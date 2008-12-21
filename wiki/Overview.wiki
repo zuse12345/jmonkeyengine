@@ -1,0 +1,13 @@
+#summary Overview - Links to useful jME resources
+#labels Featured
+
+== Documentation ==
+[http://www.jmonkeyengine.com/doc/ Javadoc]
+
+[http://www.jmonkeyengine.com/wiki/doku.php?id=user_s_guide Wiki:User guide]
+== Community & Resources ==
+[http://www.jmonkeyengine.com/jmeforum Forum]
+
+[http://www.jmonkeyengine.com/wiki/doku.php Wiki]
+  * [http://www.jmonkeyengine.com/wiki/doku.php?id=the_tutorials_-_jme_2 Getting started with jME 2]
+[http://www.jmonkeyengine.com/movies_demos.php Movies & Demos]

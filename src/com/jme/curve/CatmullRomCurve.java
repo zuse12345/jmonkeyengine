@@ -77,10 +77,6 @@ public class CatmullRomCurve extends Curve {
 	private Vector3f last;
 
 	private Vector3f beforeLast;
-	
-	public CatmullRomCurve() {
-		super(null);
-	}
 
 
 	/**

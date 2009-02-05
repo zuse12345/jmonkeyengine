@@ -553,9 +553,7 @@ public class LWJGLRenderer extends Renderer {
         matRecord.switchMode(GL11.GL_PROJECTION);
         GL11.glPushMatrix();
         GL11.glLoadIdentity();
-        float viewportWidth = width * (camera.getViewPortRight() - camera.getViewPortLeft());
-        float viewportHeight = height * (camera.getViewPortTop() - camera.getViewPortBottom());
-        GLU.gluOrtho2D(0, viewportWidth, 0, viewportHeight);
+        GLU.gluOrtho2D(0, width, 0, height);
         matRecord.switchMode(GL11.GL_MODELVIEW);
         GL11.glPushMatrix();
         GL11.glLoadIdentity();

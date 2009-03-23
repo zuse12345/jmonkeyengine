@@ -86,7 +86,7 @@ class XmlTag(object):
         self.__children.append(child)
 
     def __str__(self):
-        # Returns this element with no indentaton
+        # Returns this element with no indentaton + children indented 1 level
         bufferLinks = ['<']
         bufferLinks.append(self.name)
         if self.__curAttrs:
@@ -95,7 +95,7 @@ class XmlTag(object):
                 bufferLinks.append(' ' + n + '=' + v)
         if len(self.__textLinks) > 0 or len(self.__children) > 0:
             bufferLinks.append('>')
-        else :
+        else:
             if len(self.__commentLinks) > 0: bufferLinks.append('/>')
         for comment in self.__commentLinks:
             # If this is a 1-line element, then keep the comment(s) lined
@@ -110,15 +110,14 @@ class XmlTag(object):
         for text in self.__textLinks:
             bufferLinks.append(text) # Caller must add their own newlines!
         for child in self.__children:
+            child.spacesPerIndent = self.spacesPerIndent
             bufferLinks.append(('\n' + str(child))  \
                 .replace('\n', '\n' + (' ' * self.spacesPerIndent)))
         if len(self.__children) > 0: bufferLinks.append('\n')
         if len(self.__textLinks) > 0 or len(self.__children) > 0:
-            bufferLinks.append('</' + self.name)
+            bufferLinks.append('</' + self.name + '>')
         else:
-            if not len(self.__commentLinks) > 0:
-                bufferLinks.append('/')
-        if not len(self.__commentLinks) > 0: bufferLinks.append('>')
+            if len(self.__commentLinks) < 1: bufferLinks.append('/>')
 
         return ''.join(bufferLinks)
 

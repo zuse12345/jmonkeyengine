@@ -2,6 +2,8 @@ $Id$
 
 TODO LIST
 
+Add license file to repository and distribution.
+
 Finish the jme.xml unit test implementation.  Put real data into the test
 data file "mix.xml", and convert the display-only tests to use the unittest
 module.

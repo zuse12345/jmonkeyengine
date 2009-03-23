@@ -1,10 +1,11 @@
 #!/usr/bin/python
 
 """The jme Python module root directory must be in PYTHON path (or sys.path)
-for this script to work.  Here are the two normal idioms to accomplis this:
-To execute this script directly from the command-line:
+for this script to work.  Here are the two normal idioms to accomplish this:
+To execute this script directly from the "src" directory with the command-line:
     PYTHONPATH=. relative/path/to/this/script.py
     # For Windows, use SET to set the PYTHONPATH env variable.
+Or run an interactive Python shell or a script that resides right in "src", and
 To execute from another python script (or interactively at Python prompt):
     import absolute.module.spec  # For this exact module file
 """

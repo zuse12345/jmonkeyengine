@@ -7,6 +7,10 @@ $Id$
   <property file="local.properties"/>
   <property name="product.version" value="0.1a"/>
 
+  <target name="clearn" description="Wipe out all derived artifacts">
+    <delete dir="dist"/>
+  </target>
+
   <target name="dist" description="Build distributable package(s)">
     <mkdir dir="dist"/>
     <property name="distro.basename"

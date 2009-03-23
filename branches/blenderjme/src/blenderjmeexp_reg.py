@@ -13,4 +13,4 @@ __url__ = 'http://www.jmonkeyengine.com'
 
 print "======================================================================"
 
-import blenderexp.gui
+import blenderjmeexp.gui

@@ -1,1 +1,14 @@
-Mon Mar 23 10:27:11 EDT 2009
+<?processInstr version="1.0" encoding="UTF-8"?>
+<!--A doc comment-->
+
+<orange color="yellow" mass3="3.4">
+  <!--One comment-->
+  <!--Another comment-->
+Some words
+  <peach skin="fuffy"/>
+  <pineapple prickley="true"/>
+  <apple x="y">
+    <!--Apples are delicious-->
+    <grape tasty="true"/>
+  </apple>
+</orange>

@@ -19,20 +19,37 @@ __url__ = 'http://www.jmonkeyengine.com'
 
 from jmetest import resFileContent
 from jme.xml import XmlTag, PITag
+import unittest
+from unittest import *
 
-print '[' + resFileContent("xmldata/mix.xml", "utf-8") + ']'
+class Tests(unittest.TestCase):
+    __slots__ = ['expectedMix']
 
-apple = XmlTag('apple', {'x':'y'})
-tag = XmlTag('orange', {'color':'yellow'})
-apple.addComment("Apples are delicious")
-tag.addAttr('mass3', 3.4, 3)
-tag.addText('Some words')
-tag.addComment('One comment')
-tag.addComment('Another comment')
-tag.addChild(XmlTag('peach', {'skin':'fuffy'}))
-tag.addChild(XmlTag('pineapple', {'prickley':'true'}))
-tag.addChild(apple)
-apple.addChild(XmlTag('grape', {'tasty':'true'}))
-pi = PITag('processInstr', {'version':'1.0', 'encoding':'UTF-8'})
-pi.addComment("A doc comment")
-print '[' + str(pi) + '\n\n' + str(tag) + ']'
+    def setUp(self):
+        self.expectedMix = resFileContent("xmldata/mix.xml", "utf-8")
+
+    def testTagAssembly(self):
+        """This tests manually writes the PI and root elements, and sets the
+        indentation level"""
+
+        apple = XmlTag('apple', {'x':'y'})
+        tag = XmlTag('orange', {'color':'yellow'})
+        apple.addComment("Apples are delicious")
+        tag.addAttr('mass3', 3.4, 3)
+        tag.addText('Some words')
+        tag.addComment('One comment')
+        tag.addComment('Another comment')
+        tag.addChild(XmlTag('peach', {'skin':'fuffy'}))
+        tag.addChild(XmlTag('pineapple', {'prickley':'true'}))
+        tag.addChild(apple)
+        apple.addChild(XmlTag('grape', {'tasty':'true'}))
+        pi = PITag('processInstr', {'version':'1.0', 'encoding':'UTF-8'})
+        pi.addComment("A doc comment")
+        tag.spacesPerIndent = 2
+        manualXmlOutput = str(pi) + '\n\n' + str(tag) + '\n'
+        #print '{' + self.expectedMix + '}'
+        #print '[' + manualXmlOutput + ']'
+        self.assertEqual(self.expectedMix, manualXmlOutput)
+
+unittest.TextTestRunner()\
+        .run(unittest.TestLoader().loadTestsFromTestCase(Tests))

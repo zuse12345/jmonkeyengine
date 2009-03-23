@@ -8,6 +8,8 @@ To execute this script directly from the "src" directory with the command-line:
 Or run an interactive Python shell or a script that resides right in "src", and
 To execute from another python script (or interactively at Python prompt):
     import absolute.module.spec  # For this exact module file
+A nice shortcut for the 2nd option is to use the python -c switch, like this:
+    cd .../src; python -c 'import absolute.module.spec'
 """
 
 __version__ = '$Revision$'

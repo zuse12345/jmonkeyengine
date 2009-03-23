@@ -7,7 +7,7 @@ $Id$
   <property file="local.properties"/>
   <property name="product.version" value="0.1a"/>
 
-  <target name="clearn" description="Wipe out all derived artifacts">
+  <target name="clean" description="Wipe out all derived artifacts">
     <delete dir="dist"/>
   </target>
 
@@ -17,7 +17,7 @@ $Id$
               value="${ant.project.name}-${product.version}"/>
     
     <mkdir dir="tmp"/>
-    <fixcrlf destDir="tmp" dir="doc" includes="install.txt"
+    <fixcrlf destDir="tmp" srcDir="doc" includes="install.txt"
              preservelastmodified='true' eol="crlf"/>
     <!-- TODO:  Add license file to distro -->
     <zip destfile="dist/${distro.basename}.zip">

@@ -6,7 +6,7 @@ To execute this script directly from the command-line:
     PYTHONPATH=. relative/path/to/this/script.py
     # For Windows, use SET to set the PYTHONPATH env variable.
 To execute from another python script (or interactively at Python prompt):
-    import absolue.module.spec  # For this exact module file
+    import absolute.module.spec  # For this exact module file
 """
 
 __version__ = '$Revision$'

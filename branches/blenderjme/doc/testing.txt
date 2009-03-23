@@ -1,0 +1,9 @@
+$Id$
+
+How to run and make tests.
+
+Our Python unit tests use the unittest module, which is the Python equivalent
+of JUnit.  Blender does not include this module, so you need a standalone
+Python installation to run the unit tests.
+
+More details forthcoming...

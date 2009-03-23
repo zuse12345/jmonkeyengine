@@ -1,0 +1,13 @@
+$Id$
+
+This file describes the layout of the main directories of the blenderexp
+directory branch.
+
+doc/      Documentation
+
+src/      Product and testing scripts (differentiated from one another with
+          packages)
+
+img-src/  Image editing source files (at this time, Gimp source files)
+
+bin/      Shell scripts

@@ -6,6 +6,9 @@ Finish the jme.xml unit test implementation.  Put real data into the test
 data file "mix.xml", and convert the display-only tests to use the unittest
 module.
 
+Re-work the elegant UTF code to handle UTF-8 as much as possible without the
+codecs module, because Blender does not include that module.  It's a shame :(.
+
 Add tests of new XmlFile class to the jme.xml tests.
 
 Add Blender exporter artifacts.  The menu registration script, prototype
@@ -15,7 +18,3 @@ Add utility scripts for running the Blender-specific scripts and unit tests
 from the command line.  Without this, one would need to run Blender
 interactively to use any of these scripts.  [This is because the Blender-
 provided packages are only available from the Blender binary environment].
-
-Once have the exporter to a state where it runs, test on a PC with no
-Python installed, to verify that our exporter has no dependencies beyond
-Blender itself.

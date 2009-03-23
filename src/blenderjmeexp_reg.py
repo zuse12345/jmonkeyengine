@@ -5,6 +5,9 @@ Blender: 241
 Group: 'Render'"""
 # TODO:  install archived version of Blender and set the Blender version
 # above to the older version that this product works with.
+# TODO:  Change the Group to 'Export' before publish.  It's more convenient
+# while doing development to have it by itself in a menu (File/Export is
+# rather cluttered).
 
 __version__ = '$Revision$'
 __date__ = '$Date$'

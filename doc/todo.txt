@@ -6,6 +6,8 @@ Finish the jme.xml unit test implementation.  Put real data into the test
 data file "mix.xml", and convert the display-only tests to use the unittest
 module.
 
+Add tests of new XmlFile class to the jme.xml tests.
+
 Add Blender exporter artifacts.  The menu registration script, prototype
 exporter script, logo image.
 

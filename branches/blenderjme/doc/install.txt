@@ -1,0 +1,10 @@
+$Id$
+
+To install the Blender jME XML Exporter, just extract the zip distribution
+file into your Blender scripts directory.
+
+Depending on whether you did a shared or personal installation of Blender,
+this directory may be at C:\Program Files\Blender Foundation\Blender\.blender,
+or
+C:\Documents and Settings\YOURNAME\Application Data\Blender Foundation\Blender\.blender
+or %HOME%\.blender.

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="blenderjme" default="dist">
+<!--
+$Id$
+-->
+
+  <property file="local.properties"/>
+  <property name="product.version" value="0.1a"/>
+
+  <target name="dist" description="Build distributable package(s)">
+    <mkdir dir="dist"/>
+    <property name="distro.basename"
+              value="${ant.project.name}-${product.version}"/>
+    
+    <mkdir dir="tmp"/>
+    <fixcrlf destDir="tmp" dir="doc" includes="install.txt"
+             preservelastmodified='true' eol="crlf"/>
+    <!-- TODO:  Add license file to distro -->
+    <zip destfile="dist/${distro.basename}.zip">
+      <zipfileset dir="tmp" includes="install.txt"/>
+      <zipfileset dir="src"  excludes="**/.*/**, **/*.pyc"/>
+    </zip>
+  </target>
+</project>

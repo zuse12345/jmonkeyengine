@@ -1,14 +1,14 @@
 <?processInstr version="1.0" encoding="UTF-8"?>
-<!--A doc comment-->
+<!-- A doc comment -->
 
 <orange color="yellow" mass="3.4">
-  <!--One comment-->
-  <!--Another comment-->
+  <!-- One comment -->
+  <!-- Another comment -->
 Some words
   <peach skin="fuffy"/>
   <pineapple prickley="true"/>
   <apple x="y">
-    <!--Apples are delicious-->
+    <!-- Apples are delicious -->
     <grape tasty="true"/>
   </apple>
 </orange>

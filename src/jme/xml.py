@@ -103,10 +103,10 @@ class XmlTag(object):
             # If this is a 1-line element, then keep the comment(s) lined
             # up with it.  Otherwise, indent alone with other el. contents.
             if len(self.__textLinks) > 0 or len(self.__children) > 0:
-                bufferLinks.append(('\n<!--' + comment)  \
-                  .replace('\n', '\n'+ (' ' * self.spacesPerIndent)) + '-->')
+                bufferLinks.append(('\n<!-- ' + comment)  \
+                  .replace('\n', '\n'+ (' ' * self.spacesPerIndent)) + ' -->')
             else:
-                bufferLinks.append(('\n<!--' + comment) + '-->')
+                bufferLinks.append(('\n<!-- ' + comment) + ' -->')
         if len(self.__commentLinks) > 0 and len(self.__textLinks) > 0:
             bufferLinks.append('\n')
         for text in self.__textLinks:
@@ -161,7 +161,7 @@ class PITag(object):
                 bufferLinks.append(' ' + n + '=' + v)
         bufferLinks.append('?>')
         for comment in self.__commentLinks:
-            bufferLinks.append(('\n<!--' + comment) + '-->')
+            bufferLinks.append(('\n<!-- ' + comment) + ' -->')
 
         return ''.join(bufferLinks)
 

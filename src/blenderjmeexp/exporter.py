@@ -7,24 +7,32 @@ import Blender
 from Blender import Draw
 from Blender import BGL
 from jme.xml import XmlTag, PITag, XmlFile
+from datetime import datetime
+from blenderjmeexp.wrapperclasses import JmeObject, JmeNode
+from bpy import data
 
-def gen(x):
+def gen(saveAll):
     origEditMode = Blender.Window.EditMode()
     if origEditMode != 0: Blender.Window.EditMode(0)
     try:
-        apple = XmlTag('apple', {'x':'y'})
-        rootTag = XmlTag('orange', {'color':'yellow'})
-        apple.addComment("Apples are delicious")
-        rootTag.addAttr('mass', 3.4, 3)
-        rootTag.addText('Some words')
-        rootTag.addComment('One comment')
-        rootTag.addComment('Another comment')
-        rootTag.addChild(XmlTag('peach', {'skin':'fuffy'}))
-        rootTag.addChild(XmlTag('pineapple', {'prickley':'true'}))
-        rootTag.addChild(apple)
-        apple.addChild(XmlTag('grape', {'tasty':'true'}))
-        pi = PITag('processInstr', {'version':'1.0', 'encoding':'UTF-8'})
-        pi.addComment("A doc comment")
+        os = []
+        candidates = []
+        if saveAll:
+            candidates = data.objects
+        else:
+            candidates = data.scenes.active.objects.selected
+        for o in candidates:
+            if JmeObject.supported(o): os.append(JmeObject(o))
+        root = None
+        if len(os) > 1:
+            root = JmeNode("GroupingRootNode")
+            for o in os: root.addChild(o)
+        else:
+            root = os[0]
+
+        pi = PITag('xml', {'version':'1.0', 'encoding':'UTF-8'})
+        pi.addComment("Blender export by Blender/JME Exporter at " \
+                + datetime.now().isoformat())
+        return XmlFile(root.getXmlEl(), pi=pi)
     finally:
         if origEditMode != 0: Blender.Window.EditMode(origEditMode)
-    return XmlFile(rootTag, pi=pi)

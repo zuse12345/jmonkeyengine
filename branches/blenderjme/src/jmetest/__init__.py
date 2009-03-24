@@ -12,7 +12,7 @@ __author__ = 'Blaine Simpson, blaine (dot) simpson (at) admc (dot) com'
 __url__ = 'http://www.jmonkeyengine.com'
 
 from os.path import abspath, dirname, isfile, join
-from codecs import open
+#from codecs import open            codecs module note available in Blender
 
 __moduleDir = abspath(dirname(__file__))
 
@@ -25,14 +25,19 @@ def __validateResFile(path):
         raise Exception("No res file '" + path + "' present under module '" \
                 + dirname(__file__) + "'")
 
-def resFileContent(path, encoding=None):
+def resFileContent(path, encoding='utf-8'):
     """ Examples:
         print thismodule.resFileContent("abc/date.txt")
         print thismodule.resFileContent("extended.txt", "utf-8")
     """
     global __moduleDir
     __validateResFile(path)
-    fileObj = open(join(__moduleDir, path), "r", encoding)
-    retVal = fileObj.read()
+    # When Blender starts including the codes module, enable this codes.open()
+    # and the following read; and disable the next 2 lines.  Import
+    # codes.open too!
+    #fileObj = open(join(__moduleDir, path), "r", encoding)
+    #retVal = fileObj.read()
+    fileObj = open(join(__moduleDir, path), "r")
+    retVal = fileObj.read().decode(encoding)
     fileObj.close()
     return retVal

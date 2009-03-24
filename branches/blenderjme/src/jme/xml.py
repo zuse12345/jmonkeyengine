@@ -1,7 +1,9 @@
 """This module provides tandalone (i.e. no third party modules required) XML 
 abilities.
 Right now only handles WRITING, not reading XML files.
-Does not handle DTD at this time, only XML schemas."""
+Does not handle DTD at this time, only XML schemas.
+XmlFile nly handles one Processing Instruction per document for now, but you
+can use XmlTag and PITag to write a document with multiple PIs."""
 
 __version__ = '$Revision$'
 __date__ = '$Date$'
@@ -163,17 +165,48 @@ class PITag(object):
 
         return ''.join(bufferLinks)
 
+#from codecs import open      codecs module not available in Blender
 class XmlFile(object):
-    from codecs import open
-    __slots__ = ['rootElement', 'spacesPerIndent', 'encoding']
+    __slots__ = ['root', 'spacesPerIndent', 'encoding', 'pi', \
+            '__commentLinks']
 
-    def __init__(self, rootElement, spacesPerIndent=2, encoding='utf-8'):
+    def __init__(self, root, spacesPerIndent=2, encoding='utf-8', pi=None):
         object.__init__(self)
-        self.rootElement = rootElement
+        self.root = root
         self.spacesPerIndent = spacesPerIndent
         self.encoding = encoding
+        self.__commentLinks = []
+        self.pi = pi
 
-    def writeFile(filePath):
-        fileObj = open(path, "w", self.encoding)
-        fileObj.write()
+    def decoded(self):
+        return unicode(self.__str__(), self.encoding)
+
+    def __str__(self):
+        pieces = []
+        if not self.pi:
+            self.pi = PITag("xml", {'version':'1.0', 'encoding':self.encoding})
+            # This is the default document Processing Instruction
+        for docComment in self.__commentLinks: self.pi.addComment(docComment)
+        self.root.spacesPerIndent = self.spacesPerIndent
+        return str(self.pi) + '\n\n' + str(self.root)
+
+    def addComment(self, text):
+        self.__commentLinks.append(escape(text))
+        # Consider whether it is worthwhile to insert these doc-comments
+        # above PI comments.
+
+    def setPI(self, pi):
+        if self.pi: raise Exception("We only support one PI for now.  " \
+                + "Consider wiriting your PIs and Tags directly.")
+        self.pi = pi
+
+    def writeFile(self, filePath):
+        # When Blender starts including the codecs module, enable this
+        # codecs.open() and the writes, and disable the next 3 lines.
+        #fileObj = open(filePath, "w", self.encoding).  And import codecs.open.
+        #fileObj.write(self.__str__())
+        #fileObj.write('\n')
+        fileObj = open(filePath, "w")
+        fileObj.write(self.__str__().encode(self.encoding))
+        fileObj.write('\n'.encode(self.encoding))
         fileObj.close()

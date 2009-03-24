@@ -9,6 +9,7 @@ from Blender import BGL
 from bpy import data
 import exporter
 from os import path
+from blenderjmeexp import resFileAbsPath
 
 defaultFilePath = path.abspath("default-jme.xml")
 saveAll = False
@@ -37,7 +38,8 @@ def btnHandler(btnId):
     if btnId == BTNID_SAVE:
         try:
             xmlFile = exporter.gen(saveAll)
-        except Exception as e:
+        except Exception, e:
+            # Python 2.5 does not support "except X as y:" syntax
             if 1 == Draw.PupMenu(str(e) + "%t|Abort|Try other settings"):
                 exitModule()
             return
@@ -73,7 +75,7 @@ class GuiBox(object):
     def __loadImages(self):
         self.__imgs = []
         for path in self.__imgpaths:
-            self.__imgs.append(Blender.Image.Load(path))
+            self.__imgs.append(Blender.Image.Load(resFileAbsPath(path)))
         for img in self.__imgs: img.glLoad()
 
     def free(self):
@@ -117,11 +119,8 @@ class GuiBox(object):
         #BGL.glRectf(self.x, y, self.x + self.w, self.y + self.h -  self.imgH)
 
 
-guiBox = GuiBox(330, 300, ['/home/blaine/.blender/scripts/bj1.png', \
-    '/home/blaine/.blender/scripts/bj2.png', \
-    '/home/blaine/.blender/scripts/bj3.png', \
-    '/home/blaine/.blender/scripts/bj4.png', \
-    '/home/blaine/.blender/scripts/bj5.png'])
+guiBox = GuiBox(330, 300, \
+        ['bje1.png', 'bje2.png', 'bje3.png', 'bje4.png', 'bje5.png'])
 
 def saveFile(filepath):
     # Can only get here when our Gui is present, but completely overwritten
@@ -137,7 +136,8 @@ def saveFile(filepath):
         print "Saved file '" + filepath + "'"
         defaultFilePath = filepath
         exitModule()
-    except Exception as e:
+    except Exception, e:
+        # Python 2.5 does not support "except X as y:" syntax
         if 1 == Draw.PupMenu(str(e) + "%t|Abort|Try other settings"):
             exitModule()
         print "Will retry"

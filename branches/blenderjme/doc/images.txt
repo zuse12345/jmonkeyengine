@@ -1,0 +1,25 @@
+$Id$
+
+I am unable to get images to load and display properly except for square images
+with the side length an even power of 2.  I have tried many strategies to
+display only a portion of a square image file, or to stretch to the desired
+dimensions, but all attempts either do not work or add too much distortion.
+The following idiom works.
+[By "even" here, and below, I mean zero modulus, not zero as in odd-or-even.]
+
+Dice up your original image into squares, each square of which is an even
+power of 2 (in pixels).  You still need to export your original image so that
+its with and its height are both an even multiple of the same even power of 2.
+For example, if you export your source image to size 224x40, that would work
+since both dimensions are multiples of 2^3 = 8:
+    224 = 28 * 2^3
+    40 = 5 * 2^3
+
+Dicing script
+-------------
+I write the script "diceimage.bash" to dice up an image as described.  To
+dice up the 224x40 pixel image described above, you would run:
+
+    diceimage.bash 28 5 8
+
+This would generate 140 (28 times 5) 8x8 pixel images.

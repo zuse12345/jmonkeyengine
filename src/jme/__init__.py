@@ -17,14 +17,18 @@ from os.path import abspath, dirname, isfile, join
 
 __moduleDir = abspath(dirname(__file__))
 
-def resFilePresent(path):
+def __resFileAbsPath(path):
     global __moduleDir
-    return isfile(join(__moduleDir, path))
+    if path.startswith('/') or path.startswith('\\'):
+        raise Exception("Resource file paths should not be absolute: " + path)
+    return join(__moduleDir, path)
 
-def __validateResFile(path):
-    if not resFilePresent(path):
-        raise Exception("No res file '" + path + "' present under module '" \
-                + dirname(__file__) + "'")
+def resFileAbsPath(path):
+    absPath = __resFileAbsPath(path)
+    if not isfile(absPath):
+        raise Exception("No res file '" + path + "' present in package '" \
+                + __name__ + "'")
+    return absPath
 
 #def resFileContent(path, encoding='utf-8'):
 # Force to UTF until Blender supports encodings
@@ -34,13 +38,13 @@ def resFileContent(path):
         print thismodule.resFileContent("extended.txt", "utf-8")
     """
     global __moduleDir
-    __validateResFile(path)
+    absPath = resFileAbsPath(path)
     # When Blender starts including the codes module, enable this codes.open()
     # and the following read; and disable the next 2 lines.  Import
     # codes.open too!
     #fileObj = open(join(__moduleDir, path), "r", encoding)
     #retVal = fileObj.read()
-    fileObj = open(join(__moduleDir, path), "r")
+    fileObj = open(join(__moduleDir, absPath), "r")
     #retVal = fileObj.read().decode(encoding)
     retVal = unicode(fileObj.read())
     fileObj.close()

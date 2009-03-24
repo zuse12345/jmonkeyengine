@@ -16,4 +16,6 @@ __url__ = 'http://www.jmonkeyengine.com'
 
 print "======================================================================"
 
-import blenderjmeexp.gui
+from blenderjmeexp.gui import *
+
+Draw.Register(drawer, inputHandler, btnHandler)

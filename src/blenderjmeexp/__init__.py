@@ -25,7 +25,9 @@ def __validateResFile(path):
         raise Exception("No res file '" + path + "' present under module '" \
                 + dirname(__file__) + "'")
 
-def resFileContent(path, encoding='utf-8'):
+#def resFileContent(path, encoding='utf-8'):
+# Force to UTF until Blender supports encodings
+def resFileContent(path):
     """ Examples:
         print thismodule.resFileContent("abc/date.txt")
         print thismodule.resFileContent("extended.txt", "utf-8")
@@ -38,6 +40,7 @@ def resFileContent(path, encoding='utf-8'):
     #fileObj = open(join(__moduleDir, path), "r", encoding)
     #retVal = fileObj.read()
     fileObj = open(join(__moduleDir, path), "r")
-    retVal = fileObj.read().decode(encoding)
+    #retVal = fileObj.read().decode(encoding)
+    retVal = unicode(fileObj.read())
     fileObj.close()
     return retVal

@@ -10,6 +10,7 @@ from bpy import data
 import exporter
 from os import path
 from blenderjmeexp import resFileAbsPath
+from blenderjmeexp.wrapperclasses import JmeObject
 
 defaultFilePath = path.abspath("default-jme.xml")
 saveAll = False
@@ -28,7 +29,13 @@ def exportableCounts():
     """Returns counts of all exportable objects, and all selected exportable
     objects"""
     # TODO:  Narrow to EXPORTABLEs.  We can't export most Blender object types.
-    return [len(data.objects), len(data.scenes.active.objects.selected)]
+    selCount = 0
+    allCount = 0
+    for o in data.objects:
+        if JmeObject.supported(o): allCount = allCount + 1
+    for o in data.scenes.active.objects.selected:
+        if JmeObject.supported(o): selCount = selCount + 1
+    return [allCount, selCount]
 
 def btnHandler(btnId):
     global saveAll, xmlFile, defaultFilePath
@@ -122,6 +129,8 @@ class GuiBox(object):
 guiBox = GuiBox(330, 300, \
         ['bje1.png', 'bje2.png', 'bje3.png', 'bje4.png', 'bje5.png'])
 
+def redrawDummy(x, y): Draw.Redraw()
+
 def saveFile(filepath):
     # Can only get here when our Gui is present, but completely overwritten
     # by the FileSelector window.
@@ -148,17 +157,25 @@ def drawer():
     BGL.glClear(BGL.GL_COLOR_BUFFER_BIT)
     guiBox.drawBg()
     Draw.PushButton("Cancel", BTNID_CANCEL, \
-            guiBox.x + 10, guiBox.y + 10, 100, 20, "Abort export")
+            guiBox.x + 10, guiBox.y + 10, 50, 20, "Abort export")
     allCount, selCount = exportableCounts()
-    if selCount < 1:  # TEMPORARY.  Enable following once impl. saveAll.
-    #if allCount < 0:
+    if allCount < 1:  # TEMPORARY.  Enable following once impl. saveAll.
         Draw.Label("Your scenes contain no",
                 guiBox.x + 10, guiBox.y + 200,200,20)
         Draw.Label("export-supported objects",
                 guiBox.x + 10, guiBox.y + 170,200,20)
         return
-    Draw.Toggle("All Scene Objects",
-            BTNID_SAVEALL, guiBox.x + 10, guiBox.y + 200,100,20, saveAll,
-            "Save all savable items from scene, as opposed to selected items")
+    if saveAll:
+        toggleText = str(allCount) + " Scene Object(s)"
+    else:
+        toggleText = str(selCount) + " Selected Object(s)"
+    Draw.Toggle(toggleText,
+            BTNID_SAVEALL, guiBox.x + 10, guiBox.y + 200, 130, 20, saveAll,
+            "Choose to export supported SELECTED objects or ALL objects",
+            redrawDummy)
+            # Would prefer to make a 2-line button, but Draw does not
+            # support that... or basically anything other than vanilla.
     Draw.PushButton("Export", BTNID_SAVE, \
-            guiBox.x + 10, guiBox.y + 50, 100, 20, "Select file to save to")
+            guiBox.x + 10, guiBox.y + 50, 50, 20, "Select file to save to")
+    Draw.Label("Reserved space", guiBox.x + 180, guiBox.y + 150,200,20)
+    Draw.Label("More space", guiBox.x + 180, guiBox.y + 100,200,20)

@@ -18,7 +18,7 @@ __author__ = 'Blaine Simpson, blaine (dot) simpson (at) admc (dot) com'
 __url__ = 'http://www.jmonkeyengine.com'
 
 from jmetest import resFileContent
-from jme.xml import XmlTag, PITag
+from jme.xml import XmlTag, PITag, XmlFile
 import unittest
 from unittest import *
 
@@ -29,27 +29,51 @@ class Tests(unittest.TestCase):
         self.expectedMix = resFileContent("xmldata/mix.xml", "utf-8")
 
     def testTagAssembly(self):
-        """This tests manually writes the PI and root elements, and sets the
-        indentation level"""
+        """This tests manually writes the PI and root elements, sets the
+        indentation level, encodes"""
 
         apple = XmlTag('apple', {'x':'y'})
-        tag = XmlTag('orange', {'color':'yellow'})
+        rootTag = XmlTag('orange', {'color':'yellow'})
         apple.addComment("Apples are delicious")
-        tag.addAttr('mass3', 3.4, 3)
-        tag.addText('Some words')
-        tag.addComment('One comment')
-        tag.addComment('Another comment')
-        tag.addChild(XmlTag('peach', {'skin':'fuffy'}))
-        tag.addChild(XmlTag('pineapple', {'prickley':'true'}))
-        tag.addChild(apple)
+        rootTag.addAttr('mass', 3.4, 3)
+        rootTag.addText('Some words')
+        rootTag.addComment('One comment')
+        rootTag.addComment('Another comment')
+        rootTag.addChild(XmlTag('peach', {'skin':'fuffy'}))
+        rootTag.addChild(XmlTag('pineapple', {'prickley':'true'}))
+        rootTag.addChild(apple)
         apple.addChild(XmlTag('grape', {'tasty':'true'}))
         pi = PITag('processInstr', {'version':'1.0', 'encoding':'UTF-8'})
         pi.addComment("A doc comment")
-        tag.spacesPerIndent = 2
-        manualXmlOutput = str(pi) + '\n\n' + str(tag) + '\n'
+        rootTag.spacesPerIndent = 2
+        manualXmlOutput = str(pi) + '\n\n' \
+                + unicode(str(rootTag), 'utf-8') + '\n'
         #print '{' + self.expectedMix + '}'
         #print '[' + manualXmlOutput + ']'
         self.assertEqual(self.expectedMix, manualXmlOutput)
 
+    def testXmlFile(self):
+        "This exercises the XmlFile class"
+
+        apple = XmlTag('apple', {'x':'y'})
+        rootTag = XmlTag('orange', {'color':'yellow'})
+        apple.addComment("Apples are delicious")
+        rootTag.addAttr('mass', 3.4, 3)
+        rootTag.addText('Some words')
+        rootTag.addComment('One comment')
+        rootTag.addComment('Another comment')
+        rootTag.addChild(XmlTag('peach', {'skin':'fuffy'}))
+        rootTag.addChild(XmlTag('pineapple', {'prickley':'true'}))
+        rootTag.addChild(apple)
+        apple.addChild(XmlTag('grape', {'tasty':'true'}))
+        pi = PITag('processInstr', {'version':'1.0', 'encoding':'UTF-8'})
+        pi.addComment("A doc comment")
+        #print str(XmlFile(rootTag, pi=pi))
+        #XmlFile(rootTag, pi=pi).writeFile("/tmp/auto.xml")
+        #autoXmlOutput = str(pi) + '\n\n' + str(rootTag) + '\n'
+        self.assertEqual( \
+                self.expectedMix, XmlFile(rootTag, pi=pi).decoded() + '\n')
+
 unittest.TextTestRunner()\
         .run(unittest.TestLoader().loadTestsFromTestCase(Tests))
+

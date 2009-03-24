@@ -11,6 +11,9 @@ $Id$
     <delete dir="dist"/>
   </target>
 
+  <target name="redist" depends="clean, dist"
+          description="Rebuild distributable package(s)"/>
+
   <target name="dist" description="Build distributable package(s)">
     <mkdir dir="dist"/>
     <property name="distro.basename"

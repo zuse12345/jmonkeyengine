@@ -26,7 +26,7 @@ class Tests(unittest.TestCase):
     __slots__ = ['expectedMix']
 
     def setUp(self):
-        self.expectedMix = resFileContent("xmldata/mix.xml", "utf-8")
+        self.expectedMix = resFileContent("xmldata/mix.xml")
 
     def testTagAssembly(self):
         """This tests manually writes the PI and root elements, sets the

@@ -170,11 +170,13 @@ class XmlFile(object):
     __slots__ = ['root', 'spacesPerIndent', 'encoding', 'pi', \
             '__commentLinks']
 
-    def __init__(self, root, spacesPerIndent=2, encoding='utf-8', pi=None):
+    def __init__(self, root, spacesPerIndent=2, pi=None):
+    #def __init__(self, root, spacesPerIndent=2, encoding='utf-8', pi=None):
+    # Encoding forced to utf-8 until Blender gives some encoding support
         object.__init__(self)
         self.root = root
         self.spacesPerIndent = spacesPerIndent
-        self.encoding = encoding
+        self.encoding = 'utf-8'
         self.__commentLinks = []
         self.pi = pi
 
@@ -207,6 +209,14 @@ class XmlFile(object):
         #fileObj.write(self.__str__())
         #fileObj.write('\n')
         fileObj = open(filePath, "w")
-        fileObj.write(self.__str__().encode(self.encoding))
-        fileObj.write('\n'.encode(self.encoding))
+
+        #fileObj.write(self.__str__().encode(self.encoding))
+        #fileObj.write('\n'.encode(self.encoding))
+        # TODO: SERIOUS PROBLEM HERE.  string.encode() is not availabe in
+        # Blender, and without codecs, there is no alternative.
+        # I want to leave our encoding code in place, for when Blender
+        # improves, but it is misleading.  What to do... ?
+        fileObj.write(self.__str__())
+        fileObj.write('\n')
+
         fileObj.close()

@@ -99,8 +99,13 @@ else
     COORD_PARAMS=(-p ${COORDS[*]})
 fi
 
-[ -z "$PYTHONPATH" ] && [ -x bin/blenderscript.bash ] &&
-export PYTHONPATH="$PWD/src"
+case "$0" in
+/*) SCRIPTDIR="${0%/*}";; */*) SCRIPTDIR="$PWD/${0%/*}";; *) SCRIPTDIR="$PWD";;
+esac
+case "$SCRIPTDIR" in *?/.) SCRIPTDIR="${SCRIPTDIR%/.}"; esac
+
+[ -z "$PYTHONPATH" ] && [ -d "${SCRIPTDIR%/*}/src" ] &&
+export PYTHONPATH="${SCRIPTDIR%/*}/src"
 # Put our dev script base directory into the Python search path.
 # I don't yet know precedence.  In worse case, just uninstall the files you
 # are working on from your normal Blender scripts directory.

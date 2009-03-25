@@ -2,6 +2,8 @@ $Id$
 
 TODO LIST
 
+Fix failing unit test
+
 Fix bug with axis rotation
 
 Find out how to retrieve export or data file preference directory from Blender.
@@ -12,5 +14,11 @@ instead of a boolean.
 
 Rename and enhance the gui.update*Count*() method to also save lists of
 mixed-polies.
+
+Enhance script to honor a BLENDER_SWITCHES env variable + to add:
+-b /dev/null
+
+Make a blenderexp test that requires the shell script to run, setting
+ COORDS if necessary, and adding -noaudio, -nojoystick, -noglsl.
 
 Add license file to repository and distribution.

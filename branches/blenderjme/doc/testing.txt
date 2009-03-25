@@ -1,9 +1,107 @@
 $Id$
 
-How to run and make tests.
+INTERACTIVE TESTING
 
-Our Python unit tests use the unittest module, which is the Python equivalent
-of JUnit.  Blender does not include this module, so you need a standalone
-Python installation to run the unit tests.
+To test by running Blender interactively (without our test scripts), just set
+variable PYTHONPATH to include our "src" directory, and put our registration
+script(s) (currently just "src/blenderjmeexp_reg.py") in place directly in
+your Python script directory.  To eliminate maintenance, I recommend the use of
+a symbolic link if you are on UNIX.
 
-More details forthcoming...
+The remainder of this file only addresses the use of our test scripts.
+
+
+TEST SCRIPTS
+
+Our tests use the unittest module.  "unittest" is the Python equivalent of
+JUnit for Java.  All of our tests require a standalone Python installation,
+because we use modules which are included in a base Python installation but
+which Blender does not provide.
+
+
+STANDALONE vs. BLENDER ENVIRONMENT TESTS
+
+We have two varieties of tests, standalone tests and Blender environment
+tests.  Due to the requirement stated previously, even the Blender environment
+tests require a standalone Python installation.  For Blender installations
+intergrated tightly into your operating system (like my OpenSUSE Blender
+installation), Blender will automatically use the system's standalone Python
+installation if there is one.  If your OS has not tied them together, or if
+you wish to override that binding, set environmental variable PYTHONHOME
+before executing Blender:
+
+    :: For Windows, use System Settings to add env variable, or at shell:
+    set PYTHONHOME=c:\progra~1\Python30
+
+    # For Bourne-compatible UNIX shells:
+    PYTHONHOME=/usr/lib64/python; export PYTHONHOME
+
+(You can set this path from within scripts, but I won't explain how, since
+that isn't required for our setup).
+
+Any script that uses Blender-supplied Python items or modules requires that
+Blender provide the Python interpreter, and therefore you must execute your
+script from inside an executing Blender.  We hereby call tests like this
+"Blender environment tests".  Scripts which are independent of Blender are
+hereby called "Standalone tests.
+
+
+RUNNING TESTS
+
+Regardless of whether your test is Blender-dependent or not, you need to have
+our "src" directory in your PYTHONPATH ("sys.path" from within Python) before
+running, so that the Python interpreter (Blender's or standalone) can find the
+modules that we supply.  The STANDALONE TESTS section below explains how to set
+this manually.  For Blender environment tests, you are better off using the
+provided Bash script to run the tests, as described below.
+
+
+HOW TO RUN STANDALONE TESTS
+
+The jME Python module root directory must be in PYTHON path (or sys.path)
+for these scripts to work.  There are many ways to accomplish this.  Here are
+examples for the two idioms that I will support:
+
+    INVOKING STANDALONE TEST SCRIPTS FROM SHELL:
+
+        :: From Windows command line
+        set PYTHONPATH=path/to/src
+        path/to/test/script.py
+
+        # From UNIX Bourne-compatible shell
+        PYTHONPATH=path/to/src: export PYTHONPATH
+        path/to/this/script.py
+
+        In all cases, the paths can be relative, but if you set a relative
+        PYTHONPATH, don't expect it to work after you change directories.
+        It is fine if you have our module installed to your Blender scripts
+        directory already.  The scripts found under the specified PYTHONPATH
+        will take precedence.
+
+        It doesn't effect running tests, but be aware that menu entries are
+        only loaded from the Blender scripts directory, not the PYTHONPATH
+        directory, so the *reg*.py scripts we supply will not register menu
+        entries unless they are installed.  If you always want Blender to
+        use our scripts from our baseline, you can eliminate maintenance work
+        by putting symbolic link in place for the registration script and
+        setting PYTHONPATH in a permanent way (like export it in
+        $HOME/.bash_profile).
+
+    INVOKING STANDALONE TESTS FROM PYTHON
+
+        cd .../src           [ cd ...\src for Windows ]
+        python -c 'import absolute.module.spec'
+
+        Where "absolute.module.spec" is the script name converted to its
+        corresponding Python module name.  If the script is at src/xyz/test.py,
+        the absolute module name would be xyz.test.
+
+
+HOW TO RUN BLENDER ENVIRONMENT TESTS
+
+Use the provided shell script "blenderscript.bash" on UNIX.  This script takes
+care of numerous details to set up your PYTHONPATH, run Blender, and execute
+your script from within Python.
+
+(FYI, this script is not just for running tests.  You can use it to execute any
+manually entered Python code, or any Python scripts, in a Blender environment.

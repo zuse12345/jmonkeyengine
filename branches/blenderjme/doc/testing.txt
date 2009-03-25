@@ -5,8 +5,12 @@ INTERACTIVE TESTING
 To test by running Blender interactively (without our test scripts), just set
 variable PYTHONPATH to include our "src" directory, and put our registration
 script(s) (currently just "src/blenderjmeexp_reg.py") in place directly in
-your Python script directory.  To eliminate maintenance, I recommend the use of
-a symbolic link if you are on UNIX.
+your Python script directory.  Use an absolute path when specifying PYTHONPATH,
+so it will continue to work if anything (like a wrapper script) changes your
+directory when Blender is run (as happens for my rpm install of Blender).
+
+To eliminate maintenance, I recommend the use of a symbolic link if you are on
+UNIX.
 
 The remainder of this file only addresses the use of our test scripts.
 
@@ -77,6 +81,12 @@ examples for the two idioms that I will support:
         It is fine if you have our module installed to your Blender scripts
         directory already.  The scripts found under the specified PYTHONPATH
         will take precedence.
+
+        It doesn't effect standalone tests, but be aware that relative
+        PYTHONPATH settings may not work in Blender, depending on whether a
+        wrapper script is involved when you run it (our standalone scripts do
+        not run Blender, so this doesn't effect the case that is my current
+        subject).
 
         It doesn't effect running tests, but be aware that menu entries are
         only loaded from the Blender scripts directory, not the PYTHONPATH

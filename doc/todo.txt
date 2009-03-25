@@ -2,8 +2,6 @@ $Id$
 
 TODO LIST
 
-Write script "bin/alltests.bash".
-
 Fix bug with axis rotation
 
 Find out how to retrieve export or data file preference directory from Blender.

@@ -106,9 +106,6 @@ case "$SCRIPTDIR" in *?/.) SCRIPTDIR="${SCRIPTDIR%/.}"; esac
 
 [ -z "$PYTHONPATH" ] && [ -d "${SCRIPTDIR%/*}/src" ] &&
 export PYTHONPATH="${SCRIPTDIR%/*}/src"
-# Put our dev script base directory into the Python search path.
-# I don't yet know precedence.  In worse case, just uninstall the files you
-# are working on from your normal Blender scripts directory.
 
 #chmod +x "$TMPFILE"   Blender doesn't need to be executable, so safer without
 [ -n "$VERBOSE" ] && echo blender "${COORD_PARAMS[@]}" -P "$TMPFILE" "$@" 1>&2

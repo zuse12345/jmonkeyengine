@@ -108,6 +108,9 @@ case "$SCRIPTDIR" in *?/.) SCRIPTDIR="${SCRIPTDIR%/.}"; esac
 export PYTHONPATH="${SCRIPTDIR%/*}/src"
 
 #chmod +x "$TMPFILE"   Blender doesn't need to be executable, so safer without
-[ -n "$VERBOSE" ] && echo blender "${COORD_PARAMS[@]}" -P "$TMPFILE" "$@" 1>&2
-blender "${COORD_PARAMS[@]}" -P "$TMPFILE" "$@"
+[ -n "$VERBOSE" ] &&
+echo blender "${COORD_PARAMS[@]}" -b /dev/null -noaudio -nojoystick -noglsl \
+-P "$TMPFILE" $BLENDER_SWITCHES "$@" 1>&2
+blender "${COORD_PARAMS[@]}" -b /dev/null -noaudio -nojoystick -noglsl \
+-P "$TMPFILE" $BLENDER_SWITCHES "$@"
 # Would prefer to exec blender, but that prevents the EXIT trap from working

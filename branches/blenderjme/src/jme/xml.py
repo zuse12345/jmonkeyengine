@@ -53,7 +53,7 @@ class XmlTag(object):
         ['name', '__textLinks', '__children', \
         '__commentLinks', '__curAttrs', 'spacesPerIndent']
 
-    def __init__(self, name, attrs=None):
+    def __init__(self, name, attrs=None, attrsPrecision=None):
         object.__init__(self)
         validateXmlKeyword(name)
         self.name = name
@@ -63,7 +63,7 @@ class XmlTag(object):
         self.__curAttrs = None
         self.spacesPerIndent = 0
         if attrs: 
-            for n, v in attrs.iteritems(): self.addAttr(n, v)
+            for n, v in attrs.iteritems(): self.addAttr(n, v, attrsPrecision)
 
     # Little imperfection in this method.
     # I want to preserve whitespace exactly.  The next tag that gets written
@@ -76,8 +76,9 @@ class XmlTag(object):
         # N.b., we store the surrounging quotes with each attr value
         validateXmlKeyword(name)
         if not self.__curAttrs: self.__curAttrs = {}
-        if precision:
-            self.__curAttrs[name] = quoteattr(str(round(val, precision)))
+        if precision != None:
+            formatStr = "{0:." + str(precision) + "f}"
+            self.__curAttrs[name] = quoteattr(formatStr.format(val))
         else:
             self.__curAttrs[name] = quoteattr(val)
 
@@ -130,21 +131,22 @@ class PITag(object):
     __slots__ = \
         ['name', '__commentLinks', '__curAttrs']
 
-    def __init__(self, name, attrs=None):
+    def __init__(self, name, attrs=None, attrsPrecision=None):
         object.__init__(self)
         validateXmlKeyword(name)
         self.name = name
         self.__commentLinks = []
         self.__curAttrs = None
         if attrs: 
-            for n, v in attrs.iteritems(): self.addAttr(n, v)
+            for n, v in attrs.iteritems(): self.addAttr(n, v, attrsPrecision)
 
     def addAttr(self, name, val, precision=None):
         # N.b., we store the surrounging quotes with each attr value
         validateXmlKeyword(name)
         if not self.__curAttrs: self.__curAttrs = {}
         if precision != None:
-            self.__curAttrs[name] = quoteattr(str(round(val, precision)))
+            formatStr = "{0:." + str(precision) + "f}"
+            self.__curAttrs[name] = quoteattr(formatStr.format(val))
         else:
             self.__curAttrs[name] = quoteattr(val)
 

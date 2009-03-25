@@ -50,7 +50,7 @@ def btnHandler(btnId):
         return
     if btnId == BTNID_SAVE:
         try:
-            xmlFile = exporter.gen(saveAll)
+            xmlFile = exporter.gen(saveAll, True)
         except Exception, e:
             # Python 2.5 does not support "except X as y:" syntax
             ei = exc_info()[2]

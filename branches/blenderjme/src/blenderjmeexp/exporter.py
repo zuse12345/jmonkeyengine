@@ -10,6 +10,7 @@ from jme.xml import XmlTag, PITag, XmlFile
 from datetime import datetime
 from blenderjmeexp.wrapperclasses import *
 from bpy import data
+from Blender.Mathutils import RotationMatrix
 
 BLENDER_TO_JME_ROTATION = RotationMatrix(-90, 4, 'x')
 
@@ -43,13 +44,19 @@ def gen(saveAll, autoRotate):
                         os[0].wrappedObj.matrixLocal * BLENDER_TO_JME_ROTATION
             root = os[0]
 
+        #if autoRotate: data.scenes.active.update()     No effect
         pi = PITag('xml', {'version':'1.0', 'encoding':'UTF-8'})
         pi.addComment("Blender export by Blender/JME Exporter at " \
                 + datetime.now().isoformat())
         xmlFile = XmlFile(root.getXmlEl(), pi=pi)
+        # Though the final XML text has not been generated, the buffer of
+        # string pieces have all been generated at this point, and the model
+        # data will no longer be referenced.  Therefore, it's safe to return
+        # a XmlFile even though we will now revert some transforms (which
+        # will then not match what is in the XmlFile instance).
         for n, v in changedMats.iteritems(): n.matrixLocal = v
         # This restores the original matrixes for top-level objects
-        data.scenes.active.update(1)
+        if len(changedMats) > 0: data.scenes.active.update(1)
         return xmlFile
     finally:
         if origEditMode != 0: Blender.Window.EditMode(origEditMode)

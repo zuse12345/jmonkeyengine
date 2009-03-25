@@ -2,7 +2,8 @@ $Id$
 
 TODO LIST
 
-Fix bug with axis rotation
+Change array hash to be ordered, to prevent indeterminacy which can effect
+tests.
 
 Find out how to retrieve export or data file preference directory from Blender.
 Default export director to that.

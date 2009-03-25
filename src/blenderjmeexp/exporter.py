@@ -33,7 +33,7 @@ __url__ = 'http://www.jmonkeyengine.com'
 import Blender
 from Blender import Draw
 from Blender import BGL
-from jme.xml import XmlTag, PITag, XmlFile
+from jme.xml import XmlFile
 from datetime import datetime
 from blenderjmeexp.wrapperclasses import *
 from bpy import data

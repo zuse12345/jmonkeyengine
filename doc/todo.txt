@@ -4,11 +4,18 @@ TODO LIST
 
 Find out how to retrieve export or data file preference directory from Blender.
 Default export directory to that.
+EGAD:  Terrible situation.  There is no reliable way to save preferences or
+whatever data to the FS across Blender invocations.  Unable to extract the
+path to the current file.  Blender.Library.GetName() is useless; user path
+preferences are generally not used; current directory is usually useless.
+For now, user is going to have to navigate to desired target directory the
+first export for each session.
 
-Enhance script to honor a BLENDER_SWITCHES env variable + to add:
--b /dev/null
-
-Make a blenderexp test that requires the shell script to run, setting
- COORDS if necessary, and adding -noaudio, -nojoystick, -noglsl.
+STUCK.  Unable to run any Blender environment test scripts, because Blender is
+giving me a segmentation fault when I try to open a *.blend file from Python,
+like "Blender.Load('/file/path.blend')".  I need to try on a different
+computer.  Can still test stuff that doesn't require a *.blend file, but the
+whole point here is to verify that complex input (like what is stored in a
+*.blend file) gets exported accurately.
 
 Add silent-overwrite button.

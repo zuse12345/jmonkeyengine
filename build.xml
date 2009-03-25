@@ -20,11 +20,11 @@ $Id$
               value="${ant.project.name}-${product.version}"/>
     
     <mkdir dir="tmp"/>
-    <fixcrlf destDir="tmp" srcDir="doc" includes="install.txt"
+    <fixcrlf destDir="tmp" srcDir="doc" includes="install.txt, license.txt"
              preservelastmodified='true' eol="crlf"/>
     <!-- TODO:  Add license file to distro -->
     <zip destfile="dist/${distro.basename}.zip">
-      <zipfileset dir="tmp" includes="install.txt"/>
+      <zipfileset dir="tmp" includes="install.txt, license.txt"/>
       <zipfileset dir="src"  excludes="**/.*/**, **/*.pyc"/>
     </zip>
   </target>

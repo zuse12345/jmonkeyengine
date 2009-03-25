@@ -16,5 +16,3 @@ Enhance script to honor a BLENDER_SWITCHES env variable + to add:
 
 Make a blenderexp test that requires the shell script to run, setting
  COORDS if necessary, and adding -noaudio, -nojoystick, -noglsl.
-
-Add license file to repository and distribution.

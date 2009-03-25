@@ -9,3 +9,11 @@ your Windows variant, this directory may be at
  C:\Documents and Settings\YOURNAME\Application Data\Blender Foundation\Blender\.blender,
  C:\Users\YOURNAME\AppData\Roaming\Blender Foundation\Blender
  %HOME%\.blender.
+
+This product is copyright by a BSD license.  See the "license.txt" file in
+this distribution to find out about constraints to modifications and
+redistribution.
+
+
+Thanks for using,
+blaine (dot) simpson (at) admc (dot) com

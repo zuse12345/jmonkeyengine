@@ -38,8 +38,10 @@ before executing Blender:
     set PYTHONHOME=c:\progra~1\Python30
 
     # For Bourne-compatible UNIX shells:
-    PYTHONHOME=/usr/lib64/python; export PYTHONHOME
+    PYTHONHOME=/usr; export PYTHONHOME
 
+Note that the value of PYTHONHOME needs to be the parent directory above
+"bin/python".
 (You can set this path from within scripts, but I won't explain how, since
 that isn't required for our setup).
 

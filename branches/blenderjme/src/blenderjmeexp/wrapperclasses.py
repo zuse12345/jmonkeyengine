@@ -82,16 +82,28 @@ class JmeObject(object):
         # DOES NOT WORK TO DO rQuat = self.wrappedObj.rot.toQuat() !!!!!!!!!
         if rQuat == JmeObject.__QUAT_IDENTITY: rQuat = None
         size = self.wrappedObj.size
+        # Need to add the attrs sequentially in order to preserve sequence
+        # of the attrs in the output.
         if loc and (loc[0] != 0. or loc[1] != 0. or loc[2] != 0.):
-            tag.addChild(XmlTag("localTranslation", \
-                    {"x":loc[0], "y":loc[1], "z":loc[2]}, 7))
+            locTag = XmlTag("localTranslation")
+            locTag.addAttr("x", loc[0], 7)
+            locTag.addAttr("y", loc[1], 7)
+            locTag.addAttr("z", loc[2], 7)
+            tag.addChild(locTag)
         if rQuat and \
             (rQuat.x != 0. or rQuat.y != 0. or rQuat.z != 0. or rQuat.w != 1.):
-            tag.addChild(XmlTag("localRotation", \
-                    {"x":rQuat.x, "y":rQuat.y, "z":rQuat.z, "w":rQuat.w}, 7))
+            locTag = XmlTag("localRotation")
+            locTag.addAttr("x", rQuat.x, 7)
+            locTag.addAttr("y", rQuat.y, 7)
+            locTag.addAttr("z", rQuat.z, 7)
+            locTag.addAttr("w", rQuat.w, 7)
+            tag.addChild(locTag)
         if size and (size[0] != 1. or size[1] != 1. or size[2] != 1.):
-            tag.addChild(XmlTag("localScale", \
-                    {"x":size[0], "y":size[1], "z":size[2]}, 7))
+            locTag = XmlTag("localScale")
+            locTag.addAttr("x", size[0], 7)
+            locTag.addAttr("y", size[1], 7)
+            locTag.addAttr("z", size[2], 7)
+            tag.addChild(locTag)
         return tag
 
     def getType(self):

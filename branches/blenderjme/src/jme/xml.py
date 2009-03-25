@@ -78,9 +78,13 @@ class XmlTag(object):
 
     __slots__ = \
         ['name', '__textLinks', '__children', \
-        '__commentLinks', '__curAttrs', 'spacesPerIndent']
+        '__commentLinks', '__curAttrs', 'spacesPerIndent', '__attrKeys']
+        # The attrKeys is just to preserve the sequence of the attr hash
 
     def __init__(self, name, attrs=None, attrsPrecision=None):
+        """Warning:  Do not use give more than one attr in this cons. if you
+        care about the sequence of attrs in the output.
+        This is due to Python datatype limitation."""
         object.__init__(self)
         validateXmlKeyword(name)
         self.name = name
@@ -88,6 +92,7 @@ class XmlTag(object):
         self.__commentLinks = []
         self.__children = []
         self.__curAttrs = None
+        self.__attrKeys = None
         self.spacesPerIndent = 0
         if attrs: 
             for n, v in attrs.iteritems(): self.addAttr(n, v, attrsPrecision)
@@ -105,7 +110,9 @@ class XmlTag(object):
         formatStr = None
         if precision != None:
             formatStr = "{0:." + str(precision) + "f}"
-        if not self.__curAttrs: self.__curAttrs = {}
+        if not self.__curAttrs:
+            self.__curAttrs = {}
+            self.__attrKeys = []
         if isinstance(val, list):
             joinlist = []
             for i in range(len(val)):
@@ -119,10 +126,12 @@ class XmlTag(object):
                     else:
                         joinlist.append(formatStr.format(val[i]))
             val = " ".join(joinlist)
+        if name in self.__attrKeys: self.__attrKeys.remove(name)
         if formatStr == None or isinstance(val, basestring):
             self.__curAttrs[name] = quoteattr(val)
         else:
             self.__curAttrs[name] = quoteattr(formatStr.format(val))
+        self.__attrKeys.append(name)
 
     def addComment(self, text):
         self.__commentLinks.append(escape(text))
@@ -136,8 +145,8 @@ class XmlTag(object):
         bufferLinks = ['<']
         bufferLinks.append(self.name)
         if self.__curAttrs:
-            for n, v in self.__curAttrs.iteritems():
-                bufferLinks.append(' ' + n + '=' + v)
+            for n in self.__attrKeys:
+                bufferLinks.append(' ' + n + '=' + self.__curAttrs[n])
         if len(self.__textLinks) > 0 or len(self.__children) > 0:
             bufferLinks.append('>')
         else:
@@ -171,14 +180,19 @@ class PITag(object):
     Very similar to the XmlTag class in this module."""
 
     __slots__ = \
-        ['name', '__commentLinks', '__curAttrs']
+        ['name', '__commentLinks', '__curAttrs', '__attrKeys']
+        # The attrKeys is just to preserve the sequence of the attr hash
 
     def __init__(self, name, attrs=None, attrsPrecision=None):
+        """Warning:  Do not use give more than one attr in this cons. if you
+        care about the sequence of attrs in the output.
+        This is due to Python datatype limitation."""
         object.__init__(self)
         validateXmlKeyword(name)
         self.name = name
         self.__commentLinks = []
         self.__curAttrs = None
+        self.__attrKeys = None
         if attrs: 
             for n, v in attrs.iteritems(): self.addAttr(n, v, attrsPrecision)
 
@@ -188,7 +202,9 @@ class PITag(object):
         formatStr = None
         if precision != None:
             formatStr = "{0:." + str(precision) + "f}"
-        if not self.__curAttrs: self.__curAttrs = {}
+        if not self.__curAttrs:
+            self.__curAttrs = {}
+            self.__attrKeys = []
         if isinstance(val, list):
             joinlist = []
             for i in range(len(val)):
@@ -202,10 +218,12 @@ class PITag(object):
                     else:
                         joinlist.append(formatStr.format(val[i]))
             val = " ".join(joinlist)
+        if name in self.__attrKeys: self.__attrKeys.remove(name)
         if formatStr == None or isinstance(val, basestring):
             self.__curAttrs[name] = quoteattr(val)
         else:
             self.__curAttrs[name] = quoteattr(formatStr.format(val))
+        self.__attrKeys.append(name)
 
     def addComment(self, text):
         self.__commentLinks.append(escape(text))
@@ -215,8 +233,8 @@ class PITag(object):
         bufferLinks = ['<?']
         bufferLinks.append(self.name)
         if self.__curAttrs:
-            for n, v in self.__curAttrs.iteritems():
-                bufferLinks.append(' ' + n + '=' + v)
+            for n in self.__attrKeys:
+                bufferLinks.append(' ' + n + '=' + self.__curAttrs[n])
         bufferLinks.append('?>')
         for comment in self.__commentLinks:
             bufferLinks.append(('\n<!-- ' + comment) + ' -->')
@@ -244,7 +262,8 @@ class XmlFile(object):
     def __str__(self):
         pieces = []
         if not self.pi:
-            self.pi = PITag("xml", {'version':'1.0', 'encoding':self.encoding})
+            self.pi = PITag("xml", {'version':'1.0'})
+            self.pi.addAttr('encoding', self.encoding)
             # This is the default document Processing Instruction
         for docComment in self.__commentLinks: self.pi.addComment(docComment)
         self.root.spacesPerIndent = self.spacesPerIndent

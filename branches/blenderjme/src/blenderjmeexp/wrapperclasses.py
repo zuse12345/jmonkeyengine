@@ -12,6 +12,8 @@ class JmeObject(object):
     __slots__ = ('wrappedObj', 'children')
 
     def __init__(self, bObj):
+        """Assumes input Blender Object already validated.
+        I.e., is of supported type, and facing method is supported."""
         object.__init__(self)
         self.wrappedObj = bObj
         self.children = None
@@ -56,7 +58,34 @@ class JmeObject(object):
         return self.wrappedObj.type
 
     def supported(bObj):
-        return bObj.type in ['Mesh']
+        """Reject non-Mesh-type Blender Objects, and any Mesh-type Objects
+        which has unsupported face vertexing"""
+        if bObj.type not in ['Mesh']: return False
+        if not bObj.data: raise Exception("Mesh Object has no data member?")
+        if not bObj.data.faces:
+            print "FYI:  Accepting object '" + bObj.name + "' with no faces"
+            return True
+        vertexesPerFace = None
+        for f in bObj.getData(False, True).faces:
+            if f.verts == None: raise Exception("Face with no vertexes?")
+            if vertexesPerFace == None:
+                vertexesPerFace = len(f.verts)
+                continue
+            if vertexesPerFace != len(f.verts):
+                print "FYI:  Refusing object '" + bObj.name \
+                        + "' because contains 2 different vertexes-per-face: " \
+                        + str(vertexesPerFace) + " and " + str(len(f.verts))
+                return False
+        if vertexesPerFace == None:
+            print "FYI:  Accepting object '" + bObj.name + "' with 0 faces"
+            return True
+        #print "VPF = " + str(vertexesPerFace)
+        if vertexesPerFace == 3: return True
+        if vertexesPerFace == 4: return True
+        print "FYI:  Refusing object '" + bObj.name \
+                + "' because unsupported vertexes-per-face: " \
+                + str(vertexesPerFace)
+        return False
 
     def __str__(self):
         return '[' + self.getName() + ']'

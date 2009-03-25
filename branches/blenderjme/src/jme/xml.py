@@ -143,7 +143,7 @@ class PITag(object):
         # N.b., we store the surrounging quotes with each attr value
         validateXmlKeyword(name)
         if not self.__curAttrs: self.__curAttrs = {}
-        if precision:
+        if precision != None:
             self.__curAttrs[name] = quoteattr(str(round(val, precision)))
         else:
             self.__curAttrs[name] = quoteattr(val)

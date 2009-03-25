@@ -22,6 +22,7 @@ def escape(text):
 def quoteattr(text):
     """Emulate xml.sax.saxutils.quoteattr() so we can use this function in
     Blender without requiring external Python modules"""
+    if not isinstance(text, basestring): text = str(text)
     if text.count('"') > 0 and text.count("'") > 0:
         raise Exception("Attr value contains both types of quoetes: " + text)
         ## TODO:  Escape one of the types of quotes and use that as delim
@@ -93,7 +94,6 @@ class XmlTag(object):
         bufferLinks.append(self.name)
         if self.__curAttrs:
             for n, v in self.__curAttrs.iteritems():
-                if not isinstance(v, str): v = repr(v)
                 bufferLinks.append(' ' + n + '=' + v)
         if len(self.__textLinks) > 0 or len(self.__children) > 0:
             bufferLinks.append('>')
@@ -157,7 +157,6 @@ class PITag(object):
         bufferLinks.append(self.name)
         if self.__curAttrs:
             for n, v in self.__curAttrs.iteritems():
-                if not isinstance(v, str): v = repr(v)
                 bufferLinks.append(' ' + n + '=' + v)
         bufferLinks.append('?>')
         for comment in self.__commentLinks:

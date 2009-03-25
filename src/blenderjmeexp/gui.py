@@ -10,7 +10,9 @@ from bpy import data
 import exporter
 from os import path
 from blenderjmeexp import resFileAbsPath
-from blenderjmeexp.wrapperclasses import JmeObject
+from blenderjmeexp.wrapperclasses import *
+from traceback import tb_lineno
+from sys import exc_info
 
 defaultFilePath = path.abspath("default-jme.xml")
 saveAll = False
@@ -47,6 +49,12 @@ def btnHandler(btnId):
             xmlFile = exporter.gen(saveAll)
         except Exception, e:
             # Python 2.5 does not support "except X as y:" syntax
+            ei = exc_info()[2]
+            while ei:
+                print "  " + ei.tb_frame.f_code.co_filename + ':' \
+                    + str(tb_lineno(ei))
+                ei = ei.tb_next
+            print e
             if 1 == Draw.PupMenu(str(e) + "%t|Abort|Try other settings"):
                 exitModule()
             return
@@ -147,6 +155,14 @@ def saveFile(filepath):
         exitModule()
     except Exception, e:
         # Python 2.5 does not support "except X as y:" syntax
+        ei = exc_info()[2]
+        while ei:
+            print "  " + ei.tb_frame.f_code.co_filename + ':' \
+                + str(tb_lineno(ei))
+            ei = ei.tb_next
+        print e
+        if 1 == Draw.PupMenu(str(e) + "%t|Abort|Try other settings"):
+            exitModule()
         if 1 == Draw.PupMenu(str(e) + "%t|Abort|Try other settings"):
             exitModule()
         print "Will retry"

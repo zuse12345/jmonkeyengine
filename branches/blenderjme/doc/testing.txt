@@ -59,6 +59,10 @@ modules that we supply.  The STANDALONE TESTS section below explains how to set
 this manually.  For Blender environment tests, you are better off using the
 provided Bash script to run the tests, as described below.
 
+If you are running Linux, have Blender and standalone Python installed (and
+have PYTHONHOME set if required), and want to run all tests, just execute the
+script "bin/alltests.bash".
+
 
 HOW TO RUN STANDALONE TESTS
 

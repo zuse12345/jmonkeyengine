@@ -2,6 +2,8 @@ $Id$
 
 TODO LIST
 
+Write script "bin/alltests.bash".
+
 Fix failing unit test
 
 Fix bug with axis rotation

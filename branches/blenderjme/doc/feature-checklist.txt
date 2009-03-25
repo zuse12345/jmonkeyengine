@@ -2,10 +2,10 @@ $Id$
 
 * feature
 - -----------------------------------------------------------------------------
-  Rigorous XML generation (consistent indentation, detection of illegal XML
+* Rigorous XML generation (consistent indentation, detection of illegal XML
    keywords, conversion of illegal XML characters where possible).
-  Write single mesh object, with and without color vertexes and normals
-  Write multiple top-level mesh objects
+* Write single mesh object, with and without color vertexes and normals
+* Write multiple top-level mesh objects
   Write nested mesh objects, preserving the parent/child relationships
   Write trivial color materials
   Write materials with color and other basic settings (reflectivity et. al.)

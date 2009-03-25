@@ -1,8 +1,8 @@
 #!BPY
 """Blender-to-jME XML format Exporter
-Name: 'JME XML Exporter'
+Name: 'JMonkeyEngine (*-jme.xml)'
 Blender: 241
-Group: 'Render'"""
+Group: 'Export'"""
 # TODO:  install archived version of Blender and set the Blender version
 # above to the older version that this product works with.
 # TODO:  Change the Group to 'Export' before publish.  It's more convenient

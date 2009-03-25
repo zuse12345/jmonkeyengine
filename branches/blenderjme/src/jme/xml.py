@@ -75,12 +75,27 @@ class XmlTag(object):
     def addAttr(self, name, val, precision=None):
         # N.b., we store the surrounging quotes with each attr value
         validateXmlKeyword(name)
-        if not self.__curAttrs: self.__curAttrs = {}
+        formatStr = None
         if precision != None:
             formatStr = "{0:." + str(precision) + "f}"
-            self.__curAttrs[name] = quoteattr(formatStr.format(val))
-        else:
+        if not self.__curAttrs: self.__curAttrs = {}
+        if isinstance(val, list):
+            joinlist = []
+            for i in range(len(val)):
+                if isinstance(val[i], basestring):
+                    joinlist.append(val[i])
+                else:
+                    # Enforce that every element is a str type, as required
+                    # by join()
+                    if formatStr == None:
+                        joinlist.append(str(val[i]))
+                    else:
+                        joinlist.append(formatStr.format(val[i]))
+            val = " ".join(joinlist)
+        if formatStr == None or isinstance(val, basestring):
             self.__curAttrs[name] = quoteattr(val)
+        else:
+            self.__curAttrs[name] = quoteattr(formatStr.format(val))
 
     def addComment(self, text):
         self.__commentLinks.append(escape(text))
@@ -143,12 +158,27 @@ class PITag(object):
     def addAttr(self, name, val, precision=None):
         # N.b., we store the surrounging quotes with each attr value
         validateXmlKeyword(name)
-        if not self.__curAttrs: self.__curAttrs = {}
+        formatStr = None
         if precision != None:
             formatStr = "{0:." + str(precision) + "f}"
-            self.__curAttrs[name] = quoteattr(formatStr.format(val))
-        else:
+        if not self.__curAttrs: self.__curAttrs = {}
+        if isinstance(val, list):
+            joinlist = []
+            for i in range(len(val)):
+                if isinstance(val[i], basestring):
+                    joinlist.append(val[i])
+                else:
+                    # Enforce that every element is a str type, as required
+                    # by join()
+                    if formatStr == None:
+                        joinlist.append(str(val[i]))
+                    else:
+                        joinlist.append(formatStr.format(val[i]))
+            val = " ".join(joinlist)
+        if formatStr == None or isinstance(val, basestring):
             self.__curAttrs[name] = quoteattr(val)
+        else:
+            self.__curAttrs[name] = quoteattr(formatStr.format(val))
 
     def addComment(self, text):
         self.__commentLinks.append(escape(text))

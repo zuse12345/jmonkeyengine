@@ -2,17 +2,17 @@ $Id$
 
 TODO LIST
 
+Add toggle to the exporter to allow disabling of the file stamp.
+This will make it easier to compare output (like for unit tests!).
+
 Change array hash to be ordered, to prevent indeterminacy which can effect
 tests.
 
 Find out how to retrieve export or data file preference directory from Blender.
-Default export director to that.
+Default export directory to that.
 
 Enhance script to honor a BLENDER_SWITCHES env variable + to add:
 -b /dev/null
-
-Instead of rejecting meshes with 3 + 4 vertexes, just detect this situation
-and automatically convert to Tris, writing a warning to stdout.
 
 Make a blenderexp test that requires the shell script to run, setting
  COORDS if necessary, and adding -noaudio, -nojoystick, -noglsl.

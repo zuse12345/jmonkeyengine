@@ -10,7 +10,7 @@ from jme.xml import *
 from Blender.Mathutils import Quaternion
 
 class JmeObject(object):
-    __slots__ = ('wrappedObj', 'children', 'vertsPerFace')
+    __slots__ = ('wrappedObj', 'children', '__vpf')
     __QUAT_IDENTITY = Quaternion()  # Do not modify value!
 
     def __init__(self, bObj):
@@ -20,14 +20,7 @@ class JmeObject(object):
         self.wrappedObj = bObj
         self.children = None
         print "Instantiated JmeObject '" + self.getName() + "'"
-        faces = bObj.getData(False, True).faces
-        self.vertsPerFace = None
-        if not faces or len(faces) < 1: return
-        for f in faces:
-            if f.verts and len(f.verts) > 0:
-                self.vertsPerFace = len(f.verts)
-                return
-        self.vertsPerFace = 0
+        self.__vpf = JmeObject.__vertsPerFace(bObj.getData(False, True).faces)
         # TODO:  Generate vertex color array by looking up each vertex's
         # color in the face's face.col[vertIndex].
         # What to do if some vertexes have color (by associated with a face
@@ -50,7 +43,7 @@ class JmeObject(object):
         mesh = self.wrappedObj.getData(False, True)
         if mesh:
             childrenTag = XmlTag("children", {"size":1})
-            childrenTag.addChild(JmeObject.__genMeshEl(mesh, self.vertsPerFace))
+            childrenTag.addChild(JmeObject.__genMeshEl(mesh, self.__vpf))
             tag.addChild(childrenTag)
 
         if self.children:
@@ -77,35 +70,38 @@ class JmeObject(object):
     def getType(self):
         return self.wrappedObj.type
 
-    def supported(bObj):
-        """Reject non-Mesh-type Blender Objects, and any Mesh-type Objects
-        which has unsupported face vertexing"""
-        if bObj.type not in ['Mesh']: return False
-        if not bObj.data: raise Exception("Mesh Object has no data member?")
-        if not bObj.data.faces:
-            print "FYI:  Accepting object '" + bObj.name + "' with no faces"
-            return True
-        vertexesPerFace = None
-        for f in bObj.getData(False, True).faces:
+    def __vertsPerFace(faces):
+        """Returns 0 if type not supported; non-0 if supported.
+           2 if will require face niggling; 3 if faceless"""
+        if faces == None: return None
+        facings = set()
+        for f in faces:
             if f.verts == None: raise Exception("Face with no vertexes?")
-            if vertexesPerFace == None:
-                vertexesPerFace = len(f.verts)
-                continue
-            if vertexesPerFace != len(f.verts):
-                print "FYI:  Refusing object '" + bObj.name \
-                        + "' because contains 2 different vertexes-per-face: " \
-                        + str(vertexesPerFace) + " and " + str(len(f.verts))
-                return False
-        if vertexesPerFace == None:
-            print "FYI:  Accepting object '" + bObj.name + "' with 0 faces"
-            return True
-        #print "VPF = " + str(vertexesPerFace)
-        if vertexesPerFace == 3: return True
-        if vertexesPerFace == 4: return True
+            facings.add(len(f.verts))
+        return facings
+
+    def supported(bObj):
+        """Returns 0 if type not supported; non-0 if supported.
+           2 if will require face niggling; 3 if faceless"""
+        if bObj.type not in ['Mesh']: return 0
+        if not bObj.getData(False, True):
+            raise Exception("Mesh Object has no data member?")
+        vpf = JmeObject.__vertsPerFace(bObj.getData(False, True).faces)
+        if vpf == None:
+            print "FYI:  Accepting object '" + bObj.name + "' with no faces"
+            return 3
+        if vpf == set([0]):
+            print "FYI:  Accepting object '" + bObj.name + "' with 0 vert faces"
+            return 3
+        if vpf == set([3,4]) or vpf == set([0,3,4]):
+            print "FYI:  Object '" + bObj.name \
+                    + "' accepted but will require unification to Trimeshes"
+            return 2
+        if vpf == set([3,0]) or vpf == set([0,4]) \
+                or vpf == set([3]) or vpf == set([4]): return 1
         print "FYI:  Refusing object '" + bObj.name \
-                + "' because unsupported vertexes-per-face: " \
-                + str(vertexesPerFace)
-        return False
+                + "' because unsupported vertexes-per-face: " + str(vpf)
+        return 0
 
     def __str__(self):
         return '[' + self.getName() + ']'
@@ -116,7 +112,8 @@ class JmeObject(object):
     def __genMeshEl(meshObj, vpf):
         if not meshObj.verts:
             raise Exception("Mesh '" + meshObj.name + "' has no vertexes")
-        if vpf == 4:
+        unify = 3 in vpf and 4 in vpf
+        if 4 in vpf and not unify:
             meshType = 'Quad'
         else:
             meshType = 'Tri'
@@ -142,10 +139,19 @@ class JmeObject(object):
         normTag = XmlTag("normBuf", {"data":noArray}, 7)
         normTag.addAttr("size", len(noArray))
         tag.addChild(normTag)
-        if (not meshObj.faces) or len(meshObj.faces) < 1: return tag
+        if 3 not in vpf and 4 not in vpf: return tag
         faceVertIndexes = []
         for face in meshObj.faces:
-            for v in face.verts: faceVertIndexes.append(v.index)
+            if face.verts == None or len(face.verts) < 1: continue
+            if unify and len(face.verts) == 4:
+                faceVertIndexes.append(face.verts[0].index)
+                faceVertIndexes.append(face.verts[1].index)
+                faceVertIndexes.append(face.verts[2].index)
+                faceVertIndexes.append(face.verts[0].index)
+                faceVertIndexes.append(face.verts[2].index)
+                faceVertIndexes.append(face.verts[3].index)
+            else:
+                for v in face.verts: faceVertIndexes.append(v.index)
         indTag = XmlTag("indexBuffer", {"data":faceVertIndexes})
         indTag.addAttr("size", len(faceVertIndexes))
         tag.addChild(indTag)
@@ -153,6 +159,7 @@ class JmeObject(object):
 
     supported = staticmethod(supported)
     __genMeshEl = staticmethod(__genMeshEl)
+    __vertsPerFace = staticmethod(__vertsPerFace)
 
 class JmeNode(object):
     __slots__ = ('name', 'children')

@@ -77,11 +77,10 @@ def gen(saveAll, autoRotate):
             root = os[0]
 
         #if autoRotate: data.scenes.active.update()     No effect
-        pi = PITag('xml', {'version':'1.0', 'encoding':'UTF-8'})
         stampText = "Blender export by Blender/JME Exporter"
         if recordTimestamp: stampText += (" at " + datetime.now().isoformat())
-        pi.addComment(stampText)
-        xmlFile = XmlFile(root.getXmlEl(), pi=pi)
+        xmlFile = XmlFile(root.getXmlEl())
+        xmlFile.addComment(stampText)
         # Though the final XML text has not been generated, the buffer of
         # string pieces have all been generated at this point, and the model
         # data will no longer be referenced.  Therefore, it's safe to return

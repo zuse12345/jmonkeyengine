@@ -60,7 +60,11 @@ class Tests(unittest.TestCase):
         rootTag.addChild(XmlTag('pineapple', {'prickley':'true'}))
         rootTag.addChild(apple)
         apple.addChild(XmlTag('grape', {'tasty':'true'}))
-        pi = PITag('processInstr', {'version':'1.0', 'encoding':'UTF-8'})
+        pi = PITag('processInstr', {'version':'1.0'})
+        pi.addAttr('encoding', 'UTF-8')
+        # Would like to add multiple attrs in constructore, but due to
+        # lack of ordered Hash in Python, that would make the output a real
+        # mess to test.
         pi.addComment("A doc comment")
         rootTag.spacesPerIndent = 2
         manualXmlOutput = str(pi) + '\n\n' \
@@ -83,7 +87,11 @@ class Tests(unittest.TestCase):
         rootTag.addChild(XmlTag('pineapple', {'prickley':'true'}))
         rootTag.addChild(apple)
         apple.addChild(XmlTag('grape', {'tasty':'true'}))
-        pi = PITag('processInstr', {'version':'1.0', 'encoding':'UTF-8'})
+        pi = PITag('processInstr', {'version':'1.0'})
+        pi.addAttr('encoding', 'UTF-8')
+        # Would like to add multiple attrs in constructore, but due to
+        # lack of ordered Hash in Python, that would make the output a real
+        # mess to test.
         pi.addComment("A doc comment")
         #print str(XmlFile(rootTag, pi=pi))
         #XmlFile(rootTag, pi=pi).writeFile("/tmp/auto.xml")

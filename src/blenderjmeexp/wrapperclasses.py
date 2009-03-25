@@ -10,7 +10,7 @@ from jme.xml import XmlTag, PITag, XmlFile
 from Blender.Mathutils import RotationMatrix
 
 class JmeObject(object):
-    __slots__ = ('wrappedObj', 'children')
+    __slots__ = ('wrappedObj', 'children', 'vertsPerFace')
 
     def __init__(self, bObj):
         """Assumes input Blender Object already validated.
@@ -19,6 +19,14 @@ class JmeObject(object):
         self.wrappedObj = bObj
         self.children = None
         print "Instantiated JmeObject '" + self.getName() + "'"
+        faces = bObj.getData(False, True).faces
+        self.vertsPerFace = None
+        if not faces or len(faces) < 1: return
+        for f in faces:
+            if f.verts and len(f.verts) > 0:
+                self.vertsPerFace = len(f.verts)
+                return
+        self.vertsPerFace = 0
         # TODO:  Generate vertex color array by looking up each vertex's
         # color in the face's face.col[vertIndex].
         # What to do if some vertexes have color (by associated with a face
@@ -41,7 +49,7 @@ class JmeObject(object):
         mesh = self.wrappedObj.getData(False, True)
         if mesh:
             childrenTag = XmlTag("children", {"size":1})
-            childrenTag.addChild(JmeObject.__genMeshEl(mesh))
+            childrenTag.addChild(JmeObject.__genMeshEl(mesh, self.vertsPerFace))
             tag.addChild(childrenTag)
 
         if self.children:
@@ -103,18 +111,42 @@ class JmeObject(object):
     def __repr__(self):
         return "<JmeObject> " + self.__str__()
 
-    def __genMeshEl(meshObj):
+    def __genMeshEl(meshObj, vpf):
         if not meshObj.verts:
             raise Exception("Mesh '" + meshObj.name + "' has no vertexes")
+        if vpf == 4:
+            meshType = 'Quad'
+        else:
+            meshType = 'Tri'
         # TODO:  When iterate through verts to get vert vectors + normals,
         #        do check for null normal and throw if so:
         #   raise Exception("Mesh '" \
         #       + meshObj.name + "' has a vector with no normal")
         #   This is a Blender convention, not a 3D or JME convention
         #   (requirement for normals).
-        tag = XmlTag('com.jme.scene.TriMesh', {'name':meshObj.name})
-        tag.addChild(XmlTag("vertBuf", {"data":0, "size":len(meshObj.verts)}))
-        tag.addChild(XmlTag("normBuf", {"data":0, "size":len(meshObj.verts)}))
+        tag = XmlTag('com.jme.scene.' + meshType + 'Mesh', {'name':meshObj.name})
+        coArray = []
+        noArray = []
+        for v in meshObj.verts:
+            coArray.append(v.co.x)
+            coArray.append(v.co.y)
+            coArray.append(v.co.z)
+            noArray.append(v.no.x)
+            noArray.append(v.no.y)
+            noArray.append(v.no.z)
+        vertTag = XmlTag("vertBuf", {"data":coArray}, 7)
+        vertTag.addAttr("size", len(coArray))
+        tag.addChild(vertTag)
+        normTag = XmlTag("normBuf", {"data":noArray}, 7)
+        normTag.addAttr("size", len(noArray))
+        tag.addChild(normTag)
+        if (not meshObj.faces) or len(meshObj.faces) < 1: return tag
+        faceVertIndexes = []
+        for face in meshObj.faces:
+            for v in face.verts: faceVertIndexes.append(v.index)
+        indTag = XmlTag("indexBuffer", {"data":faceVertIndexes})
+        indTag.addAttr("size", len(faceVertIndexes))
+        tag.addChild(indTag)
         return tag
 
     supported = staticmethod(supported)

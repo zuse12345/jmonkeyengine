@@ -6,11 +6,12 @@ __date__ = '$Date$'
 __author__ = 'Blaine Simpson, blaine (dot) simpson (at) admc (dot) com'
 __url__ = 'http://www.jmonkeyengine.com'
 
-from jme.xml import XmlTag, PITag, XmlFile
-from Blender.Mathutils import RotationMatrix
+from jme.xml import *
+from Blender.Mathutils import Quaternion
 
 class JmeObject(object):
     __slots__ = ('wrappedObj', 'children', 'vertsPerFace')
+    __QUAT_IDENTITY = Quaternion()  # Do not modify value!
 
     def __init__(self, bObj):
         """Assumes input Blender Object already validated.
@@ -57,8 +58,9 @@ class JmeObject(object):
         # Use either loc + rot + size OR matrixLocal
         # Set local variables just to reduce typing in this block.
         loc = self.wrappedObj.loc
-        rQuat = None
-        if self.wrappedObj.rot: rQuat = self.wrappedObj.rot.toQuat()
+        rQuat = self.wrappedObj.matrixLocal.toQuat()
+        # DOES NOT WORK TO DO rQuat = self.wrappedObj.rot.toQuat() !!!!!!!!!
+        if rQuat == JmeObject.__QUAT_IDENTITY: rQuat = None
         size = self.wrappedObj.size
         if loc and (loc[0] != 0. or loc[1] != 0. or loc[2] != 0.):
             tag.addChild(XmlTag("localTranslation", \
@@ -66,7 +68,7 @@ class JmeObject(object):
         if rQuat and \
             (rQuat.x != 0. or rQuat.y != 0. or rQuat.z != 0. or rQuat.w != 1.):
             tag.addChild(XmlTag("localRotation", \
-                    {"x":rQuat.x, "y":rQuat.x, "z":rQuat.x, "w":rQuat.w}, 7))
+                    {"x":rQuat.x, "y":rQuat.y, "z":rQuat.z, "w":rQuat.w}, 7))
         if size and (size[0] != 1. or size[1] != 1. or size[2] != 1.):
             tag.addChild(XmlTag("localScale", \
                     {"x":size[0], "y":size[1], "z":size[2]}, 7))

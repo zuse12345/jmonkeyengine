@@ -8,7 +8,7 @@ __author__ = 'Blaine Simpson, blaine (dot) simpson (at) admc (dot) com'
 __url__ = 'http://www.jmonkeyengine.com'
 
 from jmetest import resFileContent
-from jme.xml import XmlTag, PITag, XmlFile
+from jme.xml import *
 import unittest
 from unittest import *
 

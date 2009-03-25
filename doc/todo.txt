@@ -7,4 +7,10 @@ Fix bug with axis rotation
 Find out how to retrieve export or data file preference directory from Blender.
 Default export director to that.
 
+Change the wrapperClasses.supported() method to export one of 3 constants
+instead of a boolean.
+
+Rename and enhance the gui.update*Count*() method to also save lists of
+mixed-polies.
+
 Add license file to repository and distribution.

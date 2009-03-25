@@ -2,4 +2,9 @@ $Id$
 
 TODO LIST
 
+Fix bug with axis rotation
+
+Find out how to retrieve export or data file preference directory from Blender.
+Default export director to that.
+
 Add license file to repository and distribution.

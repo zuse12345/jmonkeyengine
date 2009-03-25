@@ -40,8 +40,11 @@ from bpy import data
 from Blender.Mathutils import RotationMatrix
 
 BLENDER_TO_JME_ROTATION = RotationMatrix(-90, 4, 'x')
+recordTimestamp = True
 
 def gen(saveAll, autoRotate):
+    global recordTimestamp
+
     origEditMode = Blender.Window.EditMode()
     if origEditMode != 0: Blender.Window.EditMode(0)
     try:
@@ -55,6 +58,8 @@ def gen(saveAll, autoRotate):
         for o in candidates:
             if JmeObject.supported(o): os.append(JmeObject(o))
         root = None
+        if len(os) < 1:
+            raise Exception("Nothing to do...")
         if len(os) > 1:
             root = JmeNode("BlenderObjects")
             for o in os:
@@ -73,8 +78,9 @@ def gen(saveAll, autoRotate):
 
         #if autoRotate: data.scenes.active.update()     No effect
         pi = PITag('xml', {'version':'1.0', 'encoding':'UTF-8'})
-        pi.addComment("Blender export by Blender/JME Exporter at " \
-                + datetime.now().isoformat())
+        stampText = "Blender export by Blender/JME Exporter"
+        if recordTimestamp: stampText += (" at " + datetime.now().isoformat())
+        pi.addComment(stampText)
         xmlFile = XmlFile(root.getXmlEl(), pi=pi)
         # Though the final XML text has not been generated, the buffer of
         # string pieces have all been generated at this point, and the model

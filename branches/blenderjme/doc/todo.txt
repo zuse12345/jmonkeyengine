@@ -2,9 +2,6 @@ $Id$
 
 TODO LIST
 
-Add toggle to the exporter to allow disabling of the file stamp.
-This will make it easier to compare output (like for unit tests!).
-
 Change array hash to be ordered, to prevent indeterminacy which can effect
 tests.
 
@@ -16,3 +13,5 @@ Enhance script to honor a BLENDER_SWITCHES env variable + to add:
 
 Make a blenderexp test that requires the shell script to run, setting
  COORDS if necessary, and adding -noaudio, -nojoystick, -noglsl.
+
+Add silent-overwrite button.

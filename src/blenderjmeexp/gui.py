@@ -20,24 +20,28 @@ xmlFile = None
 BTNID_SAVEALL = 1
 BTNID_SAVE = 2
 BTNID_CANCEL = 3
+selCount = None
+allCount = None
 
 def exitModule():
-    global guiBox
+    global guiBox, selCount, allCount
     guiBox.free()
+    selCount = None
+    allCount = None
     Draw.Exit()
     print "Exiting exporter"
 
-def exportableCounts():
+def updateExportableCounts():
     """Returns counts of all exportable objects, and all selected exportable
     objects"""
-    # TODO:  Narrow to EXPORTABLEs.  We can't export most Blender object types.
+
+    global selCount, allCount
     selCount = 0
     allCount = 0
     for o in data.objects:
         if JmeObject.supported(o): allCount = allCount + 1
     for o in data.scenes.active.objects.selected:
         if JmeObject.supported(o): selCount = selCount + 1
-    return [allCount, selCount]
 
 def btnHandler(btnId):
     global saveAll, xmlFile, defaultFilePath
@@ -169,12 +173,13 @@ def saveFile(filepath):
 
 def drawer():
     global saveAll, BTNID_SAVEALL, BTNID_SAVE, BTNID_CANCEL, guiBox
+    global selCount, allCount
 
     BGL.glClear(BGL.GL_COLOR_BUFFER_BIT)
     guiBox.drawBg()
     Draw.PushButton("Cancel", BTNID_CANCEL, \
             guiBox.x + 10, guiBox.y + 10, 50, 20, "Abort export")
-    allCount, selCount = exportableCounts()
+    if not allCount: updateExportableCounts()
     if allCount < 1:  # TEMPORARY.  Enable following once impl. saveAll.
         Draw.Label("Your scenes contain no",
                 guiBox.x + 10, guiBox.y + 200,200,20)

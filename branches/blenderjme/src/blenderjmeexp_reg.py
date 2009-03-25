@@ -14,8 +14,6 @@ __date__ = '$Date$'
 __author__ = 'Blaine Simpson, blaine (dot) simpson (at) admc (dot) com'
 __url__ = 'http://www.jmonkeyengine.com'
 
-print "======================================================================"
-
 from blenderjmeexp.gui import *
 
 Draw.Register(drawer, inputHandler, btnHandler)

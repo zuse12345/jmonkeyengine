@@ -40,6 +40,7 @@ from blenderjmeexp import resFileAbsPath
 from blenderjmeexp.wrapperclasses import *
 from traceback import tb_lineno
 from sys import exc_info
+from os.path import isfile
 
 defaultFilePath = path.abspath("default-jme.xml")
 saveAll = False
@@ -49,6 +50,7 @@ BTNID_SAVE = 2
 BTNID_CANCEL = 3
 selCount = None
 allCount = None
+fileOverwrite = False
 
 def exitModule():
     global guiBox, selCount, allCount
@@ -173,12 +175,14 @@ def redrawDummy(x, y): Draw.Redraw()
 def saveFile(filepath):
     # Can only get here when our Gui is present, but completely overwritten
     # by the FileSelector window.
-    global defaultFilePath
+    global defaultFilePath, fileOverwrite
 
     try:
         if filepath.endswith(".blend"):
             raise Exception( \
             "You should only save Blender native files with extension '.blend'")
+        if isfile(filepath) and (not fileOverwrite) and (1 != Draw.PupMenu( \
+                "Overwrite '" + filepath + "'?%t|Yes|No")): return
         print "Attempting to save file '" + filepath + "'"
         xmlFile.writeFile(filepath)
         print "Saved file '" + filepath + "'"
@@ -194,8 +198,7 @@ def saveFile(filepath):
         print e
         if 1 == Draw.PupMenu(str(e) + "%t|Abort|Try other settings"):
             exitModule()
-        if 1 == Draw.PupMenu(str(e) + "%t|Abort|Try other settings"):
-            exitModule()
+            return
         print "Will retry"
 
 def drawer():

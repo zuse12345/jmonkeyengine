@@ -16,6 +16,13 @@ class JmeObject(object):
         self.wrappedObj = bObj
         self.children = None
         print "Instantiated JmeObject '" + self.getName() + "'"
+        # TODO:  Generate vertex color array by looking up each vertex's
+        # color in the face's face.col[vertIndex].
+        # What to do if some vertexes have color (by associated with a face
+        # vertex color) but other vertexes in the same mesh do not?...
+        # I'm thinking to save them as white and at least print a warning
+        # to stdout.  Looks like existing JME XML parser requires color
+        # coordinates for all vertexes or none.
 
     def addChild(self, child):
         if not self.children: self.children = []
@@ -28,8 +35,21 @@ class JmeObject(object):
         tag = XmlTag('com.jme.scene.Node', {'name':self.getName()})
         # TODO:  This is where all of the attributes and children should be
         # added to the XML.
+        mesh = self.wrappedObj.getData(False, True)
+        if mesh:
+            childrenTag = XmlTag("children", {"size":1})
+            childrenTag.addChild(JmeObject.__genMeshEl(mesh))
+            tag.addChild(childrenTag)
+
         if self.children:
             for child in self.children: tag.addChild(child.getXmlEl())
+        # Use either loc + rot + size OR matrixLocal
+        if self.wrappedObj.rot:
+            tag.addChild(XmlTag("localRotation", {"x":0}))
+        if self.wrappedObj.loc:
+            tag.addChild(XmlTag("localTranslation", {"x":0}))
+        if self.wrappedObj.size:
+            tag.addChild(XmlTag("localScale", {"x":0}))
         return tag
 
     def getType(self):
@@ -44,8 +64,22 @@ class JmeObject(object):
     def __repr__(self):
         return "<JmeObject> " + self.__str__()
 
+    def __genMeshEl(meshObj):
+        if not meshObj.verts:
+            raise Exception("Mesh '" + meshObj.name + "' has no vertexes")
+        # TODO:  When iterate through verts to get vert vectors + normals,
+        #        do check for null normal and throw if so:
+        #   raise Exception("Mesh '" \
+        #       + meshObj.name + "' has a vector with no normal")
+        #   This is a Blender convention, not a 3D or JME convention
+        #   (requirement for normals).
+        tag = XmlTag('com.jme.scene.TriMesh', {'name':meshObj.name})
+        tag.addChild(XmlTag("vertBuf", {"data":0, "size":len(meshObj.verts)}))
+        tag.addChild(XmlTag("normBuf", {"data":0, "size":len(meshObj.verts)}))
+        return tag
 
     supported = staticmethod(supported)
+    __genMeshEl = staticmethod(__genMeshEl)
 
 class JmeNode(object):
     __slots__ = ('name', 'children')
@@ -77,5 +111,7 @@ class JmeNode(object):
         # TODO:  This is where all of the attributes and children should be
         # added to the XML.
         if self.children:
-            for child in self.children: tag.addChild(child.getXmlEl())
+            childrenTag = XmlTag('children', {'size':len(self.children)})
+            tag.addChild(childrenTag)
+            for child in self.children: childrenTag.addChild(child.getXmlEl())
         return tag

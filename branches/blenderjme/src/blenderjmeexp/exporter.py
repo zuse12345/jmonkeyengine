@@ -8,7 +8,7 @@ from Blender import Draw
 from Blender import BGL
 from jme.xml import XmlTag, PITag, XmlFile
 from datetime import datetime
-from blenderjmeexp.wrapperclasses import JmeObject, JmeNode
+from blenderjmeexp.wrapperclasses import *
 from bpy import data
 
 def gen(saveAll):
@@ -25,7 +25,7 @@ def gen(saveAll):
             if JmeObject.supported(o): os.append(JmeObject(o))
         root = None
         if len(os) > 1:
-            root = JmeNode("GroupingRootNode")
+            root = JmeNode("BlenderObjects")
             for o in os: root.addChild(o)
         else:
             root = os[0]

@@ -1,0 +1,30 @@
+$Id$
+
+Python Coding Conventions
+-------------------------
+
+Only use modules and features included in the Blender-provided Python engine.
+Specifically:
+
+    Do not use "except X as y".  [Use "except X, y" instead]
+
+    Do not use xml.sax
+
+    Do not use string.encode(), string.decode(), or specify an encoding
+    type to the unicode() function.  [VERY ANNOYING!]
+
+If you catch an exception, but the cause could possibly be a code problem,
+make sure to report the source code location if you don't re-throw.  For
+example, in an exception-catching block:
+        ei = exc_info()[2]
+        while ei:
+            print "  " + ei.tb_frame.f_code.co_filename + ':' \
+                + str(tb_lineno(ei))
+            ei = ei.tb_next
+        print e
+
+Bundled files.
+If you need to bundle files to be read in by our product at runtime, follow
+the example that jmetest/xml.py uses to load the test data *.xml file(s).
+The package supplies functions to resolve relative paths to files within the
+package, and methods to read the contents of them.

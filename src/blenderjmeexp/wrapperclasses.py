@@ -7,6 +7,7 @@ __author__ = 'Blaine Simpson, blaine (dot) simpson (at) admc (dot) com'
 __url__ = 'http://www.jmonkeyengine.com'
 
 from jme.xml import XmlTag, PITag, XmlFile
+from Blender.Mathutils import RotationMatrix
 
 class JmeObject(object):
     __slots__ = ('wrappedObj', 'children')
@@ -46,12 +47,21 @@ class JmeObject(object):
         if self.children:
             for child in self.children: tag.addChild(child.getXmlEl())
         # Use either loc + rot + size OR matrixLocal
-        if self.wrappedObj.rot:
-            tag.addChild(XmlTag("localRotation", {"x":0}))
-        if self.wrappedObj.loc:
-            tag.addChild(XmlTag("localTranslation", {"x":0}))
-        if self.wrappedObj.size:
-            tag.addChild(XmlTag("localScale", {"x":0}))
+        # Set local variables just to reduce typing in this block.
+        loc = self.wrappedObj.loc
+        rQuat = None
+        if self.wrappedObj.rot: rQuat = self.wrappedObj.rot.toQuat()
+        size = self.wrappedObj.size
+        if loc and (loc[0] != 0. or loc[1] != 0. or loc[2] != 0.):
+            tag.addChild(XmlTag("localTranslation", \
+                    {"x":loc[0], "y":loc[1], "z":loc[2]}, 7))
+        if rQuat and \
+            (rQuat.x != 0. or rQuat.y != 0. or rQuat.z != 0. or rQuat.w != 1.):
+            tag.addChild(XmlTag("localRotation", \
+                    {"x":rQuat.x, "y":rQuat.x, "z":rQuat.x, "w":rQuat.w}, 7))
+        if size and (size[0] != 1. or size[1] != 1. or size[2] != 1.):
+            tag.addChild(XmlTag("localScale", \
+                    {"x":size[0], "y":size[1], "z":size[2]}, 7))
         return tag
 
     def getType(self):

@@ -48,6 +48,7 @@ xmlFile = None
 BTNID_SAVEALL = 1
 BTNID_SAVE = 2
 BTNID_CANCEL = 3
+BTNID_OVERWRITE = 4
 selCount = None
 allCount = None
 fileOverwrite = False
@@ -73,9 +74,12 @@ def updateExportableCounts():
         if JmeObject.supported(o): selCount = selCount + 1
 
 def btnHandler(btnId):
-    global saveAll, xmlFile, defaultFilePath
+    global saveAll, xmlFile, defaultFilePath, fileOverwrite
     if btnId == BTNID_SAVEALL:
         saveAll = not saveAll
+        return
+    if btnId == BTNID_OVERWRITE:
+        fileOverwrite = not fileOverwrite
         return
     if btnId == BTNID_SAVE:
         try:
@@ -202,8 +206,7 @@ def saveFile(filepath):
         print "Will retry"
 
 def drawer():
-    global saveAll, BTNID_SAVEALL, BTNID_SAVE, BTNID_CANCEL, guiBox
-    global selCount, allCount
+    global saveAll, guiBox, selCount, allCount, fileOverwrite
 
     BGL.glClear(BGL.GL_COLOR_BUFFER_BIT)
     guiBox.drawBg()
@@ -214,7 +217,7 @@ def drawer():
     Draw.Label("+ the jMonkeyEngine team", \
             guiBox.x + 160, guiBox.y + 9,157,10)
     if not allCount: updateExportableCounts()
-    if allCount < 1:  # TEMPORARY.  Enable following once impl. saveAll.
+    if allCount < 1:
         Draw.Label("Your scenes contain no",
                 guiBox.x + 10, guiBox.y + 200,200,20)
         Draw.Label("export-supported objects",
@@ -230,6 +233,9 @@ def drawer():
             redrawDummy)
             # Would prefer to make a 2-line button, but Draw does not
             # support that... or basically anything other than vanilla.
+    Draw.Toggle("Overwrite", BTNID_OVERWRITE, \
+            guiBox.x + 10, guiBox.y + 155, 60, 20, fileOverwrite, \
+            "Silently overwrite export file if it exists beforehand")
     Draw.PushButton("Export", BTNID_SAVE, \
             guiBox.x + 10, guiBox.y + 50, 50, 20, "Select file to save to")
     Draw.Label("Reserved space", guiBox.x + 180, guiBox.y + 150,200,20)

@@ -17,5 +17,3 @@ like "Blender.Load('/file/path.blend')".  I need to try on a different
 computer.  Can still test stuff that doesn't require a *.blend file, but the
 whole point here is to verify that complex input (like what is stored in a
 *.blend file) gets exported accurately.
-
-Add silent-overwrite button.

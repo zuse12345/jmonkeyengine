@@ -109,7 +109,9 @@ class XmlTag(object):
         validateXmlKeyword(name)
         formatStr = None
         if precision != None:
-            formatStr = "{0:." + str(precision) + "f}"
+            #formatStr = "{0:." + str(precision) + "f}"
+            # Blender Python doesnt' support string.format() yet.
+            formatStr = "%." + str(precision) + "f"
         if not self.__curAttrs:
             self.__curAttrs = {}
             self.__attrKeys = []
@@ -124,13 +126,17 @@ class XmlTag(object):
                     if formatStr == None:
                         joinlist.append(str(val[i]))
                     else:
-                        joinlist.append(formatStr.format(val[i]))
+                        #joinlist.append(formatStr.format(val[i]))
+                        # See above
+                        joinlist.append(formatStr % val[i])
             val = " ".join(joinlist)
         if name in self.__attrKeys: self.__attrKeys.remove(name)
         if formatStr == None or isinstance(val, basestring):
             self.__curAttrs[name] = quoteattr(val)
         else:
-            self.__curAttrs[name] = quoteattr(formatStr.format(val))
+            #self.__curAttrs[name] = quoteattr(formatStr.format(val))
+            # See above
+            self.__curAttrs[name] = quoteattr(formatStr % val)
         self.__attrKeys.append(name)
 
     def addComment(self, text):
@@ -201,7 +207,9 @@ class PITag(object):
         validateXmlKeyword(name)
         formatStr = None
         if precision != None:
-            formatStr = "{0:." + str(precision) + "f}"
+            #formatStr = "{0:." + str(precision) + "f}"
+            # Blender Python doesnt' support string.format() yet.
+            formatStr = "%." + str(precision) + "f"
         if not self.__curAttrs:
             self.__curAttrs = {}
             self.__attrKeys = []
@@ -216,13 +224,17 @@ class PITag(object):
                     if formatStr == None:
                         joinlist.append(str(val[i]))
                     else:
-                        joinlist.append(formatStr.format(val[i]))
+                        #joinlist.append(formatStr.format(val[i]))
+                        # See above
+                        joinlist.append(formatStr % val[i])
             val = " ".join(joinlist)
         if name in self.__attrKeys: self.__attrKeys.remove(name)
         if formatStr == None or isinstance(val, basestring):
             self.__curAttrs[name] = quoteattr(val)
         else:
-            self.__curAttrs[name] = quoteattr(formatStr.format(val))
+            #self.__curAttrs[name] = quoteattr(formatStr.format(val))
+            # See above
+            self.__curAttrs[name] = quoteattr(formatStr % val)
         self.__attrKeys.append(name)
 
     def addComment(self, text):

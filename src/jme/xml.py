@@ -266,6 +266,7 @@ class XmlFile(object):
             self.pi.addAttr('encoding', self.encoding)
             # This is the default document Processing Instruction
         for docComment in self.__commentLinks: self.pi.addComment(docComment)
+        self.__commentLinks = []
         self.root.spacesPerIndent = self.spacesPerIndent
         return str(self.pi) + '\n\n' + str(self.root)
 

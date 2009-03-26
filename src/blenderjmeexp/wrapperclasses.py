@@ -90,8 +90,7 @@ class JmeObject(object):
             locTag.addAttr("y", loc[1], 7)
             locTag.addAttr("z", loc[2], 7)
             tag.addChild(locTag)
-        if rQuat and \
-            (rQuat.x != 0. or rQuat.y != 0. or rQuat.z != 0. or rQuat.w != 1.):
+        if rQuat:
             locTag = XmlTag("localRotation")
             locTag.addAttr("x", rQuat.x, 7)
             locTag.addAttr("y", rQuat.y, 7)

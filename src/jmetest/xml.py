@@ -101,4 +101,3 @@ class Tests(unittest.TestCase):
 
 unittest.TextTestRunner()\
         .run(unittest.TestLoader().loadTestsFromTestCase(Tests))
-

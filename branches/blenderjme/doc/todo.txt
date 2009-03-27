@@ -6,6 +6,9 @@ Track down Quaternine bug where complex but valid Blender transformed object
 does not import to JME with correct orientation.  Problem even occurs with
 the old jME V2 exporter.
 
+If not None, write blenderObj.color to XML, so can be reconstituted to
+JME''s Geometry.defaultColor (TriMesh and QuadMesh are Geometries).
+
 Find out how to retrieve export or data file preference directory from Blender.
 Default export directory to that.
 EGAD:  Terrible situation.  There is no reliable way to save preferences or

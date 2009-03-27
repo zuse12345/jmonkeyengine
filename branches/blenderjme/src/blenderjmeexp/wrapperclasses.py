@@ -78,8 +78,9 @@ class JmeObject(object):
         # Use either loc + rot + size OR matrixLocal
         # Set local variables just to reduce typing in this block.
         loc = self.wrappedObj.loc
-        rQuat = self.wrappedObj.matrixLocal.toQuat()
+        #rQuat = self.wrappedObj.matrixLocal.toQuat()
         # DOES NOT WORK TO DO rQuat = self.wrappedObj.rot.toQuat() !!!!!!!!!
+        rQuat = self.wrappedObj.rot.toQuat()
         if rQuat == JmeObject.__QUAT_IDENTITY: rQuat = None
         size = self.wrappedObj.size
         # Need to add the attrs sequentially in order to preserve sequence

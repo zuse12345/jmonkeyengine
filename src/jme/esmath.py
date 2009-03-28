@@ -46,18 +46,48 @@ class ESQuaternion(object):
         """
         To specify rotation axis + w, call like:
             ESQuaternion(float[3], w)
+        That's all there is to that format.  The remainder of this description
+        is about the other format.
 
         To specify Euler rotations, use one of these invocation patterns:
             ESQuaternion(float[3])        # for angles in radians*
             ESQuaternion(float[3], True)  # for anges in degrees
         Specify Euler rotation angles in Blender's (and www.eclideanspace.com)
         sequence convention of Yaw/Heading, Pitch/Attitude, Roll/Bank.
+        Note that this is based on the traditional but misplaced (IMO) example
+        of an airplane flying to the right (I.e., along X axis).
+        I say it is misplaced because nobody thinks of the default local
+        forward direction of objects in blender being to the right or left.
+        Forward is either towards the viewer or away from the viewer
+        (this is how jME interprets Yaw/Heading/Pitch/Attitude/Roll/Bank).
+
+        I recommend that you forget the distraction of these words and just
+        consider the axes relative to the object being oriented.
+        From the perspective of the object being oriented, Z is forwards and
+        backwards (3rd float), X is left and right, and Y is up and down:
+        Due to Blender's insufferable quirk to orient scenes to +Y, top-level
+        objects in a Blender scene typicall have a rotation transform to point
+        them to +Y (so they face the camera, etc.).  Our exporter removes
+        this idiocy and points top-level scene objects back to +Z (which would
+        be up in a Blender scene, but towards the viewer in reasonable 3D apps).
+
         The * constructor above is the one to use for blenderObject.rot, since
         (contrary to Blender API docs), the Blender.Object.Object 'rot'
         attribute holds radian Euler angles (in the sequence required here).
         The Euler-to-Quaternion code is a Python port of the first (excellent)
         algorithm at
         http://www.euclideanspace.com/maths/geometry/rotations/conversions/eulerToQuaternion/index.htm
+
+        IMPEMENTATON NOTE:
+        It seems that Blender applies the Euler angles in an unusual order,
+        not just x axis then y axis then z axis like JME does, and which is
+        handled by the http://www.euclideanspace.com algorithms.
+        For this reason, the variables eulerX/Y/Z are Blender's X, Y, Z,
+        and not the X, Y, Z on the euclideanspace site.  The mapping is
+        Blender X -> ES Y; Blender Y -> ES Z; Blender Z -> ES X...
+        or maybe it's the inverse of that... I forget now, and it's difficult
+        to work it out since euclideanspace calls the heading/altitude/bank
+        instead of by the axis names.  :(
         """
         object.__init__(self)
         if not isinstance(wOrDegreeUnits, bool):
@@ -69,20 +99,22 @@ class ESQuaternion(object):
             return
 
         eulers = vectorOrEulerAngles
-        heading = eulers[0]
-        pitch = eulers[1]
-        bank = eulers[2]
+
+        eulerX = eulers[0]
+        eulerY = eulers[1]
+        eulerZ = eulers[2]
+
         if wOrDegreeUnits:
             # We work in Radians, so convert input to Radians
-            heading = radians(heading)
-            pitch = radians(pitch)
-            bank = radians(bank)
-        c1 = cos(heading/2.)
-        s1 = sin(heading/2.)
-        c2 = cos(pitch/2.)
-        s2 = sin(pitch/2.)
-        c3 = cos(bank/2.)
-        s3 = sin(bank/2.)
+            eulerY = radians(eulerY)
+            eulerZ = radians(eulerZ)
+            eulerX = radians(eulerX)
+        c1 = cos(eulerY/2.)
+        s1 = sin(eulerY/2.)
+        c2 = cos(eulerZ/2.)
+        s2 = sin(eulerZ/2.)
+        c3 = cos(eulerX/2.)
+        s3 = sin(eulerX/2.)
         c1c2 = c1 * c2
         s1s2 = s1 * s2
         self.w =c1c2 * c3 - s1s2 * s3

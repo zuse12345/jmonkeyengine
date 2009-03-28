@@ -35,10 +35,11 @@ __url__ = 'http://www.jmonkeyengine.com'
 
 from jme.xml import *
 from Blender.Mathutils import Quaternion
+from jme.esmath import *
 
 class JmeObject(object):
     __slots__ = ('wrappedObj', 'children', '__vpf')
-    __QUAT_IDENTITY = Quaternion()  # Do not modify value!
+    __QUAT_IDENTITY = ESQuaternion([0,0,0], 1)  # Do not modify value!
 
     def __init__(self, bObj):
         """Assumes input Blender Object already validated.
@@ -78,9 +79,8 @@ class JmeObject(object):
         # Use either loc + rot + size OR matrixLocal
         # Set local variables just to reduce typing in this block.
         loc = self.wrappedObj.loc
-        #rQuat = self.wrappedObj.matrixLocal.toQuat()
-        # DOES NOT WORK TO DO rQuat = self.wrappedObj.rot.toQuat() !!!!!!!!!
-        rQuat = self.wrappedObj.rot.toQuat()
+        # N.b. Blender.Mathutils.Quaternines ARE NOT COMPATIBLE WITH jME!
+        rQuat = ESQuaternion(self.wrappedObj.rot)
         if rQuat == JmeObject.__QUAT_IDENTITY: rQuat = None
         size = self.wrappedObj.size
         # Need to add the attrs sequentially in order to preserve sequence

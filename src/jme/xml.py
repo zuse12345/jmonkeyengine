@@ -94,7 +94,7 @@ class XmlTag(object):
         self.__curAttrs = None
         self.__attrKeys = None
         self.spacesPerIndent = 0
-        if attrs: 
+        if attrs != None:
             for n, v in attrs.iteritems(): self.addAttr(n, v, attrsPrecision)
 
     # Little imperfection in this method.
@@ -112,7 +112,7 @@ class XmlTag(object):
             #formatStr = "{0:." + str(precision) + "f}"
             # Blender Python doesnt' support string.format() yet.
             formatStr = "%." + str(precision) + "f"
-        if not self.__curAttrs:
+        if self.__curAttrs == None:
             self.__curAttrs = {}
             self.__attrKeys = []
         if isinstance(val, list):
@@ -150,7 +150,7 @@ class XmlTag(object):
         # Returns this element with no indentaton + children indented 1 level
         bufferLinks = ['<']
         bufferLinks.append(self.name)
-        if self.__curAttrs:
+        if self.__curAttrs != None:
             for n in self.__attrKeys:
                 bufferLinks.append(' ' + n + '=' + self.__curAttrs[n])
         if len(self.__textLinks) > 0 or len(self.__children) > 0:
@@ -199,7 +199,7 @@ class PITag(object):
         self.__commentLinks = []
         self.__curAttrs = None
         self.__attrKeys = None
-        if attrs: 
+        if attrs != None:
             for n, v in attrs.iteritems(): self.addAttr(n, v, attrsPrecision)
 
     def addAttr(self, name, val, precision=None):
@@ -210,7 +210,7 @@ class PITag(object):
             #formatStr = "{0:." + str(precision) + "f}"
             # Blender Python doesnt' support string.format() yet.
             formatStr = "%." + str(precision) + "f"
-        if not self.__curAttrs:
+        if self.__curAttrs == None:
             self.__curAttrs = {}
             self.__attrKeys = []
         if isinstance(val, list):
@@ -244,7 +244,7 @@ class PITag(object):
         # Returns this element with no indentaton
         bufferLinks = ['<?']
         bufferLinks.append(self.name)
-        if self.__curAttrs:
+        if self.__curAttrs != None:
             for n in self.__attrKeys:
                 bufferLinks.append(' ' + n + '=' + self.__curAttrs[n])
         bufferLinks.append('?>')
@@ -273,7 +273,7 @@ class XmlFile(object):
 
     def __str__(self):
         pieces = []
-        if not self.pi:
+        if self.pi == None:
             self.pi = PITag("xml", {'version':'1.0'})
             self.pi.addAttr('encoding', self.encoding)
             # This is the default document Processing Instruction
@@ -288,7 +288,8 @@ class XmlFile(object):
         # above PI comments.
 
     def setPI(self, pi):
-        if self.pi: raise Exception("We only support one PI for now.  " \
+        if self.pi != None:
+            raise Exception("We only support one PI for now.  " \
                 + "Consider wiriting your PIs and Tags directly.")
         self.pi = pi
 

@@ -58,7 +58,7 @@ class JmeObject(object):
         # coordinates for all vertexes or none.
 
     def addChild(self, child):
-        if not self.children: self.children = []
+        if self.children == None: self.children = []
         self.children.append(child)
 
     def getName(self):
@@ -69,13 +69,13 @@ class JmeObject(object):
         # TODO:  This is where all of the attributes and children should be
         # added to the XML.
         mesh = self.wrappedObj.getData(False, True)
-        if mesh:
+        if mesh != None:
             childrenTag = XmlTag("children", {"size":1})
             childrenTag.addChild(JmeObject.__genMeshEl( \
                     mesh, self.__vpf, self.wrappedObj.color))
             tag.addChild(childrenTag)
 
-        if self.children:
+        if self.children != None:
             for child in self.children: tag.addChild(child.getXmlEl())
         # Use either loc + rot + size OR matrixLocal
         # Set local variables just to reduce typing in this block.
@@ -86,20 +86,20 @@ class JmeObject(object):
         size = self.wrappedObj.size
         # Need to add the attrs sequentially in order to preserve sequence
         # of the attrs in the output.
-        if loc and (loc[0] != 0. or loc[1] != 0. or loc[2] != 0.):
+        if loc != None and (loc[0] != 0. or loc[1] != 0. or loc[2] != 0.):
             locTag = XmlTag("localTranslation")
             locTag.addAttr("x", loc[0], 7)
             locTag.addAttr("y", loc[1], 7)
             locTag.addAttr("z", loc[2], 7)
             tag.addChild(locTag)
-        if rQuat:
+        if rQuat != None:
             locTag = XmlTag("localRotation")
             locTag.addAttr("x", rQuat.x, 7)
             locTag.addAttr("y", rQuat.y, 7)
             locTag.addAttr("z", rQuat.z, 7)
             locTag.addAttr("w", rQuat.w, 7)
             tag.addChild(locTag)
-        if size and (size[0] != 1. or size[1] != 1. or size[2] != 1.):
+        if size != None and (size[0] != 1. or size[1] != 1. or size[2] != 1.):
             locTag = XmlTag("localScale")
             locTag.addAttr("x", size[0], 7)
             locTag.addAttr("y", size[1], 7)
@@ -150,7 +150,7 @@ class JmeObject(object):
         return "<JmeObject> " + self.__str__()
 
     def __genMeshEl(meshObj, vpf, color):
-        if not meshObj.verts:
+        if meshObj.verts == None:
             raise Exception("Mesh '" + meshObj.name + "' has no vertexes")
         unify = 3 in vpf and 4 in vpf
         if 4 in vpf and not unify:
@@ -164,7 +164,7 @@ class JmeObject(object):
         #   This is a Blender convention, not a 3D or JME convention
         #   (requirement for normals).
         tag = XmlTag('com.jme.scene.' + meshType + 'Mesh', {'name':meshObj.name})
-        if color and \
+        if color != None and \
             (color[0] != 1 or color[1] != 1 or color[2] != 1 or color[3] != 1):
             colorTag = XmlTag("defaultColor", \
                     {"class":"com.jme.renderer.ColorRGBA"})
@@ -173,8 +173,30 @@ class JmeObject(object):
             colorTag.addAttr("g", color[1])
             colorTag.addAttr("b", color[2])
             colorTag.addAttr("a", color[3])
+
+        vcMap = None   # maps vertex INDEX to MCol
+        colArray = None
+        if meshObj.vertexColors != None:
+            multiColorMapped = False
+            vcMap = {}
+            # TODO:  Test for objects with no faces, like curves, points.
+            for face in meshObj.faces:
+                if face.verts == None: continue
+                if len(face.verts) != len(face.col):
+                    raise Exception( \
+                    "Counts of Face vertexes and vertex-colors do not match: " \
+                        + str(len(face.verts)) + " vs. " + str(len(face.col)))
+                for i in range(len(face.verts)):
+                    if face.verts[i].index in vcMap: multiColorMapped = True
+                    else: vcMap[face.verts[i].index] = face.col[i]
+            if multiColorMapped:
+                print "WARNING: Ignored some multi-mapped vertex coloring(s). "\
+                        "Should average these"
+            colArray = []
+
         coArray = []
         noArray = []
+        nonFacedVertexes = 0
         for v in meshObj.verts:
             coArray.append(v.co.x)
             coArray.append(v.co.y)
@@ -182,12 +204,37 @@ class JmeObject(object):
             noArray.append(v.no.x)
             noArray.append(v.no.y)
             noArray.append(v.no.z)
+            if colArray != None:
+                if v.index in vcMap:
+                    colArray.append(vcMap[v.index])
+                else:
+                    nonFacedVertexes += 1
+                    colArray.append(None)  # We signify WHITE by None
+        if nonFacedVertexes > 0:
+            print "WARNING: " + str(nonFacedVertexes) \
+                + " vertexes set to WHITE because no face to derive color from"
         vertTag = XmlTag("vertBuf", {"data":coArray}, 7)
         vertTag.addAttr("size", len(coArray))
         tag.addChild(vertTag)
         normTag = XmlTag("normBuf", {"data":noArray}, 7)
         normTag.addAttr("size", len(noArray))
         tag.addChild(normTag)
+        if colArray != None:
+            rgbaArray = []
+            for c in colArray:
+                if c == None:
+                    rgbaArray.append(1)
+                    rgbaArray.append(1)
+                    rgbaArray.append(1)
+                    rgbaArray.append(1)
+                else:
+                    rgbaArray.append(c.r/255.)
+                    rgbaArray.append(c.g/255.)
+                    rgbaArray.append(c.b/255.)
+                    rgbaArray.append(c.a/255.)
+            vertColTag = XmlTag("colorBuf", {"data":rgbaArray}, 3)
+            vertColTag.addAttr("size", len(rgbaArray))
+            tag.addChild(vertColTag)
         if 3 not in vpf and 4 not in vpf: return tag
         faceVertIndexes = []
         for face in meshObj.faces:
@@ -239,7 +286,7 @@ class JmeNode(object):
         tag = XmlTag('com.jme.scene.Node', {'name':self.getName()})
         # TODO:  This is where all of the attributes and children should be
         # added to the XML.
-        if self.children:
+        if self.children != None:
             childrenTag = XmlTag('children', {'size':len(self.children)})
             tag.addChild(childrenTag)
             for child in self.children: childrenTag.addChild(child.getXmlEl())

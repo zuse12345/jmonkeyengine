@@ -117,7 +117,7 @@ class GuiBox(object):
         self.w = w
         self.h = h
         availableW, availableH = Blender.Window.GetAreaSize()
-        if (w > availableW) or (h > availableH):
+        if w > availableW or h > availableH:
             raise Exception("Current Window not large enough for our Gui")
         self.x = (availableW - self.w) / 2
         self.y = (availableH - self.h) / 2
@@ -135,7 +135,7 @@ class GuiBox(object):
         self.__imgs = None
 
     def drawBg(self):
-        if not self.__imgs: self.__loadImages()
+        if self.__imgs == None: self.__loadImages()
         BGL.glColor3f(.95,.54,.24)
         BGL.glRectf(self.x, self.y, self.x + self.w, self.y + self.h)
         BGL.glColor3f(1, 1, 1)

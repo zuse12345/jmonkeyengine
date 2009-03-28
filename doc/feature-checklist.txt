@@ -10,6 +10,7 @@ $Id$
   Write trivial color materials
   Write materials with color and other basic settings (reflectivity et. al.)
   Write basic texture map materials
+  Export custom boundary objects.
 
   Add exporter setting to export all "exportable" items in the current scene,
   instead of the default of exporting the exportable subset of currently-

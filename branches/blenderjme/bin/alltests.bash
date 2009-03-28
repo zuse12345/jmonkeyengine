@@ -66,6 +66,7 @@ export PYTHONPATH="${SCRIPTDIR%/*}/src"
 declare -i failures=0
 
 "$PYTHONPROG" "${PYTHONPATH}/jmetest/xml.py" || ((failures = failures + 1))
+"$PYTHONPROG" "${PYTHONPATH}/jmetest/esmath.py" || ((failures = failures + 1))
 
 # As soon as have a Blender environment test implemented:
 #"$SCRIPTDIR/blenderscript.bash" "${PYTHONPATH}/blendertest/script.py" ||

@@ -6,11 +6,14 @@ $Id$
    keywords, conversion of illegal XML characters where possible).
 * Write single mesh object, with and without color vertexes and normals
 * Write multiple top-level mesh objects
+* Writes defaultColor to Meshes if blenderObject.color set (Blender doesn't
+   "show" the color, so need scripting or an add-on to set this).
+  Write vertex colors
   Write nested mesh objects, preserving the parent/child relationships
   Write trivial color materials
   Write materials with color and other basic settings (reflectivity et. al.)
   Write basic texture map materials
-  Export custom boundary objects.
+  Export custom boundary objects
 
   Add exporter setting to export all "exportable" items in the current scene,
   instead of the default of exporting the exportable subset of currently-

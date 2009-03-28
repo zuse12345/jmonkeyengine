@@ -2,8 +2,10 @@ $Id$
 
 TODO LIST
 
-If not None, write blenderObj.color to XML, so can be reconstituted to
-JME''s Geometry.defaultColor (TriMesh and QuadMesh are Geometries).
+Think of a good way to enforce scene node name uniqueness.
+It's problematic because we want the higher-level nodes to have naming
+precedence, yet the nodes written to strings leaf-first.  Do not want to
+have to have parents pass their names down to all the descendants.  I dunno.
 
 Find out how to retrieve export or data file preference directory from Blender.
 Default export directory to that.

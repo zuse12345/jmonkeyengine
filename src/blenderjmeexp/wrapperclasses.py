@@ -71,7 +71,8 @@ class JmeObject(object):
         mesh = self.wrappedObj.getData(False, True)
         if mesh:
             childrenTag = XmlTag("children", {"size":1})
-            childrenTag.addChild(JmeObject.__genMeshEl(mesh, self.__vpf))
+            childrenTag.addChild(JmeObject.__genMeshEl( \
+                    mesh, self.__vpf, self.wrappedObj.color))
             tag.addChild(childrenTag)
 
         if self.children:
@@ -148,7 +149,7 @@ class JmeObject(object):
     def __repr__(self):
         return "<JmeObject> " + self.__str__()
 
-    def __genMeshEl(meshObj, vpf):
+    def __genMeshEl(meshObj, vpf, color):
         if not meshObj.verts:
             raise Exception("Mesh '" + meshObj.name + "' has no vertexes")
         unify = 3 in vpf and 4 in vpf
@@ -163,6 +164,15 @@ class JmeObject(object):
         #   This is a Blender convention, not a 3D or JME convention
         #   (requirement for normals).
         tag = XmlTag('com.jme.scene.' + meshType + 'Mesh', {'name':meshObj.name})
+        if color and \
+            (color[0] != 1 or color[1] != 1 or color[2] != 1 or color[3] != 1):
+            colorTag = XmlTag("defaultColor", \
+                    {"class":"com.jme.renderer.ColorRGBA"})
+            tag.addChild(colorTag)
+            colorTag.addAttr("r", color[0])
+            colorTag.addAttr("g", color[1])
+            colorTag.addAttr("b", color[2])
+            colorTag.addAttr("a", color[3])
         coArray = []
         noArray = []
         for v in meshObj.verts:

@@ -2,8 +2,6 @@ $Id$
 
 TODO LIST
 
-string.upper() the encoding value in the XML PI.
-
 Make sure all test methods "" commented.  testunit reports much better with.
 REFACTOR according to new things I've learned about Python
     No \ necessary if continuing a [list] or (parameters), and even for

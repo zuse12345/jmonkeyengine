@@ -303,7 +303,7 @@ class XmlFile(object):
         pieces = []
         if self.pi == None:
             self.pi = PITag("xml", {'version':'1.0'})
-            self.pi.addAttr('encoding', self.encoding)
+            self.pi.addAttr('encoding', self.encoding.upper())
             # This is the default document Processing Instruction
         for docComment in self.__commentLinks: self.pi.addComment(docComment)
         self.__commentLinks = []

@@ -176,12 +176,15 @@ class JmeObject(object):
 
         vcMap = None   # maps vertex INDEX to MCol
         colArray = None
-        if meshObj.vertexColors != None:
+        if meshObj.vertexColors:
             multiColorMapped = False
             vcMap = {}
             # TODO:  Test for objects with no faces, like curves, points.
             for face in meshObj.faces:
                 if face.verts == None: continue
+                # The face.col reference in the next line WILL THROW
+                # if the mesh does not support vert colors
+                # (i.e. meshObj.vertexColors).
                 if len(face.verts) != len(face.col):
                     raise Exception( \
                     "Counts of Face vertexes and vertex-colors do not match: " \

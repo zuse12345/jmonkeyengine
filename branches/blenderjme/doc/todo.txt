@@ -2,8 +2,6 @@ $Id$
 
 TODO LIST
 
-Take care of 2 bugs reported by Core-Dump in jME forum.
-
 I think need to make dedicated wrapper classes for all Blender objects
 corresponding to jME scene graph nodes, since we need (at least) to wrap
 the node names (jME requires unique, Blender does not).  Immediately

@@ -47,7 +47,7 @@ your module), just to find out there are additional syntax errors.
 
 You can execute all non-graphical Python scripts from the command-line by
 using the blenderscript.bash program.  It executes scripts very quickly.
-Limitations:
+This applies to both deliverable scripts and unit tests.  Limitations:
 
     If you need a model for your code to work on, you will need to either save
     your default Blender setup with the target model loaded, or use the
@@ -59,3 +59,7 @@ Limitations:
     (blenderscript.bash draws no Gui in order to make it run very fast).
     I don't know about blenderjmeexp_reg.py (not much in it can be tested
     non-interactively).
+
+Even if you prefer to run your scripts from inside Blender, it should still be
+of great benefit to use blenderscript.bash to syntax- and dependency-check the
+scripts before investing time starting and setting up your Blender interface.

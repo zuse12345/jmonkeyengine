@@ -56,7 +56,7 @@ def gen(saveAll, autoRotate):
         else:
             candidates = data.scenes.active.objects.selected
         for o in candidates:
-            if JmeObject.supported(o): os.append(JmeObject(o))
+            if JmeNode.supported(o): os.append(JmeNode(o))
         root = None
         if len(os) < 1:
             raise Exception("Nothing to do...")

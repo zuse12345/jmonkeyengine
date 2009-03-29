@@ -69,9 +69,9 @@ def updateExportableCounts():
     selCount = 0
     allCount = 0
     for o in data.objects:
-        if JmeObject.supported(o): allCount = allCount + 1
+        if JmeNode.supported(o): allCount = allCount + 1
     for o in data.scenes.active.objects.selected:
-        if JmeObject.supported(o): selCount = selCount + 1
+        if JmeNode.supported(o): selCount = selCount + 1
 
 def btnHandler(btnId):
     global saveAll, xmlFile, defaultFilePath, fileOverwrite

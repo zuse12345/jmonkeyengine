@@ -68,6 +68,19 @@ declare -i failures=0
 "$PYTHONPROG" "${PYTHONPATH}/jmetest/xml.py" || ((failures = failures + 1))
 "$PYTHONPROG" "${PYTHONPATH}/jmetest/esmath.py" || ((failures = failures + 1))
 
+# This single test tests the dependencies of the Blender environment itself.
+# We very particularly do not want to use an external Python interpreter.
+# This should be the only test (standalone or Blender-env) which does not use
+# "testunit".  It's impossible to test imports with testunit.
+unset ORIG_PYTHONHOME
+[ -n "$PYTHONHOME" ] && {
+    ORIG_PYTHONHOME="$PYTHONHOME"
+}
+"$SCRIPTDIR/blenderscript.bash" "${PYTHONPATH}/blendertest/modules.py" ||
+[ -n "$ORIG_PYTHONHOME" ] && {   # Restore execution environment!
+    export PYTHONHOME="$ORIG_PYTHONHOME"
+}
+
 # As soon as have a Blender environment test implemented:
 #"$SCRIPTDIR/blenderscript.bash" "${PYTHONPATH}/blendertest/script.py" ||
 #((failures = failures + 1))

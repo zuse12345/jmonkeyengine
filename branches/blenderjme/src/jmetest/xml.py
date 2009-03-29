@@ -40,15 +40,10 @@ import unittest
 from unittest import *
 
 class Tests(unittest.TestCase):
-    __slots__ = ['expectedMix']
+    __slots__ = ['expectedMix', 'expectedXml', 'expectedPi']
 
     def setUp(self):
         self.expectedMix = resFileContent("xmldata/mix.xml")
-
-    def testTagAssembly(self):
-        """This tests manually writes the PI and root elements, sets the
-        indentation level, encodes"""
-
         apple = XmlTag('apple', {'x':'y'})
         rootTag = XmlTag('orange', {'color':'yellow'})
         apple.addComment("Apples are delicious")
@@ -67,8 +62,15 @@ class Tests(unittest.TestCase):
         # mess to test.
         pi.addComment("A doc comment")
         rootTag.spacesPerIndent = 2
-        manualXmlOutput = str(pi) + '\n\n' \
-                + unicode(str(rootTag), 'utf-8') + '\n'
+        self.expectedXml = rootTag
+        self.expectedPi = pi
+
+    def testTagAssembly(self):
+        """This tests manually writes the PI and root elements, sets the
+        indentation level, encodes"""
+
+        manualXmlOutput = str(self.expectedPi) + '\n\n' \
+                + unicode(str(self.expectedXml), 'utf-8') + '\n'
         #print '{' + self.expectedMix + '}'
         #print '[' + manualXmlOutput + ']'
         self.assertEqual(self.expectedMix, manualXmlOutput)
@@ -76,9 +78,28 @@ class Tests(unittest.TestCase):
     def testXmlFile(self):
         "This exercises the XmlFile class"
 
+        #print str(XmlFile(rootTag, pi=pi))
+        #XmlFile(rootTag, pi=pi).writeFile("/tmp/auto.xml")
+        #autoXmlOutput = str(pi) + '\n\n' + str(rootTag) + '\n'
+        self.assertEqual( \
+                self.expectedMix, XmlFile( \
+                self.expectedXml, pi=self.expectedPi).decoded() + '\n')
+
+    def testAllNodes(self):
+        self.assertEqual(5, len(self.expectedXml.allNodes()))
+
+    def genUnique(self, color, usedColors):
+        "Trivial method to generate a unique value"
+        while color in usedColors: color += 'x'
+        return color
+
+    def testAttrUniqueness(self):
+        "This tests enforcement of attribute value uniqueness"
+
         apple = XmlTag('apple', {'x':'y'})
         rootTag = XmlTag('orange', {'color':'yellow'})
         apple.addComment("Apples are delicious")
+        apple.addAttr("color", 'red')
         rootTag.addAttr('mass', 3.4, 3)
         rootTag.addText('Some words')
         rootTag.addComment('One comment')
@@ -86,18 +107,36 @@ class Tests(unittest.TestCase):
         rootTag.addChild(XmlTag('peach', {'skin':'fuffy'}))
         rootTag.addChild(XmlTag('pineapple', {'prickley':'true'}))
         rootTag.addChild(apple)
-        apple.addChild(XmlTag('grape', {'tasty':'true'}))
-        pi = PITag('processInstr', {'version':'1.0'})
-        pi.addAttr('encoding', 'UTF-8')
-        # Would like to add multiple attrs in constructore, but due to
-        # lack of ordered Hash in Python, that would make the output a real
-        # mess to test.
-        pi.addComment("A doc comment")
-        #print str(XmlFile(rootTag, pi=pi))
-        #XmlFile(rootTag, pi=pi).writeFile("/tmp/auto.xml")
-        #autoXmlOutput = str(pi) + '\n\n' + str(rootTag) + '\n'
-        self.assertEqual( \
-                self.expectedMix, XmlFile(rootTag, pi=pi).decoded() + '\n')
+        rootTag.addChild(XmlTag("pear", {'color':'yellow'}))
+        grapeNode = XmlTag('grape', {'tasty':'true'})
+        apple.addChild(grapeNode)
+        grapeNode.addAttr("color", "yellow")
+        rootTag.spacesPerIndent = 2
+        #print rootTag
+        yellowColors = rootTag.tagsWithAttr("color", "yellow")
+        self.assertEqual(3, len(yellowColors))
+        allColorTags = rootTag.tagsWithAttr("color")
+        allColors = []
+        for colorTag in allColorTags:
+            allColors.append(colorTag.quotedattrs["color"])
+        self.assertEquals(4, len(allColors))
+        self.assertEquals(2, len(set(allColors)))
+        usedColors = set()
+        while len(allColorTags) > 0:
+            colorTag = allColorTags.pop(0)
+            color = colorTag.quotedattrs["color"][1:-1]
+            if color in usedColors:
+                color = self.genUnique(color, usedColors)
+                colorTag.addAttr("color", color)
+                usedColors.add(color)
+            else: usedColors.add(color)
+        allColorTags = rootTag.tagsWithAttr("color")
+        allColors = []
+        for colorTag in allColorTags:
+            allColors.append(colorTag.quotedattrs["color"])
+        self.assertEquals(4, len(allColors))
+        self.assertEquals(4, len(set(allColors)))
+        self.assertEquals(4, len(usedColors))
 
 unittest.TextTestRunner()\
         .run(unittest.TestLoader().loadTestsFromTestCase(Tests))

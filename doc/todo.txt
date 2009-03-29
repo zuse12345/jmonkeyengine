@@ -4,21 +4,13 @@ TODO LIST
 
 string.upper() the encoding value in the XML PI.
 
-Enhance blenderscript.bash.
-    Produce a warning against wrapper script if $PWD is the blender directory.
-    Re-code the write check to accommodate Windows quirk.
-    Support MinGW/Cygwin:
-        Use relative instead of absolute paths
-        Change interpreter line to just use /bin/sh
-    Drop the quit and wrap generated script with a try/expect.
-    Have the previous item display good stack trace.
-    Optimize command-line params.  Only need EITHER -p or -b.
-
 Make sure all test methods "" commented.  testunit reports much better with.
 REFACTOR according to new things I've learned about Python
     No \ necessary if continuing a [list] or (parameters), and even for
      expressions inside of ().
     Use + to concatenate lists, incl. l1 += l2
+
+Add .blend and .xml files for end-to-end Blender env unit tests.
 
 Enforce scene node name uniqueness.
 

@@ -39,68 +39,70 @@ import unittest
 from unittest import *
 
 class Tests(unittest.TestCase):
-    def testSingleAngleRotations(self):
-        self.assertTrue(ESQuaternion( \
-                [0, 0.25881904510252074, 0], 0.9659258262890683).equals( \
+    def testSingleAxisRotations(self):
+        "Test quaternions for rotations around a single axis"
+        self.assertTrue(ESQuaternion(
+                [0, 0.25881904510252074, 0], 0.9659258262890683).equals(
                 ESQuaternion([0, 30, 0], True)))
         # Negavite tests:
-        self.assertFalse(ESQuaternion( \
-                [0, 0.25881804510252074, 0], 0.9659258262890683).equals( \
+        self.assertFalse(ESQuaternion(
+                [0, 0.25881804510252074, 0], 0.9659258262890683).equals(
                 ESQuaternion([0, 30, 0], True)))
-        self.assertFalse(ESQuaternion( \
-                [0, 0.25881904510252074, 0], 0.9659248262890683).equals( \
+        self.assertFalse(ESQuaternion(
+                [0, 0.25881904510252074, 0], 0.9659248262890683).equals(
                 ESQuaternion([0, 30, 0], True)))
-        self.assertFalse(ESQuaternion( \
-                [0, 0.25881904510252074, 0], 0.9659258262890683).equals( \
+        self.assertFalse(ESQuaternion(
+                [0, 0.25881904510252074, 0], 0.9659258262890683).equals(
                 ESQuaternion([0, 30.001, 0], True)))
 
     def testMixedRotation(self):
-        self.assertTrue(ESQuaternion( \
-                [0.36758011983238364, 0.24479231586341083, \
-                0.18214796572990116], 0.8785122060499201).equals( \
+        "Test quaternions representing complex rotations"
+        self.assertTrue(ESQuaternion(
+                [0.36758011983238364, 0.24479231586341083,
+                0.18214796572990116], 0.8785122060499201).equals(
                 ESQuaternion([40, 20, 30], True)))
         # Negative tests.  Switch each parameter, in turn, by 1/1,000,000th
-        self.assertFalse(ESQuaternion( \
-                [0.36758111983238364, 0.24479231586341083, \
-                0.18214796572990116], 0.8785122060499201).equals( \
+        self.assertFalse(ESQuaternion(
+                [0.36758111983238364, 0.24479231586341083,
+                0.18214796572990116], 0.8785122060499201).equals(
                 ESQuaternion([40, 20, 30], True)))
-        self.assertFalse(ESQuaternion( \
-                [0.36758111983238364, 0.24479331586341083, \
-                0.18214796572990116], 0.8785122060499201).equals( \
+        self.assertFalse(ESQuaternion(
+                [0.36758111983238364, 0.24479331586341083,
+                0.18214796572990116], 0.8785122060499201).equals(
                 ESQuaternion([40, 20, 30], True)))
-        self.assertFalse(ESQuaternion( \
-                [0.36758011983238364, 0.24479231586341083, \
-                0.18214896572990116], 0.8785122060499201).equals( \
+        self.assertFalse(ESQuaternion(
+                [0.36758011983238364, 0.24479231586341083,
+                0.18214896572990116], 0.8785122060499201).equals(
                 ESQuaternion([40, 20, 30], True)))
-        self.assertFalse(ESQuaternion( \
-                [0.36758011983238364, 0.24479231586341083, \
-                0.18214796572990116], 0.8785132060499201).equals( \
+        self.assertFalse(ESQuaternion(
+                [0.36758011983238364, 0.24479231586341083,
+                0.18214796572990116], 0.8785132060499201).equals(
                 ESQuaternion([40, 20, 30], True)))
 
 
     def testSuperRotation(self):
-        # Rotations over 360 degrees
-
+        "Test rotations over 2 pi / 360 degrees"
         # +/ multiples of 4 pi, 720 degrees have no effect
-        self.assertTrue(ESQuaternion( \
-                [0.36758011983238364, 0.24479231586341083, \
-                0.18214796572990116], 0.8785122060499201).equals( \
+        self.assertTrue(ESQuaternion(
+                [0.36758011983238364, 0.24479231586341083,
+                0.18214796572990116], 0.8785122060499201).equals(
                 ESQuaternion([760, 740, 750], True)))
         # Not sure of all combinations, but it looks like each +/ 360 degrees
         # changes the sign of every resultant component
-        self.assertTrue(ESQuaternion( \
-                [-0.36758011983238364, -0.24479231586341083, \
-                -0.18214796572990116], -0.8785122060499201).equals( \
+        self.assertTrue(ESQuaternion(
+                [-0.36758011983238364, -0.24479231586341083,
+                -0.18214796572990116], -0.8785122060499201).equals(
                 ESQuaternion([400, 380, 390], True)))
-        self.assertTrue(ESQuaternion( \
-                [-0.36758011983238364, -0.24479231586341083, \
-                -0.18214796572990116], -0.8785122060499201).equals( \
+        self.assertTrue(ESQuaternion(
+                [-0.36758011983238364, -0.24479231586341083,
+                -0.18214796572990116], -0.8785122060499201).equals(
                 ESQuaternion([40, 380, 30], True)))
 
     def testNegativeRotation(self):
-        self.assertTrue(ESQuaternion( \
-                [-0.36758011983238364, -0.24479231586341083, \
-                -0.18214796572990116], -0.8785122060499201).equals( \
+        "Test rotations in the negative direction"
+        self.assertTrue(ESQuaternion(
+                [-0.36758011983238364, -0.24479231586341083,
+                -0.18214796572990116], -0.8785122060499201).equals(
                 ESQuaternion([-320, -340, -330], True)))
 
 unittest.TextTestRunner()\

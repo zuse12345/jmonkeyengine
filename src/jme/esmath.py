@@ -39,8 +39,7 @@ class ESQuaternion(object):
     """Quaternions based on the excellent algorithms at
     http://www.euclideanspace.com/"""
 
-    __slots__ = \
-        ['x', 'y', 'z', 'w']
+    __slots__ = ['x', 'y', 'z', 'w']
 
     def __init__(self, vectorOrEulerAngles, wOrDegreeUnits=False):
         """
@@ -141,9 +140,9 @@ class ESQuaternion(object):
         return True
 
     def __str__(self):
-        return "(" + str(self.x) + ', ' + str(self.y) + ', ' + str(self.z) \
-                + ") " + str(self.w)
+        return ("(" + str(self.x) + ', ' + str(self.y) + ', ' + str(self.z)
+                + ") " + str(self.w))
 
     def __repr__(self):
-        return "Rot axis: (" + str(self.x) + ', ' + str(self.y) + ', ' \
-                + str(self.z) + "), w: " + str(self.w)
+        return ("Rot axis: (" + str(self.x) + ', ' + str(self.y) + ', '
+                + str(self.z) + "), w: " + str(self.w))

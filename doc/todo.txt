@@ -2,15 +2,9 @@ $Id$
 
 TODO LIST
 
-Make sure all test methods "" commented.  testunit reports much better with.
-REFACTOR according to new things I've learned about Python
-    No \ necessary if continuing a [list] or (parameters), and even for
-     expressions inside of ().
-    Use + to concatenate lists, incl. l1 += l2
+Enforce scene node name uniqueness.
 
 Add .blend and .xml files for end-to-end Blender env unit tests.
-
-Enforce scene node name uniqueness.
 
 As soon as I implement proper schema validation in jME core, add the namespace
 specs to generated XML.

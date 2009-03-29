@@ -1,4 +1,5 @@
-#!/bin/bash -p
+#!/bin/sh
+# /bin/sh to accommodate MinGW.
 
 PROGNAME="${0##*/}"
 
@@ -56,12 +57,12 @@ type -t blender >&- || Failout 'Blender is not in your env search path'
 "$PYTHONPROG" -c 'import unittest' ||
 Failout "Your Python interpreter is missing, or does not support module 'unittest': $PYTHONPROG"
 
-case "$0" in
-/*) SCRIPTDIR="${0%/*}";; */*) SCRIPTDIR="$PWD/${0%/*}";; *) SCRIPTDIR="$PWD";;
-esac
-case "$SCRIPTDIR" in *?/.) SCRIPTDIR="${SCRIPTDIR%/.}"; esac
+case "$0" in */*) SCRIPTRELDIR="${0%/*}";; *) SCRIPTRELDIR=".";; esac
 
-export PYTHONPATH="${SCRIPTDIR%/*}/src"
+[ -z "$PYTHONPATH" ] && [ -d "${SCRIPTRELDIR}/../src" ] && {
+	export PYTHONPATH="${SCRIPTRELDIR}/../src"
+	[ -n "$VERBOSE" ] && echo "PYTHONPATH set to '$PYTHONPATH'"
+}
 
 declare -i failures=0
 
@@ -69,20 +70,21 @@ declare -i failures=0
 "$PYTHONPROG" "${PYTHONPATH}/jmetest/esmath.py" || ((failures = failures + 1))
 
 # This single test tests the dependencies of the Blender environment itself.
-# We very particularly do not want to use an external Python interpreter.
+# We very particularly do not want to use an external Python interpreter,
+# but, unfortunately, the current Linux distros of Blender do not have basic
+# Python packages like "os", which we ned.
 # This should be the only test (standalone or Blender-env) which does not use
 # "testunit".  It's impossible to test imports with testunit.
-unset ORIG_PYTHONHOME
-[ -n "$PYTHONHOME" ] && {
-    ORIG_PYTHONHOME="$PYTHONHOME"
-}
-"$SCRIPTDIR/blenderscript.bash" "${PYTHONPATH}/blendertest/modules.py" ||
-[ -n "$ORIG_PYTHONHOME" ] && {   # Restore execution environment!
-    export PYTHONHOME="$ORIG_PYTHONHOME"
-}
+echo "\nWatch for output from Blender env. scripts below.
+It's impractical for this script to detect failures with Blender env. tests,
+since Blender does not set a meaningful exit status.\n"
+case "$(uname)" in
+    Linux) "$SCRIPTRELDIR/blenderscript.bash" "${PYTHONPATH}/blendertest/modules.py";;
+    *) PYTHONHOME=/dev/null "$SCRIPTRELDIR/blenderscript.bash" "${PYTHONPATH}/blendertest/modules.py";;
+esac
 
-# As soon as have a Blender environment test implemented:
-#"$SCRIPTDIR/blenderscript.bash" "${PYTHONPATH}/blendertest/script.py" ||
+# Will do this ASAP.
+#"$SCRIPTRELDIR/blenderscript.bash" "${PYTHONPATH}/blendertest/script.py" ||
 #((failures = failures + 1))
 
 exit $failures

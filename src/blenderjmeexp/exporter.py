@@ -86,9 +86,11 @@ def gen(saveAll, autoRotate):
         # data will no longer be referenced.  Therefore, it's safe to return
         # a XmlFile even though we will now revert some transforms (which
         # will then not match what is in the XmlFile instance).
+        return xmlFile
+    finally:
+        print ("Restoring transformations of " + str(len(changedMats))
+                + " items...")
         for n, v in changedMats.iteritems(): n.matrixLocal = v
         # This restores the original matrixes for top-level objects
         if len(changedMats) > 0: data.scenes.active.update(1)
-        return xmlFile
-    finally:
         if origEditMode != 0: Blender.Window.EditMode(origEditMode)

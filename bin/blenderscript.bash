@@ -111,6 +111,8 @@ export PYTHONPATH="${SCRIPTDIR%/*}/src"
 [ -n "$VERBOSE" ] &&
 echo blender "${COORD_PARAMS[@]}" -b /dev/null -noaudio -nojoystick -noglsl \
 -P "$TMPFILE" $BLENDER_SWITCHES "$@" 1>&2
+[ -n "$NORUN" ] && exit 0
+echo "* IGNORE the warning message below saying: 'Loading /dev/null failed:...' *"
 blender "${COORD_PARAMS[@]}" -b /dev/null -noaudio -nojoystick -noglsl \
 -P "$TMPFILE" $BLENDER_SWITCHES "$@"
 # Would prefer to exec blender, but that prevents the EXIT trap from working

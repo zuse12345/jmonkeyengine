@@ -77,8 +77,8 @@ class XmlTag(object):
     """
 
     __slots__ = \
-        ['name', '__textLinks', '__children', \
-        '__commentLinks', '__curAttrs', 'spacesPerIndent', '__attrKeys']
+        ['name', '__textLinks', 'children', \
+        '__commentLinks', 'quotedattrs', 'spacesPerIndent', '__attrKeys']
         # The attrKeys is just to preserve the sequence of the attr hash
 
     def __init__(self, name, attrs=None, attrsPrecision=None):
@@ -90,12 +90,32 @@ class XmlTag(object):
         self.name = name
         self.__textLinks = []
         self.__commentLinks = []
-        self.__children = []
-        self.__curAttrs = None
+        self.children = []
+        self.quotedattrs = None
         self.__attrKeys = None
         self.spacesPerIndent = 0
         if attrs != None:
             for n, v in attrs.iteritems(): self.addAttr(n, v, attrsPrecision)
+
+    def tagsWithAttr(self, attrName, attrVal=None):
+        """In Leaf-last order.
+        Call like "tagtWithAttr(name)" to get all elements using attr,
+        Call like "tagsWithAttr(name, val)" to narrow to those with specified
+        attr value also."""
+        hits = []
+        if (self.quotedattrs != None and attrName in self.quotedattrs
+                and (attrVal == None or self.quotedattrs[attrName][1:-1] == attrVal)):
+            hits.append(self)
+        for child in self.children:
+            hits += child.tagsWithAttr(attrName, attrVal)
+        return hits
+
+    def allNodes(self):
+        "Returns flattened list of current node + all descendant nodes."
+        nodeList = [self]
+        if self.children != None:
+            for child in self.children: nodeList += child.allNodes()
+        return nodeList
 
     # Little imperfection in this method.
     # I want to preserve whitespace exactly.  The next tag that gets written
@@ -105,15 +125,15 @@ class XmlTag(object):
         self.__textLinks.append(escape(text))
 
     def addAttr(self, name, val, precision=None):
-        # N.b., we store the surrounging quotes with each attr value
+        # N.b., we store the surrounding quotes with each attr value
         validateXmlKeyword(name)
         formatStr = None
         if precision != None:
             #formatStr = "{0:." + str(precision) + "f}"
             # Blender Python doesnt' support string.format() yet.
             formatStr = "%." + str(precision) + "f"
-        if self.__curAttrs == None:
-            self.__curAttrs = {}
+        if self.quotedattrs == None:
+            self.quotedattrs = {}
             self.__attrKeys = []
         if isinstance(val, list):
             joinlist = []
@@ -132,11 +152,11 @@ class XmlTag(object):
             val = " ".join(joinlist)
         if name in self.__attrKeys: self.__attrKeys.remove(name)
         if formatStr == None or isinstance(val, basestring):
-            self.__curAttrs[name] = quoteattr(val)
+            self.quotedattrs[name] = quoteattr(val)
         else:
-            #self.__curAttrs[name] = quoteattr(formatStr.format(val))
+            #self.quotedattrs[name] = quoteattr(formatStr.format(val))
             # See above
-            self.__curAttrs[name] = quoteattr(formatStr % val)
+            self.quotedattrs[name] = quoteattr(formatStr % val)
         self.__attrKeys.append(name)
 
     def addComment(self, text):
@@ -144,23 +164,31 @@ class XmlTag(object):
 
     def addChild(self, child):
         # The child XmlTag will validate itself (escape, validateKeyword, etc.)
-        self.__children.append(child)
+        self.children.append(child)
+
+    #def getAttrs():
+    # The use case I had for this went away.  May not be necessary.
+        #if self.__attrKeys == None: return None
+        #map = {}
+        #for n in self.__attrKeys:
+            #map[n] = dequoteattr(self.quotedattrs[n])
+        #return map
 
     def __str__(self):
         # Returns this element with no indentaton + children indented 1 level
         bufferLinks = ['<']
         bufferLinks.append(self.name)
-        if self.__curAttrs != None:
+        if self.quotedattrs != None:
             for n in self.__attrKeys:
-                bufferLinks.append(' ' + n + '=' + self.__curAttrs[n])
-        if len(self.__textLinks) > 0 or len(self.__children) > 0:
+                bufferLinks.append(' ' + n + '=' + self.quotedattrs[n])
+        if len(self.__textLinks) > 0 or len(self.children) > 0:
             bufferLinks.append('>')
         else:
             if len(self.__commentLinks) > 0: bufferLinks.append('/>')
         for comment in self.__commentLinks:
             # If this is a 1-line element, then keep the comment(s) lined
             # up with it.  Otherwise, indent alone with other el. contents.
-            if len(self.__textLinks) > 0 or len(self.__children) > 0:
+            if len(self.__textLinks) > 0 or len(self.children) > 0:
                 bufferLinks.append(('\n<!-- ' + comment)  \
                   .replace('\n', '\n'+ (' ' * self.spacesPerIndent)) + ' -->')
             else:
@@ -169,12 +197,12 @@ class XmlTag(object):
             bufferLinks.append('\n')
         for text in self.__textLinks:
             bufferLinks.append(text) # Caller must add their own newlines!
-        for child in self.__children:
+        for child in self.children:
             child.spacesPerIndent = self.spacesPerIndent
             bufferLinks.append(('\n' + str(child))  \
                 .replace('\n', '\n' + (' ' * self.spacesPerIndent)))
-        if len(self.__children) > 0: bufferLinks.append('\n')
-        if len(self.__textLinks) > 0 or len(self.__children) > 0:
+        if len(self.children) > 0: bufferLinks.append('\n')
+        if len(self.__textLinks) > 0 or len(self.children) > 0:
             bufferLinks.append('</' + self.name + '>')
         else:
             if len(self.__commentLinks) < 1: bufferLinks.append('/>')
@@ -186,7 +214,7 @@ class PITag(object):
     Very similar to the XmlTag class in this module."""
 
     __slots__ = \
-        ['name', '__commentLinks', '__curAttrs', '__attrKeys']
+        ['name', '__commentLinks', 'quotedattrs', '__attrKeys']
         # The attrKeys is just to preserve the sequence of the attr hash
 
     def __init__(self, name, attrs=None, attrsPrecision=None):
@@ -197,7 +225,7 @@ class PITag(object):
         validateXmlKeyword(name)
         self.name = name
         self.__commentLinks = []
-        self.__curAttrs = None
+        self.quotedattrs = None
         self.__attrKeys = None
         if attrs != None:
             for n, v in attrs.iteritems(): self.addAttr(n, v, attrsPrecision)
@@ -210,8 +238,8 @@ class PITag(object):
             #formatStr = "{0:." + str(precision) + "f}"
             # Blender Python doesnt' support string.format() yet.
             formatStr = "%." + str(precision) + "f"
-        if self.__curAttrs == None:
-            self.__curAttrs = {}
+        if self.quotedattrs == None:
+            self.quotedattrs = {}
             self.__attrKeys = []
         if isinstance(val, list):
             joinlist = []
@@ -230,11 +258,11 @@ class PITag(object):
             val = " ".join(joinlist)
         if name in self.__attrKeys: self.__attrKeys.remove(name)
         if formatStr == None or isinstance(val, basestring):
-            self.__curAttrs[name] = quoteattr(val)
+            self.quotedattrs[name] = quoteattr(val)
         else:
-            #self.__curAttrs[name] = quoteattr(formatStr.format(val))
+            #self.quotedattrs[name] = quoteattr(formatStr.format(val))
             # See above
-            self.__curAttrs[name] = quoteattr(formatStr % val)
+            self.quotedattrs[name] = quoteattr(formatStr % val)
         self.__attrKeys.append(name)
 
     def addComment(self, text):
@@ -244,9 +272,9 @@ class PITag(object):
         # Returns this element with no indentaton
         bufferLinks = ['<?']
         bufferLinks.append(self.name)
-        if self.__curAttrs != None:
+        if self.quotedattrs != None:
             for n in self.__attrKeys:
-                bufferLinks.append(' ' + n + '=' + self.__curAttrs[n])
+                bufferLinks.append(' ' + n + '=' + self.quotedattrs[n])
         bufferLinks.append('?>')
         for comment in self.__commentLinks:
             bufferLinks.append(('\n<!-- ' + comment) + ' -->')

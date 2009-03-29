@@ -20,8 +20,9 @@ example, in an exception-catching block:
         while ei:
             print "  " + ei.tb_frame.f_code.co_filename + ':' \
                 + str(tb_lineno(ei))
-            ei = ei.tb_next
-        print e
+            ei = ei.tb_next print e
+If you catch an exception but don't handle it entirely, you should often
+rethrow by just calling "raise".
 
 Bundled files.
 If you need to bundle files to be read in by our product at runtime, follow

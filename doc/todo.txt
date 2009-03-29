@@ -2,6 +2,19 @@ $Id$
 
 TODO LIST
 
+Take care of 2 bugs reported by Core-Dump in jME forum.
+
+I think need to make dedicated wrapper classes for all Blender objects
+corresponding to jME scene graph nodes, since we need (at least) to wrap
+the node names (jME requires unique, Blender does not).  Immediately
+need to wrap Blender Meshes.
+
+Make sure all test methods "" commented.  testunit reports much better with.
+REFACTOR according to new things I've learned about Python
+    No \ necessary if continuing a [list] or (parameters), and even for
+     expressions inside of ().
+    Use + to concatenate lists, incl. l1 += l2
+
 Think of a good way to enforce scene node name uniqueness.
 It's problematic because we want the higher-level nodes to have naming
 precedence, yet the nodes written to strings leaf-first.  Do not want to

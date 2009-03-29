@@ -134,13 +134,13 @@ class JmeNode(object):
             print "FYI:  Accepting object '" + bObj.name + "' with 0 vert faces"
             return 3
         if vpf == set([3,4]) or vpf == set([0,3,4]):
-            print "FYI:  Object '" + bObj.name \
-                    + "' accepted but will require unification to Trimeshes"
+            print ("FYI:  Object '" + bObj.name
+                    + "' accepted but will require unification to Trimeshes")
             return 2
-        if vpf == set([3,0]) or vpf == set([0,4]) \
-                or vpf == set([3]) or vpf == set([4]): return 1
-        print "FYI:  Refusing object '" + bObj.name \
-                + "' because unsupported vertexes-per-face: " + str(vpf)
+        if (vpf == set([3,0]) or vpf == set([0,4])
+                or vpf == set([3]) or vpf == set([4])): return 1
+        print ("FYI:  Refusing object '" + bObj.name
+                + "' because unsupported vertexes-per-face: " + str(vpf))
         return 0
 
     def __str__(self):
@@ -183,15 +183,16 @@ class JmeMesh(object):
             meshType = 'Tri'
         # TODO:  When iterate through verts to get vert vectors + normals,
         #        do check for null normal and throw if so:
-        #   raise Exception("Mesh '" \
+        #   raise Exception("Mesh '"
         #       + self.wrappedMesh.name + "' has a vector with no normal")
         #   This is a Blender convention, not a 3D or JME convention
         #   (requirement for normals).
         tag = XmlTag('com.jme.scene.' + meshType + 'Mesh',
                 {'name':self.getName()})
-        if self.defaultColor != None and \
-            (self.defaultColor[0] != 1 or self.defaultColor[1] != 1 or self.defaultColor[2] != 1 or self.defaultColor[3] != 1):
-            colorTag = XmlTag("defaultColor", \
+        if (self.defaultColor != None and
+            (self.defaultColor[0] != 1 or self.defaultColor[1] != 1
+                or self.defaultColor[2] != 1 or self.defaultColor[3] != 1)):
+            colorTag = XmlTag("defaultColor",
                     {"class":"com.jme.renderer.ColorRGBA"})
             tag.addChild(colorTag)
             colorTag.addAttr("r", self.defaultColor[0])
@@ -211,15 +212,15 @@ class JmeMesh(object):
                 # if the mesh does not support vert colors
                 # (i.e. self.wrappedMesh.vertexColors).
                 if len(face.verts) != len(face.col):
-                    raise Exception( \
-                    "Counts of Face vertexes and vertex-colors do not match: " \
+                    raise Exception(
+                    "Counts of Face vertexes and vertex-colors do not match: "
                         + str(len(face.verts)) + " vs. " + str(len(face.col)))
                 for i in range(len(face.verts)):
                     if face.verts[i].index in vcMap: multiColorMapped = True
                     else: vcMap[face.verts[i].index] = face.col[i]
             if multiColorMapped:
-                print "WARNING: Ignored some multi-mapped vertex coloring(s). "\
-                        "Should average these"
+                print ("WARNING: Ignored some multi-mapped vertex "
+                    + "coloring(s). Should average these.")
             colArray = []
 
         coArray = []
@@ -239,13 +240,13 @@ class JmeMesh(object):
                     nonFacedVertexes += 1
                     colArray.append(None)  # We signify WHITE by None
         if nonFacedVertexes > 0:
-            print "WARNING: " + str(nonFacedVertexes) \
-                + " vertexes set to WHITE because no face to derive color from"
-        vertTag = XmlTag("vertBuf", {"data":coArray}, 7)
-        vertTag.addAttr("size", len(coArray))
+            print ("WARNING: " + str(nonFacedVertexes)
+                + " vertexes set to WHITE because no face to derive color from")
+        vertTag = XmlTag("vertBuf", {"size":len(coArray)})
+        vertTag.addAttr("data", coArray, 7)
         tag.addChild(vertTag)
-        normTag = XmlTag("normBuf", {"data":noArray}, 7)
-        normTag.addAttr("size", len(noArray))
+        normTag = XmlTag("normBuf", {"size":len(noArray)})
+        normTag.addAttr("data", noArray, 7)
         tag.addChild(normTag)
         if colArray != None:
             rgbaArray = []
@@ -260,8 +261,8 @@ class JmeMesh(object):
                     rgbaArray.append(c.g/255.)
                     rgbaArray.append(c.b/255.)
                     rgbaArray.append(c.a/255.)
-            vertColTag = XmlTag("colorBuf", {"data":rgbaArray}, 3)
-            vertColTag.addAttr("size", len(rgbaArray))
+            vertColTag = XmlTag("colorBuf", {"size":len(rgbaArray)})
+            vertColTag.addAttr("data", rgbaArray, 3)
             tag.addChild(vertColTag)
         if 3 not in self.__vpf and 4 not in self.__vpf: return tag
         faceVertIndexes = []
@@ -276,8 +277,8 @@ class JmeMesh(object):
                 faceVertIndexes.append(face.verts[3].index)
             else:
                 for v in face.verts: faceVertIndexes.append(v.index)
-        indTag = XmlTag("indexBuffer", {"data":faceVertIndexes})
-        indTag.addAttr("size", len(faceVertIndexes))
+        indTag = XmlTag("indexBuffer", {"size":len(faceVertIndexes)})
+        indTag.addAttr("data", faceVertIndexes)
         tag.addChild(indTag)
         return tag
 

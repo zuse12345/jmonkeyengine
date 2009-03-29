@@ -76,8 +76,7 @@ class XmlTag(object):
     them are not preserved.
     """
 
-    __slots__ = \
-        ['name', '__textLinks', 'children', \
+    __slots__ = ['name', '__textLinks', 'children',
         '__commentLinks', 'quotedattrs', 'spacesPerIndent', '__attrKeys']
         # The attrKeys is just to preserve the sequence of the attr hash
 
@@ -96,6 +95,8 @@ class XmlTag(object):
         self.spacesPerIndent = 0
         if attrs != None:
             for n, v in attrs.iteritems(): self.addAttr(n, v, attrsPrecision)
+            # N.b. we are not just concatenating here.  The attr values are
+            # changed by the addAttr method.
 
     def tagsWithAttr(self, attrName, attrVal=None):
         """In Leaf-last order.
@@ -124,7 +125,9 @@ class XmlTag(object):
     def addText(self, text):
         self.__textLinks.append(escape(text))
 
-    def addAttr(self, name, val, precision=None):
+    def addAttr(self, name, val, precision=None, tupleSpacing=None):
+        """tupleSpacing inserts an extra spaces to specify tuples.  This is
+        only applicable if value is a list type"""
         # N.b., we store the surrounding quotes with each attr value
         validateXmlKeyword(name)
         formatStr = None
@@ -138,6 +141,7 @@ class XmlTag(object):
         if isinstance(val, list):
             joinlist = []
             for i in range(len(val)):
+                if i > 0 and tupleSpacing: joinlist.append('')
                 if isinstance(val[i], basestring):
                     joinlist.append(val[i])
                 else:
@@ -189,17 +193,16 @@ class XmlTag(object):
             # If this is a 1-line element, then keep the comment(s) lined
             # up with it.  Otherwise, indent alone with other el. contents.
             if len(self.__textLinks) > 0 or len(self.children) > 0:
-                bufferLinks.append(('\n<!-- ' + comment)  \
+                bufferLinks.append(('\n<!-- ' + comment)
                   .replace('\n', '\n'+ (' ' * self.spacesPerIndent)) + ' -->')
             else:
                 bufferLinks.append(('\n<!-- ' + comment) + ' -->')
         if len(self.__commentLinks) > 0 and len(self.__textLinks) > 0:
             bufferLinks.append('\n')
-        for text in self.__textLinks:
-            bufferLinks.append(text) # Caller must add their own newlines!
+        bufferLinks += self.__textLinks # Caller must add their own newlines!
         for child in self.children:
             child.spacesPerIndent = self.spacesPerIndent
-            bufferLinks.append(('\n' + str(child))  \
+            bufferLinks.append(('\n' + str(child))
                 .replace('\n', '\n' + (' ' * self.spacesPerIndent)))
         if len(self.children) > 0: bufferLinks.append('\n')
         if len(self.__textLinks) > 0 or len(self.children) > 0:
@@ -213,8 +216,7 @@ class PITag(object):
     """XML Process Instruction tag.
     Very similar to the XmlTag class in this module."""
 
-    __slots__ = \
-        ['name', '__commentLinks', 'quotedattrs', '__attrKeys']
+    __slots__ = ['name', '__commentLinks', 'quotedattrs', '__attrKeys']
         # The attrKeys is just to preserve the sequence of the attr hash
 
     def __init__(self, name, attrs=None, attrsPrecision=None):
@@ -229,9 +231,13 @@ class PITag(object):
         self.__attrKeys = None
         if attrs != None:
             for n, v in attrs.iteritems(): self.addAttr(n, v, attrsPrecision)
+            # N.b. we are not just concatenating here.  The attr values are
+            # changed by the addAttr method.
 
-    def addAttr(self, name, val, precision=None):
-        # N.b., we store the surrounging quotes with each attr value
+    def addAttr(self, name, val, precision=None, tupleSpacing=None):
+        """tupleSpacing inserts an extra spaces to specify tuples.  This is
+        only applicable if value is a list type"""
+        # N.b., we store the surrounding quotes with each attr value
         validateXmlKeyword(name)
         formatStr = None
         if precision != None:
@@ -244,6 +250,7 @@ class PITag(object):
         if isinstance(val, list):
             joinlist = []
             for i in range(len(val)):
+                if i > 0 and tupleSpacing: joinlist.append('')
                 if isinstance(val[i], basestring):
                     joinlist.append(val[i])
                 else:
@@ -283,8 +290,7 @@ class PITag(object):
 
 #from codecs import open      codecs module not available in Blender
 class XmlFile(object):
-    __slots__ = ['root', 'spacesPerIndent', 'encoding', 'pi', \
-            '__commentLinks']
+    __slots__ = ['root', 'spacesPerIndent', 'encoding', 'pi', '__commentLinks']
 
     def __init__(self, root, spacesPerIndent=2, pi=None):
     #def __init__(self, root, spacesPerIndent=2, encoding='utf-8', pi=None):
@@ -317,7 +323,7 @@ class XmlFile(object):
 
     def setPI(self, pi):
         if self.pi != None:
-            raise Exception("We only support one PI for now.  " \
+            raise Exception("We only support one PI for now.  "
                 + "Consider wiriting your PIs and Tags directly.")
         self.pi = pi
 

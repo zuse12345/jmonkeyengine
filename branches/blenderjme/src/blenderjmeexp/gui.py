@@ -88,8 +88,8 @@ def btnHandler(btnId):
             # Python 2.5 does not support "except X as y:" syntax
             ei = exc_info()[2]
             while ei:
-                print "  " + ei.tb_frame.f_code.co_filename + ':' \
-                    + str(tb_lineno(ei))
+                print ("  " + ei.tb_frame.f_code.co_filename + ':'
+                    + str(tb_lineno(ei)))
                 ei = ei.tb_next
             print e
             if 1 == Draw.PupMenu(str(e) + "%t|Abort|Try other settings"):
@@ -139,7 +139,7 @@ class GuiBox(object):
         BGL.glColor3f(.95,.54,.24)
         BGL.glRectf(self.x, self.y, self.x + self.w, self.y + self.h)
         BGL.glColor3f(1, 1, 1)
-        BGL.glRectf(self.x + 5, self.y + 5, \
+        BGL.glRectf(self.x + 5, self.y + 5,
                 self.x + self.w - 5, self.y + self.h - 5)
 
         imgDim = self.__imgs[0].getSize()[0]; # Unfortunately [0] == [1]
@@ -171,7 +171,7 @@ class GuiBox(object):
         #BGL.glRectf(self.x, y, self.x + self.w, self.y + self.h -  self.imgH)
 
 
-guiBox = GuiBox(330, 300, \
+guiBox = GuiBox(330, 300,
         ['bje1.png', 'bje2.png', 'bje3.png', 'bje4.png', 'bje5.png'])
 
 def redrawDummy(x, y): Draw.Redraw()
@@ -183,9 +183,9 @@ def saveFile(filepath):
 
     try:
         if filepath.endswith(".blend"):
-            raise Exception( \
+            raise Exception(
             "You should only save Blender native files with extension '.blend'")
-        if isfile(filepath) and (not fileOverwrite) and (1 != Draw.PupMenu( \
+        if isfile(filepath) and (not fileOverwrite) and (1 != Draw.PupMenu(
                 "Overwrite '" + filepath + "'?%t|Yes|No")): return
         print "Attempting to save file '" + filepath + "'"
         xmlFile.writeFile(filepath)
@@ -196,8 +196,8 @@ def saveFile(filepath):
         # Python 2.5 does not support "except X as y:" syntax
         ei = exc_info()[2]
         while ei:
-            print "  " + ei.tb_frame.f_code.co_filename + ':' \
-                + str(tb_lineno(ei))
+            print ("  " + ei.tb_frame.f_code.co_filename + ':'
+                + str(tb_lineno(ei)))
             ei = ei.tb_next
         print e
         if 1 == Draw.PupMenu(str(e) + "%t|Abort|Try other settings"):
@@ -210,11 +210,11 @@ def drawer():
 
     BGL.glClear(BGL.GL_COLOR_BUFFER_BIT)
     guiBox.drawBg()
-    Draw.PushButton("Cancel", BTNID_CANCEL, \
+    Draw.PushButton("Cancel", BTNID_CANCEL,
             guiBox.x + 10, guiBox.y + 10, 50, 20, "Abort export")
-    Draw.Label(" (c) 2009 Blaine Simpson", \
+    Draw.Label(" (c) 2009 Blaine Simpson"
             guiBox.x + 170, guiBox.y + 23,145,10)
-    Draw.Label("+ the jMonkeyEngine team", \
+    Draw.Label("+ the jMonkeyEngine team",
             guiBox.x + 160, guiBox.y + 9,157,10)
     if not allCount: updateExportableCounts()
     if allCount < 1:
@@ -233,10 +233,10 @@ def drawer():
             redrawDummy)
             # Would prefer to make a 2-line button, but Draw does not
             # support that... or basically anything other than vanilla.
-    Draw.Toggle("Overwrite", BTNID_OVERWRITE, \
-            guiBox.x + 10, guiBox.y + 155, 60, 20, fileOverwrite, \
+    Draw.Toggle("Overwrite", BTNID_OVERWRITE,
+            guiBox.x + 10, guiBox.y + 155, 60, 20, fileOverwrite,
             "Silently overwrite export file if it exists beforehand")
-    Draw.PushButton("Export", BTNID_SAVE, \
+    Draw.PushButton("Export", BTNID_SAVE,
             guiBox.x + 10, guiBox.y + 50, 50, 20, "Select file to save to")
     Draw.Label("Reserved space", guiBox.x + 180, guiBox.y + 150,200,20)
     Draw.Label("More space", guiBox.x + 180, guiBox.y + 100,200,20)

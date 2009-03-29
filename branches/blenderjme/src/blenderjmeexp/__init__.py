@@ -52,7 +52,7 @@ def __resFileAbsPath(path):
 def resFileAbsPath(path):
     absPath = __resFileAbsPath(path)
     if not isfile(absPath):
-        raise Exception("No res file '" + path + "' present in package '" \
+        raise Exception("No res file '" + path + "' present in package '"
                 + __name__ + "'")
     return absPath
 

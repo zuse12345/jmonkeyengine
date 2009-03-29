@@ -69,8 +69,8 @@ class Tests(unittest.TestCase):
         """This tests manually writes the PI and root elements, sets the
         indentation level, encodes"""
 
-        manualXmlOutput = str(self.expectedPi) + '\n\n' \
-                + unicode(str(self.expectedXml), 'utf-8') + '\n'
+        manualXmlOutput = (str(self.expectedPi) + '\n\n'
+                + unicode(str(self.expectedXml), 'utf-8') + '\n')
         #print '{' + self.expectedMix + '}'
         #print '[' + manualXmlOutput + ']'
         self.assertEqual(self.expectedMix, manualXmlOutput)
@@ -81,11 +81,12 @@ class Tests(unittest.TestCase):
         #print str(XmlFile(rootTag, pi=pi))
         #XmlFile(rootTag, pi=pi).writeFile("/tmp/auto.xml")
         #autoXmlOutput = str(pi) + '\n\n' + str(rootTag) + '\n'
-        self.assertEqual( \
-                self.expectedMix, XmlFile( \
+        self.assertEqual(
+                self.expectedMix, XmlFile(
                 self.expectedXml, pi=self.expectedPi).decoded() + '\n')
 
     def testAllNodes(self):
+        "Tests the XmlFile.allNodes method"
         self.assertEqual(5, len(self.expectedXml.allNodes()))
 
     def genUnique(self, color, usedColors):

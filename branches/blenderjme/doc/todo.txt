@@ -20,19 +20,10 @@ REFACTOR according to new things I've learned about Python
      expressions inside of ().
     Use + to concatenate lists, incl. l1 += l2
 
-Think of a good way to enforce scene node name uniqueness.
-It's problematic because we want the higher-level nodes to have naming
-precedence, yet the nodes written to strings leaf-first.  Do not want to
-have to have parents pass their names down to all the descendants.  I dunno.
+Enforce scene node name uniqueness.
 
-Find out how to retrieve export or data file preference directory from Blender.
-Default export directory to that.
-EGAD:  Terrible situation.  There is no reliable way to save preferences or
-whatever data to the FS across Blender invocations.  Unable to extract the
-path to the current file.  Blender.Library.GetName() is useless; user path
-preferences are generally not used; current directory is usually useless.
-For now, user is going to have to navigate to desired target directory the
-first export for each session.
+As soon as I implement proper schema validation in jME core, add the namespace
+specs to generated XML.
 
 STUCK.  Unable to run any Blender environment test scripts, because Blender is
 giving me a segmentation fault when I try to open a *.blend file from Python,

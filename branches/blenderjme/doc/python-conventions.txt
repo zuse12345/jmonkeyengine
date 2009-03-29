@@ -29,3 +29,33 @@ If you need to bundle files to be read in by our product at runtime, follow
 the example that jmetest/xml.py uses to load the test data *.xml file(s).
 The package supplies functions to resolve relative paths to files within the
 package, and methods to read the contents of them.
+
+
+Development Environment
+-----------------------
+
+The Python code in modules other than blenderjmeexp are standalone.  That
+means you can execute and test them independently of Blender.
+
+For myself at least, it's much more convenient to execute my code outside of
+Blender.  Most significantly, modules can't be reloaded into Blender's Python
+interpreter without restarting Blender.  So, you can edit your module *.py
+file all you want, but that will have no effect until you restart Blender.  If
+you added 50 syntax errors in a big refactory, you will have dozen of Blender
+restarts (each time having to use a menu or type in Python commands to load
+your module), just to find out there are additional syntax errors.
+
+You can execute all non-graphical Python scripts from the command-line by
+using the blenderscript.bash program.  It executes scripts very quickly.
+Limitations:
+
+    If you need a model for your code to work on, you will need to either save
+    your default Blender setup with the target model loaded, or use the
+    Blender.Load() function.  Blender.Load() is crashing horribly for me,
+    regardless whether blenderscript.bash is involved.  Hopefully it will work
+    for you :) .
+
+    The gui.py script definitely requires a graphical screen to run
+    (blenderscript.bash draws no Gui in order to make it run very fast).
+    I don't know about blenderjmeexp_reg.py (not much in it can be tested
+    non-interactively).

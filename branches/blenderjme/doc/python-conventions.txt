@@ -1,17 +1,82 @@
 $Id$
 
-Python Coding Conventions
--------------------------
+IMPORTANT PYTHON CODING INFO
+----------------------------
 
-Only use modules and features included in the Blender-provided Python engine.
-Specifically:
+Blender-native
+--------------
+
+Our final deliverable must work with a vanilla Blender distribution.
+Things would be MUCH EASIER FOR US if we would just require users to have a
+standalone Python installation present.  Easy for us, but user-unfriendly :(.
+Why is this so difficult for us?
+
+    - The Blender-supplied Python interpreter is missing many important
+      and basic Python features and modules.
+
+    - Different platform distributions for the same exact Blender version
+      have DIFFERENT Python modules available.
+
+    - The Blender startup banner reporting about the Python interpreter is
+      often dead wrong.  If they can't even reliably determine whether they
+      loaded an external interpreter, IMO they should shut the f*** up
+      instead of reporting a false answer.
+
+    - Blender will load an incompatible external Python and look as if it is
+      ok, but you may encounter extremely confusing name visibility problems
+      as scripts run.  (For example, a name import succeeds, then the script
+      throws later on imported when it tries to reference the imported name).
+
+Due to the second point above, we must standardize on something.  So, in order
+to satisfy the most end users, we aim to support the following Blender binary:
+
+    Supported Blender binary = 
+    The latest production Blender Foundation-supplied binary Blender distro 
+     for 32-bit Windows.  If there are multiple variants provided for different
+     Python versions, we support the one with the latest offered Python version.
+
+What about users using a different Blender distro?  Well, our product will
+just work if (a) the user environment utilizes and external Python
+installation, or (b) the Blender distro happens to also include the modules
+that we depend on (which modules are in the 32-bit win distro),
+To give a specific, and sad, example:  My RPM binary of current Python 2.6
+build for 64 bit OpenSUSE does not have package "os".  Therefore, I can't do
+any dependency checking on my Linux workstation.
+
+ACCOMMODATING Blender-supplied Python
+
+Now to the development constraints we must live with as a consequence...
+** To cause Blender to use its built-in Python interpreter, set env variable
+PYTHONHOME to a bogus value (if in UNIX, make sure to export the var). **
+N.b.!!!  It is NOT sufficient to unset PYTHONHOME, because that causes Blender
+to use its internal discovery method, trying to locate and use an external
+Python installation.  N.b.!! DO NOT BELIEVE the Blender startup messages
+about what Python interpreter it is using.  Set PYTHONHOME as directed here.
+Samples:
+
+    export PYTHONHOME=/dev/null  # Bash shell
+
+    :: In Windows, set an env. var in advanced System settings, or at shell:
+    set PYTHONHOME=\dummy
+
+Feature limitations:
 
     Do not use "except X as y".  [Use "except X, y" instead]
 
-    Do not use xml.sax
-
     Do not use string.encode(), string.decode(), or specify an encoding
     type to the unicode() function.  [VERY ANNOYING!]
+
+    Do not use string.format().  Use the old-fashioned % operator instead.
+
+Module limitations:
+
+    Do not use xml package.
+
+    Do not use codecs module.
+
+    Do not use platform module.
+
+--------------------------------------------------------------
 
 If you catch an exception, but the cause could possibly be a code problem,
 make sure to report the source code location if you don't re-throw.  For
@@ -34,6 +99,9 @@ package, and methods to read the contents of them.
 Development Environment
 -----------------------
 
+Gotcha:  Be aware that Blender.Load() wipes clean much of the current Python
+namespace.  Imports generally have to be repeated after a Load.
+
 The Python code in modules other than blenderjmeexp are standalone.  That
 means you can execute and test them independently of Blender.
 
@@ -44,7 +112,7 @@ new file to "src/blendertest/modules.py".  This way, either directly or
 indirectly, modules.py will both syntax check and dependency-check your new
 file.
 
-As a consequence of the previous item, "alltests.bash" can be used as you
+As a consequence of the previous item, "alltests.bash"* can be used as you
 develop, to validate your code (except for graphical code).  If you don't
 want to keep revalidating "everything" as you code, then use individual
 commands to validate (syntax-check + dependency-check + execute), depending
@@ -83,3 +151,15 @@ This applies to both deliverable scripts and unit tests.  Limitations:
 Even if you prefer to run your scripts from inside Blender, it should still be
 of great benefit to use blenderscript.bash to syntax- and dependency-check the
 scripts before investing time starting and setting up your Blender interface.
+
+-----------------------
+
+FOOTNOTES
+
+* "alltests.bash" will probably only work "as is" in the following setup:
+
+        32 bit Windows
+        Plain Blender 32 bit Windows installed
+        MinGW, MSys, or Cygwin
+         (to provide a Bash interpreter for the Bash script).
+   I have to comment out the 

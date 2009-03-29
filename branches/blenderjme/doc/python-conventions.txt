@@ -37,6 +37,26 @@ Development Environment
 The Python code in modules other than blenderjmeexp are standalone.  That
 means you can execute and test them independently of Blender.
 
+With the exception graphical files (which use Blender.Draw or menu
+registration, whenever you add a Python source file you should either
+(a) add unittest invocations to "alltests.bash"; or (b) add an import of your
+new file to "src/blendertest/modules.py".  This way, either directly or
+indirectly, modules.py will both syntax check and dependency-check your new
+file.
+
+As a consequence of the previous item, "alltests.bash" can be used as you
+develop, to validate your code (except for graphical code).  If you don't
+want to keep revalidating "everything" as you code, then use individual
+commands to validate (syntax-check + dependency-check + execute), depending
+on the script type:
+
+    Standalone modules and test modules: "python -c 'import your.testmodule'"
+    ( documented in "testing.txt")
+    
+    Blender environment: "blenderscript.bash path/to/your/script.bash"
+
+    Graphical scripts:  must be tested interactively.
+
 For myself at least, it's much more convenient to execute my code outside of
 Blender.  Most significantly, modules can't be reloaded into Blender's Python
 interpreter without restarting Blender.  So, you can edit your module *.py

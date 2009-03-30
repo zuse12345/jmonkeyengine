@@ -88,8 +88,8 @@ def gen(saveAll, autoRotate):
         # will then not match what is in the XmlFile instance).
         return xmlFile
     finally:
-        print ("Restoring transformations of " + str(len(changedMats))
-                + " items...")
+        #print ("Restoring transformations of " + str(len(changedMats))
+                #+ " items...")
         for n, v in changedMats.iteritems(): n.matrixLocal = v
         # This restores the original matrixes for top-level objects
         if len(changedMats) > 0: data.scenes.active.update(1)

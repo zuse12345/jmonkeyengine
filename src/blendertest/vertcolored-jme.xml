@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Blender export by Blender/JME Exporter -->
+
+<com.jme.scene.Node name="PlanObj">
+  <children size="1">
+    <com.jme.scene.QuadMesh name="PlaneMesh">
+      <vertBuf size="12" data="1.0000000 0.9999999 0.0000000  1.0000000 -1.0000000 0.0000000  -1.0000001 -0.9999998 0.0000000  -0.9999996 1.0000004 0.0000000"/>
+      <normBuf size="12" data="0.0000000 0.0000000 1.0000000  0.0000000 0.0000000 1.0000000  0.0000000 0.0000000 1.0000000  0.0000000 0.0000000 1.0000000"/>
+      <colorBuf size="16" data="0.475 0.475 1.000 1.000  0.976 1.000 0.306 1.000  0.976 1.000 0.298 1.000  0.251 0.251 1.000 1.000"/>
+      <indexBuffer size="4" data="0 3 2 1"/>
+    </com.jme.scene.QuadMesh>
+  </children>
+  <localRotation x="0.0000000" y="0.0000000" z="0.0000000" w="1.0000000"/>
+</com.jme.scene.Node>

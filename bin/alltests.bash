@@ -90,5 +90,10 @@ echo "Running normal Blender env. tests from directory '$PWD'..."
 # the amazingly invasive behavior of Blender.Load().
 echo 'import blendertest.plane' | ../bin/blenderscript.bash
 echo 'import blendertest.planetrans' | ../bin/blenderscript.bash
+echo 'import blendertest.cone' | ../bin/blenderscript.bash
+echo 'import blendertest.dfltcolor' | ../bin/blenderscript.bash
+echo 'import blendertest.dualtrans' | ../bin/blenderscript.bash
+echo 'import blendertest.planecone' | ../bin/blenderscript.bash
+echo 'import blendertest.vertcolored' | ../bin/blenderscript.bash
 
 exit $failures

@@ -35,18 +35,24 @@ __url__ = 'http://www.jmonkeyengine.com'
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import Blender
+from blendertest import resFileAbsPath
+Blender.Load(resFileAbsPath("plane.blend"))
+# Load() wipes the namespace, so it must be done way up here.
+
 import unittest
 from unittest import *
 from blenderjmeexp import exporter
 from blenderjmeexp.exporter import gen
-from blendertest import resFileContent, resFileAbsPath
+from blendertest import resFileContent
 
 class Tests(unittest.TestCase):
+    def setUp(self):
+        exporter.recordTimestamp = False
+
     def testPlane(self):
-        Blender.Load(resFileAbsPath("plane.blend"))
+        "Simple 2D plane, converts to a jME QuadMesh, not a Quad"
         expectedXml = resFileContent("plane-jme.xml")
 
-        exporter.recordTimestamp = False
         xmlFile = gen(True, True)
         self.assertEquals(expectedXml, unicode(str(xmlFile), 'utf-8') + '\n')
 

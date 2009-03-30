@@ -95,7 +95,8 @@ date >> "$TMPFILE"
 # code, since this latter may contain Blender.Load() which wipes out imports.
 echo 'try:\n    pass' >> "$TMPFILE"
 case ${#scripts[@]} in
-    0) echo 'Enter script text:' 1>&2; while read; do echo "    $REPLY"; done ;;
+    0) [ -n "$NOPROMPT" ] || echo 'Enter script text:' 1>&2
+       while read; do echo "    $REPLY"; done ;;
     *) for script in "${scripts[@]}"; do
            echo "    execfile('$script')"
        done >> "$TMPFILE";;

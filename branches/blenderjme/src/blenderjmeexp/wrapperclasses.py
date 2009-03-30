@@ -70,7 +70,7 @@ class JmeNode(object):
             bMesh = self.wrappedObj.getData(False, True)
             if bMesh != None:
                 self.addChild(JmeMesh(bMesh, self.wrappedObj.color))
-        print "Instantiated JmeNode '" + self.getName() + "'"
+        #print "Instantiated JmeNode '" + self.getName() + "'"
 
     def addChild(self, child):
         if self.children == None: self.children = []
@@ -168,7 +168,7 @@ class JmeMesh(object):
         self.wrappedMesh = bMesh
         self.name = bMesh.name
         self.defaultColor = color
-        print "Instantiated JmeMesh '" + self.getName() + "'"
+        #print "Instantiated JmeMesh '" + self.getName() + "'"
         self.__vpf = JmeMesh.vertsPerFace(self.wrappedMesh.faces)
 
     def getName(self): return self.name

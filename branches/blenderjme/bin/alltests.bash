@@ -50,6 +50,7 @@ Failout() {
 }
 [ -n "$TMPDIR" ] || TMPDIR=/tmp
 TMPFILE="$TMPDIR/${PROGNAME%%.*}-$$.py"
+export NOPROMPT=true  # Quiets blenderscript.bash from prompting for stdin.
 
 PYTHONPROG=python
 [ -n "$PYTHONHOME" ] && PYTHONPROG="$PYTHONHOME/bin/python"
@@ -83,8 +84,11 @@ case "$(uname)" in
     *) PYTHONHOME=/dev/null "$SCRIPTRELDIR/blenderscript.bash" "${PYTHONPATH}/blendertest/modules.py";;
 esac
 
-# Will do this ASAP.
-#"$SCRIPTRELDIR/blenderscript.bash" "${PYTHONPATH}/blendertest/script.py" ||
-#((failures = failures + 1))
+cd "$PYTHONPATH" || Failout "Failed to cd to '$PYTHONPATH'"
+echo "Running normal Blender env. tests from directory '$PWD'..."
+# Unfortunately, must put each freaking test in a separate file, due to
+# the amazingly invasive behavior of Blender.Load().
+echo 'import blendertest.plane' | ../bin/blenderscript.bash
+echo 'import blendertest.planetrans' | ../bin/blenderscript.bash
 
 exit $failures

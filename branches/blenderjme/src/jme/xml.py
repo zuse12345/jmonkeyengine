@@ -141,7 +141,8 @@ class XmlTag(object):
         if isinstance(val, list):
             joinlist = []
             for i in range(len(val)):
-                if i > 0 and tupleSpacing: joinlist.append('')
+                if tupleSpacing and i > 0 and i % tupleSpacing == 0:
+                    joinlist.append('')
                 if isinstance(val[i], basestring):
                     joinlist.append(val[i])
                 else:

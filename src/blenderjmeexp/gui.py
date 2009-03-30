@@ -212,7 +212,7 @@ def drawer():
     guiBox.drawBg()
     Draw.PushButton("Cancel", BTNID_CANCEL,
             guiBox.x + 10, guiBox.y + 10, 50, 20, "Abort export")
-    Draw.Label(" (c) 2009 Blaine Simpson"
+    Draw.Label(" (c) 2009 Blaine Simpson",
             guiBox.x + 170, guiBox.y + 23,145,10)
     Draw.Label("+ the jMonkeyEngine team",
             guiBox.x + 160, guiBox.y + 9,157,10)

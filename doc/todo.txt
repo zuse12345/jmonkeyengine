@@ -2,9 +2,9 @@ $Id$
 
 TODO LIST
 
-Enforce scene node name uniqueness.
+Add more model conversion unit tests to simplemodels.py.
 
-Add .blend and .xml files for end-to-end Blender env unit tests.
+Enforce scene node name uniqueness.
 
 As soon as I implement proper schema validation in jME core, add the namespace
 specs to generated XML.

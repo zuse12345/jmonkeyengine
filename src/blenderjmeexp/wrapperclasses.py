@@ -243,10 +243,10 @@ class JmeMesh(object):
             print ("WARNING: " + str(nonFacedVertexes)
                 + " vertexes set to WHITE because no face to derive color from")
         vertTag = XmlTag("vertBuf", {"size":len(coArray)})
-        vertTag.addAttr("data", coArray, 7)
+        vertTag.addAttr("data", coArray, 7, 3)
         tag.addChild(vertTag)
         normTag = XmlTag("normBuf", {"size":len(noArray)})
-        normTag.addAttr("data", noArray, 7)
+        normTag.addAttr("data", noArray, 7, 3)
         tag.addChild(normTag)
         if colArray != None:
             rgbaArray = []
@@ -262,7 +262,7 @@ class JmeMesh(object):
                     rgbaArray.append(c.b/255.)
                     rgbaArray.append(c.a/255.)
             vertColTag = XmlTag("colorBuf", {"size":len(rgbaArray)})
-            vertColTag.addAttr("data", rgbaArray, 3)
+            vertColTag.addAttr("data", rgbaArray, 3, 4)
             tag.addChild(vertColTag)
         if 3 not in self.__vpf and 4 not in self.__vpf: return tag
         faceVertIndexes = []
@@ -278,7 +278,9 @@ class JmeMesh(object):
             else:
                 for v in face.verts: faceVertIndexes.append(v.index)
         indTag = XmlTag("indexBuffer", {"size":len(faceVertIndexes)})
-        indTag.addAttr("data", faceVertIndexes)
+        if len(face.verts) == 4 and not unify: outputVpf = 4
+        else: outputVpf = 3
+        indTag.addAttr("data", faceVertIndexes, None, outputVpf)
         tag.addChild(indTag)
         return tag
 

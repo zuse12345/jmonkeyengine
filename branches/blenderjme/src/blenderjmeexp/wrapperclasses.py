@@ -34,8 +34,8 @@ __url__ = 'http://www.jmonkeyengine.com'
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from jme.xml import *
-from Blender.Mathutils import Quaternion
 from jme.esmath import *
+from Blender.Mathutils import *
 
 # GENERAL DEVELOPMENT NOTES:
 #
@@ -50,8 +50,11 @@ from jme.esmath import *
 # not consider them children; but in JME, nodes can have nodes and Meshes
 # (or any other Spatials) as children.
 
+BLENDER_TO_JME_ROTATION = RotationMatrix(-90, 4, 'x')
+
+
 class JmeNode(object):
-    __slots__ = ('wrappedObj', 'children', 'name')
+    __slots__ = ('wrappedObj', 'children', 'name', 'autoRotate')
     __QUAT_IDENTITY = ESQuaternion([0,0,0], 1)  # Do not modify value!
 
     def __init__(self, bObjOrName):
@@ -61,6 +64,7 @@ class JmeNode(object):
         object.__init__(self)
         self.children = None
         self.wrappedObj = None
+        self.autoRotate = False
 
         if isinstance(bObjOrName, basestring):
             self.name = bObjOrName
@@ -79,6 +83,8 @@ class JmeNode(object):
     def getName(self): return self.name
 
     def getXmlEl(self):
+        global BLENDER_TO_JME_ROTATION
+         
         tag = XmlTag('com.jme.scene.Node', {'name':self.getName()})
 
         if self.children != None:
@@ -87,13 +93,19 @@ class JmeNode(object):
             for child in self.children: childrenTag.addChild(child.getXmlEl())
         if self.wrappedObj == None: return tag
 
+        if self.autoRotate:
+            # Need to transform the entire matrixLocal.
+            matrix = self.wrappedObj.matrixLocal * BLENDER_TO_JME_ROTATION
+        else:
+            matrix = Matrix(self.wrappedObj.matrixLocal)
         # Use either loc + rot + size OR matrixLocal
         # Set local variables just to reduce typing in this block.
-        loc = self.wrappedObj.loc
+        loc = matrix.translationPart()
         # N.b. Blender.Mathutils.Quaternines ARE NOT COMPATIBLE WITH jME!
-        rQuat = ESQuaternion(self.wrappedObj.rot)
-        if rQuat == JmeNode.__QUAT_IDENTITY: rQuat = None
-        size = self.wrappedObj.size
+        e = matrix.toEuler()
+        if e.x == 0 and e.y == 0 and e.z == 0: rQuat = None
+        else: rQuat = ESQuaternion(matrix.toEuler(), True)
+        scale = matrix.scalePart()
         # Need to add the attrs sequentially in order to preserve sequence
         # of the attrs in the output.
         if loc != None and (loc[0] != 0. or loc[1] != 0. or loc[2] != 0.):
@@ -109,11 +121,12 @@ class JmeNode(object):
             locTag.addAttr("z", rQuat.z, 7)
             locTag.addAttr("w", rQuat.w, 7)
             tag.addChild(locTag)
-        if size != None and (size[0] != 1. or size[1] != 1. or size[2] != 1.):
+        if scale != None and (scale[0] != 1.
+                or scale[1] != 1. or scale[2] != 1.):
             locTag = XmlTag("localScale")
-            locTag.addAttr("x", size[0], 7)
-            locTag.addAttr("y", size[1], 7)
-            locTag.addAttr("z", size[2], 7)
+            locTag.addAttr("x", scale[0], 7)
+            locTag.addAttr("y", scale[1], 7)
+            locTag.addAttr("z", scale[2], 7)
             tag.addChild(locTag)
         return tag
 
@@ -182,7 +195,7 @@ class JmeMesh(object):
         else:
             meshType = 'Tri'
         # TODO:  When iterate through verts to get vert vectors + normals,
-        #        do check for null normal and throw if so:
+        #        do check for None normal and throw if so:
         #   raise Exception("Mesh '"
         #       + self.wrappedMesh.name + "' has a vector with no normal")
         #   This is a Blender convention, not a 3D or JME convention
@@ -295,3 +308,40 @@ class JmeMesh(object):
         return facings
 
     vertsPerFace = staticmethod(vertsPerFace)
+
+
+class NodeTree(object):
+    """Trivial tree dedicated for JmeNode members.
+    Add all members to the tree, then call nest().
+    See method descriptions for details."""
+
+    __slots__ = ('__memberMap')
+
+    def __init__(self):
+        self.__memberMap = {}
+
+    def addIfSupported(self, blenderObj):
+        """Creates a JmeNode for the given Blender Object, if the Object is
+        supported."""
+        if JmeNode.supported(blenderObj):
+            self.__memberMap[blenderObj] = JmeNode(blenderObj)
+
+    def nest(self):
+        """addChild()s wherever the wrappedObj's parent is present; adds all
+        remaining nodes to the top level; and enforces the tree has a single
+        root by adding a top grouping node if necessary.
+        Returns the root node."""
+
+        if len(self.__memberMap) < 1: return None
+        parented = []
+        for bo, node in self.__memberMap.iteritems():
+            if bo.parent != None and bo.parent in self.__memberMap:
+                self.__memberMap[bo.parent].addChild(node)
+                parented.append(bo)
+        for bo in parented: del self.__memberMap[bo]
+        if len(self.__memberMap) < 1:
+            raise Exception("Internal problem.  Tree ate itself.")
+        if len(self.__memberMap) < 2: return self.__memberMap.popitem()[1]
+        root = JmeNode("BlenderObjects")
+        for node in self.__memberMap.itervalues(): root.addChild(node)
+        return root

@@ -2,16 +2,9 @@ $Id$
 
 TODO LIST
 
-Add more model conversion unit tests to simplemodels.py.
+Handle unusual Blender objects like non-face items, non-data meshes, etc.
 
 Enforce scene node name uniqueness.
 
 As soon as I implement proper schema validation in jME core, add the namespace
 specs to generated XML.
-
-STUCK.  Unable to run any Blender environment test scripts, because Blender is
-giving me a segmentation fault when I try to open a *.blend file from Python,
-like "Blender.Load('/file/path.blend')".  I need to try on a different
-computer.  Can still test stuff that doesn't require a *.blend file, but the
-whole point here is to verify that complex input (like what is stored in a
-*.blend file) gets exported accurately.

@@ -7,7 +7,5 @@ notifying, and explaining that script windows should be closed.
 
 Handle unusual Blender objects like non-face items, non-data meshes, etc.
 
-Enforce scene node name uniqueness.
-
 As soon as I implement proper schema validation in jME core, add the namespace
 specs to generated XML.

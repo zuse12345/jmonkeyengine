@@ -354,16 +354,50 @@ class NodeTree(object):
     Add all members to the tree, then call nest().
     See method descriptions for details."""
 
-    __slots__ = ('__memberMap')
+    __slots__ = ('__memberMap', '__memberKeys')
+    # N.b. __memberMap does not have a member for each node, but a member
+    #      for each saved Blender object.
+    # __memberKey is just because Python has no ordered maps/dictionaries
+    # We want nodes persisted in a well-defined sequence.
 
     def __init__(self):
         self.__memberMap = {}
+        self.__memberKeys = []
 
     def addIfSupported(self, blenderObj):
         """Creates a JmeNode for the given Blender Object, if the Object is
         supported."""
         if JmeNode.supported(blenderObj):
             self.__memberMap[blenderObj] = JmeNode(blenderObj)
+            self.__memberKeys.append(blenderObj)
+
+    def __uniquifyNames(node, parentName, nameSet):
+        # Would like to rename nodes ealier, to that messages (error and
+        # otherwise) could reflect the new names, but we can't nest properly
+        # until all nodes are added to the tree, and we want tree organization
+        # to determine naming precedence.
+        if node.name == None:
+            raiseException("Node in tree without name!")
+        #print "Checking name " + node.name + "..."
+        if node.name in nameSet:
+            #print "Renaming 2nd node with name " + node.name + "..."
+            # TODO:  Make the checks for existing substrings case-insensitive
+            if (isinstance(node, JmeMesh) and parentName != None
+                    and (parentName + "Mesh") not in nameSet):
+                node.name = (parentName + "Mesh")
+            elif (isinstance(node, JmeMesh) and node.name.count("Mesh") < 1
+                    and (node.name + "Mesh") not in nameSet):
+                node.name += "Mesh"
+            elif (isinstance(node, JmeNode) and node.name.count("Node") < 1
+                    and (node.name + "Node") not in nameSet):
+                node.name += "Node"
+            else:
+                node.name += ".uniqd"
+                while node.name in nameSet: node.name += ".uniqd"
+        nameSet.add(node.name)
+        if (not isinstance(node, JmeNode)) or node.children == None: return
+        for child in node.children:
+            NodeTree.__uniquifyNames(child, node.name, nameSet)
 
     def nest(self):
         """addChild()s wherever the wrappedObj's parent is present; adds all
@@ -371,16 +405,22 @@ class NodeTree(object):
         root by adding a top grouping node if necessary.
         Returns the root node."""
 
-        if len(self.__memberMap) < 1: return None
-        parented = []
-        for bo, node in self.__memberMap.iteritems():
+        if len(self.__memberKeys) < 1: return None
+        for bo in self.__memberKeys:
             if bo.parent != None and bo.parent in self.__memberMap:
-                self.__memberMap[bo.parent].addChild(node)
-                parented.append(bo)
-        for bo in parented: del self.__memberMap[bo]
-        if len(self.__memberMap) < 1:
+                self.__memberMap[bo.parent].addChild(self.__memberMap[bo])
+                del self.__memberMap[bo]
+        for key in self.__memberKeys:
+            if key not in self.__memberMap: self.__memberKeys.remove(key)
+        if len(self.__memberKeys) < 1:
             raise Exception("Internal problem.  Tree ate itself.")
-        if len(self.__memberMap) < 2: return self.__memberMap.popitem()[1]
-        root = JmeNode("BlenderObjects")
-        for node in self.__memberMap.itervalues(): root.addChild(node)
+        if len(self.__memberKeys) < 2:
+            root = self.__memberMap.popitem()[1]
+            del self.__memberKeys[0]
+        else:
+            root = JmeNode("BlenderObjects")
+            for key in self.__memberKeys: root.addChild(self.__memberMap[key])
+        NodeTree.__uniquifyNames(root, None, set())
         return root
+
+    __uniquifyNames = staticmethod(__uniquifyNames)

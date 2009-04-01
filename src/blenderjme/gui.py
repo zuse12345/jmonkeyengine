@@ -58,11 +58,12 @@ fileOverwrite = False
 
 def exitModule():
     global guiBox, selCount, allCount
-    if guiBox == None: raise Exception("gui module not initialized")
-    guiBox.free()
     selCount = None
     allCount = None
     _bDraw.Exit()
+    if guiBox != None:
+        guiBox.free()
+        guiBox = None
     print "Exiting exporter"
 
 def updateExportableCounts():
@@ -117,15 +118,18 @@ def inputHandler(eventNum, press): # press is set for mouse movements. ?
         exitModule()
 
 class GuiBox(object):
-    __slots__ = ['x', 'y', 'w', 'h', '__imgs', '__imgpaths']
+    __slots__ = ['x', 'y', 'w', 'h', '__imgs', '__imgpaths', 'screenTooSmall']
 
     def __init__(self, w, h, imgpaths):
         object.__init__(self)
         self.w = w
         self.h = h
         availableW, availableH = _bWindow.GetAreaSize()
+        self.__imgs = None
         if w > availableW or h > availableH:
-            raise Exception("Current Window not large enough for our Gui")
+            self.screenTooSmall = True
+            return
+        self.screenTooSmall = False
         self.x = (availableW - self.w) / 2
         self.y = (availableH - self.h) / 2
         self.__imgpaths = imgpaths
@@ -139,7 +143,8 @@ class GuiBox(object):
         for img in self.__imgs: img.glLoad()
 
     def free(self):
-        for img in self.__imgs: img.glFree()
+        if self.__imgs != None:
+            for img in self.__imgs: img.glFree()
         self.__imgs = None
 
     def drawBg(self):
@@ -181,9 +186,10 @@ class GuiBox(object):
 
 guiBox = None
 
-def init():
+def mkGuiBox():
     global guiBox
-    if guiBox != None: print "WARNING:  Re-initializing gui module"
+    if guiBox != None:
+        raise Exception("Attempted to create 2nd GuiBox.  Ignoring.")
     guiBox = GuiBox(330, 300,
             ['bje1.png', 'bje2.png', 'bje3.png', 'bje4.png', 'bje5.png'])
 
@@ -221,7 +227,11 @@ def saveFile(filepath):
 def drawer():
     global saveAll, guiBox, selCount, allCount, fileOverwrite
 
-    if guiBox == None: raise Exception("gui module not initialized")
+    if guiBox == None: mkGuiBox()
+    if guiBox.screenTooSmall:
+        _bDraw.PupMenu("Window too small.  (Close script Window if open).")
+        exitModule()
+        return
     _bBGL.glClear(_bBGL.GL_COLOR_BUFFER_BIT)
     guiBox.drawBg()
     _bDraw.PushButton("Cancel", BTNID_CANCEL,

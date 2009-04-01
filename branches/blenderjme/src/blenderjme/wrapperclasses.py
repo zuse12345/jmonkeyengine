@@ -33,9 +33,9 @@ __url__ = 'http://www.jmonkeyengine.com'
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from jme.xml import *
-from jme.esmath import *
-from Blender.Mathutils import *
+from jme.xml import XmlTag as _XmlTag
+import jme.esmath as _esmath
+import Blender.Mathutils as _bmath
 
 # GENERAL DEVELOPMENT NOTES:
 #
@@ -50,13 +50,12 @@ from Blender.Mathutils import *
 # not consider them children; but in JME, nodes can have nodes and Meshes
 # (or any other Spatials) as children.
 
-BLENDER_TO_JME_ROTATION = RotationMatrix(-90, 4, 'x')
-
 
 class JmeNode(object):
     __slots__ = ('wrappedObj', 'children',
             'name', 'autoRotate', 'retainTransform')
-    IDENTITY_4x4 = Matrix().resize4x4()
+    IDENTITY_4x4 = _bmath.Matrix().resize4x4()
+    BLENDER_TO_JME_ROTATION = _bmath.RotationMatrix(-90, 4, 'x')
 
     def __init__(self, bObjOrName):
         """Assumes input Blender Object already validated, like by using the
@@ -85,19 +84,17 @@ class JmeNode(object):
     def getName(self): return self.name
 
     def getXmlEl(self):
-        global BLENDER_TO_JME_ROTATION
-         
-        tag = XmlTag('com.jme.scene.Node', {'name':self.getName()})
+        tag = _XmlTag('com.jme.scene.Node', {'name':self.getName()})
 
-        if self.wrappedObj != None: matrix = Matrix(self.wrappedObj.matrixLocal)
+        if self.wrappedObj != None:
+            matrix = _bmath.Matrix(self.wrappedObj.matrixLocal)
         # Do all work with a copy.  We don't midify user data.
         if self.autoRotate:
             if matrix == None:
                 raise Exception("Internal error.  Only our grouper node "
                         + "should have no wrapped Blender Object")
             # Need to transform the entire matrixLocal.
-            #matrix = self.wrappedObj.matrixLocal * BLENDER_TO_JME_ROTATION
-            matrix = matrix * BLENDER_TO_JME_ROTATION
+            matrix = matrix * JmeNode.BLENDER_TO_JME_ROTATION
 
         meshBakeTransform = None
         if self.wrappedObj != None:
@@ -112,11 +109,12 @@ class JmeNode(object):
                 # so save off the properly rotated translation vector:
                 translationRow = matrix[3]
                 # This is because the inversion hoses the translation part
-                derot = matrix * Matrix(meshBakeTransform).invert()
-                matrix = Matrix(derot[0], derot[1], derot[2], translationRow)
+                derot = matrix * _bmath.Matrix(meshBakeTransform).invert()
+                matrix = _bmath.Matrix(
+                        derot[0], derot[1], derot[2], translationRow)
 
         if self.children != None:
-            childrenTag = XmlTag('children', {'size':len(self.children)})
+            childrenTag = _XmlTag('children', {'size':len(self.children)})
             tag.addChild(childrenTag)
             for child in self.children:
                 if isinstance(child, JmeMesh):
@@ -136,20 +134,20 @@ class JmeNode(object):
         if round(e.x, 6) == 0 and round(e.y, 6) == 0 and round(e.z, 6) == 0:
             rQuat = None
         else:
-            rQuat = ESQuaternion(matrix.toEuler(), True)
+            rQuat = _esmath.ESQuaternion(matrix.toEuler(), True)
         #else: rQuat = self.wrappedObj.rot.toQuat()
         scale = matrix.scalePart()
         # Need to add the attrs sequentially in order to preserve sequence
         # of the attrs in the output.
         if loc != None and (round(loc[0], 6) != 0. or round(loc[1], 6) != 0.
                 or round(loc[2], 6) != 0.):
-            locTag = XmlTag("localTranslation")
+            locTag = _XmlTag("localTranslation")
             locTag.addAttr("x", loc[0], 6)
             locTag.addAttr("y", loc[1], 6)
             locTag.addAttr("z", loc[2], 6)
             tag.addChild(locTag)
         if rQuat != None:
-            locTag = XmlTag("localRotation")
+            locTag = _XmlTag("localRotation")
             locTag.addAttr("x", rQuat.x, 6)
             locTag.addAttr("y", rQuat.y, 6)
             locTag.addAttr("z", rQuat.z, 6)
@@ -157,7 +155,7 @@ class JmeNode(object):
             tag.addChild(locTag)
         if scale != None and (round(scale[0], 6) != 1.
                 or round(scale[1], 6) != 1. or round(scale[2], 6) != 1.):
-            locTag = XmlTag("localScale")
+            locTag = _XmlTag("localScale")
             locTag.addAttr("x", scale[0], 6)
             locTag.addAttr("y", scale[1], 6)
             locTag.addAttr("z", scale[2], 6)
@@ -241,12 +239,12 @@ class JmeMesh(object):
         #       + self.wrappedMesh.name + "' has a vector with no normal")
         #   This is a Blender convention, not a 3D or JME convention
         #   (requirement for normals).
-        tag = XmlTag('com.jme.scene.' + meshType + 'Mesh',
+        tag = _XmlTag('com.jme.scene.' + meshType + 'Mesh',
                 {'name':self.getName()})
         if (self.defaultColor != None and
             (self.defaultColor[0] != 1 or self.defaultColor[1] != 1
                 or self.defaultColor[2] != 1 or self.defaultColor[3] != 1)):
-            colorTag = XmlTag("defaultColor",
+            colorTag = _XmlTag("defaultColor",
                     {"class":"com.jme.renderer.ColorRGBA"})
             tag.addChild(colorTag)
             colorTag.addAttr("r", self.defaultColor[0])
@@ -296,10 +294,10 @@ class JmeMesh(object):
         if nonFacedVertexes > 0:
             print ("WARNING: " + str(nonFacedVertexes)
                 + " vertexes set to WHITE because no face to derive color from")
-        vertTag = XmlTag("vertBuf", {"size":len(coArray)})
+        vertTag = _XmlTag("vertBuf", {"size":len(coArray)})
         vertTag.addAttr("data", coArray, 6, 3)
         tag.addChild(vertTag)
-        normTag = XmlTag("normBuf", {"size":len(noArray)})
+        normTag = _XmlTag("normBuf", {"size":len(noArray)})
         normTag.addAttr("data", noArray, 6, 3)
         tag.addChild(normTag)
         if colArray != None:
@@ -315,7 +313,7 @@ class JmeMesh(object):
                     rgbaArray.append(c.g/255.)
                     rgbaArray.append(c.b/255.)
                     rgbaArray.append(c.a/255.)
-            vertColTag = XmlTag("colorBuf", {"size":len(rgbaArray)})
+            vertColTag = _XmlTag("colorBuf", {"size":len(rgbaArray)})
             vertColTag.addAttr("data", rgbaArray, 3, 4)
             tag.addChild(vertColTag)
         if 3 not in self.__vpf and 4 not in self.__vpf: return tag
@@ -331,7 +329,7 @@ class JmeMesh(object):
                 faceVertIndexes.append(face.verts[3].index)
             else:
                 for v in face.verts: faceVertIndexes.append(v.index)
-        indTag = XmlTag("indexBuffer", {"size":len(faceVertIndexes)})
+        indTag = _XmlTag("indexBuffer", {"size":len(faceVertIndexes)})
         if len(face.verts) == 4 and not unify: outputVpf = 4
         else: outputVpf = 3
         indTag.addAttr("data", faceVertIndexes, None, outputVpf)

@@ -33,7 +33,7 @@ __url__ = 'http://www.jmonkeyengine.com'
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from math import *
+import math as _math
 
 class ESQuaternion(object):
     """Quaternions based on the excellent algorithms at
@@ -105,21 +105,21 @@ class ESQuaternion(object):
 
         if wOrDegreeUnits:
             # We work in Radians, so convert input to Radians
-            eulerY = radians(eulerY)
-            eulerZ = radians(eulerZ)
-            eulerX = radians(eulerX)
-        c1 = cos(eulerY/2.)
-        s1 = sin(eulerY/2.)
-        c2 = cos(eulerZ/2.)
-        s2 = sin(eulerZ/2.)
-        c3 = cos(eulerX/2.)
-        s3 = sin(eulerX/2.)
+            eulerY = _math.radians(eulerY)
+            eulerZ = _math.radians(eulerZ)
+            eulerX = _math.radians(eulerX)
+        c1 = _math.cos(eulerY/2.)
+        s1 = _math.sin(eulerY/2.)
+        c2 = _math.cos(eulerZ/2.)
+        s2 = _math.sin(eulerZ/2.)
+        c3 = _math.cos(eulerX/2.)
+        s3 = _math.sin(eulerX/2.)
         c1c2 = c1 * c2
         s1s2 = s1 * s2
-        self.w =c1c2 * c3 - s1s2 * s3
-        self.x =c1c2 * s3 + s1s2 * c3
-        self.y =s1 * c2 * c3 + c1 * s2 * s3
-        self.z =c1 * s2 * c3 - s1 * c2 * s3
+        self.w = c1c2 * c3 - s1s2 * s3
+        self.x = c1c2 * s3 + s1s2 * c3
+        self.y = s1 * c2 * c3 + c1 * s2 * s3
+        self.z = c1 * s2 * c3 - s1 * c2 * s3
 
     def asFloatArray(self):
         """Note that this sequence favors jME like x, y, z, w;

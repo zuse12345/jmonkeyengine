@@ -70,30 +70,41 @@ declare -i failures=0
 "$PYTHONPROG" "${PYTHONPATH}/jmetest/xml.py" || ((failures = failures + 1))
 "$PYTHONPROG" "${PYTHONPATH}/jmetest/esmath.py" || ((failures = failures + 1))
 
+echo "\nWatch for output from Blender env. scripts run after this point.
+It's impractical for this script to detect failures with Blender env. tests,
+since Blender does not set a meaningful exit status.\n"
+
 # This single test tests the dependencies of the Blender environment itself.
 # We very particularly do not want to use an external Python interpreter,
 # but, unfortunately, the current Linux distros of Blender do not have basic
 # Python packages like "os", which we ned.
 # This should be the only test (standalone or Blender-env) which does not use
-# "testunit".  It's impossible to test imports with testunit.
-echo "\nWatch for output from Blender env. scripts below.
-It's impractical for this script to detect failures with Blender env. tests,
-since Blender does not set a meaningful exit status.\n"
+# "testunit".  This modules is not present in the Blender Python environment.
+# Besides despendency/presence testing, the intmodules test does a good syntax
+# check on all of our (non-testing) scripts.
 case "$(uname)" in
-    Linux) "$SCRIPTRELDIR/blenderscript.bash" "${PYTHONPATH}/blendertest/modules.py";;
-    *) PYTHONHOME=/dev/null "$SCRIPTRELDIR/blenderscript.bash" "${PYTHONPATH}/blendertest/modules.py";;
+  Linux)
+    "$SCRIPTRELDIR/blenderscript.bash" "${PYTHONPATH}/blendertest/extmodules.py"
+    "$SCRIPTRELDIR/blenderscript.bash" "${PYTHONPATH}/blendertest/intmodules.py"
+    ;;
+  *)
+    PYTHONHOME=/dev/null "$SCRIPTRELDIR/blenderscript.bash" "${PYTHONPATH}/blendertest/extmodules.py"
+    PYTHONHOME=/dev/null "$SCRIPTRELDIR/blenderscript.bash" "${PYTHONPATH}/blendertest/intmodules.py"
+    ;;
 esac
+
+[ -n "SKIP_MODELTESTS" ] && {
+    echo 'Skipping model tests'
+    exit $failures
+}
 
 cd "$PYTHONPATH" || Failout "Failed to cd to '$PYTHONPATH'"
 echo "Running normal Blender env. tests from directory '$PWD'..."
 # Unfortunately, must put each freaking test in a separate file, due to
 # the amazingly invasive behavior of Blender.Load().
-echo 'import blendertest.plane' | ../bin/blenderscript.bash
-echo 'import blendertest.planetrans' | ../bin/blenderscript.bash
-echo 'import blendertest.cone' | ../bin/blenderscript.bash
-echo 'import blendertest.dfltcolor' | ../bin/blenderscript.bash
-echo 'import blendertest.dualtrans' | ../bin/blenderscript.bash
-echo 'import blendertest.planecone' | ../bin/blenderscript.bash
-echo 'import blendertest.vertcolored' | ../bin/blenderscript.bash
+for tstmod in plane planetrans cone dfltcolor dualtrans planecone vertcolored
+do
+    echo "import blendertest.$tstmod" | ../bin/blenderscript.bash
+done
 
 exit $failures

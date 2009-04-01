@@ -1,6 +1,12 @@
-"""
-    Bender-environment-specific tests.
-"""
+#!/usr/bin/python
+
+"""This is a test, but can't use unittest, since our goal is to test the
+Blender-provided Python environment, yet that environment does not have
+the unittest module.
+This tests tests dependencies on modules that we do not deliver, which
+includes both Blender-provided system modules and the Blender implementation
+modules (like Blender.*)."""
+
 __version__ = '$Revision$'
 __date__ = '$Date$'
 __author__ = 'Blaine Simpson, blaine (dot) simpson (at) admc (dot) com'
@@ -33,46 +39,20 @@ __url__ = 'http://www.jmonkeyengine.com'
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from os.path import abspath as _abspath
-from os.path import dirname as _dirname
-from os.path import isfile as _isfile
-from os.path import join as _join
-# from codecs import open as _codecs_open
-#   except that codecs module not available in Blender
+print "Watch console for errors..."
+try:
+    import Blender as dummy01
+    import Blender.Mathutils as dummy02
+    from bpy import data as dummy03
+    from datetime import datetime as dummy04
+    import math as dummy05
+    import os as dummy06
+    import os.path as dummy07
+    import sys as dummy08
+    from sys import exc_info as dummy09
+    from traceback import tb_lineno as dummy10
+    import re as dummy11
 
-_moduleDir = _abspath(_dirname(__file__))
-
-def _resFileAbsPath(path):
-    global _moduleDir
-    if path.startswith('/') or path.startswith('\\'):
-        raise Exception("Resource file paths should not be absolute: " + path)
-    return _join(_moduleDir, path)
-
-def resFileAbsPath(path):
-    absPath = _resFileAbsPath(path)
-    if not _isfile(absPath):
-        raise Exception("No res file '" + path + "' present in package '"
-                + __name__ + "'")
-    return absPath
-
-#def resFileContent(path, encoding='utf-8'):
-# Forcing UTF for now.  Enable encoding param once Blender supports encodings
-def resFileContent(path):
-    """ Examples:
-        print thismodule.resFileContent("abc/date.txt")
-        print thismodule.resFileContent("extended.txt", "utf-8")
-    """
-    global _moduleDir
-    absPath = resFileAbsPath(path)
-
-    # When Blender starts including the codes module, add encoding param above,
-    # and enable _codes_open above and use that instead of plain open().
-    #fileObj = _codecs_open(_join(_moduleDir, path), "r", encoding)
-    #retVal = fileObj.read()
-    # This alternative would work, but the codecs reader is better.
-    #retVal = fileObj.read().decode(encoding)
-
-    fileObj = open(_join(_moduleDir, absPath), "r")
-    retVal = unicode(fileObj.read())
-    fileObj.close()
-    return retVal
+except Exception, e:
+    print "External module not available in execution environment."
+    raise

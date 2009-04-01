@@ -9,6 +9,8 @@ $Id$
 
   <target name="clean" description="Wipe out all derived artifacts">
     <delete dir="dist"/>
+    <delete dir="." includes="*.pyc"/>
+    <delete dir="src" includes="**/*.pyc"/>
   </target>
 
   <target name="redist" depends="clean, dist"

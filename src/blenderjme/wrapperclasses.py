@@ -98,9 +98,7 @@ class JmeNode(object):
 
         meshBakeTransform = None
         if self.wrappedObj != None:
-            if matrix == JmeNode.IDENTITY_4x4:
-                print "WARNING:  Node '" + self.getName() + " not de-axified"
-            else:
+            if matrix != JmeNode.IDENTITY_4x4:
                 # BAKE IN ANY NODE ROTATION TRANSFORMATION
                 # Make 4x4 matrix out of JUST rotation portion of matrixLocal
                 meshBakeTransform = matrix.rotationPart().resize4x4()

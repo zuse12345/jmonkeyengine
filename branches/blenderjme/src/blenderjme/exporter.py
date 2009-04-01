@@ -35,7 +35,7 @@ from Blender import Draw
 from Blender import BGL
 from jme.xml import XmlFile
 from datetime import datetime
-from blenderjmeexp.wrapperclasses import *
+from blenderjme.wrapperclasses import *
 from bpy import data
 
 recordTimestamp = True

@@ -36,8 +36,8 @@ from Blender import BGL
 from bpy import data
 import exporter
 from os import path
-from blenderjmeexp import resFileAbsPath
-from blenderjmeexp.wrapperclasses import *
+from blenderjme import resFileAbsPath
+from blenderjme.wrapperclasses import *
 from traceback import tb_lineno
 from sys import exc_info
 from os.path import isfile

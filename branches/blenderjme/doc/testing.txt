@@ -17,6 +17,14 @@ registration link if you are on UNIX.
 The remainder of this file only addresses the use of our test scripts.
 
 
+TEST DATA
+
+To (re)generate test data, invoke Blender (or blenderscript.bash) with switch
+"--nostamps", like
+    .... -- --nostamps
+(run "blender -h" to read about the important and required "--" parameter).
+
+
 TEST SCRIPTS
 
 Our tests use the unittest module where possible.  "unittest" is the Python

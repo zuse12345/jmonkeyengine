@@ -1,10 +1,6 @@
 """
     This package contains eneric JMonkeyEngine functions and classes which may
     be useful to multiple different products.
-
-    The functions defined here are not automatically loaded info namespaces of
-    module files.  Those files must "from... import..." if they want local
-    names for these functions.
 """
 
 __version__ = '$Revision$'
@@ -39,40 +35,46 @@ __url__ = 'http://www.jmonkeyengine.com'
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from os.path import abspath, dirname, isfile, join
-#from codecs import open            codecs module note available in Blender
+from os.path import abspath as _abspath
+from os.path import dirname as _dirname
+from os.path import isfile as _isfile
+from os.path import join as _join
+# from codecs import open as _codecs_open
+#   except that codecs module not available in Blender
 
-__moduleDir = abspath(dirname(__file__))
+_moduleDir = _abspath(_dirname(__file__))
 
-def __resFileAbsPath(path):
-    global __moduleDir
+def _resFileAbsPath(path):
+    global _moduleDir
     if path.startswith('/') or path.startswith('\\'):
         raise Exception("Resource file paths should not be absolute: " + path)
-    return join(__moduleDir, path)
+    return _join(_moduleDir, path)
 
 def resFileAbsPath(path):
-    absPath = __resFileAbsPath(path)
-    if not isfile(absPath):
+    absPath = _resFileAbsPath(path)
+    if not _isfile(absPath):
         raise Exception("No res file '" + path + "' present in package '"
                 + __name__ + "'")
     return absPath
 
 #def resFileContent(path, encoding='utf-8'):
-# Force to UTF until Blender supports encodings
+# Forcing UTF for now.  Enable encoding param once Blender supports encodings
 def resFileContent(path):
     """ Examples:
         print thismodule.resFileContent("abc/date.txt")
         print thismodule.resFileContent("extended.txt", "utf-8")
     """
-    global __moduleDir
+    global _moduleDir
     absPath = resFileAbsPath(path)
-    # When Blender starts including the codes module, enable this codes.open()
-    # and the following read; and disable the next 2 lines.  Import
-    # codes.open too!
-    #fileObj = open(join(__moduleDir, path), "r", encoding)
+
+    # When Blender starts including the codes module, add encoding param above,
+    # and enable _codes_open above and use that instead of plain open().
+    #fileObj = _codecs_open(_join(_moduleDir, path), "r", encoding)
     #retVal = fileObj.read()
-    fileObj = open(join(__moduleDir, absPath), "r")
+    # This alternative would work, but the codecs reader is better.
     #retVal = fileObj.read().decode(encoding)
+
+    fileObj = open(_join(_moduleDir, absPath), "r")
     retVal = unicode(fileObj.read())
     fileObj.close()
     return retVal

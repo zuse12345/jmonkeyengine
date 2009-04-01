@@ -3,6 +3,11 @@ $Id$
 IMPORTANT PYTHON CODING INFO
 ----------------------------
 
+For Blender Python development in Linux, you really must have a standalone
+Python installation.  Blender's distros for Linux do not have the most basic
+modules, such as the StringIO (used by the provided Interactive Python Console)
+and "os" modules.
+
 Blender-native
 --------------
 
@@ -36,12 +41,12 @@ to satisfy the most end users, we aim to support the following Blender binary:
      Python versions, we support the one with the latest offered Python version.
 
 What about users using a different Blender distro?  Well, our product will
-just work if (a) the user environment utilizes and external Python
+just work if (a) the user environment utilizes an external Python
 installation, or (b) the Blender distro happens to also include the modules
 that we depend on (which modules are in the 32-bit win distro),
-To give a specific, and sad, example:  My RPM binary of current Python 2.6
-build for 64 bit OpenSUSE does not have package "os".  Therefore, I can't do
-any dependency checking on my Linux workstation.
+To give specific, and sad, examples:  My RPM binary of current Python 2.6
+build for 64 bit OpenSUSE does not have modules "os" or "StringIO" (both of
+which are included in the Windows builds).
 
 ACCOMMODATING Blender-supplied Python
 

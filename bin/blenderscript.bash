@@ -102,11 +102,11 @@ case ${#scripts[@]} in
        done >> "$TMPFILE";;
 esac >> "$TMPFILE"
 echo 'except Exception, e:
-    from sys import exc_info
-    from traceback import tb_lineno
-    ei = exc_info()[2]
+    from sys import exc_info as _exc_info
+    from traceback import tb_lineno as _tb_lineno
+    ei = _exc_info()[2]
     while ei:
-        print "  " + ei.tb_frame.f_code.co_filename + ":" + str(tb_lineno(ei))
+        print "  " + ei.tb_frame.f_code.co_filename + ":" + str(_tb_lineno(ei))
         ei = ei.tb_next
     print e' >> "$TMPFILE"
 [ -n "$VERBOSE" ] ||

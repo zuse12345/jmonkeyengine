@@ -30,30 +30,30 @@ __url__ = 'http://www.jmonkeyengine.com'
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import Blender
-from Blender import Draw
-from Blender import BGL
-from jme.xml import XmlFile
-from datetime import datetime
-from blenderjme.wrapperclasses import *
-from bpy import data
+from Blender.Window import EditMode as _bEditMode
+from jme.xml import XmlFile as _XmlFile
+from datetime import datetime as _datetime
+from bpy import data as _bdata
+from blenderjme.wrapperclasses import NodeTree as _NodeTree
+import blenderjme
 
-recordTimestamp = True
+recordTimestamp = "--nostamps" not in blenderjme.blenderArgs
+print "TIMESTAMPING SET TO " + str(recordTimestamp)
 
 def gen(saveAll, autoRotate):
     global recordTimestamp
 
-    origEditMode = Blender.Window.EditMode()
-    if origEditMode != 0: Blender.Window.EditMode(0)
+    origEditMode = _bEditMode()
+    if origEditMode != 0: _bEditMode(0)
     try:
         os = []
         candidates = []
         changedMats = {}  # Matrixes we have to change to effect axis rotation
         if saveAll:
-            candidates = data.objects
+            candidates = _bdata.objects
         else:
-            candidates = data.scenes.active.objects.selected
-        nodeTree = NodeTree()
+            candidates = _bdata.scenes.active.objects.selected
+        nodeTree = _NodeTree()
         for bo in candidates: nodeTree.addIfSupported(bo)
         root = nodeTree.nest()
 
@@ -65,9 +65,9 @@ def gen(saveAll, autoRotate):
                 root.autoRotate = True
 
         stampText = "Blender export by Blender/JME Exporter"
-        if recordTimestamp: stampText += (" at " + datetime.now().isoformat())
-        xmlFile = XmlFile(root.getXmlEl())
+        if recordTimestamp: stampText += (" at " + _datetime.now().isoformat())
+        xmlFile = _XmlFile(root.getXmlEl())
         xmlFile.addComment(stampText)
         return xmlFile
     finally:
-        if origEditMode != 0: Blender.Window.EditMode(origEditMode)
+        if origEditMode != 0: _bEditMode(origEditMode)

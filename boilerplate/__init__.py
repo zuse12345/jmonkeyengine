@@ -1,12 +1,13 @@
 """
-    Bender-environment-specific tests.
+    This package contains <ENTER_DESCRIPTION_HERE>.
 """
+
 __version__ = '$Revision$'
 __date__ = '$Date$'
-__author__ = 'Blaine Simpson, blaine (dot) simpson (at) admc (dot) com'
+__author__ = '<Your Name>, <your@email.addr>'
 __url__ = 'http://www.jmonkeyengine.com'
 
-# Copyright (c) 2009, Blaine Simpson and the jMonkeyEngine team
+# Copyright (c) 2009, the jMonkeyEngine team
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -20,11 +21,11 @@ __url__ = 'http://www.jmonkeyengine.com'
 #       names of its contributors may be used to endorse or promote products
 #       derived from this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY Blaine Simpson and the jMonkeyEngine team
+# THIS SOFTWARE IS PROVIDED BY the jMonkeyEngine team
 # ''AS IS'' AND ANY
 # EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL Blaine Simpson or the jMonkeyEngine team
+# DISCLAIMED. IN NO EVENT SHALL the jMonkeyEngine team
 # BE LIABLE FOR ANY
 # DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 # (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;

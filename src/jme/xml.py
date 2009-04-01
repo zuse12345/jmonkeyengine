@@ -59,9 +59,8 @@ def quoteattr(text):
         delim = '"'
     return delim + escape(text) + delim
 
-import re
-# TODO:  Verify that the re module is included in the Python base.
-XML_KEYWORD_RE = re.compile("[a-zA-Z0-9_:][a-zA-Z0-9_:.-]*")
+from re import compile as _re_compile
+XML_KEYWORD_RE = _re_compile("[a-zA-Z0-9_:][a-zA-Z0-9_:.-]*")
 def validateXmlKeyword(word):
     """Throws if the specified word is invalid as an XML element name or
     attribute name"""

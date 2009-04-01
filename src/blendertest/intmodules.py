@@ -1,7 +1,9 @@
 #!/usr/bin/python
 
-"""This is a test, but cant' use unittest, since import statements may not
-occur inside of class methods."""
+"""This is a test, but can't use unittest, since our goal is to test the
+Blender-provided Python environment, yet that environment does not have
+the unittest module.""
+This tests tests dependencies on modules that we deliver."""
 
 __version__ = '$Revision$'
 __date__ = '$Date$'
@@ -35,23 +37,17 @@ __url__ = 'http://www.jmonkeyengine.com'
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+print "Watch console for errors..."
 try:
-    import Blender
-    from Blender import *
-    #from blenderjme.gui import *   Gui will not work without real screen
-    from blenderjme import *
-    from blenderjme.wrapperclasses import *
-    from Blender.Mathutils import *
-    from bpy import data
-    from datetime import datetime
-    from jme.esmath import *
-    from jme.xml import *
-    from math import *
-    from os import *
-    from os.path import *
-    from sys import exc_info
-    from traceback import tb_lineno
-    import re
+    #from blenderjme.gui import...  Gui will not work w/out real screen
+    import jme as dummy01
+    import jme.esmath as dummy02
+    import jme.xml as dummy03
+    import blenderjme as dummy04
+    import blenderjme.gui as dummy05
+    import blenderjme.exporter as dummy06
+    import blenderjme.wrapperclasses as dummy07
+
 except Exception, e:
-    print "Module not available in execution environment:"
+    print "jME module is broken or is not available in execution environment."
     raise

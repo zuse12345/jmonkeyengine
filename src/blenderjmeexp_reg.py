@@ -38,6 +38,11 @@ __url__ = 'http://www.jmonkeyengine.com'
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from blenderjme.gui import *
+from blenderjme import gui
+from Blender.Draw import Register
 
-Draw.Register(drawer, inputHandler, btnHandler)
+# As there is little point to unit testing this script, it always assumes
+# the gui and menu system are present.
+
+gui.init()
+Register(gui.drawer, gui.inputHandler, gui.btnHandler)

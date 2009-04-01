@@ -5,34 +5,37 @@ INTERACTIVE TESTING
 To test by running Blender interactively (without our test scripts), just set
 variable PYTHONPATH to include our "src" directory, and put our registration
 script(s) (currently just "src/blenderjmeexp_reg.py") in place directly in
-your Python script directory.  Use an absolute path when specifying PYTHONPATH,
-so it will continue to work if anything (like a wrapper script) changes your
-directory when Blender is run (as happens for my rpm install of Blender).
+your Python script directory.  It is bad practice to use a wrapper script that
+changes your directory before the Blender binary runs, but if your Blender
+distribution includes such a script, test whether you need it (you probably do
+not), and remove it if you don't.  On UNIX, a simple sym-link serves the search
+path purpose without destroying the usefulness of relative data file paths.
 
-To eliminate maintenance, I recommend the use of a symbolic link if you are on
-UNIX.
+To eliminate maintenance, I recommend the use of a symbolic link for the
+registration link if you are on UNIX.
 
 The remainder of this file only addresses the use of our test scripts.
 
 
 TEST SCRIPTS
 
-Our tests use the unittest module.  "unittest" is the Python equivalent of
-JUnit for Java.  All of our tests require a standalone Python installation,
-because we use modules which are included in a base Python installation but
-which Blender does not provide.
+Our tests use the unittest module where possible.  "unittest" is the Python
+equivalent of JUnit for Java.  These tests require a standalone Python
+installation, because the Blender-provided Python does not include the unittest
+module (nor several other basic modules that every developer should have access
+to).
 
 
 STANDALONE vs. BLENDER ENVIRONMENT TESTS
 
 We have two varieties of tests, standalone tests and Blender environment
 tests.  Due to the requirement stated previously, even the Blender environment
-tests require a standalone Python installation.  For Blender installations
-intergrated tightly into your operating system (like my OpenSUSE Blender
-installation), Blender will automatically use the system's standalone Python
-installation if there is one.  If your OS has not tied them together, or if
-you wish to override that binding, set environmental variable PYTHONHOME
-before executing Blender:
+tests require a standalone Python installation (excepting only the *modules.py
+tests, which test dependencies).  For Blender installations intergrated tightly
+into your operating system (like my OpenSUSE Blender installation), Blender
+will automatically use the system's standalone Python installation if there is
+one.  If your OS has not tied them together, or if you wish to override that
+binding, set environmental variable PYTHONHOME before executing Blender:
 
     :: For Windows, use System Settings to add env variable, or at shell:
     set PYTHONHOME=c:\progra~1\Python30
@@ -63,7 +66,8 @@ provided Bash script to run the tests, as described below.
 
 If you are running Linux, have Blender and standalone Python installed (and
 have PYTHONHOME set if required), and want to run all tests, just execute the
-script "bin/alltests.bash".
+script "bin/alltests.bash".  To skip the model tests, just export
+SKIP_MODELTESTS before running.
 
 
 HOW TO RUN STANDALONE TESTS
@@ -121,3 +125,5 @@ your script from within Python.
 
 (FYI, this script is not just for running tests.  You can use it to execute any
 manually entered Python code, or any Python scripts, in a Blender environment.
+
+See the script "alltests.bash" for solid, working examples of test invocations.

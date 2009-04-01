@@ -30,19 +30,20 @@ __url__ = 'http://www.jmonkeyengine.com'
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import Blender
-from Blender import Draw
-from Blender import BGL
-from bpy import data
-import exporter
-from os import path
-from blenderjme import resFileAbsPath
-from blenderjme.wrapperclasses import *
-from traceback import tb_lineno
-from sys import exc_info
-from os.path import isfile
+from Blender import Window as _bWindow
+from Blender import Draw as _bDraw
+from Blender import BGL as _bBGL
+from Blender.Image import Load as _bLoad
+from bpy import data as _bdata
+import exporter as _exporter
+from os.path import abspath as _abspath
+from os.path import isfile as _isfile
+import blenderjme
+from blenderjme.wrapperclasses import JmeNode as _JmeNode
+from traceback import tb_lineno as _tb_lineno
+from sys import exc_info as _exc_info
 
-defaultFilePath = path.abspath("default-jme.xml")
+defaultFilePath = _abspath("default-jme.xml")
 saveAll = False
 xmlFile = None
 axisFlip = True
@@ -57,10 +58,11 @@ fileOverwrite = False
 
 def exitModule():
     global guiBox, selCount, allCount
+    if guiBox == None: raise Exception("gui module not initialized")
     guiBox.free()
     selCount = None
     allCount = None
-    Draw.Exit()
+    _bDraw.Exit()
     print "Exiting exporter"
 
 def updateExportableCounts():
@@ -70,10 +72,10 @@ def updateExportableCounts():
     global selCount, allCount
     selCount = 0
     allCount = 0
-    for o in data.objects:
-        if JmeNode.supported(o): allCount = allCount + 1
-    for o in data.scenes.active.objects.selected:
-        if JmeNode.supported(o): selCount = selCount + 1
+    for o in _bdata.objects:
+        if _JmeNode.supported(o): allCount = allCount + 1
+    for o in _bdata.scenes.active.objects.selected:
+        if _JmeNode.supported(o): selCount = selCount + 1
 
 def btnHandler(btnId):
     global saveAll, xmlFile, defaultFilePath, fileOverwrite, axisFlip
@@ -88,19 +90,19 @@ def btnHandler(btnId):
         return
     if btnId == BTNID_SAVE:
         try:
-            xmlFile = exporter.gen(saveAll, axisFlip)
+            xmlFile = _exporter.gen(saveAll, axisFlip)
         except Exception, e:
             # Python 2.5 does not support "except X as y:" syntax
-            ei = exc_info()[2]
+            ei = _exc_info()[2]
             while ei:
                 print ("  " + ei.tb_frame.f_code.co_filename + ':'
-                    + str(tb_lineno(ei)))
+                    + str(_tb_lineno(ei)))
                 ei = ei.tb_next
             print e
-            if 1 == Draw.PupMenu(str(e) + "%t|Abort|Try other settings"):
+            if 1 == _bDraw.PupMenu(str(e) + "%t|Abort|Try other settings"):
                 exitModule()
             return
-        Blender.Window.FileSelector(saveFile, "Write XML file", defaultFilePath)
+        _bWindow.FileSelector(saveFile, "Write XML file", defaultFilePath)
         # TODO:  Upon successful save, store file path to Blender registry
         # so that we can use it as default the next time.
         return
@@ -110,7 +112,7 @@ def btnHandler(btnId):
 
 def inputHandler(eventNum, press): # press is set for mouse movements. ?
     if not press: return
-    if eventNum == Draw.ESCKEY:
+    if eventNum == _bDraw.ESCKEY:
         print "Got ESC"
         exitModule()
 
@@ -121,7 +123,7 @@ class GuiBox(object):
         object.__init__(self)
         self.w = w
         self.h = h
-        availableW, availableH = Blender.Window.GetAreaSize()
+        availableW, availableH = _bWindow.GetAreaSize()
         if w > availableW or h > availableH:
             raise Exception("Current Window not large enough for our Gui")
         self.x = (availableW - self.w) / 2
@@ -132,7 +134,8 @@ class GuiBox(object):
     def __loadImages(self):
         self.__imgs = []
         for path in self.__imgpaths:
-            self.__imgs.append(Blender.Image.Load(resFileAbsPath(path)))
+            self.__imgs.append(_bLoad(
+                blenderjme.resFileAbsPath(path)))
         for img in self.__imgs: img.glLoad()
 
     def free(self):
@@ -141,10 +144,10 @@ class GuiBox(object):
 
     def drawBg(self):
         if self.__imgs == None: self.__loadImages()
-        BGL.glColor3f(.95,.54,.24)
-        BGL.glRectf(self.x, self.y, self.x + self.w, self.y + self.h)
-        BGL.glColor3f(1, 1, 1)
-        BGL.glRectf(self.x + 5, self.y + 5,
+        _bBGL.glColor3f(.95,.54,.24)
+        _bBGL.glRectf(self.x, self.y, self.x + self.w, self.y + self.h)
+        _bBGL.glColor3f(1, 1, 1)
+        _bBGL.glRectf(self.x + 5, self.y + 5,
                 self.x + self.w - 5, self.y + self.h - 5)
 
         imgDim = self.__imgs[0].getSize()[0]; # Unfortunately [0] == [1]
@@ -152,34 +155,39 @@ class GuiBox(object):
         imgX = self.x + (self.w - len(self.__imgs) * imgDim) / 2
           # Centered horizontally in gui box
         for img in self.__imgs:
-            BGL.glEnable(BGL.GL_TEXTURE_2D)
-            BGL.glBindTexture(BGL.GL_TEXTURE_2D, img.getBindCode())
-            BGL.glBegin(BGL.GL_POLYGON)
-            BGL.glTexCoord2f(0.0,0.0) 
-            BGL.glColor3f(1.0,1.0,1.0)
-            BGL.glVertex3f(float(imgX),float(imgY),0.0)
-            BGL.glTexCoord2f(1.0,0.0)
-            BGL.glColor3f(1.0,1.0,1.0)
-            BGL.glVertex3f(float(imgX + imgDim),float(imgY),0.0)
-            BGL.glTexCoord2f(1.0,1.0)
-            BGL.glColor3f(1.0,1.0,1.0)
-            BGL.glVertex3f(float(imgX+imgDim),float(imgY+imgDim),0.0)
-            BGL.glTexCoord2f(0.0,1.0)	
-            BGL.glColor3f(1.0,1.0,1.0)
-            BGL.glVertex3f(float(imgX),float(imgY+imgDim),0.0 )
+            _bBGL.glEnable(_bBGL.GL_TEXTURE_2D)
+            _bBGL.glBindTexture(_bBGL.GL_TEXTURE_2D, img.getBindCode())
+            _bBGL.glBegin(_bBGL.GL_POLYGON)
+            _bBGL.glTexCoord2f(0.0,0.0) 
+            _bBGL.glColor3f(1.0,1.0,1.0)
+            _bBGL.glVertex3f(float(imgX),float(imgY),0.0)
+            _bBGL.glTexCoord2f(1.0,0.0)
+            _bBGL.glColor3f(1.0,1.0,1.0)
+            _bBGL.glVertex3f(float(imgX + imgDim),float(imgY),0.0)
+            _bBGL.glTexCoord2f(1.0,1.0)
+            _bBGL.glColor3f(1.0,1.0,1.0)
+            _bBGL.glVertex3f(float(imgX+imgDim),float(imgY+imgDim),0.0)
+            _bBGL.glTexCoord2f(0.0,1.0)	
+            _bBGL.glColor3f(1.0,1.0,1.0)
+            _bBGL.glVertex3f(float(imgX),float(imgY+imgDim),0.0 )
             imgX += imgDim
-            BGL.glEnd() 
-            BGL.glDisable(BGL.GL_TEXTURE_2D)
+            _bBGL.glEnd() 
+            _bBGL.glDisable(_bBGL.GL_TEXTURE_2D)
 
         # Anything done after the image writing writes with BLACK
-        #BGL.glColor3f(1., 0., 0.)
-        #BGL.glRectf(self.x, y, self.x + self.w, self.y + self.h -  self.imgH)
+        #_bBGL.glColor3f(1., 0., 0.)
+        #_bBGL.glRectf(self.x, y, self.x + self.w, self.y + self.h -  self.imgH)
 
 
-guiBox = GuiBox(330, 300,
-        ['bje1.png', 'bje2.png', 'bje3.png', 'bje4.png', 'bje5.png'])
+guiBox = None
 
-def redrawDummy(x, y): Draw.Redraw()
+def init():
+    global guiBox
+    if guiBox != None: print "WARNING:  Re-initializing gui module"
+    guiBox = GuiBox(330, 300,
+            ['bje1.png', 'bje2.png', 'bje3.png', 'bje4.png', 'bje5.png'])
+
+def redrawDummy(x, y): _bDraw.Redraw()
 
 def saveFile(filepath):
     # Can only get here when our Gui is present, but completely overwritten
@@ -190,7 +198,7 @@ def saveFile(filepath):
         if filepath.endswith(".blend"):
             raise Exception(
             "You should only save Blender native files with extension '.blend'")
-        if isfile(filepath) and (not fileOverwrite) and (1 != Draw.PupMenu(
+        if _isfile(filepath) and (not fileOverwrite) and (1 != _bDraw.PupMenu(
                 "Overwrite '" + filepath + "'?%t|Yes|No")): return
         print "Attempting to save file '" + filepath + "'"
         xmlFile.writeFile(filepath)
@@ -199,13 +207,13 @@ def saveFile(filepath):
         exitModule()
     except Exception, e:
         # Python 2.5 does not support "except X as y:" syntax
-        ei = exc_info()[2]
+        ei = _exc_info()[2]
         while ei:
             print ("  " + ei.tb_frame.f_code.co_filename + ':'
-                + str(tb_lineno(ei)))
+                + str(_tb_lineno(ei)))
             ei = ei.tb_next
         print e
-        if 1 == Draw.PupMenu(str(e) + "%t|Abort|Try other settings"):
+        if 1 == _bDraw.PupMenu(str(e) + "%t|Abort|Try other settings"):
             exitModule()
             return
         print "Will retry"
@@ -213,38 +221,39 @@ def saveFile(filepath):
 def drawer():
     global saveAll, guiBox, selCount, allCount, fileOverwrite
 
-    BGL.glClear(BGL.GL_COLOR_BUFFER_BIT)
+    if guiBox == None: raise Exception("gui module not initialized")
+    _bBGL.glClear(_bBGL.GL_COLOR_BUFFER_BIT)
     guiBox.drawBg()
-    Draw.PushButton("Cancel", BTNID_CANCEL,
+    _bDraw.PushButton("Cancel", BTNID_CANCEL,
             guiBox.x + 10, guiBox.y + 10, 50, 20, "Abort export")
-    Draw.Label(" (c) 2009 Blaine Simpson",
+    _bDraw.Label(" (c) 2009 Blaine Simpson",
             guiBox.x + 170, guiBox.y + 23,145,10)
-    Draw.Label("+ the jMonkeyEngine team",
+    _bDraw.Label("+ the jMonkeyEngine team",
             guiBox.x + 160, guiBox.y + 9,157,10)
     if not allCount: updateExportableCounts()
     if allCount < 1:
-        Draw.Label("Your scenes contain no",
+        _bDraw.Label("Your scenes contain no",
                 guiBox.x + 10, guiBox.y + 200,200,20)
-        Draw.Label("export-supported objects",
+        _bDraw.Label("export-supported objects",
                 guiBox.x + 10, guiBox.y + 170,200,20)
         return
     if saveAll:
         toggleText = str(allCount) + " Scene Object(s)"
     else:
         toggleText = str(selCount) + " Selected Object(s)"
-    Draw.Toggle(toggleText,
+    _bDraw.Toggle(toggleText,
             BTNID_SAVEALL, guiBox.x + 10, guiBox.y + 200, 130, 20, saveAll,
             "Choose to export supported SELECTED objects or ALL objects",
             redrawDummy)
-            # Would prefer to make a 2-line button, but Draw does not
+            # Would prefer to make a 2-line button, but _bDraw does not
             # support that... or basically anything other than vanilla.
-    Draw.Toggle("Overwrite", BTNID_OVERWRITE,
+    _bDraw.Toggle("Overwrite", BTNID_OVERWRITE,
             guiBox.x + 10, guiBox.y + 175, 60, 20, fileOverwrite,
             "Silently overwrite export file if it exists beforehand")
-    Draw.Toggle("Rotate X", BTNID_FLIP,
+    _bDraw.Toggle("Rotate X", BTNID_FLIP,
             guiBox.x + 10, guiBox.y + 150, 55, 20, axisFlip,
             "Rotate X axis -90 degress in export so -Y axis becomes +Z")
-    Draw.PushButton("Export", BTNID_SAVE,
+    _bDraw.PushButton("Export", BTNID_SAVE,
             guiBox.x + 10, guiBox.y + 50, 50, 20, "Select file to save to")
-    Draw.Label("Reserved space", guiBox.x + 180, guiBox.y + 150,200,20)
-    Draw.Label("More space", guiBox.x + 180, guiBox.y + 100,200,20)
+    _bDraw.Label("Reserved space", guiBox.x + 180, guiBox.y + 150,200,20)
+    _bDraw.Label("More space", guiBox.x + 180, guiBox.y + 100,200,20)

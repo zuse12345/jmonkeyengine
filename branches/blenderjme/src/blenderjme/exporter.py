@@ -38,7 +38,6 @@ from blenderjme.wrapperclasses import NodeTree as _NodeTree
 import blenderjme
 
 recordTimestamp = "--nostamps" not in blenderjme.blenderArgs
-print "TIMESTAMPING SET TO " + str(recordTimestamp)
 
 def gen(saveAll, autoRotate):
     global recordTimestamp

@@ -44,5 +44,4 @@ from Blender.Draw import Register
 # As there is little point to unit testing this script, it always assumes
 # the gui and menu system are present.
 
-gui.init()
 Register(gui.drawer, gui.inputHandler, gui.btnHandler)

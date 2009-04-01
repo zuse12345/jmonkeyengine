@@ -2,9 +2,6 @@ $Id$
 
 TODO LIST
 
-If current window not large enough for our gui box, throw up a pop-up
-notifying, and explaining that script windows should be closed.
-
 Handle unusual Blender objects like non-face items, non-data meshes, etc.
 
 As soon as I implement proper schema validation in jME core, add the namespace

@@ -408,7 +408,7 @@ class NodeTree(object):
             if bo.parent != None and bo.parent in self.__memberMap:
                 self.__memberMap[bo.parent].addChild(self.__memberMap[bo])
                 del self.__memberMap[bo]
-        for key in self.__memberKeys:
+        for key in self.__memberKeys[:]:
             if key not in self.__memberMap: self.__memberKeys.remove(key)
         if len(self.__memberKeys) < 1:
             raise Exception("Internal problem.  Tree ate itself.")

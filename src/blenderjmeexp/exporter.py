@@ -37,7 +37,6 @@ from jme.xml import XmlFile
 from datetime import datetime
 from blenderjmeexp.wrapperclasses import *
 from bpy import data
-from Blender.Mathutils import RotationMatrix
 
 recordTimestamp = True
 

@@ -45,10 +45,12 @@ from os.path import isfile
 defaultFilePath = path.abspath("default-jme.xml")
 saveAll = False
 xmlFile = None
+axisFlip = True
 BTNID_SAVEALL = 1
 BTNID_SAVE = 2
 BTNID_CANCEL = 3
 BTNID_OVERWRITE = 4
+BTNID_FLIP = 5
 selCount = None
 allCount = None
 fileOverwrite = False
@@ -74,16 +76,19 @@ def updateExportableCounts():
         if JmeNode.supported(o): selCount = selCount + 1
 
 def btnHandler(btnId):
-    global saveAll, xmlFile, defaultFilePath, fileOverwrite
+    global saveAll, xmlFile, defaultFilePath, fileOverwrite, axisFlip
     if btnId == BTNID_SAVEALL:
         saveAll = not saveAll
         return
     if btnId == BTNID_OVERWRITE:
         fileOverwrite = not fileOverwrite
         return
+    if btnId == BTNID_FLIP:
+        axisFlip = not axisFlip
+        return
     if btnId == BTNID_SAVE:
         try:
-            xmlFile = exporter.gen(saveAll, True)
+            xmlFile = exporter.gen(saveAll, axisFlip)
         except Exception, e:
             # Python 2.5 does not support "except X as y:" syntax
             ei = exc_info()[2]
@@ -234,8 +239,11 @@ def drawer():
             # Would prefer to make a 2-line button, but Draw does not
             # support that... or basically anything other than vanilla.
     Draw.Toggle("Overwrite", BTNID_OVERWRITE,
-            guiBox.x + 10, guiBox.y + 155, 60, 20, fileOverwrite,
+            guiBox.x + 10, guiBox.y + 175, 60, 20, fileOverwrite,
             "Silently overwrite export file if it exists beforehand")
+    Draw.Toggle("Rotate X", BTNID_FLIP,
+            guiBox.x + 10, guiBox.y + 150, 55, 20, axisFlip,
+            "Rotate X axis -90 degress in export so -Y axis becomes +Z")
     Draw.PushButton("Export", BTNID_SAVE,
             guiBox.x + 10, guiBox.y + 50, 50, 20, "Select file to save to")
     Draw.Label("Reserved space", guiBox.x + 180, guiBox.y + 150,200,20)

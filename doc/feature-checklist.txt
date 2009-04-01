@@ -9,7 +9,7 @@ $Id$
 * Writes defaultColor to Meshes if blenderObject.color set (Blender doesn't
    "show" the color, so need scripting or an add-on to set this).
 * Write vertex colors
-  Write nested mesh objects, preserving the parent/child relationships
+* Write nested mesh objects, preserving the parent/child relationships
   Write trivial color materials
   Write materials with color and other basic settings (reflectivity et. al.)
   Write basic texture map materials

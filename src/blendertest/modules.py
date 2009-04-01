@@ -38,9 +38,9 @@ __url__ = 'http://www.jmonkeyengine.com'
 try:
     import Blender
     from Blender import *
-    #from blenderjmeexp.gui import *   Gui will not work without real screen
-    from blenderjmeexp import *
-    from blenderjmeexp.wrapperclasses import *
+    #from blenderjme.gui import *   Gui will not work without real screen
+    from blenderjme import *
+    from blenderjme.wrapperclasses import *
     from Blender.Mathutils import *
     from bpy import data
     from datetime import datetime

@@ -41,8 +41,8 @@ Blender.Load(resFileAbsPath("cone.blend"))
 
 import unittest
 from unittest import *
-from blenderjmeexp import exporter
-from blenderjmeexp.exporter import gen
+from blenderjme import exporter
+from blenderjme.exporter import gen
 from blendertest import resFileContent
 
 class Tests(unittest.TestCase):

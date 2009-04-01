@@ -93,7 +93,7 @@ case "$(uname)" in
     ;;
 esac
 
-[ -n "SKIP_MODELTESTS" ] && {
+[ -n "$SKIP_MODELTESTS" ] && {
     echo 'Skipping model tests'
     exit $failures
 }

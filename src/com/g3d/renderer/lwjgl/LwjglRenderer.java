@@ -80,8 +80,6 @@ public class LwjglRenderer implements Renderer {
     /*********************************************************************\
     |* Render State                                                      *|
     \*********************************************************************/
-
-    @Override
     public void clearBuffers(boolean color, boolean depth, boolean stencil){
         int bits = 0;
         if (color) bits = GL_COLOR_BUFFER_BIT;
@@ -138,7 +136,6 @@ public class LwjglRenderer implements Renderer {
         }
     }
 
-    @Override
     public void setTransform(Transform transform) {
         worldMatrix.loadIdentity();
         
@@ -375,7 +372,6 @@ public class LwjglRenderer implements Renderer {
         }
     }
 
-    @Override
     public void updateShaderData(Shader shader){
         int id = shader.getId();
         boolean needRegister = false;
@@ -457,7 +453,6 @@ public class LwjglRenderer implements Renderer {
         }
     }
 
-    @Override
     public void setShader(Shader shader){
         if (shader == null){
             if (context.boundShaderProgram > 0){
@@ -700,7 +695,6 @@ public class LwjglRenderer implements Renderer {
         }
     }
 
-    @Override
     public void updateBufferData(VertexBuffer vb){
         int bufId = vb.getId();
         if (bufId == -1){
@@ -780,7 +774,6 @@ public class LwjglRenderer implements Renderer {
         }
     }
 
-    @Override
     public void clearVertexAttribs(){
         VertexBuffer[] boundAttribs = context.boundAttribs;
         for (int i = 0; i < boundAttribs.length; i++){
@@ -791,7 +784,6 @@ public class LwjglRenderer implements Renderer {
         }
     }
 
-    @Override
     public void setVertexAttrib(VertexBuffer vb){
         if (vb.getBufferType() == VertexBuffer.Type.Index)
             throw new IllegalArgumentException("Index buffers not allowed to be set to vertex attrib");
@@ -845,7 +837,6 @@ public class LwjglRenderer implements Renderer {
         //context.boundAttribs[index] = vb;
     }
 
-    @Override
     public void drawTriangleList(VertexBuffer indexBuf, int count){
         if (indexBuf.getBufferType() != VertexBuffer.Type.Index)
             throw new IllegalArgumentException("Only index buffers are allowed as triangle lists.");
@@ -883,8 +874,6 @@ public class LwjglRenderer implements Renderer {
     /*********************************************************************\
     |* Render Calls                                                      *|
     \*********************************************************************/
-
-    @Override
     public void renderMesh(Mesh mesh, int count) {
         VertexBuffer indices = null;
         for (VertexBuffer vb : mesh.getBuffers()){

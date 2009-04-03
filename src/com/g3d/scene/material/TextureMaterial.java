@@ -13,8 +13,8 @@ public class TextureMaterial extends Material {
         shader = new Shader();
         shader.addSource(Shader.ShaderType.Vertex,
                 "uniform mat4 g_WorldViewProjectionMatrix;\n" +
-                "in vec4 inPosition;\n" +
-                "in vec2 inTexCoord;" +
+                "attribute vec4 inPosition;\n" +
+                "attribute vec2 inTexCoord;" +
                 "varying vec2 texCoord;\n" +
                 "\n" +
                 "void main(){\n" +

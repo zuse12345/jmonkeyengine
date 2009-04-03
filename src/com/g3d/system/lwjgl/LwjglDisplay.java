@@ -13,6 +13,9 @@ import com.g3d.system.DisplaySettings;
 
 import com.g3d.system.DisplaySettings.Template;
 import com.g3d.system.G3DSystem;
+import java.util.logging.Level;
+import org.lwjgl.LWJGLUtil;
+import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import static org.lwjgl.opengl.GL11.*;
@@ -72,6 +75,8 @@ public class LwjglDisplay extends LwjglContext {
             return;
         }
 
+        logger.info("Using LWJGL "+Sys.getVersion());
+
         PixelFormat pf = new PixelFormat(settings.getBitsPerPixel(),
                                          0,
                                          settings.getDepthBits(),
@@ -103,7 +108,6 @@ public class LwjglDisplay extends LwjglContext {
 //            }
 
             logger.fine("Running on thread: "+Thread.currentThread().getName());
-
             Util.checkGLError();
 
             IntBuffer temp = TempVars.get().intBuffer16;

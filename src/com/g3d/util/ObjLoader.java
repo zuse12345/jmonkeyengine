@@ -162,7 +162,7 @@ public class ObjLoader {
         if (cmd.startsWith("#")){
             scan.useDelimiter("\n");
             scan.next(); // skip entire comment until next line
-            scan.reset();
+            scan.useDelimiter("\\p{javaWhitespace}+");
         }else if (cmd.equals("v")){
             verts.add(readVector3());
         }else if (cmd.equals("vn")){
@@ -185,12 +185,12 @@ public class ObjLoader {
             // group name
             scan.useDelimiter("\n");
             scan.next(); // will retrieve entire group list
-            scan.reset();
+            scan.useDelimiter("\\p{javaWhitespace}+");
         }else{
             System.out.println("Unknown statement in OBJ! "+cmd);
             scan.useDelimiter("\n");
             scan.next(); // skip entire command until next line
-            scan.reset();
+            scan.useDelimiter("\\p{javaWhitespace}+");
         }
 
         return true;

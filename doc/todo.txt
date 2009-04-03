@@ -2,6 +2,9 @@ $Id$
 
 TODO LIST
 
+Find out why material colors look "washed out" in jME.  Is this exporter-
+specific?
+
 Handle unusual Blender objects like non-face items, non-data meshes, etc.
 
 As soon as I implement proper schema validation in jME core, add the namespace

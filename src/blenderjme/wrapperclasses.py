@@ -41,6 +41,12 @@ from Blender.Mesh import Modes as _meshModes
 
 # GENERAL DEVELOPMENT NOTES:
 #
+# For unsupported Blender features (e.g. a particular Shader), carefully
+# consider, on a case-by-case basis, whether it is better to not export the
+# containing object (i.e. treat the object as unsupported) or to just not
+# export that single features.  For the latter case, it's good practice to
+# write a warning to stdout.
+#
 # When getting the mesh to work with from Blender, make sure to use
 # ...getMesh(False, True), or the equivalent ...getMesh(mesh=True).
 # This will get a Blender "wrapped" Mesh instance instead of a non-wrapped
@@ -51,8 +57,36 @@ from Blender.Mesh import Modes as _meshModes
 # For example, Blender Objects aggregate Meshes and Mesh references, but do
 # not consider them children; but in JME, nodes can have nodes and Meshes
 # (or any other Spatials) as children.
+#
+# Consider limiting vertex transformations (thereby losing useful node
+# transformations by checking Object.upAxis (read-only attr.)
 
 
+from Blender.Texture import Types as _bTexTypes
+from Blender.Texture import ExtendModes as _bTexExtModes
+from Blender.Texture import ImageFlags as _bImgFlags
+from Blender.Texture import Flags as _bTexFlags
+from Blender.Texture import TexCo as _bTexCo
+from Blender.Texture import BlendModes as _bBlendModes
+from Blender.Texture import Mappings as _bTexMappings
+from Blender.Texture import MapTo as _bTexMapTo
+
+
+class UnsupportedException(Exception):
+    def __init__(self, setting, val=None, note=None):
+        Exception.__init__(self)
+        if val == None:
+            self.msg = ("Feature '" + setting + "' is unsupported.")
+        else:
+            self.msg = ("Value '" + str(val) + "' for setting '" + setting
+                    + "' unsupported.")
+        if note != None: self.msg += ("  " + note)
+
+    def __str__(self):
+        return self.msg
+
+
+from Blender.Object import PITypes as _bPITypes
 class JmeNode(object):
     __slots__ = ('wrappedObj', 'children', 'jmeMats',
             'name', 'autoRotate', 'retainTransform')
@@ -99,9 +133,8 @@ class JmeNode(object):
         meshMats = []
         for i in range(len(bMesh.materials)):
             #print "Bit " + str(i) + " for " + self.getName() + " = " + str(self.wrappedObj.colbits & (1<<i))
-            if 0 == (self.wrappedObj.colbits & (1<<i)):
-                meshMats.append(
-                        nodeTree.includeMat(bMesh.materials[i], twoSided))
+            if 0 != (self.wrappedObj.colbits & (1<<i)): continue
+            meshMats.append(nodeTree.includeMat(bMesh.materials[i], twoSided))
         if len(meshMats) > 0: jmeMesh.jmeMats = meshMats
 
     def addChild(self, child):
@@ -199,9 +232,42 @@ class JmeNode(object):
     def supported(bObj):
         """Returns 0 if type not supported; non-0 if supported.
            2 if will require face niggling; 3 if faceless"""
+        # Silently ignore keyframes bMes.key for now.
+        # Is face transp mode bMesh.mode for design-time usage?
+        # Ignore animation, action, constraints, ip, and keyframing settings.
+        # Users should know that we don't support them.
+
         if bObj.type not in ['Mesh']: return 0
-        if not bObj.getData(False, True):
-            raise Exception("Mesh Object has no data member?")
+        bMesh = bObj.getData(False, True)
+        if not bMesh: raise Exception("Mesh Object has no data member?")
+        try:
+            if len(bObj.getMaterials()) > 0:
+                for bMat in bObj.getMaterials():
+                    JmeMaterial(bMat, False) # twoSided param doesn't matter
+            for i in range(len(bMesh.materials)):
+                if 0 != (bObj.colbits & (1<<i)): continue
+                JmeMaterial(bMesh.materials[i], False) # ditto
+                for j in bMesh.materials[i].enabledTextures:
+                    examineMtex(bMesh.materials[i].textures[j])
+            if bMesh.multires: raise UnsupportedException("multires data")
+            if bMesh.texMesh != None:
+                raise UnsupportedException("Texture coords by Mesh-ref")
+        except UnsupportedException, ue:
+            print ue
+            return 0
+        if bMesh.faceUV:
+            print "WARNING:  Ignoring UV-mapped textured faces.  Not supported."
+        if bObj.isSoftBody:
+            print "WARNING:  Soft Body settings not supported yet.  Ignoring."
+        if bObj.piType != _bPITypes['NONE']:
+            print "WARNING:  Particle Interation not supported yet.  Ignoring."
+        if bObj.rbMass != 1.0 or bObj.rbRadius != 1.0:
+            print "WARNING:  Rigid Body settings not supported yet.  Ignoring."
+            # Can't test .rbFlags, since they are on and significant by dflt.
+            # Can't test .rbShapeBoundType, since there is a constant with
+            # value 0.  Poorly designed constants.
+        if bObj.track != None:
+            print "WARNING: Object tracking not supported yet.  Ignoring."
         vpf = JmeMesh.vertsPerFace(bObj.getData(False, True).faces)
         if vpf == None:
             print "FYI:  Accepting object '" + bObj.name + "' with no faces"
@@ -492,6 +558,8 @@ class NodeTree(object):
     __uniquifyNames = staticmethod(__uniquifyNames)
 
 
+from Blender.Material import Shaders as _bShaders
+from bpy.data import scenes as _bScenes
 class JmeMaterial(object):
     # May or may not need to redesign with subclasses to handle textures and
     # other material states that are not simply the 4 colors + 2 states + shini.
@@ -499,15 +567,41 @@ class JmeMaterial(object):
 
     __slots__ = ('colorMaterial', 'ambient', 'emissive', 'diffuse', 'written',
             'specular', 'shininess', 'materialFace', 'refCount', 'blenderName')
-    # N.b. __memberMap does not have a member for each node, but a member
-    #      for each saved Blender object.
-    # __memberKey is just because Python has no ordered maps/dictionaries
-    # We want nodes persisted in a well-defined sequence.
+    AMBIENT_OBJDIF_WEIGHTING = .7
+    # This has no effect if Blender World ambient lighting is active.
+    # If inactive, this specifies the portion of the generated material ambient
+    # color from the material's diffuse color.  The remainder
+    # (1.0 - ...WEIGHTING) is white.  This is before the total effect is
+    # diminished according to the Blender Material's .amb value.
 
     def __init__(self, bMat, twoSided):
+        "Throws a descriptive UnsupportedException for the obvious reason"
         self.written = False   # May write refs after written is True
         self.refCount = 0
         self.blenderName = bMat.name
+
+        # Supportability validation
+        #if len(bMat.colorband) > 0:  Attribute missing.
+        if len(bMat.colorbandDiffuse) > 0:
+            raise UnsupportedException("colorbandDiffuse", "any",
+                    "colorbandDiffuse length: " + str(len(colorbandDiffuse)))
+        if bMat.diffuseShader != _bShaders['DIFFUSE_LAMBERT']:
+            raise UnsupportedException("diffuse shader", diffuseShader)
+        if bMat.specShader != _bShaders['DIFFUSE_LAMBERT']:
+            raise UnsupportedException("specular shader", specShader)
+        if bMat.enableSSS:
+            raise UnsupportedException("Subsurface Scattering (sss)")
+        # Users should know that we don't support Mirroring, Halo, IPO,
+        # lightGropus, etc., so we ignore all of these
+        # Mirroring settings include Raytrace, Fresnel, Transp.
+        # bMat.glossTra?
+        if bMat.rbFriction != 0.5 or bMat.rbRestitution != 0:
+            print "WARNING:  Rigid Body settings not supported yet.  Ignoring."
+        if bMat.shadAlpha != 1.0:
+            raise UnsupportedException("shadow alpha", bMat.shadAlpha)
+        if bMat.specTransp != 1.0:
+            raise UnsupportedException("specular transp.", bMat.specTransp)
+
         if bMat.mode & _matModes['VCOL_PAINT']:
             # TODO:  API says replaces "basic colors".  Need to verify that
             # that means diffuse, a.o.t. diffuse + specular + mirror.
@@ -535,9 +629,38 @@ class JmeMaterial(object):
         self.emissive = [bMat.rgbCol[0] * bMat.emit,
                 bMat.rgbCol[1] * bMat.emit,
                 bMat.rgbCol[2] * bMat.emit, 1]
-        self.ambient = [bMat.amb, bMat.amb, bMat.amb, 1]
         if twoSided: self.materialFace = "FrontAndBack"
         else: self.materialFace = None
+
+        # Ambient setting needs special attention.
+        # Blender's ambient value applies the "World Ambient Light" color",
+        # not any material color.  So, with a typical R=G=B color in Blender or
+        # jME, this will "wash out" the material's explicitly set colors.
+        # If the user has set the World ambient light color, this is probably
+        # exactly what they want.  If the World ambient light is "off" (by
+        # leaving the ambient light color at its default value of 0/0/0), then
+        # the user probably has no idea that their explicit mat colors will
+        # be weakened according to the mat's amb setting-- to the point
+        # that if there is no light falling on the object, it will retain no
+        # mat coloring.
+        # Therefore, if World ambient light is off, we will make this washing
+        # out effect more subtle, by combining diffuse + world lighting.
+        world = _bScenes.active.world
+        if world == None  or (
+                world.amb[0] == 0 and world.amb[1] == 0 and world.amb[2] == 0):
+            # Add some material coloring into ambient coloring.  Details above.
+            # Weighted average of mat diffuse coloring + white (the white
+            # portion will take the color of ambient-generating lights).
+            # local vars just for conciseness.
+            diffuseFactor = JmeMaterial.AMBIENT_OBJDIF_WEIGHTING
+            whiteFactor = 1.0 - diffuseFactor
+            self.ambient = [
+                (diffuseFactor * self.diffuse[0] + whiteFactor) * bMat.amb,
+                (diffuseFactor * self.diffuse[1] + whiteFactor) * bMat.amb,
+                (diffuseFactor * self.diffuse[2] + whiteFactor) * bMat.amb,
+            1]
+        else:
+            self.ambient = [bMat.amb, bMat.amb, bMat.amb, 1]
 
     def getXmlEl(self):
         tag = _XmlTag('com.jme.scene.state.MaterialState',
@@ -547,6 +670,7 @@ class JmeMaterial(object):
             return tag
         self.written = True
         if self.refCount > 0: tag.addAttr("reference_ID", self.blenderName)
+
         tag.addAttr("shininess", self.shininess, 2)
         if self.materialFace != None:
             tag.addAttr("materialFace", self.materialFace)
@@ -578,4 +702,28 @@ class JmeMaterial(object):
         specularTag.addAttr("b", self.specular[2], 3)
         specularTag.addAttr("a", self.specular[3], 3)
         tag.addChild(specularTag)
+        return tag
+
+
+class JmeTexture(object):
+    "A Texture corresponding to a jME TextureState."
+
+    __slots__ = ('blenderName')
+
+    def __init__(self, bMat, twoSided):
+        "Throws a descriptive UnsupportedException for the obvious reason"
+        self.written = False   # May write refs after written is True
+        self.refCount = 0
+        self.blenderName = bMat.name
+
+    def getXmlEl(self):
+        tag = _XmlTag('com.jme.scene.state.TextureState',
+                {'class':"com.jme.scene.state.lwjgl.LWJGLTextureState"})
+        if self.written:
+            tag.addAttr('ref', self.blenderName)
+            return tag
+        self.written = True
+        if self.refCount > 0: tag.addAttr("reference_ID", self.blenderName)
+
+        #tag.addChild(specularTag)
         return tag

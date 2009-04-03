@@ -2,8 +2,9 @@ $Id$
 
 TODO LIST
 
-Find out why material colors look "washed out" in jME.  Is this exporter-
-specific?
+The Blender materials don't have a basic material alpha setting, just RGB.
+Look into whether I should get the alpha value for the jME color float[4]s
+from somewhere.  Just setting all alphas to 1 for now.
 
 Handle unusual Blender objects like non-face items, non-data meshes, etc.
 

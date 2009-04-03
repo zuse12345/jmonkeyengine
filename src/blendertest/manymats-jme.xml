@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Blender export by Blender/JME Exporter -->
+
+<com.jme.scene.Node name="BlenderObjects">
+  <children size="7">
+    <com.jme.scene.Node name="o2">
+      <renderStateList>
+        <com.jme.scene.state.MaterialState class="com.jme.scene.state.lwjgl.LWJGLMaterialState" reference_ID="GreenMat" shininess="32.00" materialFace="FrontAndBack">
+          <diffuse r="0.000" g="1.000" b="0.000" a="1.000"/>
+          <ambient r="0.500" g="0.500" b="0.500" a="1.000"/>
+          <emissive r="0.000" g="0.000" b="0.000" a="1.000"/>
+          <specular r="1.000" g="1.000" b="1.000" a="1.000"/>
+        </com.jme.scene.state.MaterialState>
+      </renderStateList>
+      <children size="5">
+        <com.jme.scene.QuadMesh name="mesh2">
+          <vertBuf size="12" data="1.000000 1.000000 0.000000  1.000000 -1.000000 0.000000  -1.000000 -1.000000 0.000000  -1.000000 1.000000 0.000000"/>
+          <normBuf size="12" data="0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000"/>
+          <indexBuffer size="4" data="0 3 2 1"/>
+        </com.jme.scene.QuadMesh>
+        <com.jme.scene.Node name="Plane">
+          <children size="1">
+            <com.jme.scene.QuadMesh name="PlaneMesh">
+              <renderStateList>
+                <com.jme.scene.state.MaterialState class="com.jme.scene.state.lwjgl.LWJGLMaterialState" ref="GreenMat"/>
+              </renderStateList>
+              <vertBuf size="12" data="1.000000 1.000000 0.000000  1.000000 -1.000000 0.000000  -1.000000 -1.000000 0.000000  -1.000000 1.000000 0.000000"/>
+              <normBuf size="12" data="0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000"/>
+              <indexBuffer size="4" data="0 3 2 1"/>
+            </com.jme.scene.QuadMesh>
+          </children>
+          <localTranslation x="-1.725765" y="-2.829095" z="0.545696"/>
+        </com.jme.scene.Node>
+        <com.jme.scene.Node name="Plane.001">
+          <renderStateList>
+            <com.jme.scene.state.MaterialState class="com.jme.scene.state.lwjgl.LWJGLMaterialState" ref="GreenMat"/>
+          </renderStateList>
+          <children size="1">
+            <com.jme.scene.QuadMesh name="Plane.001Mesh">
+              <vertBuf size="12" data="1.000000 1.000000 0.000000  1.000000 -1.000000 0.000000  -1.000000 -1.000000 0.000000  -1.000000 1.000000 0.000000"/>
+              <normBuf size="12" data="0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000"/>
+              <indexBuffer size="4" data="0 3 2 1"/>
+            </com.jme.scene.QuadMesh>
+          </children>
+          <localTranslation x="2.499971" y="-2.435170" z="0.545696"/>
+        </com.jme.scene.Node>
+        <com.jme.scene.Node name="Plane.004">
+          <children size="1">
+            <com.jme.scene.QuadMesh name="Plane.004Mesh">
+              <renderStateList>
+                <com.jme.scene.state.MaterialState class="com.jme.scene.state.lwjgl.LWJGLMaterialState" ref="GreenMat"/>
+              </renderStateList>
+              <vertBuf size="12" data="1.000000 1.000000 0.000000  1.000000 -1.000000 0.000000  -1.000000 -1.000000 0.000000  -1.000000 1.000000 0.000000"/>
+              <normBuf size="12" data="0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000"/>
+              <indexBuffer size="4" data="0 3 2 1"/>
+            </com.jme.scene.QuadMesh>
+          </children>
+          <localTranslation x="2.571595" y="2.005434" z="0.545696"/>
+        </com.jme.scene.Node>
+        <com.jme.scene.Node name="Plane.005">
+          <children size="1">
+            <com.jme.scene.QuadMesh name="Plane.005Mesh">
+              <renderStateList>
+                <com.jme.scene.state.MaterialState class="com.jme.scene.state.lwjgl.LWJGLMaterialState" reference_ID="RedMat" shininess="32.00" materialFace="FrontAndBack">
+                  <diffuse r="1.000" g="0.000" b="0.000" a="1.000"/>
+                  <ambient r="0.500" g="0.500" b="0.500" a="1.000"/>
+                  <emissive r="0.000" g="0.000" b="0.000" a="1.000"/>
+                  <specular r="1.000" g="1.000" b="1.000" a="1.000"/>
+                </com.jme.scene.state.MaterialState>
+              </renderStateList>
+              <vertBuf size="12" data="1.000000 1.000000 0.000000  1.000000 -1.000000 0.000000  -1.000000 -1.000000 0.000000  -1.000000 1.000000 0.000000"/>
+              <normBuf size="12" data="0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000"/>
+              <indexBuffer size="4" data="0 3 2 1"/>
+            </com.jme.scene.QuadMesh>
+          </children>
+          <localTranslation x="-1.009538" y="3.043962" z="0.545696"/>
+        </com.jme.scene.Node>
+      </children>
+      <localTranslation x="3.192324" y="0.000000" z="0.054570"/>
+    </com.jme.scene.Node>
+    <com.jme.scene.Node name="Plane.003">
+      <children size="3">
+        <com.jme.scene.QuadMesh name="Plane.003Mesh">
+          <renderStateList>
+            <com.jme.scene.state.MaterialState class="com.jme.scene.state.lwjgl.LWJGLMaterialState" ref="GreenMat"/>
+          </renderStateList>
+          <vertBuf size="12" data="1.000000 1.000000 0.000000  1.000000 -1.000000 0.000000  -1.000000 -1.000000 0.000000  -1.000000 1.000000 0.000000"/>
+          <normBuf size="12" data="0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000"/>
+          <indexBuffer size="4" data="0 3 2 1"/>
+        </com.jme.scene.QuadMesh>
+        <com.jme.scene.Node name="o1">
+          <children size="1">
+            <com.jme.scene.QuadMesh name="mesh1">
+              <renderStateList>
+                <com.jme.scene.state.MaterialState class="com.jme.scene.state.lwjgl.LWJGLMaterialState" ref="RedMat"/>
+              </renderStateList>
+              <vertBuf size="12" data="1.000000 1.000000 0.000000  1.000000 -1.000000 0.000000  -1.000000 -1.000000 0.000000  -1.000000 1.000000 0.000000"/>
+              <normBuf size="12" data="0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000"/>
+              <indexBuffer size="4" data="0 3 2 1"/>
+            </com.jme.scene.QuadMesh>
+          </children>
+          <localTranslation x="1.420515" y="3.008152" z="-0.682121"/>
+        </com.jme.scene.Node>
+        <com.jme.scene.Node name="Plane.002">
+          <renderStateList>
+            <com.jme.scene.state.MaterialState class="com.jme.scene.state.lwjgl.LWJGLMaterialState" ref="RedMat"/>
+          </renderStateList>
+          <children size="1">
+            <com.jme.scene.QuadMesh name="Plane.002Mesh">
+              <vertBuf size="12" data="1.000000 1.000000 0.000000  1.000000 -1.000000 0.000000  -1.000000 -1.000000 0.000000  -1.000000 1.000000 0.000000"/>
+              <normBuf size="12" data="0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000"/>
+              <indexBuffer size="4" data="0 3 2 1"/>
+            </com.jme.scene.QuadMesh>
+          </children>
+          <localTranslation x="3.258830" y="5.156831" z="-0.000000"/>
+        </com.jme.scene.Node>
+      </children>
+      <localTranslation x="-6.304498" y="-3.008152" z="0.600266"/>
+    </com.jme.scene.Node>
+    <com.jme.scene.Node name="Plane.006">
+      <children size="1">
+        <com.jme.scene.QuadMesh name="Plane.006Mesh">
+          <renderStateList>
+            <com.jme.scene.state.MaterialState class="com.jme.scene.state.lwjgl.LWJGLMaterialState" ref="GreenMat"/>
+          </renderStateList>
+          <vertBuf size="12" data="1.000000 1.000000 0.000000  1.000000 -1.000000 0.000000  -1.000000 -1.000000 0.000000  -1.000000 1.000000 0.000000"/>
+          <normBuf size="12" data="0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000"/>
+          <indexBuffer size="4" data="0 3 2 1"/>
+        </com.jme.scene.QuadMesh>
+      </children>
+      <localTranslation x="-3.045667" y="-4.082491" z="0.600266"/>
+    </com.jme.scene.Node>
+    <com.jme.scene.Node name="Plane.007">
+      <renderStateList>
+        <com.jme.scene.state.MaterialState class="com.jme.scene.state.lwjgl.LWJGLMaterialState" ref="RedMat"/>
+      </renderStateList>
+      <children size="1">
+        <com.jme.scene.QuadMesh name="Plane.007Mesh">
+          <vertBuf size="12" data="1.000000 1.000000 0.000000  1.000000 -1.000000 0.000000  -1.000000 -1.000000 0.000000  -1.000000 1.000000 0.000000"/>
+          <normBuf size="12" data="0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000"/>
+          <indexBuffer size="4" data="0 3 2 1"/>
+        </com.jme.scene.QuadMesh>
+      </children>
+      <localTranslation x="-1.541591" y="5.658189" z="0.600265"/>
+    </com.jme.scene.Node>
+    <com.jme.scene.Node name="Plane.008">
+      <children size="1">
+        <com.jme.scene.QuadMesh name="Plane.008Mesh">
+          <vertBuf size="12" data="1.000000 1.000000 0.000000  1.000000 -1.000000 0.000000  -1.000000 -1.000000 0.000000  -1.000000 1.000000 0.000000"/>
+          <normBuf size="12" data="0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000"/>
+          <indexBuffer size="4" data="0 3 2 1"/>
+        </com.jme.scene.QuadMesh>
+      </children>
+      <localTranslation x="-0.825365" y="0.143245" z="0.600266"/>
+    </com.jme.scene.Node>
+    <com.jme.scene.Node name="Plane.009">
+      <children size="1">
+        <com.jme.scene.QuadMesh name="Plane.009Mesh">
+          <renderStateList>
+            <com.jme.scene.state.MaterialState class="com.jme.scene.state.lwjgl.LWJGLMaterialState" shininess="32.00" materialFace="FrontAndBack">
+              <diffuse r="0.000" g="0.000" b="0.867" a="1.000"/>
+              <ambient r="0.500" g="0.500" b="0.500" a="1.000"/>
+              <emissive r="0.000" g="0.000" b="0.000" a="1.000"/>
+              <specular r="1.000" g="1.000" b="1.000" a="1.000"/>
+            </com.jme.scene.state.MaterialState>
+          </renderStateList>
+          <vertBuf size="12" data="1.000000 1.000000 0.000000  1.000000 -1.000000 0.000000  -1.000000 -1.000000 0.000000  -1.000000 1.000000 0.000000"/>
+          <normBuf size="12" data="0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000"/>
+          <indexBuffer size="4" data="0 3 2 1"/>
+        </com.jme.scene.QuadMesh>
+      </children>
+      <localTranslation x="3.543617" y="-4.046680" z="0.600266"/>
+    </com.jme.scene.Node>
+    <com.jme.scene.Node name="Plane.010">
+      <children size="1">
+        <com.jme.scene.QuadMesh name="Plane.010Mesh">
+          <renderStateList>
+            <com.jme.scene.state.MaterialState class="com.jme.scene.state.lwjgl.LWJGLMaterialState" shininess="32.00" materialFace="FrontAndBack">
+              <diffuse r="1.000" g="1.000" b="0.000" a="1.000"/>
+              <ambient r="0.500" g="0.500" b="0.500" a="1.000"/>
+              <emissive r="0.000" g="0.000" b="0.000" a="1.000"/>
+              <specular r="1.000" g="1.000" b="1.000" a="1.000"/>
+            </com.jme.scene.state.MaterialState>
+            <com.jme.scene.state.MaterialState class="com.jme.scene.state.lwjgl.LWJGLMaterialState" ref="RedMat"/>
+            <com.jme.scene.state.MaterialState class="com.jme.scene.state.lwjgl.LWJGLMaterialState" ref="GreenMat"/>
+          </renderStateList>
+          <vertBuf size="12" data="1.000000 1.000000 0.000000  1.000000 -1.000000 0.000000  -1.000000 -1.000000 0.000000  -1.000000 1.000000 0.000000"/>
+          <normBuf size="12" data="0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000"/>
+          <indexBuffer size="4" data="0 3 2 1"/>
+        </com.jme.scene.QuadMesh>
+      </children>
+      <localTranslation x="-0.861176" y="-5.085209" z="0.600266"/>
+    </com.jme.scene.Node>
+  </children>
+</com.jme.scene.Node>

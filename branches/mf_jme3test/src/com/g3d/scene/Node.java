@@ -62,7 +62,7 @@ public class Node extends Spatial implements Savable {
     /** 
      * This node's children.
      */
-    protected List<Spatial> children = Collections.synchronizedList(new ArrayList<Spatial>(1));;
+    protected List<Spatial> children = new ArrayList<Spatial>(1);
 
     /**
      * Default constructor.
@@ -90,10 +90,6 @@ public class Node extends Spatial implements Savable {
      * @return the number of children this node maintains.
      */
     public int getQuantity() {
-        if(children == null) {
-            return 0;
-        } 
-            
         return children.size();        
     }
 

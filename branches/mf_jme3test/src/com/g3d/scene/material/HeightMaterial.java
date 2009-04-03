@@ -9,7 +9,7 @@ public class HeightMaterial extends Material {
         shader = new Shader();
         shader.addSource(ShaderType.Vertex,
                           "uniform mat4 g_WorldViewProjectionMatrix;\n" +
-                          "in vec4 inPosition;\n" +
+                          "attribute vec4 inPosition;\n" +
                           "uniform float g_MaxHeight;\n" +
                           "varying float height;\n" +
                           "\n" +

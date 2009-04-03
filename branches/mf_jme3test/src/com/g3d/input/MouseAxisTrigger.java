@@ -12,7 +12,6 @@ public class MouseAxisTrigger implements Trigger {
         this.negative = negative;
     }
 
-    @Override
     public String getName() {
         String name = "Invalid";
         switch (axisIndex){
@@ -31,7 +30,6 @@ public class MouseAxisTrigger implements Trigger {
         return name;
     }
 
-    @Override
     public float getValue() {
         float value = 0f;
         switch (axisIndex){

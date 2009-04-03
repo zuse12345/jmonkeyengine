@@ -19,12 +19,10 @@ public class KeyTrigger implements Trigger {
         }
     }
 
-    @Override
     public String getName(){
         return keyName;
     }
 
-    @Override
     public float getValue(){
 //        if (keyCode == -1)
             return 0f;

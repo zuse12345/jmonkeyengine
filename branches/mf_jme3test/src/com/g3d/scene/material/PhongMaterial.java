@@ -9,15 +9,14 @@ public class PhongMaterial extends Material {
     public PhongMaterial(float shiny){
         shader = new Shader();
         shader.addSource(Shader.ShaderType.Vertex,
-                "#version 120\n"+
                 "uniform vec4 g_LightColor[4];\n" +
                 "uniform vec4 g_LightPosition[4];\n" +
                 "uniform mat4 g_WorldViewProjectionMatrix;" +
                 "uniform mat4 g_WorldMatrix;\n" +
                 "uniform mat4 g_WorldViewMatrix;\n" +
                 "uniform mat4 g_ViewMatrix;\n" +
-                "in vec3 inPosition;\n" +
-                "in vec3 inNormal;\n" +
+                "attribute vec3 inPosition;\n" +
+                "attribute vec3 inNormal;\n" +
                 "varying vec3 normal;\n" +
                 "varying vec4 lightDir[4];\n" +
                 "varying vec3 viewDir;\n" +
@@ -33,7 +32,7 @@ public class PhongMaterial extends Material {
                 "void main(){\n" +
                 "   gl_Position = g_WorldViewProjectionMatrix * vec4(inPosition,1.0);\n" +
                 "   vec3 worldPos = (g_WorldMatrix * vec4(inPosition,1.0)).xyz;\n" +
-                "   normal = normalize( mat3(g_WorldMatrix) * inNormal );\n" +
+                "   normal = normalize( g_WorldMatrix * vec4(inNormal,0.0) ).xyz;\n" +
                 "   viewDir = -normalize(g_WorldViewMatrix * vec4(inPosition,1.0)).xyz;\n" +
                 "   // compute for each light\n"+
                 "   for (int i = 0; i < 4; i++){\n" +
@@ -41,12 +40,11 @@ public class PhongMaterial extends Material {
                 "   }\n" +
                 "}\n");
         shader.addSource(Shader.ShaderType.Fragment,
-                "#version 120\n"+
                 "uniform float g_Shininess;\n" +
                 "uniform vec4 g_LightColor[4];\n"+
-                "in vec3 normal;\n" +
-                "in vec4 lightDir[4];\n" +
-                "in vec3 viewDir;\n" +
+                "varying vec3 normal;\n" +
+                "varying vec4 lightDir[4];\n" +
+                "varying vec3 viewDir;\n" +
                 "\n"+
                 "vec3 lightComputeDiffuse(in vec3 norm, in vec4 lightdir, in vec4 color){\n" +
                 "    return vec3(max(0.0, dot(normal, lightdir.xyz))) * color.xyz * lightdir.w;\n" +

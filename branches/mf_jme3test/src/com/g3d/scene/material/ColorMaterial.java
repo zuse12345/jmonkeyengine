@@ -14,7 +14,7 @@ public class ColorMaterial extends Material {
         shader = new Shader();
         shader.addSource(ShaderType.Vertex,
                           "uniform mat4 g_WorldViewProjectionMatrix;\n" +
-                          "in vec4 inPosition;\n" +
+                          "attribute vec4 inPosition;\n" +
                           "\n" +
                           "void main(){\n" +
                           "    gl_Position = g_WorldViewProjectionMatrix * inPosition;\n" +

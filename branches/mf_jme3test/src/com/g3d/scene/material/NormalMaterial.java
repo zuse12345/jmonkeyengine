@@ -9,8 +9,8 @@ public class NormalMaterial extends Material {
         shader = new Shader();
         shader.addSource(ShaderType.Vertex,
                           "uniform mat4 g_WorldViewProjectionMatrix;\n" +
-                          "in vec4 inPosition;" +
-                          "in vec3 inNormal;\n" +
+                          "attribute vec4 inPosition;" +
+                          "attribute vec3 inNormal;\n" +
                           "varying vec3 normal;" +
                           "\n" +
                           "void main(){\n" +

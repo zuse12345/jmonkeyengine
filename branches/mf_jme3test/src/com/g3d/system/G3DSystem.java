@@ -54,7 +54,6 @@ public class G3DSystem {
         logger.info("Running on "+getFullName());
 
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            @Override
             public void uncaughtException(Thread thread, Throwable thrown) {
                 reportError("Uncaught exception thrown in "+thread.toString(), thrown);
             }
@@ -77,7 +76,7 @@ public class G3DSystem {
     }
 
     public static String getFullName(){
-        return "Gorilla3D Engine 0.03";
+        return "Gorilla3D Engine 0.05";
     }
 
     public static void reportError(String errorMsg){

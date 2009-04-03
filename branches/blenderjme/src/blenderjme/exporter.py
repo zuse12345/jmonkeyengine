@@ -65,7 +65,7 @@ def gen(saveAll, autoRotate):
 
         stampText = "Blender export by Blender/JME Exporter"
         if recordTimestamp: stampText += (" at " + _datetime.now().isoformat())
-        xmlFile = _XmlFile(root.getXmlEl())
+        xmlFile = _XmlFile(nodeTree.getXml())
         xmlFile.addComment(stampText)
         return xmlFile
     finally:

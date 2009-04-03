@@ -36,6 +36,8 @@ __url__ = 'http://www.jmonkeyengine.com'
 from jme.xml import XmlTag as _XmlTag
 import jme.esmath as _esmath
 import Blender.Mathutils as _bmath
+from Blender.Material import Modes as _matModes
+from Blender.Mesh import Modes as _meshModes
 
 # GENERAL DEVELOPMENT NOTES:
 #
@@ -52,30 +54,55 @@ import Blender.Mathutils as _bmath
 
 
 class JmeNode(object):
-    __slots__ = ('wrappedObj', 'children',
+    __slots__ = ('wrappedObj', 'children', 'jmeMats',
             'name', 'autoRotate', 'retainTransform')
     IDENTITY_4x4 = _bmath.Matrix().resize4x4()
     BLENDER_TO_JME_ROTATION = _bmath.RotationMatrix(-90, 4, 'x')
 
-    def __init__(self, bObjOrName):
+    def __init__(self, bObjOrName, nodeTree=None):
         """Assumes input Blender Object already validated, like by using the
         supported() static method below.
-        I.e., is of supported type, and facing method is supported."""
+        I.e., is of supported type, and facing method is supported.
+        Materials from given bObj and direct data mesh (if any) will be added
+        to one of the specified nodeTree's materials maps."""
         object.__init__(self)
         self.children = None
         self.wrappedObj = None
         self.autoRotate = False
         self.retainTransform = None
+        self.jmeMats = None
 
         if isinstance(bObjOrName, basestring):
             self.name = bObjOrName
-        else:
-            self.wrappedObj = bObjOrName
-            self.name = self.wrappedObj.name
-            bMesh = self.wrappedObj.getData(False, True)
-            if bMesh != None:
-                self.addChild(JmeMesh(bMesh, self.wrappedObj.color))
+            return
+
+        if nodeTree == None:
+            raise Exception("If instantiating a Blender-Object-wrapping Node, "
+                    + "param nodeTree must be set")
+        self.wrappedObj = bObjOrName
+        self.name = self.wrappedObj.name
+        bMesh = self.wrappedObj.getData(False, True)
+        twoSided = bMesh != None and (bMesh.mode & _meshModes['TWOSIDED'])
+        if len(self.wrappedObj.getMaterials()) > 0:
+            self.jmeMats = []
+            for bMat in self.wrappedObj.getMaterials():
+                self.jmeMats.append(nodeTree.includeMat(bMat, twoSided))
+        if bMesh == None: return
+
+        # From here on, we know we have a Blender direct Mesh data member
+        jmeMesh =   JmeMesh(bMesh, self.wrappedObj.color)
+        self.addChild(jmeMesh)
         #print "Instantiated JmeNode '" + self.getName() + "'"
+        # Since Blender has mashed together the Object and Mesh by having
+        # object.colbits specify how the Mesh's materials are to be
+        # interpreted, we add the Mesh's materials here.
+        meshMats = []
+        for i in range(len(bMesh.materials)):
+            #print "Bit " + str(i) + " for " + self.getName() + " = " + str(self.wrappedObj.colbits & (1<<i))
+            if 0 == (self.wrappedObj.colbits & (1<<i)):
+                meshMats.append(
+                        nodeTree.includeMat(bMesh.materials[i], twoSided))
+        if len(meshMats) > 0: jmeMesh.jmeMats = meshMats
 
     def addChild(self, child):
         if self.children == None: self.children = []
@@ -86,8 +113,14 @@ class JmeNode(object):
     def getXmlEl(self):
         tag = _XmlTag('com.jme.scene.Node', {'name':self.getName()})
 
+        if self.jmeMats != None:
+            rsTag = _XmlTag('renderStateList')
+            for mat in self.jmeMats: rsTag.addChild(mat.getXmlEl())
+            tag.addChild(rsTag)
+
         if self.wrappedObj != None:
             matrix = _bmath.Matrix(self.wrappedObj.matrixLocal)
+
         # Do all work with a copy.  We don't midify user data.
         if self.autoRotate:
             if matrix == None:
@@ -196,7 +229,7 @@ class JmeNode(object):
 
 
 class JmeMesh(object):
-    __slots__ = ('wrappedMesh',
+    __slots__ = ('wrappedMesh', 'jmeMats',
             '__vpf', 'defaultColor', 'name', 'bakeTransform')
     # defaultColor corresponds to jME's Meshs' defaultColor.
     # In Blender this is a per-Object, not per-Mesh setting.
@@ -213,6 +246,7 @@ class JmeMesh(object):
         self.name = bMesh.name
         self.defaultColor = color
         self.bakeTransform = None
+        self.jmeMats = None
         #print "Instantiated JmeMesh '" + self.getName() + "'"
         self.__vpf = JmeMesh.vertsPerFace(self.wrappedMesh.faces)
 
@@ -249,6 +283,11 @@ class JmeMesh(object):
             colorTag.addAttr("g", self.defaultColor[1])
             colorTag.addAttr("b", self.defaultColor[2])
             colorTag.addAttr("a", self.defaultColor[3])
+
+        if self.jmeMats != None:
+            rsTag = _XmlTag('renderStateList')
+            for mat in self.jmeMats: rsTag.addChild(mat.getXmlEl())
+            tag.addChild(rsTag)
 
         vcMap = None   # maps vertex INDEX to MCol
         colArray = None
@@ -352,7 +391,8 @@ class NodeTree(object):
     Add all members to the tree, then call nest().
     See method descriptions for details."""
 
-    __slots__ = ('__memberMap', '__memberKeys')
+    __slots__ = ('__memberMap', '__memberKeys',
+            '__matMap1side', '__matMap2side', 'root')
     # N.b. __memberMap does not have a member for each node, but a member
     #      for each saved Blender object.
     # __memberKey is just because Python has no ordered maps/dictionaries
@@ -361,13 +401,32 @@ class NodeTree(object):
     def __init__(self):
         self.__memberMap = {}
         self.__memberKeys = []
+        self.__matMap1side = {}
+        self.__matMap2side = {}
+        self.root = None
+
+    def includeMat(self, bMat, twoSided):
+        """include* instead of add*, because we don't necessarily 'add'.  We
+        will just increment the refCount if it's already in our list.
+        Returns new or used JmeMaterial."""
+        if twoSided:
+            matMap = self.__matMap2side
+        else:
+            matMap = self.__matMap1side
+        if bMat in matMap:
+            jmeMat = matMap[bMat]
+            jmeMat.refCount += 1
+            return jmeMat
+        jmeMat = JmeMaterial(bMat, twoSided)
+        matMap[bMat] = jmeMat
+        return jmeMat
 
     def addIfSupported(self, blenderObj):
         """Creates a JmeNode for the given Blender Object, if the Object is
         supported."""
-        if JmeNode.supported(blenderObj):
-            self.__memberMap[blenderObj] = JmeNode(blenderObj)
-            self.__memberKeys.append(blenderObj)
+        if not JmeNode.supported(blenderObj): return
+        self.__memberMap[blenderObj] = JmeNode(blenderObj, self)
+        self.__memberKeys.append(blenderObj)
 
     def __uniquifyNames(node, parentName, nameSet):
         # Would like to rename nodes ealier, to that messages (error and
@@ -403,7 +462,9 @@ class NodeTree(object):
         root by adding a top grouping node if necessary.
         Returns the root node."""
 
-        if len(self.__memberKeys) < 1: return None
+        if len(self.__memberKeys) < 1:
+            self.root = None
+            return self.root
         for bo in self.__memberKeys:
             if bo.parent != None and bo.parent in self.__memberMap:
                 self.__memberMap[bo.parent].addChild(self.__memberMap[bo])
@@ -413,12 +474,107 @@ class NodeTree(object):
         if len(self.__memberKeys) < 1:
             raise Exception("Internal problem.  Tree ate itself.")
         if len(self.__memberKeys) < 2:
-            root = self.__memberMap.popitem()[1]
+            self.root = self.__memberMap.popitem()[1]
             del self.__memberKeys[0]
         else:
-            root = JmeNode("BlenderObjects")
-            for key in self.__memberKeys: root.addChild(self.__memberMap[key])
-        NodeTree.__uniquifyNames(root, None, set())
-        return root
+            self.root = JmeNode("BlenderObjects")
+            for key in self.__memberKeys:
+                self.root.addChild(self.__memberMap[key])
+        NodeTree.__uniquifyNames(self.root, None, set())
+        return self.root
+
+    def getXml(self):
+        if self.root == None and self.nest() == None: return None
+        for m in self.__matMap1side.itervalues(): m.written = False
+        for m in self.__matMap2side.itervalues(): m.written = False
+        return self.root.getXmlEl()
 
     __uniquifyNames = staticmethod(__uniquifyNames)
+
+
+class JmeMaterial(object):
+    # May or may not need to redesign with subclasses to handle textures and
+    # other material states that are not simply the 4 colors + 2 states + shini.
+    "A material definition corresponding to a jME MaterialState."
+
+    __slots__ = ('colorMaterial', 'ambient', 'emissive', 'diffuse', 'written',
+            'specular', 'shininess', 'materialFace', 'refCount', 'blenderId')
+    # N.b. __memberMap does not have a member for each node, but a member
+    #      for each saved Blender object.
+    # __memberKey is just because Python has no ordered maps/dictionaries
+    # We want nodes persisted in a well-defined sequence.
+
+    def __init__(self, bMat, twoSided):
+        self.written = False   # May write refs after written is True
+        self.refCount = 0
+        self.blenderId = id(bMat)
+        if bMat.mode & _matModes['VCOL_PAINT']:
+            # TODO:  API says replaces "basic colors".  Need to verify that
+            # that means diffuse, a.o.t. diffuse + specular + mirror.
+            self.colorMaterial = "Diffuse"
+        elif bMat.mode & _matModes['VCOL_LIGHT']:
+            # TODO:  API says "add... as extra light".  ?  Test.
+            # If by this they mean light-source-independent-light, then we
+            # want to set this to "Ambient".
+            self.colorMaterial = "AmbientAndDiffuse"
+        else:
+            self.colorMaterial = None
+        self.diffuse = bMat.rgbCol
+        self.diffuse.append(1)
+        self.specular = bMat.specCol
+        self.specular.append(1)
+        #softnessPercentage = 1. - (bMat.hard - 1.) / 510.
+        # Softness increases specular spread.
+        # Unfortunately, it's far from linear, and the Python math functions
+        # available are inadequate to normalize this to a ratio we can use.
+        # Therefore, for now we are ignoring the harness setting.
+        if (abs(bMat.hard - 50)) > 1:
+            print ("WARNING: Hardness setting ignored.  " +
+                    "Adjust spec setting to compensate")
+        self.shininess = bMat.spec * .5 * 128
+        self.emissive = [bMat.rgbCol[0] * bMat.emit,
+                bMat.rgbCol[1] * bMat.emit,
+                bMat.rgbCol[2] * bMat.emit, 1]
+        self.ambient = [bMat.amb, bMat.amb, bMat.amb, 1]
+        if twoSided: self.materialFace = "FrontAndBack"
+        else: self.materialFace = None
+
+    def getXmlEl(self):
+        tag = _XmlTag('com.jme.scene.state.MaterialState',
+                {'class':"com.jme.scene.state.lwjgl.LWJGLMaterialState"})
+        if self.written:
+            tag.addAttr('ref', self.blenderId)
+            return tag
+        if self.refCount > 0: tag.addAttr("reference_ID", self.blenderId)
+        tag.addAttr("shininess", self.shininess, 2)
+        if self.materialFace != None:
+            tag.addAttr("materialFace", self.materialFace)
+        if self.colorMaterial != None:
+            tag.addAttr("colorMaterial", self.colorMaterial)
+        # TODO:  Consider if it is safe to skip the colors if equal to either
+        # [0,0,0,1] or [1,1,1,0].  Unless know better, save all.
+        diffuseTag = _XmlTag("diffuse")
+        diffuseTag.addAttr("r", self.diffuse[0], 3)
+        diffuseTag.addAttr("g", self.diffuse[1], 3)
+        diffuseTag.addAttr("b", self.diffuse[2], 3)
+        diffuseTag.addAttr("a", self.diffuse[3], 3)
+        tag.addChild(diffuseTag)
+        ambientTag = _XmlTag("ambient")
+        ambientTag.addAttr("r", self.ambient[0], 3)
+        ambientTag.addAttr("g", self.ambient[1], 3)
+        ambientTag.addAttr("b", self.ambient[2], 3)
+        ambientTag.addAttr("a", self.ambient[3], 3)
+        tag.addChild(ambientTag)
+        emissiveTag = _XmlTag("emissive")
+        emissiveTag.addAttr("r", self.emissive[0], 3)
+        emissiveTag.addAttr("g", self.emissive[1], 3)
+        emissiveTag.addAttr("b", self.emissive[2], 3)
+        emissiveTag.addAttr("a", self.emissive[3], 3)
+        tag.addChild(emissiveTag)
+        specularTag = _XmlTag("specular")
+        specularTag.addAttr("r", self.specular[0], 3)
+        specularTag.addAttr("g", self.specular[1], 3)
+        specularTag.addAttr("b", self.specular[2], 3)
+        specularTag.addAttr("a", self.specular[3], 3)
+        tag.addChild(specularTag)
+        return tag

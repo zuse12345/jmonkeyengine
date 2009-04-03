@@ -498,7 +498,7 @@ class JmeMaterial(object):
     "A material definition corresponding to a jME MaterialState."
 
     __slots__ = ('colorMaterial', 'ambient', 'emissive', 'diffuse', 'written',
-            'specular', 'shininess', 'materialFace', 'refCount', 'blenderId')
+            'specular', 'shininess', 'materialFace', 'refCount', 'blenderName')
     # N.b. __memberMap does not have a member for each node, but a member
     #      for each saved Blender object.
     # __memberKey is just because Python has no ordered maps/dictionaries
@@ -507,7 +507,7 @@ class JmeMaterial(object):
     def __init__(self, bMat, twoSided):
         self.written = False   # May write refs after written is True
         self.refCount = 0
-        self.blenderId = id(bMat)
+        self.blenderName = bMat.name
         if bMat.mode & _matModes['VCOL_PAINT']:
             # TODO:  API says replaces "basic colors".  Need to verify that
             # that means diffuse, a.o.t. diffuse + specular + mirror.
@@ -543,9 +543,10 @@ class JmeMaterial(object):
         tag = _XmlTag('com.jme.scene.state.MaterialState',
                 {'class':"com.jme.scene.state.lwjgl.LWJGLMaterialState"})
         if self.written:
-            tag.addAttr('ref', self.blenderId)
+            tag.addAttr('ref', self.blenderName)
             return tag
-        if self.refCount > 0: tag.addAttr("reference_ID", self.blenderId)
+        self.written = True
+        if self.refCount > 0: tag.addAttr("reference_ID", self.blenderName)
         tag.addAttr("shininess", self.shininess, 2)
         if self.materialFace != None:
             tag.addAttr("materialFace", self.materialFace)

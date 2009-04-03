@@ -10,13 +10,13 @@ $Id$
    "show" the color, so need scripting or an add-on to set this).
 * Write vertex colors
 * Write nested mesh objects, preserving the parent/child relationships
-  Write trivial color materials
-  Write materials with color and other basic settings (reflectivity et. al.)
-  Write basic texture map materials
-  Export custom boundary objects
-
-  Add exporter setting to export all "exportable" items in the current scene,
+* Write trivial color materials
+* Write materials with color and other basic settings (reflectivity et. al.)
+* Add exporter setting to export all "exportable" items in the current scene,
   instead of the default of exporting the exportable subset of currently-
   selected items.
+  Write basic texture map materials
 
   Write armatures
+  Add support for Object RB* game settings.  These would be very useful for
+   jME games.  Like, custom Bondary objects, Physics integration, action hooks.

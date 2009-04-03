@@ -103,7 +103,7 @@ echo "Running normal Blender env. tests from directory '$PWD'..."
 # Unfortunately, must put each freaking test in a separate file, due to
 # the amazingly invasive behavior of Blender.Load().
 for tstmod in plane planetrans cone dfltcolor dualtrans planecone vertcolored \
-    walkbot mixedparenting complexparenting
+    walkbot mixedparenting complexparenting manymats
 do
     echo "import blendertest.$tstmod" | ../bin/blenderscript.bash
 done

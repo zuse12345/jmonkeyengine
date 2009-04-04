@@ -95,7 +95,7 @@ class JmeNode(object):
 
     def __init__(self, bObjOrName, nodeTree=None):
         """Assumes input Blender Object already validated, like by using the
-        supported() static method below.
+        supported static method below.
         I.e., is of supported type, and facing method is supported.
         Materials from given bObj and direct data mesh (if any) will be added
         to one of the specified nodeTree's materials maps."""
@@ -229,7 +229,7 @@ class JmeNode(object):
     def getType(self):
         return self.wrappedObj.type
 
-    def supported(bObj):
+    def supported(bObj, skipObjs):
         """Returns 0 if type not supported; non-0 if supported.
            2 if will require face niggling; 3 if faceless"""
         # Silently ignore keyframes bMes.key for now.
@@ -240,21 +240,22 @@ class JmeNode(object):
         if bObj.type not in ['Mesh']: return 0
         bMesh = bObj.getData(False, True)
         if not bMesh: raise Exception("Mesh Object has no data member?")
-        try:
-            if len(bObj.getMaterials()) > 0:
-                for bMat in bObj.getMaterials():
-                    JmeMaterial(bMat, False) # twoSided param doesn't matter
-            for i in range(len(bMesh.materials)):
-                if 0 != (bObj.colbits & (1<<i)): continue
-                JmeMaterial(bMesh.materials[i], False) # ditto
-                for j in bMesh.materials[i].enabledTextures:
-                    examineMtex(bMesh.materials[i].textures[j])
-            if bMesh.multires: raise UnsupportedException("multires data")
-            if bMesh.texMesh != None:
-                raise UnsupportedException("Texture coords by Mesh-ref")
-        except UnsupportedException, ue:
-            print ue
+        if bMesh.multires:
+            print "multires data"
             return 0
+        if skipObjs:
+            try:
+                if len(bObj.getMaterials()) > 0:
+                    for bMat in bObj.getMaterials():
+                        JmeMaterial(bMat, False) # twoSided param doesn't matter
+                for i in range(len(bMesh.materials)):
+                    if 0 != (bObj.colbits & (1<<i)): continue
+                    JmeMaterial(bMesh.materials[i], False) # ditto
+                if bMesh.texMesh != None:
+                    raise UnsupportedException("Texture coords by Mesh-ref")
+            except UnsupportedException, ue:
+                print ue
+                return 0
         if bMesh.faceUV:
             print "WARNING:  Ignoring UV-mapped textured faces.  Not supported."
         if bObj.isSoftBody:
@@ -487,10 +488,10 @@ class NodeTree(object):
         matMap[bMat] = jmeMat
         return jmeMat
 
-    def addIfSupported(self, blenderObj):
+    def addIfSupported(self, blenderObj, skipObjs):
         """Creates a JmeNode for the given Blender Object, if the Object is
         supported."""
-        if not JmeNode.supported(blenderObj): return
+        if not JmeNode.supported(blenderObj, skipObjs): return
         self.__memberMap[blenderObj] = JmeNode(blenderObj, self)
         self.__memberKeys.append(blenderObj)
 

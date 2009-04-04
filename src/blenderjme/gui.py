@@ -47,11 +47,13 @@ defaultFilePath = _abspath("default-jme.xml")
 saveAll = False
 xmlFile = None
 axisFlip = True
+skipObjs = False  # Unsupported Mat Objs
 BTNID_SAVEALL = 1
 BTNID_SAVE = 2
 BTNID_CANCEL = 3
 BTNID_OVERWRITE = 4
 BTNID_FLIP = 5
+BTNID_SKIPOBJS = 5
 selCount = None
 allCount = None
 fileOverwrite = False
@@ -70,16 +72,20 @@ def updateExportableCounts():
     """Returns counts of all exportable objects, and all selected exportable
     objects"""
 
-    global selCount, allCount
+    global selCount, allCount, skipObjs
     selCount = 0
     allCount = 0
     for o in _bdata.objects:
-        if _JmeNode.supported(o): allCount = allCount + 1
+        if _JmeNode.supported(o, skipObjs): allCount = allCount + 1
     for o in _bdata.scenes.active.objects.selected:
-        if _JmeNode.supported(o): selCount = selCount + 1
+        if _JmeNode.supported(o, skipObjs): selCount = selCount + 1
 
 def btnHandler(btnId):
-    global saveAll, xmlFile, defaultFilePath, fileOverwrite, axisFlip
+    global saveAll, xmlFile, defaultFilePath, fileOverwrite, axisFlip, skipObjs
+    if btnId == BTNID_SKIPOBJS:
+        skipObjs = not skipObjs
+        updateExportableCounts()
+        return
     if btnId == BTNID_SAVEALL:
         saveAll = not saveAll
         return
@@ -91,7 +97,7 @@ def btnHandler(btnId):
         return
     if btnId == BTNID_SAVE:
         try:
-            xmlFile = _exporter.gen(saveAll, axisFlip)
+            xmlFile = _exporter.gen(saveAll, axisFlip, skipObjs)
         except Exception, e:
             # Python 2.5 does not support "except X as y:" syntax
             ei = _exc_info()[2]
@@ -241,16 +247,16 @@ def drawer():
     _bDraw.Label("+ the jMonkeyEngine team",
             guiBox.x + 160, guiBox.y + 9,157,10)
     if not allCount: updateExportableCounts()
-    if allCount < 1:
+    if allCount < 1 and not skipObjs:
         _bDraw.Label("Your scenes contain no",
                 guiBox.x + 10, guiBox.y + 200,200,20)
         _bDraw.Label("export-supported objects",
                 guiBox.x + 10, guiBox.y + 170,200,20)
         return
-    if saveAll:
-        toggleText = str(allCount) + " Scene Object(s)"
-    else:
-        toggleText = str(selCount) + " Selected Object(s)"
+    if saveAll: toggleText = str(allCount) + " Scene Object(s)"
+    else: toggleText = str(selCount) + " Selected Object(s)"
+    if skipObjs: skipText = "Skip Objs"
+    else: skipText = "Skip Mats"
     _bDraw.Toggle(toggleText,
             BTNID_SAVEALL, guiBox.x + 10, guiBox.y + 200, 130, 20, saveAll,
             "Choose to export supported SELECTED objects or ALL objects",
@@ -263,6 +269,10 @@ def drawer():
     _bDraw.Toggle("Rotate X", BTNID_FLIP,
             guiBox.x + 10, guiBox.y + 150, 55, 20, axisFlip,
             "Rotate X axis -90 degress in export so -Y axis becomes +Z")
+    _bDraw.Label("For unsupported Materials...",
+            guiBox.x + 10, guiBox.y + 130, 157, 10)
+    _bDraw.Toggle(skipText, BTNID_SKIPOBJS,
+            guiBox.x + 10, guiBox.y + 105, 55, 20, skipObjs, "", redrawDummy)
     _bDraw.PushButton("Export", BTNID_SAVE,
             guiBox.x + 10, guiBox.y + 50, 50, 20, "Select file to save to")
     _bDraw.Label("Reserved space", guiBox.x + 180, guiBox.y + 150,200,20)

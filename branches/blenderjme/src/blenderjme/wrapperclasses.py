@@ -62,16 +62,6 @@ from Blender.Mesh import Modes as _meshModes
 # transformations by checking Object.upAxis (read-only attr.)
 
 
-from Blender.Texture import Types as _bTexTypes
-from Blender.Texture import ExtendModes as _bTexExtModes
-from Blender.Texture import ImageFlags as _bImgFlags
-from Blender.Texture import Flags as _bTexFlags
-from Blender.Texture import TexCo as _bTexCo
-from Blender.Texture import BlendModes as _bBlendModes
-from Blender.Texture import Mappings as _bTexMappings
-from Blender.Texture import MapTo as _bTexMapTo
-
-
 class UnsupportedException(Exception):
     def __init__(self, setting, val=None, note=None):
         Exception.__init__(self)
@@ -88,7 +78,7 @@ class UnsupportedException(Exception):
 
 from Blender.Object import PITypes as _bPITypes
 class JmeNode(object):
-    __slots__ = ('wrappedObj', 'children', 'jmeMats',
+    __slots__ = ('wrappedObj', 'children', 'jmeMats', 'jmeTextureState',
             'name', 'autoRotate', 'retainTransform')
     IDENTITY_4x4 = _bmath.Matrix().resize4x4()
     BLENDER_TO_JME_ROTATION = _bmath.RotationMatrix(-90, 4, 'x')
@@ -105,6 +95,7 @@ class JmeNode(object):
         self.autoRotate = False
         self.retainTransform = None
         self.jmeMats = None
+        self.jmeTextureState = None
 
         if isinstance(bObjOrName, basestring):
             self.name = bObjOrName
@@ -119,23 +110,44 @@ class JmeNode(object):
         twoSided = bMesh != None and (bMesh.mode & _meshModes['TWOSIDED'])
         if len(self.wrappedObj.getMaterials()) > 0:
             self.jmeMats = []
+            jmeTexs = []
             for bMat in self.wrappedObj.getMaterials():
                 self.jmeMats.append(nodeTree.includeMat(bMat, twoSided))
+                for j in bMat.enabledTextures:
+                    try:
+                        JmeTexture.supported(bMat.textures[j])
+                        jmeTexs.append(nodeTree.includeTex(bMat.textures[j]))
+                    except UnsupportedException, ue:
+                        print ("Skipping a texture of object " + self.name
+                                + " due to: " + str(ue))
+            if len(jmeTexs) > 0:
+                self.jmeTextureState = nodeTree.includeJmeTextureList(jmeTexs)
         if bMesh == None: return
 
         # From here on, we know we have a Blender direct Mesh data member
-        jmeMesh =   JmeMesh(bMesh, self.wrappedObj.color)
+        jmeMesh =  JmeMesh(bMesh, self.wrappedObj.color)
         self.addChild(jmeMesh)
         #print "Instantiated JmeNode '" + self.getName() + "'"
         # Since Blender has mashed together the Object and Mesh by having
         # object.colbits specify how the Mesh's materials are to be
-        # interpreted, we add the Mesh's materials here.
+        # interpreted, we add the Mesh's materials and textures here.
         meshMats = []
+        jmeTexs = []
         for i in range(len(bMesh.materials)):
             #print "Bit " + str(i) + " for " + self.getName() + " = " + str(self.wrappedObj.colbits & (1<<i))
             if 0 != (self.wrappedObj.colbits & (1<<i)): continue
             meshMats.append(nodeTree.includeMat(bMesh.materials[i], twoSided))
+            for j in bMesh.materials[i].enabledTextures:
+                try:
+                    JmeTexture.supported(bMesh.materials[i].textures[j])
+                    jmeTexs.append(nodeTree.includeTex(
+                            bMesh.materials[i].textures[j]))
+                except UnsupportedException, ue:
+                    print ("Skipping a texture of mesh " + jmeMesh.getName()
+                            + " due to: " + str(ue))
         if len(meshMats) > 0: jmeMesh.jmeMats = meshMats
+        if len(jmeTexs) > 0:
+            jmeMesh.jmeTextureState = nodeTree.includeJmeTextureList(jmeTexs)
 
     def addChild(self, child):
         if self.children == None: self.children = []
@@ -149,6 +161,8 @@ class JmeNode(object):
         if self.jmeMats != None:
             rsTag = _XmlTag('renderStateList')
             for mat in self.jmeMats: rsTag.addChild(mat.getXmlEl())
+            if self.jmeTextureState != None:
+                rsTag.addChild(self.jmeTextureState.getXmlEl())
             tag.addChild(rsTag)
 
         if self.wrappedObj != None:
@@ -230,7 +244,7 @@ class JmeNode(object):
         return self.wrappedObj.type
 
     def supported(bObj, skipObjs):
-        """Returns 0 if type not supported; non-0 if supported.
+        """Static method returns 0 if type not supported; non-0 if supported.
            2 if will require face niggling; 3 if faceless"""
         # Silently ignore keyframes bMes.key for now.
         # Is face transp mode bMesh.mode for design-time usage?
@@ -248,16 +262,28 @@ class JmeNode(object):
                 if len(bObj.getMaterials()) > 0:
                     for bMat in bObj.getMaterials():
                         JmeMaterial(bMat, False) # twoSided param doesn't matter
+                        for j in bMat.enabledTextures:
+                            JmeTexture.supported(bMat.textures[j])
                 for i in range(len(bMesh.materials)):
                     if 0 != (bObj.colbits & (1<<i)): continue
                     JmeMaterial(bMesh.materials[i], False) # ditto
-                if bMesh.texMesh != None:
-                    raise UnsupportedException("Texture coords by Mesh-ref")
+                    for j in bMesh.materials[i].enabledTextures:
+                        JmeTexture.supported(bMesh.materials[i].textures[j])
+                # Following test was misplaced, because the nodes with the
+                # texcoords may be descendants, not necessarily "this" node.
+                #if anyTextures and (not bMesh.vertexUV) and not bMesh.faceUV:
+                    #raise UnsupportedException(
+                            #"We only support UV for texture mapping, and "
+                            #+ "neither sticky nor face texcoords are set")
             except UnsupportedException, ue:
                 print ue
                 return 0
-        if bMesh.faceUV:
-            print "WARNING:  Ignoring UV-mapped textured faces.  Not supported."
+        if bMesh.texMesh != None:
+            print "Texture coords by Mesh-ref"
+            return 0
+        if bMesh.faceUV and bMesh.vertexUV:
+            print "Mesh contains both sticky and per-face texture coords"
+            return 0
         if bObj.isSoftBody:
             print "WARNING:  Soft Body settings not supported yet.  Ignoring."
         if bObj.piType != _bPITypes['NONE']:
@@ -296,7 +322,7 @@ class JmeNode(object):
 
 
 class JmeMesh(object):
-    __slots__ = ('wrappedMesh', 'jmeMats',
+    __slots__ = ('wrappedMesh', 'jmeMats', 'jmeTextureState',
             '__vpf', 'defaultColor', 'name', 'bakeTransform')
     # defaultColor corresponds to jME's Meshs' defaultColor.
     # In Blender this is a per-Object, not per-Mesh setting.
@@ -314,6 +340,7 @@ class JmeMesh(object):
         self.defaultColor = color
         self.bakeTransform = None
         self.jmeMats = None
+        self.jmeTextureState = None
         #print "Instantiated JmeMesh '" + self.getName() + "'"
         self.__vpf = JmeMesh.vertsPerFace(self.wrappedMesh.faces)
 
@@ -355,6 +382,8 @@ class JmeMesh(object):
             rsTag = _XmlTag('renderStateList')
             for mat in self.jmeMats: rsTag.addChild(mat.getXmlEl())
             tag.addChild(rsTag)
+            if self.jmeTextureState != None:
+                rsTag.addChild(self.jmeTextureState.getXmlEl())
 
         vcMap = None   # maps vertex INDEX to MCol
         colArray = None
@@ -381,6 +410,8 @@ class JmeMesh(object):
 
         coArray = []
         noArray = []
+        if mesh.faceUV or mesh.vertexUV: texArray=[]
+        else: texArray = None
         nonFacedVertexes = 0
         for v in mesh.verts:
             coArray.append(v.co.x)
@@ -395,6 +426,13 @@ class JmeMesh(object):
                 else:
                     nonFacedVertexes += 1
                     colArray.append(None)  # We signify WHITE by None
+            if mesh.vertexUV: 
+                # For unknown reason, Blender's Sticky uv vert creation sets
+                # values to (-1 to 1) range instead of proper (0 to 1) range.
+                texArray.append(v.uvco.x * .5 + .5)
+                texArray.append(v.uvco.y * .5 + .5)
+            elif mesh.faceUV: 
+                raise Exception("Haven't implemented face uv yet")
         if nonFacedVertexes > 0:
             print ("WARNING: " + str(nonFacedVertexes)
                 + " vertexes set to WHITE because no face to derive color from")
@@ -404,6 +442,14 @@ class JmeMesh(object):
         normTag = _XmlTag("normBuf", {"size":len(noArray)})
         normTag.addAttr("data", noArray, 6, 3)
         tag.addChild(normTag)
+        if texArray != None:
+            coordsTag = _XmlTag("coords", {"size":len(texArray)})
+            coordsTag.addAttr("data", texArray, 6, 3)
+            texCoordsTag = _XmlTag("com.jme.scene.TexCoords", {"perVert":2})
+            texCoordsTag.addChild(coordsTag)
+            texTag = _XmlTag("texBuf", {"size":1})
+            texTag.addChild(texCoordsTag)
+            tag.addChild(texTag)
         if colArray != None:
             rgbaArray = []
             for c in colArray:
@@ -441,7 +487,7 @@ class JmeMesh(object):
         return tag
 
     def vertsPerFace(faces):
-        """Returns 0 if type not supported; non-0 if supported.
+        """Static method returns 0 if type not supported; non-0 if supported.
            2 if will require face niggling; 3 if faceless"""
         if faces == None: return None
         facings = set()
@@ -459,18 +505,49 @@ class NodeTree(object):
     See method descriptions for details."""
 
     __slots__ = ('__memberMap', '__memberKeys',
-            '__matMap1side', '__matMap2side', 'root')
+            '__matMap1side', '__matMap2side', 'root',
+            '__textureHash', '__textureStates')
     # N.b. __memberMap does not have a member for each node, but a member
     #      for each saved Blender object.
     # __memberKey is just because Python has no ordered maps/dictionaries
     # We want nodes persisted in a well-defined sequence.
+    # __textureHash is named *Hash instead of *Map only to avoid confusion
+    # with "texture maps", which these are not.
 
     def __init__(self):
+        object.__init__(self)
         self.__memberMap = {}
         self.__memberKeys = []
         self.__matMap1side = {}
         self.__matMap2side = {}
+        self.__textureHash = {}
+        self.__textureStates = set()
         self.root = None
+
+    def includeTex(self, mtex):
+        """include* instead of add*, because we don't necessarily 'add'.  We
+        will just increment the refCount if it's already in our list.
+        Returns new or used JmeTexture."""
+        newJmeTexId = JmeTexture.idFor(mtex)
+        if newJmeTexId in self.__textureHash:
+            jmeTex = self.__textureHash[newJmeTexId]
+            jmeTex.refCount += 1
+            return jmeTex
+        jmeTex = JmeTexture(mtex, newJmeTexId)
+        self.__textureHash[newJmeTexId] = jmeTex
+        return jmeTex
+
+    def includeJmeTextureList(self, textureList):
+        """include* instead of add*, because we don't necessarily 'add'.  We
+        will just increment the refCount if it's already in our list.
+        Returns new or used JmeTextureState."""
+        for texState in self.__textureStates:
+            if texState.cf(textureList):
+                texState.refCount += 1
+                return texState
+        texState = JmeTextureState(textureList)
+        self.__textureStates.add(texState)
+        return texState
 
     def includeMat(self, bMat, twoSided):
         """include* instead of add*, because we don't necessarily 'add'.  We
@@ -496,6 +573,7 @@ class NodeTree(object):
         self.__memberKeys.append(blenderObj)
 
     def __uniquifyNames(node, parentName, nameSet):
+        """Static private method"""
         # Would like to rename nodes ealier, to that messages (error and
         # otherwise) could reflect the new names, but we can't nest properly
         # until all nodes are added to the tree, and we want tree organization
@@ -554,6 +632,8 @@ class NodeTree(object):
         if self.root == None and self.nest() == None: return None
         for m in self.__matMap1side.itervalues(): m.written = False
         for m in self.__matMap2side.itervalues(): m.written = False
+        for t in self.__textureHash.itervalues(): m.written = False
+        for ts in self.__textureStates: ts.written = False
         return self.root.getXmlEl()
 
     __uniquifyNames = staticmethod(__uniquifyNames)
@@ -577,6 +657,8 @@ class JmeMaterial(object):
 
     def __init__(self, bMat, twoSided):
         "Throws a descriptive UnsupportedException for the obvious reason"
+
+        object.__init__(self)
         self.written = False   # May write refs after written is True
         self.refCount = 0
         self.blenderName = bMat.name
@@ -670,7 +752,11 @@ class JmeMaterial(object):
             tag.addAttr('ref', self.blenderName)
             return tag
         self.written = True
-        if self.refCount > 0: tag.addAttr("reference_ID", self.blenderName)
+        #if self.refCount > 0: tag.addAttr("reference_ID", self.blenderName)
+        tag.addAttr("reference_ID", self.blenderName)
+        # Blender users have the ability to use these names, and to pull them
+        # in from shared libraries, so it can be useful to propagate the names
+        # even if not needed for our own refs.
 
         tag.addAttr("shininess", self.shininess, 2)
         if self.materialFace != None:
@@ -706,25 +792,220 @@ class JmeMaterial(object):
         return tag
 
 
+from Blender.Texture import Types as _bTexTypes
+from Blender.Texture import ExtendModes as _bTexExtModes
+from Blender.Texture import ImageFlags as _bImgFlags
+from Blender.Texture import Flags as _bTexFlags
+from Blender.Texture import TexCo as _bTexCo
+from Blender.Texture import BlendModes as _bBlendModes
+from Blender.Texture import Mappings as _bTexMappings
+from Blender.Texture import MapTo as _bTexMapTo
 class JmeTexture(object):
-    "A Texture corresponding to a jME TextureState."
+    "A Texture corresponding to a single jME Texture"
 
-    __slots__ = ('blenderName')
+    REQUIRED_IMGFLAGS = \
+        _bImgFlags['MIPMAP'] | _bImgFlags['USEALPHA'] | _bImgFlags['INTERPOL']
 
-    def __init__(self, bMat, twoSided):
+    def supported(mtex):
+        """Static method that validates the specified Blender MTex.
+        MTex is Blender's Material-specific Texture-holder.
+        DOES NOT RETURN A MEANINGFUL VALUE.
+        Will return upon validation success.
+        Otherwise will raise an UnsupportedException with a detail message."""
+        
+        tex = mtex.tex
+        if tex == None:
+            raise UnsupportedExcpeption("texture", tex,
+                    "MTex has no target Texture")
+
+        # Would like to support those prohibited in this code block.
+        if mtex.colfac != 1.0:
+            raise UnsupportedException("MTex colfac", mtex.colfac)
+        if mtex.size[0] != 1. or mtex.size[1] != 1. or mtex.size[2] != 1.:
+            raise UnsupportedException(
+                    "MTex image scaling", mtex.size, "non-0")
+        # Esp. mtex.size[1.] == -1. => flip="true"
+        if mtex.ofs[1] != 0. or mtex.ofs[1] != 0. or mtex.ofs[2] != 0.:
+            raise UnsupportedException(
+                    "MTex image offset", mtex.ofs, "non-1")
+        if JmeTexture.REQUIRED_IMGFLAGS != tex.imageFlags:
+            raise UnsupportedException("Tex Image flags", tex.imageFlags,
+            "not USEALPHA + MIPMAP + INTERPOL")
+
+        if tex.image == None:
+            raise UnsupportedException(
+                    "texture image", tex.image, "no image")
+        if tex.image.filename == None:
+            raise UnsupportedException("texture image file",
+                    tex.image.filename, "no image file name")
+        if tex.type != _bTexTypes['IMAGE']:
+            raise UnsupportedException("Texture Type", tex.type)
+        #print "TEX anti: " + str(tex.anti)  Attr missing???
+        if tex.crop != (0.0, 0.0, 1.0, 1.0):
+            raise UnsupportedException("Tex cropping extents",
+                    str(tex.crop))
+        # As implement ExtendModes, remove tests from here:
+        if (tex.extend != _bTexExtModes['REPEAT']
+                and tex.extend != _bTexExtModes['EXTEND']):
+            raise UnsupportedException("Tex extend mode", tex.extend)
+        if tex.brightness != 1.0:
+            raise UnsupportedException("Tex brightness", tex.brightness)
+        if tex.calcAlpha != 0:
+            raise UnsupportedException( "Tex calcAlpha", tex.calcAlpha)
+        if len(tex.colorband) != 0:
+            raise UnsupportedException("Tex colorband.len",
+                    len(tex.colorband))
+        if tex.contrast != 1.0:
+            raise UnsupportedException("Tex contrast", tex.contrast)
+        if tex.filterSize != 1.0:
+            raise UnsupportedException("Tex filterSize" +tex.filterSize)
+        # Allow PREVIEW_ALPHA, since Blender dev environment setting.
+        if tex.flags & _bTexFlags['FLIPBLEND']:
+            raise UnsupportedException("Tex flags", 'FLIPBLEND')
+        if tex.flags & _bTexFlags['NEGALPHA']:
+            raise UnsupportedException("Tex flags", 'NEGALPHA')
+        #if tex.flags & _bTexFlags['CHECKER_ODD']:
+            #raise UnsupportedException("Tex flags", 'CHECKER_ODD')
+            # This is on by default, but the Blender Gui doesn't show
+            # checkering on.  ?
+        if tex.flags & _bTexFlags['CHECKER_EVEN']:
+            raise UnsupportedException("Tex flags", 'CHECKER_EVEN')
+        if tex.flags & _bTexFlags['COLORBAND']:
+            raise UnsupportedException("Tex flags", 'COLORBAND')
+        if tex.flags & _bTexFlags['REPEAT_XMIR']:
+            raise UnsupportedException("Tex flags", 'REPEAT_XMIR')
+        if tex.flags & _bTexFlags['REPEAT_YMIR']:
+            raise UnsupportedException("Tex flags", 'REPEAT_YMIR')
+        if tex.repeat[0] != 1:
+            raise UnsupportedException("Tex X-Repeat", tex.repeat[0])
+        if tex.repeat[1] != 1:
+            raise UnsupportedException("Tex Y-Repeat", tex.repeat[1])
+        # Map Input
+        if mtex.texco != _bTexCo["STICK"] and mtex.texco == _bTexCo["UV"]:
+            raise UnsupportedException("Coordinate Mapping type",
+                    mtex.texco)
+        # Just ignore uvlayer.  We don't care what layer names the user has
+        # defined, nor which they set to active.
+        if (mtex.blendmode != _bBlendModes['MIX'] # == jME ApplyMode.Decal
+                and mtex.blendmode != _bBlendModes['MULTIPLY'] # Modulate
+                and mtex.blendmode != _bBlendModes['ADD']): # Add
+            raise UnsupportedException("MTex blendmode", mtex.blendmode)
+        if mtex.mapping != _bTexMappings['FLAT']:
+            raise UnsupportedException("MTex mapping shape", mtex.mapping)
+        if mtex.mapto != _bTexMapTo['COL']:
+            raise UnsupportedException("MTex mapTo", mtex.mapto)
+        if mtex.correctNor:
+            raise UnsupportedException("MTex correctNor", mtex.correctNor)
+        if round(mtex.dispfac, 3) != .2:
+            raise UnsupportedException("MTex surface disp. fac.",
+                    mtex.dispfac)
+        if mtex.fromOrig:
+            raise UnsupportedException("MTex fromOrig", mtex.fromOrig)
+        if mtex.neg: raise UnsupportedException("MTex negate", mtex.neg)
+        if mtex.norfac != .5:
+            raise UnsupportedException("MTex normal affec factor",
+                    mtex.norfac)
+        if mtex.stencil:
+            raise UnsupportedException("MTex stencil", mtex.stencil)
+        if mtex.warpfac != 0.0:
+            raise UnsupportedException("MTex warpfac", mtex.warpfac)
+        if mtex.xproj != 1:
+            raise UnsupportedException("MTex xproj", mtex.xproj)
+        if mtex.yproj != 2:
+            raise UnsupportedException("MTex yproj" + mtex.yproj)
+        if mtex.zproj != 3:
+            raise UnsupportedException("MTex zproj" + mtex.zproj)
+
+    def idFor(mtex):
+        """Static method that validates mtex and returns a unique JmeTexture id
+        Input MTex must already have been validated."""
+
+        hashVal = 2 * id(mtex.tex)
+        hashVal += 3 * id(mtex.blendmode)
+        # Remember that the mtex.tex hash code above encompasses hashes of
+        # all of the mtex.tex.* values.  We only need to be concerned about
+        # direct and significant mtex attributes here.
+        return hashVal
+
+    __slots__ = (
+            'written', 'refCount', 'applyMode', 'filepath', 'wrapMode', 'refid')
+    idFor = staticmethod(idFor)
+    supported = staticmethod(supported)
+
+    def __init__(self, mtex, newId):
         "Throws a descriptive UnsupportedException for the obvious reason"
+        # TODO:  Look into whether Blender persistence supports saving
+        #        image references, so we can share (possibly large) Image
+        #        objects instead of loading separate copies from FS for each
+        #        JmeTexture.
+
+        object.__init__(self)
         self.written = False   # May write refs after written is True
         self.refCount = 0
-        self.blenderName = bMat.name
+        if mtex.blendmode == _bBlendModes['MIX']:
+            self.applyMode = "Decal"
+        elif mtex.blendmode == _bBlendModes['MULTIPLY']:
+            self.applyMode = "Modulate"
+        elif mtex.blendmode == _bBlendModes['ADD']:
+            self.applyMode = "Add"
+        else:
+            raise Exception("Unexpected blendmode even though pre-validated: "
+                    + mtex.blendmode)
+        if mtex.tex.extend != _bTexExtModes['REPEAT']:
+            self.wrapMode = "Repeat"
+        elif mtex.tex.extend != _bTexExtModes['EXTEND']:
+            self.wrapMode = "Clamp"
+        else:
+            raise Exception("Unexpected extend mode even though pre-validated: "
+                    + mtex.tex.extend)
+        self.filepath = mtex.tex.image.filename
+        self.refid = newId
+
+    def getXmlEl(self):
+        tag = _XmlTag('com.jme.image.Texture2D')
+        if self.written:
+            tag.addAttr('ref', self.refid)
+            return tag
+        self.written = True
+        if self.refCount > 0: tag.addAttr("reference_ID", self.refid)
+
+        textureKeyTag = _XmlTag(
+                "textureKey", {"class":"com.jme.util.TextureKey"})
+        tag.addChild(textureKeyTag)
+        textureKeyTag.addAttr("file", self.filepath)
+        textureKeyTag.addAttr("protocol", "file")
+        print "TODO*** WRITE self.applyMode"
+        print "TODO*** WRITE self.wrapMode"
+        return tag
+
+
+class JmeTextureState(object):
+    "A unique list of JmeTextures"
+
+    __slots__ = ('__jmeTextures', 'written', 'refCount')
+
+    def __init__(self, jmeTextures):
+        object.__init__(self)
+        self.written = False   # May write refs after written is True
+        self.__jmeTextures = jmeTextures
+        self.refCount = 0
+
+    def cf(self, anotherJmeTextureList):
+        if len(self.__jmeTextures) != len(anotherJmeTextureList): return false
+        return set(self.__jmeTextures) == set(other.__jmeTextures)
 
     def getXmlEl(self):
         tag = _XmlTag('com.jme.scene.state.TextureState',
                 {'class':"com.jme.scene.state.lwjgl.LWJGLTextureState"})
         if self.written:
-            tag.addAttr('ref', self.blenderName)
+            tag.addAttr('ref', id(self))
             return tag
         self.written = True
-        if self.refCount > 0: tag.addAttr("reference_ID", self.blenderName)
+        if self.refCount > 0: tag.addAttr("reference_ID", id(self))
 
-        #tag.addChild(specularTag)
+        textureGroupingTag = _XmlTag("texture")
+        tag.addChild(textureGroupingTag)
+        for texture in self.__jmeTextures:
+            textureGroupingTag.addChild(texture.getXmlEl())
+        textureGroupingTag.addAttr("size", len(self.__jmeTextures))
         return tag

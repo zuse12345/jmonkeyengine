@@ -30,6 +30,10 @@ __url__ = 'http://www.jmonkeyengine.com'
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# We purposefully do not handle the case where the user changes or merges the
+# Window containing our Gui box.  This is a limitation of the crappy Blender
+# window manager.  No user expecting success would do this anyways.
+
 from Blender import Window as _bWindow
 from Blender import Draw as _bDraw
 from Blender import BGL as _bBGL
@@ -55,7 +59,7 @@ BTNID_OVERWRITE = 4
 BTNID_FLIP = 5
 BTNID_SKIPOBJS = 5
 selCount = None
-allCount = None
+allCount = None      # Does double-duty.  (allCount != None) means Gui is up.
 fileOverwrite = False
 
 def exitModule():
@@ -75,10 +79,10 @@ def updateExportableCounts():
     global selCount, allCount, skipObjs
     selCount = 0
     allCount = 0
-    for o in _bdata.objects:
-        if _JmeNode.supported(o, skipObjs): allCount = allCount + 1
-    for o in _bdata.scenes.active.objects.selected:
-        if _JmeNode.supported(o, skipObjs): selCount = selCount + 1
+    for o in _bdata.scenes.active.objects:
+        if not _JmeNode.supported(o, skipObjs): continue
+        allCount = allCount + 1
+        if o.sel: selCount = selCount + 1
 
 def btnHandler(btnId):
     global saveAll, xmlFile, defaultFilePath, fileOverwrite, axisFlip, skipObjs
@@ -246,13 +250,20 @@ def drawer():
             guiBox.x + 170, guiBox.y + 23,145,10)
     _bDraw.Label("+ the jMonkeyEngine team",
             guiBox.x + 160, guiBox.y + 9,157,10)
-    if not allCount: updateExportableCounts()
-    if allCount < 1 and not skipObjs:
-        _bDraw.Label("Your scenes contain no",
-                guiBox.x + 10, guiBox.y + 200,200,20)
-        _bDraw.Label("export-supported objects",
-                guiBox.x + 10, guiBox.y + 170,200,20)
-        return
+    if allCount == None:
+        # First, regardless of modes, check if any export can possibly succeed.
+        canSucceed = False
+        for o in _bdata.scenes.active.objects:
+            if _JmeNode.supported(o, False):
+                canSucceed = True
+                break
+        if not canSucceed:
+            _bDraw.Label("Your scenes contain no",
+                    guiBox.x + 10, guiBox.y + 200,200,20)
+            _bDraw.Label("export-supported objects",
+                    guiBox.x + 10, guiBox.y + 170,200,20)
+            return
+        updateExportableCounts()
     if saveAll: toggleText = str(allCount) + " Scene Object(s)"
     else: toggleText = str(selCount) + " Selected Object(s)"
     if skipObjs: skipText = "Skip Objs"

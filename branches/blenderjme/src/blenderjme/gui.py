@@ -101,7 +101,7 @@ def btnHandler(btnId):
         return
     if btnId == BTNID_SAVE:
         try:
-            xmlFile = _exporter.gen(saveAll, axisFlip, skipObjs)
+            xmlFile = _exporter.gen(saveAll, axisFlip, skipObjs, ".*?([^/]+)$")
         except Exception, e:
             # Python 2.5 does not support "except X as y:" syntax
             ei = _exc_info()[2]

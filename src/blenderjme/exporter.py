@@ -39,7 +39,7 @@ import blenderjme
 
 recordTimestamp = "--nostamps" not in blenderjme.blenderArgs
 
-def gen(saveAll, autoRotate, skipObjs=True):
+def gen(saveAll, autoRotate, skipObjs=True, pathMapRe=None):
     global recordTimestamp
 
     origEditMode = _bEditMode()
@@ -53,6 +53,7 @@ def gen(saveAll, autoRotate, skipObjs=True):
         else:
             candidates = _bdata.scenes.active.objects.selected
         nodeTree = _NodeTree()
+        nodeTree.setPathMap(pathMapRe)
         for bo in candidates: nodeTree.addIfSupported(bo, skipObjs)
         root = nodeTree.nest()
 

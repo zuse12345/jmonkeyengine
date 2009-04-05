@@ -72,7 +72,9 @@ declare -i failures=0
 
 echo "\nWatch for output from Blender env. scripts run after this point.
 It's impractical for this script to detect failures with Blender env. tests,
-since Blender does not set a meaningful exit status.\n"
+since Blender does not set a meaningful exit status.\n
+(We could do a Python exit(), but it would be pretty rude to terminate the
+Blender process without giving it any opportunity to clean up)."
 
 # This single test tests the dependencies of the Blender environment itself.
 # We very particularly do not want to use an external Python interpreter,

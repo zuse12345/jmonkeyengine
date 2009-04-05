@@ -430,7 +430,7 @@ class JmeMesh(object):
                 # For unknown reason, Blender's Sticky uv vert creation sets
                 # values to (-1 to 1) range instead of proper (0 to 1) range.
                 texArray.append(v.uvco.x * .5 + .5)
-                texArray.append(v.uvco.y * .5 + .5)
+                texArray.append(1. - (v.uvco.y * .5 + .5))
             elif mesh.faceUV: 
                 raise Exception("Haven't implemented face uv yet")
         if nonFacedVertexes > 0:

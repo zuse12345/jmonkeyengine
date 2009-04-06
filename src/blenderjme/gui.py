@@ -46,18 +46,29 @@ import blenderjme
 from blenderjme.wrapperclasses import JmeNode as _JmeNode
 from traceback import tb_lineno as _tb_lineno
 from sys import exc_info as _exc_info
+import webbrowser as _webbrowser
 
 defaultFilePath = _abspath("default-jme.xml")
+helpUrl = "file://" + blenderjme.resFileAbsPath("exporter.html")
 saveAll = False
 xmlFile = None
 axisFlip = True
 skipObjs = True  # Unsupported Mat Objs
+activeReField = None
+activePrefField = None
+pathRe = ".*?([^/]+)$"
+pathPrefix = ""
 BTNID_SAVEALL = 1
 BTNID_SAVE = 2
 BTNID_CANCEL = 3
 BTNID_OVERWRITE = 4
 BTNID_FLIP = 5
-BTNID_SKIPOBJS = 5
+BTNID_SKIPOBJS = 6
+BTNID_HELP = 7
+BTNID_PATHRE = 8
+BTNID_PATHRE_CLEAR = 9
+BTNID_PREF = 10
+BTNID_PREF_CLEAR = 11
 selCount = None
 allCount = None      # Does double-duty.  (allCount != None) means Gui is up.
 fileOverwrite = False
@@ -85,7 +96,23 @@ def updateExportableCounts():
         if o.sel: selCount = selCount + 1
 
 def btnHandler(btnId):
-    global saveAll, xmlFile, defaultFilePath, fileOverwrite, axisFlip, skipObjs
+    global saveAll, xmlFile, defaultFilePath, fileOverwrite, axisFlip, \
+            skipObjs, helpUrl, pathRe, activeReField, pathPrefix, \
+            activePrefField
+    if btnId == BTNID_PATHRE_CLEAR:
+        pathRe = ''
+        _bDraw.Redraw()
+        return
+    if btnId == BTNID_PATHRE:
+        pathRe = activeReField.val
+        return
+    if btnId == BTNID_PREF_CLEAR:
+        pathPrefix = ''
+        _bDraw.Redraw()
+        return
+    if btnId == BTNID_PREF:
+        pathPrefix = activePrefField.val
+        return
     if btnId == BTNID_SKIPOBJS:
         skipObjs = not skipObjs
         updateExportableCounts()
@@ -101,7 +128,8 @@ def btnHandler(btnId):
         return
     if btnId == BTNID_SAVE:
         try:
-            xmlFile = _exporter.gen(saveAll, axisFlip, skipObjs, ".*?([^/]+)$")
+            xmlFile = _exporter.gen(
+                    saveAll, axisFlip, skipObjs, pathRe, pathPrefix)
         except Exception, e:
             # Python 2.5 does not support "except X as y:" syntax
             ei = _exc_info()[2]
@@ -110,12 +138,15 @@ def btnHandler(btnId):
                     + str(_tb_lineno(ei)))
                 ei = ei.tb_next
             print e
-            if 1 == _bDraw.PupMenu(str(e) + "%t|Abort|Try other settings"):
-                exitModule()
+            if 1 == (_bDraw.PupMenu(str(e)
+                    + "%t|Abort export|Try other settings")): exitModule()
             return
         _bWindow.FileSelector(saveFile, "Write XML file", defaultFilePath)
         # TODO:  Upon successful save, store file path to Blender registry
         # so that we can use it as default the next time.
+        return
+    if btnId == BTNID_HELP:
+        _webbrowser.open(helpUrl)
         return
     if btnId == BTNID_CANCEL:
         exitModule()
@@ -235,21 +266,26 @@ def saveFile(filepath):
         print "Will retry"
 
 def drawer():
-    global saveAll, guiBox, selCount, allCount, fileOverwrite
+    global saveAll, guiBox, selCount, allCount, fileOverwrite, activeReField, \
+            activePrefField
 
     if guiBox == None: mkGuiBox()
     if guiBox.screenTooSmall:
-        _bDraw.PupMenu("Window too small.  (Close script Window if open).")
+        _bDraw.PupMenu("Window too small.  "
+                + "(TIP: Close or enlarge script Window if open)")
         exitModule()
         return
     _bBGL.glClear(_bBGL.GL_COLOR_BUFFER_BIT)
     guiBox.drawBg()
     _bDraw.PushButton("Cancel", BTNID_CANCEL,
-            guiBox.x + 10, guiBox.y + 10, 50, 20, "Abort export")
+            guiBox.x + 10, guiBox.y + 10, 50, 17, "Abort export")
+    _bDraw.PushButton("Help", BTNID_HELP,
+            guiBox.x + 280, guiBox.y + 10, 40, 17,
+            "Open Help doc in web browser")
     _bDraw.Label(" (c) 2009 Blaine Simpson",
-            guiBox.x + 170, guiBox.y + 23,145,10)
+            guiBox.x + 170, guiBox.y + 46,145,10)
     _bDraw.Label("+ the jMonkeyEngine team",
-            guiBox.x + 160, guiBox.y + 9,157,10)
+            guiBox.x + 160, guiBox.y + 32,157,10)
     if allCount == None:
         # First, regardless of modes, check if any export can possibly succeed.
         canSucceed = False
@@ -259,32 +295,49 @@ def drawer():
                 break
         if not canSucceed:
             _bDraw.Label("Your scenes contain no",
-                    guiBox.x + 10, guiBox.y + 200,200,20)
+                    guiBox.x + 15, guiBox.y + 200,200,17)
             _bDraw.Label("export-supported objects",
-                    guiBox.x + 10, guiBox.y + 170,200,20)
+                    guiBox.x + 15, guiBox.y + 170,200,17)
             return
         updateExportableCounts()
-    if saveAll: toggleText = str(allCount) + " Scene Object(s)"
-    else: toggleText = str(selCount) + " Selected Object(s)"
+    if saveAll: toggleText = str(allCount) + " in Scene"
+    else: toggleText = str(selCount) + " Selected"
     if skipObjs: skipText = "Skip Objs"
     else: skipText = "Skip Mats"
     _bDraw.Toggle(toggleText,
-            BTNID_SAVEALL, guiBox.x + 10, guiBox.y + 200, 130, 20, saveAll,
+            BTNID_SAVEALL, guiBox.x + 15, guiBox.y + 200, 75, 17, saveAll,
             "Choose to export supported SELECTED objects or ALL objects",
             redrawDummy)
             # Would prefer to make a 2-line button, but _bDraw does not
             # support that... or basically anything other than vanilla.
     _bDraw.Toggle("Overwrite", BTNID_OVERWRITE,
-            guiBox.x + 10, guiBox.y + 175, 60, 20, fileOverwrite,
+            guiBox.x + 15, guiBox.y + 175, 60, 17, fileOverwrite,
             "Silently overwrite export file if it exists beforehand")
     _bDraw.Toggle("Rotate X", BTNID_FLIP,
-            guiBox.x + 10, guiBox.y + 150, 55, 20, axisFlip,
+            guiBox.x + 15, guiBox.y + 150, 55, 17, axisFlip,
             "Rotate X axis -90 degress in export so -Y axis becomes +Z")
-    _bDraw.Label("For unsupported Materials...",
-            guiBox.x + 10, guiBox.y + 130, 157, 10)
     _bDraw.Toggle(skipText, BTNID_SKIPOBJS,
-            guiBox.x + 10, guiBox.y + 105, 55, 20, skipObjs, "", redrawDummy)
+            guiBox.x + 15, guiBox.y + 125, 60, 17, skipObjs, "", redrawDummy)
+    activeReField = _bDraw.String('', BTNID_PATHRE,
+            guiBox.x + 15, guiBox.y + 100, 110, 17, pathRe, 100)
+    activePrefField = _bDraw.String('', BTNID_PREF,
+            guiBox.x + 15, guiBox.y + 75, 110, 17, pathPrefix, 100)
+        # Contrary to what the API says, this String "button" generates the
+        # button event when focus LEAVES the field, not when it is clicked.
     _bDraw.PushButton("Export", BTNID_SAVE,
-            guiBox.x + 10, guiBox.y + 50, 50, 20, "Select file to save to")
-    _bDraw.Label("Reserved space", guiBox.x + 180, guiBox.y + 150,200,20)
-    _bDraw.Label("More space", guiBox.x + 180, guiBox.y + 100,200,20)
+            guiBox.x + 150, guiBox.y + 10, 50, 17, "Select file to save to")
+    _bDraw.Label("Object(s) to export", guiBox.x + 100, guiBox.y + 200,200,17)
+    _bDraw.Label("Overwrite without confirmation",
+            guiBox.x + 100, guiBox.y + 175,200,17)
+    _bDraw.Label("Make axes jME-conformant",
+            guiBox.x + 100, guiBox.y + 150,200,17)
+    _bDraw.Label("Unsupported Material-handling",
+            guiBox.x + 100, guiBox.y + 125,200,17)
+    _bDraw.Label("Filename (capture) regex",
+            guiBox.x + 130, guiBox.y + 100,150,17)
+    _bDraw.PushButton("none", BTNID_PATHRE_CLEAR,
+            guiBox.x + 280, guiBox.y + 100, 35, 17, "No filename mapping")
+    _bDraw.Label("Filepath prefix",
+            guiBox.x + 130, guiBox.y + 75,150,17)
+    _bDraw.PushButton("none", BTNID_PREF_CLEAR,
+            guiBox.x + 280, guiBox.y + 75, 35, 17, "No filepath prefix")

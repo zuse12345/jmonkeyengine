@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- $Id$ -->
+<HTML>
+  <HEAD>
+    <TITLE>Blender / jME Exporter Help</TITLE>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<html>
+<head>
+    <STYLE>
+      body { background-color:white; }
+      body, table, div { font-family:sans-serif; }
+      code { font-family:monospace; }
+      table { background-color:silver; }
+      table, td, th { border:solid gray 1px; }
+      th { font-size:80%; }
+      td, th { padding:3px; }
+      tr.odd td { background-color:#E6E6FA; }
+      tr.even td { background-color:#E0FFFF; }
+      li { margin-top:0; margin-bottom:7px; }
+      div.footer { font-size:12px; }
+      span.addr { font-style:italic; white-space:nowrap; }
+    </STYLE>
+  </HEAD>
+  <BODY>
+    <h3>Blender / Jme Exporter Help</h3>
+    As soon as the Gui has stabilized, I'll display a screen shot of it here.
+    <HR/>
+    <h4>Interface items</h4>
+    <UL>
+      <LI><b>Object(s) to export</b>
+        Choose to export either all SELECTED exportable objects,
+        or all exportable objects in the active scene.
+        Toggle back and forth to see how many objects qualify each way.
+      <LI><b>Overwrite...</b>
+        Choose whether to overwrite export files without confirmation.
+        If the target file does not exist yet, this setting has no effect.
+      <LI><b>Make axes jME-conformant</b>
+        Rotate the X axis by -90 degrees, to make the exported scene +Z forward.
+      <LI><b>Unsupported Material-handling</b>
+        This setting has no effect unless the items to be exported contain
+        unsupported materials.
+        Choose whether to skip objects which contain unsupported materials;
+        or to export such objects without the unsupported materials.
+        Toggle back and forth to see how many objects qualify each way
+        (export object counts are shown inside the top button).
+      <LI><b>Filename capture regex and Filepath prefix</b>
+        These fields have no effect unless your model contains file path
+        references (at this time, this just means texture file paths).
+        If both fields are empty, the generated export file will leave the
+        file paths exactly as Blender has them.
+        If you set a Filename capture regex, the file name will be extracted
+        from Blender's file path.
+        <P>
+        <B>IMPORTANT: your capture regular expression must be valid regular
+          expressions which can match an entire absolute file path (how
+          Blender stores them) and must have "(...)" parentheses to match the
+          file name portion of the path.</B>
+        </P> <P>
+        If you set a Filepath prefix, the specified string will be prefixed to
+        the filename captured by your regex, if you have set one; or to the
+        absolute file path that Blender has.
+        </P> <P>
+          Examples:
+          <TABLE cellspacing="0">
+            <tr><th>regex</th><th>prefix</th><th>Blender's path</th>
+              <th>Output path</th></tr>
+            <tr class="odd"><td>&nbsp;</td><td>&nbsp;</td>
+              <td><code>/a/b/c/file.tga</code></td>
+              <td><code>/a/b/c/file.tga</code></td></tr>
+            <tr class="even"><td>&nbsp;</td><td>.</td>
+              <td><code>/a/b/c/file.tga</code></td>
+              <td><code>./a/b/c/file.tga</code></td></tr>
+            <tr class="odd"><td><code>.*?([^/]+)$</code></td>&nbsp;<td></td>
+              <td><code>/a/b/c/file.tga</code></td>
+              <td><code>file.tga</code></td></tr>
+            <tr class="even"><td><code>.*?([^/]+)$</code></td>
+              <td><code>/home/blaine/</code></td>
+              <td><code>/a/b/c/file.tga</code></td>
+              <td><code>/home/blaine/file.tga</code></td></tr>
+            <tr class="odd"><td><code>.*?([^/]+/[^/]+)$</code></td>
+              <td><code>&nbsp;</code></td>
+              <td><code>/a/b/c/file.tga</code></td>
+              <td><code>c/file.tga</code></td></tr>
+          </TABLE>
+        </P>
+    </UL>
+    <HR/>
+    <h4>Usage Tips</h4>
+      <UL>
+        <LI><b>Details</b>
+        To find out details about why the exporter refuses to export
+        specific objects; or details about any failure, start Blender from the
+        command-line.  When you attempt to export, messages about failures, or
+        why items are rejected are written to stdout.
+        <LI><b>Real Program Problems</b>
+        I do not have time to teach you Blender or jME, but if you have taken
+        the time to produce evidence (like test cases) that a problem is due
+        to the exporter itself, please contact me.
+        <span class="addr">blaine (dot) simpson (at) admc (dot) com</span>
+    </UL>
+    <HR/>
+    <h4>Mapping Blender items to jME items</h4>
+      <UL>
+        <LI><b>Object colors</b>
+          Object colors are usually only set by Blender users who use the
+          Blender Game features.
+          If you have set an object color and select the <CODE>ObColor</CODE>
+          toggle in the Material tab, the Mesh for this Blender object will
+          write a jME defaultColor setting.
+        <LI><b>Vertex coloring</b>
+          If you color vertexes, for example by using Blender's Vertex Paint
+          mode, a colorBuf element will be written for the mesh.
+          The Mesh subpanel of the Editing buttons panel lists "Vertex Color"
+          layers.  The exporter will export the currently active vertex color
+          layer.
+          (Usually you will only have one such layer).
+          <P>
+          Be aware that when coloring vertexes in Blender, you are painting
+          face-specific vertex colors.
+          The exporter duplicates vertexes where necessary to accommodate jME's
+          lack of face support.
+          As an example of this, consider a blender Plane object which you
+          subdivide on two opposing edges, making a plane with 6 vertexes and
+          2 faces.
+          This object would export to a 6-vertex jME QuadMesh unless you paint
+          the middle vertexes with different colors for the two faces.
+          In that case, the object would export to an 8-vertex jME QuadMesh,
+          since the middle vertexes need to be duplicated in order to persist
+          the unique colorings.
+          </P>
+        <LI><b>Sticky UV texcoords</b>
+          If a mesh has Sticky UV values, they will be saved as jME TexCoords.
+          You can tell whether you have sticky UV values by the text on the
+          "Sticky:" button in the Mesh subpanel of the Editing buttons panel.
+          If it says "Make", you have none; if it says "Delete", you have them.
+          While sticky UV values are a direct match to jME TexCoords and
+          require no conversion, they are poorly supported in Blender, and you
+          are really restricted with them compared to Per-face UV values.
+        <LI><b>Per-face UV texcoords</b>
+          If a mesh has Per-face UV values, they will be saved as jME TexCoords.
+          The Mesh subpanel of the Editing buttons panel lists per-face UV
+          values as "UV Texture" layers.
+          The exporter will export the currently active UV Texture layer.
+          (Usually you will only have one such layer).
+          <P>
+          The exporter duplicates vertexes where necessary to accommodate jME's
+          lack of face support.
+          The example above under "Vertex coloring" shows the implications of
+          this (just replace "UV values" where that description talks about
+          color values).
+          <P/>
+      </UL>
+    <HR/>
+    <DIV class="footer">
+      $Revision$
+      <BR/>
+      Last modified $Date$
+      <BR/>
+      <span class="addr">blaine (dot) simpson (at) admc (dot) com</span>
+    </DIV>
+  </BODY>
+</HTML>

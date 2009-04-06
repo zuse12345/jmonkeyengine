@@ -15,7 +15,7 @@ $Id$
 * Add exporter setting to export all "exportable" items in the current scene,
   instead of the default of exporting the exportable subset of currently-
   selected items.
-  Write basic texture map materials
+* Write basic texture map materials
 
   Write armatures
   Add support for Object RB* game settings.  These would be very useful for

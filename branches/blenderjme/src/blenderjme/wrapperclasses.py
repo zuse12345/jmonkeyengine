@@ -386,11 +386,22 @@ class JmeMesh(object):
             if self.jmeTextureState != None:
                 rsTag.addChild(self.jmeTextureState.getXmlEl())
 
-        vcMap = None   # maps vertex INDEX to MCol
-        colArray = None
+        # Make a copy so we can easily add verts like a normal Python list
+        vertList = []
+        for v in mesh.verts: vertList.append(v)
+        vertToColor = None
+        vertToUv = None
+        faceVertToNewVert = [] # Direct replacement for face[].verts[].index
+         # 2-dim array. Only necessary (and only changed) if using vertexColors.
+         # Note that though faceVertToNewVert face count and vert count always
+         # exactly matches the source mesh.faces.  We just change the
+         # destination indexes.
         if mesh.vertexColors:
-            multiColorMapped = False
-            vcMap = {}
+            vertToColor = {} # Simple modifiedVertIndex -> Color Hash
+            #  Temp vars only used in this block:
+            origIndColors = {}
+            # Nested dict. from OrigIndex -> Color -> NewIndex
+
             # TODO:  Test for objects with no faces, like curves, points.
             for face in mesh.faces:
                 if face.verts == None: continue
@@ -401,29 +412,141 @@ class JmeMesh(object):
                     raise Exception(
                     "Counts of Face vertexes and vertex-colors do not match: "
                         + str(len(face.verts)) + " vs. " + str(len(face.col)))
+                if len(face.verts) < 1: continue
+                faceVertToNewVert.append([])
                 for i in range(len(face.verts)):
-                    if face.verts[i].index in vcMap: multiColorMapped = True
-                    else: vcMap[face.verts[i].index] = face.col[i]
-            if multiColorMapped:
-                print ("WARNING: Ignored some multi-mapped vertex "
-                    + "coloring(s). Should average these.")
-            colArray = []
+                    colKey = (str(face.col[i].r)
+                            + "|" + str(face.col[i].g)
+                            + "|" + str(face.col[i].b)
+                            + "|" + str(face.col[i].a))
+                    # Generate key from Color since equality is not implemented
+                    # properly for MCols.  I.e. "in" tests fail, etc.
+                    if face.verts[i].index in origIndColors:
+                        #print ("Checking for " + colKey + " in "
+                                #+ str(origIndColors[face.verts[i].index]))
+                        if colKey in origIndColors[face.verts[i].index]:
+                            #print ("Agreement upon color " + colKey
+                                    #+ " for 2 face verts")
+                            finalFaceVIndex = \
+                              origIndColors[face.verts[i].index][colKey]
+                        else:
+                            # CREATE NEW VERT COPY!!
+                            finalFaceVIndex = len(vertList)
+                            vertList.append(UpdatableMVert(face.verts[i],
+                                    finalFaceVIndex, mesh))
+                            origIndColors[face.verts[i].index][colKey] =\
+                                    finalFaceVIndex
+                            # Writing the new vert index to the map-map so that
+                            # other faces using the same color of the same
+                            # original index may re-use it (preceding if block)
+                    else:
+                        # Only use of vertex (so far), so just save orig index
+                        finalFaceVIndex = face.verts[i].index
+                        origIndColors[face.verts[i].index] = \
+                                { colKey:finalFaceVIndex }
+                        # Writing the existing vert index to the map-map so
+                        # that other faces using the same color of the same
+                        # original index may re-use it.
+                    vertToColor[finalFaceVIndex] = face.col[i]
+                    faceVertToNewVert[-1].append(finalFaceVIndex)
+        else:
+            for face in mesh.faces:
+                if face.verts == None or len(face.verts) < 1: continue
+                faceVertToNewVert.append([])
+                for i in range(len(face.verts)):
+                    faceVertToNewVert[-1].append(face.verts[i].index)
+        # At this point, faceVertToNewVert[][]  contains references to every
+        # vertex, both original and new copies.  For shared vertexes, there
+        # will be multiple faceVertToNewVert[][] elements pointing to the
+        # same vertex, but there will be no vertexes orphaned by faceVert...
+        if mesh.faceUV:
+            vertToUv = {} # Simple modifiedVertIndex -> [u,v] Vector
+            #  Temp vars only used in this block:
+            origIndUvs = {}
+            # Nested dict. from OrigIndex -> "u|v" -> NewIndex
 
+            # TODO:  Test for objects with no faces, like curves, points.
+            firstUvVertexCopy = len(vertList)
+            for face in mesh.faces:
+                if face.verts == None: continue
+                # The face.uv reference in the next line WILL THROW
+                # if the mesh does not support uv values
+                # (i.e. mesh.faceUV).
+                if (len(face.verts) != len(face.uv)):
+                    raise Exception(
+                    "Counts of Face vertexes and uv-values do not match: "
+                        + str(len(face.verts)) + " vs. " + str(len(face.uv)))
+                for i in range(len(face.verts)):
+                    uvKey = str(face.uv[i].x) + "|" + str(face.uv[i].y)
+                    # Compound key to prevent need for nested or 2-dim hash
+                    # N.b. we generate the uvKey from the original face data,
+                    # since nothing above this level gets changed.
+                    vertIndex = faceVertToNewVert[face.index][i]
+                    if vertIndex in origIndUvs:
+                        if uvKey in origIndUvs[vertIndex]:
+                            #print ("Agreement upon uv " + uvKey
+                                    #+ " for 2 face verts")
+                            finalFaceVIndex = origIndUvs[vertIndex][uvKey]
+                        else:
+                            # CREATE NEW VERT COPY!!
+                            finalFaceVIndex = len(vertList)
+                            vertList.append(UpdatableMVert(
+                                vertList[vertIndex], finalFaceVIndex, mesh))
+                            origIndUvs[vertIndex][uvKey] = finalFaceVIndex
+                            # Writing the new vert index to the map-map so that
+                            # other faces using the same uv val of the same
+                            # original index may re-use it (preceding if block)
+                            if vertToColor != None:
+                                # Must make a vertToColor mapping for any
+                                # new vert.
+                                if vertList[-1].origIndex in vertToColor:
+                                    vertToColor[finalFaceVIndex] =  \
+                                            vertToColor[vertList[-1].origIndex]
+                                else:
+                                    print ("WARNING:  Original vert "
+                                        + str(vertList[-1].origIndex)
+                                        + " which was dupped for faceUV, was "
+                                        + "assigned no vertex color")
+                        faceVertToNewVert[face.index][i] = finalFaceVIndex
+                        # Overwriting faceVertToNewVert from vertIndex
+                    else:
+                        # Only use of vertex (so far), so just save orig index
+                        finalFaceVIndex = vertIndex
+                        origIndUvs[vertIndex]= { uvKey:finalFaceVIndex }
+                        # Writing the existing vert index to the map-map so
+                        # that other faces using the same uv val of the same
+                        # original index may re-use it.
+                    vertToUv[finalFaceVIndex] = face.uv[i]
+
+        if len(mesh.verts) != len(vertList):
+            print (str(len(vertList) - len(mesh.verts)) + " verts added:  "
+                    + str(len(mesh.verts)) + " -> " + str(len(vertList)))
         coArray = []
         noArray = []
-        if mesh.faceUV or mesh.vertexUV: texArray=[]
-        else: texArray = None
+        if vertToColor == None:
+            colArray = None
+        else:
+            colArray = []
+        if mesh.faceUV or mesh.vertexUV:
+            texArray=[]
+        else:
+            texArray = None
         nonFacedVertexes = 0
-        for v in mesh.verts:
+        nonUvVertexes = 0
+        for v in vertList:
             coArray.append(v.co.x)
             coArray.append(v.co.y)
             coArray.append(v.co.z)
             noArray.append(v.no.x)
             noArray.append(v.no.y)
             noArray.append(v.no.z)
+            # For pixel addressing, Blender just loves to use + down.
+            # We have to correct this incorrect usage of uv mappings, since
+            # V of 0 is supposed to mean TOP not BOTTOM.  This is why both v
+            # values are saved as 1 - y.
             if colArray != None:
-                if v.index in vcMap:
-                    colArray.append(vcMap[v.index])
+                if v.index in vertToColor:
+                    colArray.append(vertToColor[v.index])
                 else:
                     nonFacedVertexes += 1
                     colArray.append(None)  # We signify WHITE by None
@@ -433,10 +556,21 @@ class JmeMesh(object):
                 texArray.append(v.uvco.x * .5 + .5)
                 texArray.append(1. - (v.uvco.y * .5 + .5))
             elif mesh.faceUV: 
-                raise Exception("Haven't implemented face uv yet")
+                if v.index in vertToUv:
+                    uvVert = vertToUv[v.index]
+                    texArray.append(uvVert.x)
+                    texArray.append(1 - uvVert.y)
+                else:
+                    nonUvVertexes += 1
+                    texArray.append(-1)
+                    texArray.append(-1)
         if nonFacedVertexes > 0:
             print ("WARNING: " + str(nonFacedVertexes)
                 + " vertexes set to WHITE because no face to derive color from")
+        if nonUvVertexes > 0:
+            print ("WARNING: " + str(nonUvVertexes)
+                + " uv vals set to (-1,-1) because no face to derive uv from")
+
         vertTag = _XmlTag("vertBuf", {"size":len(coArray)})
         vertTag.addAttr("data", coArray, 6, 3)
         tag.addChild(vertTag)
@@ -469,17 +603,17 @@ class JmeMesh(object):
             tag.addChild(vertColTag)
         if 3 not in self.__vpf and 4 not in self.__vpf: return tag
         faceVertIndexes = []
-        for face in mesh.faces:
-            if face.verts == None or len(face.verts) < 1: continue
-            if unify and len(face.verts) == 4:
-                faceVertIndexes.append(face.verts[0].index)
-                faceVertIndexes.append(face.verts[1].index)
-                faceVertIndexes.append(face.verts[2].index)
-                faceVertIndexes.append(face.verts[0].index)
-                faceVertIndexes.append(face.verts[2].index)
-                faceVertIndexes.append(face.verts[3].index)
+        for i in range(len(faceVertToNewVert)):
+            if unify and len(faceVertToNewVert[i]) == 4:
+                faceVertIndexes.append(faceVertToNewVert[i][0])
+                faceVertIndexes.append(faceVertToNewVert[i][1])
+                faceVertIndexes.append(faceVertToNewVert[i][2])
+                faceVertIndexes.append(faceVertToNewVert[i][0])
+                faceVertIndexes.append(faceVertToNewVert[i][2])
+                faceVertIndexes.append(faceVertToNewVert[i][3])
             else:
-                for v in face.verts: faceVertIndexes.append(v.index)
+                for j in range(len(faceVertToNewVert[i])):
+                    faceVertIndexes.append(faceVertToNewVert[i][j])
         indTag = _XmlTag("indexBuffer", {"size":len(faceVertIndexes)})
         if len(face.verts) == 4 and not unify: outputVpf = 4
         else: outputVpf = 3
@@ -505,7 +639,7 @@ class NodeTree(object):
     Add all members to the tree, then call nest().
     See method descriptions for details."""
 
-    __slots__ = ('__memberMap', '__memberKeys', '__pathMapRe',
+    __slots__ = ('__memberMap', '__memberKeys', '__pathMapRe', '__pathPrefix',
             '__matMap1side', '__matMap2side', 'root',
             '__textureHash', '__textureStates')
     # N.b. __memberMap does not have a member for each node, but a member
@@ -525,16 +659,24 @@ class NodeTree(object):
         self.__textureStates = set()
         self.root = None
         self.__pathMapRe = None
+        self.__pathPrefix = None
+
+    def setPathPrefix(self, pathPrefix): self.__pathPrefix = pathPrefix
 
     def setPathMap(self, reStr):
         if reStr == None:
             self.__pathMapRe = None
+            return
         else:
             try:
                 self.__pathMapRe = re.compile(reStr)
             except Exception, e:
-                raise Exception('Filepath-mapping expression "' + reStr
+                raise Exception('Filepath-mapping regex "' + reStr
                         + '" is malformatted: ' + str(e))
+            testMatch = self.__pathMapRe.match("/test/file/path.tga")
+            if testMatch == None or testMatch.group(1) == None:
+                raise Exception('Filepath-mapping regex "' + reStr
+                    + '" does not successfully (match) an /absolute/file/path')
 
     def includeTex(self, mtex):
         """include* instead of add*, because we don't necessarily 'add'.  We
@@ -545,7 +687,8 @@ class NodeTree(object):
             jmeTex = self.__textureHash[newJmeTexId]
             jmeTex.refCount += 1
             return jmeTex
-        jmeTex = JmeTexture(mtex, newJmeTexId, self.__pathMapRe)
+        jmeTex = JmeTexture(
+                mtex, newJmeTexId, self.__pathMapRe, self.__pathPrefix)
         self.__textureHash[newJmeTexId] = jmeTex
         return jmeTex
 
@@ -709,9 +852,9 @@ class JmeMaterial(object):
         else:
             self.colorMaterial = None
         self.diffuse = bMat.rgbCol
-        self.diffuse.append(1)
+        self.diffuse.append(bMat.alpha)
         self.specular = bMat.specCol
-        self.specular.append(1)
+        self.specular.append(bMat.alpha)
         #softnessPercentage = 1. - (bMat.hard - 1.) / 510.
         # Softness increases specular spread.
         # Unfortunately, it's far from linear, and the Python math functions
@@ -723,7 +866,7 @@ class JmeMaterial(object):
         self.shininess = bMat.spec * .5 * 128
         self.emissive = [bMat.rgbCol[0] * bMat.emit,
                 bMat.rgbCol[1] * bMat.emit,
-                bMat.rgbCol[2] * bMat.emit, 1]
+                bMat.rgbCol[2] * bMat.emit, bMat.alpha]
         if twoSided: self.materialFace = "FrontAndBack"
         else: self.materialFace = None
 
@@ -753,7 +896,7 @@ class JmeMaterial(object):
                 (diffuseFactor * self.diffuse[0] + whiteFactor) * bMat.amb,
                 (diffuseFactor * self.diffuse[1] + whiteFactor) * bMat.amb,
                 (diffuseFactor * self.diffuse[2] + whiteFactor) * bMat.amb,
-            1]
+                bMat.alpha]
         else:
             self.ambient = [bMat.amb, bMat.amb, bMat.amb, 1]
 
@@ -893,7 +1036,7 @@ class JmeTexture(object):
         if tex.repeat[1] != 1:
             raise UnsupportedException("Tex Y-Repeat", tex.repeat[1])
         # Map Input
-        if mtex.texco != _bTexCo["STICK"] and mtex.texco == _bTexCo["UV"]:
+        if mtex.texco != _bTexCo["STICK"] and mtex.texco != _bTexCo["UV"]:
             raise UnsupportedException("Coordinate Mapping type",
                     mtex.texco)
         # Just ignore uvlayer.  We don't care what layer names the user has
@@ -944,7 +1087,7 @@ class JmeTexture(object):
     idFor = staticmethod(idFor)
     supported = staticmethod(supported)
 
-    def __init__(self, mtex, newId, pathMapRe = None):
+    def __init__(self, mtex, newId, pathMapRe = None, pathPrefix = None):
         "Throws a descriptive UnsupportedException for the obvious reason"
         # TODO:  Look into whether Blender persistence supports saving
         #        image references, so we can share (possibly large) Image
@@ -970,10 +1113,12 @@ class JmeTexture(object):
         else:
             raise Exception("Unexpected extend mode even though pre-validated: "
                     + mtex.tex.extend)
+        if pathPrefix == None: pathPrefix = ""
         if pathMapRe == None:
-            self.filepath = mtex.tex.image.filename
+            self.filepath = pathPrefix + mtex.tex.image.filename
         else:
-            self.filepath = pathMapRe.match(mtex.tex.image.filename).group(1)
+            self.filepath = pathPrefix + pathMapRe.match(
+                    mtex.tex.image.filename).group(1)
         self.refid = newId
 
     def getXmlEl(self):
@@ -1005,9 +1150,9 @@ class JmeTextureState(object):
         self.__jmeTextures = jmeTextures
         self.refCount = 0
 
-    def cf(self, anotherJmeTextureList):
-        if len(self.__jmeTextures) != len(anotherJmeTextureList): return false
-        return set(self.__jmeTextures) == set(other.__jmeTextures)
+    def cf(self, jmeTextureList):
+        if len(self.__jmeTextures) != len(jmeTextureList): return false
+        return set(self.__jmeTextures) == set(jmeTextureList)
 
     def getXmlEl(self):
         tag = _XmlTag('com.jme.scene.state.TextureState',
@@ -1024,3 +1169,24 @@ class JmeTextureState(object):
             textureGroupingTag.addChild(texture.getXmlEl())
         textureGroupingTag.addAttr("size", len(self.__jmeTextures))
         return tag
+
+class UpdatableMVert:
+    #__slots__ = ('co', 'hide', 'index', 'no', 'sel', 'uvco')
+    __slots__ = ('co', 'index', 'no', 'uvco', 'origIndex')
+    # For efficiency, cut out the attrs that we will never use.
+    # Very important to retain the original vertex's uvco, since these are
+    # used when writing sticky uv values for dupped verts.
+    # Need to keep track of the original index so that loops after the one
+    # which added the duplicate can (1) loop through just the original
+    # vertexes, then (2) loop through added vertexes, copying results just
+    # derived for the original source vertex.
+
+    def __init__(self, mvert, newIndex, mesh):
+        object.__init__(self)
+        self.co = mvert.co
+        #self.hide = mvert.hide
+        self.origIndex = mvert.index
+        self.index = newIndex
+        self.no = mvert.no
+        #self.sel = mvert.sel
+        if mesh.vertexUV: self.uvco = mvert.uvco

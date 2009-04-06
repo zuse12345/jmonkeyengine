@@ -2,7 +2,8 @@
 """Blender-to-jME XML format Exporter
 Name: 'JMonkeyEngine (*-jme.xml)'
 Blender: 241
-Group: 'Export'"""
+Group: 'Export'
+Tip: 'Export to jMonkeyEngine XML file'"""
 # TODO:  install archived version of Blender and set the Blender version
 # above to the older version that this product works with.
 
@@ -10,6 +11,11 @@ __version__ = '$Revision$'
 __date__ = '$Date$'
 __author__ = 'Blaine Simpson, blaine (dot) simpson (at) admc (dot) com'
 __url__ = 'http://www.jmonkeyengine.com'
+# The Blender Help browser system parses this file for the __url__ value.
+# That system is designed terribly and completely chokes if __url__ is
+# derived in any way, so we can't generate the __url__ value.
+
+__bpydoc__ = "Run the exporter and hit the Help button in the Gui."
 
 # Copyright (c) 2009, Blaine Simpson and the jMonkeyEngine team
 # All rights reserved.

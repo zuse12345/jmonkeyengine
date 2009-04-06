@@ -2,11 +2,13 @@ $Id$
 
 TODO LIST
 
-The Blender materials don't have a basic material alpha setting, just RGB.
-Look into whether I should get the alpha value for the jME color float[4]s
-from somewhere.  Just setting all alphas to 1 for now.
+Consider refactoring the huge amount of code in JmeNode.getXmlEl concerned
+with accommodating face-specific colors and uv values.  I think this could be
+done more simply and efficiently by adding a per-UpdatableMVert .col and by
+populating UpdateableMVert.uvco from per-vertex uvs.
 
-Handle unusual Blender objects like non-face items, non-data meshes, etc.
+Handle unusual Blender objects like lights, cameras, non-face meshes,
+non-data meshes, etc.
 
 As soon as I implement proper schema validation in jME core, add the namespace
 specs to generated XML.

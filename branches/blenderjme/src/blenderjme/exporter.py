@@ -39,11 +39,13 @@ import blenderjme
 
 recordTimestamp = "--nostamps" not in blenderjme.blenderArgs
 
-def gen(saveAll, autoRotate, skipObjs=True, pathMapRe=None):
+def gen(saveAll, autoRotate, skipObjs=True, pathMapRe=None, pathPrefix=None):
     global recordTimestamp
 
     origEditMode = _bEditMode()
     if origEditMode != 0: _bEditMode(0)
+    if pathMapRe == "": pathMapRe = None
+    if pathPrefix == "": pathPrefix = None
     try:
         os = []
         candidates = []
@@ -54,6 +56,7 @@ def gen(saveAll, autoRotate, skipObjs=True, pathMapRe=None):
             candidates = _bdata.scenes.active.objects.selected
         nodeTree = _NodeTree()
         nodeTree.setPathMap(pathMapRe)
+        nodeTree.setPathPrefix(pathPrefix)
         for bo in candidates: nodeTree.addIfSupported(bo, skipObjs)
         root = nodeTree.nest()
 
@@ -66,6 +69,8 @@ def gen(saveAll, autoRotate, skipObjs=True, pathMapRe=None):
 
         stampText = "Blender export by Blender/JME Exporter"
         if recordTimestamp: stampText += (" at " + _datetime.now().isoformat())
+        stampText += ("\nExporter (not this file!) copyright by\n  "
+                + __author__ + " + the jME Dev Team")
         xmlFile = _XmlFile(nodeTree.getXml())
         xmlFile.addComment(stampText)
         return xmlFile

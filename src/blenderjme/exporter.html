@@ -122,12 +122,12 @@
           Make sure to deliver the resource files along with your *-jme.xml
           file.
         <LI><b>On the jME side, make the resource files available</b>
-          If my proposal is accepted, you should shortly be able to just put
-          the resource files in the same relative location to the *-jme.xml
-          file and jME's XMLImporter will <i>just work</i>.
-          Due to compounded design problems with the jME resource locator
-          system, however, that isn't as easy to accommodate as it sounds.
-          Until then, you are responsible for making the resource files
+          I have already written the jME code to handle this automatically (as
+          long as you use relative resource file paths!).
+          If my code is accepted into the jME baseline, I will update this
+          document to specify which versions of jME have it.
+          If you are using a jME code base without this enhancement, you will
+          need to make the resource files
           visible to the static (!) ResourceLocatorTool that XMLImporter uses.
           I recommend this approach temporarily:<PRE style="background-color:#FFFFE0;"><CODE style="background-color:#FFFFE0;">
     ResourceLocator modelResLocator = new SimpleResourceLocator(

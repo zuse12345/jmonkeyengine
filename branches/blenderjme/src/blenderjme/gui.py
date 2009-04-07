@@ -54,10 +54,6 @@ saveAll = False
 xmlFile = None
 axisFlip = True
 skipObjs = True  # Unsupported Mat Objs
-activeReField = None
-activePrefField = None
-pathRe = ".*?([^/]+)$"
-pathPrefix = ""
 BTNID_SAVEALL = 1
 BTNID_SAVE = 2
 BTNID_CANCEL = 3
@@ -65,10 +61,6 @@ BTNID_OVERWRITE = 4
 BTNID_FLIP = 5
 BTNID_SKIPOBJS = 6
 BTNID_HELP = 7
-BTNID_PATHRE = 8
-BTNID_PATHRE_CLEAR = 9
-BTNID_PREF = 10
-BTNID_PREF_CLEAR = 11
 selCount = None
 allCount = None      # Does double-duty.  (allCount != None) means Gui is up.
 fileOverwrite = False
@@ -97,22 +89,7 @@ def updateExportableCounts():
 
 def btnHandler(btnId):
     global saveAll, xmlFile, defaultFilePath, fileOverwrite, axisFlip, \
-            skipObjs, helpUrl, pathRe, activeReField, pathPrefix, \
-            activePrefField
-    if btnId == BTNID_PATHRE_CLEAR:
-        pathRe = ''
-        _bDraw.Redraw()
-        return
-    if btnId == BTNID_PATHRE:
-        pathRe = activeReField.val
-        return
-    if btnId == BTNID_PREF_CLEAR:
-        pathPrefix = ''
-        _bDraw.Redraw()
-        return
-    if btnId == BTNID_PREF:
-        pathPrefix = activePrefField.val
-        return
+            skipObjs, helpUrl
     if btnId == BTNID_SKIPOBJS:
         skipObjs = not skipObjs
         updateExportableCounts()
@@ -128,8 +105,7 @@ def btnHandler(btnId):
         return
     if btnId == BTNID_SAVE:
         try:
-            xmlFile = _exporter.gen(
-                    saveAll, axisFlip, skipObjs, pathRe, pathPrefix)
+            xmlFile = _exporter.gen(saveAll, axisFlip, skipObjs)
         except Exception, e:
             # Python 2.5 does not support "except X as y:" syntax
             ei = _exc_info()[2]
@@ -142,8 +118,6 @@ def btnHandler(btnId):
                     + "%t|Abort export|Try other settings")): exitModule()
             return
         _bWindow.FileSelector(saveFile, "Write XML file", defaultFilePath)
-        # TODO:  Upon successful save, store file path to Blender registry
-        # so that we can use it as default the next time.
         return
     if btnId == BTNID_HELP:
         _webbrowser.open(helpUrl)
@@ -179,8 +153,7 @@ class GuiBox(object):
     def __loadImages(self):
         self.__imgs = []
         for path in self.__imgpaths:
-            self.__imgs.append(_bLoad(
-                blenderjme.resFileAbsPath(path)))
+            self.__imgs.append(_bLoad(blenderjme.resFileAbsPath(path)))
         for img in self.__imgs: img.glLoad()
 
     def free(self):
@@ -266,8 +239,7 @@ def saveFile(filepath):
         print "Will retry"
 
 def drawer():
-    global saveAll, guiBox, selCount, allCount, fileOverwrite, activeReField, \
-            activePrefField
+    global saveAll, guiBox, selCount, allCount, fileOverwrite
 
     if guiBox == None: mkGuiBox()
     if guiBox.screenTooSmall:
@@ -318,12 +290,6 @@ def drawer():
             "Rotate X axis -90 degress in export so -Y axis becomes +Z")
     _bDraw.Toggle(skipText, BTNID_SKIPOBJS,
             guiBox.x + 15, guiBox.y + 125, 60, 17, skipObjs, "", redrawDummy)
-    activeReField = _bDraw.String('', BTNID_PATHRE,
-            guiBox.x + 15, guiBox.y + 100, 110, 17, pathRe, 100)
-    activePrefField = _bDraw.String('', BTNID_PREF,
-            guiBox.x + 15, guiBox.y + 75, 110, 17, pathPrefix, 100)
-        # Contrary to what the API says, this String "button" generates the
-        # button event when focus LEAVES the field, not when it is clicked.
     _bDraw.PushButton("Export", BTNID_SAVE,
             guiBox.x + 150, guiBox.y + 10, 50, 17, "Select file to save to")
     _bDraw.Label("Object(s) to export", guiBox.x + 100, guiBox.y + 200,200,17)
@@ -333,11 +299,3 @@ def drawer():
             guiBox.x + 100, guiBox.y + 150,200,17)
     _bDraw.Label("Unsupported Material-handling",
             guiBox.x + 100, guiBox.y + 125,200,17)
-    _bDraw.Label("Filename (capture) regex",
-            guiBox.x + 130, guiBox.y + 100,150,17)
-    _bDraw.PushButton("none", BTNID_PATHRE_CLEAR,
-            guiBox.x + 280, guiBox.y + 100, 35, 17, "No filename mapping")
-    _bDraw.Label("Filepath prefix",
-            guiBox.x + 130, guiBox.y + 75,150,17)
-    _bDraw.PushButton("none", BTNID_PREF_CLEAR,
-            guiBox.x + 280, guiBox.y + 75, 35, 17, "No filepath prefix")

@@ -38,7 +38,6 @@ import jme.esmath as _esmath
 import Blender.Mathutils as _bmath
 from Blender.Material import Modes as _matModes
 from Blender.Mesh import Modes as _meshModes
-import re
 
 # GENERAL DEVELOPMENT NOTES:
 #
@@ -639,7 +638,7 @@ class NodeTree(object):
     Add all members to the tree, then call nest().
     See method descriptions for details."""
 
-    __slots__ = ('__memberMap', '__memberKeys', '__pathMapRe', '__pathPrefix',
+    __slots__ = ('__memberMap', '__memberKeys',
             '__matMap1side', '__matMap2side', 'root',
             '__textureHash', '__textureStates')
     # N.b. __memberMap does not have a member for each node, but a member
@@ -658,25 +657,6 @@ class NodeTree(object):
         self.__textureHash = {}
         self.__textureStates = set()
         self.root = None
-        self.__pathMapRe = None
-        self.__pathPrefix = None
-
-    def setPathPrefix(self, pathPrefix): self.__pathPrefix = pathPrefix
-
-    def setPathMap(self, reStr):
-        if reStr == None:
-            self.__pathMapRe = None
-            return
-        else:
-            try:
-                self.__pathMapRe = re.compile(reStr)
-            except Exception, e:
-                raise Exception('Filepath-mapping regex "' + reStr
-                        + '" is malformatted: ' + str(e))
-            testMatch = self.__pathMapRe.match("/test/file/path.tga")
-            if testMatch == None or testMatch.group(1) == None:
-                raise Exception('Filepath-mapping regex "' + reStr
-                    + '" does not successfully (match) an /absolute/file/path')
 
     def includeTex(self, mtex):
         """include* instead of add*, because we don't necessarily 'add'.  We
@@ -687,8 +667,7 @@ class NodeTree(object):
             jmeTex = self.__textureHash[newJmeTexId]
             jmeTex.refCount += 1
             return jmeTex
-        jmeTex = JmeTexture(
-                mtex, newJmeTexId, self.__pathMapRe, self.__pathPrefix)
+        jmeTex = JmeTexture(mtex, newJmeTexId)
         self.__textureHash[newJmeTexId] = jmeTex
         return jmeTex
 
@@ -1087,7 +1066,7 @@ class JmeTexture(object):
     idFor = staticmethod(idFor)
     supported = staticmethod(supported)
 
-    def __init__(self, mtex, newId, pathMapRe = None, pathPrefix = None):
+    def __init__(self, mtex, newId):
         "Throws a descriptive UnsupportedException for the obvious reason"
         # TODO:  Look into whether Blender persistence supports saving
         #        image references, so we can share (possibly large) Image
@@ -1113,12 +1092,11 @@ class JmeTexture(object):
         else:
             raise Exception("Unexpected extend mode even though pre-validated: "
                     + mtex.tex.extend)
-        if pathPrefix == None: pathPrefix = ""
-        if pathMapRe == None:
-            self.filepath = pathPrefix + mtex.tex.image.filename
+        if (len(mtex.tex.image.filename) > 2
+                and mtex.tex.image.filename[0:2] == "//"):
+            self.filepath = mtex.tex.image.filename[2:]
         else:
-            self.filepath = pathPrefix + pathMapRe.match(
-                    mtex.tex.image.filename).group(1)
+            self.filepath = mtex.tex.image.filename
         self.refid = newId
 
     def getXmlEl(self):

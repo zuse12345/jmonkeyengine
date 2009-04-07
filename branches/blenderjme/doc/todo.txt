@@ -2,6 +2,9 @@ $Id$
 
 TODO LIST
 
+Install archived version of Blender and set the Blender version in
+"blenderjmeexp_reg.py" to the oldest version that this product works with.
+
 Consider refactoring the huge amount of code in JmeNode.getXmlEl concerned
 with accommodating face-specific colors and uv values.  I think this could be
 done more simply and efficiently by adding a per-UpdatableMVert .col and by

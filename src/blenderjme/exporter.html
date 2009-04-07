@@ -110,6 +110,34 @@
             <LI>Export your model
             <LI>Re-open your blend-file to restore the pre-modified modifiers.
           </OL>
+        <LI><b>Use .blend-file-relative resource files</b>
+          If selecting a resource file for loading or saving, make sure that
+          you have already saved your scene to a .blend file (so Blender can
+          figure out what directory to make files relative to), then <UL>
+            <LI>With the file Blender's file selection widget, make sure to
+                enable the "Relative Paths" toggle button.
+            <LI>When keying in a path, make sure to begin the path with "//",
+                which means relative-to-the-.blend file.
+          </UL>
+          Make sure to deliver the resource files along with your *-jme.xml
+          file.
+        <LI><b>On the jME side, make the resource files available</b>
+          If my proposal is accepted, you should shortly be able to just put
+          the resource files in the same relative location to the *-jme.xml
+          file and jME's XMLImporter will <i>just work</i>.
+          Due to compounded design problems with the jME resource locator
+          system, however, that isn't as easy to accommodate as it sounds.
+          Until then, you are responsible for making the resource files
+          visible to the static (!) ResourceLocatorTool that XMLImporter uses.
+          I recommend this approach temporarily:<PRE style="background-color:#FFFFE0;"><CODE style="background-color:#FFFFE0;">
+    ResourceLocator modelResLocator = new SimpleResourceLocator(
+            xmlFile.getParentFile().toURI());
+    ResourceLocatorTool.addResourceLocator(ResourceLocatorTool.TYPE_TEXTURE,
+            modelResLocator);
+    Object o =importer.load(file);
+    ResourceLocatorTool.removeResourceLocator(ResourceLocatorTool.TYPE_TEXTURE,
+            modelResLocator));
+          </CODE></PRE>
     </UL>
     <HR/>
     <h4>Mapping Blender items to jME items</h4>

@@ -30,7 +30,8 @@
     with the included BSD open source license.
     <HR/>
     <h4>Interface</h4>
-    <img src="exporterbox.png" style="float:left; margin:20px;"/>
+    <div>
+    <img src="exporterbox.png" style="float:left; margin-right:20px;"/>
     <UL>
       <LI><b>Object(s) to export</b>
         Choose to export either all SELECTED exportable objects,
@@ -48,47 +49,8 @@
         or to export such objects without the unsupported materials.
         Toggle back and forth to see how many objects qualify each way
         (export object counts are shown inside the top button).
-      <LI><b>Filename capture regex and Filepath prefix</b>
-        These fields have no effect unless your model contains file path
-        references (at this time, this just means texture file paths).
-        If both fields are empty, the generated export file will leave the
-        file paths exactly as Blender has them.
-        If you set a Filename capture regex, the file name will be extracted
-        from Blender's file path.
-        <P>
-        <B>IMPORTANT: your capture regular expression must be valid regular
-          expressions which can match an entire absolute file path (how
-          Blender stores them) and must have "(...)" parentheses to match the
-          file name portion of the path.</B>
-        </P> <P>
-        If you set a Filepath prefix, the specified string will be prefixed to
-        the filename captured by your regex, if you have set one; or to the
-        absolute file path that Blender has.
-        </P> <P>
-          Examples:
-          <TABLE cellspacing="0">
-            <tr><th>regex</th><th>prefix</th><th>Blender's path</th>
-              <th>Output path</th></tr>
-            <tr class="odd"><td>&nbsp;</td><td>&nbsp;</td>
-              <td><code>/a/b/c/file.tga</code></td>
-              <td><code>/a/b/c/file.tga</code></td></tr>
-            <tr class="even"><td>&nbsp;</td><td>.</td>
-              <td><code>/a/b/c/file.tga</code></td>
-              <td><code>./a/b/c/file.tga</code></td></tr>
-            <tr class="odd"><td><code>.*?([^/]+)$</code></td>&nbsp;<td></td>
-              <td><code>/a/b/c/file.tga</code></td>
-              <td><code>file.tga</code></td></tr>
-            <tr class="even"><td><code>.*?([^/]+)$</code></td>
-              <td><code>/home/blaine/</code></td>
-              <td><code>/a/b/c/file.tga</code></td>
-              <td><code>/home/blaine/file.tga</code></td></tr>
-            <tr class="odd"><td><code>.*?([^/]+/[^/]+)$</code></td>
-              <td><code>&nbsp;</code></td>
-              <td><code>/a/b/c/file.tga</code></td>
-              <td><code>c/file.tga</code></td></tr>
-          </TABLE>
-        </P>
     </UL>
+    </div>
     <HR/>
     <h4>Usage Tips</h4>
       <UL>

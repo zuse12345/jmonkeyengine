@@ -9,6 +9,7 @@ $Id$
 
   <target name="clean" description="Wipe out all derived artifacts">
     <delete dir="dist"/>
+    <delete dir="tmp/stage"/>
     <delete dir="." includes="*.pyc"/>
     <delete dir="src" includes="**/*.pyc"/>
   </target>
@@ -17,17 +18,27 @@ $Id$
           description="Rebuild distributable package(s)"/>
 
   <target name="dist" description="Build distributable package(s)">
+    <tstamp>
+      <format property="build.time" pattern="yyyy-MM-dd'T'HH:mm:ssz"/>
+    </tstamp>
     <mkdir dir="dist"/>
     <property name="distro.basename"
               value="${ant.project.name}-${product.version}"/>
     
-    <mkdir dir="tmp"/>
-    <fixcrlf destDir="tmp" srcDir="doc" includes="install.txt, license.txt"
+    <mkdir dir="tmp/stage"/>
+    <fixcrlf destDir="tmp/stage" srcDir="doc"
+             includes="install.txt, license.txt"
              preservelastmodified='true' eol="crlf"/>
-    <!-- TODO:  Add license file to distro -->
+     <copy todir="tmp/stage">
+       <fileset dir="src" includes="**/*.py, **/*.html"
+                excludes="**/.*/**, **/*.pyc, *test*/**"/>
+      <filterchain> <expandproperties/> </filterchain>
+    </copy>
+
     <zip destfile="dist/${distro.basename}.zip">
-      <zipfileset dir="tmp" includes="install.txt, license.txt"/>
-      <zipfileset dir="src" excludes="**/.*/**, **/*.pyc, *test*/**"/>
+      <zipfileset dir="tmp/stage"/>
+      <zipfileset dir="src"
+                excludes="**/.*/**, **/*.pyc, *test*/**, **/*.py, **/*.html"/>
       <!--  To simplify dev env. PYTHONPATH issues, moving docs into src/
             branch for now.
       <zipfileset dir="doc" includes="blenderjme/**" excludes="**/.*/**"/>

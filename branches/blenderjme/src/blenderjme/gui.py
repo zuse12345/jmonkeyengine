@@ -248,6 +248,8 @@ def drawer():
         exitModule()
         return
     _bBGL.glClear(_bBGL.GL_COLOR_BUFFER_BIT)
+    _bDraw.Label("v. ${product.version}",
+            guiBox.x + 10, guiBox.y + 32,157,10)
     guiBox.drawBg()
     _bDraw.PushButton("Cancel", BTNID_CANCEL,
             guiBox.x + 10, guiBox.y + 10, 50, 17, "Abort export")

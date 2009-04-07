@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Blender export by Blender/JME Exporter -->
+<!-- Blender export by Blender/JME Exporter
+Exporter (not this file!) copyright by
+  Blaine Simpson, blaine (dot) simpson (at) admc (dot) com + the jME Dev Team -->
 
 <com.jme.scene.Node name="BlenderObjects">
   <children size="2">

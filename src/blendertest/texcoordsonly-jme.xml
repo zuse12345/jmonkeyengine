@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Blender export by Blender/JME Exporter
+Exporter (not this file!) copyright by
+  Blaine Simpson, blaine (dot) simpson (at) admc (dot) com + the jME Dev Team -->
+
+<com.jme.scene.Node name="Plane">
+  <children size="1">
+    <com.jme.scene.QuadMesh name="PlaneMesh">
+      <vertBuf size="12" data="1.000000 1.000000 0.000000  1.000000 -1.000000 0.000000  -1.000000 -1.000000 0.000000  -1.000000 1.000000 0.000000"/>
+      <normBuf size="12" data="0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000"/>
+      <texBuf size="1">
+        <com.jme.scene.TexCoords perVert="2">
+          <coords size="8" data="1.000000 1.000000 1.000000  0.000000 0.000000 0.000000  0.000000 1.000000"/>
+        </com.jme.scene.TexCoords>
+      </texBuf>
+      <indexBuffer size="4" data="0 3 2 1"/>
+    </com.jme.scene.QuadMesh>
+  </children>
+</com.jme.scene.Node>

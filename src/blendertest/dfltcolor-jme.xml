@@ -6,7 +6,7 @@ Exporter (not this file!) copyright by
 <com.jme.scene.Node name="Plane">
   <children size="1">
     <com.jme.scene.QuadMesh name="PlaneMesh">
-      <defaultColor class="com.jme.renderer.ColorRGBA" r="1.0" g="1.0" b="0.0" a="1.0"/>
+      <defaultColor r="1.0" g="1.0" b="0.0" a="1.0"/>
       <vertBuf size="12" data="1.000000 1.000000 0.000000  1.000000 -1.000000 0.000000  -1.000000 -1.000000 0.000000  -1.000000 1.000000 0.000000"/>
       <normBuf size="12" data="0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000  0.000000 0.000000 1.000000"/>
       <indexBuffer size="4" data="0 3 2 1"/>

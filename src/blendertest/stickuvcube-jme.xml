@@ -10,12 +10,11 @@ Exporter (not this file!) copyright by
         <com.jme.scene.state.MaterialState class="com.jme.scene.state.lwjgl.LWJGLMaterialState" reference_ID="Material" shininess="32.00" materialFace="FrontAndBack">
           <diffuse r="0.800" g="0.800" b="0.800" a="1.000"/>
           <ambient r="0.430" g="0.430" b="0.430" a="1.000"/>
-          <emissive r="0.000" g="0.000" b="0.000" a="1.000"/>
           <specular r="1.000" g="1.000" b="1.000" a="1.000"/>
         </com.jme.scene.state.MaterialState>
         <com.jme.scene.state.TextureState class="com.jme.scene.state.lwjgl.LWJGLTextureState">
           <texture size="1">
-            <com.jme.image.Texture2D>
+            <com.jme.image.Texture2D apply="Decal" wrapS="Repeat" wrapT="Repeat">
               <textureKey class="com.jme.util.TextureKey" file="Monkey.png" protocol="file"/>
             </com.jme.image.Texture2D>
           </texture>

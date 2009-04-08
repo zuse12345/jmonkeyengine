@@ -93,15 +93,19 @@ def btnHandler(btnId):
     if btnId == BTNID_SKIPOBJS:
         skipObjs = not skipObjs
         updateExportableCounts()
+        _bDraw.Redraw()
         return
     if btnId == BTNID_SAVEALL:
         saveAll = not saveAll
+        _bDraw.Redraw()
         return
     if btnId == BTNID_OVERWRITE:
         fileOverwrite = not fileOverwrite
+        _bDraw.Redraw()
         return
     if btnId == BTNID_FLIP:
         axisFlip = not axisFlip
+        _bDraw.Redraw()
         return
     if btnId == BTNID_SAVE:
         try:
@@ -252,10 +256,10 @@ def drawer():
             guiBox.x + 10, guiBox.y + 32,157,10)
     guiBox.drawBg()
     _bDraw.PushButton("Cancel", BTNID_CANCEL,
-            guiBox.x + 10, guiBox.y + 10, 50, 17, "Abort export")
+            guiBox.x + 10, guiBox.y + 10, 50, 17, "Exit this exporter")
     _bDraw.PushButton("Help", BTNID_HELP,
             guiBox.x + 280, guiBox.y + 10, 40, 17,
-            "Open Help doc in web browser")
+            "Open Help document in web browser")
     _bDraw.Label(" (c) 2009 Blaine Simpson",
             guiBox.x + 170, guiBox.y + 46,145,10)
     _bDraw.Label("+ the jMonkeyEngine team",
@@ -278,24 +282,30 @@ def drawer():
     else: toggleText = str(selCount) + " Selected"
     if skipObjs: skipText = "Skip Objs"
     else: skipText = "Skip Mats"
+    if fileOverwrite: overwriteText = "Silently"
+    else: overwriteText = "Confirm"
+    if axisFlip: flipText = "Rotate X"
+    else: flipText = "No"
     _bDraw.Toggle(toggleText,
             BTNID_SAVEALL, guiBox.x + 15, guiBox.y + 200, 75, 17, saveAll,
             "Choose to export supported SELECTED objects or ALL objects",
             redrawDummy)
             # Would prefer to make a 2-line button, but _bDraw does not
             # support that... or basically anything other than vanilla.
-    _bDraw.Toggle("Overwrite", BTNID_OVERWRITE,
-            guiBox.x + 15, guiBox.y + 175, 60, 17, fileOverwrite,
-            "Silently overwrite export file if it exists beforehand")
-    _bDraw.Toggle("Rotate X", BTNID_FLIP,
+    _bDraw.Toggle(overwriteText, BTNID_OVERWRITE,
+            guiBox.x + 15, guiBox.y + 175, 47, 17, fileOverwrite,
+            "Whether to confirm before overwriting existing export files")
+    _bDraw.Toggle(flipText, BTNID_FLIP,
             guiBox.x + 15, guiBox.y + 150, 55, 17, axisFlip,
             "Rotate X axis -90 degress in export so -Y axis becomes +Z")
     _bDraw.Toggle(skipText, BTNID_SKIPOBJS,
-            guiBox.x + 15, guiBox.y + 125, 60, 17, skipObjs, "", redrawDummy)
+            guiBox.x + 15, guiBox.y + 125, 60, 17, skipObjs,
+            "Choose to skip just the Mats or the containing Objs", redrawDummy)
     _bDraw.PushButton("Export", BTNID_SAVE,
-            guiBox.x + 150, guiBox.y + 10, 50, 17, "Select file to save to")
+            guiBox.x + 150, guiBox.y + 10, 50, 17,
+            "Proceed to select file to save to")
     _bDraw.Label("Object(s) to export", guiBox.x + 100, guiBox.y + 200,200,17)
-    _bDraw.Label("Overwrite without confirmation",
+    _bDraw.Label("Export file overwrites",
             guiBox.x + 100, guiBox.y + 175,200,17)
     _bDraw.Label("Make axes jME-conformant",
             guiBox.x + 100, guiBox.y + 150,200,17)

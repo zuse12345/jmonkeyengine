@@ -136,6 +136,8 @@ class JmeNode(object):
         for i in range(len(bMesh.materials)):
             #print "Bit " + str(i) + " for " + self.getName() + " = " + str(self.wrappedObj.colbits & (1<<i))
             if 0 != (self.wrappedObj.colbits & (1<<i)): continue
+            if bMesh.materials[i] == None: continue
+              # This will happen if the mat has been removed
             meshMats.append(nodeTree.includeMat(bMesh.materials[i], twoSided))
             for j in bMesh.materials[i].enabledTextures:
                 try:
@@ -266,6 +268,8 @@ class JmeNode(object):
                             JmeTexture.supported(bMat.textures[j])
                 for i in range(len(bMesh.materials)):
                     if 0 != (bObj.colbits & (1<<i)): continue
+                    if bMesh.materials[i] == None: continue
+                      # This will happen if the mat has been removed
                     JmeMaterial(bMesh.materials[i], False) # ditto
                     for j in bMesh.materials[i].enabledTextures:
                         JmeTexture.supported(bMesh.materials[i].textures[j])
@@ -539,10 +543,10 @@ class JmeMesh(object):
             noArray.append(v.no.x)
             noArray.append(v.no.y)
             noArray.append(v.no.z)
-            # For pixel addressing, Blender just loves to use + down.
-            # We have to correct this incorrect usage of uv mappings, since
-            # V of 0 is supposed to mean TOP not BOTTOM.  This is why both v
-            # values are saved as 1 - y.
+            # Blender treats +v as up.  That makes sense with gui programming,
+            # but the "v" of "uv" goes + down, so we have to correct this.
+            # (u,v) = (0,0) = TOP LEFT.
+            # This is why both v values are saved as 1 - y.
             if colArray != None:
                 if v.index in vertToColor:
                     colArray.append(vertToColor[v.index])
@@ -799,6 +803,8 @@ class JmeMaterial(object):
 
         # Supportability validation
         #if len(bMat.colorband) > 0:  Attribute missing.
+        # Would like to check validate the ObColor setting, but can't find it
+        # in the API.
         if len(bMat.colorbandDiffuse) > 0:
             raise UnsupportedException("colorbandDiffuse", "any",
                     "colorbandDiffuse length: " + str(len(colorbandDiffuse)))
@@ -843,9 +849,12 @@ class JmeMaterial(object):
             print ("WARNING: Hardness setting ignored.  " +
                     "Adjust spec setting to compensate")
         self.shininess = bMat.spec * .5 * 128
-        self.emissive = [bMat.rgbCol[0] * bMat.emit,
-                bMat.rgbCol[1] * bMat.emit,
-                bMat.rgbCol[2] * bMat.emit, bMat.alpha]
+        if bMat.emit == 0.:
+            self.emissive = None
+        else:
+            self.emissive = [bMat.rgbCol[0] * bMat.emit,
+                    bMat.rgbCol[1] * bMat.emit,
+                    bMat.rgbCol[2] * bMat.emit, bMat.alpha]
         if twoSided: self.materialFace = "FrontAndBack"
         else: self.materialFace = None
 
@@ -897,8 +906,6 @@ class JmeMaterial(object):
             tag.addAttr("materialFace", self.materialFace)
         if self.colorMaterial != None:
             tag.addAttr("colorMaterial", self.colorMaterial)
-        # TODO:  Consider if it is safe to skip the colors if equal to either
-        # [0,0,0,1] or [1,1,1,0].  Unless know better, save all.
         diffuseTag = _XmlTag("diffuse")
         diffuseTag.addAttr("r", self.diffuse[0], 3)
         diffuseTag.addAttr("g", self.diffuse[1], 3)
@@ -911,12 +918,15 @@ class JmeMaterial(object):
         ambientTag.addAttr("b", self.ambient[2], 3)
         ambientTag.addAttr("a", self.ambient[3], 3)
         tag.addChild(ambientTag)
-        emissiveTag = _XmlTag("emissive")
-        emissiveTag.addAttr("r", self.emissive[0], 3)
-        emissiveTag.addAttr("g", self.emissive[1], 3)
-        emissiveTag.addAttr("b", self.emissive[2], 3)
-        emissiveTag.addAttr("a", self.emissive[3], 3)
-        tag.addChild(emissiveTag)
+        if self.emissive != None:
+            emissiveTag = _XmlTag("emissive")
+            emissiveTag.addAttr("r", self.emissive[0], 3)
+            emissiveTag.addAttr("g", self.emissive[1], 3)
+            emissiveTag.addAttr("b", self.emissive[2], 3)
+            emissiveTag.addAttr("a", self.emissive[3], 3)
+            tag.addChild(emissiveTag)
+        # TODO:  Consider if it is safe to skip specular tag if it is equal
+        # to (0, 0, 0, *).  I think so.
         specularTag = _XmlTag("specular")
         specularTag.addAttr("r", self.specular[0], 3)
         specularTag.addAttr("g", self.specular[1], 3)
@@ -955,13 +965,11 @@ class JmeTexture(object):
         # Would like to support those prohibited in this code block.
         if mtex.colfac != 1.0:
             raise UnsupportedException("MTex colfac", mtex.colfac)
-        if mtex.size[0] != 1. or mtex.size[1] != 1. or mtex.size[2] != 1.:
-            raise UnsupportedException(
-                    "MTex image scaling", mtex.size, "non-0")
-        # Esp. mtex.size[1.] == -1. => flip="true"
-        if mtex.ofs[1] != 0. or mtex.ofs[1] != 0. or mtex.ofs[2] != 0.:
-            raise UnsupportedException(
-                    "MTex image offset", mtex.ofs, "non-1")
+        if mtex.size[0] == None or mtex.size[1] == None or mtex.size[2] == None:
+            raise UnsupportedException("A null mtex (scale) size dimension")
+        # This is a much more general solution than setting "flip".
+        if mtex.ofs[0] == None or mtex.ofs[1] == None or mtex.ofs[2] == None:
+            raise UnsupportedException("A null mtex offset dimension")
         if JmeTexture.REQUIRED_IMGFLAGS != tex.imageFlags:
             raise UnsupportedException("Tex Image flags", tex.imageFlags,
             "not USEALPHA + MIPMAP + INTERPOL")
@@ -980,6 +988,7 @@ class JmeTexture(object):
                     str(tex.crop))
         # As implement ExtendModes, remove tests from here:
         if (tex.extend != _bTexExtModes['REPEAT']
+                and tex.extend != _bTexExtModes['CLIP']
                 and tex.extend != _bTexExtModes['EXTEND']):
             raise UnsupportedException("Tex extend mode", tex.extend)
         if tex.brightness != 1.0:
@@ -1062,7 +1071,8 @@ class JmeTexture(object):
         return hashVal
 
     __slots__ = (
-            'written', 'refCount', 'applyMode', 'filepath', 'wrapMode', 'refid')
+            'written', 'refCount', 'applyMode', 'filepath', 'wrapMode',
+            'refid', 'scale', 'translation')
     idFor = staticmethod(idFor)
     supported = staticmethod(supported)
 
@@ -1079,16 +1089,20 @@ class JmeTexture(object):
         if mtex.blendmode == _bBlendModes['MIX']:
             self.applyMode = "Decal"
         elif mtex.blendmode == _bBlendModes['MULTIPLY']:
-            self.applyMode = "Modulate"
+            self.applyMode = "Modulate"  # This is the jME default
         elif mtex.blendmode == _bBlendModes['ADD']:
             self.applyMode = "Add"
         else:
             raise Exception("Unexpected blendmode even though pre-validated: "
                     + mtex.blendmode)
-        if mtex.tex.extend != _bTexExtModes['REPEAT']:
+        if mtex.tex.extend == _bTexExtModes['REPEAT']:
             self.wrapMode = "Repeat"
-        elif mtex.tex.extend != _bTexExtModes['EXTEND']:
+        elif mtex.tex.extend == _bTexExtModes['EXTEND']:
             self.wrapMode = "Clamp"
+        elif mtex.tex.extend == _bTexExtModes['CLIP']:
+            self.wrapMode = "BorderClamp"
+            # I haven't got this to reveal the underlaying mat yet, but it's
+            # the closes wrap mode we have.  May require the right applyMode.
         else:
             raise Exception("Unexpected extend mode even though pre-validated: "
                     + mtex.tex.extend)
@@ -1097,6 +1111,24 @@ class JmeTexture(object):
             self.filepath = mtex.tex.image.filename[2:]
         else:
             self.filepath = mtex.tex.image.filename
+        if mtex.size[0] == 1. and mtex.size[1] == 1. and mtex.size[2] == 1.:
+            self.scale = None
+        else:
+            self.scale = mtex.size
+        if (mtex.ofs[0] == 0. and mtex.ofs[1] == 0. and mtex.ofs[2] == 0.
+                and self.scale == None):
+            self.translation = None
+        else:
+            translBase = [mtex.ofs[0], -mtex.ofs[1], mtex.ofs[2]]
+            if self.scale == None:
+                scalingOffset = [0., 0., 0.]
+            else:
+                scalingOffset = [.5 - .5 * self.scale[0],
+                        .5 + -.5 * self.scale[1],
+                        .5 - .5 * self.scale[2]]
+            self.translation = [translBase[0] + scalingOffset[0],
+                    translBase[1] + scalingOffset[1],
+                    translBase[2] + scalingOffset[2]]
         self.refid = newId
 
     def getXmlEl(self):
@@ -1107,13 +1139,27 @@ class JmeTexture(object):
         self.written = True
         if self.refCount > 0: tag.addAttr("reference_ID", self.refid)
 
+        tag.addAttr("apply", self.applyMode)
+        tag.addAttr("wrapS", self.wrapMode)
+        tag.addAttr("wrapT", self.wrapMode)
+        if self.translation != None:
+            translTag = _XmlTag(
+                    "translation", {"class":"com.jme.math.Vector3f"})
+            translTag.addAttr("x", self.translation[0], 6)
+            translTag.addAttr("y", self.translation[1], 6)
+            translTag.addAttr("z", self.translation[2], 6)
+            tag.addChild(translTag)
+        if self.scale != None:
+            scaleTag = _XmlTag("scale", {"class":"com.jme.math.Vector3f"})
+            scaleTag.addAttr("x", self.scale[0], 6)
+            scaleTag.addAttr("y", self.scale[1], 6)
+            scaleTag.addAttr("z", self.scale[2], 6)
+            tag.addChild(scaleTag)
         textureKeyTag = _XmlTag(
                 "textureKey", {"class":"com.jme.util.TextureKey"})
         tag.addChild(textureKeyTag)
         textureKeyTag.addAttr("file", self.filepath)
         textureKeyTag.addAttr("protocol", "file")
-        print "TODO*** WRITE self.applyMode"
-        print "TODO*** WRITE self.wrapMode"
         return tag
 
 

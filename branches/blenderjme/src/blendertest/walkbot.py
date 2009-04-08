@@ -49,7 +49,7 @@ class Tests(unittest.TestCase):
     def setUp(self):
         exporter.recordTimestamp = False
 
-    def testCone(self):
+    def testObjectNesting(self):
         """Model has 2 standalone objects separated by translation, with 3
         levels of Blender object nesting, and asymmetrical rotations (of the
         legs)."""

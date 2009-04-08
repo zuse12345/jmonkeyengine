@@ -49,7 +49,7 @@ class Tests(unittest.TestCase):
     def setUp(self):
         exporter.recordTimestamp = False
 
-    def testCone(self):
+    def testParenting(self):
         """2-level Blender object nesting with complex transformations to
         parent and children.  These attributes are layered on top of the
         abilities tested in the mixedparenting test, and you should see the

@@ -139,11 +139,14 @@
         <LI><b>On the jME side, make the resource files available</b>
           I have already written the jME code to handle this automatically (as
           long as you use relative resource file paths!).
-          If my code is accepted into the jME baseline, I will update this
-          document to specify which versions of jME have it.
+          As nobody at JMonkey has objected, I will be committing this to
+          the code base very shortly.
+          I will update this document to specify which versions of jME have it.
           If you are using a jME code base without this enhancement, you will
           need to make the resource files
-          visible to the static (!) ResourceLocatorTool that XMLImporter uses.
+          visible to the static ResourceLocatorTool that XMLImporter uses
+          (not that static discovery tools are bad, but static storage of
+          application state discovery paths is).
           I recommend this approach temporarily:<PRE style="background-color:#FFFFE0;"><CODE style="background-color:#FFFFE0;">
     ResourceLocator modelResLocator = new SimpleResourceLocator(
             xmlFile.getParentFile().toURI());

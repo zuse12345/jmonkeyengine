@@ -8,11 +8,19 @@
 <html>
 <head>
     <STYLE>
-      body { background-color:white; }
-      body, table, div { font-family:sans-serif; }
+      body, table, div {
+          font-family:sans-serif:0;
+          font-size:14px;
+          border:0;
+          padding:0;
+      }
+      table, div {
+          margin:0;
+      }
+      body { background-color:white; margin:10px; }
       code { font-family:monospace; }
-      table { background-color:silver; }
-      table, td, th { border:solid gray 1px; }
+      table.data { background-color:silver; }
+      table.data td, table.data th { border:solid gray 1px; }
       th { font-size:80%; }
       td, th { padding:3px; }
       tr.odd td { background-color:#E6E6FA; }
@@ -30,8 +38,9 @@
     with the included BSD open source license.
     <HR/>
     <h4>Interface</h4>
-    <div>
-    <img src="exporterbox.png" style="float:left; margin-right:20px;"/>
+    <table cellspacing="0"><tr><td>
+      <img src="exporterbox.png" style="float:left; margin-right:20px;"/>
+      </td><td>
     <UL>
       <LI><b>Object(s) to export</b>
         Choose to export either all SELECTED exportable objects,
@@ -50,7 +59,42 @@
         Toggle back and forth to see how many objects qualify each way
         (export object counts are shown inside the top button).
     </UL>
-    </div>
+      </td></tr></table>
+    <HR/>
+    <h4>Blender Settings Supported</h4>
+      The following Blender settings are converted preserved in an export.<UL>
+        <LI>3-vertex meshes.  Converted to jME TriMeshes.
+        <LI>4-vertex meshes.  Converted to jME QuadMeshes.
+        <LI>3- and 4- vertex meshes.  Converted to jME TriMeshes.
+        <LI>Blender object nesting (parent/child relationships) is preserved.
+        <LI>Object coloring (saved as jME mesh defaultColor)
+        <LI>Vertex coloring.  Includes support for distinct per-face colors.
+        <LI>Sticky UV texCoords.
+        <LI>Per-face UV texCoords.
+            Includes support for distinct per-face colors, and the
+            "VCol Light" setting.
+        <LI>Material sharing.  Two-Sided of containing mesh is honored
+            (duplicated if necessary if material is shared).
+        <LI>These Material colorings are converted<UL>
+          <LI>Diffuse colors ("Col")
+          <LI>Specular colors
+          <LI>Alpha
+          <LI>Specularity
+          <LI>Emit
+          <LI>Ambient (with world ambient color compensated for)
+        </UL>
+        <LI>Texture sharing
+        <LI>Image textures, with support for the following options<UL>
+          <LI>Texture offsets
+          <LI>Texture size (scale)
+          <LI>Extend, Clip, and Repeat wrap modes
+          <LI>Mix, Multiply, and Add blending modes
+        </UL>
+        <LI>Textures + Materials.
+          Supported modes combine as they should.
+          You can, for example, overlay a file with transparency and see
+          through the transparent parts to the material beneath.
+      </UL>
     <HR/>
     <h4>Usage Tips</h4>
       <UL>
@@ -85,8 +129,13 @@
             <LI>When keying in a path, make sure to begin the path with "//",
                 which means relative-to-the-.blend file.
           </UL>
+          You are advised to go into Blender's User Preferences, the File Paths
+          tab, and turn on the "Relative Paths Default" toggle (and Save
+          Default Settings to persist the change).
+          <P>
           Make sure to deliver the resource files along with your *-jme.xml
           file.
+          </P>
         <LI><b>On the jME side, make the resource files available</b>
           I have already written the jME code to handle this automatically (as
           long as you use relative resource file paths!).
@@ -112,9 +161,8 @@
         <LI><b>Object colors</b>
           Object colors are usually only set by Blender users who use the
           Blender Game features.
-          If you have set an object color and select the <CODE>ObColor</CODE>
-          toggle in the Material tab, the Mesh for this Blender object will
-          write a jME defaultColor setting.
+          If you set the object color, we will save it as the Mesh's jME
+          defaultColor setting.
         <LI><b>Vertex coloring</b>
           If you color vertexes, for example by using Blender's Vertex Paint
           mode, a colorBuf element will be written for the mesh.
@@ -158,6 +206,27 @@
           color values).
           <P/>
       </UL>
+    <HR/>
+    <h4>UV Coordinates and Values</h4>
+      For those who need to manipulate UV values manually, be aware that the
+      conventions used by Blender are bizarre.
+      <UL>
+        <LI><b>Sticky Vertex UVs</b>
+          Contrary to everything I've ever heard of UV mapping, these values
+          run from -1 to 1.  Value (-1, -1) corresponds to the
+          bottom-leftmost pixel of the texture image (with (1,1) mapping to
+          the opposite corner).
+        <LI><b>Per-Face-Vertex UVs</b>
+          Like they should, the values run from 0 to 1.
+          Value (0, 0) corresponds to the bottom-leftmost pixel of the texture
+          image (with (1,1) mapping to the opposite corner).
+      </UL>
+      jME maps (u,v) of (0,0) to the upper-leftmost pixel of the texture image
+      (with (1,1) mapping to the opposite corner).
+      According to the sources I can find, this is how UV values are supposed
+      to map to texture images.
+      The exporter converts the values from Blender-convention to
+      jME-convention as necessary.
     <HR/>
     <DIV class="footer">
       $Revision$

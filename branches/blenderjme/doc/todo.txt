@@ -2,6 +2,13 @@ $Id$
 
 TODO LIST
 
+Review generated *-jme.xml files and verify precision of numbers and whether
+default values skipped as desired.
+
+Save a texcoordsonly-jme.xml file.
+
+Try removing all "class" attributes and see if things work.
+
 Install archived version of Blender and set the Blender version in
 "blenderjmeexp_reg.py" to the oldest version that this product works with.
 

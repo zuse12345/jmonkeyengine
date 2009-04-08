@@ -137,11 +137,9 @@
           file.
           </P>
         <LI><b>On the jME side, make the resource files available</b>
-          I have already written the jME code to handle this automatically (as
-          long as you use relative resource file paths!).
-          As nobody at JMonkey has objected, I will be committing this to
-          the code base very shortly.
-          I will update this document to specify which versions of jME have it.
+          Subversion revision 4263 and later of jMonkeyEngine v. 2 contain my
+          modification to seek relative texture files relative to the
+          containing XML file.
           If you are using a jME code base without this enhancement, you will
           need to make the resource files
           visible to the static ResourceLocatorTool that XMLImporter uses
@@ -157,6 +155,25 @@
             modelResLocator));
           </CODE></PRE>
           For brevity, I leave implementation of the try/finally block to you.
+        <LI><b>Ambient Coloring</b>
+          jMonkeyEngine has much more fine-grained support for ambient coloring
+          than Blender has.
+          In Blender, you see ambient coloration only if you have set the
+          World object's ambient lighting color, and every object will have
+          this as it's ambient color.
+          This results in pretty unrelealistic coloring on the shadow sides of
+          objects.
+          The exporter applies the following behavior if you lave World ambient
+          coloring off (which is the default state).
+          It sets the Material's ambient color to a mix of a gray and the
+          material's diffuse color.
+          I.e., a <i>washed out version</i> of the object's diffuse color.
+          This gives a realistic appearance in JME when you have light
+          source(s) that emanate ambient and other light types.
+          If you have set a world ambient color, then this is obviously the
+          color that you intend for your objects to show in shadows, so that
+          is exactly what we save as the jME ambient color for all of your
+          materials.
     </UL>
     <HR/>
     <h4>Mapping Blender items to jME items</h4>

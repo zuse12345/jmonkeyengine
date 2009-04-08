@@ -374,8 +374,7 @@ class JmeMesh(object):
         if (self.defaultColor != None and
             (self.defaultColor[0] != 1 or self.defaultColor[1] != 1
                 or self.defaultColor[2] != 1 or self.defaultColor[3] != 1)):
-            colorTag = _XmlTag("defaultColor",
-                    {"class":"com.jme.renderer.ColorRGBA"})
+            colorTag = _XmlTag("defaultColor")
             tag.addChild(colorTag)
             colorTag.addAttr("r", self.defaultColor[0])
             colorTag.addAttr("g", self.defaultColor[1])

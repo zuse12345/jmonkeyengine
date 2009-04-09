@@ -178,6 +178,19 @@
     <HR/>
     <h4>Mapping Blender items to jME items</h4>
       <UL>
+        <LI><b>Color and Mateiral inheritance</b>
+          Both vertex coloring and "defaultColors" are mesh-specific objects
+          in jME, and since Geometries can not have children, there is no
+          inheritance.
+          But for materials, even though in Blender you will not see any
+          inheritance, the generated export will reflect intuitive material
+          inheritance.
+          By default, Blender links materials to Meshes, and if you link them
+          this way, there will be no inheritance for the reason explained above.
+          If you change the material linking to Objects explitly, or change the
+          default in your Blender User Preferences, the material settings will
+          be inherited according to the object parenting relationships.
+          These relationships are easily seen in the Outliner window.
         <LI><b>Object colors</b>
           Object colors are usually only set by Blender users who use the
           Blender Game features.

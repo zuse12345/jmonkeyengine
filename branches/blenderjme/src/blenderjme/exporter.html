@@ -163,17 +163,18 @@
           this as it's ambient color.
           This results in pretty unrelealistic coloring on the shadow sides of
           objects.
-          The exporter applies the following behavior if you lave World ambient
-          coloring off (which is the default state).
+          The exporter applies the following behavior if you leave World
+          ambient coloring off (which is the default state).
           It sets the Material's ambient color to a mix of a gray and the
-          material's diffuse color.
+          material's diffuse color, attenuated by the material's "emit"
+          value.
           I.e., a <i>washed out version</i> of the object's diffuse color.
           This gives a realistic appearance in JME when you have light
           source(s) that emanate ambient and other light types.
           If you have set a world ambient color, then this is obviously the
           color that you intend for your objects to show in shadows, so that
-          is exactly what we save as the jME ambient color for all of your
-          materials.
+          color, attenuated by the materials' "emit" value, is exactly what we
+          save as the jME Material State's ambient color.
     </UL>
     <HR/>
     <h4>Mapping Blender items to jME items</h4>

@@ -2,6 +2,10 @@ $Id$
 
 TODO LIST
 
+Convert Blender mat "VCol Pain" setting to jME
+MaterialState.setColorMaterial(MaterialState.ColorMaterial.AmbientAndDiffuse).
+Very likely attr:  colorMaterial="AmbientAndDiffuse".
+
 Consider not writing JmeMaterial referencing elements if the referrent is the
 object link of an ancestor Object.  In jME, it is more efficient and powerful
 to use scene graph parent/child relationships to inherit colors than to

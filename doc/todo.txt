@@ -2,6 +2,8 @@ $Id$
 
 TODO LIST
 
+Per nymon:  ...give the option of exporting with the modifiers applied, instead of having to save, apply them, export, then reload. The OBJ exporter that comes with Blender does this...
+
 Install archived version of Blender and set the Blender version in
 "blenderjmeexp_reg.py" to the oldest version that this product works with.
 

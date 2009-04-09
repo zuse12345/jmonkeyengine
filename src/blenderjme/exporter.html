@@ -191,6 +191,15 @@
           default in your Blender User Preferences, the material settings will
           be inherited according to the object parenting relationships.
           These relationships are easily seen in the Outliner window.
+          <P>
+          Another quirk in Blender is that at any time, an Object's
+          Object-linked materials are active, or the Object's Mesh-linked
+          materials.
+          This is reflected both in the 3D View and in renders.
+          In jME, the more specific material will override by default, just as
+          you would want in a scene graph (this behavior can be modified by
+          changing a Spatial's MaterialState inheritance mode).
+          </P>
         <LI><b>Object colors</b>
           Object colors are usually only set by Blender users who use the
           Blender Game features.

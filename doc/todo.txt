@@ -2,6 +2,11 @@ $Id$
 
 TODO LIST
 
+Consider not writing JmeMaterial referencing elements if the referrent is the
+object link of an ancestor Object.  In jME, it is more efficient and powerful
+to use scene graph parent/child relationships to inherit colors than to
+require explicit links in every material-using node.
+
 Per nymon:  ...give the option of exporting with the modifiers applied, instead of having to save, apply them, export, then reload. The OBJ exporter that comes with Blender does this...
 
 Install archived version of Blender and set the Blender version in

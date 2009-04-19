@@ -125,7 +125,13 @@ class JmeNode(object):
         if bMesh == None: return
 
         # From here on, we know we have a Blender direct Mesh data member
-        jmeMesh =  JmeMesh(bMesh, self.wrappedObj.color)
+        objColor = None
+        try:
+            objColor = self.wrappedObj.color
+        except Exception, e:
+            print str(e)  # For some reason, sometimes the .color attribute is
+                          # available, and sometimes it is not.
+        jmeMesh =  JmeMesh(bMesh, objColor)
         self.addChild(jmeMesh)
         #print "Instantiated JmeNode '" + self.getName() + "'"
         # Since Blender has mashed together the Object and Mesh by having

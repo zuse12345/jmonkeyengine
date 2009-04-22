@@ -47,7 +47,6 @@ def gen(saveAll, autoRotate, skipObjs=True):
     try:
         os = []
         candidates = []
-        changedMats = {}  # Matrixes we have to change to effect axis rotation
         if saveAll:
             candidates = _bdata.objects
         else:

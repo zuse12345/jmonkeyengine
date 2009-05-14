@@ -126,6 +126,17 @@ class ESQuaternion(object):
         NOT Blender like w, x, y, z."""
         return [self.x, self.y, self.x, self.w]
 
+    def norm(self):
+        return (self.w * self.w + self.x * self.x
+                + self.y * self.y + self.z * self.z)
+
+    def inverse(self):
+        norm = self.norm()
+        if norm <= 0.0: raise Exception("Can't invert Quat w/ norm of " + norm)
+        invNorm = 1.0 / norm
+        return ESQuaternion([self.x * -invNorm, self.y * -invNorm,
+                self.z * -invNorm], self.w * invNorm)
+
     def equals(self, otherQuat, precision=7):
         """Compare 'this' Quaternion to the specified one, within the specified
         precision."""

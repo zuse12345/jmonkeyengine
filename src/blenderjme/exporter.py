@@ -56,17 +56,12 @@ def gen(saveAll, autoRotate, skipObjs=True):
         root = nodeTree.nest()
 
         if root == None: raise Exception("Nothing to do...")
-        if autoRotate:
-            if root.wrappedObj == None:
-                for child in root.children: child.autoRotate = True
-            else:
-                root.autoRotate = True
 
         stampText = "Blender export by Blender/JME Exporter"
         if recordTimestamp: stampText += (" at " + _datetime.now().isoformat())
         stampText += ("\nExporter (not this file!) copyright by\n  "
                 + __author__ + " + the jME Dev Team")
-        xmlFile = _XmlFile(nodeTree.getXml())
+        xmlFile = _XmlFile(nodeTree.getXml(autoRotate))
         xmlFile.addComment(stampText)
         return xmlFile
     finally:

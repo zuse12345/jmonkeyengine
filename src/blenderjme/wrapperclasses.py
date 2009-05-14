@@ -80,7 +80,7 @@ class UnsupportedException(Exception):
 from Blender.Object import PITypes as _bPITypes
 class JmeNode(object):
     __slots__ = ('wrappedObj', 'children', 'jmeMats', 'jmeTextureState',
-            'name', 'autoRotate', 'backoutTransform')
+            'name', 'backoutTransform')
     IDENTITY_4x4 = _bmath.Matrix().resize4x4()
     BLENDER_TO_JME_ROTATION = _bmath.RotationMatrix(-90, 4, 'x')
 
@@ -93,7 +93,6 @@ class JmeNode(object):
         object.__init__(self)
         self.children = None
         self.wrappedObj = None
-        self.autoRotate = False
         self.backoutTransform = None
         self.jmeMats = None
         self.jmeTextureState = None
@@ -164,7 +163,7 @@ class JmeNode(object):
 
     def getName(self): return self.name
 
-    def getXmlEl(self):
+    def getXmlEl(self, autoRotate):
         tag = _XmlTag('com.jme.scene.Node', {'name':self.getName()})
 
         if self.jmeMats != None:
@@ -182,7 +181,7 @@ class JmeNode(object):
                     child.backoutTransform = self.wrappedObj.mat
                     # N.b. DO NOT USE .matrixParentInverse.  That is a static
                     #  value for funky Blender behaior we don't want to retain.
-                childrenTag.addChild(child.getXmlEl())
+                childrenTag.addChild(child.getXmlEl(autoRotate))
 
         if self.wrappedObj == None: return tag
 
@@ -209,12 +208,23 @@ class JmeNode(object):
             #rQuat = _esmath.ESQuaternion(e, True)
             rQuat = matrix.toQuat()
             scaleMat = matrix * rQuat.copy().inverse().toMatrix().resize4x4()
-        scale = (scaleMat[0][0], scaleMat[1][1], scaleMat[2][2])
+        scale = [scaleMat[0][0], scaleMat[1][1], scaleMat[2][2]]
         if (round(scale[0], 6) == 1.
                 and round(scale[1], 6) == 1. and round(scale[2], 6) == 1.):
             scale = None
-        if self.autoRotate:
-            raise Exception("Have not refactored AUTOROTATE mode yet")
+        if autoRotate:
+            if loc != None:
+                hold = loc[1]
+                loc[1] = loc[2]
+                loc[2] = -hold
+            if rQuat != None:
+                hold = rQuat.y
+                rQuat.y = rQuat.z
+                rQuat.z = -hold
+            if scale != None:
+                hold = scale[1]
+                scale[1] = scale[2]
+                scale[2] = hold
         # Need to add the attrs sequentially in order to preserve sequence
         # of the attrs in the output.
         if loc != None:
@@ -336,7 +346,7 @@ class JmeNode(object):
 
 class JmeMesh(object):
     __slots__ = ('wrappedMesh', 'jmeMats', 'jmeTextureState',
-            '__vpf', 'defaultColor', 'name', 'autoRotate')
+            '__vpf', 'defaultColor', 'name')
     # defaultColor corresponds to jME's Meshs' defaultColor.
     # In Blender this is a per-Object, not per-Mesh setting.
     # This is why it is a parameter of the constructor below.
@@ -351,7 +361,6 @@ class JmeMesh(object):
         self.wrappedMesh = bMesh
         self.name = bMesh.name
         self.defaultColor = color
-        self.autoRotate = False
         self.jmeMats = None
         self.jmeTextureState = None
         #print "Instantiated JmeMesh '" + self.getName() + "'"
@@ -359,12 +368,11 @@ class JmeMesh(object):
 
     def getName(self): return self.name
 
-    def getXmlEl(self):
+    def getXmlEl(self, autoRotate):
         if self.wrappedMesh.verts == None:
             raise Exception("Mesh '" + self.getName() + "' has no vertexes")
         mesh = self.wrappedMesh.copy()
         # This does do a deep copy! (like we need)
-        if self.autoRotate: raise Exception("AUTOROTATE not impd yet")
         # Note that the last param here doesn't calculate norms anew, it just
         # transforms them along with vertexes, which is just what we want.
         unify = 3 in self.__vpf and 4 in self.__vpf
@@ -546,11 +554,19 @@ class JmeMesh(object):
         nonUvVertexes = 0
         for v in vertList:
             coArray.append(v.co.x)
-            coArray.append(v.co.y)
-            coArray.append(v.co.z)
+            if autoRotate:
+                coArray.append(v.co.z)
+                coArray.append(-v.co.y)
+            else:
+                coArray.append(v.co.y)
+                coArray.append(v.co.z)
             noArray.append(v.no.x)
-            noArray.append(v.no.y)
-            noArray.append(v.no.z)
+            if autoRotate:
+                noArray.append(v.no.z)
+                noArray.append(-v.no.y)
+            else:
+                noArray.append(v.no.y)
+                noArray.append(v.no.z)
             # Blender treats +v as up.  That makes sense with gui programming,
             # but the "v" of "uv" goes + down, so we have to correct this.
             # (u,v) = (0,0) = TOP LEFT.
@@ -933,13 +949,13 @@ class NodeTree(object):
         NodeTree.__uniquifyNames(self.root, None, set())
         return self.root
 
-    def getXml(self):
+    def getXml(self, autoRotate):
         if self.root == None and self.nest() == None: return None
         for m in self.__matMap1side.itervalues(): m.written = False
         for m in self.__matMap2side.itervalues(): m.written = False
         for t in self.__textureHash.itervalues(): m.written = False
         for ts in self.__textureStates: ts.written = False
-        return self.root.getXmlEl()
+        return self.root.getXmlEl(autoRotate)
 
     __uniquifyNames = staticmethod(__uniquifyNames)
 

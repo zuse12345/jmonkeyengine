@@ -80,7 +80,7 @@ class UnsupportedException(Exception):
 from Blender.Object import PITypes as _bPITypes
 class JmeNode(object):
     __slots__ = ('wrappedObj', 'children', 'jmeMats', 'jmeTextureState',
-            'name', 'autoRotate', 'retainTransform')
+            'name', 'autoRotate', 'backoutTransform')
     IDENTITY_4x4 = _bmath.Matrix().resize4x4()
     BLENDER_TO_JME_ROTATION = _bmath.RotationMatrix(-90, 4, 'x')
 
@@ -94,7 +94,7 @@ class JmeNode(object):
         self.children = None
         self.wrappedObj = None
         self.autoRotate = False
-        self.retainTransform = None
+        self.backoutTransform = None
         self.jmeMats = None
         self.jmeTextureState = None
 
@@ -174,60 +174,50 @@ class JmeNode(object):
                 rsTag.addChild(self.jmeTextureState.getXmlEl())
             tag.addChild(rsTag)
 
-        if self.wrappedObj != None:
-            matrix = _bmath.Matrix(self.wrappedObj.matrixLocal)
-
-        # Do all work with a copy.  We don't modify user data.
-        if self.autoRotate:
-            if matrix == None:
-                raise Exception("Internal error.  Only our grouper node "
-                        + "should have no wrapped Blender Object")
-            # Need to transform the entire matrixLocal.
-            matrix = matrix * JmeNode.BLENDER_TO_JME_ROTATION
-
-        meshBakeTransform = None
-        if self.wrappedObj != None:
-            if matrix != JmeNode.IDENTITY_4x4:
-                # BAKE IN ANY NODE ROTATION TRANSFORMATION
-                # Make 4x4 matrix out of JUST rotation portion of matrixLocal
-                meshBakeTransform = matrix.rotationPart().resize4x4()
-                # Wipe the rotation portion of matrixLocal.
-                # Unfortunately, this competely hoses the translation row,
-                # so save off the properly rotated translation vector:
-                translationRow = matrix[3]
-                # This is because the inversion hoses the translation part
-                derot = matrix * _bmath.Matrix(meshBakeTransform).invert()
-                matrix = _bmath.Matrix(
-                        derot[0], derot[1], derot[2], translationRow)
-
         if self.children != None:
             childrenTag = _XmlTag('children', {'size':len(self.children)})
             tag.addChild(childrenTag)
             for child in self.children:
-                if isinstance(child, JmeMesh):
-                    child.bakeTransform = meshBakeTransform
-                else:
-                    child.retainTransform = meshBakeTransform
+                if self.wrappedObj != None and not isinstance(child, JmeMesh):
+                    child.backoutTransform = self.wrappedObj.mat
+                    # N.b. DO NOT USE .matrixParentInverse.  That is a static
+                    #  value for funky Blender behaior we don't want to retain.
                 childrenTag.addChild(child.getXmlEl())
 
         if self.wrappedObj == None: return tag
 
-        if self.retainTransform != None: matrix = matrix * self.retainTransform
+        if self.backoutTransform == None:
+            matrix = self.wrappedObj.mat
+        else:
+            matrix = self.wrappedObj.mat * self.backoutTransform.copy().invert()
 
         # Set local variables just to reduce typing in this block.
         loc = matrix.translationPart()
+        if (round(loc[0], 6) == 0. and round(loc[1], 6) == 0.
+                and round(loc[2], 6) == 0.): loc = None
         # N.b. Blender.Mathutils.Quaternines ARE NOT COMPATIBLE WITH jME!
         e = matrix.toEuler()
         if round(e.x, 6) == 0 and round(e.y, 6) == 0 and round(e.z, 6) == 0:
             rQuat = None
+            scaleMat = matrix
         else:
-            rQuat = _esmath.ESQuaternion(e, True)
-        #else: rQuat = self.wrappedObj.rot.toQuat()
-        scale = matrix.scalePart()
+            # Blender Quaternion functions give different results from the
+            # algorithms at euclideanspace.com, especially for the X rot
+            # element.  However, until I don't want to introduce the risk of
+            # several new ESQuaternion methods until I am certain that we can
+            # successfully match Ogre exporte behavior with Blender's quats.
+            #rQuat = _esmath.ESQuaternion(e, True)
+            rQuat = matrix.toQuat()
+            scaleMat = matrix * rQuat.copy().inverse().toMatrix().resize4x4()
+        scale = (scaleMat[0][0], scaleMat[1][1], scaleMat[2][2])
+        if (round(scale[0], 6) == 1.
+                and round(scale[1], 6) == 1. and round(scale[2], 6) == 1.):
+            scale = None
+        if self.autoRotate:
+            raise Exception("Have not refactored AUTOROTATE mode yet")
         # Need to add the attrs sequentially in order to preserve sequence
         # of the attrs in the output.
-        if loc != None and (round(loc[0], 6) != 0. or round(loc[1], 6) != 0.
-                or round(loc[2], 6) != 0.):
+        if loc != None:
             locTag = _XmlTag("localTranslation")
             locTag.addAttr("x", loc[0], 6)
             locTag.addAttr("y", loc[1], 6)
@@ -240,8 +230,7 @@ class JmeNode(object):
             locTag.addAttr("z", rQuat.z, 6)
             locTag.addAttr("w", rQuat.w, 6)
             tag.addChild(locTag)
-        if scale != None and (round(scale[0], 6) != 1.
-                or round(scale[1], 6) != 1. or round(scale[2], 6) != 1.):
+        if scale != None:
             locTag = _XmlTag("localScale")
             locTag.addAttr("x", scale[0], 6)
             locTag.addAttr("y", scale[1], 6)
@@ -347,7 +336,7 @@ class JmeNode(object):
 
 class JmeMesh(object):
     __slots__ = ('wrappedMesh', 'jmeMats', 'jmeTextureState',
-            '__vpf', 'defaultColor', 'name', 'bakeTransform')
+            '__vpf', 'defaultColor', 'name', 'autoRotate')
     # defaultColor corresponds to jME's Meshs' defaultColor.
     # In Blender this is a per-Object, not per-Mesh setting.
     # This is why it is a parameter of the constructor below.
@@ -362,7 +351,7 @@ class JmeMesh(object):
         self.wrappedMesh = bMesh
         self.name = bMesh.name
         self.defaultColor = color
-        self.bakeTransform = None
+        self.autoRotate = False
         self.jmeMats = None
         self.jmeTextureState = None
         #print "Instantiated JmeMesh '" + self.getName() + "'"
@@ -375,7 +364,7 @@ class JmeMesh(object):
             raise Exception("Mesh '" + self.getName() + "' has no vertexes")
         mesh = self.wrappedMesh.copy()
         # This does do a deep copy! (like we need)
-        if self.bakeTransform != None: mesh.transform(self.bakeTransform, True)
+        if self.autoRotate: raise Exception("AUTOROTATE not impd yet")
         # Note that the last param here doesn't calculate norms anew, it just
         # transforms them along with vertexes, which is just what we want.
         unify = 3 in self.__vpf and 4 in self.__vpf
@@ -925,8 +914,11 @@ class NodeTree(object):
             return self.root
         for bo in self.__memberKeys:
             if bo.parent != None and bo.parent in self.__memberMap:
+                print bo.getName() + " hasa parent"
                 self.__memberMap[bo.parent].addChild(self.__memberMap[bo])
                 del self.__memberMap[bo]
+            else:
+                print bo.getName() + " has NO parent"
         for key in self.__memberKeys[:]:
             if key not in self.__memberMap: self.__memberKeys.remove(key)
         if len(self.__memberKeys) < 1:

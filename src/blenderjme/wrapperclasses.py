@@ -928,15 +928,14 @@ class NodeTree(object):
         if len(self.__memberKeys) < 1:
             self.root = None
             return self.root
+        parentedBos = []
         for bo in self.__memberKeys:
-            if bo.parent != None and bo.parent in self.__memberMap:
-                print bo.getName() + " hasa parent"
+            if bo.parent != None and bo.parent in self.__memberKeys:
                 self.__memberMap[bo.parent].addChild(self.__memberMap[bo])
-                del self.__memberMap[bo]
-            else:
-                print bo.getName() + " has NO parent"
-        for key in self.__memberKeys[:]:
-            if key not in self.__memberMap: self.__memberKeys.remove(key)
+                parentedBos.append(bo)
+        for bo in parentedBos:
+            del self.__memberMap[bo]
+            self.__memberKeys.remove(bo)
         if len(self.__memberKeys) < 1:
             raise Exception("Internal problem.  Tree ate itself.")
         if len(self.__memberKeys) < 2:

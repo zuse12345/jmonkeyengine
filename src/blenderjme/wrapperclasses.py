@@ -263,11 +263,9 @@ class JmeNode(object):
         if bObj.type == 'Armature':
             arma = bObj.getData(False, True)
             if arma.vertexGroups:
-                print "Vertex Group weighting not supported yet"
-                return 0
+                print "ATTEMPTING a VG-weighted Armature, " + bObj.name + "..."
             if arma.envelopes:
-                print "Envelope weighting not supported yet"
-                return 0
+                print "ATTEMPTING an Env-weighted Armature, " + bObj.name + "..."
             for bone in arma.bones.values():
                 if _Armature.HINGE in bone.options:
                     print "HINGE bone option not supported"
@@ -664,14 +662,14 @@ class JmeMesh(object):
 class JmeBone(object):
     # TODO:  As each bone consists of a single vertex, I am hoping that we
     # don't need to do any baking.
-    # Could be that the weigthing vector will need to be transformed similarly
+    # Could be that the weigting vector will need to be transformed similarly
     # though.
     """We make a top level Bone for the entire Armature, for which Blender has
     no corresponding bone.  This is necessary since Blender can have
     "unparented" bones, but JME requires all but the root bone to be
     parented."""
-    __slots__ = ('matrix', 'children', 'name', 'autoRotate',
-            'childTransOffset', 'parent', 'headLoc', 'retainTransform')
+    __slots__ = ('matrix', 'children', 'name',
+            'childTransOffset', 'parent', 'headLoc', 'backoutTransform')
     # The childTranOffset is a translation added to the translation of all
     # direct child bones.  Since Blender is calculating the vertex weights
     # of the skins, this is the only remaining significance of a bone's
@@ -679,30 +677,17 @@ class JmeBone(object):
 
     def __init__(self, objOrBone, parent=None):
         object.__init__(self)
-        self.autoRotate = False
         blenderChildren = []
         self.children = None
-        self.retainTransform = None
+        self.backoutTransform = None
+        self.parent = parent
         if parent == None:
             if isinstance(objOrBone, _Armature.Bone):
                 raise Exception("Parent not specified for internal Bone")
-            self.parent = None
-            self.headLoc = None
-            self.matrix = _bmath.Matrix(objOrBone.matrixLocal)
-            if self.matrix != JmeNode.IDENTITY_4x4:
-                # BAKE IN ANY NODE ROTATION TRANSFORMATION
-                # Make 4x4 matrix out of JUST rotation portion of matrixLocal
-                meshBakeTransform = self.matrix.rotationPart().resize4x4()
-                # Wipe the rotation portion of matrixLocal.
-                # Unfortunately, this competely hoses the translation row,
-                # so save off the properly rotated translation vector:
-                translationRow = self.matrix[3]
-                # This is because the inversion hoses the translation part
-                derot = self.matrix * _bmath.Matrix(meshBakeTransform).invert()
-                self.matrix = _bmath.Matrix(
-                        derot[0], derot[1], derot[2], translationRow)
             arma = objOrBone.getData(False, True)
             self.name = arma.name
+            self.headLoc = None
+            self.matrix = _bmath.Matrix(objOrBone.mat)
             self.childTransOffset = 0
             for childBlenderBone in arma.bones.values():
                 if childBlenderBone.parent == None:
@@ -711,12 +696,12 @@ class JmeBone(object):
             if not isinstance(objOrBone, _Armature.Bone):
                 raise Exception("Internal bone object is not a Blender Bone: "
                         + str(type(objOrBone)))
-            self.parent = parent
+            self.name = objOrBone.name
             self.headLoc = _bmath.Vector(objOrBone.head['BONESPACE'])
             self.matrix = _bmath.Matrix(objOrBone.matrix['BONESPACE'])
+            # N.b. BONESPACE matrixes are  3x3!
             blenderChildren = objOrBone.children
             self.childTransOffset = objOrBone.length
-            self.name = objOrBone.name
         if len(blenderChildren) < 1: return
         # Recursive instantiation:
         self.children = []
@@ -726,39 +711,158 @@ class JmeBone(object):
     def getName(self):
         return self.name
 
-    def getXmlEl(self):
+    def getXmlEl(self, autoRotate):
         tag = _XmlTag('com.jme.animation.Bone', {'name':self.getName()})
         # Do all work with a copy.  We don't modify user data.
-        if self.autoRotate:
-            # Need to transform the entire matrixLocal.
-            self.matrix = self.matrix * JmeNode.BLENDER_TO_JME_ROTATION
-
+        if autoRotate:
+            raise Exception("AUTOROTATION not implemented for bones yet")
         if self.children != None:
             childrenTag = _XmlTag('children', {'size':len(self.children)})
             tag.addChild(childrenTag)
             for child in self.children:
-                childrenTag.addChild(child.getXmlEl())
+                # Don't know yet if or when this should be conditional:
+                #child.backoutTransform = matrix
+                # N.b. DO NOT USE .matrixParentInverse.  That is a static
+                #  value for funky Blender behaior we don't want to retain.
+                childrenTag.addChild(child.getXmlEl(autoRotate))
+        matrix = self.matrix  # to save some typing
 
-        matrix = self.matrix
-        if self.retainTransform != None: matrix = matrix * self.retainTransform
-        # Set local variables just to reduce typing in this block.
-        if self.headLoc == None:
+        # N.b. Blender.Mathutils.Quaternines ARE NOT COMPATIBLE WITH jME!
+        e = matrix.toEuler()
+        rQuat = matrix.toQuat()
+        if round(e.x, 6) == 0 and round(e.y, 6) == 0 and round(e.z, 6) == 0:
+            rQuat = None
+        if autoRotate and rQuat != None:
+            hold = rQuat.y
+            rQuat.y = rQuat.z
+            rQuat.z = -hold
+        if rQuat != None:
+            locTag = _XmlTag("localRotation")
+            locTag.addAttr("x", rQuat.x, 6)
+            locTag.addAttr("y", rQuat.y, 6)
+            locTag.addAttr("z", rQuat.z, 6)
+            locTag.addAttr("w", rQuat.w, 6)
+            tag.addChild(locTag)
+
+        # Making a wild first-try guess as to what will work:
+        if self.parent == None:
+            matrix *= self.backoutTransform.copy().invert()
             loc = matrix.translationPart()
+            if (round(loc[0], 6) == 0. and round(loc[1], 6) == 0.
+                    and round(loc[2], 6) == 0.): loc = None
+            scale = None
+            if self.backoutTransform == None:
+                scaleMat = matrix
+            elif rQuat != None:
+                scaleMat = matrix * rQuat.copy().inverse().toMatrix().resize4x4()
+            if scale != None:
+                scale = [scaleMat[0][0], scaleMat[1][1], scaleMat[2][2]]
+            if (scale != None and round(scale[0], 6) == 1.
+                    and round(scale[1], 6) == 1. and round(scale[2], 6) == 1.):
+                scale = None
+            if autoRotate:
+                if loc != None:
+                    hold = loc[1]
+                    loc[1] = loc[2]
+                    loc[2] = -hold
+                if scale != None:
+                    hold = scale[1]
+                    scale[1] = scale[2]
+                    scale[2] = hold
+            # Need to add the attrs sequentially in order to preserve sequence
+            # of the attrs in the output.
+            if loc != None:
+                locTag = _XmlTag("localTranslation")
+                locTag.addAttr("x", loc[0], 6)
+                locTag.addAttr("y", loc[1], 6)
+                locTag.addAttr("z", loc[2], 6)
+                tag.addChild(locTag)
+            if scale != None:
+                locTag = _XmlTag("localScale")
+                locTag.addAttr("x", scale[0], 6)
+                locTag.addAttr("y", scale[1], 6)
+                locTag.addAttr("z", scale[2], 6)
+                tag.addChild(locTag)
+            return tag
+        # NOW for real Blender bones, which have only parent bone size + rot
+        locTag = _XmlTag("localTranslation")
+        locTag.addAttr("x", self.headLoc.x, 6)
+        locTag.addAttr("y", self.headLoc.y, 6)
+        locTag.addAttr("z", self.headLoc.z + self.parent.childTransOffset, 6)
+        tag.addChild(locTag)
+        return tag
+
+
+class JmeSkinAndBone(object):
+    """
+    This class basically generates a Node parent of a SkinNode + Bone; and
+    corresonds to the Blender Armature's parent Object.
+    We make a top level Bone for the entire Armature, for which Blender has
+    no corresponding bone.  This is necessary since Blender can have
+    "unparented" bones, but JME requires all but the root bone to be
+    parented.
+    Very much want to support multiple Bone and SkinNode child, but for now: No
+    """
+    __slots__ = ('wrappedObj', 'wrappedArma', 'backoutTransform',
+            'boneTree', 'name', 'children')
+    # Children is only used so tree recursion can descend into the bones;
+
+    def __init__(self, bObj):
+        """N.b. the bObj param is not the data object (like we take for Mesh
+        Objects), but a Blender Object."""
+        object.__init__(self)
+        self.wrappedObj = bObj
+        self.wrappedArma = bObj.getData(False, True)
+        self.boneTree = JmeBone(bObj)
+        self.children = [self.boneTree]
+        self.name = bObj.name
+        self.backoutTransform = None
+
+    def getName(self):
+        return self.name
+
+    def addChild(self, child):
+        self.children.append(child)
+
+    def getXmlEl(self, autoRotate):
+        if self.backoutTransform == None:
+            matrix = self.wrappedObj.mat
         else:
-            loc = self.headLoc
-            loc.z += self.parent.childTransOffset
+            matrix = self.wrappedObj.mat * self.backoutTransform.copy().invert()
+
+        # Set local variables just to reduce typing in this block.
+        loc = matrix.translationPart()
+        if (round(loc[0], 6) == 0. and round(loc[1], 6) == 0.
+                and round(loc[2], 6) == 0.): loc = None
         # N.b. Blender.Mathutils.Quaternines ARE NOT COMPATIBLE WITH jME!
         e = matrix.toEuler()
         if round(e.x, 6) == 0 and round(e.y, 6) == 0 and round(e.z, 6) == 0:
             rQuat = None
+            scaleMat = matrix
         else:
-            rQuat = _esmath.ESQuaternion(e, True)
-        #else: rQuat = self.wrappedObj.rot.toQuat()
-        scale = matrix.scalePart()
+            rQuat = matrix.toQuat()
+            scaleMat = matrix * rQuat.copy().inverse().toMatrix().resize4x4()
+        scale = [scaleMat[0][0], scaleMat[1][1], scaleMat[2][2]]
+        if (round(scale[0], 6) == 1.
+                and round(scale[1], 6) == 1. and round(scale[2], 6) == 1.):
+            scale = None
+        if autoRotate:
+            if loc != None:
+                hold = loc[1]
+                loc[1] = loc[2]
+                loc[2] = -hold
+            if rQuat != None:
+                hold = rQuat.y
+                rQuat.y = rQuat.z
+                rQuat.z = -hold
+            if scale != None:
+                hold = scale[1]
+                scale[1] = scale[2]
+                scale[2] = hold
+        tag = _XmlTag('com.jme.scene.Node', {'name':self.getName()})
         # Need to add the attrs sequentially in order to preserve sequence
         # of the attrs in the output.
-        if loc != None and (round(loc[0], 6) != 0. or round(loc[1], 6) != 0.
-                or round(loc[2], 6) != 0.):
+        if loc != None:
             locTag = _XmlTag("localTranslation")
             locTag.addAttr("x", loc[0], 6)
             locTag.addAttr("y", loc[1], 6)
@@ -771,46 +875,34 @@ class JmeBone(object):
             locTag.addAttr("z", rQuat.z, 6)
             locTag.addAttr("w", rQuat.w, 6)
             tag.addChild(locTag)
-        if scale != None and (round(scale[0], 6) != 1.
-                or round(scale[1], 6) != 1. or round(scale[2], 6) != 1.):
+        if scale != None:
             locTag = _XmlTag("localScale")
             locTag.addAttr("x", scale[0], 6)
             locTag.addAttr("y", scale[1], 6)
             locTag.addAttr("z", scale[2], 6)
             tag.addChild(locTag)
+
+        for child in self.children:
+            child.backoutTransform = self.wrappedObj.mat
+            # N.b. DO NOT USE .matrixParentInverse.  That is a static
+            #  value for funky Blender behaior we don't want to retain.
+        if len(self.children) == 1: return self.boneTree.getXmlEl(autoRotate)
+
+        childrenTag = _XmlTag('children', {'size':len(self.children)})
+        childrenTag.addChild(self.boneTree.getXmlEl(autoRotate))
+        for skinChild in self.children[1:]:
+            skinTag = _XmlTag('com.jme.animation.SkinNode',
+                    {'name':skinChild.getName() + "Skin"})
+            skinChildrenTag = _XmlTag('children', {'size':1})
+            skinChildrenTag.addChild(skinChild.getXmlEl(autoRotate))
+            skinTag.addChild(skinChildrenTag)
+            childrenTag.addChild(skinTag)
+        tag.addChild(childrenTag)
         return tag
 
 
-class JmeBoneContainer(object):
-    """We make a top level Bone for the entire Armature, for which Blender has
-    no corresponding bone.  This is necessary since Blender can have
-    "unparented" bones, but JME requires all but the root bone to be
-    parented."""
-    __slots__ = ('wrappedObj', 'wrappedArma', 'retainTransform',
-            'boneTree', 'autoRotate', 'name', 'children')
-    # Children is only used to tree recursion can descend into the bones
-    # autoRotate and retainTransform attrs are hacks just to pass directly to
-    # the root boneTree instance.
-
-    def __init__(self, bObj):
-        """N.b. the bObj param is not the data object (like we take for Mesh
-        Objects), but a Blender Object."""
-        object.__init__(self)
-        self.autoRotate = False
-        self.wrappedObj = bObj
-        self.wrappedArma = bObj.getData(False, True)
-        self.boneTree = JmeBone(bObj)
-        self.children = [self.boneTree]
-        self.retainTransform = None
-
-    def getXmlEl(self):
-        self.boneTree.autoRotate = self.autoRotate
-        self.boneTree.retainTransform = self.retainTransform
-        return self.boneTree.getXmlEl()
-
-
 class NodeTree(object):
-    """Trivial tree dedicated for JmeNode and JmeBoneContainer members.
+    """Trivial tree dedicated for JmeNode and JmeSkinAndBone members.
     Add all members to the tree, then call nest().
     See method descriptions for details."""
 
@@ -876,11 +968,13 @@ class NodeTree(object):
         return jmeMat
 
     def addIfSupported(self, blenderObj, skipObjs):
-        """Creates a JmeNode or JmeBoneContainer for the given Blender Object,
+        """Creates a JmeNode or JmeSkinAndBone for the given Blender Object,
         if the Object is supported."""
+        print "Trying to add " + blenderObj.getType() + '/' + blenderObj.getName() + "..."
         if not JmeNode.supported(blenderObj, skipObjs): return
+        print "Accepted"
         if blenderObj.type == "Armature":
-            self.__memberMap[blenderObj] = JmeBoneContainer(blenderObj)
+            self.__memberMap[blenderObj] = JmeSkinAndBone(blenderObj)
         else:
             self.__memberMap[blenderObj] = JmeNode(blenderObj, self)
         self.__memberKeys.append(blenderObj)
@@ -891,31 +985,27 @@ class NodeTree(object):
         # otherwise) could reflect the new names, but we can't nest properly
         # until all nodes are added to the tree, and we want tree organization
         # to determine naming precedence.
-        if not isinstance(node, JmeBoneContainer):
-            if node.name == None:
-                raiseException("Node in tree without name!")
-            #print "Checking name " + node.name + "..."
-            if node.name in nameSet:
-                #print "Renaming 2nd node with name " + node.name + "..."
-                # TODO:  Make the checks for existing substrings case-insens.
-                if (isinstance(node, JmeMesh) and parentName != None
-                        and (parentName + "Mesh") not in nameSet):
-                    node.name = (parentName + "Mesh")
-                elif (isinstance(node, JmeMesh) and node.name.count("Mesh") < 1
-                        and (node.name + "Mesh") not in nameSet):
-                    node.name += "Mesh"
-                elif (isinstance(node, JmeNode) and node.name.count("Node") < 1
-                        and (node.name + "Node") not in nameSet):
-                    node.name += "Node"
-                else:
-                    node.name += ".uniqd"
-                    while node.name in nameSet: node.name += ".uniqd"
-            nameSet.add(node.name)
+        if node.name == None:
+            raiseException("Node in tree without name!")
+        #print "Checking name " + node.name + "..."
+        if node.name in nameSet:
+            #print "Renaming 2nd node with name " + node.name + "..."
+            # TODO:  Make the checks for existing substrings case-insens.
+            if (isinstance(node, JmeMesh) and parentName != None
+                    and (parentName + "Mesh") not in nameSet):
+                node.name = (parentName + "Mesh")
+            elif (isinstance(node, JmeMesh) and node.name.count("Mesh") < 1
+                    and (node.name + "Mesh") not in nameSet):
+                node.name += "Mesh"
+            elif (isinstance(node, JmeNode) and node.name.count("Node") < 1
+                    and (node.name + "Node") not in nameSet):
+                node.name += "Node"
+            else:
+                node.name += ".uniqd"
+                while node.name in nameSet: node.name += ".uniqd"
+        nameSet.add(node.name)
         if (isinstance(node, JmeMesh)) or node.children == None: return
-        if isinstance(node, JmeBoneContainer):
-            nameToPass = None
-        else:
-            nameToPass = node.name
+        nameToPass = node.name
         for child in node.children:
             NodeTree.__uniquifyNames(child, nameToPass, nameSet)
 
@@ -928,9 +1018,21 @@ class NodeTree(object):
         if len(self.__memberKeys) < 1:
             self.root = None
             return self.root
+
+        # Supporting arbitrary nesting of skeleton/anination-related elements
+        # would be best, but that is quite impossible with com.jme.animation.
+        # Since we can't achieve that goal, I'm restricting things farther for
+        # now:  Just to get things working, I'm mandating a Node to
+        # aggregrate the Bone + SkinNode.  This prevents general sharing, but
+        # is necessary for now, due to the several interdependencies between
+        # many objects nested within both Bone and SkinNode.
+
         parentedBos = []
         for bo in self.__memberKeys:
             if bo.parent != None and bo.parent in self.__memberKeys:
+                print ("Nesting " + bo.getType() + "/" + bo.getName()
+                        + " to  " + bo.parent.getType() + "/"
+                        + bo.parent.getName())
                 self.__memberMap[bo.parent].addChild(self.__memberMap[bo])
                 parentedBos.append(bo)
         for bo in parentedBos:

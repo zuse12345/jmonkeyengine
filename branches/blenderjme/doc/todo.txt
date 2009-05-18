@@ -2,6 +2,9 @@ $Id$
 
 TODO LIST
 
+Don't ever write values of negative 0.  Looks terrible, and adds ambiguity,
+when rounding results in "-0.000000" or "-0.000" and we write that.
+
 Convert Blender mat "VCol Pain" setting to jME
 MaterialState.setColorMaterial(MaterialState.ColorMaterial.AmbientAndDiffuse).
 Very likely attr:  colorMaterial="AmbientAndDiffuse".

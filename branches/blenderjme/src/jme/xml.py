@@ -296,6 +296,8 @@ class XmlFile(object):
     #def __init__(self, root, spacesPerIndent=2, encoding='utf-8', pi=None):
     # Encoding forced to utf-8 until Blender gives some encoding support
         object.__init__(self)
+        if root == None: raise Exception(
+                "XML documents require a root element, but none specified")
         self.root = root
         self.spacesPerIndent = spacesPerIndent
         self.encoding = 'utf-8'

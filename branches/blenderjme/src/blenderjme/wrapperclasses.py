@@ -676,7 +676,6 @@ class JmeBone(object):
     # from the zero rotation.  Probably not difficult to do, but can't tell
     # until we get to animating.
 
-    ROOTBONE_USELESS_ROTATION = _bmath.RotationMatrix(90, 3, 'x')
     __slots__ = ('matrix', 'children', 'name', 'loc', 'quatRot',
             'childYOffset', 'parentBone', 'backoutTransform')
     # The childYOffset is a translation added to the translation of all
@@ -741,19 +740,12 @@ class JmeBone(object):
         for blenderBone in blenderChildren:
             # Recursive instantiation:
             self.children.append(JmeBone(blenderBone, self))
-        # Fix the Blender x+90 rotation to its (not our) root level bones
-        if parentBone == None:
-            for child in self.children:
-                child.backoutTransform = JmeBone.ROOTBONE_USELESS_ROTATION
 
     def getName(self):
         return self.name
 
     def getXmlEl(self, autoRotate):
         tag = _XmlTag('com.jme.animation.Bone', {'name':self.getName()})
-        # Do all work with a copy.  We don't modify user data.
-        if autoRotate:
-            raise Exception("AUTOROTATION not implemented for bones yet")
         if self.children != None:
             childrenTag = _XmlTag('children', {'size':len(self.children)})
             tag.addChild(childrenTag)
@@ -795,46 +787,49 @@ class JmeBone(object):
             matrix *= self.backoutTransform.copy().invert()
             # The top-level bone has a 4x4 matrix.  All other bones have 3x3.
 
+        # Need to add the attrs sequentially in order to preserve sequence
+        # of the attrs in the output.
         # N.b. Blender.Mathutils.Quaternines ARE NOT COMPATIBLE WITH jME!
         rQuat = matrix.toQuat()
-        if (round(rQuat.x, 6) == 0 and round(rQuat.y, 6) == 0
-                and round(rQuat.z, 6) == 0 and round(rQuat.w) == 1):
-            rQuat = None
-        if autoRotate and rQuat != None:
-            hold = rQuat.y
-            rQuat.y = rQuat.z
-            rQuat.z = -hold
-        if rQuat != None:
+        if (round(rQuat.x, 6) != 0 or round(rQuat.y, 6) != 0
+                or round(rQuat.z, 6) != 0 or round(rQuat.w) != 1):
+            if autoRotate and rQuat != None:
+                hold = rQuat.y
+                rQuat.y = rQuat.z
+                rQuat.z = -hold
             locTag = _XmlTag("localRotation")
             locTag.addAttr("x", rQuat.x, 6)
             locTag.addAttr("y", rQuat.y, 6)
             locTag.addAttr("z", rQuat.z, 6)
             locTag.addAttr("w", rQuat.w, 6)
             tag.addChild(locTag)
-        loc = matrix.translationPart()
-        if (round(loc[0], 6) == 0. and round(loc[1], 6) == 0.
-                and round(loc[2], 6) == 0.): loc = None
         if rQuat == None:
             scaleMat = matrix
         else:
             scaleMat = matrix * rQuat.copy().inverse().toMatrix().resize4x4()
         scale = [scaleMat[0][0], scaleMat[1][1], scaleMat[2][2]]
-        if (round(scale[0], 6) == 1.
-                and round(scale[1], 6) == 1. and round(scale[2], 6) == 1.):
-            scale = None
-        # Need to add the attrs sequentially in order to preserve sequence
-        # of the attrs in the output.
-        if loc != None:
-            locTag = _XmlTag("localTranslation")
-            locTag.addAttr("x", loc[0], 6)
-            locTag.addAttr("y", loc[1], 6)
-            locTag.addAttr("z", loc[2], 6)
-            tag.addChild(locTag)
-        if scale != None:
+        if (round(scale[0], 6) != 1.
+                or round(scale[1], 6) != 1. or round(scale[2], 6) != 1.):
+            if autoRotate:
+                hold = scale[1]
+                scale[1] = scale[2]
+                scale[2] = hold
             locTag = _XmlTag("localScale")
             locTag.addAttr("x", scale[0], 6)
             locTag.addAttr("y", scale[1], 6)
             locTag.addAttr("z", scale[2], 6)
+            tag.addChild(locTag)
+        loc = matrix.translationPart()
+        if (round(loc[0], 6) != 0. or round(loc[1], 6) != 0.
+                or round(loc[2], 6) != 0.):
+            if autoRotate and rQuat != None:
+                hold = loc[1]
+                loc[1] = loc[2]
+                loc[2] = -hold
+            locTag = _XmlTag("localTranslation")
+            locTag.addAttr("x", loc[0], 6)
+            locTag.addAttr("y", loc[1], 6)
+            locTag.addAttr("z", loc[2], 6)
             tag.addChild(locTag)
         return tag
 

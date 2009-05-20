@@ -1,0 +1,8 @@
+Material Bush : phong_lighting.j3md {
+    MaterialParameters {
+         m_Shininess: 4.0
+         m_DiffuseMap: bush_color.tga
+         m_NormalMap: bush_normal.tga
+         m_SpecularMap: bush_spec.tga
+    }
+}

@@ -1,0 +1,8 @@
+Material Signpost : phong_lighting.j3md {
+    MaterialParameters {
+         m_Shininess: 4.0
+         m_DiffuseMap: signpost_color.tga
+         m_NormalMap: signpost_normal.tga
+         m_SpecularMap: signpost_spec.tga
+    }
+}

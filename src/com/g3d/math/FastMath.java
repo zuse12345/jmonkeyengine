@@ -33,6 +33,7 @@
 package com.g3d.math;
 
 import java.util.Random;
+import java.util.Scanner;
 
 /**
  * <code>FastMath</code> provides 'fast' math approximations and float equivalents of Math
@@ -580,4 +581,70 @@ final public class FastMath {
     public static float saturate(float input){
         return clamp(input, 0f, 1f);
     }
+
+    /**
+     * Converts a single precision (32 bit) floating point value
+     * into half precision (16 bit).
+     *
+     * Source: http://www.fox-toolkit.org/ftp/fasthalffloatconversion.pdf
+     *
+     * @param half The half floating point value as a short.
+     * @return floating point value of the half.
+     */
+    public static float convertHalfToFloat(short half){
+        switch ((int)half){
+            case 0x0000:
+                return 0f;
+            case 0x8000:
+                return -0f;
+            case 0x7c00:
+                return Float.POSITIVE_INFINITY;
+            case 0xfc00:
+                return Float.NEGATIVE_INFINITY;
+            // TODO: Support for NaN?
+            default:
+                return  Float.intBitsToFloat(((half & 0x8000) << 16)
+                                          | (((half & 0x7c00) + 0x1C000) << 13)
+                                          |  ((half & 0x03FF) << 13));
+        }
+    }
+
+
+
+    public static short convertFloatToHalf(float flt){
+        if (Float.isNaN(flt)){
+            throw new UnsupportedOperationException("NaN to half conversion not supported!");
+        }else if (flt == Float.POSITIVE_INFINITY){
+            return (short) 0x7c00;
+        }else if (flt == Float.NEGATIVE_INFINITY){
+            return (short) 0xfc00;
+        }else if (flt == 0f){
+            return (short) 0x0000;
+        }else if (flt == -0f){
+            return (short) 0x8000;
+        }
+
+        int f = Float.floatToIntBits(flt);
+        return (short)(( (f >> 16) & 0x8000)
+             | ( ( ( (f & 0x7f800000) - 0x38000000) >> 13) & 0x7c00)
+             | ( (f >> 13) & 0x03ff));
+    }
+
+    public static void main(String[] args){
+        Scanner scan = new Scanner(System.in);
+        while (true){
+            System.out.println("Enter float to convert or 'x' to exit: ");
+            String s = scan.nextLine();
+            if (s.equals("x"))
+                break;
+
+            float flt = Float.valueOf(s);
+            short half = convertFloatToHalf(flt);
+            float flt2 = convertHalfToFloat(half);
+
+            System.out.println("Input float: "+flt);
+            System.out.println("Result float: "+flt2);
+        }
+    }
+
 }

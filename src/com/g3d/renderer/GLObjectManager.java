@@ -17,14 +17,14 @@ public class GLObjectManager {
      * The queue will receive notifications of GLObjects which are no longer
      * referenced.
      */
-    private static ReferenceQueue<Object> refQueue = new ReferenceQueue<Object>();
+    private ReferenceQueue<Object> refQueue = new ReferenceQueue<Object>();
 
     /**
      * List of currently active GLObjects.
      */
-    private static List<GLObject> objectList = new ArrayList<GLObject>();
+    private List<GLObject> objectList = new ArrayList<GLObject>();
 
-    private static class GLObjectRef extends PhantomReference<Object>{
+    private class GLObjectRef extends PhantomReference<Object>{
         private GLObject obj;
 
         public GLObjectRef(GLObject obj){
@@ -36,8 +36,7 @@ public class GLObjectManager {
     /**
      * Register a GLObject with the manager.
      */
-    public static void registerForCleanup(Renderer r, GLObject obj){
-        deleteUnused(r);
+    public void registerForCleanup(GLObject obj){
         new GLObjectRef(obj);
         objectList.add(obj);
         //System.out.println("Registered for cleanup: "+obj);
@@ -46,7 +45,7 @@ public class GLObjectManager {
     /**
      * Deletes unused GLObjects
      */
-    public static void deleteUnused(Renderer r){
+    public void deleteUnused(Renderer r){
         for (GLObjectRef ref = (GLObjectRef) refQueue.poll(); ref != null;){
             ref.obj.deleteObject(r);
             objectList.remove(ref.obj);
@@ -55,12 +54,23 @@ public class GLObjectManager {
     }
 
     /**
+     * Deletes all objects. Must only be called when display is destroyed.
+     */
+    public void deleteAllObjects(Renderer r){
+        for (GLObject obj : objectList){
+            obj.deleteObject(r);
+        }
+        objectList.clear();
+    }
+
+    /**
      * Resets all GLObjects.
      */
-    public static void resetObjects(){
+    public void resetObjects(){
         for (GLObject obj : objectList){
             obj.resetObject();
             System.out.println("Reset: "+obj);
         }
+        objectList.clear();
     }
 }

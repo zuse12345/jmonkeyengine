@@ -6,23 +6,22 @@ import com.g3d.math.Matrix4f;
 import com.g3d.math.Quaternion;
 import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
-import com.g3d.renderer.Renderer;
 import com.g3d.util.BufferUtils;
 import java.nio.BufferOverflowException;
 import java.nio.FloatBuffer;
 
-public class Uniform {
+public class Uniform extends ShaderVariable {
 
     public static enum Type {
         Float,
-        Float2,
-        Float3,
-        Float4,
+        Vector2,
+        Vector3,
+        Vector4,
 
         FloatArray,
-        Float2Array,
-        Float3Array,
-        Float4Array,
+        Vector2Array,
+        Vector3Array,
+        Vector4Array,
 
         Matrix2,
         Matrix3,
@@ -39,20 +38,6 @@ public class Uniform {
     }
 
     /**
-     * Shader who owns this uniform .
-     */
-    //protected Shader owner;
-
-    protected int location = -1;
-
-    /**
-     * Name of the uniform as was declared in the shader.
-     * E.g name = "g_WorldMatrix" if the decleration was
-     * "uniform mat4 g_WorldMatrix;".
-     */
-    protected String name = null;
-
-    /**
      * Currently set value of the uniform.
      */
     protected Object value = null;
@@ -63,22 +48,6 @@ public class Uniform {
      */
     protected Type dataType;
 
-    public void setLocation(int location){
-        this.location = location;
-    }
-
-    public int getLocation(){
-        return location;
-    }
-
-    public void setName(String name){
-        this.name = name;
-    }
-
-    public String getName(){
-        return name;
-    }
-
     public Type getDataType() {
         return dataType;
     }
@@ -87,11 +56,10 @@ public class Uniform {
         return value;
     }
 
-    public void deleteObject(Renderer r){
-        // done automatically 
-    }
-
     public void setMatrix4(Matrix4f mat){
+        if (location == -1)
+            return;
+
         if (dataType != null && dataType != Type.Matrix4)
             throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
 
@@ -102,9 +70,13 @@ public class Uniform {
         mat.fillFloatBuffer(matrixValue, true);
         matrixValue.flip();
         dataType = Type.Matrix4;
+        updateNeeded = true;
     }
 
     public void setMatrix3(Matrix3f mat){
+        if (location == -1)
+            return;
+
         if (dataType != null && dataType != Type.Matrix3)
             throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
 
@@ -112,38 +84,53 @@ public class Uniform {
             matrixValue = BufferUtils.createFloatBuffer(9);
             value = matrixValue;
         }
-        mat.fillFloatBuffer(matrixValue);
+        mat.fillFloatBuffer(matrixValue, true);
         matrixValue.flip();
         dataType = Type.Matrix3;
-        // need to do transpose here!
+        updateNeeded = true;
     }
 
     public void setFloat(float val){
+        if (location == -1)
+            return;
+
         if (dataType != null && dataType != Type.Float)
             throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
 
         value = new Float(val);
         dataType = Type.Float;
+        updateNeeded = true;
     }
 
     public void setFloatArray(float[] vals){
+        if (location == -1)
+            return;
+
         if (dataType != null && dataType != Type.FloatArray)
             throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
 
         value = BufferUtils.createFloatBuffer(vals);
         dataType = Type.FloatArray;
+        updateNeeded = true;
     }
 
     public void setVector3Array(Vector3f[] vals){
-        if (dataType != null && dataType != Type.Float3Array)
+        if (location == -1)
+            return;
+
+        if (dataType != null && dataType != Type.Vector3Array)
             throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
 
         value = BufferUtils.createFloatBuffer(vals);
-        dataType = Type.Float3Array;
+        dataType = Type.Vector3Array;
+        updateNeeded = true;
     }
 
     public void setVector4Array(Quaternion[] vals){
-        if (dataType != null && dataType != Type.Float4Array)
+        if (location == -1)
+            return;
+
+        if (dataType != null && dataType != Type.Vector4Array)
             throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
 
         FloatBuffer fb = (FloatBuffer) value;
@@ -159,58 +146,91 @@ public class Uniform {
         fb.flip();
         value = fb;
 
-        dataType = Type.Float3Array;
+        dataType = Type.Vector3Array;
+        updateNeeded = true;
     }
 
     public void setVector4Length(int length){
+        if (location == -1)
+            return;
+
         FloatBuffer fb = (FloatBuffer) value;
         if (fb == null || fb.capacity() < length){
             value = BufferUtils.createFloatBuffer(length * 4);
         }
 
-        dataType = Type.Float4Array;
+        dataType = Type.Vector4Array;
+        updateNeeded = true;
     }
 
     public void setVector4InArray(float x, float y, float z, float w, int index){
-        if (dataType != null && dataType != Type.Float4Array)
+        if (location == -1)
+            return;
+
+        if (dataType != null && dataType != Type.Vector4Array)
             throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
 
         FloatBuffer fb = (FloatBuffer) value;
         fb.position(index * 4);
         fb.put(x).put(y).put(z).put(w);
         fb.rewind();
+        updateNeeded = true;
     }
 
     public void setVector2(Vector2f val){
-        if (dataType != null && dataType != Type.Float2)
+        if (location == -1)
+            return;
+
+        if (dataType != null && dataType != Type.Vector2)
             throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
 
         value = val.clone();
-        dataType = Type.Float2;
+        dataType = Type.Vector2;
+        updateNeeded = true;
     }
 
-    public void setVector3f(Vector3f val){
-        if (dataType != null && dataType != Type.Float3)
+    public void setVector3(Vector3f val){
+        if (location == -1)
+            return;
+
+        if (dataType != null && dataType != Type.Vector3)
             throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
 
         value = val.clone();
-        dataType = Type.Float3;
+        dataType = Type.Vector3;
+        updateNeeded = true;
     }
 
     public void setColor(ColorRGBA color){
-        if (dataType != null && dataType != Type.Float4)
+        if (location == -1)
+            return;
+
+        if (dataType != null && dataType != Type.Vector4)
             throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
 
         value = color.clone();
-        dataType = Type.Float4;
+        dataType = Type.Vector4;
+        updateNeeded = true;
     }
 
     public void setInt(int val){
+        if (location == -1)
+            return;
+        
         if (dataType != null && dataType != Type.Int)
             throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
 
         value = new Integer(val);
         dataType = Type.Int;
+        updateNeeded = true;
+    }
+
+    public boolean isUpdateNeeded(){
+        return updateNeeded;
+    }
+
+    public void clearUpdateNeeded(){
+        updateNeeded = false;
     }
 
 }

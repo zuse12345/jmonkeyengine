@@ -10,21 +10,23 @@ import java.util.Map;
 
 public class Shader extends GLObject {
 
-    public static final Shader DEFAULT = new Shader();
+    public static final Shader DEFAULT_GLSL = new Shader("GLSL100");
 
     static {
-        DEFAULT.addSource(ShaderType.Vertex,
+        DEFAULT_GLSL.addSource(ShaderType.Vertex,
                           "uniform mat4 g_WorldViewProjectionMatrix;\n" +
                           "in vec4 inPosition;\n" +
                           "\n" +
                           "void main(){\n" +
                           "    gl_Position = g_WorldViewProjectionMatrix * inPosition;\n" +
                           "}\n");
-        DEFAULT.addSource(ShaderType.Fragment,
+        DEFAULT_GLSL.addSource(ShaderType.Fragment,
                           "void main(){\n" +
                           "   gl_FragColor = vec4(1.0);\n" +
                           "}\n");
     }
+
+    private String language;
 
     /**
      * True if the shader is fully compiled & linked.
@@ -41,6 +43,11 @@ public class Shader extends GLObject {
      * Maps uniform name to the uniform variable.
      */
     private Map<String, Uniform> uniforms = new HashMap<String, Uniform>();
+
+    /**
+     * Maps attribute name to the location of the attribute in the shader.
+     */
+    private Map<String, Attribute> attribs = new HashMap<String, Attribute>();
 
     /**
      * Type of shader. The shader will control the pipeline of it's type.
@@ -66,20 +73,22 @@ public class Shader extends GLObject {
      * Shader source describes a shader object in OpenGL. Each shader source
      * is assigned a certain pipeline which it controls (described by it's type).
      */
-    public static class ShaderSource {
+    public class ShaderSource {
 
         final ShaderType shaderType;
-        final Shader parent;
+//        final Shader parent;
 
         boolean usable = false;
         String source = null;
-        String name = "Untitled";
+//        String name = "Untitled";
 
         int id = -1;
 
         public ShaderSource(Shader parent, ShaderType type){
             this.shaderType = type;
-            this.parent = parent;
+            if (type == null)
+                throw new NullPointerException("The shader type must be specified");
+//            this.parent = parent;
         }
 
         public int getId(){
@@ -95,14 +104,16 @@ public class Shader extends GLObject {
         }
 
         public void setSource(String source){
+            if (source == null)
+                throw new NullPointerException("Shader source cannot be null");
+
             this.source = source;
-            if (parent != null)
-                parent.updateNeeded = true;
+            updateNeeded = true;
         }
 
-        public void setName(String name){
-            this.name = name;
-        }
+//        public void setName(String name){
+//            this.name = name;
+//        }
 
         public String getSource(){
             return source;
@@ -125,8 +136,9 @@ public class Shader extends GLObject {
     /**
      * Create an empty shader.
      */
-    public Shader(){
+    public Shader(String language){
         super(Type.Shader);
+        this.language = language;
     }
 
     /**
@@ -138,7 +150,6 @@ public class Shader extends GLObject {
     public void addSource(ShaderType type, String source){
         ShaderSource shader = new ShaderSource(this, type);
 
-        // TODO: Parse the source for import statements, etc.
         shader.setSource(source);
         shaderList.add(shader);
         updateNeeded = true;
@@ -152,6 +163,16 @@ public class Shader extends GLObject {
             uniforms.put(name, uniform);
         }
         return uniform;
+    }
+
+    public Attribute getAttribute(String name){
+        Attribute attrib = attribs.get(name);
+        if (attrib == null){
+            attrib = new Attribute();
+            attrib.name = name;
+            attribs.put(name, attrib);
+        }
+        return attrib;
     }
 
     public Collection<Uniform> getUniforms(){
@@ -203,6 +224,9 @@ public class Shader extends GLObject {
         }
         for (Uniform uniform : uniforms.values()){
             uniform.location = -1;
+        }
+        for (Attribute attrib : attribs.values()){
+            attrib.location = -1;
         }
     }
 

@@ -1,5 +1,13 @@
 package com.g3d.system.lwjgl;
 
+import com.g3d.input.JoyInput;
+import com.g3d.input.KeyInput;
+import com.g3d.input.MouseInput;
+import com.g3d.input.lwjgl.LwjglJoyInput;
+import com.g3d.input.lwjgl.LwjglKeyInput;
+import com.g3d.input.lwjgl.LwjglMouseInput;
+import com.g3d.renderer.GLObjectManager;
+import com.g3d.renderer.lwjgl.LwjglRenderer;
 import com.g3d.system.G3DContext.Type;
 import com.g3d.util.TempVars;
 import java.nio.IntBuffer;
@@ -18,6 +26,9 @@ import org.lwjgl.LWJGLUtil;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.ContextAttribs;
+import org.lwjgl.opengl.GLContext;
+import org.lwjgl.opengl.OpenGLException;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -27,22 +38,25 @@ public class LwjglDisplay extends LwjglContext {
     private static final Logger logger = Logger.getLogger(LwjglDisplay.class.getName());
 
     protected DisplayMode getFullscreenDisplayMode(int width, int height, int bpp, int freq){
-        DisplayMode[] disp = null;
         try {
-            disp = org.lwjgl.util.Display.getAvailableDisplayModes(width, height, width, height, bpp, bpp, freq, freq);
+            DisplayMode[] modes = Display.getAvailableDisplayModes();
+            for (DisplayMode mode : modes){
+                if (mode.getWidth() == width && mode.getHeight() == height
+                 && mode.getBitsPerPixel() == bpp && mode.getFrequency() == freq){
+                    return mode;
+                }
+            }
         } catch (LWJGLException ex) {
             ex.printStackTrace();
         }
-        if (disp == null || disp.length == 0)
-            return null;
-
-        return disp[0];
+        return null;
     }
 
     protected void applySettings(DisplaySettings settings){
         DisplayMode displayMode = null;
         if (settings.getTemplate() == Template.DesktopFullscreen){
             displayMode = org.lwjgl.opengl.Display.getDesktopDisplayMode();
+            settings.setResolution(displayMode.getWidth(), displayMode.getHeight());
         }else if (settings.isFullscreen()){
             displayMode = getFullscreenDisplayMode(settings.getWidth(), settings.getHeight(),
                                                    settings.getBitsPerPixel(), settings.getFrequency());
@@ -51,8 +65,8 @@ public class LwjglDisplay extends LwjglContext {
         }else{
             displayMode = new DisplayMode(settings.getWidth(), settings.getHeight());
         }
-        logger.fine("Selected display mode: "+displayMode);
 
+        logger.info("Selected display mode: "+displayMode);
         try{
             Display.setVSyncEnabled(settings.isVSync());
             Display.setFullscreen(settings.isFullscreen());
@@ -85,7 +99,14 @@ public class LwjglDisplay extends LwjglContext {
 
         try{
             applySettings(settings);
-            Display.create(pf);
+            String rendererStr = settings.getString("Renderer");
+            if (rendererStr.equals("LWJGL-OpenGL3")){
+                ContextAttribs attribs = new ContextAttribs(3, 0);
+                attribs.withForwardCompatible(true);
+                Display.create(pf, attribs);
+            }else{
+                Display.create(pf);
+            }
 
             boolean isActive = Display.isActive();
             boolean isCreated = Display.isCreated();
@@ -101,14 +122,17 @@ public class LwjglDisplay extends LwjglContext {
                     logger.warning("Display is not active!");
             }
 
-//            if (!GLContext.getCapabilities().OpenGL30){
-//                throw new UnsupportedOperationException("Your driver does not support OpenGL 3");
-//            }else{
-//                logger.fine("OpenGL 3.0 supported!");
-//            }
+            if (GLContext.getCapabilities().OpenGL30){
+                logger.fine("OpenGL 3.0 supported!");
+            }
 
             logger.fine("Running on thread: "+Thread.currentThread().getName());
-            Util.checkGLError();
+            
+            try{
+                 Util.checkGLError();
+            } catch (OpenGLException ex){
+                System.out.println(ex.getMessage());
+            }
 
             IntBuffer temp = TempVars.get().intBuffer16;
             if (settings.getSamples() != 0) {
@@ -151,8 +175,21 @@ public class LwjglDisplay extends LwjglContext {
         super.create();
     }
 
+    public JoyInput getJoyInput() {
+        return new LwjglJoyInput();
+    }
+
+    public MouseInput getMouseInput() {
+        return new LwjglMouseInput();
+    }
+
+    public KeyInput getKeyInput() {
+        return new LwjglKeyInput();
+    }
+
     @Override
     public void destroy(){
+        renderer.cleanup();
         Display.destroy();
         logger.info("Display destroyed.");
         super.destroy();
@@ -164,9 +201,12 @@ public class LwjglDisplay extends LwjglContext {
     }
 
     @Override
-    public void restart() {
+    public void restart(boolean updateCamera) {
         if (created){
             applySettings(settings);
+            if (renderer.getCamera() != null && updateCamera){
+                renderer.getCamera().resize(settings.getWidth(), settings.getHeight(), true);
+            }
             logger.info("Display restarted.");
         }else{
             logger.warning("Display is not created, cannot restart window.");

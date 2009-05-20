@@ -323,7 +323,6 @@ public class ColorRGBA implements Savable, Cloneable {
       rVal.r = FastMath.nextRandomFloat();
       rVal.g = FastMath.nextRandomFloat();
       rVal.b = FastMath.nextRandomFloat();
-      rVal.clamp();
       return rVal;
     }
 

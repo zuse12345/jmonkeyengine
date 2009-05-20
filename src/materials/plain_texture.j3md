@@ -1,0 +1,16 @@
+MaterialDef Plain Texture {
+
+    MaterialParameters {
+        Texture2D m_ColorMap
+    }
+
+    Technique {
+        VertexShader GLSL100: plain_texture.vert
+        FragmentShader GLSL100: plain_texture.frag
+
+        WorldParameters {
+            g_WorldViewProjectionMatrix
+        }
+    }
+
+}

@@ -1,5 +1,8 @@
 package com.g3d.system;
 
+import com.g3d.input.JoyInput;
+import com.g3d.input.KeyInput;
+import com.g3d.input.MouseInput;
 import com.g3d.renderer.Renderer;
 
 /**
@@ -53,9 +56,31 @@ public interface G3DContext {
     public void setDisplaySettings(DisplaySettings settings);
 
     /**
+     * @return The current display settings. Note that they might be 
+     * different from the ones set with setDisplaySettings() if the context
+     * was restarted or the settings changed internally.
+     */
+    public DisplaySettings getDisplaySettings();
+
+    /**
      * @return The renderer for this context, or null if not created yet.
      */
     public Renderer getRenderer();
+
+    /**
+     * @return Mouse input implementation. May be null if not available.
+     */
+    public MouseInput getMouseInput();
+
+    /**
+     * @return Keyboard input implementation. May be null if not available.
+     */
+    public KeyInput getKeyInput();
+
+    /**
+     * @return Joystick input implementation. May be null if not available.
+     */
+    public JoyInput getJoyInput();
 
     /**
      * @return The timer for this context, or null if not created yet.
@@ -76,8 +101,11 @@ public interface G3DContext {
     /**
      * Destroys and then re-creates the context. This should be called after
      * the display settings have been changed.
+     *
+     * @param updateCamera If true, the current renderer's camera will
+     * be resized to match the new resolution in the settings.
      */
-    public void restart();
+    public void restart(boolean updateCamera);
 
     /**
      * Destroys the context completely, making it inactive.

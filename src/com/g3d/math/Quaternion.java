@@ -1232,10 +1232,10 @@ public class Quaternion implements Savable, Cloneable {
      */
     public void lookAt(Vector3f direction, Vector3f up ) {
         TempVars vars = TempVars.get();
-        vars.tmpZaxis.set( direction ).normalizeLocal();
-        vars.tmpXaxis.set( up ).crossLocal( direction ).normalizeLocal();
-        vars.tmpYaxis.set( direction ).crossLocal( vars.tmpXaxis ).normalizeLocal();
-        fromAxes( vars.tmpXaxis, vars.tmpYaxis, vars.tmpZaxis );
+        vars.vect3.set( direction ).normalizeLocal();
+        vars.vect1.set( up ).crossLocal( direction ).normalizeLocal();
+        vars.vect2.set( direction ).crossLocal( vars.vect1 ).normalizeLocal();
+        fromAxes( vars.vect1, vars.vect2, vars.vect3 );
     }
 
     public void write(G3DExporter e) throws IOException {

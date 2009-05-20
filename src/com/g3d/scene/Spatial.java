@@ -6,16 +6,22 @@
 package com.g3d.scene;
 
 import com.g3d.bounding.BoundingVolume;
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
+import com.g3d.export.Savable;
 import com.g3d.light.Light;
 import com.g3d.light.LightList;
+import com.g3d.material.Material;
 import com.g3d.math.Matrix3f;
 import com.g3d.math.Matrix4f;
 import com.g3d.math.Quaternion;
 import com.g3d.math.Transform;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
-import com.g3d.scene.material.Material;
 import com.g3d.util.TempVars;
+import java.io.IOException;
 
 
 /**
@@ -28,7 +34,7 @@ import com.g3d.util.TempVars;
  * @author Joshua Slack
  * @version $Revision: 4075 $, $Data$
  */
-public abstract class Spatial {
+public abstract class Spatial implements Savable {
 
     public enum CullHint {
         /** 
@@ -81,7 +87,7 @@ public abstract class Spatial {
     protected String name;
 
     // scale values
-    protected Camera.FrustumIntersect frustrumIntersects = Camera.FrustumIntersect.Intersects;
+    protected transient Camera.FrustumIntersect frustrumIntersects = Camera.FrustumIntersect.Intersects;
 
     public transient float queueDistance = Float.NEGATIVE_INFINITY;
 
@@ -100,7 +106,7 @@ public abstract class Spatial {
      * Refresh flags. Indicate what data of the spatial need to be
      * updated to reflect the correct state.
      */
-    protected int refreshFlags = 0;
+    protected transient int refreshFlags = 0;
 
     /**
      * Default Constructor.
@@ -782,38 +788,39 @@ public abstract class Spatial {
 //
 //    public abstract int getTriangleCount();
 
-//    public void write(G3DExporter ex) throws IOException {
-//        OutputCapsule capsule = ex.getCapsule(this);
-//        capsule.write(name, "name", null);
+    public void write(G3DExporter ex) throws IOException {
+        OutputCapsule capsule = ex.getCapsule(this);
+        capsule.write(name, "name", null);
+        capsule.write(worldBound, "worldBound", null);
+//        capsule.write(material, "material", null);
+//        capsule.write(localLights, "localLights", null);
+
 //        capsule.write(isCollidable, "isCollidable", true);
-//        capsule.write(cullHint, "cullMode", CullHint.Inherit);
+        capsule.write(cullHint, "cullMode", CullHint.Inherit);
+
+
+
+//        capsule.write(renderQueueMode, "renderQueueMode",
+//                Renderer.QUEUE_INHERIT);
+//        capsule.write(zOrder, "zOrder", 0);
+
+        capsule.write(localTransform, "localTransform", new Transform());
+
+//        capsule.writeStringSavableMap(UserDataManager.getInstance().getAllData(
+//                this), "userData", null);
 //
-////        capsule.write(renderQueueMode, "renderQueueMode",
-////                Renderer.QUEUE_INHERIT);
-////        capsule.write(zOrder, "zOrder", 0);
-////        capsule.write(lightCombineMode, "lightCombineMode", LightCombineMode.Inherit);
-////        capsule.write(textureCombineMode, "textureCombineMode",
-////                TextureCombineMode.Inherit);
-////        capsule.write(normalsMode, "normalsMode", NormalsMode.Inherit);
-////        capsule.write(renderStateList, "renderStateList", null);
-//
-//        capsule.write(localTransform, "localTransform", new Transform());
-//
-////        capsule.writeStringSavableMap(UserDataManager.getInstance().getAllData(
-////                this), "userData", null);
-////
-////        capsule.writeSavableArrayList(geometricalControllers,
-////                "geometricalControllers", null);
-//    }
+//        capsule.writeSavableArrayList(geometricalControllers,
+//                "geometricalControllers", null);
+    }
 
 //    @SuppressWarnings("unchecked")
-//    public void read(G3DImporter im) throws IOException {
-//        InputCapsule capsule = im.getCapsule(this);
-//        name = capsule.readString("name", null);
+    public void read(G3DImporter im) throws IOException {
+        InputCapsule capsule = im.getCapsule(this);
+        name = capsule.readString("name", null);
 //        isCollidable = capsule.readBoolean("isCollidable", true);
-//        cullHint = capsule.readEnum("cullMode", CullHint.class,
-//                CullHint.Inherit);
-//
+        cullHint = capsule.readEnum("cullMode", CullHint.class,
+                CullHint.Inherit);
+
 //        renderQueueMode = capsule.readInt("renderQueueMode",
 //                Renderer.QUEUE_INHERIT);
 //        zOrder = capsule.readInt("zOrder", 0);
@@ -823,7 +830,7 @@ public abstract class Spatial {
 //                TextureCombineMode.Inherit);
 //        normalsMode = capsule.readEnum("normalsMode", NormalsMode.class,
 //                NormalsMode.Inherit);
-//
+
 //        Savable[] savs = capsule.readSavableArray("renderStateList", null);
 //        if (savs == null)
 //            renderStateList = null;
@@ -834,19 +841,19 @@ public abstract class Spatial {
 //            }
 //        }
 
-//        localTransform = (Transform) capsule.readSavable("localTransform", new Transform());
+        localTransform = (Transform) capsule.readSavable("localTransform", new Transform());
 
 //        HashMap<String, Savable> map = (HashMap<String, Savable>) capsule
 //                .readStringSavableMap("userData", null);
 //        if (map != null) {
 //            UserDataManager.getInstance().setAllData(this, map);
 //        }
-
+//
 //        geometricalControllers = capsule.readSavableArrayList(
 //                "geometricalControllers", null);
 
-//        worldTransform = new Transform();
-//    }
+        worldTransform = new Transform();
+    }
 //
 //    /**
 //     * Sets if this Spatial is to be used in intersection (collision and

@@ -43,6 +43,7 @@ import com.g3d.math.FastMath;
 import com.g3d.math.Plane;
 import com.g3d.math.Ray;
 import com.g3d.math.Transform;
+import com.g3d.math.Triangle;
 import com.g3d.math.Vector3f;
 import com.g3d.util.BufferUtils;
 import com.g3d.util.TempVars;
@@ -67,14 +68,6 @@ public class BoundingSphere extends BoundingVolume {
     float radius;
     
 	private static final float RADIUS_EPSILON = 1f + 0.00001f;
-
-	private static final FloatBuffer _mergeBuf = BufferUtils.createVector3Buffer(8);
-//    static private final Vector3f[] verts = new Vector3f[3];
-
-    private static Vector3f tempA = new Vector3f(),
-                            tempB = new Vector3f(),
-                            tempC = new Vector3f(),
-                            tempD = new Vector3f();
 
     /**
      * Default contstructor instantiates a new <code>BoundingSphere</code>
@@ -131,29 +124,29 @@ public class BoundingSphere extends BoundingVolume {
         calcWelzl(points);
     }
 
-//    /**
-//     * <code>computeFromTris</code> creates a new Bounding Box from a given
-//     * set of triangles. It is used in OBBTree calculations.
-//     *
-//     * @param tris
-//     * @param start
-//     * @param end
-//     */
-//    public void computeFromTris(Triangle[] tris, int start, int end) {
-//        if (end - start <= 0) {
-//            return;
-//        }
-//
-//        Vector3f[] vertList = new Vector3f[(end - start) * 3];
-//
-//        int count = 0;
-//        for (int i = start; i < end; i++) {
-//        	vertList[count++] = tris[i].get(0);
-//        	vertList[count++] = tris[i].get(1);
-//        	vertList[count++] = tris[i].get(2);
-//        }
-//        averagePoints(vertList);
-//    }
+    /**
+     * <code>computeFromTris</code> creates a new Bounding Box from a given
+     * set of triangles. It is used in OBBTree calculations.
+     *
+     * @param tris
+     * @param start
+     * @param end
+     */
+    public void computeFromTris(Triangle[] tris, int start, int end) {
+        if (end - start <= 0) {
+            return;
+        }
+
+        Vector3f[] vertList = new Vector3f[(end - start) * 3];
+
+        int count = 0;
+        for (int i = start; i < end; i++) {
+        	vertList[count++] = tris[i].get(0);
+        	vertList[count++] = tris[i].get(1);
+        	vertList[count++] = tris[i].get(2);
+        }
+        averagePoints(vertList);
+    }
 //
 //    /**
 //     * <code>computeFromTris</code> creates a new Bounding Box from a given
@@ -217,6 +210,12 @@ public class BoundingSphere extends BoundingVolume {
      *            in <code>points</code>.
      */
     private void recurseMini(FloatBuffer points, int p, int b, int ap) {
+        TempVars vars = TempVars.get();
+        Vector3f tempA = vars.vect1;
+        Vector3f tempB = vars.vect2;
+        Vector3f tempC = vars.vect3;
+        Vector3f tempD = vars.vect4;
+
         switch (b) {
         case 0:
             this.radius = 0;

@@ -38,6 +38,7 @@ import com.g3d.export.InputCapsule;
 import com.g3d.export.OutputCapsule;
 import com.g3d.export.Savable;
 import com.g3d.renderer.GLObject;
+import com.g3d.renderer.Renderer;
 import java.io.IOException;
 
 /**
@@ -391,6 +392,17 @@ public abstract class Texture extends GLObject implements Savable {
             anisotropicFilter = 1;
         else
             anisotropicFilter = level;
+    }
+
+    @Override
+    public void resetObject() {
+        this.id = -1;
+        this.updateNeeded = true;
+    }
+
+    @Override
+    public void deleteObject(Renderer r) {
+        r.deleteTexture(this);
     }
 
 //    public boolean equals(Object other) {

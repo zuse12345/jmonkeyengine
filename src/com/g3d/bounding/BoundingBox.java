@@ -66,7 +66,6 @@ public class BoundingBox extends BoundingVolume {
 
     float xExtent, yExtent, zExtent;
 
-//	private static final Vector3f[] verts = new Vector3f[3];
     /**
      * Default constructor instantiates a new <code>BoundingBox</code>
      * object.

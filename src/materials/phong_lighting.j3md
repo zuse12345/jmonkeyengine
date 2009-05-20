@@ -1,0 +1,26 @@
+MaterialDef Phong Lighting {
+
+    MaterialParameters {
+        Float m_Shininess
+        Texture2D m_DiffuseMap
+        Texture2D m_NormalMap
+        Texture2D m_SpecularMap
+    }
+
+    Technique {
+
+        UseLighting
+
+        VertexShader GLSL100: phong_lighting.vert
+        FragmentShader GLSL100: phong_lighting.frag
+
+        WorldParameters {
+            g_WorldViewProjectionMatrix
+            g_NormalMatrix
+            g_WorldMatrix
+            g_WorldViewMatrix
+            g_ViewMatrix
+        }
+    }
+
+}

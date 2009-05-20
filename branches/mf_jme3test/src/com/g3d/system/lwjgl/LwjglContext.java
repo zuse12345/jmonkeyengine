@@ -14,26 +14,32 @@ import org.lwjgl.opengl.DisplayMode;
 public abstract class LwjglContext implements G3DContext {
 
     protected boolean created = false;
-    protected DisplaySettings settings;
+    protected DisplaySettings settings = new DisplaySettings();
     protected LwjglRenderer renderer;
     protected Timer timer;
 
     public abstract boolean isActive();
-    public abstract void restart();
+    public abstract void restart(boolean updateCamera);
 
     public void destroy(){
         created = false;
+        renderer = null;
         timer = null;
     }
     
     public void create(){
         timer = Timer.getTimer();
         renderer = new LwjglRenderer();
+        renderer.initialize();
         created = true;
     }
 
     public void setDisplaySettings(DisplaySettings settings) {
-        this.settings = settings;
+        this.settings.copyFrom(settings);
+    }
+
+    public DisplaySettings getDisplaySettings(){
+        return settings;
     }
 
     public Renderer getRenderer() {

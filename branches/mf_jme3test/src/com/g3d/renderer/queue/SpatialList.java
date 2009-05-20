@@ -1,7 +1,7 @@
 package com.g3d.renderer.queue;
 
 import com.g3d.scene.Spatial;
-import com.g3d.util.SortUtil;
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -14,18 +14,24 @@ import java.util.Comparator;
  */
 public class SpatialList {
 
-    Spatial[] list, tlist;
-
-    int listSize;
-
     private static final int DEFAULT_SIZE = 32;
 
-    private Comparator<Spatial> c;
+    private Spatial[] spatials;
+    private int size;
+    private Comparator<Spatial> comparator;
 
-    SpatialList(Comparator<Spatial> c) {
-        listSize = 0;
-        list = new Spatial[DEFAULT_SIZE];
-        this.c = c;
+    public SpatialList(Comparator<Spatial> comparator) {
+        size = 0;
+        spatials = new Spatial[DEFAULT_SIZE];
+        this.comparator = comparator;
+    }
+
+    public int size(){
+        return size;
+    }
+
+    public Spatial get(int index){
+        return spatials[index];
     }
 
     /**
@@ -34,39 +40,33 @@ public class SpatialList {
      * @param s
      *            The spatial to add.
      */
-    void add(Spatial s) {
-        if (listSize == list.length) {
-            Spatial[] temp = new Spatial[listSize * 2];
-            System.arraycopy(list, 0, temp, 0, listSize);
-            list = temp;
+    public void add(Spatial s) {
+        if (size == spatials.length) {
+            Spatial[] temp = new Spatial[size * 2];
+            System.arraycopy(spatials, 0, temp, 0, size);
+            spatials = temp; // original list replaced by double-size list
         }
-        list[listSize++] = s;
+        spatials[size++] = s;
     }
 
     /**
      * Resets list size to 0.
      */
-    void clear() {
-        for (int i = 0; i < listSize; i++)
-            list[i] = null;
-        if (tlist != null)
-            Arrays.fill(tlist, null);
-        listSize = 0;
+    public void clear() {
+        for (int i = 0; i < size; i++){
+            spatials[i] = null;
+        }
+
+        size = 0;
     }
 
     /**
      * Sorts the elements in the list acording to their Comparator.
      */
-    void sort() {
-        if (listSize > 1) {
-            // resize or populate our temporary array as necessary
-            if (tlist == null || tlist.length != list.length) {
-                tlist = list.clone();
-            } else {
-                System.arraycopy(list, 0, tlist, 0, list.length);
-            }
-            // now merge sort tlist into list
-            SortUtil.msort(tlist, list, 0, listSize, c);
+    public void sort() {
+        if (size > 1) {
+            // sort the spatial list using the comparator
+            Arrays.sort(spatials, comparator);
         }
     }
 }

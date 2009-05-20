@@ -36,7 +36,6 @@ import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
 import com.g3d.export.InputCapsule;
 import com.g3d.export.OutputCapsule;
-import com.g3d.renderer.Renderer;
 import java.io.IOException;
 
 /**
@@ -46,6 +45,22 @@ public class Texture2D extends Texture {
 
     private WrapMode wrapS = WrapMode.EdgeClamp;
     private WrapMode wrapT = WrapMode.EdgeClamp;
+
+    /**
+     * Creates a new two-dimensional texture with default attributes.
+     */
+    public Texture2D(){
+        super();
+    }
+
+    /**
+     * Creates a new two-dimensional texture using the given image.
+     * @param img The image to use.
+     */
+    public Texture2D(Image img){
+        super();
+        setImage(img);
+    }
 
     public Texture createSimpleClone() {
         return createSimpleClone(new Texture2D());
@@ -155,13 +170,4 @@ public class Texture2D extends Texture {
         wrapT = capsule.readEnum("wrapT", WrapMode.class, WrapMode.EdgeClamp);
     }
 
-    @Override
-    public void resetObject() {
-        this.id = -1;
-    }
-
-    @Override
-    public void deleteObject(Renderer r) {
-        r.deleteTexture(this);
-    }
 }

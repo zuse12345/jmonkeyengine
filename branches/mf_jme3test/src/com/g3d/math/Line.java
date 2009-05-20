@@ -38,6 +38,7 @@ import com.g3d.export.G3DImporter;
 import com.g3d.export.OutputCapsule;
 import com.g3d.export.Savable;
 import com.g3d.util.BufferUtils;
+import com.g3d.util.TempVars;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.FloatBuffer;
@@ -55,12 +56,6 @@ public class Line implements Savable, Cloneable {
 
     private Vector3f origin;
     private Vector3f direction;
-    
-    private static final Vector3f compVec1 = new Vector3f();
-	private static final Vector3f compVec2 = new Vector3f();
-	private static final Matrix3f compMat1 = new Matrix3f();
-	private static final Eigen3f compEigen1 = new Eigen3f();
-	
 
     /**
      * Constructor instantiates a new <code>Line</code> object. The origin and
@@ -120,11 +115,15 @@ public class Line implements Savable, Cloneable {
     }
     
     public float distanceSquared(Vector3f point) {
-       point.subtract(origin, compVec1);
-       float lineParameter = direction.dot(compVec1);
-       origin.add(direction.mult(lineParameter, compVec2), compVec2);
-       compVec2.subtract(point, compVec1);
-       return compVec1.lengthSquared();
+        TempVars vars = TempVars.get();
+        Vector3f compVec1 = vars.vect1;
+        Vector3f compVec2 = vars.vect2;
+
+        point.subtract(origin, compVec1);
+        float lineParameter = direction.dot(compVec1);
+        origin.add(direction.mult(lineParameter, compVec2), compVec2);
+        compVec2.subtract(point, compVec1);
+        return compVec1.lengthSquared();
     }
     
     public float distance(Vector3f point) {
@@ -135,6 +134,12 @@ public class Line implements Savable, Cloneable {
 		if (points == null) {
 			return;
 		}
+
+        TempVars vars = TempVars.get();
+        Vector3f compVec1 = vars.vect1;
+        Vector3f compVec2 = vars.vect2;
+        Matrix3f compMat1 = vars.tempMat3;
+        Eigen3f compEigen1 = vars.eigen;
 
 		points.rewind();
 

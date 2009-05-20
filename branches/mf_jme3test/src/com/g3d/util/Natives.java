@@ -22,10 +22,10 @@ public class Natives {
             throw new RuntimeException("Working directory "+workingDir+" does not exist!");
     }
 
-    public static void extractNativeLib(String name) throws IOException{
+    public static void extractNativeLib(String sysName, String name) throws IOException{
         String fullname = System.mapLibraryName(name);
         File targetFile = new File(workingDir, fullname);
-        InputStream in = Natives.class.getResourceAsStream("/native/" + fullname);
+        InputStream in = Natives.class.getResourceAsStream("/native/"+sysName+"/" + fullname);
         if (in == null) {
             logger.warning("Cannot locate native library " + name);
         }
@@ -44,9 +44,21 @@ public class Natives {
         logger.fine("Copied "+fullname+" to "+targetFile);
     }
 
-    public static void extractNativeLibs() throws IOException{
-        // TODO: Support for other rendering libraries
-        extractNativeLib("lwjgl");
+    public static void extractNativeLibs(String sysName) throws IOException{
+        extractNativeLib(sysName, "lwjgl");
+        extractNativeLib(sysName, "lwjgl64");
+        if (sysName.equals("windows")){
+            extractNativeLib(sysName, "jinput-dx8");
+            extractNativeLib(sysName, "jinput-dx8_64");
+            extractNativeLib(sysName, "jinput-raw");
+            extractNativeLib(sysName, "jinput-raw_64");
+        }else if (sysName.equals("linux")){
+            extractNativeLib(sysName, "jinput-linux");
+            extractNativeLib(sysName, "jinput-linux64");
+        }else{
+            extractNativeLib(sysName, "jinput");
+            extractNativeLib(sysName, "jinput64");
+        }
         System.setProperty("org.lwjgl.librarypath", workingDir.toString());
     }
 

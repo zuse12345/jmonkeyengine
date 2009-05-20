@@ -4,6 +4,7 @@ import com.g3d.util.G3DFormatter;
 import com.g3d.*;
 import com.g3d.system.lwjgl.LwjglDisplay;
 import com.g3d.util.Natives;
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import org.lwjgl.LWJGLUtil;
 
 public class G3DSystem {
 
@@ -26,6 +28,19 @@ public class G3DSystem {
         return true;
     }
 
+    public static String getPlatformID(){
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("windows")){
+            return "windows";
+        }else if (os.contains("linux") || os.contains("freebsd") || os.contains("sunos")){
+            return "linux";
+        }else if (os.contains("mac os x")){
+            return "macosx";
+        }else{
+            throw new UnsupportedOperationException("The specified platform: "+os+" is not supported.");
+        }
+    }
+
     public static G3DContext newDisplay() {
         initialize();
         return new LwjglDisplay();
@@ -34,7 +49,7 @@ public class G3DSystem {
     public static void initialize(){
         if (initialized)
             return;
-
+        
         initialized = true;
         try {
             Handler fileHandler = new FileHandler("gorilla3d.log");
@@ -59,11 +74,14 @@ public class G3DSystem {
             }
         });
         logger.fine("Running on thread: "+Thread.currentThread().getName());
-        
-        try {
-            Natives.extractNativeLibs();
-        } catch (IOException ex) {
-            reportError("Error while copying native libraries", ex);
+
+        String val = System.getProperty("jnlp.g3d.nonativecopy");
+        if (val == null || !val.equals("true")){
+            try {
+                Natives.extractNativeLibs(getPlatformID());
+            } catch (IOException ex) {
+                reportError("Error while copying native libraries", ex);
+            }
         }
     }
 
@@ -76,7 +94,7 @@ public class G3DSystem {
     }
 
     public static String getFullName(){
-        return "Gorilla3D Engine 0.05";
+        return "Gorilla3D Engine 0.07";
     }
 
     public static void reportError(String errorMsg){

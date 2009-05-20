@@ -3,10 +3,16 @@ package com.g3d.scene;
 import com.g3d.bounding.BoundingBox;
 import com.g3d.bounding.BoundingSphere;
 import com.g3d.bounding.BoundingVolume;
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
+import com.g3d.export.Savable;
 import com.g3d.math.Triangle;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.VertexBuffer.*;
 import com.g3d.util.BufferUtils;
+import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
@@ -14,7 +20,7 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Iterator;
 
-public class Mesh {
+public class Mesh implements Savable {
 
     /**
      * The bounding volume that contains the mesh entirely.
@@ -24,6 +30,8 @@ public class Mesh {
 
     private EnumMap<VertexBuffer.Type, VertexBuffer> buffers = new EnumMap<Type, VertexBuffer>(VertexBuffer.Type.class);
 
+    private transient int vertexArrayID = -1;
+
     public Mesh(){
     }
 
@@ -31,10 +39,34 @@ public class Mesh {
      * Locks the mesh so it cannot be modified anymore, thus
      * optimizing its data.
      */
-    public void lockStatic() {
+    public void setStatic() {
         for (VertexBuffer vb : buffers.values()){
             vb.setUsage(Usage.Static);
         }
+    }
+
+    public void setStreamed(){
+        for (VertexBuffer vb : buffers.values()){
+            vb.setUsage(Usage.DynamicWriteOnly);
+        }
+    }
+
+    public void convertToHalf() {
+        for (VertexBuffer vb : buffers.values()){
+            if (vb.getFormat() == Format.Float)
+                vb.convertToHalf();
+        }
+    }
+
+    public int getId(){
+        return vertexArrayID;
+    }
+
+    public void setId(int id){
+        if (vertexArrayID != -1)
+            throw new IllegalStateException("ID has already been set.");
+        
+        vertexArrayID = id;
     }
 
     public void setBuffer(Type type, int components, FloatBuffer buf) {
@@ -48,6 +80,8 @@ public class Mesh {
             buffers.put(type, vb);
         }else if (buf == null){
             buffers.remove(type);
+        }else{
+            vb.setupData(Usage.Dynamic, components, Format.Float, buf);
         }
     }
 
@@ -81,6 +115,10 @@ public class Mesh {
         setBuffer(type, components, BufferUtils.createShortBuffer(buf));
     }
 
+    public VertexBuffer getBuffer(Type type){
+        return buffers.get(type);
+    }
+
     public void updateBound(){
         VertexBuffer posBuf = buffers.get(VertexBuffer.Type.Position);
         if (meshBound != null && posBuf != null){
@@ -98,6 +136,15 @@ public class Mesh {
 
     public Collection<VertexBuffer> getBuffers(){
         return buffers.values();
+    }
+
+    public void write(G3DExporter ex) throws IOException {
+        OutputCapsule out = ex.getCapsule(this);
+        out.write(meshBound, "modelBound", null);
+
+    }
+
+    public void read(G3DImporter im) throws IOException {
     }
 
 }

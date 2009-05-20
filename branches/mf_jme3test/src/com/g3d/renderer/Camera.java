@@ -42,11 +42,11 @@ import com.g3d.math.FastMath;
 import com.g3d.math.Matrix4f;
 import com.g3d.math.Plane;
 import com.g3d.math.Quaternion;
+import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
 import com.g3d.util.TempVars;
 import java.io.IOException;
 import java.util.logging.Logger;
-import org.lwjgl.util.vector.Vector2f;
 
 /**
  * <code>Camera</code> is a standalone, purely mathematical class for doing
@@ -229,7 +229,6 @@ public class Camera implements Savable {
      */
     private boolean parallelProjection;
 
-    //protected final Matrix4f _transMatrix = new Matrix4f();
     protected final Matrix4f viewMatrix = new Matrix4f();
     protected final Matrix4f projectionMatrix = new Matrix4f();
     protected final Matrix4f viewProjectionMatrix = new Matrix4f();
@@ -285,10 +284,16 @@ public class Camera implements Savable {
      * @param height
      *            the view height
      */
-    public void resize(final int width, final int height) {
+    public void resize(int width, int height, boolean fixAspect) {
         this.width = width;
         this.height = height;
         onViewPortChange();
+
+        if (fixAspect && !parallelProjection){
+            frustumRight = frustumTop * ((float)width / height);
+            frustumLeft = -frustumRight;
+            onFrustumChange();
+        }
     }
 
     /**
@@ -418,6 +423,15 @@ public class Camera implements Savable {
     }
 
     /**
+     * <code>getRotation</code> retrieves the rotation quaternion of the camera.
+     *
+     * @return the rotation of the camera.
+     */
+    public Quaternion getRotation(){
+        return rotation;
+    }
+
+    /**
      * <code>getDirection</code> retrieves the direction vector the camera is
      * facing.
      *
@@ -446,6 +460,37 @@ public class Camera implements Savable {
      */
     public Vector3f getUp() {
         return rotation.getRotationColumn(1);
+    }
+
+    /**
+     * <code>getDirection</code> retrieves the direction vector the camera is
+     * facing.
+     *
+     * @return the direction the camera is facing.
+     * @see Camera#getDirection()
+     */
+    public Vector3f getDirection(Vector3f store) {
+        return rotation.getRotationColumn(2, store);
+    }
+
+    /**
+     * <code>getLeft</code> retrieves the left axis of the camera.
+     *
+     * @return the left axis of the camera.
+     * @see Camera#getLeft()
+     */
+    public Vector3f getLeft(Vector3f store) {
+        return rotation.getRotationColumn(0, store);
+    }
+
+    /**
+     * <code>getUp</code> retrieves the up axis of the camera.
+     *
+     * @return the up axis of the camera.
+     * @see Camera#getUp()
+     */
+    public Vector3f getUp(Vector3f store) {
+        return rotation.getRotationColumn(1, store);
     }
 
     /**

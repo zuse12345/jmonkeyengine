@@ -1,8 +1,10 @@
 package com.g3d.util;
 
+import com.g3d.math.Eigen3f;
 import com.g3d.math.Matrix4f;
 import com.g3d.math.Matrix3f;
 import com.g3d.math.Quaternion;
+import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -36,18 +38,17 @@ public class TempVars {
     public final IntBuffer intBuffer16 = BufferUtils.createIntBuffer(16);
 
     /**
-     * LookAt calculations in Quaternion.
-     */
-    public final Vector3f tmpYaxis = new Vector3f();
-    public final Vector3f tmpZaxis = new Vector3f();
-    public final Vector3f tmpXaxis = new Vector3f();
-
-    /**
-     * Genera vectors.
+     * General vectors.
      */
     public final Vector3f vect1 = new Vector3f();
 	public final Vector3f vect2 = new Vector3f();
 	public final Vector3f vect3 = new Vector3f();
+    public final Vector3f vect4 = new Vector3f();
+
+    /**
+     * 2D vector
+     */
+    public final Vector2f vect2d = new Vector2f();
 
     /**
      * General matrices.
@@ -59,6 +60,11 @@ public class TempVars {
      * General quaternions.
      */
     public final Quaternion quat1 = new Quaternion();
+
+    /**
+     * Eigen
+     */
+    public final Eigen3f eigen = new Eigen3f();
 
     /**
      * BoundingBox ray collision

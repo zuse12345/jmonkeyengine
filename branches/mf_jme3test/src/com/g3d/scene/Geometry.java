@@ -2,6 +2,8 @@ package com.g3d.scene;
 
 import com.g3d.bounding.BoundingVolume;
 import com.g3d.light.LightList;
+import com.g3d.math.Matrix4f;
+import com.g3d.util.TempVars;
 
 public class Geometry extends Spatial {
 
@@ -9,6 +11,8 @@ public class Geometry extends Spatial {
      * The mesh contained herein
      */
     protected Mesh mesh;
+
+    protected Matrix4f cachedWorldMat = new Matrix4f();
 
     /**
      * Create a geometry node without any mesh data.
@@ -26,8 +30,10 @@ public class Geometry extends Spatial {
      */
     public Geometry(String name, Mesh mesh){
         this(name);
+        if (mesh == null)
+            throw new NullPointerException();
+
         this.mesh = mesh;
-        updateModelBound();
     }
 
     public Mesh getMesh(){
@@ -67,10 +73,24 @@ public class Geometry extends Spatial {
 
     @Override
     protected void updateWorldTransforms(){
-       super.updateWorldTransforms();
+        super.updateWorldTransforms();
 
-       // geometry requires lights to be sorted
-       worldLights.sort(true);
+        cachedWorldMat.loadIdentity();
+
+        cachedWorldMat.setRotationQuaternion(worldTransform.getRotation());
+        cachedWorldMat.setTranslation(worldTransform.getTranslation());
+
+        Matrix4f scaleMat = TempVars.get().tempMat4;
+        scaleMat.loadIdentity();
+        scaleMat.scale(worldTransform.getScale());
+        cachedWorldMat.multLocal(scaleMat);
+
+        // geometry requires lights to be sorted
+        worldLights.sort(true);
+    }
+
+    public Matrix4f getWorldMatrix(){
+        return cachedWorldMat;
     }
 
     @Override

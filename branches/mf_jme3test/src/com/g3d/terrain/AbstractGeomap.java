@@ -133,7 +133,6 @@ public abstract class AbstractGeomap implements Geomap {
      * which directly accesses the data rather than using getNormal
      */
     public FloatBuffer writeNormalArray(FloatBuffer store, Vector3f scale) {
-        // TODO: Use a normal generator if no normal map is available
         if (!isLoaded())
             throw new NullPointerException();
         
@@ -250,7 +249,7 @@ public abstract class AbstractGeomap implements Geomap {
         m.setBuffer(Type.Normal, 3, nb);
         m.setBuffer(Type.TexCoord, 2, tb);
         m.setBuffer(Type.Index, 3, ib);
-        m.lockStatic();
+        m.setStatic();
         m.updateBound();
         return m;
     }

@@ -1,7 +1,9 @@
 package com.g3d.scene;
 
+import com.g3d.math.FastMath;
 import com.g3d.renderer.GLObject;
 import com.g3d.renderer.Renderer;
+import com.g3d.util.BufferUtils;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
@@ -42,8 +44,6 @@ public class VertexBuffer extends GLObject {
         UnsignedShort(ShortBuffer.class, 2),
         Int(IntBuffer.class, 4),
         UnsignedInt(IntBuffer.class, 4);
-
-        // TODO: long buffers?
 
         private Class<? extends Buffer> formatDataType;
         private int componentSize = 0;
@@ -112,9 +112,34 @@ public class VertexBuffer extends GLObject {
         this.componentsLength = components * format.getComponentSize();
     }
 
+    public void convertToHalf(){
+        if (id != -1)
+            throw new UnsupportedOperationException("Data has already been sent.");
+
+        if (format != Format.Float)
+            throw new IllegalStateException("Format must be float!");
+
+        int numElements = data.capacity() / components;
+        format = Format.Half;
+        this.componentsLength = components * format.getComponentSize();
+        
+        ByteBuffer halfData = BufferUtils.createByteBuffer(componentsLength * numElements);
+        halfData.rewind();
+
+        FloatBuffer floatData = (FloatBuffer) data;
+        floatData.rewind();
+
+        for (int i = 0; i < floatData.capacity(); i++){
+            float f = floatData.get(i);
+            short half = FastMath.convertFloatToHalf(f);
+            halfData.putShort(half);
+        }
+        this.data = halfData;
+    }
+
     @Override
     public void resetObject() {
-        assert this.id != -1;
+//        assert this.id != -1;
         this.id = -1;
         setUpdateNeeded();
     }

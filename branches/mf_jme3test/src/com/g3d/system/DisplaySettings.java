@@ -6,6 +6,9 @@ public class DisplaySettings extends HashMap<String, Object> {
 
     private static final DisplaySettings defaults = new DisplaySettings();
 
+    public static final String LWJGL_OPENGL2 = "LWJGL-OpenGL2",
+                               LWJGL_OPENGL3 = "LWJGL-OpenGL3";
+
     static {
         defaults.put("Width", 640);
         defaults.put("Height", 480);
@@ -14,12 +17,14 @@ public class DisplaySettings extends HashMap<String, Object> {
         defaults.put("DepthBits", 8);
         defaults.put("StencilBits", 0);
         defaults.put("Samples", 0);
-        defaults.put("VSync", true);
+        defaults.put("VSync", false);
         defaults.put("Fullscreen", false);
         defaults.put("Title", G3DSystem.getFullName());
+        defaults.put("Renderer", LWJGL_OPENGL2);
+        defaults.put("DisableJoysticks", true);
     }
 
-    private final Template template;
+    private Template template;
 
     public DisplaySettings(){
         template = Template.None;
@@ -64,6 +69,12 @@ public class DisplaySettings extends HashMap<String, Object> {
     public Template getTemplate() {
         return template;
     }
+
+    public void copyFrom(DisplaySettings other){
+        this.putAll(other);
+        this.template = other.template;
+    }
+
 
     public int getInteger(String key){
         Integer i = (Integer) get(key);

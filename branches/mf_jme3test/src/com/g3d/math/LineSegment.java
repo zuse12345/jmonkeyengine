@@ -36,6 +36,7 @@ import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
 import com.g3d.export.OutputCapsule;
 import com.g3d.export.Savable;
+import com.g3d.util.TempVars;
 import java.io.IOException;
 
 /**
@@ -61,8 +62,6 @@ public class LineSegment implements Cloneable, Savable {
 	private Vector3f direction;
 
 	private float extent;
-
-	private static final Vector3f compVec1 = new Vector3f();
 
 	public LineSegment() {
 		origin = new Vector3f();
@@ -115,6 +114,8 @@ public class LineSegment implements Cloneable, Savable {
 	}
 
 	public float distanceSquared(Vector3f point) {
+        Vector3f compVec1 = TempVars.get().vect1;
+
 		point.subtract(origin, compVec1);
 		float segmentParameter = direction.dot(compVec1);
 
@@ -135,6 +136,8 @@ public class LineSegment implements Cloneable, Savable {
 	}
 
 	public float distanceSquared(LineSegment test) {
+        Vector3f compVec1 = TempVars.get().vect1;
+
 		origin.subtract(test.getOrigin(), compVec1);
 		float negativeDirectionDot = -(direction.dot(test.getDirection()));
 		float diffThisDot = compVec1.dot(direction);

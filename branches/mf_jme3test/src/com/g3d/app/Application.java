@@ -1,13 +1,17 @@
 package com.g3d.app;
 
+import com.g3d.input.Dispatcher;
+import com.g3d.input.JoyInput;
+import com.g3d.input.KeyInput;
+import com.g3d.input.MouseInput;
 import com.g3d.system.*;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
 import com.g3d.renderer.Renderer;
-import com.g3d.renderer.lwjgl.LwjglRenderer;
+import com.g3d.res.ContentManager;
 import com.g3d.scene.SceneManager;
 import com.g3d.system.DisplaySettings.Template;
-import org.lwjgl.input.Keyboard;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The <code>Application</code> class represents an instance of a
@@ -17,16 +21,28 @@ import org.lwjgl.input.Keyboard;
 public class Application implements Runnable {
 
     protected SceneManager sceneManager;
+    protected ContentManager manager;
+
     protected Renderer renderer;
     protected G3DContext context;
     protected DisplaySettings settings;
     protected Timer timer;
     protected Camera cam;
 
+    protected MouseInput mouseInput;
+    protected KeyInput keyInput;
+    protected JoyInput joyInput;
+    protected Dispatcher dispatcher;
+
+    protected AtomicBoolean needClose = new AtomicBoolean();
+
     /**
      * Create a new instance of <code>Application</code>.
      */
     public Application(){
+        // Why initialize it here? 
+        // Because it allows offline loading of content.
+        initContentManager();
     }
 
     /**
@@ -64,14 +80,13 @@ public class Application implements Runnable {
 
         // assuming display inited at this point
         context.create();
+        settings = context.getDisplaySettings();
 
         timer = context.getTimer();
         renderer = context.getRenderer();
 
         assert renderer != null;
         assert context.isActive();
-
-        renderer.setBackfaceCulling(true);
     }
 
     /**
@@ -82,11 +97,45 @@ public class Application implements Runnable {
     private void initCamera(){
         cam = new Camera(settings.getWidth(), settings.getHeight());
 
-        cam.setFrustumPerspective(45f, cam.getWidth() / cam.getHeight(), 1f, 1000f);
+        cam.setFrustumPerspective(45f, (float)cam.getWidth() / cam.getHeight(), 1f, 1000f);
         cam.setLocation(new Vector3f(0f, 0f, -10f));
         cam.lookAt(new Vector3f(0f, 0f, 0f), Vector3f.UNIT_Y);
 
         renderer.setCamera(cam);
+    }
+
+    private void initInput(){
+        mouseInput = context.getMouseInput();
+        if (mouseInput != null)
+            mouseInput.initialize();
+
+        keyInput = context.getKeyInput();
+        if (keyInput != null)
+            keyInput.initialize();
+
+        if (!settings.getBoolean("DisableJoysticks")){
+            joyInput = context.getJoyInput();
+            if (joyInput != null)
+                joyInput.initialize();
+        }
+        // TODO: Write dummy implementation for joysticks
+
+        dispatcher = new Dispatcher(mouseInput, keyInput, joyInput);
+    }
+
+    private void initContentManager(){
+        manager = new ContentManager(true);
+    }
+
+    public ContentManager getContentManager(){
+        return manager;
+    }
+
+    /**
+     * @return the input binding event dispatcher.
+     */
+    public Dispatcher getDispatcher(){
+        return dispatcher;
     }
 
     /**
@@ -118,9 +167,34 @@ public class Application implements Runnable {
      * perspective projection with 45° field of view, with near
      * and far values 1 and 1000 units respectively.
      */
-    public void init(){
+    protected void init(){
         initDisplay();
         initCamera();
+        initInput();
+    }
+
+    protected void deinit(){
+        if (mouseInput != null)
+            mouseInput.destroy();
+
+        if (keyInput != null)
+            keyInput.destroy();
+
+        if (joyInput != null)
+            joyInput.destroy();
+
+        timer.reset();
+        renderer.cleanup();
+        context.destroy();
+        G3DSystem.destroy();
+    }
+
+    public void start(){
+        new Thread(this, "G3D Render Thread").start();
+    }
+
+    public void stop(){
+        needClose.set(true);
     }
 
     /**
@@ -130,26 +204,53 @@ public class Application implements Runnable {
      * to the calling code until the display is closed.
      */
     public void run(){
+        init();
+
         if (sceneManager != null)
             sceneManager.init(renderer);
 
+        // update timer so that the next delta is not too large
         timer.update();
         while (true){
-            timer.update();
-            renderer.clearBuffers(true, true, true);
+            // update display.
+            context.update();
 
-            if (sceneManager != null){
-                sceneManager.update(timer.getTimePerFrame());
-                sceneManager.render(renderer);
-            }
-
-            if (context.isCloseRequested() || Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)){
+            // close if needed
+            if (context.isCloseRequested() || needClose.get()){
                 break;
             }
-            context.update();
+
+            if (context.isActive()){
+                // update timer
+                timer.update();
+
+                // update input
+                if (mouseInput != null)
+                    mouseInput.update();
+
+                if (keyInput != null)
+                    keyInput.update();
+
+                if (joyInput != null)
+                    joyInput.update();
+
+                dispatcher.update(timer.getTimePerFrame());
+
+                // clear display
+                renderer.clearBuffers(true, true, true);
+
+                // update logic and render
+                if (sceneManager != null){
+                    sceneManager.update(timer.getTimePerFrame());
+                    sceneManager.render(renderer);
+                }
+
+                // flush the render queue to display all queued
+                // objects.
+                renderer.renderQueue();
+            }
         }
-        context.destroy();
-        G3DSystem.destroy();
+        deinit();
     }
 
 }

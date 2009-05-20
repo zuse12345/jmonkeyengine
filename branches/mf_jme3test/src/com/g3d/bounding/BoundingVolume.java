@@ -39,12 +39,9 @@ import java.io.IOException;
 import java.nio.FloatBuffer;
 
 import com.g3d.math.Plane;
-import com.g3d.math.Quaternion;
 import com.g3d.math.Ray;
 import com.g3d.math.Transform;
-import com.g3d.math.Triangle;
 import com.g3d.math.Vector3f;
-import com.g3d.scene.Mesh;
 //import com.jme.scene.TriMesh;
 
 /**

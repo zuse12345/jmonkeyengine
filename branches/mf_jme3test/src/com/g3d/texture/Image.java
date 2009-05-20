@@ -56,27 +56,38 @@ import com.g3d.export.Savable;
 public class Image implements Savable {
 
     public enum Format {
-        Alpha8,
-        Alpha16,
-        Luminance8,
-        Luminance16,
-        Luminance8Alpha8,
-        Luminance16Alpha16,
-        Intensity8,
-        Intensity16,
-        RGB8,
-        RGB10,
-        RGB16,
-        RGB5A1,
-        RGBA8,
-        RGBA16,
-        DXT1,
-        DXT1A,
-        DXT3,
-        DXT5,
-        Depth,
-        RGB16F,
-        RGB32F,
+        Alpha8(8),
+        Alpha16(16),
+        Luminance8(8),
+        Luminance16(16),
+        Luminance8Alpha8(16),
+        Luminance16Alpha16(32),
+        Intensity8(8),
+        Intensity16(16),
+        RGB8(24),
+        RGB10(30),
+        RGB16(48),
+        RGB5A1(16),
+        RGBA8(32),
+        RGBA16(64),
+        DXT1(4),
+        DXT1A(4),
+        DXT3(8),
+        DXT5(8),
+        Depth(0),
+        RGB16F(48),
+        RGB32F(96);
+
+        private int bpp;
+
+        private Format(int bpp){
+            this.bpp = bpp;
+        }
+
+        public int getBitsPerPixel(){
+            return bpp;
+        }
+
     }
 
     // image attributes

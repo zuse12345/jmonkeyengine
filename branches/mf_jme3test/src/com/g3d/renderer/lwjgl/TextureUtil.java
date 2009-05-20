@@ -3,6 +3,7 @@ package com.g3d.renderer.lwjgl;
 import com.g3d.texture.Image;
 import com.g3d.texture.Image.Format;
 import java.nio.ByteBuffer;
+import org.lwjgl.opengl.ARBHalfFloatPixel;
 import org.lwjgl.opengl.ARBTextureFloat;
 import static org.lwjgl.opengl.ARBTextureCompression.*;
 import static org.lwjgl.opengl.EXTTextureCompressionS3TC.*;
@@ -99,10 +100,10 @@ public class TextureUtil {
                 format = GL_RGB;
                 dataType = GL_UNSIGNED_BYTE;
                 break;
-            case RGB16F: // TODO: Support storage of half-floats on CPU?
+            case RGB16F:
                 internalFormat = ARBTextureFloat.GL_RGB16F_ARB;
                 format = GL_RGB;
-                dataType = GL_FLOAT;
+                dataType = ARBHalfFloatPixel.GL_HALF_FLOAT_ARB;
                 break;
             case RGB32F:
                 internalFormat = ARBTextureFloat.GL_RGB32F_ARB;

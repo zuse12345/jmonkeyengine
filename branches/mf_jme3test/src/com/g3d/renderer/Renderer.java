@@ -1,12 +1,18 @@
 package com.g3d.renderer;
 
 import com.g3d.light.LightList;
+import com.g3d.material.Technique;
+import com.g3d.math.Matrix4f;
 import com.g3d.math.Transform;
+import com.g3d.renderer.queue.RenderQueue;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.VertexBuffer;
 import com.g3d.shader.Shader;
+import com.g3d.shader.Uniform;
+import com.g3d.shader.UniformBinding;
 import com.g3d.texture.Texture;
+import java.util.EnumMap;
 
 public interface Renderer {
 
@@ -50,17 +56,19 @@ public interface Renderer {
      * @param transform The world transform to use. This changes
      * the world matrix given in the shader.
      */
-    public void setTransform(Transform transform);
+    public void setWorldMatrix(Matrix4f worldMatrix);
+
+    public void updateWorldParameters(EnumMap<UniformBinding, Uniform> params);
 
     /**
      * Uploads the lights in the light list as two uniform arrays.<br/><br/>
      *      * <p>
-     * <code>uniform vec4 g_LightColor[8];</code><br/>
+     * <code>uniform vec4 g_LightColor[numLights];</code><br/>
      * // g_LightColor.rgb is the diffuse/specular color of the light.<br/>
      * // g_Lightcolor.a is the type of light, 0 = Directional, 1 = Point, <br/>
      * // 2 = Spot. <br/>
      * <br/>
-     * <code>uniform vec4 g_LightPosition[8];</code><br/>
+     * <code>uniform vec4 g_LightPosition[numLights];</code><br/>
      * // g_LightPosition.xyz is the position of the light (for point lights)<br/>
      * // or the direction of the light (for directional lights).<br/>
      * // g_LightPosition.w is the inverse radius of the light, <br/>
@@ -69,7 +77,7 @@ public interface Renderer {
      * @param shader
      * @param lightList
      */
-    public void updateLightListUniforms(Shader shader, Geometry geom);
+    public void updateLightListUniforms(Shader shader, Geometry geom, int numLights);
 
     /**
      * Uploads the shader source code and prepares it for use.
@@ -90,6 +98,28 @@ public interface Renderer {
     public void deleteShader(Shader shader);
 
     /**
+     * Prepares the texture for use and uploads its image data if neceessary.
+     */
+    public void updateTextureData(Texture tex);
+
+    /**
+     * Sets the texture to use for the given texture unit.
+     */
+    public void setTexture(int unit, Texture tex);
+
+    /**
+     * Clears all set texture units
+     * @see #setTexture
+     */
+    public void clearTextureUnits();
+
+    /**
+     * Deletes a texture from the GPU.
+     * @param tex
+     */
+    public void deleteTexture(Texture tex);
+
+    /**
      * Uploads the vertex buffer's data onto the GPU, assiging it an ID if
      * needed.
      */
@@ -100,22 +130,6 @@ public interface Renderer {
      * @param vb The vertex buffer to delete
      */
     public void deleteBuffer(VertexBuffer vb);
-
-    /**
-     * Sets the texture to use for the given texture unit.
-     */
-    public void setTexture(int unit, Texture tex);
-
-    /**
-     * Clears all set texture units
-     */
-    public void clearTextureUnits();
-
-    /**
-     * Deletes a texture from the GPU.
-     * @param tex
-     */
-    public void deleteTexture(Texture tex);
 
     /**
      * Sets the vertex attrib. This data is exposed in the shader depending
@@ -135,7 +149,7 @@ public interface Renderer {
      * The int variable gl_VertexID can be used to access the current
      * vertex index inside the vertex shader.
      *
-     * @param count The number of triangles to draw
+     * @param count The number of triangles to draw from the buffer
      */
     public void drawTriangleList(VertexBuffer indexBuf, int count);
 
@@ -143,6 +157,20 @@ public interface Renderer {
      * Clears all vertex attributes set with <code>setVertexAttrib</code>.
      */
     public void clearVertexAttribs();
+
+    /**
+     * Renders all geometry objects that are currently in the render queue.
+     * Use addToQueue() to add objects to the render queue.
+     */
+    public void renderQueue();
+
+    /**
+     * Adds an element to the queue.
+     * 
+     * @param geom
+     * @param bucket The bucket into which to place the goemetry.
+     */
+    public void addToQueue(Geometry geom, RenderQueue.Bucket bucket);
 
     /**
      * Renders <code>count</code> meshes, with the geometry data supplied.
@@ -162,5 +190,11 @@ public interface Renderer {
      * the world transform and the material contained in the geometry.
      */
     public void renderGeometry(Geometry geom);
+
+    /**
+     * Called when the display is restarted to delete
+     * all created GL objects.
+     */
+    public void cleanup();
     
 }

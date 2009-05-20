@@ -71,6 +71,9 @@ public class LightList implements Iterable<Light> {
      * Resets list size to 0.
      */
     public void clear() {
+        if (listSize == 0)
+            return;
+
         for (int i = 0; i < listSize; i++)
             list[i] = null;
 

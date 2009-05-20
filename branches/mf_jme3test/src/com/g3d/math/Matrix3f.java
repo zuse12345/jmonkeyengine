@@ -377,10 +377,16 @@ public class Matrix3f implements Savable, Cloneable {
      * @return matrix data as a FloatBuffer. (position is advanced by 9 and any
      *         limit set is not changed).
      */
-    public FloatBuffer fillFloatBuffer(FloatBuffer fb) {
-        fb.put(m00).put(m01).put(m02);
-        fb.put(m10).put(m11).put(m12);
-        fb.put(m20).put(m21).put(m22);
+    public FloatBuffer fillFloatBuffer(FloatBuffer fb, boolean columnMajor) {
+        if (columnMajor){
+            fb.put(m00).put(m10).put(m20);
+            fb.put(m01).put(m11).put(m21);
+            fb.put(m02).put(m12).put(m22);
+        }else{
+            fb.put(m00).put(m01).put(m02);
+            fb.put(m10).put(m11).put(m12);
+            fb.put(m20).put(m21).put(m22);
+        }
         return fb;
     }
 

@@ -1,0 +1,11 @@
+MaterialDef Debug Height {
+
+    MaterialParameters {
+        Float m_Height
+    }
+
+    Technique {
+        VertexShader GLSL100: debug_height.vert
+        FragmentShader GLSL100: debug_height.frag
+    }
+}

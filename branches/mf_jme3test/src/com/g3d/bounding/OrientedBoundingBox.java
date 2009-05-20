@@ -67,7 +67,6 @@ package com.g3d.bounding;
 //
 //    private static final long serialVersionUID = 1L;
 //
-//    // TODO: Really need to move from static compute fields to an object pool.
 //    static private final Vector3f _compVect3 = new Vector3f();
 //
 //    static private final Vector3f _compVect4 = new Vector3f();

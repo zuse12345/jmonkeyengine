@@ -59,9 +59,9 @@ import java.util.WeakHashMap;
 public final class BufferUtils {
 
     ////  -- TEMP DATA OBJECTS --  ////
-    private static final Vector2f _tempVec2 = new Vector2f();
-    private static final Vector3f _tempVec3 = new Vector3f();
-    private static final ColorRGBA _tempColor = new ColorRGBA();
+//    private static final Vector2f _tempVec2 = new Vector2f();
+//    private static final Vector3f _tempVec3 = new Vector3f();
+//    private static final ColorRGBA _tempColor = new ColorRGBA();
 
     ////  -- TRACKER HASH --  ////
     private static final Map<Buffer, Object> trackingHash = Collections.synchronizedMap(new WeakHashMap<Buffer, Object>());
@@ -224,9 +224,10 @@ public final class BufferUtils {
      *            to normalize
      */
     public static void normalizeVector3(FloatBuffer buf, int index) {
-        populateFromBuffer(_tempVec3, buf, index);
-        _tempVec3.normalizeLocal();
-        setInBuffer(_tempVec3, buf, index);
+        Vector3f tempVec3 = TempVars.get().vect1;
+        populateFromBuffer(tempVec3, buf, index);
+        tempVec3.normalizeLocal();
+        setInBuffer(tempVec3, buf, index);
     }
 
     /**
@@ -241,9 +242,10 @@ public final class BufferUtils {
      *            to add to
      */
     public static void addInBuffer(Vector3f toAdd, FloatBuffer buf, int index) {
-        populateFromBuffer(_tempVec3, buf, index);
-        _tempVec3.addLocal(toAdd);
-        setInBuffer(_tempVec3, buf, index);
+        Vector3f tempVec3 = TempVars.get().vect1;
+        populateFromBuffer(tempVec3, buf, index);
+        tempVec3.addLocal(toAdd);
+        setInBuffer(tempVec3, buf, index);
     }
 
     /**
@@ -258,9 +260,10 @@ public final class BufferUtils {
      *            to multiply
      */
     public static void multInBuffer(Vector3f toMult, FloatBuffer buf, int index) {
-        populateFromBuffer(_tempVec3, buf, index);
-        _tempVec3.multLocal(toMult);
-        setInBuffer(_tempVec3, buf, index);
+        Vector3f tempVec3 = TempVars.get().vect1;
+        populateFromBuffer(tempVec3, buf, index);
+        tempVec3.multLocal(toMult);
+        setInBuffer(tempVec3, buf, index);
     }
 
     /**
@@ -277,8 +280,9 @@ public final class BufferUtils {
      * @return
      */
     public static boolean equals(Vector3f check, FloatBuffer buf, int index) {
-        populateFromBuffer(_tempVec3, buf, index);
-        return _tempVec3.equals(check);
+        Vector3f tempVec3 = TempVars.get().vect1;
+        populateFromBuffer(tempVec3, buf, index);
+        return tempVec3.equals(check);
     }
 
     // // -- VECTOR2F METHODS -- ////
@@ -414,9 +418,10 @@ public final class BufferUtils {
      *            to normalize
      */
     public static void normalizeVector2(FloatBuffer buf, int index) {
-        populateFromBuffer(_tempVec2, buf, index);
-        _tempVec2.normalizeLocal();
-        setInBuffer(_tempVec2, buf, index);
+        Vector2f tempVec2 = TempVars.get().vect2d;
+        populateFromBuffer(tempVec2, buf, index);
+        tempVec2.normalizeLocal();
+        setInBuffer(tempVec2, buf, index);
     }
 
     /**
@@ -431,9 +436,10 @@ public final class BufferUtils {
      *            to add to
      */
     public static void addInBuffer(Vector2f toAdd, FloatBuffer buf, int index) {
-        populateFromBuffer(_tempVec2, buf, index);
-        _tempVec2.addLocal(toAdd);
-        setInBuffer(_tempVec2, buf, index);
+        Vector2f tempVec2 = TempVars.get().vect2d;
+        populateFromBuffer(tempVec2, buf, index);
+        tempVec2.addLocal(toAdd);
+        setInBuffer(tempVec2, buf, index);
     }
 
     /**
@@ -448,9 +454,10 @@ public final class BufferUtils {
      *            to multiply
      */
     public static void multInBuffer(Vector2f toMult, FloatBuffer buf, int index) {
-        populateFromBuffer(_tempVec2, buf, index);
-        _tempVec2.multLocal(toMult);
-        setInBuffer(_tempVec2, buf, index);
+        Vector2f tempVec2 = TempVars.get().vect2d;
+        populateFromBuffer(tempVec2, buf, index);
+        tempVec2.multLocal(toMult);
+        setInBuffer(tempVec2, buf, index);
     }
 
     /**
@@ -467,8 +474,9 @@ public final class BufferUtils {
      * @return
      */
     public static boolean equals(Vector2f check, FloatBuffer buf, int index) {
-        populateFromBuffer(_tempVec2, buf, index);
-        return _tempVec2.equals(check);
+        Vector2f tempVec2 = TempVars.get().vect2d;
+        populateFromBuffer(tempVec2, buf, index);
+        return tempVec2.equals(check);
     }
 
 

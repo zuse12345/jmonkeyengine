@@ -144,7 +144,13 @@ class JmeNode(object):
             if 0 != (self.wrappedObj.colbits & (1<<i)): continue
             if bMesh.materials[i] == None: continue
               # This will happen if the mat has been removed
-            meshMats.append(nodeTree.includeMat(bMesh.materials[i], twoSided))
+            try:
+                meshMats.append(
+                        nodeTree.includeMat(bMesh.materials[i], twoSided))
+            except UnsupportedException, ue:
+                print ("Skipping a mat of mesh " + jmeMesh.getName()
+                        + " due to: " + str(ue))
+                continue
             for j in bMesh.materials[i].enabledTextures:
                 try:
                     JmeTexture.supported(bMesh.materials[i].textures[j])
@@ -1075,11 +1081,13 @@ class JmeMaterial(object):
         # in the API.
         if len(bMat.colorbandDiffuse) > 0:
             raise UnsupportedException("colorbandDiffuse", "any",
-                    "colorbandDiffuse length: " + str(len(colorbandDiffuse)))
+                "colorbandDiffuse length: " + str(len(bMat.colorbandDiffuse)))
         if bMat.diffuseShader != _bShaders['DIFFUSE_LAMBERT']:
-            raise UnsupportedException("diffuse shader", diffuseShader)
+            raise UnsupportedException("diffuse shader", bMat.diffuseShader,
+                    "Only Lambert diffuse supported")
         if bMat.specShader != _bShaders['DIFFUSE_LAMBERT']:
-            raise UnsupportedException("specular shader", specShader)
+            raise UnsupportedException("specular shader", bMat.specShader,
+                    "Only Lambert specular supported")
         if bMat.enableSSS:
             raise UnsupportedException("Subsurface Scattering (sss)")
         # Users should know that we don't support Mirroring, Halo, IPO,

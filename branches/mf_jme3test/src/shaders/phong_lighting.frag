@@ -9,13 +9,13 @@
 #define HAS_NORMALMAP
 
 // if m_SpecularMap contains valid specular map
-#define HAS_SPECULARMAP
+//#define HAS_SPECULARMAP
 
 // if defined, alpha channel of diffuse map is used for blending
-#define USE_ALPHA
+//#define USE_ALPHA
 
 // number of lights sent in g_Light params
-#define NUM_LIGHTS 4
+#define NUM_LIGHTS 2
 
 //============================================
 // BEGIN PHONG LIGHTING SHADER
@@ -116,7 +116,7 @@ void main(){
    #ifdef HAS_DIFFUSEMAP
     vec4 diffuseColor = texture2D(m_DiffuseMap, texCoord);
    #else
-    vec4 diffuseColor = vec3(0.7, 0.7, 0.5, 1.0);
+    vec4 diffuseColor = vec4(0.7, 0.7, 0.5, 1.0);
    #endif
 
    #ifdef HAS_SPECULARMAP

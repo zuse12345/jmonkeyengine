@@ -676,8 +676,13 @@ class JmeBone(object):
     # from the zero rotation.  Probably not difficult to do, but can't tell
     # until we get to animating.
 
+    # IMPORTANT!  Since the Blender Python depends on globally unique bone
+    # names, we are making use of that to simplify our references.
+    # Until this gets validated by JmeTree.uniquify(), this is a danger.
+    # This class uses bone names as XML IDs.
+
     __slots__ = ('matrix', 'children', 'name', 'loc', 'quatRot',
-            'childYOffset', 'parentBone', 'backoutTransform')
+            'childYOffset', 'parentBone', 'backoutTransform', 'actions')
     # The childYOffset is a translation added to the translation of all
     # direct child bones.  Since Blender is calculating the vertex weights
     # of the skins, this is the only remaining significance of a bone's
@@ -689,11 +694,15 @@ class JmeBone(object):
     # I'd like to name "children" more precisely, like "boneChildren", but
     # need to name it "children" so it can be used for our XML tree recursion.
 
+    # For now, we support only a single animation controller. All Actions get
+    # added as Animations of that Controller.
+
     def __init__(self, objOrBone, parentBone=None):
         object.__init__(self)
         blenderChildren = []
         self.backoutTransform = None
         self.parentBone = parentBone
+        self.actions = None
         if parentBone == None:
             if isinstance(objOrBone, _Armature.Bone):
                 raise Exception("parentBone not specified for internal Bone")
@@ -741,6 +750,9 @@ class JmeBone(object):
             # Recursive instantiation:
             self.children.append(JmeBone(blenderBone, self))
 
+    def getChildren(self):
+        return self.children
+
     def getName(self):
         return self.name
 
@@ -753,6 +765,9 @@ class JmeBone(object):
                 childrenTag.addChild(child.getXmlEl(autoRotate))
 
         if self.parentBone != None:
+            if self.actions != None:
+                raise Exception(
+                    "Actions attached to non-root bone.  Not supported yet.")
             # Real Blender bones, which have only translation + rotation.
             # Take care of this simpler case first.
             if self.loc != None:
@@ -831,6 +846,74 @@ class JmeBone(object):
             locTag.addAttr("y", loc[1], 6)
             locTag.addAttr("z", loc[2], 6)
             tag.addChild(locTag)
+        if self.actions == None: return tag
+
+        gConTag = _XmlTag("geometricalControllers", {'size': 1})
+        conTag = _XmlTag(
+                "com.jme.animation.AnimationController", {'repeatType': 1})
+        animsTag = _XmlTag("animationSets", {'size': len(self.actions)})
+
+        # generate a unique XML ID here...
+        tag.addAttr('reference_ID', self.getName())
+        for anim in self.actions: animsTag.addChild(anim.getXmlEl())
+
+        conTag.addChild(animsTag)
+        conTag.addChild(_XmlTag('skeleton', {
+            'class': "com.jme.animation.Bone", 'ref': self.getName()
+        }))
+        gConTag.addChild(conTag)
+        tag.addChild(gConTag)
+        return tag
+
+    def addAction(self, bAction):
+        if self.actions == None:
+            self.actions = []
+        self.actions.append(JmeAnimation(bAction))
+
+
+class JmeAnimation(object):
+    __slots__ = ('wrappedObj', 'name')
+
+
+    def __init__(self, bObj):
+        object.__init__(self)
+        self.wrappedObj = bObj
+        self.name = bObj.name
+
+    def getName(self):
+        return self.name
+
+    def getXmlEl(self):  # TBD whether need to pass autoRotate
+        tag = _XmlTag('com.jme.animation.BoneAnimation',
+                {'name':self.getName(), 'endFrame': 10})
+        # TODO:  Set endFrame.  Is it last frame # or frame count???
+
+        keyframeTimeTag = _XmlTag('keyframeTime')  # takes a data attr
+        interpolationTypeTag = _XmlTag('interpolationType')  # takes a data attr
+        frames = (1, 2, 3)  # JUST A STUB VALUE
+        transformedBones = (2, 3)
+        transformsTag = _XmlTag(
+                'boneTransforms', {'size': len(transformedBones)})
+        for bone in transformedBones:
+            transformTag = _XmlTag('com.jme.animation.BoneTransform')
+            rotationsTag = _XmlTag('rotations', {'size': len(frames)})
+            for frame in frames:
+                quatTag = _XmlTag('com.jme.math.Quaternion')
+                rQuat = _bmath.Quaternion()  # JUST A STUB VALUE
+                quatTag.addAttr("x", rQuat.x, 6)
+                quatTag.addAttr("y", rQuat.y, 6)
+                quatTag.addAttr("z", rQuat.z, 6)
+                quatTag.addAttr("w", rQuat.w, 6)
+                rotationsTag.addChild(quatTag)
+            transformTag.addChild(rotationsTag)
+            transformsTag.addChild(transformTag)
+            transformTag.addChild(_XmlTag('bone', {
+                'class': "com.jme.animation.Bone", 'ref': "aBoneName"
+            }))
+
+        tag.addChild(keyframeTimeTag)
+        tag.addChild(interpolationTypeTag)
+        tag.addChild(transformsTag)
         return tag
 
 
@@ -850,7 +933,7 @@ class JmeSkinAndBone(object):
     is passed directly to the root bone.
     """
     __slots__ = ('wrappedObj', 'backoutTransform',
-            'boneTree', 'name', 'children')
+            'boneTree', 'name', 'children', 'flatBoneNames')
     # children[0] == boneTree.  A bit redundant.
 
     def __init__(self, bObj):
@@ -863,14 +946,32 @@ class JmeSkinAndBone(object):
         self.name = bObj.name
         if self.boneTree.name == self.name: self.boneTree.name += "RootBone"
         self.backoutTransform = None
+        toload = self.boneTree.getChildren()[:]
+        self.flatBoneNames = set()  # Does not include our root bone
+        while len(toload) > 0:
+            popped = toload.pop(0)
+            self.flatBoneNames.add(popped.getName())
+            children = popped.getChildren()
+            if children != None: toload.extend(children)
+
+    def getFlatBoneNames(self):
+        return self.flatBoneNames
 
     def getName(self):
         return self.name
+
+    def addAction(self, bAction):
+        """Defers the action to the root Bone.
+        It may or may not make sense to attach an animation to a bone other
+        than the root bone, but we don't support that yet."""
+        self.boneTree.addAction(bAction)
 
     def addChild(self, child):
         self.children.append(child)
 
     def getXmlEl(self, autoRotate):
+        if len(self.children) > 2:
+            print "WARNING: The Skin&Bone will probably not work with > 1 skin"
         self.boneTree.backoutTransform = self.backoutTransform
         if len(self.children) == 1: return self.boneTree.getXmlEl(autoRotate)
         tag = _XmlTag('com.jme.scene.Node', {'name':self.getName()})
@@ -890,12 +991,13 @@ class JmeSkinAndBone(object):
 
 class NodeTree(object):
     """Trivial tree dedicated for JmeNode and JmeSkinAndBone members.
-    Add all members to the tree, then call nest().
+    Add all members to the tree, then call addActions() if desired, and nest().
     See method descriptions for details."""
 
     __slots__ = ('__memberMap', '__memberKeys',
             '__matMap1side', '__matMap2side', 'root',
-            '__textureHash', '__textureStates')
+            '__textureHash', '__textureStates',
+            '__usedActionChannels')
     # N.b. __memberMap does not have a member for each node, but a member
     #      for each saved Blender object.
     # __memberKey is just because Python has no ordered maps/dictionaries
@@ -911,7 +1013,22 @@ class NodeTree(object):
         self.__matMap2side = {}
         self.__textureHash = {}
         self.__textureStates = set()
+        self.__usedActionChannels = {}  # actionName -> ipoNames
         self.root = None
+        for action in _bActionSeq:
+            # TODO:  Verify that if we rename bones, that we do so after
+            # looking up the original name in __usedActionChannels
+            s = set()
+            for name, ipo in action.getAllChannelIpos().iteritems():
+                if ipo != None and len(ipo) > 0: s.add(name)
+            if len(s) > 0: self.__usedActionChannels[action.name] = s
+
+    def addActions(self):
+        for member in self.__memberMap.itervalues():
+            if not isinstance(member, JmeSkinAndBone): continue
+            for n, v in self.__usedActionChannels.iteritems():
+                if len(v & member.getFlatBoneNames()) > 0:
+                    member.addAction(_bActionSeq[n])
 
     def includeTex(self, mtex):
         """include* instead of add*, because we don't necessarily 'add'.  We
@@ -964,6 +1081,10 @@ class NodeTree(object):
             self.__memberMap[blenderObj] = JmeNode(blenderObj, self)
         self.__memberKeys.append(blenderObj)
 
+    # IMPORTANT TODO:  Bones are Spatials too in jME.
+    #  Ensure that Bone names are unique.  This is actually required for
+    #  animation export consistency, since Blender, amazingly, provides no way
+    #  to map action channels to bones other than by the bone name.
     def __uniquifyNames(node, parentName, nameSet):
         """Static private method"""
         # Would like to rename nodes ealier, to that messages (error and
@@ -1015,9 +1136,9 @@ class NodeTree(object):
         parentedBos = []
         for bo in self.__memberKeys:
             if bo.parent != None and bo.parent in self.__memberKeys:
-                print ("Nesting " + bo.getType() + "/" + bo.getName()
-                        + " to  " + bo.parent.getType() + "/"
-                        + bo.parent.getName())
+                #print ("Nesting " + bo.getType() + "/" + bo.getName()
+                        #+ " to  " + bo.parent.getType() + "/"
+                        #+ bo.parent.getName())
                 self.__memberMap[bo.parent].addChild(self.__memberMap[bo])
                 parentedBos.append(bo)
         for bo in parentedBos:
@@ -1048,6 +1169,7 @@ class NodeTree(object):
 
 from Blender.Material import Shaders as _bShaders
 from bpy.data import scenes as _bScenes
+from bpy.data import actions as _bActionSeq
 class JmeMaterial(object):
     # May or may not need to redesign with subclasses to handle textures and
     # other material states that are not simply the 4 colors + 2 states + shini.
@@ -1117,7 +1239,7 @@ class JmeMaterial(object):
         # available are inadequate to normalize this to a ratio we can use.
         # Therefore, for now we are ignoring the harness setting.
         if (abs(bMat.hard - 50)) > 1:
-            print ("WARNING: Hardness setting ignored.  " +
+            print ("WARNING: Hardness setting ignorted.  " +
                     "Adjust spec setting to compensate")
         self.shininess = bMat.spec * .5 * 128
         if bMat.emit == 0.:

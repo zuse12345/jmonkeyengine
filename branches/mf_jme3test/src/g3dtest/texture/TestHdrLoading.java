@@ -3,19 +3,12 @@ package g3dtest.texture;
 import com.g3d.app.SimpleApplication;
 import com.g3d.material.Material;
 import com.g3d.math.Vector3f;
-import com.g3d.res.plugins.HDRLoader;
 import com.g3d.scene.Geometry;
-import com.g3d.scene.Node;
 import com.g3d.scene.Quad;
 import com.g3d.system.DisplaySettings;
 import com.g3d.texture.Image;
-import com.g3d.texture.Texture;
 import com.g3d.texture.Texture2D;
 import com.g3d.util.ToneMapper;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.lwjgl.LWJGLException;
-import org.lwjgl.opengl.Display;
 
 public class TestHdrLoading extends SimpleApplication {
 

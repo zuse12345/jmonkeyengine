@@ -114,9 +114,9 @@ class Tests(unittest.TestCase):
         grapeNode.addAttr("color", "yellow")
         rootTag.spacesPerIndent = 2
         #print rootTag
-        yellowColors = rootTag.tagsWithAttr("color", "yellow")
+        yellowColors = rootTag.tagsMatching(attrName="color", attrVal="yellow")
         self.assertEqual(3, len(yellowColors))
-        allColorTags = rootTag.tagsWithAttr("color")
+        allColorTags = rootTag.tagsMatching(attrName="color")
         allColors = []
         for colorTag in allColorTags:
             allColors.append(colorTag.quotedattrs["color"])
@@ -131,7 +131,7 @@ class Tests(unittest.TestCase):
                 colorTag.addAttr("color", color)
                 usedColors.add(color)
             else: usedColors.add(color)
-        allColorTags = rootTag.tagsWithAttr("color")
+        allColorTags = rootTag.tagsMatching(attrName="color")
         allColors = []
         for colorTag in allColorTags:
             allColors.append(colorTag.quotedattrs["color"])

@@ -97,17 +97,47 @@ class XmlTag(object):
             # N.b. we are not just concatenating here.  The attr values are
             # changed by the addAttr method.
 
-    def tagsWithAttr(self, attrName, attrVal=None):
-        """In Leaf-last order.
-        Call like "tagtWithAttr(name)" to get all elements using attr,
-        Call like "tagsWithAttr(name, val)" to narrow to those with specified
-        attr value also."""
+    def swap(self, otherTag):
+        # "This method can not fix indentation, unfortunately"???? I dunno
+        newName = otherTag.name
+        newTextLinks = otherTag.__textLinks
+        newChildren = otherTag.children
+        newCommentLinks = otherTag.__commentLinks
+        newQa = otherTag.quotedattrs
+        newSpi = otherTag.spacesPerIndent
+        newAttrKeys = otherTag.__attrKeys
+
+        otherTag.name = self.name
+        otherTag.__textLinks = self.__textLinks
+        otherTag.children = self.children
+        otherTag.__commentLinks = self.__commentLinks
+        otherTag.quotedattrs = self.quotedattrs
+        otherTag.spacesPerIndent = self.spacesPerIndent
+        otherTag.__attrKeys = self.__attrKeys
+
+        self.name = newName
+        self.__textLinks = newTextLinks
+        self.children = newChildren
+        self.__commentLinks = newCommentLinks
+        self.quotedattrs = newQa
+        self.spacesPerIndent = newSpi
+        self.__attrKeys = newAttrKeys
+
+    def tagsMatching(self, tagName=None, attrName=None, attrVal=None):
+        "In Leaf-last order."
         hits = []
-        if (self.quotedattrs != None and attrName in self.quotedattrs
-                and (attrVal == None or self.quotedattrs[attrName][1:-1] == attrVal)):
-            hits.append(self)
+        if attrName == None and attrVal != None:
+            raise Exception(
+                "Must specify an attrName in order to also match an attr value")
+        if tagName == None or tagName == self.name:
+            if attrName == None:
+                hits.append(self)
+            elif self.quotedattrs == None or attrName not in self.quotedattrs:
+                pass
+            elif attrVal == None or self.quotedattrs[attrName][1:-1] == attrVal:
+                hits.append(self)
         for child in self.children:
-            hits += child.tagsWithAttr(attrName, attrVal)
+            hits += child.tagsMatching(tagName, attrName, attrVal)
         return hits
 
     def allNodes(self):
@@ -123,6 +153,10 @@ class XmlTag(object):
     # variable to fix this.
     def addText(self, text):
         self.__textLinks.append(escape(text))
+
+    def delAttr(self, name):
+        del self.quotedattrs[name]
+        self.__attrKeys.remove(name)
 
     def addAttr(self, name, val, precision=None, tupleSpacing=None):
         """tupleSpacing inserts an extra spaces to specify tuples.  This is
@@ -177,6 +211,11 @@ class XmlTag(object):
         #for n in self.__attrKeys:
             #map[n] = dequoteattr(self.quotedattrs[n])
         #return map
+
+    def getAttr(self, key):
+        if key not in self.quotedattrs: return None
+        quotedAttr = self.quotedattrs[key]
+        return quotedAttr[1:-1]
 
     def __str__(self):
         # Returns this element with no indentaton + children indented 1 level

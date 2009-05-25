@@ -87,11 +87,16 @@ class JmeNode(object):
     #BLENDER_TO_JME_ROTATION = _bmath.RotationMatrix(-90, 4, 'x')
 
     def __init__(self, bObjOrName, nodeTree=None):
-        """Assumes input Blender Object already validated, like by using the
+        """
+        Assumes input Blender Object already validated, like by using the
         supported static method below.
         I.e., is of supported type, and facing method is supported.
         Materials from given bObj and direct data mesh (if any) will be added
-        to one of the specified nodeTree's materials maps."""
+        to one of the specified nodeTree's materials maps.
+        The instantiator does not take a backoutTransform parameter.
+        backoutTransform must be set later, after we know which ancestore
+        nodes are being exported.
+        """
         object.__init__(self)
         self.children = None
         self.wrappedObj = None
@@ -683,8 +688,8 @@ class JmeBone(object):
     # Until this gets validated by NodeTree.uniquify(), this is a danger.
     # This class uses bone names as XML IDs.
 
-    __slots__ = ('matrix', 'children', 'name', 'loc', 'quatRot', 'armaObj',
-            'childYOffset', 'parentBone', 'backoutTransform', 'actions')
+    __slots__ = ('matrix', 'children', 'name', 'armaObj', 'addlTransform',
+            'parentBone', 'inverseTotalTrans', 'actions')
     # The childYOffset is a translation added to the translation of all
     # direct child bones.  Since Blender is calculating the vertex weights
     # of the skins, this is the only remaining significance of a bone's
@@ -695,14 +700,18 @@ class JmeBone(object):
     # and its parentBone's attributes.
     # I'd like to name "children" more precisely, like "boneChildren", but
     # need to name it "children" so it can be used for our XML tree recursion.
+    # addlTransform is a shared transform pointer which will EVENTUALLY
+    # contain a matrix that needs to be applied to all bones.
+    # "inverseTotalTrans" name and purpose is copied from the Ogre exporter.
 
     # For now, we support only a single animation controller. All Actions get
     # added as Animations of that Controller.
 
-    def __init__(self, objOrBone, parentBone=None):
+    ZEROMAT4 = _bmath.Matrix()
+
+    def __init__(self, objOrBone, parentBone=None, addlTransform=None):
         object.__init__(self)
         blenderChildren = []
-        self.backoutTransform = None
         self.parentBone = parentBone
         self.actions = None
         if parentBone == None:
@@ -715,13 +724,11 @@ class JmeBone(object):
                 raise Exception(
                         "Data object for top-level bone not an Armature: "
                         + str(type(arma)))
+            self.addlTransform = objOrBone.mat.copy()
+            # N.b. this matrix IS NOT READY TO USE until rootBone updates it
+            # in getXmlEl()
             self.name = arma.name
-            # Top-level bone can't calculate loc or quatRot here.  Need the
-            # backout adjustment to matrix first, so retaining matrix.
-            self.loc = None
-            self.quatRot = None
             self.matrix = _bmath.Matrix(self.armaObj.mat)
-            self.childYOffset = 0
             for childBlenderBone in arma.bones.values():
                 # This loop makes all Blender top-level bones into direct
                 # children of our new, single topLevel root bone.
@@ -733,27 +740,21 @@ class JmeBone(object):
                         + str(type(objOrBone)))
             self.armaObj = None
             self.name = objOrBone.name
-            self.matrix = None  # Only need this for the top bone
+            self.matrix = objOrBone.matrix['ARMATURESPACE']
+            self.addlTransform = addlTransform
+            # N.b. addlTransform not ready to use until rootBone updates it!
             blenderChildren = objOrBone.children
 
-            self.quatRot = objOrBone.matrix['BONESPACE'].toQuat()
-
-            headLoc = _bmath.Vector(objOrBone.head['BONESPACE'])
-            self.loc = [
-                    headLoc.x, headLoc.y + parentBone.childYOffset, headLoc.z]
-            if (round(self.loc[0], 6) == 0.
-                    and round(self.loc[1], 6) == 0.
-                    and round(self.loc[2], 6) == 0.):
-                self.loc = None
-
-            self.childYOffset = objOrBone.length
         if len(blenderChildren) < 1:
             self.children = None
             return
         self.children = []
         for blenderBone in blenderChildren:
+            # TODO:  May not belong here, but somewhere we need to
+            # skip bones with option NO_DEFORM (need to still recurse
+            # to their children though).
             # Recursive instantiation:
-            self.children.append(JmeBone(blenderBone, self))
+            self.children.append(JmeBone(blenderBone, self, self.addlTransform))
 
     def getChildren(self):
         return self.children
@@ -761,88 +762,52 @@ class JmeBone(object):
     def getName(self):
         return self.name
 
+    def updateAddlTransform(self, backoutTransform):
+        if self.parentBone != None:
+            raise Exception("updateAddlTransform called for non-root bone")
+        print "addlTransform WAS " + str(self.addlTransform)
+        # Critical to update addlTransform before any bones are written
+        self.addlTransform *= backoutTransform.copy().invert()
+        print "addlTransform NOW " + str(self.addlTransform)
+
     def getXmlEl(self, autoRotate):
         tag = _XmlTag('com.jme.animation.Bone', {'name':self.getName()})
+        if self.parentBone == None:
+            # TODO:  Apply axis flip here
+            invParentMat = None
+        else:
+            invParentMat = self.parentBone.inverseTotalTrans
+        if (self.parentBone != None and self.addlTransform != None
+                and self.addlTransform != JmeBone.ZEROMAT4):
+            #print "Applying addl to " + self.getName() + ": " + str(self.addlTransform)
+            self.matrix *= self.addlTransform
+        self.inverseTotalTrans = self.matrix.copy().invert()
+            # N.b. .matrix is in an intermediate state here
+        if invParentMat != None: self.matrix *= invParentMat
+        #if invParentMat != None:
+            #if not JmeBone.beenHere:
+                #print "SKIPPING invParent transformation..."
+                #JmeBone.beenHere = True
+            #else:
+                #print "FROM " + str(self.matrix)
+                #self.matrix *= invParentMat
+                #print "TO " + str(self.matrix)
+
+        # Must have calculated self.inverseTotalTrans before recursing,
+        # since children use it.
         if self.children != None:
             childrenTag = _XmlTag('children', {'size':len(self.children)})
             tag.addChild(childrenTag)
             for child in self.children:
                 childrenTag.addChild(child.getXmlEl(autoRotate))
 
-        if self.parentBone != None:
-            if self.actions != None:
-                raise Exception(
-                    "Actions attached to non-root bone.  Not supported yet.")
-            # Real Blender bones, which have only translation + rotation.
-            # Take care of this simpler case first.
-            if self.loc != None:
-                if autoRotate:
-                    hold = self.loc[1]
-                    self.loc[1] = self.loc[2]
-                    self.loc[2] = -hold
-                locTag = _XmlTag("localTranslation")
-                locTag.addAttr("x", self.loc[0], 6)
-                locTag.addAttr("y", self.loc[1], 6)
-                locTag.addAttr("z", self.loc[2], 6)
-                tag.addChild(locTag)
-            if self.quatRot != None:
-                if autoRotate:
-                    hold = self.quatRot.y
-                    self.quatRot.y = self.quatRot.z
-                    self.quatRot.z = -hold
-                locTag = _XmlTag("localRotation")
-                locTag.addAttr("x", self.quatRot.x, 6)
-                locTag.addAttr("y", self.quatRot.y, 6)
-                locTag.addAttr("z", self.quatRot.z, 6)
-                locTag.addAttr("w", self.quatRot.w, 6)
-                tag.addChild(locTag)
-            return tag
-
-        # Now for the root bone's transforms.
-        # Set local variables just to reduce typing in this block.
-        matrix = self.matrix  # to save some typing
-
-        if self.backoutTransform != None:
-            # Must update the matrix before using anything from it.
-            matrix *= self.backoutTransform.copy().invert()
-            # The top-level bone has a 4x4 matrix.  All other bones have 3x3.
-
-        # Need to add the attrs sequentially in order to preserve sequence
-        # of the attrs in the output.
-        # N.b. Blender.Mathutils.Quaternines ARE NOT COMPATIBLE WITH jME!
-        rQuat = matrix.toQuat()
-        if (round(rQuat.x, 6) != 0 or round(rQuat.y, 6) != 0
-                or round(rQuat.z, 6) != 0 or round(rQuat.w) != 1):
-            if autoRotate and rQuat != None:
-                hold = rQuat.y
-                rQuat.y = rQuat.z
-                rQuat.z = -hold
-            locTag = _XmlTag("localRotation")
-            locTag.addAttr("x", rQuat.x, 6)
-            locTag.addAttr("y", rQuat.y, 6)
-            locTag.addAttr("z", rQuat.z, 6)
-            locTag.addAttr("w", rQuat.w, 6)
-            tag.addChild(locTag)
-        if rQuat == None:
-            scaleMat = matrix
-        else:
-            scaleMat = matrix * rQuat.copy().inverse().toMatrix().resize4x4()
-        scale = [scaleMat[0][0], scaleMat[1][1], scaleMat[2][2]]
-        if (round(scale[0], 6) != 1.
-                or round(scale[1], 6) != 1. or round(scale[2], 6) != 1.):
+        #if self.parentBone != None:
+        # Real Blender bones, which have only translation + rotation.
+        # Take care of this simpler case first.
+        loc = self.matrix.translationPart()
+        if (round(loc[0], 6) != 0 or round(loc[1], 6) != 0
+                or round(loc[2], 6) != 0):
             if autoRotate:
-                hold = scale[1]
-                scale[1] = scale[2]
-                scale[2] = hold
-            locTag = _XmlTag("localScale")
-            locTag.addAttr("x", scale[0], 6)
-            locTag.addAttr("y", scale[1], 6)
-            locTag.addAttr("z", scale[2], 6)
-            tag.addChild(locTag)
-        loc = matrix.translationPart()
-        if (round(loc[0], 6) != 0. or round(loc[1], 6) != 0.
-                or round(loc[2], 6) != 0.):
-            if autoRotate and rQuat != None:
                 hold = loc[1]
                 loc[1] = loc[2]
                 loc[2] = -hold
@@ -851,21 +816,33 @@ class JmeBone(object):
             locTag.addAttr("y", loc[1], 6)
             locTag.addAttr("z", loc[2], 6)
             tag.addChild(locTag)
-        if self.actions == None: return tag
-
-        gConTag = _XmlTag("geometricalControllers", {'size': 1})
-        conTag = _XmlTag(
-                "com.jme.animation.AnimationController", {'repeatType': 1})
-        animsTag = _XmlTag("animationSets", {'size': len(self.actions)})
-
-        for anim in self.actions: animsTag.addChild(anim.getXmlEl(autoRotate))
-
-        conTag.addChild(animsTag)
-        conTag.addChild(_XmlTag('skeleton', {
-            'class': "com.jme.animation.Bone", 'ref': self.getName()
-        }))
-        gConTag.addChild(conTag)
-        tag.addChild(gConTag)
+        quatRot = self.matrix.toQuat()
+        if (round(quatRot.x, 6) != 0 or round(quatRot.y, 6) != 0
+                or round(quatRot.z, 6) != 0 or round(quatRot.w) != 1):
+            if autoRotate:
+                hold = quatRot.y
+                quatRot.y = quatRot.z
+                quatRot.z = -hold
+            locTag = _XmlTag("localRotation")
+            locTag.addAttr("x", quatRot.x, 6)
+            locTag.addAttr("y", quatRot.y, 6)
+            locTag.addAttr("z", quatRot.z, 6)
+            locTag.addAttr("w", quatRot.w, 6)
+            tag.addChild(locTag)
+        # N.b. bones have no scale
+        scale = self.matrix.scalePart()
+        if (round(scale[0], 6) != 1 or round(scale[1], 6) != 1
+                or round(scale[2], 6) != 1):
+            if autoRotate:
+                hold = scale[1]
+                scale[1] = scale[2]
+                scale[2] = hold
+            print "SSSSSSSSSSSSSSSSSSS setting scale of " + self.getName() + " to " + str(scale)
+            scaleTag = _XmlTag("localScale")
+            scaleTag.addAttr("x", scale[0], 6)
+            scaleTag.addAttr("y", scale[1], 6)
+            scaleTag.addAttr("z", scale[2], 6)
+            tag.addChild(scaleTag)
         return tag
 
     def addAction(self, bAction):
@@ -1078,8 +1055,12 @@ class JmeSkinAndBone(object):
     # children[0] == boneTree.  A bit redundant.
 
     def __init__(self, bObj):
-        """N.b. the bObj param is not the data object (like we take for Mesh
-        Objects), but a Blender Object."""
+        """
+        N.b. the bObj param is not the data object (like we take for Mesh
+        Objects), but a Blender Object.
+        Just as for JmeNodes, we can't set backoutTransform until we know what
+        objects are to be exported.
+        """
         object.__init__(self)
         self.wrappedObj = bObj
         self.boneTree = JmeBone(bObj)
@@ -1113,7 +1094,16 @@ class JmeSkinAndBone(object):
     def getXmlEl(self, autoRotate):
         if len(self.children) > 2:
             print "WARNING: The Skin&Bone will probably not work with > 1 skin"
-        self.boneTree.backoutTransform = self.backoutTransform
+        # We couldn't set backoutTransform until now, because we didn't know
+        # if the Skin object or parent Blender object were being exported.
+        if len(self.children) > 1:
+            print "Parenting skeleton to Skin mesh"
+            self.boneTree.updateAddlTransform(
+                    self.children[1].wrappedObj.mat)
+            # Bones will be relative to the Skin object
+        elif self.backoutTransform != None:
+            print "Parenting skeleton to some other Object"
+            self.boneTree.updateAddlTransform(self.backoutTransform)
         if len(self.children) == 1: return self.boneTree.getXmlEl(autoRotate)
         tag = _XmlTag('com.jme.scene.Node', {'name':self.getName()})
 
@@ -1466,7 +1456,7 @@ class JmeMaterial(object):
         # available are inadequate to normalize this to a ratio we can use.
         # Therefore, for now we are ignoring the harness setting.
         if (abs(bMat.hard - 50)) > 1:
-            print ("WARNING: Hardness setting ignorted.  " +
+            print ("WARNING: Hardness setting ignored.  " +
                     "Adjust spec setting to compensate")
         self.shininess = bMat.spec * .5 * 128
         if bMat.emit == 0.:

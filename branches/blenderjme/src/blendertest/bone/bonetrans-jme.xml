@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Blender export by Blender/JME Exporter at 2009-05-25T14:35:35.616865
+Exporter (not this file!) copyright by
+  Blaine Simpson, blaine (dot) simpson (at) admc (dot) com + the jME Dev Team -->
+
+<com.jme.animation.Bone name="ArmatureRootBone">
+  <children size="1">
+    <com.jme.animation.Bone name="Bone01">
+      <children size="1">
+        <com.jme.animation.Bone name="dummy01">
+          <localTranslation x="0.000000" y="0.000000" z="-1.346291"/>
+          <localRotation x="0.964428" y="-0.141301" z="-0.162627" w="0.153181"/>
+        </com.jme.animation.Bone>
+      </children>
+      <localTranslation x="1.000000" y="3.000000" z="-2.000000"/>
+      <localRotation x="0.420910" y="-0.210455" z="0.000000" w="0.882351"/>
+    </com.jme.animation.Bone>
+  </children>
+</com.jme.animation.Bone>

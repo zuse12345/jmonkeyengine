@@ -9,7 +9,7 @@ MaterialDef Plain Texture {
         FragmentShader GLSL100: plain_texture.frag
 
         WorldParameters {
-            g_WorldViewProjectionMatrix
+            WorldViewProjectionMatrix
         }
     }
 

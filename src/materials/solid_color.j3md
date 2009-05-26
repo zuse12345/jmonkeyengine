@@ -9,7 +9,7 @@ MaterialDef Solid Color {
         FragmentShader GLSL100: solid_color.frag
 
         WorldParameters {
-            g_WorldViewProjectionMatrix
+            WorldViewProjectionMatrix
         }
     }
 

@@ -13,6 +13,7 @@ import com.g3d.shader.Uniform;
 import com.g3d.shader.UniformBinding;
 import com.g3d.texture.Texture;
 import java.util.EnumMap;
+import java.util.List;
 
 public interface Renderer {
 
@@ -58,7 +59,10 @@ public interface Renderer {
      */
     public void setWorldMatrix(Matrix4f worldMatrix);
 
-    public void updateWorldParameters(EnumMap<UniformBinding, Uniform> params);
+    /**
+     * Updates uniforms that are bound to world parameters.
+     */
+    public void updateWorldParameters(List<Uniform> params);
 
     /**
      * Uploads the lights in the light list as two uniform arrays.<br/><br/>

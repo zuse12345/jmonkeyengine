@@ -48,6 +48,19 @@ public class Uniform extends ShaderVariable {
      */
     protected Type dataType;
 
+    /**
+     * Binding to a renderer value, or null if user-defined uniform
+     */
+    protected UniformBinding binding;
+
+    public void setBinding(UniformBinding binding){
+        this.binding = binding;
+    }
+
+    public UniformBinding getBinding(){
+        return binding;
+    }
+
     public Type getDataType() {
         return dataType;
     }
@@ -198,6 +211,18 @@ public class Uniform extends ShaderVariable {
 
         value = val.clone();
         dataType = Type.Vector3;
+        updateNeeded = true;
+    }
+
+    public void setVector4(Quaternion val){
+        if (location == -1)
+            return;
+
+        if (dataType != null && dataType != Type.Vector4)
+            throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
+
+        value = val.clone();
+        dataType = Type.Vector4;
         updateNeeded = true;
     }
 

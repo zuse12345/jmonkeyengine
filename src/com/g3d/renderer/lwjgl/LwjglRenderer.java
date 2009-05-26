@@ -4,10 +4,10 @@ import com.g3d.light.DirectionalLight;
 import com.g3d.light.Light;
 import com.g3d.light.LightList;
 import com.g3d.light.PointLight;
-import com.g3d.shader.UniformBinding;
 import com.g3d.math.ColorRGBA;
 import com.g3d.math.Matrix3f;
 import com.g3d.math.Matrix4f;
+import com.g3d.math.Quaternion;
 import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
@@ -28,6 +28,7 @@ import com.g3d.shader.Shader;
 import com.g3d.shader.Shader.ShaderSource;
 import com.g3d.shader.Shader.ShaderType;
 import com.g3d.shader.Uniform;
+import com.g3d.system.Timer;
 import com.g3d.texture.Image;
 import com.g3d.texture.Texture;
 import com.g3d.texture.Texture.WrapAxis;
@@ -38,8 +39,7 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
-import java.util.EnumMap;
-import java.util.Map;
+import java.util.List;
 import java.util.logging.Logger;
 
 //import org.lwjgl.opengl.ARBGeometryShader4;
@@ -370,18 +370,24 @@ public class LwjglRenderer implements Renderer {
         }
     }
 
-    public void updateWorldParameters(EnumMap<UniformBinding, Uniform> params){
+    /* (Non-Javadoc)
+     * TODO: Should really implement this in another class.
+     */
+    public void updateWorldParameters(List<Uniform> params){
         // assums worldMatrix is properly set.
         Matrix4f viewMatrix = camera.getViewMatrix();
         Matrix4f projMatrix = camera.getProjectionMatrix();
         Matrix4f viewProjMatrix = camera.getViewProjectionMatrix();
 
-        Matrix4f tempMat4 = TempVars.get().tempMat4;
-        Matrix3f tempMat3 = TempVars.get().tempMat3;
+        TempVars vars = TempVars.get();
+        Matrix4f tempMat4 = vars.tempMat4;
+        Matrix3f tempMat3 = vars.tempMat3;
+        Vector3f tempVec3 = vars.vect1;
+        Quaternion tempVec4 = vars.quat1;
 
-        for (Map.Entry<UniformBinding, Uniform> param  : params.entrySet()){
-            Uniform u = param.getValue();
-            switch (param.getKey()){
+        for (int i = 0; i < params.size(); i++){
+            Uniform u = params.get(i);
+            switch (u.getBinding()){
                 case WorldMatrix:
                     u.setMatrix4(worldMatrix);
                     break;
@@ -413,6 +419,41 @@ public class LwjglRenderer implements Renderer {
                     tempMat4.set(viewProjMatrix);
                     tempMat4.multLocal(worldMatrix);
                     u.setMatrix4(tempMat4);
+                    break;
+                case ViewPort:
+                    tempVec4.set(camera.getViewPortLeft(),
+                                 camera.getViewPortTop(),
+                                 camera.getViewPortRight(),
+                                 camera.getViewPortBottom());
+                    u.setVector4(tempVec4);
+                    break;
+                case Aspect:
+                    float aspect = ((float) camera.getWidth()) / camera.getHeight();
+                    u.setFloat(aspect);
+                    break;
+                case CameraPosition:
+                    u.setVector3(camera.getLocation());
+                    break;
+                case CameraDirection:
+                    camera.getDirection(tempVec3);
+                    u.setVector3(tempVec3);
+                    break;
+                case CameraLeft:
+                    camera.getLeft(tempVec3);
+                    u.setVector3(tempVec3);
+                    break;
+                case CameraUp:
+                    camera.getUp(tempVec3);
+                    u.setVector3(tempVec3);
+                    break;
+                case Time:
+                    u.setFloat(Timer.getTimer().getTimeInSeconds());
+                    break;
+                case Tpf:
+                    u.setFloat(Timer.getTimer().getTimePerFrame());
+                    break;
+                case FrameRate:
+                    u.setFloat(Timer.getTimer().getFrameRate());
                     break;
             }
         }

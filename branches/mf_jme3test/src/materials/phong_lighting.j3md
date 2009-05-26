@@ -15,11 +15,11 @@ MaterialDef Phong Lighting {
         FragmentShader GLSL100: phong_lighting.frag
 
         WorldParameters {
-            g_WorldViewProjectionMatrix
-            g_NormalMatrix
-            g_WorldMatrix
-            g_WorldViewMatrix
-            g_ViewMatrix
+            WorldViewProjectionMatrix
+            NormalMatrix
+            WorldMatrix
+            WorldViewMatrix
+            ViewMatrix
         }
     }
 

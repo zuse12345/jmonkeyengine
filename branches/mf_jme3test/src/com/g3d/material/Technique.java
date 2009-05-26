@@ -1,13 +1,10 @@
 package com.g3d.material;
 
 import com.g3d.shader.UniformBinding;
-import com.g3d.shader.Attribute;
 import com.g3d.shader.Shader;
 import com.g3d.shader.Uniform;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Technique {
 
@@ -15,8 +12,7 @@ public class Technique {
     private Shader shader;
     private boolean useLighting;
 
-    private final EnumMap<UniformBinding, Uniform> worldParams
-            = new EnumMap<UniformBinding, Uniform>(UniformBinding.class);
+    private final List<Uniform> worldParams = new ArrayList<Uniform>();
 
 //    private final Map<String, Attribute> attribs = new HashMap<String, Attribute>();
 
@@ -44,12 +40,13 @@ public class Technique {
         this.shader = shader;
     }
 
-    public boolean addWorldParam(String name){
-        Uniform uniform = shader.getUniform(name);
-        for (UniformBinding binding : UniformBinding.values()){
-            if (binding.getVarName().equals(name)){
-                 worldParams.put(binding, uniform);
-                 return true;
+    public boolean addWorldParam(String name) {
+        Uniform uniform = shader.getUniform("g_"+name);
+        for (UniformBinding binding : UniformBinding.values()) {
+            if (binding.name().equals(name)) {
+                uniform.setBinding(binding);
+                worldParams.add(uniform);
+                return true;
             }
         }
         return false;
@@ -60,7 +57,7 @@ public class Technique {
 //        attribs.put(name, attrib);
 //    }
 
-    public EnumMap<UniformBinding, Uniform> getWorldParams() {
+    public List<Uniform> getWorldParams() {
         return worldParams;
     }
 

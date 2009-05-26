@@ -39,7 +39,7 @@ public class GLObjectManager {
     public void registerForCleanup(GLObject obj){
         new GLObjectRef(obj);
         objectList.add(obj);
-        //System.out.println("Registered for cleanup: "+obj);
+        System.out.println("Registered for cleanup: "+obj);
     }
 
     /**

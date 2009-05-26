@@ -11,6 +11,10 @@ public class Quad extends Mesh {
         updateGeometry(width, height);
     }
 
+    public Quad(float width, float height, boolean flipCoords){
+        updateGeometry(width, height, true, flipCoords);
+    }
+
     public void updateGeometry(float width, float height){
         updateGeometry(width, height, true, false);
     }
@@ -30,15 +34,15 @@ public class Quad extends Mesh {
                                                     width,  0,      0});
         }
         if (flipCoords){
-            setBuffer(Type.TexCoord, 2, new float[]{1, 0,
-                                                    0, 0,
-                                                    1, 1,
-                                                    0, 1});
-        }else{
-            setBuffer(Type.TexCoord, 2, new float[]{1, 1,
-                                                    0, 1,
+            setBuffer(Type.TexCoord, 2, new float[]{0, 0,
                                                     1, 0,
-                                                    0, 0});
+                                                    0, 1,
+                                                    1, 1});
+        }else{
+            setBuffer(Type.TexCoord, 2, new float[]{0, 1,
+                                                    1, 1,
+                                                    0, 0,
+                                                    1, 0});
         }
         setBuffer(Type.Normal, 3, new float[]{0, 0, 1,
                                               0, 0, 1,

@@ -51,7 +51,7 @@ public class ContentManager {
             registerLocator("/materials/", ClasspathLocator.class, "j3md", "j3m");
             registerLocator("/shaders/", ClasspathLocator.class, "glsl", "vert", "frag");
             registerLocator("/models/", ClasspathLocator.class, "obj");
-            registerLoader(AWTLoader.class, ImageIO.getReaderFileSuffixes());
+            registerLoader(AWTLoader.class, "jpg", "bmp", "gif", "png", "jpeg");
             registerLoader(J3MLoader.class, "j3m");
             registerLoader(J3MLoader.class, "j3md"); // use seperate loader
             registerLoader(HDRLoader.class, "hdr");

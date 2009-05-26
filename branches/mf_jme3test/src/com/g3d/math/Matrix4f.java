@@ -929,7 +929,6 @@ public class Matrix4f implements Savable, Cloneable {
      * @return the resultant matrix
      */
     public Matrix4f multLocal(Matrix4f in2) {
-        
         return mult(in2, this);
     }
 

@@ -123,6 +123,23 @@ class XmlTag(object):
         self.spacesPerIndent = newSpi
         self.__attrKeys = newAttrKeys
 
+    def tagsMatchingAny(self, tagNames, attrName=None, attrVal=None):
+        "In Leaf-last order."
+        hits = []
+        if attrName == None and attrVal != None:
+            raise Exception(
+                "Must specify an attrName in order to also match an attr value")
+        if self.name in tagNames:
+            if attrName == None:
+                hits.append(self)
+            elif self.quotedattrs == None or attrName not in self.quotedattrs:
+                pass
+            elif attrVal == None or self.quotedattrs[attrName][1:-1] == attrVal:
+                hits.append(self)
+        for child in self.children:
+            hits += child.tagsMatchingAny(tagNames, attrName, attrVal)
+        return hits
+
     def tagsMatching(self, tagName=None, attrName=None, attrVal=None):
         "In Leaf-last order."
         hits = []
@@ -155,6 +172,7 @@ class XmlTag(object):
         self.__textLinks.append(escape(text))
 
     def delAttr(self, name):
+        if name not in self.__attrKeys: return
         del self.quotedattrs[name]
         self.__attrKeys.remove(name)
 

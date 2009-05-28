@@ -84,7 +84,6 @@ class JmeNode(object):
     __slots__ = ('wrappedObj', 'children', 'jmeMats', 'jmeTextureState',
             'name', 'backoutTransform')
     IDENTITY_4x4 = _bmath.Matrix().resize4x4()
-    #BLENDER_TO_JME_ROTATION = _bmath.RotationMatrix(-90, 4, 'x')
 
     def __init__(self, bObjOrName, nodeTree=None):
         """
@@ -193,7 +192,7 @@ class JmeNode(object):
                 if self.wrappedObj != None and not isinstance(child, JmeMesh):
                     child.backoutTransform = self.wrappedObj.mat
                     # N.b. DO NOT USE .matrixParentInverse.  That is a static
-                    #  value for funky Blender behaior we don't want to retain.
+                    #  value for funky Blender behavior we don't want to retain.
                 childrenTag.addChild(child.getXmlEl(autoRotate))
 
         if self.wrappedObj == None: return tag
@@ -688,7 +687,7 @@ class JmeBone(object):
     # Until this gets validated by NodeTree.uniquify(), this is a danger.
     # This class uses bone names as XML IDs.
 
-    __slots__ = ('matrix', 'children', 'name', 'armaObj', 'addlTransform',
+    __slots__ = ('matrix', 'children', 'name', 'armaObj',
             'parentBone', 'inverseTotalTrans', 'actions')
     # The childYOffset is a translation added to the translation of all
     # direct child bones.  Since Blender is calculating the vertex weights
@@ -700,8 +699,6 @@ class JmeBone(object):
     # and its parentBone's attributes.
     # I'd like to name "children" more precisely, like "boneChildren", but
     # need to name it "children" so it can be used for our XML tree recursion.
-    # addlTransform is a shared transform pointer which will EVENTUALLY
-    # contain a matrix that needs to be applied to all bones.
     # "inverseTotalTrans" name and purpose is copied from the Ogre exporter.
 
     # For now, we support only a single animation controller. All Actions get
@@ -709,7 +706,7 @@ class JmeBone(object):
 
     ZEROMAT4 = _bmath.Matrix()
 
-    def __init__(self, objOrBone, parentBone=None, addlTransform=None):
+    def __init__(self, objOrBone, parentBone=None):
         object.__init__(self)
         blenderChildren = []
         self.parentBone = parentBone
@@ -724,7 +721,6 @@ class JmeBone(object):
                 raise Exception(
                         "Data object for top-level bone not an Armature: "
                         + str(type(arma)))
-            self.addlTransform = objOrBone.mat.copy()
             # N.b. this matrix IS NOT READY TO USE until rootBone updates it
             # in getXmlEl()
             self.name = arma.name
@@ -741,8 +737,6 @@ class JmeBone(object):
             self.armaObj = None
             self.name = objOrBone.name
             self.matrix = objOrBone.matrix['ARMATURESPACE']
-            self.addlTransform = addlTransform
-            # N.b. addlTransform not ready to use until rootBone updates it!
             blenderChildren = objOrBone.children
 
         if len(blenderChildren) < 1:
@@ -754,7 +748,7 @@ class JmeBone(object):
             # skip bones with option NO_DEFORM (need to still recurse
             # to their children though).
             # Recursive instantiation:
-            self.children.append(JmeBone(blenderBone, self, self.addlTransform))
+            self.children.append(JmeBone(blenderBone, self))
 
     def getChildren(self):
         return self.children
@@ -762,25 +756,18 @@ class JmeBone(object):
     def getName(self):
         return self.name
 
-    def updateAddlTransform(self, backoutTransform):
-        if self.parentBone != None:
-            raise Exception("updateAddlTransform called for non-root bone")
-        print "addlTransform WAS " + str(self.addlTransform)
-        # Critical to update addlTransform before any bones are written
-        self.addlTransform *= backoutTransform.copy().invert()
-        print "addlTransform NOW " + str(self.addlTransform)
-
-    def getXmlEl(self, autoRotate):
+    def getXmlEl(self, autoRotate, addlTransform):
+        """addlTransform is the same for all bones and animation channels of
+        an Armature."""
         tag = _XmlTag('com.jme.animation.Bone', {'name':self.getName()})
         if self.parentBone == None:
-            # TODO:  Apply axis flip here
             invParentMat = None
         else:
             invParentMat = self.parentBone.inverseTotalTrans
-        if (self.parentBone != None and self.addlTransform != None
-                and self.addlTransform != JmeBone.ZEROMAT4):
-            #print "Applying addl to " + self.getName() + ": " + str(self.addlTransform)
-            self.matrix *= self.addlTransform
+        if (self.parentBone != None and addlTransform != None
+                and addlTransform != JmeBone.ZEROMAT4):
+            #print "Applying addl to " + self.getName() + ": " + str(addlTransform)
+            self.matrix *= addlTransform
         self.inverseTotalTrans = self.matrix.copy().invert()
             # N.b. .matrix is in an intermediate state here
         if invParentMat != None: self.matrix *= invParentMat
@@ -799,7 +786,7 @@ class JmeBone(object):
             childrenTag = _XmlTag('children', {'size':len(self.children)})
             tag.addChild(childrenTag)
             for child in self.children:
-                childrenTag.addChild(child.getXmlEl(autoRotate))
+                childrenTag.addChild(child.getXmlEl(autoRotate, addlTransform))
 
         #if self.parentBone != None:
         # Real Blender bones, which have only translation + rotation.
@@ -837,41 +824,66 @@ class JmeBone(object):
                 hold = scale[1]
                 scale[1] = scale[2]
                 scale[2] = hold
-            print "SSSSSSSSSSSSSSSSSSS setting scale of " + self.getName() + " to " + str(scale)
+            print "Setting scale of " + self.getName() + " to " + str(scale)
+            # TODO:  Test with symmetrical scaling (sx = sy = sz), and
+            # asymmetrical scaling.  Preliminary testing indicates that the
+            # latter does not work.
             scaleTag = _XmlTag("localScale")
             scaleTag.addAttr("x", scale[0], 6)
             scaleTag.addAttr("y", scale[1], 6)
             scaleTag.addAttr("z", scale[2], 6)
             tag.addChild(scaleTag)
+        if self.actions == None: return tag
+
+        gConTag = _XmlTag("geometricalControllers", {'size': 1})
+        conTag = _XmlTag(
+                "com.jme.animation.AnimationController", {'repeatType': 1})
+        animsTag = _XmlTag("animationSets", {'size': len(self.actions)})
+
+        for anim in self.actions:
+            animsTag.addChild(anim.getXmlEl(autoRotate, addlTransform))
+
+        conTag.addChild(animsTag)
+        conTag.addChild(_XmlTag('skeleton', {
+            'class': "com.jme.animation.Bone", 'ref': self.getName()
+        }))
+        gConTag.addChild(conTag)
+        tag.addChild(gConTag)
         return tag
 
-    def addAction(self, bAction):
+    def addAction(self, bAction, flatBoneNames):
         if self.actions == None:
             self.actions = []
-        self.actions.append(JmeAnimation(bAction, self.armaObj))
+        self.actions.append(
+                JmeAnimation(bAction, self.armaObj, flatBoneNames))
+        # Kinda silly to pass through flatBoneName, since it was
+        # populated by this class.  This is a vestige of several refactors
+        # done to get things right.
 
 
 class JmeAnimation(object):
     __slots__ = ('wrappedObj', 'name', 'keyframeTimes', 'blenderFrames',
+            'armaObj', 'poseTransformNames', 'flatBoneNames',
             'boneRots', 'boneLocs')
     frameRate = None
 
-    def __init__(self, bObj, armaObj):
-        "This constructor does actually pose the model at each keyframe."
+    def __init__(self, bObj, armaObj, flatBoneNames):
         object.__init__(self)
-        if JmeAnimation.frameRate == None:
-            raise Exception("You can't instantiate JmeAnimations until the "
-                    + "frameRate is updated")
         self.wrappedObj = bObj
         self.name = bObj.name
         frameSet = set()
-        self.boneRots = {}
-        self.boneLocs = {}
-        for name, ipo in bObj.getAllChannelIpos().iteritems():
+        self.poseTransformNames = []
+        self.flatBoneNames = flatBoneNames
+        self.armaObj = armaObj
+        channelIpos = bObj.getAllChannelIpos()
+        for name in flatBoneNames:
+            if name not in channelIpos: continue
+            ipo = channelIpos[name]
             if ipo == None or len(ipo) < 1: continue
             #print "Channel (" + name + ") has " + str(len(ipo)) + " curves"
-            self.boneRots[name] = []
-            self.boneLocs[name] = []
+            self.poseTransformNames.append(name)
+            # This is because we need pose channels in bone nest order
+            # (which order is preserved by flatBoneNames).
             for curve in ipo:
                 # There are normally 7 curves for an IPO.
                 # However, if there is a Quat IPO, all 4 Quat* will be present,
@@ -888,30 +900,46 @@ class JmeAnimation(object):
                     # Leaving value a float so float division will occur below
         self.blenderFrames = list(frameSet)
         self.blenderFrames.sort()
-        self.keyframeTimes = []
+        self.keyframeTimes = None
+        self.boneLocs = None
+        self.boneRots = None
 
-        # NOW POSE
-        self.wrappedObj.setActive(armaObj)
+
+    def runPoses(self, autoRotate, addlTransform):
+        if JmeAnimation.frameRate == None:
+            raise Exception("You can't instantiate JmeAnimations until the "
+                    + "frameRate is updated")
+        self.keyframeTimes = []
+        self.wrappedObj.setActive(self.armaObj)
+        self.boneLocs = {}
+        self.boneRots = {}
+        for boneName in self.poseTransformNames:
+            # Allocat an array of rotations and transls for each bone
+            self.boneRots[boneName] = []
+            self.boneLocs[boneName] = []
+
         for frameNum in self.blenderFrames:
             print("Posing frame #" + str(int(frameNum-1.)) + " @"
                     + str(JmeAnimation.frameRate) + " fps")
             self.keyframeTimes.append((frameNum-1.) / JmeAnimation.frameRate)
             _bSet('curframe', int(frameNum))
             _Window.Redraw()
-            armaObj.evaluatePose(frameNum)
-            poseBones = armaObj.getPose().bones
-            for boneName, oneBoneRots in self.boneRots.iteritems():
-                if boneName not in poseBones.keys():
-                    raise Exception("Bone missing from pose: " + boneName)
-                oneBoneRots.append(poseBones[boneName].quat.copy())
+            self.armaObj.evaluatePose(int(frameNum))
+            poseBones = self.armaObj.getPose().bones
+            for boneName in self.poseTransformNames:
+                # We purposefully silently ignore bones in the pose that do
+                # not exist in our Armature skeleton or a channel IPO.
+                ##############################################################
+                # THIS IS THE MEAT OF SKELETAL ANIMATION
+                self.boneLocs[boneName].append(poseBones[boneName].loc.copy())
+                self.boneRots[boneName].append(poseBones[boneName].quat.copy())
                 print "Appending rot " + str(poseBones[boneName].quat) + " for bone " + boneName
-            for boneName, oneBoneLocs in self.boneLocs.iteritems():
-                if boneName not in poseBones.keys():
-                    raise Exception("Bone missing from pose: " + boneName)
-                oneBoneLocs.append(poseBones[boneName].loc.copy())
-            #for name, poseBone in armaObj.getPose().bones.items():
-                #print "Posing bone (" + name + ") == (" + poseBone.name + ")?"
-                #print "Quat (" + str(poseBone.quat) + ") Loc (" + str(poseBone.loc) + ')'
+                # Doesn't seem like the parenting trickle-down will work right
+                # for a bone with both keyframed and non-keyframed ancestor
+                # bones.  Ogre doesn't do anything special.  Test this.
+                ##############################################################
+        print("Posed anim " + self.getName() + " at frame times: "
+                + str(self.keyframeTimes))
 
         # Cull unused bone channels
         usedRotChannels = set()
@@ -933,9 +961,6 @@ class JmeAnimation(object):
             print "Zapping bone '" + locZapBone + "' from locations"
             del self.boneLocs[locZapBone]
 
-        print("Frame times for anim " + self.getName() + ": "
-                + str(self.keyframeTimes))
-
     def updateFrameRate():
         JmeAnimation.frameRate =  \
                 _bScenes.active.getRenderingContext().framesPerSec()
@@ -945,7 +970,8 @@ class JmeAnimation(object):
     def getName(self):
         return self.name
 
-    def getXmlEl(self, autoRotate):
+    def getXmlEl(self, autoRotate, addlTransform):
+        self.runPoses(autoRotate, addlTransform)
         tag = _XmlTag('com.jme.animation.BoneAnimation',
                 {'name':self.getName(), 'endFrame':(len(self.keyframeTimes)-1)})
         # endFrame is the 0-based INDEX of the last frame that will play.
@@ -971,13 +997,14 @@ class JmeAnimation(object):
         for i in range(len(self.keyframeTimes)): interpTypes.append(0)
         interpolationTypeTag.addAttr("data", interpTypes)
 
-        transformedBoneNames = set(self.boneRots.keys() + self.boneLocs.keys())
+        transformedBoneNames = self.boneRots.keys() + self.boneLocs.keys()
         transformsTag = _XmlTag(
-                'boneTransforms', {'size': len(transformedBoneNames)})
-        for boneName in transformedBoneNames:
+                'boneTransforms', {'size': len(set(transformedBoneNames))})
+        for boneName in self.flatBoneNames:
             # com.jme.BoneAnimation requires rotations and translations
             # elements, even if the size is 0.  The code below can be
             # streamlined once this is fixed.
+            if boneName not in transformedBoneNames: continue
 
             translationsTag = _XmlTag("translations")
             if boneName in self.boneLocs.keys():
@@ -989,7 +1016,10 @@ class JmeAnimation(object):
                             + " locs, but there are "
                             + str(len(self.keyframeTimes)) + " key frames")
                 for loc in self.boneLocs[boneName]:
-                    # Autorotate loc?
+                    #if autoRotate:
+                        #hold = loc[1]
+                        #loc[1] = loc[2]
+                        #loc[2] = -hold
                     locTag = _XmlTag('com.jme.math.Vector3f')
                     locTag.addAttr("x", loc.x, 6)
                     locTag.addAttr("y", loc.y, 6)
@@ -1049,10 +1079,13 @@ class JmeSkinAndBone(object):
     Any transform for the Blender Armature-parent Object will be assigned to
     our new root bone.  Consequently, the 'backountTransform' attribute here
     is passed directly to the root bone.
+
+    addlTransform is a shared transform pointer which will EVENTUALLY
+    contain a matrix that needs to be applied to all bones.
+    children[0] == boneTree.  A bit redundant.
     """
-    __slots__ = ('wrappedObj', 'backoutTransform',
-            'boneTree', 'name', 'children', 'flatBoneNames')
-    # children[0] == boneTree.  A bit redundant.
+    __slots__ = ('wrappedObj', 'backoutTransform', 'flatBoneNames',
+            'boneTree', 'name', 'children')
 
     def __init__(self, bObj):
         """
@@ -1069,15 +1102,12 @@ class JmeSkinAndBone(object):
         if self.boneTree.name == self.name: self.boneTree.name += "RootBone"
         self.backoutTransform = None
         toload = self.boneTree.getChildren()[:]
-        self.flatBoneNames = set()  # Does not include our root bone
+        self.flatBoneNames = []
         while len(toload) > 0:
             popped = toload.pop(0)
-            self.flatBoneNames.add(popped.getName())
+            self.flatBoneNames.append(popped.getName())
             children = popped.getChildren()
             if children != None: toload.extend(children)
-
-    def getFlatBoneNames(self):
-        return self.flatBoneNames
 
     def getName(self):
         return self.name
@@ -1086,7 +1116,7 @@ class JmeSkinAndBone(object):
         """Defers the action to the root Bone.
         It may or may not make sense to attach an animation to a bone other
         than the root bone, but we don't support that yet."""
-        self.boneTree.addAction(bAction)
+        self.boneTree.addAction(bAction, self.flatBoneNames)
 
     def addChild(self, child):
         self.children.append(child)
@@ -1094,21 +1124,26 @@ class JmeSkinAndBone(object):
     def getXmlEl(self, autoRotate):
         if len(self.children) > 2:
             print "WARNING: The Skin&Bone will probably not work with > 1 skin"
+
+        addlTransform = self.wrappedObj.mat.copy()
         # We couldn't set backoutTransform until now, because we didn't know
         # if the Skin object or parent Blender object were being exported.
+        print "addlTransform WAS " + str(addlTransform)
+        # Critical to update addlTransform before any bones are written
         if len(self.children) > 1:
             print "Parenting skeleton to Skin mesh"
-            self.boneTree.updateAddlTransform(
-                    self.children[1].wrappedObj.mat)
+            addlTransform *= self.children[1].wrappedObj.mat.copy().invert()
             # Bones will be relative to the Skin object
         elif self.backoutTransform != None:
             print "Parenting skeleton to some other Object"
-            self.boneTree.updateAddlTransform(self.backoutTransform)
-        if len(self.children) == 1: return self.boneTree.getXmlEl(autoRotate)
+            addlTransform *= self.backoutTransform.copy().invert()
+        print "addlTransform NOW " + str(addlTransform)
+        if len(self.children) == 1:
+            return self.boneTree.getXmlEl(autoRotate, addlTransform)
         tag = _XmlTag('com.jme.scene.Node', {'name':self.getName()})
 
         childrenTag = _XmlTag('children', {'size':len(self.children)})
-        childrenTag.addChild(self.boneTree.getXmlEl(autoRotate))
+        childrenTag.addChild(self.boneTree.getXmlEl(autoRotate, addlTransform))
         for skinChild in self.children[1:]:
             skinTag = _XmlTag('com.jme.animation.SkinNode',
                     {'name':skinChild.getName() + "Skin"})
@@ -1165,7 +1200,7 @@ class NodeTree(object):
             for member in self.__memberMap.itervalues():
                 if not isinstance(member, JmeSkinAndBone): continue
                 for n, v in self.__usedActionChannels.iteritems():
-                    if len(v & member.getFlatBoneNames()) > 0:
+                    if len(v & set(member.flatBoneNames)) > 0:
                         member.addAction(_bActionSeq[n])
         finally:
             print "Need to restore Blender action and frame states here"
@@ -1336,25 +1371,26 @@ class NodeTree(object):
         if animationSets == None:
             raise Exception(
                     "No animationSets for 'geometricalControllers'")
-        boneDefs = {}
-        for boneDef in childrenTag.tagsMatching(
-                "com.jme.animation.Bone", "name"):
-            boneDefs[boneDef.getAttr("name")] = boneDef
-        print("Found " + str(len(boneDefs)) + " boneDefs for controller: "
-               + str(boneDefs.keys()))
         infiniteLoopCheck = 0
         while True:
             infiniteLoopCheck += 1
             if infiniteLoopCheck > 10000:
                 raise Exception("Internal loop problem in __inlineGeoBones")
+            boneDefs = {}
+            for boneDef in childrenTag.tagsMatching(
+                    "com.jme.animation.Bone", "name"):
+                boneDefs[boneDef.getAttr("name")] = boneDef
+            print("Found " + str(len(boneDefs)) + " boneDefs for controller: "
+                   + str(boneDefs.keys()))
                 # We don't want problems to lock up Blender permanently
             fixed = False
-            for boneRef in animationSets.tagsMatching("bone", "ref"):
+            for boneRef in animationSets.tagsMatchingAny(
+                    ["bone", "com.jme.animation.Bone"], "ref"):
                 if boneRef.getAttr("ref") in boneDefs:
                     fixed = True
                     boneName = boneRef.getAttr("ref")
                     print "Fixing " + boneName
-                    boneDef = boneDefs[boneName]
+                    boneDef = boneDefs.pop(boneName)
                     boneRef.name = "com.jme.animation.Bone"
                     boneRef.delAttr("class")
                     boneDef.name = "bone"

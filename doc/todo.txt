@@ -2,6 +2,18 @@ $Id$
 
 TODO LIST
 
+GUI
+    Add Linear Interp toggle forces Linear animation interpolation (work-around
+     for broken state of Bezier interpolation in jME's com.jme.animation
+     package).
+    Add switch whether to export animations of selected armatures.
+
+DOCUMENT
+    If user does not want to export Bones, select just the skin mesh instead
+     of the Armature.
+    If user does not want to export an Armature skin, select just the Armature
+     without the skin mesh.
+
 Don't ever write values of negative 0.  Looks terrible, and adds ambiguity,
 when rounding results in "-0.000000" or "-0.000" and we write that.
 

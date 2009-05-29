@@ -53,8 +53,6 @@ def gen(saveAll, autoRotate, skipObjs=True):
             candidates = _bdata.scenes.active.objects.selected
         nodeTree = _NodeTree()
         for bo in candidates: nodeTree.addIfSupported(bo, skipObjs)
-        nodeTree.addActions()
-        # Don't know yet if the squence of addActions() and nest() matters
         root = nodeTree.nest()
 
         if root == None: raise Exception("Nothing to do...")

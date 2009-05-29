@@ -41,6 +41,7 @@ from Blender.Mesh import Modes as _meshModes
 from Blender import Armature as _Armature
 from Blender import Window as _Window
 from Blender import Set as _bSet
+from ActionData import ActionData
 from bpy.data import actions as _bActionSeq
 
 # GENERAL DEVELOPMENT NOTES:
@@ -852,136 +853,32 @@ class JmeBone(object):
         tag.addChild(gConTag)
         return tag
 
-    def addAction(self, bAction, flatBoneNames):
+    def addAction(self, actionData):
         if self.actions == None: self.actions = []
-        self.actions.append(JmeAnimation(bAction, self.armaObj, flatBoneNames))
-        # Kinda silly to pass through flatBoneName, since it was
-        # populated by this class.  This is a vestige of several refactors
-        # done to get things right.
+        self.actions.append(JmeAnimation(actionData))
 
 
 class JmeAnimation(object):
-    __slots__ = ('wrappedObj', 'name', 'keyframeTimes', 'blenderFrames',
-            'armaObj', 'poseTransformNames', 'flatBoneNames',
-            'boneRots', 'boneLocs')
-    frameRate = None
+    """We have distinct ActionData and JmeAnimation objects because ActionData
+    are just tentative JME animations."""
+    __slots__ = ('__data')
 
-    def __init__(self, bObj, armaObj, flatBoneNames):
+    def __init__(self, actionData):
         object.__init__(self)
-        self.wrappedObj = bObj
-        self.name = bObj.name
-        frameSet = set()
-        self.poseTransformNames = []
-        self.flatBoneNames = flatBoneNames
-        self.armaObj = armaObj
-        channelIpos = bObj.getAllChannelIpos()
-        for name in flatBoneNames:
-            if name not in channelIpos: continue
-            ipo = channelIpos[name]
-            if ipo == None or len(ipo) < 1: continue
-            #print "Channel (" + name + ") has " + str(len(ipo)) + " curves"
-            self.poseTransformNames.append(name)
-            # This is because we need pose channels in bone nest order
-            # (which order is preserved by flatBoneNames).
-            for curve in ipo:
-                # There are normally 7 curves for an IPO.
-                # However, if there is a Quat IPO, all 4 Quat* will be present,
-                # and if there is a Loc IP, all 3 Loc* will be present.
-                # Therefore, just test one of each.
-                if curve.name not in ['LocX', 'QuatW']: continue
-                for bp in curve.bezierPoints:
-                    frameFloat = bp.vec[1][0]
-                    # Remember that Blender frames are 1-based, not 0-based
-                    if frameFloat % 1 != 0: raise Exception(
-                            "A curve Bezier pt has non-integral frame num: "
-                            + str(frameFloat))
-                    frameSet.add(frameFloat)
-                    # Leaving value a float so float division will occur below
-        self.blenderFrames = list(frameSet)
-        self.blenderFrames.sort()
-        self.keyframeTimes = None
-        self.boneLocs = None
-        self.boneRots = None
-
-    def runPoses(self, autoRotate, addlTransform):
-        if JmeAnimation.frameRate == None:
-            raise Exception("You can't instantiate JmeAnimations until the "
-                    + "frameRate is updated")
-        self.keyframeTimes = []
-        self.wrappedObj.setActive(self.armaObj)
-        self.boneLocs = {}
-        self.boneRots = {}
-        for boneName in self.poseTransformNames:
-            # Allocat an array of rotations and transls for each bone
-            self.boneRots[boneName] = []
-            self.boneLocs[boneName] = []
-
-        for frameNum in self.blenderFrames:
-            print("Posing frame #" + str(int(frameNum-1.)) + " @"
-                    + str(JmeAnimation.frameRate) + " fps")
-            self.keyframeTimes.append((frameNum-1.) / JmeAnimation.frameRate)
-            _bSet('curframe', int(frameNum))
-            _Window.Redraw()
-            self.armaObj.evaluatePose(int(frameNum))
-            poseBones = self.armaObj.getPose().bones
-            for boneName in self.poseTransformNames:
-                # We purposefully silently ignore bones in the pose that do
-                # not exist in our Armature skeleton or a channel IPO.
-                ##############################################################
-                # THIS IS THE MEAT OF SKELETAL ANIMATION
-                self.boneLocs[boneName].append(poseBones[boneName].loc.copy())
-                self.boneRots[boneName].append((poseBones[boneName].poseMatrix
-                        * addlTransform).toQuat())
-                print("Appending rot " + str(poseBones[boneName].quat)
-                        + " for bone " + boneName)
-                # Doesn't seem like the parenting trickle-down will work right
-                # for a bone with both keyframed and non-keyframed ancestor
-                # bones.  Ogre doesn't do anything special.  Test this.
-                ##############################################################
-        print("Posed anim " + self.getName() + " at frame times: "
-                + str(self.keyframeTimes))
-
-        # Cull unused bone channels
-        usedRotChannels = set()
-        usedLocChannels = set()
-        for boneName, oneBoneRots in self.boneRots.iteritems():
-            for quat in oneBoneRots:
-                if (round(quat.x, 6) != 0 or round(quat.y, 6) != 0
-                        or round(quat.z, 6) != 0 or round(quat.w) != 1):
-                    usedRotChannels.add(boneName)
-        for boneName, oneBoneLocs in self.boneLocs.iteritems():
-            for loc in oneBoneLocs:
-                if (round(loc[0], 6) != 0. or round(loc[1], 6) != 0.
-                        or round(loc[2], 6) != 0.):
-                    usedLocChannels.add(boneName)
-        for rotZapBone in set(self.boneRots.keys()) - usedRotChannels:
-            print "Zapping bone '" + rotZapBone + "' from rotations"
-            del self.boneRots[rotZapBone]
-        for locZapBone in set(self.boneLocs.keys()) - usedLocChannels:
-            print "Zapping bone '" + locZapBone + "' from locations"
-            del self.boneLocs[locZapBone]
-
-    def updateFrameRate():
-        JmeAnimation.frameRate =  \
-                _bScenes.active.getRenderingContext().framesPerSec()
-
-    updateFrameRate = staticmethod(updateFrameRate)
-
-    def getName(self):
-        return self.name
+        self.__data = actionData;
 
     def getXmlEl(self, autoRotate, addlTransform):
-        self.runPoses(autoRotate, addlTransform)
         tag = _XmlTag('com.jme.animation.BoneAnimation',
-                {'name':self.getName(), 'endFrame':(len(self.keyframeTimes)-1)})
+                {'name':self.__data.getName(),
+                    'endFrame':(len(self.__data.keyframeTimes)-1)})
         # endFrame is the 0-based INDEX of the last frame that will play.
         # Would like to allow for lengthening or shortening with the Blender
         # renderer's last frame setting, but that would not allow for different
         # values for different animations.
 
         keyframeTimeTag = _XmlTag(
-                'keyframeTime', {'size': len(self.keyframeTimes)})
-        keyframeTimeTag.addAttr("data", self.keyframeTimes, 6)
+                'keyframeTime', {'size': len(self.__data.keyframeTimes)})
+        keyframeTimeTag.addAttr("data", self.__data.keyframeTimes, 6)
         # keyframe times are relative to Animation start time of 0
         # Normally you should have 0 for first frame.  Otherwise, if
         # interpolation is on, it will interpolate movement backwards to 0.
@@ -989,37 +886,38 @@ class JmeAnimation(object):
         # last transform.  If repeatType is 1, motion flips immediately from
         # the final transform to the 0 position.
         interpolationTypeTag = _XmlTag(
-                'interpolationType', {'size': len(self.keyframeTimes)})
+                'interpolationType', {'size': len(self.__data.keyframeTimes)})
         # Use no interpolationType tag for No interpolation, or set a value
         # for each frame: 0 for Linear, 1 for Bezier.
         # SWITCH TO BEZIER ONCE com.jme.animation BEZIER IS FIXED!
         interpTypes = []
-        for i in range(len(self.keyframeTimes)): interpTypes.append(0)
+        for i in range(len(self.__data.keyframeTimes)): interpTypes.append(0)
         interpolationTypeTag.addAttr("data", interpTypes)
 
-        transformedBoneNames = self.boneRots.keys() + self.boneLocs.keys()
+        channelNames = self.__data.getChannelNames()
+
         transformsTag = _XmlTag(
-                'boneTransforms', {'size': len(set(transformedBoneNames))})
-        for boneName in self.flatBoneNames:
+                'boneTransforms', {'size': len(channelNames)})
+        for boneName in channelNames:
             # com.jme.BoneAnimation requires rotations and translations
             # elements, even if the size is 0.  The code below can be
             # streamlined once this is fixed.
-            if boneName not in transformedBoneNames: continue
-
             translationsTag = _XmlTag("translations")
-            if boneName in self.boneLocs.keys():
-                translationsTag.addAttr("size", len(self.keyframeTimes))
+            if boneName in self.__data.locs:
+                translationsTag.addAttr("size", len(self.__data.keyframeTimes))
                 # Sanity check:
-                if len(self.keyframeTimes) != len(self.boneLocs[boneName]):
+                if (len(self.__data.keyframeTimes)
+                        )!= len(self.__data.locs[boneName]):
                     raise Exception("Bone " + boneName + " has " +
-                            + str(len(self.boneLocs[boneName]))
+                            + str(len(self.__data.boneList[boneName]))
                             + " locs, but there are "
-                            + str(len(self.keyframeTimes)) + " key frames")
-                for loc in self.boneLocs[boneName]:
-                    #if autoRotate:
-                        #hold = loc[1]
-                        #loc[1] = loc[2]
-                        #loc[2] = -hold
+                            + str(len(self.__data.keyframeTimes))
+                            + " key frames")
+                for loc in self.__data.locs[boneName]:
+                    if autoRotate:
+                        hold = loc[1]
+                        loc[1] = loc[2]
+                        loc[2] = -hold
                     locTag = _XmlTag('com.jme.math.Vector3f')
                     locTag.addAttr("x", loc.x, 6)
                     locTag.addAttr("y", loc.y, 6)
@@ -1029,15 +927,17 @@ class JmeAnimation(object):
                 translationsTag.addAttr("size", 0)
 
             rotationsTag = _XmlTag("rotations")
-            if boneName in self.boneRots.keys():
-                rotationsTag.addAttr("size", len(self.keyframeTimes))
+            if boneName in self.__data.rots.keys():
+                rotationsTag.addAttr("size", len(self.__data.keyframeTimes))
                 # Sanity check:
-                if len(self.keyframeTimes) != len(self.boneRots[boneName]):
+                if (len(self.__data.keyframeTimes)
+                        != len(self.__data.rots[boneName])):
                     raise Exception("Bone " + boneName + " has " +
-                            + str(len(self.boneRots[boneName]))
+                            + str(len(self._data.rots[boneName]))
                             + " quat rots, but there are "
-                            + str(len(self.keyframeTimes)) + " key frames")
-                for quat in self.boneRots[boneName]:
+                            + str(len(self._data.keyframeTimes))
+                            + " key frames")
+                for quat in self.__data.rots[boneName]:
                     if autoRotate:
                         hold = quat.y
                         quat.y = quat.z
@@ -1085,7 +985,7 @@ class JmeSkinAndBone(object):
     children[0] == boneTree.  A bit redundant.
     """
     __slots__ = ('wrappedObj', 'backoutTransform', 'flatBoneNames',
-            'boneTree', 'name', 'children')
+            'boneTree', 'name', 'children', 'actionDataList')
 
     def __init__(self, bObj):
         """
@@ -1096,22 +996,49 @@ class JmeSkinAndBone(object):
         """
         object.__init__(self)
         self.wrappedObj = bObj
-        self.boneTree = JmeBone(bObj)
-        self.children = [self.boneTree]
         self.name = bObj.name
+        self.__runPoses()   # Need to run this before instantiating bones, I think
+        self.boneTree = JmeBone(bObj)
+        for data in self.actionDataList: self.boneTree.addAction(data)
+        self.children = [self.boneTree]
         if self.boneTree.name == self.name: self.boneTree.name += "RootBone"
         self.backoutTransform = None
         toload = self.boneTree.getChildren()[:]
+        # The remainder of this method is just to populate flatBoneNames in
+        # proper nesting order.  THIS MAY NO LONGER BE NECESSARY!
         self.flatBoneNames = []
         while len(toload) > 0:
             popped = toload.pop(0)
             self.flatBoneNames.append(popped.getName())
             children = popped.getChildren()
             if children != None: toload.extend(children)
+
+    def __runPoses(self):
+        """Execute poses to gather data.
+        We do this very early because we need optimized pose data in order to
+        structure our wrapper objects as required by com.jme.animation."""
+
+        self.actionDataList = []
         for bAction in _bActionSeq:
-            if len(set(bAction.getChannelNames())
-                    - set(bObj.getData(False, True).bones.keys())) < 1:
-                self.boneTree.addAction(bAction, self.flatBoneNames)
+            if len(set(bAction.getChannelNames()) - set(
+                    self.wrappedObj.getData(False, True).bones.keys())) > 0:
+                continue
+            actionData = ActionData(bAction)
+
+            bAction.setActive(self.wrappedObj)
+            for frameNum in actionData.blenderFrames:
+                print("Posing frame #" + str(int(frameNum-1.)) + " @"
+                        + str(ActionData.frameRate) + " fps")
+                _bSet('curframe', int(frameNum))
+                _Window.Redraw()
+                self.wrappedObj.evaluatePose(int(frameNum))
+                actionData.addPose(self.wrappedObj.getPose().bones)
+            print("Posed anim " + self.getName() + " at frame times: "
+                    + str(actionData.keyframeTimes))
+            if actionData.blenderFrames != None:
+                self.actionDataList.append(actionData)
+            # blenderFrames may == None if no channels are significant to this
+            # Armature
 
     def getName(self):
         return self.name
@@ -1177,6 +1104,7 @@ class NodeTree(object):
         self.__textureHash = {}
         self.__textureStates = set()
         self.root = None
+        ActionData.updateFrameRate()
 
     def includeTex(self, mtex):
         """include* instead of add*, because we don't necessarily 'add'.  We
@@ -1393,7 +1321,6 @@ class NodeTree(object):
         for m in self.__matMap2side.itervalues(): m.written = False
         for t in self.__textureHash.itervalues(): m.written = False
         for ts in self.__textureStates: ts.written = False
-        JmeAnimation.updateFrameRate()
         # URGENT TODO:
         # Store action and frame state before root.getXmlEl run and restore
         # after, because JmeAnimation.getXmlEl() executes poses.

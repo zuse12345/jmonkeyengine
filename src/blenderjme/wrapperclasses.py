@@ -41,6 +41,7 @@ from Blender.Mesh import Modes as _meshModes
 from Blender import Armature as _Armature
 from Blender import Window as _Window
 from Blender import Set as _bSet
+from bpy.data import actions as _bActionSeq
 
 # GENERAL DEVELOPMENT NOTES:
 #
@@ -852,10 +853,8 @@ class JmeBone(object):
         return tag
 
     def addAction(self, bAction, flatBoneNames):
-        if self.actions == None:
-            self.actions = []
-        self.actions.append(
-                JmeAnimation(bAction, self.armaObj, flatBoneNames))
+        if self.actions == None: self.actions = []
+        self.actions.append(JmeAnimation(bAction, self.armaObj, flatBoneNames))
         # Kinda silly to pass through flatBoneName, since it was
         # populated by this class.  This is a vestige of several refactors
         # done to get things right.
@@ -904,7 +903,6 @@ class JmeAnimation(object):
         self.boneLocs = None
         self.boneRots = None
 
-
     def runPoses(self, autoRotate, addlTransform):
         if JmeAnimation.frameRate == None:
             raise Exception("You can't instantiate JmeAnimations until the "
@@ -932,8 +930,10 @@ class JmeAnimation(object):
                 ##############################################################
                 # THIS IS THE MEAT OF SKELETAL ANIMATION
                 self.boneLocs[boneName].append(poseBones[boneName].loc.copy())
-                self.boneRots[boneName].append(poseBones[boneName].quat.copy())
-                print "Appending rot " + str(poseBones[boneName].quat) + " for bone " + boneName
+                self.boneRots[boneName].append((poseBones[boneName].poseMatrix
+                        * addlTransform).toQuat())
+                print("Appending rot " + str(poseBones[boneName].quat)
+                        + " for bone " + boneName)
                 # Doesn't seem like the parenting trickle-down will work right
                 # for a bone with both keyframed and non-keyframed ancestor
                 # bones.  Ogre doesn't do anything special.  Test this.
@@ -1108,15 +1108,13 @@ class JmeSkinAndBone(object):
             self.flatBoneNames.append(popped.getName())
             children = popped.getChildren()
             if children != None: toload.extend(children)
+        for bAction in _bActionSeq:
+            if len(set(bAction.getChannelNames())
+                    - set(bObj.getData(False, True).bones.keys())) < 1:
+                self.boneTree.addAction(bAction, self.flatBoneNames)
 
     def getName(self):
         return self.name
-
-    def addAction(self, bAction):
-        """Defers the action to the root Bone.
-        It may or may not make sense to attach an animation to a bone other
-        than the root bone, but we don't support that yet."""
-        self.boneTree.addAction(bAction, self.flatBoneNames)
 
     def addChild(self, child):
         self.children.append(child)
@@ -1157,13 +1155,12 @@ class JmeSkinAndBone(object):
 
 class NodeTree(object):
     """Trivial tree dedicated for JmeNode and JmeSkinAndBone members.
-    Add all members to the tree, then call addActions() if desired, and nest().
+    Add all members to the tree, then call and nest().
     See method descriptions for details."""
 
     __slots__ = ('__memberMap', '__memberKeys',
             '__matMap1side', '__matMap2side', 'root',
-            '__textureHash', '__textureStates',
-            '__usedActionChannels')
+            '__textureHash', '__textureStates')
     # N.b. __memberMap does not have a member for each node, but a member
     #      for each saved Blender object.
     # __memberKey is just because Python has no ordered maps/dictionaries
@@ -1180,30 +1177,6 @@ class NodeTree(object):
         self.__textureHash = {}
         self.__textureStates = set()
         self.root = None
-
-        # The only purpose for the remainder of this constructor is to allow
-        # us to determine which Armatures individual Actions apply to.
-        self.__usedActionChannels = {}  # actionName -> ipoNames
-        for action in _bActionSeq:
-            # TODO:  Verify that if we rename bones, that we do so after
-            # looking up the original name in __usedActionChannels
-            s = set()
-            for name, ipo in action.getAllChannelIpos().iteritems():
-                if ipo != None and len(ipo) > 0: s.add(name)
-            if len(s) > 0: self.__usedActionChannels[action.name] = s
-
-    # URGENT TODO:  Store action and frame state before run and restore after.
-    def addActions(self):
-        "Assigns actions to every exporting Armature to which a bone belongs"
-        JmeAnimation.updateFrameRate()
-        try:
-            for member in self.__memberMap.itervalues():
-                if not isinstance(member, JmeSkinAndBone): continue
-                for n, v in self.__usedActionChannels.iteritems():
-                    if len(v & set(member.flatBoneNames)) > 0:
-                        member.addAction(_bActionSeq[n])
-        finally:
-            print "Need to restore Blender action and frame states here"
 
     def includeTex(self, mtex):
         """include* instead of add*, because we don't necessarily 'add'.  We
@@ -1291,10 +1264,18 @@ class NodeTree(object):
             NodeTree.__uniquifyNames(child, nameToPass, nameSet)
 
     def nest(self):
-        """addChild()s wherever the wrappedObj's parent is present; adds all
+        """
+        This method should be renamed.  It does general post-selection work,
+        not just nesting.
+
+        addChild()s wherever the wrappedObj's parent is present; adds all
         remaining nodes to the top level; and enforces the tree has a single
         root by adding a top grouping node if necessary.
-        Returns the root node."""
+
+        Also does some animation work.
+
+        Returns the root node.
+        """
 
         if len(self.__memberKeys) < 1:
             self.root = None
@@ -1412,6 +1393,10 @@ class NodeTree(object):
         for m in self.__matMap2side.itervalues(): m.written = False
         for t in self.__textureHash.itervalues(): m.written = False
         for ts in self.__textureStates: ts.written = False
+        JmeAnimation.updateFrameRate()
+        # URGENT TODO:
+        # Store action and frame state before root.getXmlEl run and restore
+        # after, because JmeAnimation.getXmlEl() executes poses.
         xml = self.root.getXmlEl(autoRotate)
         self.__inlineBones(xml)
         return xml
@@ -1422,7 +1407,6 @@ class NodeTree(object):
 
 from Blender.Material import Shaders as _bShaders
 from bpy.data import scenes as _bScenes
-from bpy.data import actions as _bActionSeq
 class JmeMaterial(object):
     # May or may not need to redesign with subclasses to handle textures and
     # other material states that are not simply the 4 colors + 2 states + shini.

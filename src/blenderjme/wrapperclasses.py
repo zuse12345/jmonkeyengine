@@ -708,7 +708,7 @@ class JmeBone(object):
 
     ZEROMAT4 = _bmath.Matrix()
 
-    def __init__(self, objOrBone, parentBone=None):
+    def __init__(self, objOrBone, channelNames=None, parentBone=None):
         object.__init__(self)
         blenderChildren = []
         self.parentBone = parentBone
@@ -730,7 +730,8 @@ class JmeBone(object):
             for childBlenderBone in arma.bones.values():
                 # This loop makes all Blender top-level bones into direct
                 # children of our new, single topLevel root bone.
-                if childBlenderBone.parent == None:
+                if (childBlenderBone.parent == None
+                        or childBlenderBone.name in channelNames):
                     blenderChildren.append(childBlenderBone)
         else:
             if not isinstance(objOrBone, _Armature.Bone):
@@ -739,7 +740,9 @@ class JmeBone(object):
             self.armaObj = None
             self.name = objOrBone.name
             self.matrix = objOrBone.matrix['ARMATURESPACE']
-            blenderChildren = objOrBone.children
+            for child in objOrBone.children:
+                if child.name not in channelNames:
+                    blenderChildren.append(child)
 
         if len(blenderChildren) < 1:
             self.children = None
@@ -750,7 +753,7 @@ class JmeBone(object):
             # skip bones with option NO_DEFORM (need to still recurse
             # to their children though).
             # Recursive instantiation:
-            self.children.append(JmeBone(blenderBone, self))
+            self.children.append(JmeBone(blenderBone, channelNames, self))
 
     def getChildren(self):
         return self.children
@@ -998,7 +1001,10 @@ class JmeSkinAndBone(object):
         self.wrappedObj = bObj
         self.name = bObj.name
         self.__runPoses()   # Need to run this before instantiating bones, I think
-        self.boneTree = JmeBone(bObj)
+
+        allChannelNames = set()
+        for d in self.actionDataList: allChannelNames |= d.getChannelNames()
+        self.boneTree = JmeBone(bObj, allChannelNames)
         for data in self.actionDataList: self.boneTree.addAction(data)
         self.children = [self.boneTree]
         if self.boneTree.name == self.name: self.boneTree.name += "RootBone"
@@ -1237,7 +1243,6 @@ class NodeTree(object):
             self.root = JmeNode("BlenderObjects")
             for key in self.__memberKeys:
                 self.root.addChild(self.__memberMap[key])
-        NodeTree.__uniquifyNames(self.root, None, set())
         return self.root
 
     def __inlineBones(self, xml):
@@ -1326,6 +1331,7 @@ class NodeTree(object):
         # after, because JmeAnimation.getXmlEl() executes poses.
         xml = self.root.getXmlEl(autoRotate)
         self.__inlineBones(xml)
+        NodeTree.__uniquifyNames(self.root, None, set())
         return xml
 
     __uniquifyNames = staticmethod(__uniquifyNames)

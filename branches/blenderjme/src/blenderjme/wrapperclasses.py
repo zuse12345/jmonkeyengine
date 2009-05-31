@@ -358,10 +358,13 @@ class JmeNode(object):
 
 class JmeMesh(object):
     __slots__ = ('wrappedMesh', 'jmeMats', 'jmeTextureState',
-            '__vpf', 'defaultColor', 'name')
+            '__vpf', 'defaultColor', 'name', 'blenderVertIndexes')
     # defaultColor corresponds to jME's Meshs' defaultColor.
     # In Blender this is a per-Object, not per-Mesh setting.
     # This is why it is a parameter of the constructor below.
+    # blenderVertIndexes is a list corresponding to the vertBuf + normBuf
+    # lists that we write, with the original Blender indexes of the vert.
+    # (This is used for skin weighting).
 
     def __init__(self, bMesh, color=None):
         """Assumes input Blender Mesh already validated, like by using the
@@ -377,6 +380,7 @@ class JmeMesh(object):
         self.jmeTextureState = None
         #print "Instantiated JmeMesh '" + self.getName() + "'"
         self.__vpf = JmeMesh.vertsPerFace(self.wrappedMesh.faces)
+        self.blenderVertIndexes = None
 
     def getName(self): return self.name
 
@@ -419,7 +423,7 @@ class JmeMesh(object):
 
         # Make a copy so we can easily add verts like a normal Python list
         vertList = []
-        for v in mesh.verts: vertList.append(v)
+        vertList += mesh.verts
         vertToColor = None
         vertToUv = None
         faceVertToNewVert = [] # Direct replacement for face[].verts[].index
@@ -564,7 +568,19 @@ class JmeMesh(object):
             texArray = None
         nonFacedVertexes = 0
         nonUvVertexes = 0
+        self.blenderVertIndexes = []
         for v in vertList:
+            if len(self.blenderVertIndexes) < len(mesh.verts):
+                # Remove this assertion after confirmed:
+                # ARRRG.  Can't determine absolute class name for NMVert!!
+                self.blenderVertIndexes.append(v.index)
+            else:
+                # Remove this assertion after confirmed:
+                if not isistance(v, UpdatableMVert):
+                    raise Exception("Vert # "
+                            + str(len(self.blenderVertIndexes) - 1)
+                            + " not an UPdatableMVert: " + str(type(v)))
+                self.blenderVertIndexes.append(v.origIndex)
             coArray.append(v.co.x)
             if autoRotate:
                 coArray.append(v.co.z)
@@ -765,6 +781,10 @@ class JmeBone(object):
         """addlTransform is the same for all bones and animation channels of
         an Armature."""
         tag = _XmlTag('com.jme.animation.Bone', {'name':self.getName()})
+        tag.addAttr("reference_ID", self.getName())
+        # The reference_ID is not strictly needed if a bone is not skinned
+        # and not the target of a bone influence.
+        # Since nearly all bones are skinned, easier to id them all.
         if self.parentBone == None:
             invParentMat = None
         else:
@@ -841,8 +861,8 @@ class JmeBone(object):
         if self.actions == None: return tag
 
         gConTag = _XmlTag("geometricalControllers", {'size': 1})
-        conTag = _XmlTag(
-                "com.jme.animation.AnimationController", {'repeatType': 1})
+        conTag = _XmlTag("com.jme.animation.AnimationController",
+                {'repeatType': 1, "reference_ID": "AC_" + self.getName()})
         animsTag = _XmlTag("animationSets", {'size': len(self.actions)})
 
         for anim in self.actions:
@@ -854,6 +874,10 @@ class JmeBone(object):
         }))
         gConTag.addChild(conTag)
         tag.addChild(gConTag)
+        tag.addChild(_XmlTag("animationController", {
+            "class":"com.jme.animation.AnimationController",
+            "ref": "AC_" + self.getName()
+        }))
         return tag
 
     def addAction(self, actionData):
@@ -987,8 +1011,9 @@ class JmeSkinAndBone(object):
     contain a matrix that needs to be applied to all bones.
     children[0] == boneTree.  A bit redundant.
     """
-    __slots__ = ('wrappedObj', 'backoutTransform', 'flatBoneNames',
-            'boneTree', 'name', 'children', 'actionDataList')
+    __slots__ = ('wrappedObj', 'backoutTransform',
+            'boneTree', 'name', 'children', 'actionDataList', 'maxWeightings')
+    WEIGHT_THRESHOLD = .001
 
     def __init__(self, bObj):
         """
@@ -997,6 +1022,7 @@ class JmeSkinAndBone(object):
         Just as for JmeNodes, we can't set backoutTransform until we know what
         objects are to be exported.
         """
+        self.maxWeightings = 4  # max of 4 influencing bones for each vertex
         object.__init__(self)
         self.wrappedObj = bObj
         self.name = bObj.name
@@ -1009,15 +1035,6 @@ class JmeSkinAndBone(object):
         self.children = [self.boneTree]
         if self.boneTree.name == self.name: self.boneTree.name += "RootBone"
         self.backoutTransform = None
-        toload = self.boneTree.getChildren()[:]
-        # The remainder of this method is just to populate flatBoneNames in
-        # proper nesting order.  THIS MAY NO LONGER BE NECESSARY!
-        self.flatBoneNames = []
-        while len(toload) > 0:
-            popped = toload.pop(0)
-            self.flatBoneNames.append(popped.getName())
-            children = popped.getChildren()
-            if children != None: toload.extend(children)
 
     def __runPoses(self):
         """Execute poses to gather data.
@@ -1075,14 +1092,84 @@ class JmeSkinAndBone(object):
 
         childrenTag = _XmlTag('children', {'size':len(self.children)})
         childrenTag.addChild(self.boneTree.getXmlEl(autoRotate, addlTransform))
+        meshChild = None  # we'll only skin the last skin child, for now
+        skinRef = None
         for skinChild in self.children[1:]:
+            for grandChild in skinChild.children:
+                if isinstance(grandChild, JmeMesh): meshChild = grandChild
+            if meshChild == None:
+                raise Exception("No child of Skin object is a mesh: "
+                        + skinChild.getName())
             skinTag = _XmlTag('com.jme.animation.SkinNode',
                     {'name':skinChild.getName() + "Skin"})
             skinChildrenTag = _XmlTag('children', {'size':1})
-            skinChildrenTag.addChild(skinChild.getXmlEl(autoRotate))
+            skinChildTag = skinChild.getXmlEl(autoRotate)
+            skinRef = skinChild.getName()
+            skinChildTag.addAttr("reference_ID", skinRef)
+            skinChildrenTag.addChild(skinChildTag)
             skinTag.addChild(skinChildrenTag)
             childrenTag.addChild(skinTag)
         tag.addChild(childrenTag)
+        if meshChild == None: return tag
+        mesh = meshChild.wrappedMesh
+        vGroups = mesh.getVertGroupNames()
+        if vGroups == None or len(vGroups) < 1: return tag
+        vertexWeights = {}
+        # jvi is the jME vertBuf/noBuf we write; bvi is the Blender vert index
+        for jvi in range(len(meshChild.blenderVertIndexes)):
+            bvi = meshChild.blenderVertIndexes[jvi]
+            vWeightMap = {}   # Weight for this jvi
+            for g in vGroups:
+                try:
+                    weight = mesh.getVertsFromGroup(g, 1, [bvi])[0][1]
+                except Exception, e:
+                    continue
+                if weight >= JmeSkinAndBone.WEIGHT_THRESHOLD:
+                    vWeightMap[g] = weight
+            if len(vWeightMap) > 0: vertexWeights[jvi] = vWeightMap
+        print (str(len(vertexWeights)) + " verts out of "
+                + str(len(meshChild.blenderVertIndexes)) + " weighted")
+        if len(vertexWeights) < 1: return tag
+
+        skinTag.addChild(_XmlTag('skins', {
+                "class":"com.jme.scene.Node", "ref":skinRef
+        }))
+        skinTag.addChild(_XmlTag('skeleton', {
+                "class":"com.jme.animation.Bone",
+                "ref":self.boneTree.getName(),
+                "name":self.boneTree.getName()
+        }))
+
+        cacheTag = _XmlTag('cache', {'size':1})
+        salaTag = _XmlTag('SavableArrayListArray_0', {'size':len(vertexWeights)})
+        for vi, vWeightMap in vertexWeights.iteritems():
+            if len(vWeightMap.values()) > self.maxWeightings:
+                allWeights = list(vWeightMap.values())
+                allWeights.sort()
+                limit = allWeights[-4:-3]
+                weightCount = self.maxWeightings
+            else:
+                limit = 0;
+                weightCount = len(vWeightMap)
+            salTag = _XmlTag(
+                    'SavableArrayList_' + str(vi), {'size':weightCount})
+            salaTag.addChild(salTag)
+            weightSum = 0
+            for weight in vWeightMap.itervalues():
+                if weight < 0:
+                    raise Exception("Negative weight.  Should we support this?")
+                if weight >= limit: weightSum += weight
+            for group, weight in vWeightMap.iteritems():
+                if weight < limit: continue
+                influenceTag = _XmlTag("com.jme.animation.BoneInfluence", {
+                        "boneId":group })
+                influenceTag.addAttr("weight", weight/weightSum, 6)
+                salTag.addChild(influenceTag)
+                influenceTag.addChild(_XmlTag("bone", {
+                    "class":"com.jme.animation.Bone", "ref":group
+                }))
+        cacheTag.addChild(salaTag)
+        skinTag.addChild(cacheTag)
         return tag
 
 
@@ -1309,7 +1396,6 @@ class NodeTree(object):
                     boneRef.delAttr("class")
                     boneDef.name = "bone"
                     boneDef.addAttr("class", "com.jme.animation.Bone")
-                    boneDef.addAttr("reference_ID", boneName)
 
                     boneDef.swap(boneRef)
                     # We can only fix one element each time through the main

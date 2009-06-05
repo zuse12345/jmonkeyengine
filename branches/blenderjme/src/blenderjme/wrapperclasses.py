@@ -404,6 +404,7 @@ class JmeMesh(object):
         #   (requirement for normals).
         tag = _XmlTag('com.jme.scene.' + meshType + 'Mesh',
                 {'name':self.getName()})
+        colorTag = None  # so we can tell later on whether we wrote it
         if (self.defaultColor != None and
             (self.defaultColor[0] != 1 or self.defaultColor[1] != 1
                 or self.defaultColor[2] != 1 or self.defaultColor[3] != 1)):
@@ -414,7 +415,21 @@ class JmeMesh(object):
             colorTag.addAttr("b", self.defaultColor[2])
             colorTag.addAttr("a", self.defaultColor[3])
 
-        if self.jmeMats != None:
+        if self.jmeMats == None:
+            # Tough call here.
+            # Since default object coloring and vertex coloring are useless
+            # with jME lighting enabled, we are disabling lighting if either
+            # of these are in use with NO MATERIAL for the Mesh itself.
+            # N.b. this may clobber cases where the user depends on material
+            # enheritance.  Doing it this way by default because the Blender
+            # Gui and renderer do not support material inheritance (though the
+            # brand new rendering nodes in v. 2.49 may), so we set the default
+            # behavior to what will work for most Blender users.  We should
+            # provide an exporter switch for users who want to take advantage
+            # of inheritance.
+            if colorTag != None or mesh.vertexColors:
+                tag.addAttr("lightCombineMode", "Off")
+        else:
             rsTag = _XmlTag('renderStateList')
             for mat in self.jmeMats: rsTag.addChild(mat.getXmlEl())
             tag.addChild(rsTag)

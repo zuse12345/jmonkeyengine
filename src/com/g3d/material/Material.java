@@ -94,6 +94,10 @@ public class Material {
         }
     }
 
+    public void setBoolean(String name, boolean value){
+        setParam(name, MatParamType.Boolean, value);
+    }
+
     public void setFloat(String name, float value){
         setParam(name, MatParamType.Float, value);
     }
@@ -117,6 +121,9 @@ public class Material {
                     case Float:
                         uniform.setFloat((Float)value.getValue());
                         break;
+                    case Boolean:
+                        uniform.setBoolean((Boolean)value.getValue());
+                        break;
                     case Vector2:
                         uniform.setVector2((Vector2f)value.getValue());
                         break;
@@ -129,6 +136,7 @@ public class Material {
                     case Int:
                         uniform.setInt((Integer)value.getValue());
                         break;
+
                 }
             }
             for (MatParamTexture tex : texValues.values()){

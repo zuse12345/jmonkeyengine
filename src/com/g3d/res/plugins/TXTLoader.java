@@ -8,10 +8,7 @@ import java.io.InputStreamReader;
 
 public class TXTLoader implements ContentLoader {
 
-    public void setOwner(ContentManager owner) {
-    }
-
-    public Object load(InputStream in, String extension) throws IOException {
+    public Object load(ContentManager owner, InputStream in, String extension) throws IOException {
         StringBuilder sb = new StringBuilder();
 
         InputStreamReader r = new InputStreamReader(in);

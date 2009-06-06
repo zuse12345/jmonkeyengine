@@ -1,8 +1,18 @@
 package com.g3d.input.event;
 
-public class InputEvent {
+/**
+ * An abstract input event.
+ */
+public abstract class InputEvent {
 
+    /**
+     * Time in ticks when the event occured.
+     */
     protected long time;
+
+    /**
+     * Delta value since this event last happened in ticks.
+     */
     protected long delta;
 
     public long getTime(){

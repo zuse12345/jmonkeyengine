@@ -13,23 +13,27 @@ import javax.imageio.ImageIO;
 
 public class AWTLoader implements ContentLoader {
 
-    public void setOwner(ContentManager owner){
-    }
-
-    private static Image loadAWT(InputStream in) throws IOException{
+    private Image loadAWT(ContentManager owner, InputStream in) throws IOException{
         BufferedImage img = ImageIO.read(in);
         if (img == null)
             return null;
 
         int width = img.getWidth();
         int height = img.getHeight();
+        String flipProp = owner.getProperty("FlipImages");
+        boolean flip = flipProp != null && flipProp.equals("true");
 
         if (img.getTransparency() == Transparency.OPAQUE){
             ByteBuffer data = BufferUtils.createByteBuffer(img.getWidth()*img.getHeight()*3);
             // no alpha
             for (int y = 0; y < height; y++){
                 for (int x = 0; x < width; x++){
-                    int rgb = img.getRGB(x,y);
+                    int ny = y;
+                    if (flip){
+                        ny = height - y - 1;
+                    }
+                    
+                    int rgb = img.getRGB(x,ny);
                     byte r = (byte) ((rgb & 0x00FF0000) >> 16);
                     byte g = (byte) ((rgb & 0x0000FF00) >> 8);
                     byte b = (byte) ((rgb & 0x000000FF));
@@ -43,7 +47,12 @@ public class AWTLoader implements ContentLoader {
             // no alpha
             for (int y = 0; y < height; y++){
                 for (int x = 0; x < width; x++){
-                    int rgb = img.getRGB(x,y);
+                    int ny = y;
+                    if (flip){
+                        ny = height - y - 1;
+                    }
+
+                    int rgb = img.getRGB(x,ny);
                     byte a = (byte) ((rgb & 0xFF000000) >> 24);
                     byte r = (byte) ((rgb & 0x00FF0000) >> 16);
                     byte g = (byte) ((rgb & 0x0000FF00) >> 8);
@@ -56,9 +65,9 @@ public class AWTLoader implements ContentLoader {
         }
     }
 
-    public Object load(InputStream in, String extension) throws IOException {
+    public Object load(ContentManager owner, InputStream in, String extension) throws IOException {
         if (ImageIO.getImageWritersBySuffix(extension) != null){
-            return loadAWT(in);
+            return loadAWT(owner, in);
         }
         return null;
     }

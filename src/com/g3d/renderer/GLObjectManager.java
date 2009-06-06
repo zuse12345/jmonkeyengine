@@ -4,14 +4,20 @@ import java.lang.ref.PhantomReference;
 import java.lang.ref.ReferenceQueue;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * GLObjectManager tracks all GLObjects. If the display system is restarted,
- * all GLObjects are re-uploaded so that all data can be used again. If the
- * objects are no longer referenced, they will be automatically deleted
- * from the graphics library to avoid memory leaks.
+ * GLObjectManager tracks all GLObjects used by the Renderer. Using a
+ * <code>ReferenceQueue</code> the <code>GLObjectManager</code> can delete
+ * unused objects from GPU when their counterparts on the CPU are no longer used.
+ *
+ * On restart, the renderer may request the objects to be reset, thus allowing
+ * the GLObjects to re-initialize with the new display context.
  */
 public class GLObjectManager {
+
+    private static final Logger logger = Logger.getLogger(GLObjectManager.class.getName());
 
     /**
      * The queue will receive notifications of GLObjects which are no longer
@@ -39,7 +45,8 @@ public class GLObjectManager {
     public void registerForCleanup(GLObject obj){
         new GLObjectRef(obj);
         objectList.add(obj);
-        System.out.println("Registered for cleanup: "+obj);
+        if (logger.isLoggable(Level.FINEST))
+            logger.log(Level.FINEST, "Registered: {0}", new String[]{obj.toString()});
     }
 
     /**
@@ -49,7 +56,8 @@ public class GLObjectManager {
         for (GLObjectRef ref = (GLObjectRef) refQueue.poll(); ref != null;){
             ref.obj.deleteObject(r);
             objectList.remove(ref.obj);
-            System.out.println("Deleted: "+ref.obj);
+            if (logger.isLoggable(Level.FINEST))
+                logger.log(Level.FINEST, "Deleted: {0}", ref.obj);
         }
     }
 
@@ -69,7 +77,8 @@ public class GLObjectManager {
     public void resetObjects(){
         for (GLObject obj : objectList){
             obj.resetObject();
-            System.out.println("Reset: "+obj);
+            if (logger.isLoggable(Level.FINEST))
+                logger.log(Level.FINEST, "Reset: {0}", obj);
         }
         objectList.clear();
     }

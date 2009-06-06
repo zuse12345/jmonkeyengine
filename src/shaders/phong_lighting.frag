@@ -9,13 +9,13 @@
 #define HAS_NORMALMAP
 
 // if m_SpecularMap contains valid specular map
-#define HAS_SPECULARMAP
+//#define HAS_SPECULARMAP
 
 // if defined, alpha channel of diffuse map is used for blending
 //#define USE_ALPHA
 
 // number of lights sent in g_Light params
-#define NUM_LIGHTS 4
+#define NUM_LIGHTS 2
 
 //============================================
 // BEGIN PHONG LIGHTING SHADER

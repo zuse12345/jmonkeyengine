@@ -29,6 +29,9 @@ import com.g3d.shader.Shader.ShaderSource;
 import com.g3d.shader.Shader.ShaderType;
 import com.g3d.shader.Uniform;
 import com.g3d.system.Timer;
+import com.g3d.system.lwjgl.LwjglContext;
+import com.g3d.texture.FrameBuffer;
+import com.g3d.texture.FrameBuffer.RenderBuffer;
 import com.g3d.texture.Image;
 import com.g3d.texture.Texture;
 import com.g3d.texture.Texture.WrapAxis;
@@ -40,11 +43,17 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 //import org.lwjgl.opengl.ARBGeometryShader4;
+//import org.lwjgl.opengl.ARBHalfFloatVertex;
+//import org.lwjgl.opengl.ARBVertexArrayObject;
 import org.lwjgl.opengl.ARBHalfFloatVertex;
 import org.lwjgl.opengl.ARBVertexArrayObject;
+import org.lwjgl.opengl.EXTFramebufferMultisample;
+import org.lwjgl.opengl.EXTFramebufferObject;
+import org.lwjgl.opengl.EXTTextureArray;
 import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
 import org.lwjgl.opengl.GLContext;
 import org.lwjgl.opengl.Util;
@@ -55,21 +64,27 @@ import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL14.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
+
+import static org.lwjgl.opengl.EXTFramebufferObject.*;
+import static org.lwjgl.opengl.EXTFramebufferMultisample.*;
+import static org.lwjgl.opengl.EXTFramebufferBlit.*;
 //import static org.lwjgl.opengl.ARBDrawInstanced.*;
 
 public class LwjglRenderer implements Renderer {
 
     private static final Logger logger = Logger.getLogger(LwjglRenderer.class.getName());
+    private static final boolean VALIDATE_SHADER = true;
 
     private ByteBuffer nameBuf = BufferUtils.createByteBuffer(250);
     private StringBuilder stringBuf = new StringBuilder(250);
 
+    private LwjglContext owner;
     private RenderQueue queue;
     private RenderContext context = new RenderContext();
     private GLObjectManager objManager = new GLObjectManager();
     
     private final Matrix4f worldMatrix = new Matrix4f();
-//    private final FloatBuffer floatBuf16 = BufferUtils.createFloatBuffer(16);
+    private final Matrix4f orthoMatrix = new Matrix4f();
 
     // current state
     private Camera camera;
@@ -81,9 +96,13 @@ public class LwjglRenderer implements Renderer {
     private int vertexUniforms;
     private int fragUniforms;
     private int vertexAttribs;
+    private int maxFBOSamples;
+    private int maxFBOAttachs;
+    private int maxRBSize;
 
-    public LwjglRenderer(){
+    public LwjglRenderer(LwjglContext owner){
         queue = new RenderQueue(this);
+        this.owner = owner;
     }
 
     protected void updateNameBuffer(){
@@ -117,15 +136,35 @@ public class LwjglRenderer implements Renderer {
 
         glGetInteger(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, vars.intBuffer16);
         vertexTextureUnits = vars.intBuffer16.get(0);
+        logger.log(Level.FINER, "VTF Units: {0}", vertexTextureUnits);
 
         glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS, vars.intBuffer16);
         fragTextureUnits = vars.intBuffer16.get(0);
+        logger.log(Level.FINER, "Texture Units: {0}", fragTextureUnits);
 
         glGetInteger(GL_MAX_VERTEX_UNIFORM_COMPONENTS, vars.intBuffer16);
         vertexUniforms = vars.intBuffer16.get(0);
+        logger.log(Level.FINER, "Vertex Uniforms: {0}", vertexUniforms);
 
         glGetInteger(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, vars.intBuffer16);
         fragUniforms = vars.intBuffer16.get(0);
+        logger.log(Level.FINER, "Fragment Uniforms: {0}", fragUniforms);
+
+        if (GLContext.getCapabilities().GL_EXT_framebuffer_object){
+            glGetInteger(GL_MAX_RENDERBUFFER_SIZE_EXT, vars.intBuffer16);
+            maxRBSize = vars.intBuffer16.get(0);
+            logger.log(Level.FINER, "FBO RB Max Size: {0}", maxRBSize);
+
+            glGetInteger(GL_MAX_COLOR_ATTACHMENTS_EXT, vars.intBuffer16);
+            maxFBOAttachs = vars.intBuffer16.get(0);
+            logger.log(Level.FINER, "FBO Max renderbuffers: {0}", maxFBOAttachs);
+            
+            if (GLContext.getCapabilities().GL_EXT_framebuffer_multisample){
+                glGetInteger(GL_MAX_SAMPLES_EXT, vars.intBuffer16);
+                maxFBOSamples = vars.intBuffer16.get(0);
+                logger.log(Level.FINER, "FBO Max Samples: {0}", maxFBOSamples);
+            }
+        }
     }
 
     public void cleanup(){
@@ -187,38 +226,48 @@ public class LwjglRenderer implements Renderer {
     }
 
     /*********************************************************************\
-    |* Support checks                                                    *|
-    \*********************************************************************/
-    public void checkShaderSupport(String lang, int attribs, int uniforms){
-        if (attribs > 0){
-            // check attribute size
-            // TODO: Finish shader support check
-        }
-    }
-
-
-    /*********************************************************************\
     |* Camera and World transforms                                       *|
     \*********************************************************************/
 
     public void setCamera(Camera cam) {
+        if (this.camera == cam)
+            return;
+        
         this.camera = cam;
+        // the GL state needs an update in viewport
+        updateViewPort();
     }
 
     public Camera getCamera(){
         return camera;
     }
 
+    private void updateViewPort(){
+        int x = (int) (camera.getViewPortLeft() * camera.getWidth());
+        int y = (int) (camera.getViewPortBottom() * camera.getHeight());
+        int w = (int) ((camera.getViewPortRight() - camera.getViewPortLeft()) * camera.getWidth());
+        int h = (int) ((camera.getViewPortTop() - camera.getViewPortBottom()) * camera.getHeight());
+        glViewport(x, y, w, h);
+
+        //also update ortho matrix
+        orthoMatrix.loadIdentity();
+
+        float tx = -(w+x)/(w-x);
+        float ty = -(h+y)/(h-y);
+        float tz = 0;
+        orthoMatrix.setTranslation(tx, ty, tz);
+
+        float m00 = 2f / (w-x);
+        float m11 = 2f / (h-y);
+        float m22 = -1f;
+        orthoMatrix.setScale(new Vector3f(m00,m11,m22));
+    }
+
     public void onFrame(){
         objManager.deleteUnused(this);
 
         if (camera.isViewportChanged()){
-            int x = (int) (camera.getViewPortLeft() * camera.getWidth());
-            int y = (int) (camera.getViewPortBottom() * camera.getHeight());
-            int w = (int) ((camera.getViewPortRight() - camera.getViewPortLeft()) * camera.getWidth());
-            int h = (int) ((camera.getViewPortTop() - camera.getViewPortBottom()) * camera.getHeight());
-            glViewport(x, y, w, h);
-
+            updateViewPort();
             camera.clearViewportChanged();
         }
     }
@@ -259,7 +308,7 @@ public class LwjglRenderer implements Renderer {
                 uniform.setLocation(-1);
                 uniform.clearUpdateNeeded();
                 // uniform is not declared in shader
-                //logger.warning("Uniform "+uniform.getName()+" is not declared in shader.");
+                logger.warning("Uniform "+uniform.getName()+" is not declared in shader.");
                 return;
             }
             uniform.setLocation(loc);
@@ -284,10 +333,9 @@ public class LwjglRenderer implements Renderer {
                 ColorRGBA c = (ColorRGBA)uniform.getValue();
                 glUniform4f(loc, c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
                 break;
-            case Matrix2:
-                fb = (FloatBuffer)uniform.getValue();
-                assert fb.remaining() == 4;
-                glUniformMatrix2(loc, false, fb);
+            case Boolean:
+                Boolean b = (Boolean)uniform.getValue();
+                glUniform1i(loc, b.booleanValue() ? GL_TRUE : GL_FALSE);
                 break;
             case Matrix3:
                 fb = (FloatBuffer)uniform.getValue();
@@ -383,6 +431,7 @@ public class LwjglRenderer implements Renderer {
         Matrix4f tempMat4 = vars.tempMat4;
         Matrix3f tempMat3 = vars.tempMat3;
         Vector3f tempVec3 = vars.vect1;
+        Vector2f tempVec2 = vars.vect2d;
         Quaternion tempVec4 = vars.quat1;
 
         for (int i = 0; i < params.size(); i++){
@@ -408,11 +457,19 @@ public class LwjglRenderer implements Renderer {
                     tempMat4.set(viewMatrix);
                     tempMat4.multLocal(worldMatrix);
                     tempMat4.toRotationMatrix(tempMat3);
-                    // TODO: NormalMatrix = transpose(mat3(g_WorldViewMatrix))??
                     tempMat3.invertLocal();
                     tempMat3.transposeLocal();
                     
                     u.setMatrix3(tempMat3);
+                    break;
+                case OrthoMatrix:
+                    u.setMatrix4(orthoMatrix);
+                    break;
+                case WorldOrthoMatrix:
+                    tempMat4.loadIdentity();
+                    tempMat4.set(orthoMatrix);
+                    tempMat4.multLocal(worldMatrix);
+                    u.setMatrix4(tempMat4);
                     break;
                 case WorldViewProjectionMatrix:
                     tempMat4.loadIdentity();
@@ -426,6 +483,10 @@ public class LwjglRenderer implements Renderer {
                                  camera.getViewPortRight(),
                                  camera.getViewPortBottom());
                     u.setVector4(tempVec4);
+                    break;
+                case Resolution:
+                    tempVec2.set(camera.getWidth(), camera.getHeight());
+                    u.setVector2(tempVec2);
                     break;
                 case Aspect:
                     float aspect = ((float) camera.getWidth()) / camera.getHeight();
@@ -447,13 +508,13 @@ public class LwjglRenderer implements Renderer {
                     u.setVector3(tempVec3);
                     break;
                 case Time:
-                    u.setFloat(Timer.getTimer().getTimeInSeconds());
+                    u.setFloat(owner.getTimer().getTimeInSeconds());
                     break;
                 case Tpf:
-                    u.setFloat(Timer.getTimer().getTimePerFrame());
+                    u.setFloat(owner.getTimer().getTimePerFrame());
                     break;
                 case FrameRate:
-                    u.setFloat(Timer.getTimer().getFrameRate());
+                    u.setFloat(owner.getTimer().getFrameRate());
                     break;
             }
         }
@@ -468,7 +529,7 @@ public class LwjglRenderer implements Renderer {
 //            case Geometry:
 //                return ARBGeometryShader4.GL_GEOMETRY_SHADER_ARB;
             default:
-                throw new RuntimeException("Unknown shader type.");
+                throw new RuntimeException("Unrecognized shader type.");
         }
     }
 
@@ -489,32 +550,26 @@ public class LwjglRenderer implements Renderer {
 
         IntBuffer temp = TempVars.get().intBuffer1;
         glGetShader(id, GL_COMPILE_STATUS, temp);
+
         boolean compiledOK = temp.get(0) == GL_TRUE;
-
-        // check for errors, etc
-        glGetShader(id, GL_INFO_LOG_LENGTH, temp);
-        int length = temp.get(0);
-        if (length > 0){
-            // get infos
-            ByteBuffer logBuf = BufferUtils.createByteBuffer(length);
-            glGetShaderInfoLog(id, null, logBuf);
-
-            // convert to string, etc
-            byte[] logBytes = new byte[length];
-            logBuf.get(logBytes, 0, length);
-            String infoLog = new String(logBytes);
-            if (compiledOK){
-                // we dont care much about the info log if all still compiled..
-                // send as FINE
-                logger.fine(source.getType().name()+" compile success: "+infoLog);
-            }else{
-                // send as WARNING
-                logger.warning(source.getType().name()+" compile error: "+infoLog);
-            }
-        }else if (!compiledOK){
-            logger.warning(source.getType().name()+" compile error: ?");
-        }else{
+        if (compiledOK){
             logger.fine(source.getType().name()+" compile success");
+        }else{
+            // check for error log
+            glGetShader(id, GL_INFO_LOG_LENGTH, temp);
+            int length = temp.get(0);
+            if (length > 0){
+                // get infos
+                ByteBuffer logBuf = BufferUtils.createByteBuffer(length);
+                glGetShaderInfoLog(id, null, logBuf);
+                byte[] logBytes = new byte[length];
+                logBuf.get(logBytes, 0, length);
+                 // convert to string, etc
+                String infoLog = new String(logBytes);
+                logger.warning(source.getType().name()+" compile error: "+infoLog);
+            }else{
+                logger.warning(source.getType().name()+" compile error: ?");
+            }
         }
 
         // only usable if compiled
@@ -559,36 +614,34 @@ public class LwjglRenderer implements Renderer {
         glGetProgram(id, GL_LINK_STATUS, temp);
         boolean linkOK = temp.get(0) == GL_TRUE;
 
-        // XXX: Apparently VALIDATE_STATUS is only for use with
-        // glValidateProgram call.
-//        glGetProgram(id, GL_VALIDATE_STATUS, temp);
-//        boolean validateOK = temp.get(0) == GL_TRUE;
-
-        glGetProgram(id, GL_INFO_LOG_LENGTH, temp);
-        int length = temp.get(0);
-
-        if (length > 0){
-            // get infos
-            ByteBuffer logBuf = BufferUtils.createByteBuffer(length);
-            glGetProgramInfoLog(id, null, logBuf);
-
-            // convert to string, etc
-            byte[] logBytes = new byte[length];
-            logBuf.get(logBytes, 0, length);
-            String infoLog = new String(logBytes);
-
-            if (linkOK){
-                // we dont care much about the info log if all still compiled..
-                // send as FINE
-                logger.fine("shader link success: "+infoLog);
-            }else{
-                // send as WARNING
-                logger.warning("shader link failure: "+infoLog);
+        if (linkOK){
+            if (VALIDATE_SHADER){
+                glValidateProgram(id);
+                glGetProgram(id, GL_VALIDATE_STATUS, temp);
+                boolean validateOK = temp.get(0) == GL_TRUE;
+                if (validateOK)
+                    logger.fine("shader validate success");
+                else
+                    logger.warning("shader validate failure");
             }
-        }else if (linkOK){
+
             logger.fine("shader link success");
-        }else if (!linkOK){
-            logger.fine("shader link failure");
+        }else{
+            glGetProgram(id, GL_INFO_LOG_LENGTH, temp);
+            int length = temp.get(0);
+            if (length > 0){
+                // get infos
+                ByteBuffer logBuf = BufferUtils.createByteBuffer(length);
+                glGetProgramInfoLog(id, null, logBuf);
+
+                // convert to string, etc
+                byte[] logBytes = new byte[length];
+                logBuf.get(logBytes, 0, length);
+                String infoLog = new String(logBytes);
+                logger.warning("shader link failure: "+infoLog);
+            }else{
+                logger.fine("shader link failure");
+            }
         }
 
         shader.clearUpdateNeeded();
@@ -619,7 +672,6 @@ public class LwjglRenderer implements Renderer {
             if (!shader.isUsable())
                 return;
 
-//            updatePredefinedUniforms(shader);
             updateShaderUniforms(shader);
             if (context.boundShaderProgram != shader.getId()){
                 glUseProgram(shader.getId());
@@ -644,6 +696,233 @@ public class LwjglRenderer implements Renderer {
     }
 
     /*********************************************************************\
+    |* Framebuffers                                                      *|
+    \*********************************************************************/
+    public void copyFrameBuffer(FrameBuffer src, FrameBuffer dst){
+        if (GLContext.getCapabilities().GL_EXT_framebuffer_blit){
+            int srcW = 0;
+            int srcH = 0;
+            int dstW = 0;
+            int dstH = 0;
+            int prevFBO = context.boundFBO;
+            if (src == null){
+                glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, 0);
+                srcW = camera.getWidth();
+                srcH = camera.getHeight();
+            }else{
+                glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, src.getId());
+                srcW = src.getWidth();
+                srcH = src.getHeight();
+            }
+            if (dst == null){
+                glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, 0);
+                dstW = camera.getWidth();
+                dstH = camera.getHeight();
+            }else{
+                glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, dst.getId());
+                dstW = dst.getWidth();
+                dstH = dst.getHeight();
+            }
+            glBlitFramebufferEXT(0, 0, srcW, srcH,
+                                 0, 0, dstW, dstH,
+                                 GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
+                                 GL_LINEAR);
+            
+            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, prevFBO);
+        }else{
+            throw new UnsupportedOperationException("EXT_framebuffer_blit required.");
+              // TODO: support non-blit copies?
+        }
+    }
+
+    private void updateRenderBuffer(FrameBuffer fb, RenderBuffer rb){
+        int id = rb.getId();
+        if (id == -1){
+            glGenRenderbuffersEXT(TempVars.get().intBuffer1);
+            id = TempVars.get().intBuffer1.get(0);
+            rb.setId(id);
+        }
+
+        if (context.boundRB != id){
+            glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, id);
+            context.boundRB = id;
+        }
+
+        if (fb.getWidth() > maxRBSize || fb.getHeight() > maxRBSize)
+            throw new UnsupportedOperationException("Resolution "+fb.getWidth()+
+                                                    ":"+fb.getHeight()+" is not supported.");
+       
+        if (fb.getSamples() > 0 && GLContext.getCapabilities().GL_EXT_framebuffer_multisample){
+            int samples = fb.getSamples();
+            if (maxFBOSamples < samples){
+                samples = maxFBOSamples;
+            }
+            glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT,
+                                                samples,
+                                                TextureUtil.convertTextureFormat(rb.getFormat()),
+                                                fb.getWidth(),
+                                                fb.getHeight());
+        }else{
+            glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
+                                     TextureUtil.convertTextureFormat(rb.getFormat()),
+                                     fb.getWidth(),
+                                     fb.getHeight());
+        }
+    }
+
+    private int convertAttachmentSlot(int attachmentSlot){
+        // can also add support for stencil here
+        if (attachmentSlot == -100){
+            return GL_DEPTH_ATTACHMENT_EXT;
+        }else if (attachmentSlot < 0 || attachmentSlot >= 16){
+            throw new UnsupportedOperationException("Invalid FBO attachment slot: "+attachmentSlot);
+        }
+
+        return GL_COLOR_ATTACHMENT0_EXT + attachmentSlot;
+    }
+
+    private void checkFrameBufferError() {
+        int status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+        switch (status) {
+            case GL_FRAMEBUFFER_COMPLETE_EXT:
+                break;
+            case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
+                //Choose different formats
+                throw new IllegalStateException("Framebuffer object format is " +
+                                                "unsupported by the video hardware.");
+            case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
+                throw new IllegalStateException("Framebuffer has erronous attachment.");
+            case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
+                throw new IllegalStateException("Framebuffer is missing required attachment.");
+            case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
+                throw new IllegalStateException("Framebuffer has dimensions error.");
+            case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
+                throw new IllegalStateException("Framebuffer has format error.");
+            case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
+                throw new IllegalStateException("Incomplete draw buffer.");
+            case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
+                throw new IllegalStateException("Incomplete read buffer.");
+            case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT:
+                throw new IllegalStateException("Incomplete multisample buffer.");
+            default:
+                //Programming error; will fail on all hardware
+                throw new IllegalStateException("Some video driver error " +
+                                                "or programming error occured. " +
+                                                "Framebuffer object status is invalid. ");
+        }
+    }
+
+    public void updateFrameBuffer(FrameBuffer fb) {
+        int id = fb.getId();
+        if (id == -1){
+            // create FBO
+            glGenFramebuffersEXT(TempVars.get().intBuffer1);
+            id = TempVars.get().intBuffer1.get(0);
+            fb.setId(id);
+            objManager.registerForCleanup(fb);
+        }
+
+        if (context.boundFBO != id){
+            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, id);
+            context.boundFBO = id;
+        }
+
+        FrameBuffer.RenderBuffer depthBuf = fb.getDepthBuffer();
+        if (depthBuf != null){
+            // if it hasn't been created yet, then attach is required.
+            boolean needAttach = depthBuf.getId() == -1;
+
+            updateRenderBuffer(fb, depthBuf);
+
+            if (needAttach){
+                glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
+                                             convertAttachmentSlot(depthBuf.getSlot()),
+                                             GL_RENDERBUFFER_EXT,
+                                             depthBuf.getId());
+            }
+        }
+
+        FrameBuffer.RenderBuffer colorBuf = fb.getColorBuffer();
+        if (colorBuf != null){
+            boolean needAttach;
+            if (colorBuf.getTexture() == null){
+                // if it hasn't been created yet, then attach is required.
+                needAttach = colorBuf.getId() == -1;
+                updateRenderBuffer(fb, colorBuf);
+            }else{
+                Texture tex = colorBuf.getTexture();
+                needAttach = false;
+                setTexture(0, tex);
+                glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
+                                          convertAttachmentSlot(colorBuf.getSlot()),
+                                          convertTextureType(tex.getType()),
+                                          tex.getId(),
+                                          0);
+                clearTextureUnits();
+            }
+
+            if (needAttach){
+                glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
+                                             convertAttachmentSlot(colorBuf.getSlot()),
+                                             GL_RENDERBUFFER_EXT,
+                                             colorBuf.getId());
+            }
+        }
+
+        checkFrameBufferError();
+        fb.clearUpdateNeeded();
+    }
+
+    public void setFrameBuffer(FrameBuffer fb) {
+        // make sure all prior render commands have been sent
+        renderQueue();
+
+        if (fb == null){
+            if (context.boundFBO != 0){
+                glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+                context.boundFBO = 0;
+            }
+        }else{
+            if (fb.isUpdateNeeded())
+               updateFrameBuffer(fb);
+
+            if (context.boundFBO != fb.getId()){
+                glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fb.getId());
+                context.boundFBO = fb.getId();
+            }
+
+            assert fb.getId() >= 0;
+            assert context.boundFBO == fb.getId();
+        }
+    }
+
+    private void deleteRenderBuffer(FrameBuffer fb, RenderBuffer rb){
+        TempVars.get().intBuffer1.put(0, rb.getId());
+        glDeleteRenderbuffersEXT(TempVars.get().intBuffer1);
+    }
+
+    public void deleteFrameBuffer(FrameBuffer fb) {
+        if (fb.getId() != -1){
+            if (context.boundFBO == fb.getId()){
+                glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+                context.boundFBO = 0;
+            }
+            
+            if (fb.getDepthBuffer() != null){
+                deleteRenderBuffer(fb, fb.getDepthBuffer());
+            }
+            if (fb.getColorBuffer() != null){
+                deleteRenderBuffer(fb, fb.getColorBuffer());
+            }
+
+            TempVars.get().intBuffer1.put(0, fb.getId());
+            glDeleteFramebuffersEXT(TempVars.get().intBuffer1);
+            fb.resetObject();
+        }
+    }
+
+
+    /*********************************************************************\
     |* Textures                                                          *|
     \*********************************************************************/
 
@@ -653,6 +932,8 @@ public class LwjglRenderer implements Renderer {
                 return GL_TEXTURE_1D;
             case TwoDimensional:
                 return GL_TEXTURE_2D;
+            case TwoDimensionalArray:
+                return EXTTextureArray.GL_TEXTURE_2D_ARRAY_EXT;
             case ThreeDimensional:
                 return GL_TEXTURE_3D;
             case CubeMap:
@@ -738,15 +1019,18 @@ public class LwjglRenderer implements Renderer {
 		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magFilter);
 
         if (tex.getAnisotropicFilter() > 1){
-            glTexParameterf(target,
-                            EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT,
-                            tex.getAnisotropicFilter());
+            if (GLContext.getCapabilities().GL_EXT_texture_filter_anisotropic){
+                glTexParameterf(target,
+                                EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                                tex.getAnisotropicFilter());
+            }
         }
         // repeat modes
         switch (tex.getType()){
             case ThreeDimensional:
                 glTexParameteri(target, GL_TEXTURE_WRAP_R, convertWrapMode(tex.getWrap(WrapAxis.R)));
             case TwoDimensional:
+            case TwoDimensionalArray:
                 glTexParameteri(target, GL_TEXTURE_WRAP_T, convertWrapMode(tex.getWrap(WrapAxis.T)));
                 // fall down here is intentional..
             case OneDimensional:
@@ -758,11 +1042,15 @@ public class LwjglRenderer implements Renderer {
 
         Image img = tex.getImage();
         if (img != null){
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             if (!img.hasMipmaps() && tex.getMinFilter().usesMipMapLevels()){
                 // No pregenerated mips available,
                 // generate from base level if required
-                glTexParameteri(target, GL_GENERATE_MIPMAP, GL_TRUE);
+                if (GLContext.getCapabilities().GL_ARB_framebuffer_object){
+                    // apparently required by OpenGL3.0?!
+                    glGenerateMipmapEXT(target);
+                }else{
+                    glTexParameteri(target, GL_GENERATE_MIPMAP, GL_TRUE);
+                }
             }
             TextureUtil.uploadTexture(img, target, 0);
         }
@@ -816,17 +1104,6 @@ public class LwjglRenderer implements Renderer {
             textures[idx] = null;
         }
         context.textureIndexList.copyNewToOld();
-        
-//        Texture[] boundTextures = context.boundTextures;
-//        for (int i = 0; i < boundTextures.length; i++){
-//            if (boundTextures[i] != null){
-//                glActiveTexture(GL_TEXTURE0 + i);
-//                int type = convertTextureType(boundTextures[i].getType());
-//                glDisable(type);
-//                glBindTexture(type, 0);
-//                boundTextures[i] = null;
-//            }
-//        }
     }
 
     public void deleteTexture(Texture tex){
@@ -945,14 +1222,6 @@ public class LwjglRenderer implements Renderer {
     public void deleteBuffer(VertexBuffer vb) {
         int bufId = vb.getId();
         if (bufId != -1){
-//            if (bufId == context.boundArrayVBO){
-//                glBindBuffer(GL_ARRAY_BUFFER, 0);
-//                context.boundArrayVBO = 0;
-//            }
-//            if (bufId == context.boundElementArrayVBO){
-//                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-//                context.boundElementArrayVBO = 0;
-//            }
             // delete buffer
             IntBuffer temp = TempVars.get().intBuffer1;
             temp.put(0, bufId);
@@ -1071,19 +1340,26 @@ public class LwjglRenderer implements Renderer {
                            convertFormat(indexBuf.getFormat()),
                            0);
 //        }
-//        Util.checkGLError();
     }
 
     public void drawTriangleStrip(int length){
         glDrawArrays(GL_TRIANGLE_STRIP, 0, length);
-        Util.checkGLError();
     }
 
     /*********************************************************************\
     |* Render Calls                                                      *|
     \*********************************************************************/
     public void renderQueue(){
+        // gui covers many parts of the screen,
+        // render it first to reduce overdraw of other objects
+        queue.renderQueue(Bucket.Gui);
+
         queue.renderQueue(Bucket.Opaque);
+        queue.renderQueue(Bucket.Sky);
+        
+        // transparent is last because it require blending with the 
+        // rest of the scene's objects
+        queue.renderQueue(Bucket.Transparent);
     }
 
     public void addToQueue(Geometry geom, RenderQueue.Bucket bucket){
@@ -1155,7 +1431,7 @@ public class LwjglRenderer implements Renderer {
             drawTriangleList(mesh.getBuffer(Type.Index), 1);
             clearTextureUnits();
         }else{
-            renderMesh(geom.getMesh(), 1);
+            renderMesh(mesh, 1);
         }
     }
 

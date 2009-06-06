@@ -64,9 +64,6 @@ public class OBJLoader implements ContentLoader {
     public OBJLoader(){
     }
 
-    public void setOwner(ContentManager owner){
-    }
-
     protected void loadVertexIndex(Vertex vert){
         Integer index = vertIndexMap.get(vert);
         if (index != null){
@@ -249,7 +246,7 @@ public class OBJLoader implements ContentLoader {
     }
 
     @SuppressWarnings("empty-statement")
-    public Object load(InputStream in, String extension){
+    public Object load(ContentManager owner, InputStream in, String extension){
         scan = new Scanner(in);
         while (readLine());
         return constructMesh();

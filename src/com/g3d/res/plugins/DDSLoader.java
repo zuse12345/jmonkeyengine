@@ -106,10 +106,7 @@ public class DDSLoader implements ContentLoader {
     public DDSLoader() {
     }
 
-    public void setOwner(ContentManager owner){
-    }
-
-    public Object load(InputStream in, String extension) throws IOException{
+    public Object load(ContentManager owner, InputStream in, String extension) throws IOException{
         return loadImage(in);
     }
 

@@ -465,6 +465,15 @@ public class ColorRGBA implements Savable, Cloneable {
         a = capsule.readFloat("a", 0);
     }
 
+    public byte[] asBytesRGBA(){
+        byte[] store = new byte[4];
+        store[0] = (byte)((int)(r * 255) & 0xFF);
+        store[1] = (byte)((int)(g * 255) & 0xFF);
+        store[2] = (byte)((int)(b * 255) & 0xFF);
+        store[3] = (byte)((int)(a * 255) & 0xFF);
+        return store;
+    }
+
     public int asIntARGB() {
         int argb = (((int) (a * 255) & 0xFF) << 24)
                  | (((int) (r * 255) & 0xFF) << 16)

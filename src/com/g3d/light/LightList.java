@@ -56,10 +56,17 @@ public class LightList implements Iterable<Light> {
         distToOwner[listSize] = Float.NEGATIVE_INFINITY;
     }
 
+    /**
+     * @return The size of the list.
+     */
     public int size(){
         return listSize;
     }
 
+    /**
+     * @return the light at the given index.
+     * @throws IndexOutOfBoundsException If the given index is outside bounds.
+     */
     public Light get(int num){
         if (num > listSize || num < 0)
             throw new IndexOutOfBoundsException();
@@ -85,6 +92,14 @@ public class LightList implements Iterable<Light> {
 
     /**
      * Sorts the elements in the list acording to their Comparator.
+     * There are two reasons why lights should be resorted. 
+     * First, if the lights have moved, that means their distance to 
+     * the spatial changed. 
+     * Second, if the spatial itself moved, it means the distance from it to 
+     * the individual lights might have changed.
+     * 
+     *
+     * @param transformChanged Whether the spatial's transform has changed
      */
     public void sort(boolean transformChanged) {
         if (listSize > 1) {
@@ -107,12 +122,26 @@ public class LightList implements Iterable<Light> {
         }
     }
 
+    /**
+     * Updates a "world-space" light list, using the spatial's local-space
+     * light list and its parent's world-space light list.
+     *
+     * @param local
+     * @param parent
+     */
     public void update(LightList local, LightList parent){
+        // clear the list as it will be reconstructed
+        // using the arguments
         clear();
+
+        // add the lights from the local list
         for (int i = 0; i < local.listSize; i++){
             list[i] = local.list[i];
             distToOwner[i] = Float.NEGATIVE_INFINITY;
         }
+
+        // if the spatial has a parent node, add the lights
+        // from the parent list as well
         if (parent != null){
             for (int i = 0; i < parent.listSize; i++){
                 int p = i + local.listSize;

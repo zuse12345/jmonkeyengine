@@ -22,7 +22,7 @@ public class SoftwareCursor extends Geometry implements BindingListener {
     public SoftwareCursor(){
         super("Software Cursor", new Quad(1,1));
         quad = (Quad) getMesh();
-        quad.updateGeometry(1, 1, false, true);
+        quad.updateGeometry(1, 1, true);
         
         // setup texture
         tex.setAnisotropicFilter(0);

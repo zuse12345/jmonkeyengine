@@ -10,7 +10,7 @@ import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Spatial;
 import com.g3d.scene.Sphere;
-import com.g3d.system.DisplaySettings;
+import com.g3d.system.AppSettings;
 import com.g3d.util.TangentBinormalGenerator;
 
 public class TestBumpModel extends SimpleApplication {
@@ -21,7 +21,7 @@ public class TestBumpModel extends SimpleApplication {
 
     public static void main(String[] args){
         TestBumpModel app = new TestBumpModel();
-        app.setSettings(new DisplaySettings(DisplaySettings.Template.Default800x600));
+        app.setSettings(new AppSettings(AppSettings.Template.Default800x600));
         app.start();
     }
 

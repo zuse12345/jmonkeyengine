@@ -6,36 +6,30 @@ import com.g3d.input.MouseInput;
 import com.g3d.input.lwjgl.LwjglJoyInput;
 import com.g3d.input.lwjgl.LwjglKeyInput;
 import com.g3d.input.lwjgl.LwjglMouseInput;
-import com.g3d.renderer.GLObjectManager;
-import com.g3d.renderer.lwjgl.LwjglRenderer;
 import com.g3d.system.G3DContext.Type;
-import com.g3d.util.TempVars;
-import java.nio.IntBuffer;
 import java.util.logging.Logger;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.PixelFormat;
 import org.lwjgl.opengl.Util;
-import com.g3d.system.DisplaySettings;
+import com.g3d.system.AppSettings;
 
-import com.g3d.system.DisplaySettings.Template;
+import com.g3d.system.AppSettings.Template;
 import com.g3d.system.G3DSystem;
-import java.util.logging.Level;
-import org.lwjgl.LWJGLUtil;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.ContextAttribs;
-import org.lwjgl.opengl.GLContext;
+//import org.lwjgl.opengl.ContextAttribs;
 import org.lwjgl.opengl.OpenGLException;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL20.*;
 
-public class LwjglDisplay extends LwjglContext {
+public class LwjglDisplay extends LwjglContext implements Runnable {
 
     private static final Logger logger = Logger.getLogger(LwjglDisplay.class.getName());
+    protected AtomicBoolean needClose = new AtomicBoolean(false);
 
     protected DisplayMode getFullscreenDisplayMode(int width, int height, int bpp, int freq){
         try {
@@ -52,11 +46,11 @@ public class LwjglDisplay extends LwjglContext {
         return null;
     }
 
-    protected void applySettings(DisplaySettings settings){
+    protected void applySettings(AppSettings settings){
         DisplayMode displayMode = null;
         if (settings.getTemplate() == Template.DesktopFullscreen){
-            displayMode = org.lwjgl.opengl.Display.getDesktopDisplayMode();
-            settings.setResolution(displayMode.getWidth(), displayMode.getHeight());
+//            displayMode = org.lwjgl.opengl.Display.getDesktopDisplayMode();
+//            settings.setResolution(displayMode.getWidth(), displayMode.getHeight());
         }else if (settings.isFullscreen()){
             displayMode = getFullscreenDisplayMode(settings.getWidth(), settings.getHeight(),
                                                    settings.getBitsPerPixel(), settings.getFrequency());
@@ -75,22 +69,14 @@ public class LwjglDisplay extends LwjglContext {
         } catch (LWJGLException ex){
             throw new RuntimeException("Failed to create display.", ex);
         } finally {
-            if (!created){
+            if (!created.get()){
                 if (Display.isCreated())
                     Display.destroy();
             }
         }
     }
 
-    @Override
-    public void create(){
-        if (created){
-            logger.warning("create() called when display is already created!");
-            return;
-        }
-
-        logger.info("Using LWJGL "+Sys.getVersion());
-
+    protected void initInThread(){
         PixelFormat pf = new PixelFormat(settings.getBitsPerPixel(),
                                          0,
                                          settings.getDepthBits(),
@@ -99,14 +85,15 @@ public class LwjglDisplay extends LwjglContext {
 
         try{
             applySettings(settings);
-            String rendererStr = settings.getString("Renderer");
-            if (rendererStr.equals("LWJGL-OpenGL3")){
-                ContextAttribs attribs = new ContextAttribs(3, 0);
-                attribs.withForwardCompatible(true);
-                Display.create(pf, attribs);
-            }else{
+//            String rendererStr = settings.getString("Renderer");
+//            if (rendererStr.equals("LWJGL-OpenGL3")){
+//                ContextAttribs attribs = new ContextAttribs(2, 1);
+//                attribs.withForwardCompatible(false);
+//                attribs.withForwardCompatible(true);
+//                Display.create(pf, attribs);
+//            }else{
                 Display.create(pf);
-            }
+//            }
 
             boolean isActive = Display.isActive();
             boolean isCreated = Display.isCreated();
@@ -122,28 +109,16 @@ public class LwjglDisplay extends LwjglContext {
                     logger.warning("Display is not active!");
             }
 
-            if (GLContext.getCapabilities().OpenGL30){
-                logger.fine("OpenGL 3.0 supported!");
-            }
+//            if (GLContext.getCapabilities().OpenGL30){
+//                logger.fine("OpenGL 3.0 supported!");
+//            }
 
             logger.fine("Running on thread: "+Thread.currentThread().getName());
-            
+
             try{
                  Util.checkGLError();
             } catch (OpenGLException ex){
                 System.out.println(ex.getMessage());
-            }
-
-            IntBuffer temp = TempVars.get().intBuffer16;
-            if (settings.getSamples() != 0) {
-                glEnable(GL_MULTISAMPLE);
-                logger.info("Multisampling enabled. ");
-
-                glGetInteger(GL_SAMPLE_BUFFERS, temp);
-                logger.info("Sample buffers: "+temp.get(0));
-
-                glGetInteger(GL_SAMPLES, temp);
-                logger.info("Samples: "+temp.get(0));
             }
 
             Keyboard.poll();
@@ -163,16 +138,62 @@ public class LwjglDisplay extends LwjglContext {
             logger.info("OpenGL Version: "+version);
             logger.info("GLSL Ver: "+shadingLang);
 
-            created = true;
+            created.set(true);
         } catch (LWJGLException ex){
             G3DSystem.reportError("Failed to create display.", ex);
         } finally {
-            if (!created){
+            // TODO: It is possible to avoid "Failed to find pixel format"
+            // error here by creating a default display.
+
+            if (!created.get()){
                 if (Display.isCreated())
                     Display.destroy();
             }
         }
         super.create();
+        listener.initialize();
+    }
+
+    protected void runLoop(){
+        if (!created.get())
+            throw new IllegalStateException();
+
+        listener.update();
+        
+        // calls swap buffers, etc.
+        Display.update();
+        renderer.onFrame();
+    }
+
+    protected void deinitInThread(){
+        listener.destroy();
+
+        renderer.cleanup();
+        Display.destroy();
+        logger.info("Display destroyed.");
+        super.destroy();
+    }
+
+    public void run(){
+        logger.info("Using LWJGL "+Sys.getVersion());
+        initInThread();
+        while (true){
+            if (needClose.get())
+                break;
+
+            runLoop();
+        }
+        deinitInThread();
+    }
+
+    @Override
+    public void create(){
+        if (created.get()){
+            logger.warning("create() called when display is already created!");
+            return;
+        }
+
+        new Thread(this, "LWJGL Renderer Thread").start();
     }
 
     public JoyInput getJoyInput() {
@@ -189,10 +210,7 @@ public class LwjglDisplay extends LwjglContext {
 
     @Override
     public void destroy(){
-        renderer.cleanup();
-        Display.destroy();
-        logger.info("Display destroyed.");
-        super.destroy();
+        needClose.set(true);
     }
 
     @Override
@@ -202,7 +220,7 @@ public class LwjglDisplay extends LwjglContext {
 
     @Override
     public void restart(boolean updateCamera) {
-        if (created){
+        if (created.get()){
             applySettings(settings);
             if (renderer.getCamera() != null && updateCamera){
                 renderer.getCamera().resize(settings.getWidth(), settings.getHeight(), true);
@@ -219,14 +237,6 @@ public class LwjglDisplay extends LwjglContext {
 
     public boolean isCloseRequested() {
         return Display.isCloseRequested();
-    }
-
-    public void update() {
-        if (!created)
-            throw new IllegalStateException();
-
-        Display.update();
-        renderer.onFrame();
     }
 
 }

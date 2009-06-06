@@ -1,18 +1,14 @@
 package com.g3d.renderer;
 
-import com.g3d.light.LightList;
-import com.g3d.material.Technique;
 import com.g3d.math.Matrix4f;
-import com.g3d.math.Transform;
 import com.g3d.renderer.queue.RenderQueue;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.VertexBuffer;
 import com.g3d.shader.Shader;
 import com.g3d.shader.Uniform;
-import com.g3d.shader.UniformBinding;
+import com.g3d.texture.FrameBuffer;
 import com.g3d.texture.Texture;
-import java.util.EnumMap;
 import java.util.List;
 
 public interface Renderer {
@@ -105,6 +101,27 @@ public interface Renderer {
      * Prepares the texture for use and uploads its image data if neceessary.
      */
     public void updateTextureData(Texture tex);
+
+    /**
+     * Copies contents from src to dst, scaling if neccessary.
+     */
+    public void copyFrameBuffer(FrameBuffer src, FrameBuffer dst);
+
+    /**
+     * Sets the framebuffer that will be drawn to.
+     */
+    public void setFrameBuffer(FrameBuffer fb);
+
+    /**
+     * Initializes the framebuffer, creating it if neccessary and allocating
+     * requested renderbuffers.
+     */
+    public void updateFrameBuffer(FrameBuffer fb);
+
+    /**
+     * Deletes a framebuffer and all attached renderbuffers
+     */
+    public void deleteFrameBuffer(FrameBuffer fb);
 
     /**
      * Sets the texture to use for the given texture unit.

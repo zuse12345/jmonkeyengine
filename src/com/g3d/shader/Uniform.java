@@ -23,18 +23,15 @@ public class Uniform extends ShaderVariable {
         Vector3Array,
         Vector4Array,
 
-        Matrix2,
+        Boolean,
+
         Matrix3,
         Matrix4,
 
-        Matrix2Array,
         Matrix3Array,
         Matrix4Array,
 
         Int,
-        Int2,
-        Int3,
-        Int4
     }
 
     /**
@@ -112,6 +109,18 @@ public class Uniform extends ShaderVariable {
 
         value = new Float(val);
         dataType = Type.Float;
+        updateNeeded = true;
+    }
+
+    public void setBoolean(boolean val) {
+        if (location == -1)
+            return;
+
+        if (dataType != null && dataType != Type.Boolean)
+            throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
+
+        value = new Boolean(val);
+        dataType = Type.Boolean;
         updateNeeded = true;
     }
 

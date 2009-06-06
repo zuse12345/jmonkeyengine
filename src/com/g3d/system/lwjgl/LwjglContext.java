@@ -2,10 +2,11 @@ package com.g3d.system.lwjgl;
 
 import com.g3d.renderer.Renderer;
 import com.g3d.renderer.lwjgl.LwjglRenderer;
-import com.g3d.system.DisplaySettings;
-import com.g3d.system.DisplaySettings.Template;
+import com.g3d.system.AppSettings;
+import com.g3d.system.ContextListener;
 import com.g3d.system.G3DContext;
 import com.g3d.system.Timer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.lwjgl.opengl.DisplayMode;
 
 /**
@@ -13,32 +14,41 @@ import org.lwjgl.opengl.DisplayMode;
  */
 public abstract class LwjglContext implements G3DContext {
 
-    protected boolean created = false;
-    protected DisplaySettings settings = new DisplaySettings();
+    protected AtomicBoolean created = new AtomicBoolean(false);
+    protected AppSettings settings = new AppSettings();
     protected LwjglRenderer renderer;
     protected Timer timer;
+    protected ContextListener listener;
 
     public abstract boolean isActive();
     public abstract void restart(boolean updateCamera);
 
+    public void setContextListener(ContextListener listener){
+        this.listener = listener;
+    }
+
     public void destroy(){
-        created = false;
+        created.set(false);
         renderer = null;
         timer = null;
     }
     
     public void create(){
-        timer = Timer.getTimer();
-        renderer = new LwjglRenderer();
+        timer = new LwjglTimer();
+        renderer = new LwjglRenderer(this);
         renderer.initialize();
-        created = true;
+        created.set(true);
     }
 
-    public void setDisplaySettings(DisplaySettings settings) {
+    public boolean isCreated(){
+        return created.get();
+    }
+
+    public void setSettings(AppSettings settings) {
         this.settings.copyFrom(settings);
     }
 
-    public DisplaySettings getDisplaySettings(){
+    public AppSettings getSettings(){
         return settings;
     }
 

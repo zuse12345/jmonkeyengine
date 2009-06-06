@@ -4,6 +4,7 @@ import com.g3d.input.JoyInput;
 import com.g3d.input.KeyInput;
 import com.g3d.input.MouseInput;
 import com.g3d.renderer.Renderer;
+import javax.naming.Context;
 
 /**
  * Represents a rendering context within the engine.
@@ -53,14 +54,20 @@ public interface G3DContext {
      * the context has already been created, then <code>restart()</code> must be called
      * for the changes to be applied.
      */
-    public void setDisplaySettings(DisplaySettings settings);
+    public void setSettings(AppSettings settings);
+
+    /**
+     * Sets the listener that will recieve events relating to context
+     * creation, update, and destroy.
+     */
+    public void setContextListener(ContextListener listener);
 
     /**
      * @return The current display settings. Note that they might be 
      * different from the ones set with setDisplaySettings() if the context
      * was restarted or the settings changed internally.
      */
-    public DisplaySettings getDisplaySettings();
+    public AppSettings getSettings();
 
     /**
      * @return The renderer for this context, or null if not created yet.
@@ -88,8 +95,14 @@ public interface G3DContext {
     public Timer getTimer();
 
     /**
-     * @return True if the context is currently active (meaning, it has been
-     * created but not yet destroyed).
+     * @return True if the context has been created but not yet destroyed.
+     */
+    public boolean isCreated();
+
+    /**
+     * @return True if the context is in focus/visible on the screen.
+     * Can be used to reduce resource consumption when the application
+     * is not visible on the screen.
      */
     public boolean isActive();
 
@@ -111,10 +124,5 @@ public interface G3DContext {
      * Destroys the context completely, making it inactive.
      */
     public void destroy();
-
-    /**
-     * Update the context. Should be called every frame.
-     */
-    public void update();
 
 }

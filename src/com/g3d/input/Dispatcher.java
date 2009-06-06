@@ -6,13 +6,20 @@ import com.g3d.input.event.KeyInputEvent;
 import com.g3d.input.event.MouseButtonEvent;
 import com.g3d.input.event.MouseMotionEvent;
 import com.g3d.input.binding.BindingListener;
-import com.g3d.system.G3DContext;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The <code>Dispatcher</code> is responsible for converting input events
+ * recieved from the Key, Mouse and Joy Input implementations into an
+ * abstract, input device independent representation that user code can use.
+ *
+ * By default a dispatcher is included with every Application instance for use
+ * in user code to query input, unless the Application is created as headless
+ * or with input explicitly disabled.
+ */
 public class Dispatcher implements RawInputListener {
 
     private MouseInput mouseInput;
@@ -36,7 +43,18 @@ public class Dispatcher implements RawInputListener {
     private float[][] joyAxes;
     private boolean[][] joyButtons;
 
+    /**
+     * Initializes the Dispatcher.
+     *
+     * @param mouseInput
+     * @param keyInput
+     * @param joyInput
+     * @throws IllegalArgumentException If either mouseInput or keyInput are null.
+     */
     public Dispatcher(MouseInput mouseInput, KeyInput keyInput, JoyInput joyInput){
+        if (mouseInput == null || keyInput == null)
+            throw new IllegalArgumentException("Mouse and key input cannot be null");
+
         this.keyInput = keyInput;
         keyboard = new boolean[keyInput.getKeyCount()];
         keyInput.setInputListener(this);
@@ -66,6 +84,9 @@ public class Dispatcher implements RawInputListener {
         }
     }
 
+    /**
+     * @param visible whether the mouse cursor should be visible or not.
+     */
     public void setCursorVisible(boolean visible){
         mouseInput.setCursorVisible(visible);
     }
@@ -149,27 +170,18 @@ public class Dispatcher implements RawInputListener {
     }
 
     public void onJoyAxisEvent(JoyAxisEvent evt) {
-        // check if binding set for axis
-        // would only fail if more than 64k joysticks or more than 64k axes..
-        // also make sure 0 axis becomes 1 axis so negative works
-//        int axisId = (evt.getJoyIndex()+1) | ((evt.getAxisIndex()+1) << 16);
-
         joyAxes[evt.getJoyIndex()][evt.getAxisIndex()] = evt.getValue();
-//        if (evt.getValue() > 0){
-//            // positive X axis
-//            String name = joyAxisBindings.get(axisId);
-//            float value = evt.getValue();
-//            notifyListeners(name, value);
-//        }else if (evt.getValue() < 0){
-//            String name = joyAxisBindings.get(-axisId);
-//            float value = -evt.getValue();
-//            notifyListeners(name, value);
-//        }
     }
 
     public void onJoyButtonEvent(JoyButtonEvent evt) {
     }
 
+    /**
+     * Updates the Dispatcher. This will query current input devices and send
+     * appropriate events to registered listeners.
+     *
+     * @param tpf Time per frame value.
+     */
     public void update(float tpf){
         lastButtonEvent = null;
         lastKeyEvent = null;
@@ -177,6 +189,9 @@ public class Dispatcher implements RawInputListener {
         
         // query current keyboard state for all bindings
         for (Map.Entry<Integer, String> entry : keyBindings.entrySet()){
+            if (entry.getKey() >= keyboard.length)
+                continue;
+
             if (keyboard[entry.getKey()]){
                 // key is currently down
                 notifyListeners(entry.getValue(), tpf);
@@ -207,14 +222,31 @@ public class Dispatcher implements RawInputListener {
         }
     }
 
+    /**
+     * Registers a keyboard key binding.
+     * @param name
+     * @param keyCode
+     */
     public void registerKeyBinding(String name, int keyCode){
         keyBindings.put(keyCode, name);
     }
 
+    /**
+     * Registers a mouse button binding.
+     * @param name
+     * @param btnIndex
+     */
     public void registerMouseButtonBinding(String name, int btnIndex){
         mouseBtnBindings.put(btnIndex, name);
     }
 
+    /**
+     * Registers a mouse axis binding
+     * @param name
+     * @param mouseAxis 0 is X axis, 1 is Y axis, 2 is wheel
+     * @param negative If true, the event will be invoked when the axis is in
+     * the negative direction, otherwise it will be invoked on positive direction.
+     */
     public void registerMouseAxisBinding(String name, int mouseAxis, boolean negative){
         mouseAxis ++; // makes axis 0 (X) become 1 & axis 1 (Y) become 2
         if (negative)
@@ -236,14 +268,27 @@ public class Dispatcher implements RawInputListener {
         joyAxisBindings.put(axisId, name);
     }
 
+    /**
+     * Adds a trigger listener. Listeners will be invoked when the binding
+     * value is greater than zero.
+     *
+     * @param listener
+     */
     public void addTriggerListener(BindingListener listener){
         listeners.add(listener);
     }
 
+    /**
+     * Remove a previously added trigger listener.
+     * @param listener
+     */
     public void removeTriggerListener(BindingListener listener){
         listeners.remove(listener);
     }
 
+    /**
+     * Removes all trigger listeners from the list of registered listnerers.
+     */
     public void clearTriggerListeners(){
         listeners.clear();
     }

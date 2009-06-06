@@ -9,32 +9,31 @@ import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
 import com.g3d.renderer.Renderer;
 import com.g3d.res.ContentManager;
-import com.g3d.scene.SceneManager;
-import com.g3d.system.DisplaySettings.Template;
-import java.util.concurrent.atomic.AtomicBoolean;
+import com.g3d.system.AppSettings.Template;
 
 /**
  * The <code>Application</code> class represents an instance of a
- * real-time 3D rendering application. Typically the rendering is controlled
- * with a <code>SceneManager</code> implementation.
+ * real-time 3D rendering application.
  */
-public class Application implements Runnable {
+public class Application implements ContextListener {
 
-    protected SceneManager sceneManager;
+    /**
+     * The content manager. Typically initialized outside the GL thread
+     * to allow offline loading of content.
+     */
     protected ContentManager manager;
 
     protected Renderer renderer;
     protected G3DContext context;
-    protected DisplaySettings settings;
+    protected AppSettings settings;
     protected Timer timer;
     protected Camera cam;
 
+    protected boolean inputEnabled = true;
     protected MouseInput mouseInput;
     protected KeyInput keyInput;
     protected JoyInput joyInput;
     protected Dispatcher dispatcher;
-
-    protected AtomicBoolean needClose = new AtomicBoolean();
 
     /**
      * Create a new instance of <code>Application</code>.
@@ -46,47 +45,34 @@ public class Application implements Runnable {
     }
 
     /**
-     * Set the <code>SceneManager</code> to control rendering and updating
-     * of the application's scene and real-time state respectively. It is
-     * not recommended to change the SceneManager while the application
-     * is running.
-     * @param manager The scene manager to set
-     */
-    public void setSceneManager(SceneManager manager) {
-        sceneManager = manager;
-    }
-
-    /**
      * Set the display settings to define the display created. Examples of
      * display parameters include display pixel width and height,
      * color bit depth, z-buffer bits, antialiasing samples, and update freqency.
      *
      * @param settings The settings to set.
      */
-    public void setSettings(DisplaySettings settings){
+    public void setSettings(AppSettings settings){
         this.settings = settings;
+        if (context != null && settings.useInput() != inputEnabled){
+            // may need to create or destroy input based
+            // on settings change
+            inputEnabled = !inputEnabled;
+            if (inputEnabled){
+                initInput();
+            }else{
+                destroyInput();
+            }
+        }else{
+            inputEnabled = settings.useInput();
+        }
     }
 
-    /**
-     * Initializes the display. If settings are not specified, a default
-     * 640x480 display is created.
-     */
     private void initDisplay(){
-        context = G3DSystem.newDisplay();
-        if (settings == null){
-            settings = new DisplaySettings(Template.Default640x480);
-        }
-        context.setDisplaySettings(settings);
-
-        // assuming display inited at this point
-        context.create();
-        settings = context.getDisplaySettings();
-
+        // aquire important objects
+        // from the context
+        settings = context.getSettings();
         timer = context.getTimer();
         renderer = context.getRenderer();
-
-        assert renderer != null;
-        assert context.isActive();
     }
 
     /**
@@ -104,6 +90,11 @@ public class Application implements Runnable {
         renderer.setCamera(cam);
     }
 
+    /**
+     * Initializes mouse and keyboard input. Also
+     * initializes joystick input if joysticks are enabled in the
+     * AppSettings.
+     */
     private void initInput(){
         mouseInput = context.getMouseInput();
         if (mouseInput != null)
@@ -118,15 +109,20 @@ public class Application implements Runnable {
             if (joyInput != null)
                 joyInput.initialize();
         }
-        // TODO: Write dummy implementation for joysticks
 
         dispatcher = new Dispatcher(mouseInput, keyInput, joyInput);
     }
 
+    /**
+     * Initializes the content manager.
+     */
     private void initContentManager(){
         manager = new ContentManager(true);
     }
 
+    /**
+     * @return The content manager for this application.
+     */
     public ContentManager getContentManager(){
         return manager;
     }
@@ -161,19 +157,82 @@ public class Application implements Runnable {
     }
 
     /**
+     * Starts the application. Creating a display and running the main loop.
+     */
+    public void start(){
+        if (context != null && context.isCreated()){
+            return;
+        }
+
+        if (settings == null){
+            settings = new AppSettings(Template.Default640x480);
+        }
+        
+        context = G3DSystem.newDisplay(settings);
+        context.setContextListener(this);
+
+        context.create();
+    }
+
+    /**
+     * Requests the display to close, shutting down the main loop
+     * and making neccessary cleanup operations.
+     */
+    public void stop(){
+        context.destroy();
+    }
+
+    /**
+     * Do not call manually.
+     * Callback from ContextListener.
+     *
      * Initializes the <code>Application</code>, by creating a display and
      * default camera. If display settings are not specified, a default
      * 640x480 display is created. Default values are used for the camera;
      * perspective projection with 45° field of view, with near
      * and far values 1 and 1000 units respectively.
      */
-    protected void init(){
+    public void initialize(){
         initDisplay();
         initCamera();
-        initInput();
+        if (inputEnabled){
+            initInput();
+        }
+
+        // update timer so that the next delta is not too large
+        timer.update();
+
+        // user code here..
     }
 
-    protected void deinit(){
+    /**
+     * Do not call manually.
+     * Callback from ContextListener.
+     */
+    public void update(){
+        if (context.isCloseRequested()){
+            context.destroy();
+        }
+
+        timer.update();
+
+        if (inputEnabled){
+            if (mouseInput != null)
+                mouseInput.update();
+
+            if (keyInput != null)
+                keyInput.update();
+
+            if (joyInput != null)
+                joyInput.update();
+
+            dispatcher.update(timer.getTimePerFrame());
+        }
+
+        // user code here..
+    }
+
+    protected void destroyInput(){
         if (mouseInput != null)
             mouseInput.destroy();
 
@@ -183,74 +242,19 @@ public class Application implements Runnable {
         if (joyInput != null)
             joyInput.destroy();
 
+        dispatcher = null;
+    }
+
+    /**
+     * Do not call manually.
+     * Callback from ContextListener.
+     */
+    public void destroy(){
+        destroyInput();
         timer.reset();
         renderer.cleanup();
         context.destroy();
         G3DSystem.destroy();
-    }
-
-    public void start(){
-        new Thread(this, "G3D Render Thread").start();
-    }
-
-    public void stop(){
-        needClose.set(true);
-    }
-
-    /**
-     * Begins the main loop for the application, invoking the set
-     * <code>SceneManager</code> for initialization first, then running
-     * update and render calls each frame. Note that control will not be returned
-     * to the calling code until the display is closed.
-     */
-    public void run(){
-        init();
-
-        if (sceneManager != null)
-            sceneManager.init(renderer);
-
-        // update timer so that the next delta is not too large
-        timer.update();
-        while (true){
-            // update display.
-            context.update();
-
-            // close if needed
-            if (context.isCloseRequested() || needClose.get()){
-                break;
-            }
-
-            if (context.isActive()){
-                // update timer
-                timer.update();
-
-                // update input
-                if (mouseInput != null)
-                    mouseInput.update();
-
-                if (keyInput != null)
-                    keyInput.update();
-
-                if (joyInput != null)
-                    joyInput.update();
-
-                dispatcher.update(timer.getTimePerFrame());
-
-                // clear display
-                renderer.clearBuffers(true, true, true);
-
-                // update logic and render
-                if (sceneManager != null){
-                    sceneManager.update(timer.getTimePerFrame());
-                    sceneManager.render(renderer);
-                }
-
-                // flush the render queue to display all queued
-                // objects.
-                renderer.renderQueue();
-            }
-        }
-        deinit();
     }
 
 }

@@ -1,12 +1,15 @@
 package com.g3d.renderer;
 
+/**
+ * A specialized data-structure used to optimize state changes of "slot"
+ * based state. 
+ */
 public class IDList {
 
     public int[] newList = new int[16];
     public int[] oldList = new int[16];
     public int newLen = 0;
     public int oldLen = 0;
-
 
     public boolean moveToNew(int idx){
 //        if (newLen == 0 || newList[newLen-1] != idx)

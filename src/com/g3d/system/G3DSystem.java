@@ -2,6 +2,7 @@ package com.g3d.system;
 
 import com.g3d.util.G3DFormatter;
 import com.g3d.*;
+import com.g3d.system.jogl.JoglDisplay;
 import com.g3d.system.lwjgl.LwjglDisplay;
 import com.g3d.util.Natives;
 import java.io.IOException;
@@ -35,9 +36,21 @@ public class G3DSystem {
         }
     }
 
-    public static G3DContext newDisplay() {
+    public static G3DContext newDisplay(AppSettings settings) {
         initialize();
-        return new LwjglDisplay();
+        G3DContext ctx;
+        if (settings.getRenderer().startsWith("LWJGL")){
+            ctx = new LwjglDisplay();
+            ctx.setSettings(settings);
+        }else if (settings.getRenderer().startsWith("JOGL")){
+            ctx = new JoglDisplay();
+            ctx.setSettings(settings);
+        }else{
+            throw new UnsupportedOperationException(
+                            "Unrecognizable renderer specified: "+
+                            settings.getRenderer());
+        }
+        return ctx;
     }
 
     public static void initialize(){
@@ -88,7 +101,7 @@ public class G3DSystem {
     }
 
     public static String getFullName(){
-        return "Gorilla3D Engine 0.07";
+        return "Gorilla3D Engine 0.11";
     }
 
     public static void reportError(String errorMsg){

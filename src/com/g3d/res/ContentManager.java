@@ -20,7 +20,9 @@ import com.g3d.texture.Texture2D;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -35,6 +37,7 @@ public class ContentManager {
     private final ImplHandler handler = new ImplHandler(this);
     private final ThreadingManager threadingMan = new ThreadingManager(this);
     private final Set<String> alreadyLoadingSet = new HashSet<String>();
+    private final Map<String, String> properties = new HashMap<String, String>();
 
     public ContentManager(){
         this(false);
@@ -43,6 +46,10 @@ public class ContentManager {
     public ContentManager(boolean loadDefaults){
         G3DSystem.initialize();
         if (loadDefaults){
+            // enable flipping images by Y
+            setProperty("FlipImages", "true");
+
+            //setup loading of resources from the classpath.
             registerLocator("/textures/",
                             ClasspathLocator.class,
                             "dds", "hdr", "tga",
@@ -70,6 +77,14 @@ public class ContentManager {
 
         String ext = name.substring(idx+1).toLowerCase();
         return ext;
+    }
+
+    public void setProperty(String key, String value){
+        properties.put(key, value);
+    }
+
+    public String getProperty(String key){
+        return properties.get(key);
     }
 
     public void registerLoader(Class<?> loader, String ... extensions){
@@ -133,7 +148,7 @@ public class ContentManager {
                 return null;
             }
             try {
-                o = loader.load(in, ext);
+                o = loader.load(this, in, ext);
             } catch (IOException ex) {
                 logger.log(Level.WARNING, "Failed to load resource: "+name, ex);
             }

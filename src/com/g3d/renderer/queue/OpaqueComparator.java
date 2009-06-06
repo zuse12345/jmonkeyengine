@@ -25,6 +25,7 @@ public class OpaqueComparator implements Comparator<Spatial> {
         Camera cam = renderer.getCamera();
 
         Vector3f camPosition = cam.getLocation();
+        Vector3f viewVector = cam.getDirection();
         Vector3f spatPosition = null;
 
         if (spat.getWorldBound() != null){
@@ -36,18 +37,16 @@ public class OpaqueComparator implements Comparator<Spatial> {
         spatPosition.subtract(camPosition, tempVec);
         spat.queueDistance = tempVec.dot(tempVec);
 
-//        float retval = Math.abs(tempVec.dot(viewVector)
-//                / viewVector.dot(viewVector));
-//        tempVec = viewVector.mult(retval, tempVec);
-//
-//        spat.queueDistance = tempVec.length();
+        float retval = Math.abs(tempVec.dot(viewVector)
+                / viewVector.dot(viewVector));
+        tempVec = viewVector.mult(retval, tempVec);
+
+        spat.queueDistance = tempVec.length();
 
         return spat.queueDistance;
     }
 
     public int compare(Spatial o1, Spatial o2) {
-//        Camera cam = renderer.getCamera();
-
         Vector3f tempVec = TempVars.get().vect1;
         float d1 = distanceToCam(o1, tempVec);
         float d2 = distanceToCam(o2, tempVec);

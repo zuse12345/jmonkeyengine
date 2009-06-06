@@ -10,6 +10,17 @@ import com.g3d.renderer.Camera;
 import com.g3d.util.TempVars;
 import org.lwjgl.input.Keyboard;
 
+/**
+ * A first person view camera controller.
+ * After creation, you must register the camera controller with the
+ * dispatcher using #registerWithDispatcher().
+ *
+ * Controls:
+ *  - Move the mouse to rotate the camera
+ *  - Mouse wheel for zooming in or out
+ *  - WASD keys for moving forward/backward and strafing
+ *  - QZ keys raise or lower the camera
+ */
 public class FlyByCamera implements BindingListener {
 
     private Camera cam;
@@ -17,27 +28,40 @@ public class FlyByCamera implements BindingListener {
     private float rotationSpeed = 0.2f;
     private float moveSpeed = 1f;
 
+    /**
+     * Creates a new FlyByCamera to control the given Camera object.
+     * @param cam
+     */
     public FlyByCamera(Camera cam){
         this.cam = cam;
         initialUpVec = cam.getUp().clone();
     }
 
+    /**
+     * Sets the move speed. The speed is given in world units per second.
+     * @param moveSpeed
+     */
     public void setMoveSpeed(float moveSpeed){
         this.moveSpeed = moveSpeed;
     }
 
+    /**
+     * Registers the FlyByCamera to recieve input events from the provided
+     * Dispatcher.
+     * @param dispacher
+     */
     public void registerWithDispatcher(Dispatcher dispacher){
         dispacher.setCursorVisible(false);
 
-        dispacher.registerJoystickAxisBinding("FLYCAM_Left",  2, JoyAxisEvent.AXIS_X, true);
-        dispacher.registerJoystickAxisBinding("FLYCAM_Right", 2, JoyAxisEvent.AXIS_X, false);
-        dispacher.registerJoystickAxisBinding("FLYCAM_Up",    2, JoyAxisEvent.AXIS_Y, true);
-        dispacher.registerJoystickAxisBinding("FLYCAM_Down",  2, JoyAxisEvent.AXIS_Y, false);
-
-        dispacher.registerJoystickAxisBinding("FLYCAM_StrafeLeft",  2, JoyAxisEvent.POV_X, true);
-        dispacher.registerJoystickAxisBinding("FLYCAM_StrafeRight", 2, JoyAxisEvent.POV_X, false);
-        dispacher.registerJoystickAxisBinding("FLYCAM_Forward",     2, JoyAxisEvent.POV_Y, true);
-        dispacher.registerJoystickAxisBinding("FLYCAM_Backward",    2, JoyAxisEvent.POV_Y, false);
+//        dispacher.registerJoystickAxisBinding("FLYCAM_Left",  2, JoyAxisEvent.AXIS_X, true);
+//        dispacher.registerJoystickAxisBinding("FLYCAM_Right", 2, JoyAxisEvent.AXIS_X, false);
+//        dispacher.registerJoystickAxisBinding("FLYCAM_Up",    2, JoyAxisEvent.AXIS_Y, true);
+//        dispacher.registerJoystickAxisBinding("FLYCAM_Down",  2, JoyAxisEvent.AXIS_Y, false);
+//
+//        dispacher.registerJoystickAxisBinding("FLYCAM_StrafeLeft",  2, JoyAxisEvent.POV_X, true);
+//        dispacher.registerJoystickAxisBinding("FLYCAM_StrafeRight", 2, JoyAxisEvent.POV_X, false);
+//        dispacher.registerJoystickAxisBinding("FLYCAM_Forward",     2, JoyAxisEvent.POV_Y, true);
+//        dispacher.registerJoystickAxisBinding("FLYCAM_Backward",    2, JoyAxisEvent.POV_Y, false);
         
         dispacher.registerMouseAxisBinding("FLYCAM_Left", 0, true);
         dispacher.registerMouseAxisBinding("FLYCAM_Right", 0, false);

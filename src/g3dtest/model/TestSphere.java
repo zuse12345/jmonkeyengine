@@ -12,14 +12,14 @@ import com.g3d.scene.Geometry;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.Quad;
 import com.g3d.scene.Sphere;
-import com.g3d.system.DisplaySettings;
+import com.g3d.system.AppSettings;
 import com.g3d.texture.Texture;
 
 public class TestSphere extends SimpleApplication  {
 
     public static void main(String[] args){
         TestSphere app = new TestSphere();
-        app.setSettings(new DisplaySettings(DisplaySettings.Template.Default640x480));
+        app.setSettings(new AppSettings(AppSettings.Template.Default640x480));
         app.start();
     }
 

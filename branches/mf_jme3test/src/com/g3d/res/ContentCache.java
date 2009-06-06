@@ -4,6 +4,13 @@ import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.Hashtable;
 
+/**
+ * A <code>ContentCache</code> allows storage of loaded resources in order
+ * to improve their access time if they are requested again in a short period
+ * of time. The ContentCache stores weak references to the resources, allowing
+ * Java's garbage collector to request deletion of rarely used resources
+ * when heap memory is low.
+ */
 public class ContentCache {
 
     private final ReferenceQueue<Object> refQueue = new ReferenceQueue<Object>();
@@ -17,6 +24,12 @@ public class ContentCache {
         }
     }
 
+    /**
+     * Adds a resource to the cache.
+     *
+     * For resource retrieval,
+     * @see #getFromCache(java.lang.String)
+     */
     public void addToCache(String key, Object obj){
         synchronized (loadedObjects){
             deleteUnused();

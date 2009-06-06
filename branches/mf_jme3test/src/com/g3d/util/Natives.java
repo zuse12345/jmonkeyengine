@@ -28,6 +28,7 @@ public class Natives {
         InputStream in = Natives.class.getResourceAsStream("/native/"+sysName+"/" + fullname);
         if (in == null) {
             logger.warning("Cannot locate native library " + name);
+            return;
         }
         if (targetFile.exists())
             return;
@@ -47,6 +48,14 @@ public class Natives {
     public static void extractNativeLibs(String sysName) throws IOException{
         extractNativeLib(sysName, "lwjgl");
         extractNativeLib(sysName, "lwjgl64");
+
+        // TODO: it seems JOGL has a different method of loading
+        // natives that is incompatible with LWJGLs..
+        // In order to properly support JOGL, the architecture (32 or 64 bit)
+        // must be determined and then the proper natives can be extracted. 
+//        extractNativeLib(sysName, "jogl");
+//        extractNativeLib(sysName, "jogl64");
+//        extractNativeLib(sysName, "jogl_awt");
         if (sysName.equals("windows")){
             extractNativeLib(sysName, "jinput-dx8");
             extractNativeLib(sysName, "jinput-dx8_64");
@@ -59,6 +68,7 @@ public class Natives {
             extractNativeLib(sysName, "jinput");
             extractNativeLib(sysName, "jinput64");
         }
+//        System.setProperty("java.library.path", workingDir.toString());
         System.setProperty("org.lwjgl.librarypath", workingDir.toString());
     }
 

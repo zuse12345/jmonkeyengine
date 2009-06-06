@@ -3,6 +3,7 @@ package com.g3d.renderer;
 /**
  * Describes a GL object. An encapsulation of a certain object 
  * on the native side of the graphics library.
+ * This class is used to track
  */
 public abstract class GLObject {
 
@@ -15,7 +16,7 @@ public abstract class GLObject {
     /**
      * A reference to a "handle". By hard referencing a certain object, it's
      * possible to find when a certain GLObject is no longer used, and to delete
-     * its data from the graphics library side.
+     * its instance from the graphics library.
      */
     protected Object handleRef = null;
 
@@ -52,6 +53,13 @@ public abstract class GLObject {
          * they cooperate to control the vertex and fragment processor.
          */
         Shader,
+
+        /**
+         * FrameBuffer is an offscreen surface which can be rendered to.
+         * Can be used to create "Render-to-Texture" effects and
+         * scene post processing.
+         */
+        FrameBuffer,
     }
 
     public GLObject(Type type){

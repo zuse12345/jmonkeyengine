@@ -491,6 +491,22 @@ public class Vector3f implements Savable, Cloneable {
         return this;
     }
 
+    /**
+     * <code>multLocal</code> multiplies this vector by 3 scalars
+     * internally, and returns a handle to this vector for easy chaining of
+     * calls.
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @return this
+     */
+    public Vector3f multLocal(float x, float y, float z) {
+        this.x *= x;
+        this.y *= y;
+        this.z *= z;
+        return this;
+    }
 
     /**
      * <code>multLocal</code> multiplies a provided vector to this vector

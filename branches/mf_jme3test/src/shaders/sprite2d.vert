@@ -1,15 +1,12 @@
-uniform mat4 g_WorldMatrix;
+uniform mat4 g_WorldOrthoMatrix;
 
-attribute vec2 inPosition;
+attribute vec4 inPosition;
 attribute vec2 inTexCoord;
-
-uniform float g_Aspect;
 
 varying vec2 texCoord;
 
 void main() {
-    vec2 pos = inPosition;
-    pos.x /= g_Aspect;
-    gl_Position = g_WorldMatrix * vec4(pos, 0.0, 1.0);
+    vec2 pos = (g_WorldOrthoMatrix * inPosition).xy;
     texCoord = inTexCoord;
+    gl_Position = vec4(pos, 0.0, 1.0);
 }

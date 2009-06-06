@@ -483,7 +483,7 @@ public abstract class Spatial implements Savable {
      */
     public void setLocalRotation(Matrix3f rotation) {
         localTransform.getRotation().fromRotationMatrix(rotation);
-        this.worldTransform.setRotationQuaternion(this.localTransform.getRotation());
+        this.worldTransform.setRotation(this.localTransform.getRotation());
         setTransformRefresh();
     }
 
@@ -495,8 +495,8 @@ public abstract class Spatial implements Savable {
      *            the quaternion that defines the matrix.
      */
     public void setLocalRotation(Quaternion quaternion) {
-        localTransform.setRotationQuaternion(quaternion);
-        this.worldTransform.setRotationQuaternion(this.localTransform.getRotation());
+        localTransform.setRotation(quaternion);
+        this.worldTransform.setRotation(this.localTransform.getRotation());
         setTransformRefresh();
     }
 
@@ -578,6 +578,43 @@ public abstract class Spatial implements Savable {
     public void addLight(Light l){
         localLights.add(l);
         setLightListRefresh();
+    }
+
+    public void move(float x, float y, float z){
+        this.localTransform.getTranslation().addLocal(x, y, z);
+        this.worldTransform.setTranslation(this.localTransform.getTranslation());
+        setTransformRefresh();
+    }
+
+    public void scale(float x, float y, float z){
+        this.localTransform.getScale().multLocal(x,y,z);
+        this.worldTransform.setScale(this.localTransform.getScale());
+        setTransformRefresh();
+    }
+
+    public void rotate(Quaternion rot){
+        this.localTransform.getRotation().multLocal(rot);
+        this.worldTransform.setRotation(this.localTransform.getRotation());
+        setTransformRefresh();
+    }
+
+    public void rotate(float yaw, float roll, float pitch){
+        Quaternion q = TempVars.get().quat1;
+        q.fromAngles(yaw, roll, pitch);
+        rotate(q);
+    }
+
+    public void center(){
+        if ((refreshFlags & RF_BOUND) != 0){
+            updateWorldBound();
+            updateWorldTransforms();
+        }
+
+        Vector3f worldTrans = getWorldTranslation();
+        Vector3f worldCenter = getWorldBound().getCenter();
+
+        Vector3f absTrans = worldTrans.subtract(worldCenter);
+        setLocalTranslation(absTrans);
     }
 
     //
@@ -671,18 +708,6 @@ public abstract class Spatial implements Savable {
 //            if (getRenderState(x) != null)
 //                states[x].push(getRenderState(x));
 //    }
-
-    /**
-     * <code>propagateBoundToRoot</code> passes the new world bound up the
-     * tree to the root.
-     */
-//    public void propagateBoundToRoot() {
-//        if (parent != null) {
-//            parent.updateWorldBound();
-//            parent.propagateBoundToRoot();
-//        }
-//    }
-//
 //    /**
 //     * <code>calculateCollisions</code> calls findCollisions to populate the
 //     * CollisionResults object then processes the collision results.
@@ -748,42 +773,7 @@ public abstract class Spatial implements Savable {
 //     *            the results of the picking
 //     */
 //    public abstract void findPick(Ray toTest, PickResults results);
-//
-//    /**
-//     * Stores user define data for this Spatial.
-//     *
-//     * @param key
-//     *            the key component to retrieve the data from the hash map.
-//     * @param data
-//     *            the data to store.
-//     */
-//    public void setUserData(String key, Savable data) {
-//        UserDataManager.getInstance().setUserData(this, key, data);
-//    }
-//
-//    /**
-//     * Retrieves user data from the hashmap defined by the provided key.
-//     *
-//     * @param key
-//     *            the key of the data to obtain.
-//     * @return the data referenced by the key. If the key is invalid, null is
-//     *         returned.
-//     */
-//    public Savable getUserData(String key) {
-//        return UserDataManager.getInstance().getUserData(this, key);
-//    }
-//
-//    /**
-//     * Removes user data from the hashmap defined by the provided key.
-//     *
-//     * @param key
-//     *            the key of the data to remove.
-//     * @return the data that has been removed, null if no data existed.
-//     */
-//    public Savable removeUserData(String key) {
-//        return UserDataManager.getInstance().removeUserData(this, key);
-//    }
-//
+
 //    public abstract int getVertexCount();
 //
 //    public abstract int getTriangleCount();

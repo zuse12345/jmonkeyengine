@@ -23,46 +23,46 @@ public class TransparentComparator implements Comparator<Spatial> {
      *            Spatial to distancize.
      * @return Distance from Spatial to camera.
      */
-    private float distanceToCam(Camera cam, Spatial spat) {
+    public float distanceToCam(Spatial spat, Vector3f tempVec){
+        if (spat == null)
+            return Float.NEGATIVE_INFINITY;
+
         if (spat.queueDistance != Float.NEGATIVE_INFINITY)
                 return spat.queueDistance;
 
-        spat.queueDistance = 0;
+        Camera cam = renderer.getCamera();
 
         Vector3f camPosition = cam.getLocation();
-        Vector3f spatPosition = null;
         Vector3f viewVector = cam.getDirection();
-        Vector3f tempVector = TempVars.get().vect1;
+        Vector3f spatPosition = null;
 
-        if (Vector3f.isValidVector(cam.getLocation())) {
-            if (spat.getWorldBound() != null && Vector3f.isValidVector(spat.getWorldBound().getCenter()))
-                spatPosition = spat.getWorldBound().getCenter();
-            else if (spat instanceof Spatial && Vector3f.isValidVector(((Spatial)spat).getWorldTranslation()))
-                spatPosition = ((Spatial) spat).getWorldTranslation();
+        if (spat.getWorldBound() != null){
+            spatPosition = spat.getWorldBound().getCenter();
+        }else{
+            spatPosition = spat.getWorldTranslation();
         }
 
-        if (spatPosition != null) {
-            spatPosition.subtract(camPosition, tempVector);
+        spatPosition.subtract(camPosition, tempVec);
+        spat.queueDistance = tempVec.dot(tempVec);
 
-            float retval = Math.abs(tempVector.dot(viewVector)
-                    / viewVector.dot(viewVector));
-            tempVector = viewVector.mult(retval, tempVector);
+        float retval = Math.abs(tempVec.dot(viewVector)
+                / viewVector.dot(viewVector));
+        tempVec = viewVector.mult(retval, tempVec);
 
-            spat.queueDistance = tempVector.length();
-        }
+        spat.queueDistance = tempVec.length();
 
         return spat.queueDistance;
     }
 
         public int compare(Spatial o1, Spatial o2) {
-            Camera cam = renderer.getCamera();
-            float d1 = distanceToCam(cam, o1);
-            float d2 = distanceToCam(cam, o2);
+            Vector3f tempVec = TempVars.get().vect1;
+            float d1 = distanceToCam(o1, tempVec);
+            float d2 = distanceToCam(o2, tempVec);
             if (d1 == d2)
                 return 0;
             else if (d1 < d2)
-                return 1;
-            else
                 return -1;
+            else
+                return 1;
         }
 }

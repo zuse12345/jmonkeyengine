@@ -3,6 +3,9 @@ package com.g3d.light;
 import com.g3d.math.ColorRGBA;
 import com.g3d.scene.Spatial;
 
+/**
+ * Abstract class for representing a light source.
+ */
 public abstract class Light {
 
     public static enum Type {
@@ -30,6 +33,9 @@ public abstract class Light {
      */
     protected float lastDistance = -1;
 
+    /**
+     * @return The color of the light.
+     */
     public ColorRGBA getColor() {
         return color;
     }

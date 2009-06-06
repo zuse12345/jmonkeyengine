@@ -1,0 +1,14 @@
+MaterialDef Log Lum 2D {
+    MaterialParameters {
+        Texture2D m_Input
+    }
+    Technique {
+        VertexShader GLSL100: sprite2d.vert
+        FragmentShader GLSL100: loglum2d.frag
+
+        WorldParameters {
+            WorldOrthoMatrix
+        }
+    }
+
+}

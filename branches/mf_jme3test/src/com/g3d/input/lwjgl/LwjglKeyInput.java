@@ -17,7 +17,7 @@ public class LwjglKeyInput implements KeyInput {
     public void initialize() {
         try {
             Keyboard.create();
-            Keyboard.enableRepeatEvents(true);
+//            Keyboard.enableRepeatEvents(true);
             logger.info("Keyboard created.");
         } catch (LWJGLException ex) {
             logger.log(Level.SEVERE, "Error while creating keyboard.", ex);
@@ -38,7 +38,8 @@ public class LwjglKeyInput implements KeyInput {
             int keyCode = Keyboard.getEventKey();
             char keyChar = Keyboard.getEventCharacter();
             boolean pressed = Keyboard.getEventKeyState();
-            boolean down = Keyboard.isRepeatEvent();
+            boolean down = false;
+//            boolean down = Keyboard.isRepeatEvent();
             long time = Keyboard.getEventNanoseconds();
             KeyInputEvent evt = new KeyInputEvent(keyCode, keyChar, pressed, down);
             evt.setTime(time);

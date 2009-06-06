@@ -111,17 +111,19 @@ final public class FastMath {
      * Linear interpolation from startValue to endValue by the given percent.
      * Basically: ((1 - percent) * startValue) + (percent * endValue)
      * 
-     * @param percent
-     *            Percent value to use.
+     * @param scale
+     *            scale value to use. if 1, use endValue, if 0, use startValue.
      * @param startValue
      *            Begining value. 0% of f
      * @param endValue
      *            ending value. 100% of f
      * @return The interpolated value between startValue and endValue.
      */
-    public static float interpolateLinear(float percent, float startValue, float endValue) {
+    public static float interpolateLinear(float scale, float startValue, float endValue) {
         if (startValue == endValue) return startValue;
-        return ((1 - percent) * startValue) + (percent * endValue);
+        if (scale <= 0f) return startValue;
+        if (scale >= 1f) return endValue;
+        return ((1f - scale) * startValue) + (scale * endValue);
     }
 
 
@@ -628,23 +630,6 @@ final public class FastMath {
         return (short)(( (f >> 16) & 0x8000)
              | ( ( ( (f & 0x7f800000) - 0x38000000) >> 13) & 0x7c00)
              | ( (f >> 13) & 0x03ff));
-    }
-
-    public static void main(String[] args){
-        Scanner scan = new Scanner(System.in);
-        while (true){
-            System.out.println("Enter float to convert or 'x' to exit: ");
-            String s = scan.nextLine();
-            if (s.equals("x"))
-                break;
-
-            float flt = Float.valueOf(s);
-            short half = convertFloatToHalf(flt);
-            float flt2 = convertHalfToFloat(half);
-
-            System.out.println("Input float: "+flt);
-            System.out.println("Result float: "+flt2);
-        }
     }
 
 }

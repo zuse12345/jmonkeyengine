@@ -11,15 +11,17 @@ import com.g3d.shader.Shader;
 import com.g3d.shader.Shader.ShaderType;
 import com.g3d.shader.Uniform;
 import com.g3d.texture.Image;
+import com.g3d.texture.Image.Format;
 import com.g3d.texture.Texture2D;
+import com.g3d.util.BufferUtils;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.Scanner;
 
 public class J3MLoader implements ContentLoader {
 
     private ContentManager owner;
-
     private Scanner scan;
 
     private MaterialDef materialDef;
@@ -28,19 +30,6 @@ public class J3MLoader implements ContentLoader {
     private Shader shader;
 
     public J3MLoader(){
-    }
-
-    public void setOwner(ContentManager owner){
-        this.owner = owner;
-    }
-
-    public static void main(String[] args) throws IOException{
-        InputStream in = J3MLoader.class.getResourceAsStream("/materials/red_color.j3m");
-
-        J3MLoader loader = new J3MLoader();
-        ContentManager manager = new ContentManager(true);
-        loader.setOwner(manager);
-        loader.load(in);
     }
 
     private void throwIfNequal(String expected, String got) throws IOException {
@@ -72,6 +61,25 @@ public class J3MLoader implements ContentLoader {
         String str = scan.next();
         scan.useDelimiter("\\p{javaWhitespace}+");
         return str.trim();
+    }
+
+    private Image createColorTexture(ColorRGBA color){
+        if (color.getAlpha() == 1.0f){
+            // create RGB texture
+            ByteBuffer data = BufferUtils.createByteBuffer(3);
+            byte[] bytes = color.asBytesRGBA();
+            data.put(bytes[0]).put(bytes[1]).put(bytes[2]);
+            data.flip();
+
+            return new Image(Format.RGB8, 1, 1, data);
+        }else{
+            // create RGBA texture
+            ByteBuffer data = BufferUtils.createByteBuffer(4);
+            data.putInt(color.asIntRGBA());
+            data.flip();
+
+            return new Image(Format.RGBA8, 1, 1, data);
+        }
     }
 
     private void readShaderStatement(ShaderType type) throws IOException {
@@ -115,8 +123,28 @@ public class J3MLoader implements ContentLoader {
         MatParamType type = p.getType();
         if (type.isTextureType()){
             String texturePath = readString("[\n;(//)(\\})]");
+            Image img;
+            if (texturePath.startsWith("color")){
+                texturePath = texturePath.substring(5).trim();
+                String[] split = texturePath.split(" ");
+                if (split.length == 4){
+                    img = createColorTexture(new ColorRGBA(Float.parseFloat(split[0]),
+                                                           Float.parseFloat(split[1]),
+                                                           Float.parseFloat(split[2]),
+                                                           Float.parseFloat(split[3])));
+                }else if (split.length == 3){
+                    img = createColorTexture(new ColorRGBA(Float.parseFloat(split[0]),
+                                                           Float.parseFloat(split[1]),
+                                                           Float.parseFloat(split[2]),
+                                                           1.0f));
+                }else{
+                    throw new IOException("Expected 3 or 4 floats, got '"+texturePath+"'");
+                }
+            }else{
+                img =  owner.loadImage(texturePath);
+            }
                         // parse texture
-            Image img = owner.loadImage(texturePath);
+            
             if (type == MatParamType.Texture2D){
                 material.setTextureParam(name, type, new Texture2D(img));
             }
@@ -271,7 +299,8 @@ public class J3MLoader implements ContentLoader {
         shader = null;
     }
 
-    public Object load(InputStream stream, String extension) throws IOException {
+    public Object load(ContentManager owner, InputStream stream, String extension) throws IOException {
+        this.owner = owner;
         load(stream);
         if (material != null){
             // material implementation

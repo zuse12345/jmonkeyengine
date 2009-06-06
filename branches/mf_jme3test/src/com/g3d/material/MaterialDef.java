@@ -17,9 +17,8 @@ public class MaterialDef {
         Vector4(false),
 
         Int(false),
-        Int2(false),
-        Int3(false),
-        Int4(false),
+
+        Boolean(false),
 
         Matrix2(false),
         Matrix3(false),

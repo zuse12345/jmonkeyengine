@@ -1,41 +1,43 @@
 package g3dtest.gui;
 
 import com.g3d.app.SimpleApplication;
-import com.g3d.material.Material;
-import com.g3d.scene.Geometry;
-import com.g3d.scene.Quad;
-import com.g3d.system.DisplaySettings;
-import com.g3d.texture.Texture;
+import com.g3d.renderer.Renderer;
+import com.g3d.scene.Node;
+import com.g3d.scene.Spatial.CullHint;
+import com.g3d.system.AppSettings;
+import com.g3d.ui.Picture;
 
 public class TestOrtho extends SimpleApplication {
-    
+
+    private Node orthoNode = new Node("Ortho Node");
+
     public static void main(String[] args){
         TestOrtho app = new TestOrtho();
-        app.setSettings(new DisplaySettings(DisplaySettings.Template.Default1280x720));
+        app.setSettings(new AppSettings(AppSettings.Template.Default320x240));
         app.start();
     }
 
     public void simpleInitApp() {
-        // create the mesh
-        Quad q = new Quad(2, 2, true);
+        orthoNode.setCullHint(CullHint.Never);
 
-        // put mesh in geometry scene graph element
-        Geometry g = new Geometry("Picture", q);
+        Picture p = new Picture("Picture");
+        p.setPosition(0, 0);
+        p.setWidth(640);
+        p.setHeight(480);
+        p.setImage(manager, "Monkey.png", false);
 
-        // create material which extends definition "sprite2d.j3md"
-        Material m = new Material(manager, "sprite2d.j3md");
+        // attach geometry to orthoNode
+        orthoNode.attachChild(p);
+    }
 
-        // load texture named "Monkey.dds"
-        Texture t = manager.loadTexture("Monkey.dds");
-
-        // set a parameter called "m_Texture" on the material to
-        // the loaded texture
-        m.setTexture("m_Texture", t);
-
-        // set the geometry to use the material
-        g.setMaterial(m);
-
-        // attach geometry to root node
-        rootNode.attachChild(g);
+    @Override
+    public void simpleUpdate(float tpf){
+        orthoNode.updateGeometricState(tpf, true);
+    }
+    
+    @Override
+    public void simpleRender(Renderer r){
+        render(orthoNode, r);
+        r.renderQueue();
     }
 }

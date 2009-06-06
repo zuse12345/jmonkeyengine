@@ -74,7 +74,7 @@ public class Transform implements Savable, Cloneable {
      * Sets this rotation to the given Quaternion value.
      * @param rot The new rotation for this matrix.
      */
-    public void setRotationQuaternion(Quaternion rot) {
+    public void setRotation(Quaternion rot) {
         this.rot.set(rot);
     }
 

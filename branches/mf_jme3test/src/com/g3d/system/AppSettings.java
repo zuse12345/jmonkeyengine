@@ -2,44 +2,47 @@ package com.g3d.system;
 
 import java.util.HashMap;
 
-public class DisplaySettings extends HashMap<String, Object> {
+public class AppSettings extends HashMap<String, Object> {
 
-    private static final DisplaySettings defaults = new DisplaySettings();
+    private static final AppSettings defaults = new AppSettings();
 
     public static final String LWJGL_OPENGL2 = "LWJGL-OpenGL2",
-                               LWJGL_OPENGL3 = "LWJGL-OpenGL3";
+                               LWJGL_OPENGL3 = "LWJGL-OpenGL3",
+                               JOGL          = "JOGL";
 
     static {
         defaults.put("Width", 640);
         defaults.put("Height", 480);
-        defaults.put("BitsPerPixel", 32);
+        defaults.put("BitsPerPixel", 24);
         defaults.put("Frequency", 60);
-        defaults.put("DepthBits", 8);
+        defaults.put("DepthBits", 24);
         defaults.put("StencilBits", 0);
         defaults.put("Samples", 0);
         defaults.put("VSync", false);
         defaults.put("Fullscreen", false);
         defaults.put("Title", G3DSystem.getFullName());
-        defaults.put("Renderer", LWJGL_OPENGL2);
+        defaults.put("Renderer", JOGL);
         defaults.put("DisableJoysticks", true);
+        defaults.put("UseInput", true);
     }
 
     private Template template;
 
-    public DisplaySettings(){
+    public AppSettings(){
         template = Template.None;
     }
 
     public static enum Template {
         None,
         DesktopFullscreen,
+        Default320x240,
         Default640x480,
         Default800x600,
         Default1024x768,
         Default1280x720
     }
 
-    public DisplaySettings(Template template){
+    public AppSettings(Template template){
         this.template = template;
         if (template == Template.None){
             // ?
@@ -55,6 +58,8 @@ public class DisplaySettings extends HashMap<String, Object> {
         putAll(defaults);
         if (template == Template.Default640x480){
             // nothing
+        }else if (template == Template.Default320x240){
+            setResolution(320, 240);
         }else if (template == Template.Default800x600){
             setResolution(800, 600);
         }else if (template == Template.Default1024x768){
@@ -70,7 +75,7 @@ public class DisplaySettings extends HashMap<String, Object> {
         return template;
     }
 
-    public void copyFrom(DisplaySettings other){
+    public void copyFrom(AppSettings other){
         this.putAll(other);
         this.template = other.template;
     }
@@ -112,6 +117,14 @@ public class DisplaySettings extends HashMap<String, Object> {
         put(key, value);
     }
 
+    public void setUseInput(boolean use){
+        putBoolean("UseInput", use);
+    }
+
+    public void setRenderer(String renderer){
+        putString("Renderer", renderer);
+    }
+
     public void setWidth(int value){
         putInteger("Width", value);
     }
@@ -147,6 +160,14 @@ public class DisplaySettings extends HashMap<String, Object> {
 
     public void setVSync(boolean value){
         putBoolean("VSync", value);
+    }
+
+    public boolean useInput(){
+        return getBoolean("UseInput");
+    }
+
+    public String getRenderer(){
+        return getString("Renderer");
     }
 
     public int getWidth(){

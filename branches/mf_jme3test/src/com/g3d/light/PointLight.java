@@ -4,6 +4,11 @@ import com.g3d.bounding.BoundingVolume;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Spatial;
 
+/**
+ * Represents a point light.
+ * A point light emits light from a given position into all directions in space.
+ * E.g a lamp or a bright effect.
+ */
 public class PointLight extends Light {
 
     protected Vector3f position = new Vector3f();

@@ -22,9 +22,6 @@ public class HDRLoader implements ContentLoader {
     
     private static final Format imageFormat = Format.RGB32F;
 
-    public void setOwner(ContentManager owner){
-    }
-
     private static void convertRGBEtoFloat(byte[] rgbe, float[] store){
         if (rgbe.length != 4 || store.length != 3)
             throw new IllegalArgumentException();
@@ -189,7 +186,7 @@ public class HDRLoader implements ContentLoader {
         }
     }
     
-    public Object load(InputStream is, String extension) throws IOException {
+    public Object load(ContentManager owner, InputStream is, String extension) throws IOException {
         float gamma = -1f;
         float exposure = -1f;
         float[] colorcorr = new float[]{ -1f, -1f, -1f };

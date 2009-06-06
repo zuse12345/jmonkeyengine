@@ -8,6 +8,7 @@ import com.g3d.texture.Texture;
  * internally to reduce state changes. NOTE: This class is specific to OpenGL.
  */
 public class RenderContext {
+    
     /**
      * If back-face culling is enabled.
      */
@@ -24,6 +25,16 @@ public class RenderContext {
     public int boundShaderProgram;
 
     /**
+     * Currently bound Framebuffer Object.
+     */
+    public int boundFBO = 0;
+
+    /**
+     * Currently bound Renderbuffer
+     */
+    public int boundRB = 0;
+
+    /**
      * Currently bound element array vertex buffer.
      */
     public int boundElementArrayVBO;
@@ -34,8 +45,6 @@ public class RenderContext {
      * Currently bound array vertex buffer.
      */
     public int boundArrayVBO;
-
-//    public int boundTexture;
 
     public int numTexturesSet = 0;
 

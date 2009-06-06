@@ -62,6 +62,20 @@ public class Texture2D extends Texture {
         setImage(img);
     }
 
+    /**
+     * Creates a new two-dimensional texture for the purpose of offscreen
+     * rendering.
+     *
+     * @see com.g3d.texture.FrameBuffer
+     *
+     * @param width
+     * @param height
+     * @param format
+     */
+    public Texture2D(int width, int height, Image.Format format){
+        this(new Image(format, width, height, null));
+    }
+
     public Texture createSimpleClone() {
         return createSimpleClone(new Texture2D());
     }

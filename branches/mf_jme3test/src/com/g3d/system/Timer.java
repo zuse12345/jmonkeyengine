@@ -42,8 +42,7 @@ import com.g3d.system.lwjgl.LwjglTimer;
  * @version $Id: Timer.java,v 1.18 2007/03/09 10:19:34 rherlitz Exp $
  */
 public abstract class Timer {
-    protected static Timer instance;
-
+    
     /**
      * Returns the current time in ticks. A tick is an arbitrary measure of time
      * defined by the timer implementation. The number of ticks per second is
@@ -91,27 +90,6 @@ public abstract class Timer {
      */
     public abstract void update();
 
-    /**
-     * Returns the high resolution timer. Timer is a singleton class so only one
-     * instance of Timer is allowed.
-     *
-     * @return the timer defined by the SystemProvider
-     */
-    public static synchronized Timer getTimer() {
-        if (instance == null) {
-            instance = new LwjglTimer();
-        }
-        
-        return instance;
-    }
-
-	/**
-	 * Set a user defined timer instance
-	 * @param timer timer to use
-	 */
-	public static synchronized void setTimer(Timer timer) {
-		instance = timer;
-	}
 
 	/**
      * Reset the timer to 0. Clear any tpf history.

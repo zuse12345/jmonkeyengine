@@ -1,35 +1,34 @@
 package com.g3d.app;
 
 import com.g3d.input.FlyByCamera;
-import com.g3d.input.SoftwareCursor;
 import com.g3d.input.binding.BindingListener;
 import com.g3d.renderer.Renderer;
-import com.g3d.renderer.lwjgl.LwjglRenderer;
 import com.g3d.renderer.queue.RenderQueue;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Node;
-import com.g3d.scene.SceneManager;
 import com.g3d.scene.Spatial;
-import com.g3d.system.DisplaySettings;
-import com.g3d.system.DisplaySettings.Template;
-import com.g3d.system.Timer;
+import com.g3d.system.AppSettings;
+import com.g3d.system.AppSettings.Template;
 import java.util.List;
 import org.lwjgl.input.Keyboard;
 
-public abstract class SimpleApplication extends Application implements SceneManager {
+/**
+ * <code>SimpleApplication</code> extends the <code>Application</code> class
+ * to provide default functionality like a first-person camera,
+ * and an accessible root node that is updated and rendered regularly.
+ */
+public abstract class SimpleApplication extends Application {
 
     protected Node rootNode = new Node("Root Node");
     protected float secondCounter = 0.0f;
 
     protected FlyByCamera flyCam;
-    protected SoftwareCursor cursor;
 
     public SimpleApplication(){
-        setSceneManager(this);
-        setSettings(new DisplaySettings(Template.Default640x480));
+        setSettings(new AppSettings(Template.Default640x480));
     }
 
-    private void render(Spatial s, Renderer r){
+    protected void render(Spatial s, Renderer r){
         if (!s.checkCulling(cam)){
                 return;
         }
@@ -45,40 +44,41 @@ public abstract class SimpleApplication extends Application implements SceneMana
         }
     }
 
-    public void init(Renderer r) {
+    @Override
+    public void initialize(){
+        super.initialize();
+
         // enable depth test and back-face culling for performance
-        r.setDepthTest(true);
-        r.setBackfaceCulling(true);
+        renderer.setDepthTest(true);
+        renderer.setBackfaceCulling(true);
 
-        flyCam = new FlyByCamera(cam);
-        flyCam.setMoveSpeed(1f);
-        flyCam.registerWithDispatcher(dispatcher);
-
-//        cursor = new SoftwareCursor();
-//        try {
-//            Texture t = TextureLoader.loadTexture(Application.class.getResource("/com/g3d/app/cursor.png"));
-//            cursor.setImage(t.getImage(), settings.getWidth(), settings.getHeight());
-//        } catch (IOException ex) {
-//        }
-//        cursor.registerWithDispatcher(dispatcher);
-
-        dispatcher.registerKeyBinding("SIMPLEAPP_Exit", Keyboard.KEY_ESCAPE);
-        dispatcher.addTriggerListener(new BindingListener() {
-            public void onBinding(String binding, float value) {
-                if (binding.equals("SIMPLEAPP_Exit")){
-                    stop();
+        if (dispatcher != null){
+            flyCam = new FlyByCamera(cam);
+            flyCam.setMoveSpeed(1f);
+            flyCam.registerWithDispatcher(dispatcher);
+        
+            dispatcher.registerKeyBinding("SIMPLEAPP_Exit", Keyboard.KEY_ESCAPE);
+            dispatcher.addTriggerListener(new BindingListener() {
+                public void onBinding(String binding, float value) {
+                    if (binding.equals("SIMPLEAPP_Exit")){
+                        stop();
+                    }
                 }
-            }
-        });
+            });
+        }
 
         // call user code
         simpleInitApp();
         // TODO: Add fps display
     }
 
-    public void update(float tpf) {
+    @Override
+    public void update() {
+        super.update();
+        float tpf = timer.getTimePerFrame();
+
         secondCounter += tpf;
-        float fps = Timer.getTimer().getFrameRate();
+        float fps = timer.getFrameRate();
         if (secondCounter >= 1.0f){
 //            System.out.println(fps);
             secondCounter = 0.0f;
@@ -86,25 +86,11 @@ public abstract class SimpleApplication extends Application implements SceneMana
         
         simpleUpdate(tpf);
         rootNode.updateGeometricState(tpf, true);
-    }
 
-    public void render(Renderer r) {
-        LwjglRenderer lr = (LwjglRenderer) r;
-//        lr.setupDepthPrePass();
-//        {
-//            render(rootNode, r);
-//            simpleRender(r);
-//        }
-//        lr.setupColorPass();
-//        {
-            render(rootNode, r);
-            simpleRender(r);
-
-            if (cursor != null){
-                cursor.updateGeometricState(0f, true);
-                renderer.renderGeometry(cursor);
-            }
-//        }
+        renderer.clearBuffers(true, true, true);
+        render(rootNode, renderer);
+        simpleRender(renderer);
+        renderer.renderQueue();
     }
 
     public abstract void simpleInitApp();

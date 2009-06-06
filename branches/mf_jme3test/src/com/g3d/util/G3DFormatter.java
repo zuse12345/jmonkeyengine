@@ -7,7 +7,9 @@ package com.g3d.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.MessageFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
@@ -19,18 +21,25 @@ import java.util.logging.LogRecord;
  */
 public class G3DFormatter extends Formatter {
 
-    private Calendar calendar = new GregorianCalendar();
+    private Date calendar = new Date();
     private String lineSeperator;
+    private MessageFormat format;
+    private Object args[] = new Object[1];
+    private StringBuffer store = new StringBuffer();
 
     public G3DFormatter(){
         lineSeperator = System.getProperty("line.separator");
+        format = new MessageFormat("{0,time}");
     }
 
     @Override
     public String format(LogRecord record) {
         StringBuffer sb = new StringBuffer();
 
-        calendar.setTimeInMillis(record.getMillis());
+        calendar.setTime(record.getMillis());
+        args[0] = calendar;
+        store.setLength(0);
+        format.format(args, store, null);
 
         String clazz = null;
         try{
@@ -40,11 +49,8 @@ public class G3DFormatter extends Formatter {
         
         sb.append(record.getLevel().getLocalizedName()).append(" ");
         sb.append(clazz).append(" ");
-        sb.append(calendar.get(Calendar.HOUR)).append(":");
-        sb.append(calendar.get(Calendar.MINUTE)).append(":");
-        sb.append(calendar.get(Calendar.SECOND)).append(" ");
-        sb.append(calendar.get(Calendar.AM_PM) == 1 ? "PM" : "AM").append(": ");
-        sb.append(record.getMessage()).append(lineSeperator);
+        sb.append(store.toString()).append(" ");
+        sb.append(formatMessage(record)).append(lineSeperator);
 
         if (record.getThrown() != null) {
             try {

@@ -1,18 +1,16 @@
 package com.g3d.res;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Makes sure the implementations of ContentLoader and ContentLocator
- * support multi-threading.
- * @author Kirill
+ * <code>ImplHandler</code> manager the content loader and content locator
+ * implementations in a thread safe way. This allows implementations
+ * which store local persistent data to operate with a multi-threaded system.
+ * This is done by keeping an instance of each content loader and content
+ * locator object in a thread local.
  */
 public class ImplHandler {
 
@@ -124,7 +122,6 @@ public class ImplHandler {
             ImplThreadLocal local = loaders.get(extension);
             if (local != null){
                 ContentLoader loader = (ContentLoader) local.get();
-                loader.setOwner(owner);
                 return loader;
             }
             return null;

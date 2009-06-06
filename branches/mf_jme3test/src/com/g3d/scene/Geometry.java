@@ -1,8 +1,8 @@
 package com.g3d.scene;
 
 import com.g3d.bounding.BoundingVolume;
-import com.g3d.light.LightList;
 import com.g3d.math.Matrix4f;
+import com.g3d.math.Vector3f;
 import com.g3d.util.TempVars;
 
 public class Geometry extends Spatial {

@@ -6,10 +6,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
+/**
+ * <code>ThreadingManager</code> manages the threads used to load content
+ * within the Content Manager system. A pool of threads and a task queue
+ * is used to load resource data and perform I/O while the application's
+ * render thread is active. 
+ */
 public class ThreadingManager {
 
     protected final ExecutorService executor =
-            Executors.newFixedThreadPool(10,
+            Executors.newFixedThreadPool(2,
                                          new LoadingThreadFactory());
 
     protected final ContentManager owner;

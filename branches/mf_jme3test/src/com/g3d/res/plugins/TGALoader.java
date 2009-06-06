@@ -77,10 +77,7 @@ public final class TGALoader implements ContentLoader {
     public static final int TYPE_BLACKANDWHITE_RLE = 11;
 
 
-    public void setOwner(ContentManager owner){
-    }
-
-    public Object load(InputStream is, String extension) throws IOException {
+    public Object load(ContentManager owner, InputStream is, String extension) throws IOException {
         return loadImage(is, true);
     }
 

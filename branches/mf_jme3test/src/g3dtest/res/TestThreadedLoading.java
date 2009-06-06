@@ -10,7 +10,7 @@ import com.g3d.material.Material;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Quad;
-import com.g3d.system.DisplaySettings;
+import com.g3d.system.AppSettings;
 import com.g3d.texture.Texture;
 import java.util.concurrent.ExecutionException;
 
@@ -18,7 +18,7 @@ public class TestThreadedLoading extends SimpleApplication {
 
     public static void main(String[] args){
         TestThreadedLoading app = new TestThreadedLoading();
-        app.setSettings(new DisplaySettings(DisplaySettings.Template.Default1024x768));
+        app.setSettings(new AppSettings(AppSettings.Template.Default1024x768));
 
         try {
             long time = System.nanoTime();
@@ -44,7 +44,7 @@ public class TestThreadedLoading extends SimpleApplication {
     @Override
     public void simpleInitApp() {
         Quad quadMesh = new Quad(1, 1);
-        quadMesh.updateGeometry(1, 1, true, true);
+        quadMesh.updateGeometry(1, 1, true);
 
         Geometry quad = new Geometry("Textured Quad", quadMesh);
         quad.updateModelBound();

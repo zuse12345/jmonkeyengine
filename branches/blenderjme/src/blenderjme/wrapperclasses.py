@@ -808,6 +808,18 @@ class JmeBone(object):
                 and addlTransform != JmeBone.ZEROMAT4):
             #print "Applying addl to " + self.getName() + ": " + str(addlTransform)
             self.matrix *= addlTransform
+        bindTag = _XmlTag("bindMatrix", {'class':'com.jme.math.Matrix4f'})
+        # This makes unconventional sequence 00 10 20 instead of 00 01 02...
+        # Can fix that by just swapping the next 2 lines.  Keeping this way
+        # for now because that's how XMLExporter writes and it's easier to
+        # compare regression runs with the same ordering.
+        for y in range(4):
+            for x in range(4):
+                if ((x == y and round(self.matrix[x][y], 6) != 1.)
+                        or (x != y and round(self.matrix[x][y], 6) != 0.)):
+                    bindTag.addAttr(("m" + str(y) + str(x)),
+                            self.matrix[x][y], 6)
+        tag.addChild(bindTag)
         self.inverseTotalTrans = self.matrix.copy().invert()
             # N.b. .matrix is in an intermediate state here
         if invParentMat != None: self.matrix *= invParentMat
@@ -1019,7 +1031,7 @@ class JmeSkinAndBone(object):
 
     This node itself is only for grouping and will never have a transform.
     Any transform for the Blender Armature-parent Object will be assigned to
-    our new root bone.  Consequently, the 'backountTransform' attribute here
+    our new root bone.  Consequently, the 'backoutTransform' attribute here
     is passed directly to the root bone.
 
     addlTransform is a shared transform pointer which will EVENTUALLY

@@ -1178,16 +1178,17 @@ class JmeSkinAndBone(object):
             else:
                 limit = 0;
                 weightCount = len(vWeightMap)
-            salTag = _XmlTag(
-                    'SavableArrayList_' + str(vi), {'size':weightCount})
+            salTag = _XmlTag('SavableArrayList_' + str(vi))
             salaTag.addChild(salTag)
             weightSum = 0
             for weight in vWeightMap.itervalues():
                 if weight < 0:
                     raise Exception("Negative weight.  Should we support this?")
                 if weight >= limit: weightSum += weight
+            influenceCount = 0
             for group, weight in vWeightMap.iteritems():
                 if weight < limit: continue
+                influenceCount += 1
                 influenceTag = _XmlTag("com.jme.animation.BoneInfluence", {
                         "boneId":group })
                 influenceTag.addAttr("weight", weight/weightSum, 6)
@@ -1195,6 +1196,7 @@ class JmeSkinAndBone(object):
                 influenceTag.addChild(_XmlTag("bone", {
                     "class":"com.jme.animation.Bone", "ref":group
                 }))
+            salTag.addAttr("size", influenceCount)
         cacheTag.addChild(salaTag)
         skinTag.addChild(cacheTag)
         return tag

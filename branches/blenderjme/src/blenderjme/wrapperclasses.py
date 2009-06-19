@@ -591,10 +591,10 @@ class JmeMesh(object):
                 self.blenderVertIndexes.append(v.index)
             else:
                 # Remove this assertion after confirmed:
-                if not isistance(v, UpdatableMVert):
+                if not isinstance(v, UpdatableMVert):
                     raise Exception("Vert # "
                             + str(len(self.blenderVertIndexes) - 1)
-                            + " not an UPdatableMVert: " + str(type(v)))
+                            + " not an UpdatableMVert: " + str(type(v)))
                 self.blenderVertIndexes.append(v.origIndex)
             coArray.append(v.co.x)
             if autoRotate:

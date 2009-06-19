@@ -41,3 +41,10 @@ non-data meshes, etc.
 
 As soon as I implement proper schema validation in jME core, add the namespace
 specs to generated XML.
+
+Provide some means for the designer to specify the BoundingVolume for each mesh.
+This satisfies 2 use cases:  1: where one BV type is either required (e.g. the
+game may require an OBB to support model movement) or more accurate*;
+2: where animations (Blender-designed or jME-controlled) will extend the mesh
+beyond a load-time generated BV.
+* boxes are more accurately bound by BBs, spheres by BSs, angled boxes by OBBs.

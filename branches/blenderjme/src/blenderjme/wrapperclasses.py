@@ -1173,7 +1173,7 @@ class JmeSkinAndBone(object):
             if len(vWeightMap.values()) > self.maxWeightings:
                 allWeights = list(vWeightMap.values())
                 allWeights.sort()
-                limit = allWeights[-4:-3]
+                limit = allWeights[-4]
                 weightCount = self.maxWeightings
             else:
                 limit = 0;
@@ -1197,6 +1197,13 @@ class JmeSkinAndBone(object):
                     "class":"com.jme.animation.Bone", "ref":group
                 }))
             salTag.addAttr("size", influenceCount)
+            # ASSERTION.  For performance reasons, may want to remove this
+            # after the Assertion is known to always be true:
+            if limit != 0 and influenceCount != self.maxWeightings:
+                raise Exception("ASSERTION FAILED.  maxWeightings set to "
+                        + str(self.maxWeightings) + ", yet we wrote "
+                        + str(influenceCount)
+                        + " weight influences for a frame")
         cacheTag.addChild(salaTag)
         skinTag.addChild(cacheTag)
         return tag

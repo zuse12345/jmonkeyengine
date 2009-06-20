@@ -1114,11 +1114,14 @@ class JmeSkinAndBone(object):
             addlTransform *= self.backoutTransform.copy().invert()
         print "addlTransform NOW " + str(addlTransform)
         if len(self.children) == 1:
-            return self.boneTree.getXmlEl(autoRotate, addlTransform)
+            return self.boneTree.getXmlEl(False, addlTransform)
         tag = _XmlTag('com.jme.scene.Node', {'name':self.getName()})
+        if autoRotate: tag.addChild(_XmlTag("localRotation", {
+            'x':-0.7071, 'y':0, 'z':0, 'w':0.7071
+        }))
 
         childrenTag = _XmlTag('children', {'size':len(self.children)})
-        childrenTag.addChild(self.boneTree.getXmlEl(autoRotate, addlTransform))
+        childrenTag.addChild(self.boneTree.getXmlEl(False, addlTransform))
         meshChild = None  # we'll only skin the last skin child, for now
         skinRef = None
         for skinChild in self.children[1:]:
@@ -1130,7 +1133,7 @@ class JmeSkinAndBone(object):
             skinTag = _XmlTag('com.jme.animation.SkinNode',
                     {'name':skinChild.getName() + "Skin"})
             skinChildrenTag = _XmlTag('children', {'size':1})
-            skinChildTag = skinChild.getXmlEl(autoRotate)
+            skinChildTag = skinChild.getXmlEl(False)
             skinRef = skinChild.getName()
             skinChildTag.addAttr("reference_ID", skinRef)
             skinChildrenTag.addChild(skinChildTag)
@@ -1860,7 +1863,7 @@ class JmeTextureState(object):
         self.refCount = 0
 
     def cf(self, jmeTextureList):
-        if len(self.__jmeTextures) != len(jmeTextureList): return false
+        if len(self.__jmeTextures) != len(jmeTextureList): return False
         return set(self.__jmeTextures) == set(jmeTextureList)
 
     def getXmlEl(self):

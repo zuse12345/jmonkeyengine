@@ -1217,12 +1217,12 @@ class NodeTree(object):
     Add all members to the tree, then call and nest().
     See method descriptions for details."""
 
-    __slots__ = ('__memberMap', '__memberKeys',
+    __slots__ = ('__memberMap', 'memberKeys',
             '__matMap1side', '__matMap2side', 'root',
             '__textureHash', '__textureStates')
     # N.b. __memberMap does not have a member for each node, but a member
     #      for each saved Blender object.
-    # __memberKey is just because Python has no ordered maps/dictionaries
+    # memberKeys is just because Python has no ordered maps/dictionaries
     # We want nodes persisted in a well-defined sequence.
     # __textureHash is named *Hash instead of *Map only to avoid confusion
     # with "texture maps", which these are not.
@@ -1230,7 +1230,7 @@ class NodeTree(object):
     def __init__(self):
         object.__init__(self)
         self.__memberMap = {}
-        self.__memberKeys = []
+        self.memberKeys = []
         self.__matMap1side = {}
         self.__matMap2side = {}
         self.__textureHash = {}
@@ -1287,7 +1287,7 @@ class NodeTree(object):
             self.__memberMap[blenderObj] = JmeSkinAndBone(blenderObj)
         else:
             self.__memberMap[blenderObj] = JmeNode(blenderObj, self)
-        self.__memberKeys.append(blenderObj)
+        self.memberKeys.append(blenderObj)
 
     # IMPORTANT TODO:  Bones are Spatials too in jME.
     #  Ensure that Bone names are unique.  This is actually required for
@@ -1337,7 +1337,7 @@ class NodeTree(object):
         Returns the root node.
         """
 
-        if len(self.__memberKeys) < 1:
+        if len(self.memberKeys) < 1:
             self.root = None
             return self.root
 
@@ -1350,8 +1350,8 @@ class NodeTree(object):
         # many objects nested within both Bone and SkinNode.
 
         parentedBos = []
-        for bo in self.__memberKeys:
-            if bo.parent != None and bo.parent in self.__memberKeys:
+        for bo in self.memberKeys:
+            if bo.parent != None and bo.parent in self.memberKeys:
                 #print ("Nesting " + bo.getType() + "/" + bo.getName()
                         #+ " to  " + bo.parent.getType() + "/"
                         #+ bo.parent.getName())
@@ -1359,15 +1359,15 @@ class NodeTree(object):
                 parentedBos.append(bo)
         for bo in parentedBos:
             del self.__memberMap[bo]
-            self.__memberKeys.remove(bo)
-        if len(self.__memberKeys) < 1:
+            self.memberKeys.remove(bo)
+        if len(self.memberKeys) < 1:
             raise Exception("Internal problem.  Tree ate itself.")
-        if len(self.__memberKeys) < 2:
+        if len(self.memberKeys) < 2:
             self.root = self.__memberMap.popitem()[1]
-            del self.__memberKeys[0]
+            del self.memberKeys[0]
         else:
             self.root = JmeNode("BlenderObjects")
-            for key in self.__memberKeys:
+            for key in self.memberKeys:
                 self.root.addChild(self.__memberMap[key])
         return self.root
 

@@ -80,12 +80,72 @@ class UnsupportedException(Exception):
     def __str__(self):
         return self.msg
 
+def addRotationEl(parentEl, inQuat):
+    """Modifies the parent Element in-place.  Returns nothing.
+    It is safe for inQuat to be None, in which case, nothing is done.
+    The value attributes are added sequentially so that they will always be
+    ordered consistently.
+    """
+    if inQuat == None: return
+    newTag = _XmlTag("localRotation")
+    newTag.addAttr("x", inQuat.x, 6)
+    newTag.addAttr("y", inQuat.y, 6)
+    newTag.addAttr("z", inQuat.z, 6)
+    newTag.addAttr("w", inQuat.w, 6)
+    parentEl.addChild(newTag)
+
+def addScaleEl(parentEl, inVecList):
+    """Modifies the parent Element in-place.  Returns nothing.
+    It is safe for inVecList to be None, in which case, nothing is done.
+    The value attributes are added sequentially so that they will always be
+    ordered consistently.
+    """
+    if inVecList == None: return
+    newTag = _XmlTag("localScale")
+    newTag.addAttr("x", inVecList[0], 6)
+    newTag.addAttr("y", inVecList[1], 6)
+    newTag.addAttr("z", inVecList[2], 6)
+    parentEl.addChild(newTag)
+
+def addTranslationEl(parentEl, inVecList):
+    """Modifies the parent Element in-place.  Returns nothing.
+    It is safe for inVecList to be None, in which case, nothing is done.
+    The value attributes are added sequentially so that they will always be
+    ordered consistently.
+    """
+    if inVecList == None: return
+    newTag = _XmlTag("localTranslation")
+    newTag.addAttr("x", inVecList[0], 6)
+    newTag.addAttr("y", inVecList[1], 6)
+    newTag.addAttr("z", inVecList[2], 6)
+    parentEl.addChild(newTag)
+
+def addVector3fEl(parentEl, tagName, inVecList):
+    """
+    If specify tagName of None, tag will be named 'com.jme.math.Vector3f',
+    otherwise the tag will be named as specified and a 'class' attr will
+    be added with value 'com.jme.math.Vector3f'.
+    Modifies the parent Element in-place.  Returns nothing.
+    It is safe for inVecList to be None, in which case, nothing is done.
+    The value attributes are added sequentially so that they will always be
+    ordered consistently.
+    """
+    if inVecList == None: return
+    if tagName == None:
+        newTag = _XmlTag("com.jme.math.Vector3f")
+    else:
+        newTag = _XmlTag(tagName)
+        newTag.addAttr("class", "com.jme.math.Vector3f")
+    newTag.addAttr("x", inVecList[0], 6)
+    newTag.addAttr("y", inVecList[1], 6)
+    newTag.addAttr("z", inVecList[2], 6)
+    parentEl.addChild(newTag)
+
 
 from Blender.Object import PITypes as _bPITypes
 class JmeNode(object):
     __slots__ = ('wrappedObj', 'children', 'jmeMats', 'jmeTextureState',
             'name', 'backoutTransform')
-    IDENTITY_4x4 = _bmath.Matrix().resize4x4()
 
     def __init__(self, bObjOrName, nodeTree=None):
         """
@@ -95,7 +155,7 @@ class JmeNode(object):
         Materials from given bObj and direct data mesh (if any) will be added
         to one of the specified nodeTree's materials maps.
         The instantiator does not take a backoutTransform parameter.
-        backoutTransform must be set later, after we know which ancestore
+        backoutTransform must be set later, after we know which ancestor
         nodes are being exported.
         """
         object.__init__(self)
@@ -241,25 +301,9 @@ class JmeNode(object):
                 scale[2] = hold
         # Need to add the attrs sequentially in order to preserve sequence
         # of the attrs in the output.
-        if loc != None:
-            locTag = _XmlTag("localTranslation")
-            locTag.addAttr("x", loc[0], 6)
-            locTag.addAttr("y", loc[1], 6)
-            locTag.addAttr("z", loc[2], 6)
-            tag.addChild(locTag)
-        if rQuat != None:
-            locTag = _XmlTag("localRotation")
-            locTag.addAttr("x", rQuat.x, 6)
-            locTag.addAttr("y", rQuat.y, 6)
-            locTag.addAttr("z", rQuat.z, 6)
-            locTag.addAttr("w", rQuat.w, 6)
-            tag.addChild(locTag)
-        if scale != None:
-            locTag = _XmlTag("localScale")
-            locTag.addAttr("x", scale[0], 6)
-            locTag.addAttr("y", scale[1], 6)
-            locTag.addAttr("z", scale[2], 6)
-            tag.addChild(locTag)
+        addTranslationEl(tag, loc)
+        addScaleEl(tag, scale)
+        addRotationEl(tag, rQuat)
         return tag
 
     def getType(self):
@@ -737,7 +781,7 @@ class JmeBone(object):
     # For now, we support only a single animation controller. All Actions get
     # added as Animations of that Controller.
 
-    ZEROMAT4 = _bmath.Matrix()
+    IDENTITY_4x4 = _bmath.Matrix()
 
     def __init__(self, objOrBone, channelNames=None, parentBone=None):
         object.__init__(self)
@@ -805,7 +849,7 @@ class JmeBone(object):
         else:
             invParentMat = self.parentBone.inverseTotalTrans
         if (self.parentBone != None and addlTransform != None
-                and addlTransform != JmeBone.ZEROMAT4):
+                and addlTransform != JmeBone.IDENTITY_4x4):
             #print "Applying addl to " + self.getName() + ": " + str(addlTransform)
             self.matrix *= addlTransform
         bindTag = _XmlTag("bindMatrix", {'class':'com.jme.math.Matrix4f'})
@@ -850,11 +894,7 @@ class JmeBone(object):
                 hold = loc[1]
                 loc[1] = loc[2]
                 loc[2] = -hold
-            locTag = _XmlTag("localTranslation")
-            locTag.addAttr("x", loc[0], 6)
-            locTag.addAttr("y", loc[1], 6)
-            locTag.addAttr("z", loc[2], 6)
-            tag.addChild(locTag)
+            addTranslationEl(tag, loc)
         quatRot = self.matrix.toQuat()
         if (round(quatRot.x, 6) != 0 or round(quatRot.y, 6) != 0
                 or round(quatRot.z, 6) != 0 or round(quatRot.w) != 1):
@@ -862,12 +902,7 @@ class JmeBone(object):
                 hold = quatRot.y
                 quatRot.y = quatRot.z
                 quatRot.z = -hold
-            locTag = _XmlTag("localRotation")
-            locTag.addAttr("x", quatRot.x, 6)
-            locTag.addAttr("y", quatRot.y, 6)
-            locTag.addAttr("z", quatRot.z, 6)
-            locTag.addAttr("w", quatRot.w, 6)
-            tag.addChild(locTag)
+            addRotationEl(tag, quatRot)
         # N.b. bones have no scale
         scale = self.matrix.scalePart()
         if (round(scale[0], 6) != 1 or round(scale[1], 6) != 1
@@ -880,11 +915,7 @@ class JmeBone(object):
             # TODO:  Test with symmetrical scaling (sx = sy = sz), and
             # asymmetrical scaling.  Preliminary testing indicates that the
             # latter does not work.
-            scaleTag = _XmlTag("localScale")
-            scaleTag.addAttr("x", scale[0], 6)
-            scaleTag.addAttr("y", scale[1], 6)
-            scaleTag.addAttr("z", scale[2], 6)
-            tag.addChild(scaleTag)
+            addScaleEl(tag, scale)
         if self.actions == None: return tag
 
         gConTag = _XmlTag("geometricalControllers", {'size': 1})
@@ -972,11 +1003,7 @@ class JmeAnimation(object):
                         hold = loc[1]
                         loc[1] = loc[2]
                         loc[2] = -hold
-                    locTag = _XmlTag('com.jme.math.Vector3f')
-                    locTag.addAttr("x", loc.x, 6)
-                    locTag.addAttr("y", loc.y, 6)
-                    locTag.addAttr("z", loc.z, 6)
-                    translationsTag.addChild(locTag)
+                    addVector3fEl(translationsTag, None, loc)
             else:
                 translationsTag.addAttr("size", 0)
 
@@ -1041,6 +1068,7 @@ class JmeSkinAndBone(object):
     __slots__ = ('wrappedObj', 'backoutTransform',
             'boneTree', 'name', 'children', 'actionDataList', 'maxWeightings')
     WEIGHT_THRESHOLD = .001
+    BLENDERTOJME_FLIP_MAT4 = _bmath.RotationMatrix(-90, 4, 'x')
 
     def __init__(self, bObj):
         """
@@ -1049,8 +1077,8 @@ class JmeSkinAndBone(object):
         Just as for JmeNodes, we can't set backoutTransform until we know what
         objects are to be exported.
         """
-        self.maxWeightings = 4  # max of 4 influencing bones for each vertex
         object.__init__(self)
+        self.maxWeightings = 4  # max of 4 influencing bones for each vertex
         self.wrappedObj = bObj
         self.name = bObj.name
         self.__runPoses()   # Need to run this before instantiating bones, I think
@@ -1116,9 +1144,8 @@ class JmeSkinAndBone(object):
         if len(self.children) == 1:
             return self.boneTree.getXmlEl(False, addlTransform)
         tag = _XmlTag('com.jme.scene.Node', {'name':self.getName()})
-        if autoRotate: tag.addChild(_XmlTag("localRotation", {
-            'x':-0.7071, 'y':0, 'z':0, 'w':0.7071
-        }))
+        if autoRotate: addRotationEl(tag,
+                JmeSkinAndBone.BLENDERTOJME_FLIP_MAT4.toQuat())
 
         childrenTag = _XmlTag('children', {'size':len(self.children)})
         childrenTag.addChild(self.boneTree.getXmlEl(False, addlTransform))
@@ -1560,7 +1587,7 @@ class JmeMaterial(object):
         # Therefore, if World ambient light is off, we will make this washing
         # out effect more subtle, by combining diffuse + world lighting.
         world = _bScenes.active.world
-        if world == None  or (
+        if world == None or (
                 world.amb[0] == 0 and world.amb[1] == 0 and world.amb[2] == 0):
             # Add some material coloring into ambient coloring.  Details above.
             # Weighted average of mat diffuse coloring + white (the white
@@ -1830,19 +1857,8 @@ class JmeTexture(object):
         tag.addAttr("apply", self.applyMode)
         tag.addAttr("wrapS", self.wrapMode)
         tag.addAttr("wrapT", self.wrapMode)
-        if self.translation != None:
-            translTag = _XmlTag(
-                    "translation", {"class":"com.jme.math.Vector3f"})
-            translTag.addAttr("x", self.translation[0], 6)
-            translTag.addAttr("y", self.translation[1], 6)
-            translTag.addAttr("z", self.translation[2], 6)
-            tag.addChild(translTag)
-        if self.scale != None:
-            scaleTag = _XmlTag("scale", {"class":"com.jme.math.Vector3f"})
-            scaleTag.addAttr("x", self.scale[0], 6)
-            scaleTag.addAttr("y", self.scale[1], 6)
-            scaleTag.addAttr("z", self.scale[2], 6)
-            tag.addChild(scaleTag)
+        addVector3fEl(tag, "translation", self.translation)
+        addVector3fEl(tag, "scale", self.scale)
         textureKeyTag = _XmlTag(
                 "textureKey", {"class":"com.jme.util.TextureKey"})
         tag.addChild(textureKeyTag)

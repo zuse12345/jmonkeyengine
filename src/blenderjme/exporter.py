@@ -35,6 +35,8 @@ from jme.xml import XmlFile as _XmlFile
 from datetime import datetime as _datetime
 from bpy import data as _bdata
 from blenderjme.wrapperclasses import NodeTree as _NodeTree
+from Blender.Modifier import Type as _bModifierType
+from Blender.Modifier import Settings as _bModifierSettings
 import blenderjme
 
 recordTimestamp = "--nostamps" not in blenderjme.blenderArgs
@@ -44,6 +46,7 @@ def gen(saveAll, autoRotate, skipObjs=True):
 
     origEditMode = _bEditMode()
     if origEditMode != 0: _bEditMode(0)
+    reparenteds = {}
     try:
         os = []
         candidates = []
@@ -53,6 +56,16 @@ def gen(saveAll, autoRotate, skipObjs=True):
             candidates = _bdata.scenes.active.objects.selected
         nodeTree = _NodeTree()
         for bo in candidates: nodeTree.addIfSupported(bo, skipObjs)
+        for bo in nodeTree.memberKeys:
+            for mod in bo.modifiers:
+                if (mod.type != _bModifierType.ARMATURE
+                        or mod[_bModifierSettings.OBJECT] == None): continue
+                modObject = mod[_bModifierSettings.OBJECT]
+                if (modObject in nodeTree.memberKeys
+                        and modObject != bo.parent):
+                    reparenteds[bo] = bo.parent
+                    modObject.makeParent([bo])
+                    print "Pre loc = " + str(bo.getLocation())
         root = nodeTree.nest()
 
         if root == None: raise Exception("Nothing to do...")
@@ -66,3 +79,11 @@ def gen(saveAll, autoRotate, skipObjs=True):
         return xmlFile
     finally:
         if origEditMode != 0: _bEditMode(origEditMode)
+        for bo, par in reparenteds.iteritems():
+            print "Restoring parent "+ str(par) + " to " + bo.getName()
+            if par == None:
+                bo.clrParent()
+            else:
+                par.makeParent([bo])
+        # TODO:  Test whether need to run Blender.update() or whatever to
+        # make sure Outliner and everything reflect the restored relationships

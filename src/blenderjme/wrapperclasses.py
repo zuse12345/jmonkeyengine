@@ -299,8 +299,6 @@ class JmeNode(object):
                 hold = scale[1]
                 scale[1] = scale[2]
                 scale[2] = hold
-        # Need to add the attrs sequentially in order to preserve sequence
-        # of the attrs in the output.
         addTranslationEl(tag, loc)
         addScaleEl(tag, scale)
         addRotationEl(tag, rQuat)
@@ -310,8 +308,14 @@ class JmeNode(object):
         return self.wrappedObj.type
 
     def supported(bObj, skipObjs):
-        """Static method returns 0 if type not supported; non-0 if supported.
-           2 if will require face niggling; 3 if faceless"""
+        """
+        Static method returns 0 if type not supported; non-0 if supported.
+        2 if will require face niggling; 3 if faceless.
+        This method doesn't, and cannot, validate dependencies based upon
+        other Blender Objects, since we don't necessarily know if the other
+        objects are selected for export or not.
+        An example of this situation is validation of Armature/Skin linkages.
+        """
         # Silently ignore keyframes bMes.key for now.
         # Is face transp mode bMesh.mode for design-time usage?
         # Ignore animation, action, constraints, ip, and keyframing settings.
@@ -1064,8 +1068,11 @@ class JmeSkinAndBone(object):
     addlTransform is a shared transform pointer which will EVENTUALLY
     contain a matrix that needs to be applied to all bones.
     children[0] == boneTree.  A bit redundant.
+
+    'matrix' does not hold the Armature parent object matrix, but a form of the
+    skin Object's matrix.
     """
-    __slots__ = ('wrappedObj', 'backoutTransform',
+    __slots__ = ('wrappedObj', 'backoutTransform', 'matrix',
             'boneTree', 'name', 'children', 'actionDataList', 'maxWeightings')
     WEIGHT_THRESHOLD = .001
     BLENDERTOJME_FLIP_MAT4 = _bmath.RotationMatrix(-90, 4, 'x')
@@ -1082,6 +1089,7 @@ class JmeSkinAndBone(object):
         self.wrappedObj = bObj
         self.name = bObj.name
         self.__runPoses()   # Need to run this before instantiating bones, I think
+        self.matrix = None
 
         allChannelNames = set()
         for d in self.actionDataList: allChannelNames |= d.getChannelNames()
@@ -1090,6 +1098,9 @@ class JmeSkinAndBone(object):
         self.children = [self.boneTree]
         if self.boneTree.name == self.name: self.boneTree.name += "RootBone"
         self.backoutTransform = None
+
+    def setMatrix(self, matrix):
+        self.matrix = matrix
 
     def __runPoses(self):
         """Execute poses to gather data.
@@ -1141,14 +1152,44 @@ class JmeSkinAndBone(object):
             print "Parenting skeleton to some other Object"
             addlTransform *= self.backoutTransform.copy().invert()
         print "addlTransform NOW " + str(addlTransform)
-        if len(self.children) == 1:
+
+        if autoRotate:
+            if self.matrix == None:
+                self.matrix = JmeSkinAndBone.BLENDERTOJME_FLIP_MAT4
+            else:
+                self.matrix *= JmeSkinAndBone.BLENDERTOJME_FLIP_MAT4
+        if len(self.children) == 1 and self.matrix == None:
             return self.boneTree.getXmlEl(False, addlTransform)
+
         tag = _XmlTag('com.jme.scene.Node', {'name':self.getName()})
-        if autoRotate: addRotationEl(tag,
-                JmeSkinAndBone.BLENDERTOJME_FLIP_MAT4.toQuat())
+
+        if self.matrix != None:
+            # This block for writing local transforms is copied directly from
+            # JmeNode above.  See that section for commentary.
+            loc = self.matrix.translationPart()
+            if (round(loc[0], 6) == 0. and round(loc[1], 6) == 0.
+                    and round(loc[2], 6) == 0.): loc = None
+            rQuat = self.matrix.toQuat()
+            if (round(rQuat.x, 6) == 0 and round(rQuat.y, 6) == 0
+                    and round(rQuat.z, 6) == 0 and round(rQuat.w) == 1):
+                rQuat = None
+                scaleMat = self.matrix
+            else:
+                scaleMat = self.matrix * (
+                        rQuat.copy().inverse().toMatrix().resize4x4())
+            scale = [scaleMat[0][0], scaleMat[1][1], scaleMat[2][2]]
+            if (round(scale[0], 6) == 1.
+                    and round(scale[1], 6) == 1. and round(scale[2], 6) == 1.):
+                scale = None
+            addTranslationEl(tag, loc)
+            addScaleEl(tag, scale)
+            addRotationEl(tag, rQuat)
 
         childrenTag = _XmlTag('children', {'size':len(self.children)})
         childrenTag.addChild(self.boneTree.getXmlEl(False, addlTransform))
+        if len(self.children) == 1:
+            tag.addChild(childrenTag)
+            return tag
         meshChild = None  # we'll only skin the last skin child, for now
         skinRef = None
         for skinChild in self.children[1:]:
@@ -1244,12 +1285,12 @@ class NodeTree(object):
     Add all members to the tree, then call and nest().
     See method descriptions for details."""
 
-    __slots__ = ('__memberMap', 'memberKeys',
+    __slots__ = ('__memberMap', '__memberKeys',
             '__matMap1side', '__matMap2side', 'root',
             '__textureHash', '__textureStates')
     # N.b. __memberMap does not have a member for each node, but a member
     #      for each saved Blender object.
-    # memberKeys is just because Python has no ordered maps/dictionaries
+    # __memberKeys is just because Python has no ordered maps/dictionaries
     # We want nodes persisted in a well-defined sequence.
     # __textureHash is named *Hash instead of *Map only to avoid confusion
     # with "texture maps", which these are not.
@@ -1257,7 +1298,7 @@ class NodeTree(object):
     def __init__(self):
         object.__init__(self)
         self.__memberMap = {}
-        self.memberKeys = []
+        self.__memberKeys = []
         self.__matMap1side = {}
         self.__matMap2side = {}
         self.__textureHash = {}
@@ -1306,15 +1347,19 @@ class NodeTree(object):
         matMap[bMat] = jmeMat
         return jmeMat
 
-    def addIfSupported(self, blenderObj, skipObjs):
+    def addSupported(self, blenderObj, skipObjs):
         """Creates a JmeNode or JmeSkinAndBone for the given Blender Object,
-        if the Object is supported."""
-        if not JmeNode.supported(blenderObj, skipObjs): return
+        The specified object MUST BE PRE-VALIDATED AS BEING SUPPORTED!"""
+        if not JmeNode.supported(blenderObj, skipObjs):
+            raise Exception(
+                "Internal error:  Script said item supported when it is not: "
+                + blenderObj.getName())
         if blenderObj.type == "Armature":
             self.__memberMap[blenderObj] = JmeSkinAndBone(blenderObj)
         else:
             self.__memberMap[blenderObj] = JmeNode(blenderObj, self)
-        self.memberKeys.append(blenderObj)
+        self.__memberKeys.append(blenderObj)
+        return self.__memberMap[blenderObj]
 
     # IMPORTANT TODO:  Bones are Spatials too in jME.
     #  Ensure that Bone names are unique.  This is actually required for
@@ -1364,7 +1409,7 @@ class NodeTree(object):
         Returns the root node.
         """
 
-        if len(self.memberKeys) < 1:
+        if len(self.__memberKeys) < 1:
             self.root = None
             return self.root
 
@@ -1377,8 +1422,8 @@ class NodeTree(object):
         # many objects nested within both Bone and SkinNode.
 
         parentedBos = []
-        for bo in self.memberKeys:
-            if bo.parent != None and bo.parent in self.memberKeys:
+        for bo in self.__memberKeys:
+            if bo.parent != None and bo.parent in self.__memberKeys:
                 #print ("Nesting " + bo.getType() + "/" + bo.getName()
                         #+ " to  " + bo.parent.getType() + "/"
                         #+ bo.parent.getName())
@@ -1386,15 +1431,15 @@ class NodeTree(object):
                 parentedBos.append(bo)
         for bo in parentedBos:
             del self.__memberMap[bo]
-            self.memberKeys.remove(bo)
-        if len(self.memberKeys) < 1:
+            self.__memberKeys.remove(bo)
+        if len(self.__memberKeys) < 1:
             raise Exception("Internal problem.  Tree ate itself.")
-        if len(self.memberKeys) < 2:
+        if len(self.__memberKeys) < 2:
             self.root = self.__memberMap.popitem()[1]
-            del self.memberKeys[0]
+            del self.__memberKeys[0]
         else:
             self.root = JmeNode("BlenderObjects")
-            for key in self.memberKeys:
+            for key in self.__memberKeys:
                 self.root.addChild(self.__memberMap[key])
         return self.root
 

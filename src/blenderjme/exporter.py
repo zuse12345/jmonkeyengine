@@ -35,55 +35,104 @@ from jme.xml import XmlFile as _XmlFile
 from datetime import datetime as _datetime
 from bpy import data as _bdata
 from blenderjme.wrapperclasses import NodeTree as _NodeTree
+from blenderjme.wrapperclasses import JmeSkinAndBone as _JmeSkinAndBone
+from blenderjme.wrapperclasses import JmeNode as _JmeNode
 from Blender.Modifier import Type as _bModifierType
 from Blender.Modifier import Settings as _bModifierSettings
+import Blender.Mathutils as _bmath
 import blenderjme
 
 recordTimestamp = "--nostamps" not in blenderjme.blenderArgs
+IDENTITY_4x4 = _bmath.Matrix()
 
 def gen(saveAll, autoRotate, skipObjs=True):
     global recordTimestamp
 
+    reparenteds = {}
+    relocateds = {}
+    os = []
+    candidates = []
+    supportedCandidates = []
+    zapees = []  # Blender Objs which are supported atomically, but
+                 # rejected due to interdependencies with other selected
+                 # objects.
     origEditMode = _bEditMode()
     if origEditMode != 0: _bEditMode(0)
-    reparenteds = {}
     try:
-        os = []
-        candidates = []
         if saveAll:
             candidates = _bdata.objects
         else:
             candidates = _bdata.scenes.active.objects.selected
         nodeTree = _NodeTree()
-        for bo in candidates: nodeTree.addIfSupported(bo, skipObjs)
-        for bo in nodeTree.memberKeys:
+        for bo in candidates:
+            if _JmeNode.supported(bo, skipObjs):
+                supportedCandidates.append(bo)
+        for bo in supportedCandidates:
+            if (bo.type == "Armature" and bo.parent != None
+                    and bo.parent in supportedCandidates):
+                print("Rejecting Armature '" + bo.getName()
+                        + "' because we only support root-level Arma Objs")
+                zapees.append(bo)
+        for bo in zapees: supportedCandidates.remove(bo)
+        for bo in supportedCandidates:
             for mod in bo.modifiers:
                 if (mod.type != _bModifierType.ARMATURE
                         or mod[_bModifierSettings.OBJECT] == None): continue
                 modObject = mod[_bModifierSettings.OBJECT]
-                if (modObject in nodeTree.memberKeys
+                if (modObject in supportedCandidates
                         and modObject != bo.parent):
                     reparenteds[bo] = bo.parent
                     modObject.makeParent([bo])
-                    print "Pre loc = " + str(bo.getLocation())
+            if (bo.parent != None and bo.parent.type == "Armature"
+                    and bo.parent in supportedCandidates
+                    and bo.parent.matrixLocal * bo.matrixLocal != IDENTITY_4x4):
+                # This is a Skin node.
+                # We must zero the Skin node Object's transform from the
+                # skin node and the Arma obj. to avoid serious problems
+                # with bone locations and with model location jumping when
+                # animations start up.
+                origParentMat = bo.parent.matrixLocal.copy()
+                origMat = bo.matrixLocal.copy()
+                relocateds[bo.parent] = bo.matrixLocal * bo.parent.matrixLocal
+                relocateds[bo] = relocateds[bo.parent]
+                inversion = relocateds[bo].copy().invert()
+                bo.parent.matrixLocal *= inversion
+                bo.matrixLocal *= inversion
+                if origMat == bo.matrixLocal.copy():
+                    raise Exception("Internal problem:  Matrix was not "
+                    + "changed when transformed by:\n" + str(inversion))
+                if origParentMat == bo.parent.matrixLocal.copy():
+                    raise Exception("Internal problem:  Parent Matrix was not "
+                    + "changed when transformed by:\n" + str(inversion))
+        for bo in supportedCandidates:
+            jmeObj = nodeTree.addSupported(bo, skipObjs)
+            if isinstance(jmeObj, _JmeSkinAndBone) and bo in relocateds:
+                jmeObj.setMatrix(relocateds[bo])
         root = nodeTree.nest()
 
         if root == None: raise Exception("Nothing to do...")
 
-        stampText = "Blender export by Blender/JME Exporter"
+        stampText = "Blender export by Blender-to-jME Exporter"
         if recordTimestamp: stampText += (" at " + _datetime.now().isoformat())
-        stampText += ("\nExporter (not this file!) copyright by\n  "
-                + __author__ + " + the jME Dev Team")
+        stampText += ("\n     Exporter (not this file!) copyright by\n"
+                + "     " + __author__ + "\n     + the jMonkeyEngine Dev Team")
         xmlFile = _XmlFile(nodeTree.getXml(autoRotate))
         xmlFile.addComment(stampText)
         return xmlFile
     finally:
-        if origEditMode != 0: _bEditMode(origEditMode)
+        for bo, mat in relocateds.iteritems():
+            origMat = bo.matrixLocal.copy()
+            bo.matrixLocal *= mat
+            print("Restoring transform matrix of " + bo.type + " '"
+                    + bo.getName() + "'")
+            if origMat == bo.matrixLocal.copy():
+                raise Exception("Internal problem:  " + bo.getName()
+                        + " Matrix was not changed when "
+                        + "restored with:\n" + str(mat))
         for bo, par in reparenteds.iteritems():
             print "Restoring parent "+ str(par) + " to " + bo.getName()
             if par == None:
                 bo.clrParent()
             else:
                 par.makeParent([bo])
-        # TODO:  Test whether need to run Blender.update() or whatever to
-        # make sure Outliner and everything reflect the restored relationships
+        if origEditMode != 0: _bEditMode(origEditMode)

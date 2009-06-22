@@ -1,7 +1,7 @@
 #!BPY
-"""Blender-to-jME XML format Exporter
+"""Blender ==> jME XML format Exporter
 Name: 'JMonkeyEngine (*-jme.xml)'
-Blender: 241
+Blender: 248
 Group: 'Export'
 Tip: 'Export to jMonkeyEngine XML file'"""
 # TODO:  install archived version of Blender and set the Blender version
@@ -17,8 +17,7 @@ __url__ = 'http://www.jmonkeyengine.com'
 
 __bpydoc__ = "Run the exporter and hit the Help button in the Gui."
 
-# Copyright (c) 2009, Blaine Simpson and the jMonkeyEngine team
-# All rights reserved.
+# Copyright (c) 2009, Blaine Simpson and the jMonkeyEngine Dev Team.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:

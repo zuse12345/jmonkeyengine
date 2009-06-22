@@ -45,6 +45,11 @@ import blenderjme
 recordTimestamp = "--nostamps" not in blenderjme.blenderArgs
 IDENTITY_4x4 = _bmath.Matrix()
 
+def descendantOf(meNode, ancestor):
+    if meNode.parent == None: return False
+    if meNode.parent == ancestor: return True
+    return descendantOf(meNode.parent, ancestor)
+
 def gen(saveAll, autoRotate, skipObjs=True):
     global recordTimestamp
 
@@ -93,21 +98,30 @@ def gen(saveAll, autoRotate, skipObjs=True):
                 # animations start up.
                 origParentMat = bo.parent.matrixLocal.copy()
                 origMat = bo.matrixLocal.copy()
-                relocateds[bo.parent] = bo.matrixLocal * bo.parent.matrixLocal
-                relocateds[bo] = relocateds[bo.parent]
-                inversion = relocateds[bo].copy().invert()
+                relocateds[bo.parent] = origParentMat
+                relocateds[bo] = origMat
+                inversion = (bo.matrixLocal * bo.parent.matrixLocal).invert()
                 bo.parent.matrixLocal *= inversion
                 bo.matrixLocal *= inversion
-                if origMat == bo.matrixLocal.copy():
+                if origMat == bo.matrixLocal:
                     raise Exception("Internal problem:  Matrix was not "
                     + "changed when transformed by:\n" + str(inversion))
-                if origParentMat == bo.parent.matrixLocal.copy():
+                if origParentMat == bo.parent.matrixLocal:
                     raise Exception("Internal problem:  Parent Matrix was not "
                     + "changed when transformed by:\n" + str(inversion))
         for bo in supportedCandidates:
             jmeObj = nodeTree.addSupported(bo, skipObjs)
             if isinstance(jmeObj, _JmeSkinAndBone) and bo in relocateds:
                 jmeObj.setMatrix(relocateds[bo])
+        # This backs up all objects under skin nodes, since they may get moved
+        for skinBo in relocateds.keys()[:]:
+            if skinBo.parent == None: continue  # Armature object
+            # skinBo really is a Skin Object now
+            for bo in _bdata.scenes.active.objects:
+                if bo in relocateds: continue
+                if descendantOf(bo, skinBo):
+                    print "Backing up t of " + bo.getName()
+                    relocateds[bo] = bo.matrixLocal.copy()
         root = nodeTree.nest()
 
         if root == None: raise Exception("Nothing to do...")
@@ -121,14 +135,16 @@ def gen(saveAll, autoRotate, skipObjs=True):
         return xmlFile
     finally:
         for bo, mat in relocateds.iteritems():
+            #if bo.matrixLocal == mat: continue  # sometimes gives false posit.
             origMat = bo.matrixLocal.copy()
-            bo.matrixLocal *= mat
+            bo.matrixLocal = mat
             print("Restoring transform matrix of " + bo.type + " '"
                     + bo.getName() + "'")
-            if origMat == bo.matrixLocal.copy():
-                raise Exception("Internal problem:  " + bo.getName()
-                        + " Matrix was not changed when "
-                        + "restored with:\n" + str(mat))
+            if origMat == bo.matrixLocal:
+                print("WARNING:  Internal problem:  " + bo.getName()
+                        + " Matrix was not changed when restored")
+                        #+ " with:\n" + str(mat) + "\nFROM:\n" + str(origMat)
+                        #+ "\n==>\n" + str(bo.matrixLocal))
         for bo, par in reparenteds.iteritems():
             print "Restoring parent "+ str(par) + " to " + bo.getName()
             if par == None:

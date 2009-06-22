@@ -809,8 +809,7 @@ class JmeBone(object):
             for childBlenderBone in arma.bones.values():
                 # This loop makes all Blender top-level bones into direct
                 # children of our new, single topLevel root bone.
-                if (childBlenderBone.parent == None
-                        or childBlenderBone.name in channelNames):
+                if childBlenderBone.parent == None:
                     blenderChildren.append(childBlenderBone)
         else:
             if not isinstance(objOrBone, _Armature.Bone):
@@ -819,9 +818,7 @@ class JmeBone(object):
             self.armaObj = None
             self.name = objOrBone.name
             self.matrix = objOrBone.matrix['ARMATURESPACE']
-            for child in objOrBone.children:
-                if child.name not in channelNames:
-                    blenderChildren.append(child)
+            blenderChildren = objOrBone.children
 
         if len(blenderChildren) < 1:
             self.children = None
@@ -1112,7 +1109,8 @@ class JmeSkinAndBone(object):
             if len(set(bAction.getChannelNames()) - set(
                     self.wrappedObj.getData(False, True).bones.keys())) > 0:
                 continue
-            actionData = ActionData(bAction)
+            actionData = ActionData(bAction,
+                    self.wrappedObj.getData(False, True).bones)
 
             bAction.setActive(self.wrappedObj)
             for frameNum in actionData.blenderFrames:

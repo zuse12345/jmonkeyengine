@@ -42,10 +42,16 @@ class ActionData(object):
 
     The key sets for locs, rots, mats is always the same FOR NOW.
     """
-    __slots__ = (
-            'blenderFrames', 'keyframeTimes', 'locs', 'rots', 'mats', 'name')
+    __slots__ = ('blenderFrames', 'keyframeTimes', 'locs', 'rots',
+            'mats', 'name', 'boneMap')
     # Not sure which of rots and/or mats will be used.
     # For now, using 'rots' just to cull <rotations> with no rotations.
+    # boneMap is the map of the armature bones, not the pose bones.  We need
+    # this because the pose bones don't keep enough nesting data.
+
+    # TODO:  Reorganize so that addPose() just sets the mats, then call
+    # nestBones just once for each bone, instead of once per bone per frame.
+
     frameRate = None
 
     def getChannelNames(self):
@@ -54,9 +60,10 @@ class ActionData(object):
     def getName(self):
         return self.name
 
-    def __init__(self, bAction):
+    def __init__(self, bAction, boneMap):
         object.__init__(self)
         self.name = bAction.name
+        self.boneMap = boneMap
         if ActionData.frameRate == None:
             raise Exception("You can't instantiate ActionData until the "
                     + "frameRate is updated")
@@ -96,22 +103,48 @@ class ActionData(object):
             self.keyframeTimes.append((frameNum-1.) / ActionData.frameRate)
 
     def addPose(self, poseBones):
+        "Add a pose for a single frame"
+        # First we get concentrate on setting the last mats element for each
+        # bone, then we go back and set the last locs and rots elements,
+        # based on the new mats element.
+        for boneName in self.locs.iterkeys():  # equivalent to self.rots...
+            if boneName in poseBones.keys():
+                self.mats[boneName].append(poseBones[boneName].poseMatrix.copy())
+            else:
+                raise Exception(
+            "TODO:  Figure out what to do when channel has no val for a frame");
+                self.mats[boneName].append(None)
+
+        for boneName in self.locs.iterkeys():
+            if poseBones[boneName].parent == None:
+                matInv = self.mats[boneName][-1].copy().invert()
+                for childBone in self.boneMap[boneName].children:
+                    self.applyMat(childBone, matInv)
+
         for boneName in self.locs.iterkeys():  # equivalent to self.rots...
             locs = self.locs[boneName]
             rots = self.rots[boneName]
-            mats = self.mats[boneName]
+            mat = self.mats[boneName][-1]
             if boneName in poseBones.keys():
-                locs.append(
-                        poseBones[boneName].poseMatrix.translationPart())
-                rots.append(poseBones[boneName]
-                        .poseMatrix.rotationPart().toQuat())
-                mats.append(poseBones[boneName].poseMatrix.copy())
+                locs.append(mat.translationPart())
+                rots.append(mat.rotationPart().toQuat())
             else:
                 raise Exception(
             "TODO:  Figure out what to do when channel has no val for a frame");
                 locs.append(None)
                 rots.append(None)
-                mats.append(None)
+
+    def applyMat(self, armaBone, matInv):
+        """Updates the matrixes of all descendant Pose Bones (not Armature Bones)
+        to account for the matrixes of ancestor bones."""
+
+        if armaBone.name not in self.mats: return
+        self.mats[armaBone.name][-1] *= matInv
+        if armaBone.children == None: return
+        newInv = matInv * self.mats[armaBone.name][-1].copy().invert()
+        for childBone in armaBone.children:
+            print childBone.name + " childof " + armaBone.name
+            self.applyMat(childBone, newInv)
 
     def cull(self):
         usedRotChannels = set()

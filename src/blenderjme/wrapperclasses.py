@@ -1074,7 +1074,7 @@ class JmeSkinAndBone(object):
     WEIGHT_THRESHOLD = .001
     BLENDERTOJME_FLIP_MAT4 = _bmath.RotationMatrix(-90, 4, 'x')
 
-    def __init__(self, bObj):
+    def __init__(self, bObj, maxWeightings):
         """
         N.b. the bObj param is not the data object (like we take for Mesh
         Objects), but a Blender Object.
@@ -1082,7 +1082,7 @@ class JmeSkinAndBone(object):
         objects are to be exported.
         """
         object.__init__(self)
-        self.maxWeightings = 4  # max of 4 influencing bones for each vertex
+        self.maxWeightings = maxWeightings
         self.wrappedObj = bObj
         self.name = bObj.name
         self.__runPoses()   # Need to run this before instantiating bones, I think
@@ -1283,7 +1283,7 @@ class NodeTree(object):
     Add all members to the tree, then call and nest().
     See method descriptions for details."""
 
-    __slots__ = ('__memberMap', '__memberKeys',
+    __slots__ = ('__memberMap', '__memberKeys', '__maxWeightings',
             '__matMap1side', '__matMap2side', 'root',
             '__textureHash', '__textureStates')
     # N.b. __memberMap does not have a member for each node, but a member
@@ -1301,6 +1301,7 @@ class NodeTree(object):
         self.__matMap2side = {}
         self.__textureHash = {}
         self.__textureStates = set()
+        self.__maxWeightings = None
         self.root = None
         ActionData.updateFrameRate()
 
@@ -1345,6 +1346,14 @@ class NodeTree(object):
         matMap[bMat] = jmeMat
         return jmeMat
 
+    def setMaxWeightings(self, maxWeightings):
+        if not isinstance(maxWeightings, int):
+            raise Exception("Illegal form at for weightings value: "
+                    + str(maxWeightings))
+        if maxWeightings < 1:
+            raise Exception("maxWeightings must be > 0")
+        self.__maxWeightings = maxWeightings
+
     def addSupported(self, blenderObj, skipObjs):
         """Creates a JmeNode or JmeSkinAndBone for the given Blender Object,
         The specified object MUST BE PRE-VALIDATED AS BEING SUPPORTED!"""
@@ -1353,7 +1362,10 @@ class NodeTree(object):
                 "Internal error:  Script said item supported when it is not: "
                 + blenderObj.getName())
         if blenderObj.type == "Armature":
-            self.__memberMap[blenderObj] = JmeSkinAndBone(blenderObj)
+            if self.__maxWeightings == None:
+                raise Exception("Assertion failed:  maxWeightings not set")
+            self.__memberMap[blenderObj] =  \
+                    JmeSkinAndBone(blenderObj, self.__maxWeightings)
         else:
             self.__memberMap[blenderObj] = JmeNode(blenderObj, self)
         self.__memberKeys.append(blenderObj)

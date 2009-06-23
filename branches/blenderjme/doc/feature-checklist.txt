@@ -4,6 +4,7 @@ $Id$
 - -----------------------------------------------------------------------------
 * Rigorous XML generation (consistent indentation, detection of illegal XML
    keywords, conversion of illegal XML characters where possible).
+* Automatic axis-flip from conventional Blender axes to conventional jME axes.
 * Write single mesh object, with and without color vertexes and normals
 * Write multiple top-level mesh objects
 * Writes defaultColor to Meshes if blenderObject.color set (Blender doesn't
@@ -16,7 +17,13 @@ $Id$
   instead of the default of exporting the exportable subset of currently-
   selected items.
 * Write basic texture map materials
+* Write armatures (including without actions or weightings)
+* Write armature actions
+* Write armature bone weightings
+* Support nesting of Objects under armature skins (though these objects will
+  not deform through either Blender nor jME-side bone manipulation.
+* Support both old-fashioned parenting and modifier for associating skin
+  object to armature object.
 
-  Write armatures
   Add support for Object RB* game settings.  These would be very useful for
    jME games.  Like, custom Bondary objects, Physics integration, action hooks.

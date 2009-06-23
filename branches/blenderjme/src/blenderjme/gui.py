@@ -54,6 +54,7 @@ saveAll = False
 xmlFile = None
 axisFlip = True
 skipObjs = True  # Unsupported Mat Objs
+maxWeightings = 4
 BTNID_SAVEALL = 1
 BTNID_SAVE = 2
 BTNID_CANCEL = 3
@@ -61,9 +62,11 @@ BTNID_OVERWRITE = 4
 BTNID_FLIP = 5
 BTNID_SKIPOBJS = 6
 BTNID_HELP = 7
+BTNID_MAXWEIGHTINGS = 8
 selCount = None
 allCount = None      # Does double-duty.  (allCount != None) means Gui is up.
 fileOverwrite = False
+maxWeightingsNumber = None
 
 def exitModule():
     global guiBox, selCount, allCount
@@ -76,7 +79,7 @@ def exitModule():
     print "Exiting exporter"
 
 def updateExportableCounts():
-    """Returns counts of all exportable objects, and all selected exportable
+    """Generates counts of all exportable objects, and all selected exportable
     objects"""
 
     global selCount, allCount, skipObjs
@@ -89,7 +92,7 @@ def updateExportableCounts():
 
 def btnHandler(btnId):
     global saveAll, xmlFile, defaultFilePath, fileOverwrite, axisFlip, \
-            skipObjs, helpUrl
+            skipObjs, helpUrl, maxWeightings
     if btnId == BTNID_SKIPOBJS:
         skipObjs = not skipObjs
         updateExportableCounts()
@@ -109,7 +112,7 @@ def btnHandler(btnId):
         return
     if btnId == BTNID_SAVE:
         try:
-            xmlFile = _exporter.gen(saveAll, axisFlip, skipObjs)
+            xmlFile = _exporter.gen(saveAll, axisFlip, skipObjs, maxWeightings)
         except Exception, e:
             # Python 2.5 does not support "except X as y:" syntax
             ei = _exc_info()[2]
@@ -129,6 +132,10 @@ def btnHandler(btnId):
     if btnId == BTNID_CANCEL:
         exitModule()
         return
+    if btnId == BTNID_MAXWEIGHTINGS:
+        maxWeightings = maxWeightingsNumber.val
+        return
+    raise Exception("Unexpected button ID: " + btnId)
 
 def inputHandler(eventNum, press): # press is set for mouse movements. ?
     if not press: return
@@ -243,7 +250,8 @@ def saveFile(filepath):
         print "Will retry"
 
 def drawer():
-    global saveAll, guiBox, selCount, allCount, fileOverwrite
+    global saveAll, guiBox, selCount, allCount, fileOverwrite, maxWeightings
+    global maxWeightingsNumber
 
     if guiBox == None: mkGuiBox()
     if guiBox.screenTooSmall:
@@ -301,6 +309,10 @@ def drawer():
     _bDraw.Toggle(skipText, BTNID_SKIPOBJS,
             guiBox.x + 15, guiBox.y + 125, 60, 17, skipObjs,
             "Choose to skip just the Mats or the containing Objs", redrawDummy)
+    maxWeightingsNumber = _bDraw.Number("", BTNID_MAXWEIGHTINGS,
+            guiBox.x + 15, guiBox.y + 100, 50, 17, maxWeightings, 1, 10000,
+            "Max number of the highest weighted bones which can influence an "
+            + "animated vertex")
     _bDraw.PushButton("Export", BTNID_SAVE,
             guiBox.x + 150, guiBox.y + 10, 50, 17,
             "Proceed to select file to save to")
@@ -311,3 +323,5 @@ def drawer():
             guiBox.x + 100, guiBox.y + 150,200,17)
     _bDraw.Label("Unsupported Material-handling",
             guiBox.x + 100, guiBox.y + 125,200,17)
+    _bDraw.Label("Max bone weightings/vert.",
+            guiBox.x + 100, guiBox.y + 100,200,17)

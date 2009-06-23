@@ -50,7 +50,7 @@ def descendantOf(meNode, ancestor):
     if meNode.parent == ancestor: return True
     return descendantOf(meNode.parent, ancestor)
 
-def gen(saveAll, autoRotate, skipObjs=True):
+def gen(saveAll, autoRotate, skipObjs=True, maxWeightings=4):
     global recordTimestamp
 
     reparenteds = {}
@@ -69,6 +69,7 @@ def gen(saveAll, autoRotate, skipObjs=True):
         else:
             candidates = _bdata.scenes.active.objects.selected
         nodeTree = _NodeTree()
+        nodeTree.setMaxWeightings(maxWeightings)
         for bo in candidates:
             if _JmeNode.supported(bo, skipObjs):
                 supportedCandidates.append(bo)

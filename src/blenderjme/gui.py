@@ -54,6 +54,7 @@ saveAll = False
 xmlFile = None
 axisFlip = True
 skipObjs = True  # Unsupported Mat Objs
+exportActions = True
 maxWeightings = 4
 BTNID_SAVEALL = 1
 BTNID_SAVE = 2
@@ -63,6 +64,7 @@ BTNID_FLIP = 5
 BTNID_SKIPOBJS = 6
 BTNID_HELP = 7
 BTNID_MAXWEIGHTINGS = 8
+BTNID_EXPORTACTIONS = 9
 selCount = None
 allCount = None      # Does double-duty.  (allCount != None) means Gui is up.
 fileOverwrite = False
@@ -92,7 +94,7 @@ def updateExportableCounts():
 
 def btnHandler(btnId):
     global saveAll, xmlFile, defaultFilePath, fileOverwrite, axisFlip, \
-            skipObjs, helpUrl, maxWeightings
+            skipObjs, helpUrl, maxWeightings, exportActions
     if btnId == BTNID_SKIPOBJS:
         skipObjs = not skipObjs
         updateExportableCounts()
@@ -112,7 +114,8 @@ def btnHandler(btnId):
         return
     if btnId == BTNID_SAVE:
         try:
-            xmlFile = _exporter.gen(saveAll, axisFlip, skipObjs, maxWeightings)
+            xmlFile = _exporter.gen(
+                    saveAll, axisFlip, skipObjs, maxWeightings, exportActions)
         except Exception, e:
             # Python 2.5 does not support "except X as y:" syntax
             ei = _exc_info()[2]
@@ -134,6 +137,10 @@ def btnHandler(btnId):
         return
     if btnId == BTNID_MAXWEIGHTINGS:
         maxWeightings = maxWeightingsNumber.val
+        return
+    if btnId == BTNID_EXPORTACTIONS:
+        exportActions = not exportActions
+        _bDraw.Redraw()
         return
     raise Exception("Unexpected button ID: " + btnId)
 
@@ -294,6 +301,8 @@ def drawer():
     else: overwriteText = "Confirm"
     if axisFlip: flipText = "Rotate X"
     else: flipText = "No"
+    if exportActions: actionsText = "Include"
+    else: actionsText = "Exclude"
     _bDraw.Toggle(toggleText,
             BTNID_SAVEALL, guiBox.x + 15, guiBox.y + 200, 75, 17, saveAll,
             "Choose to export supported SELECTED objects or ALL objects",
@@ -313,6 +322,9 @@ def drawer():
             guiBox.x + 15, guiBox.y + 100, 50, 17, maxWeightings, 1, 10000,
             "Max number of the highest weighted bones which can influence an "
             + "animated vertex")
+    _bDraw.Toggle(actionsText, BTNID_EXPORTACTIONS,
+            guiBox.x + 15, guiBox.y + 75, 50, 17, exportActions,
+            "Whether to export all Actions for selected Armatures")
     _bDraw.PushButton("Export", BTNID_SAVE,
             guiBox.x + 150, guiBox.y + 10, 50, 17,
             "Proceed to select file to save to")
@@ -325,3 +337,5 @@ def drawer():
             guiBox.x + 100, guiBox.y + 125,200,17)
     _bDraw.Label("Max bone weightings/vert.",
             guiBox.x + 100, guiBox.y + 100,200,17)
+    _bDraw.Label("Blender animations",
+            guiBox.x + 100, guiBox.y + 75,200,17)

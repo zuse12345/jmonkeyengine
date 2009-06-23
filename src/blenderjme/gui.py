@@ -209,7 +209,7 @@ def mkGuiBox():
     if guiBox != None:
         raise Exception("Attempted to create 2nd GuiBox.  Ignoring.")
     guiBox = GuiBox(330, 300,
-            ['bje1.png', 'bje2.png', 'bje3.png', 'bje4.png', 'bje5.png'])
+            ['bje-1.png', 'bje-2.png', 'bje-3.png', 'bje-4.png', 'bje-5.png'])
 
 def redrawDummy(x, y): _bDraw.Redraw()
 

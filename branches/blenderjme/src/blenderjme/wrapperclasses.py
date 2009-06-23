@@ -43,6 +43,7 @@ from Blender import Window as _Window
 from Blender import Set as _bSet
 from ActionData import ActionData
 from bpy.data import actions as _bActionSeq
+from Blender.Object import ParentTypes as _bParentTypes
 
 # GENERAL DEVELOPMENT NOTES:
 #
@@ -787,7 +788,7 @@ class JmeBone(object):
 
     IDENTITY_4x4 = _bmath.Matrix()
 
-    def __init__(self, objOrBone, channelNames=None, parentBone=None):
+    def __init__(self, objOrBone, parentBone=None):
         object.__init__(self)
         blenderChildren = []
         self.parentBone = parentBone
@@ -829,7 +830,7 @@ class JmeBone(object):
             # skip bones with option NO_DEFORM (need to still recurse
             # to their children though).
             # Recursive instantiation:
-            self.children.append(JmeBone(blenderBone, channelNames, self))
+            self.children.append(JmeBone(blenderBone, self))
 
     def getChildren(self):
         return self.children
@@ -864,6 +865,7 @@ class JmeBone(object):
                         or (x != y and round(self.matrix[x][y], 6) != 0.)):
                     bindTag.addAttr(("m" + str(y) + str(x)),
                             self.matrix[x][y], 6)
+        bindMatrix = self.matrix.copy()
         tag.addChild(bindTag)
         self.inverseTotalTrans = self.matrix.copy().invert()
             # N.b. .matrix is in an intermediate state here
@@ -883,7 +885,14 @@ class JmeBone(object):
             childrenTag = _XmlTag('children', {'size':len(self.children)})
             tag.addChild(childrenTag)
             for child in self.children:
-                childrenTag.addChild(child.getXmlEl(autoRotate, addlTransform))
+                if isinstance(child, JmeBone):
+                    childrenTag.addChild(child.getXmlEl(autoRotate, addlTransform))
+                elif isinstance(child, JmeNode):
+                    child.backoutTransform = bindMatrix
+                    childrenTag.addChild(child.getXmlEl(autoRotate))
+                else:
+                    raise Exception("Unexpected child of bone: "
+                            + child.getName() + " of type " + str(type(child)))
 
         #if self.parentBone != None:
         # Real Blender bones, which have only translation + rotation.
@@ -942,6 +951,13 @@ class JmeBone(object):
     def addAction(self, actionData):
         if self.actions == None: self.actions = []
         self.actions.append(JmeAnimation(actionData))
+
+    def addChild(self, newChild):
+        if not isinstance(newChild, JmeNode):
+            raise Exception("Attempted to add unexpected child type to bone: "
+                    + newChild.getName() + " of type " + str(type(newChild)))
+        if self.children == None: self.children = []
+        self.children.append(newChild)
 
 
 class JmeAnimation(object):
@@ -1064,19 +1080,32 @@ class JmeSkinAndBone(object):
     our new root bone.  Consequently, the 'backoutTransform' attribute here
     is passed directly to the root bone.
 
+    Mesh objects which are "parented to bone" in Blender are _really_ parented
+    to the Bone object here.  If we were to emulate Blender, these meshes
+    would actually be parented to this JmeSkinAndBone with just a reference to
+    a bone name.
+
     addlTransform is a shared transform pointer which will EVENTUALLY
     contain a matrix that needs to be applied to all bones.
-    children[0] == boneTree.  A bit redundant.
+
+    'children' is maintained only because it is needed for recursive functions
+    of NodeTree.  This is a derived value which is always set to:
+        boneTree (element 0) + skin (element 1 if present) + plainChildren
+    where plainChildren are normal, non mesh-deforming Objects.
+    If and when we support multiple skins, 'skin' here will be changed to list
+    'skins'.
 
     'matrix' does not hold the Armature parent object matrix, but a form of the
     skin Object's matrix.
     """
-    __slots__ = ('wrappedObj', 'backoutTransform', 'matrix',
+    __slots__ = ('wrappedObj', 'backoutTransform', 'matrix', 'boneMap', 'skin',
+            'plainChildren',
             'boneTree', 'name', 'children', 'actionDataList', 'maxWeightings')
     WEIGHT_THRESHOLD = .001
     BLENDERTOJME_FLIP_MAT4 = _bmath.RotationMatrix(-90, 4, 'x')
+    # boneMap is a flat map of bone names to JmeBones, not blender bones.
 
-    def __init__(self, bObj, maxWeightings):
+    def __init__(self, bObj, maxWeightings, animate):
         """
         N.b. the bObj param is not the data object (like we take for Mesh
         Objects), but a Blender Object.
@@ -1087,16 +1116,36 @@ class JmeSkinAndBone(object):
         self.maxWeightings = maxWeightings
         self.wrappedObj = bObj
         self.name = bObj.name
-        self.__runPoses()   # Need to run this before instantiating bones, I think
+        self.skin = None
+        self.plainChildren = None
+        self.actionDataList = None
+        if animate: self.__runPoses()
+        # Need to run this before instantiating bones, I think
         self.matrix = None
 
-        allChannelNames = set()
-        for d in self.actionDataList: allChannelNames |= d.getChannelNames()
-        self.boneTree = JmeBone(bObj, allChannelNames)
-        for data in self.actionDataList: self.boneTree.addAction(data)
-        self.children = [self.boneTree]
+        self.boneTree = JmeBone(bObj)
         if self.boneTree.name == self.name: self.boneTree.name += "RootBone"
+        self.__regenChildren()
+        if self.actionDataList != None:
+            for data in self.actionDataList: self.boneTree.addAction(data)
         self.backoutTransform = None
+        self.boneMap = {}
+        # N.b., we populate boneMap BEFORE any mesh children are added, so that
+        # the bone map will contain only bones.
+        self.__recursiveAddToBoneMap(self.boneTree)
+        #for n, b in self.boneMap.iteritems():
+            #print "    " + n + " ==> " + b.getName()
+
+    def __regenChildren(self):
+        self.children = [self.boneTree]
+        if self.skin != None: self.children.append(self.skin)
+        if self.plainChildren != None: self.children += self.plainChildren
+
+    def __recursiveAddToBoneMap(self, jmeBone):
+        self.boneMap[jmeBone.getName()] = jmeBone
+        if jmeBone.children != None:
+            for childBone in jmeBone.children:
+                self.__recursiveAddToBoneMap(childBone)
 
     def setMatrix(self, matrix):
         self.matrix = matrix
@@ -1123,6 +1172,7 @@ class JmeSkinAndBone(object):
                 self.wrappedObj.evaluatePose(int(frameNum))
                 actionData.addPose(self.wrappedObj.getPose().bones)
             actionData.restoreFrame()
+            #self.wrappedObj.evaluatePose(ORIG_FRAME_NUM)  Seems unnecessary
             print("Posed anim " + self.getName() + " at frame times: "
                     + str(actionData.keyframeTimes))
             if actionData.blenderFrames != None:
@@ -1133,24 +1183,54 @@ class JmeSkinAndBone(object):
     def getName(self):
         return self.name
 
-    def addChild(self, child):
-        self.children.append(child)
+    def addChild(self, newChild):
+        """This is the method which currently enforces the 1-skin-per-arma
+        constraint."""
+        if newChild.wrappedObj.type != "Mesh":
+            raise Exception(
+                    "Don't know how to parent the type of " + newChild.getName()
+                    + " to an Armature: " + newChild.wrappedObj.type)
+        if (newChild.wrappedObj.parentType == _bParentTypes["OBJECT"]):
+            if self.plainChildren == None: self.plainChildren = []
+            self.plainChildren.append(newChild)
+        elif (newChild.wrappedObj.parentType == _bParentTypes["ARMATURE"]):
+            if self.skin != None:
+                raise Exception("Only one skin mesh supported per Armature.  "
+                        + "You attempted to set both " + self.skin.getName()
+                        + " and " + newChild.getName() + " as skins for "
+                        + self.getName())
+            self.skin = newChild
+        elif (newChild.wrappedObj.parentType == _bParentTypes["BONE"]):
+            if newChild.wrappedObj.parentbonename == None:
+                raise Exception("Attempted to add " + newChild.getName()
+                        + " to a bone, but no specific bone is named")
+            if newChild.wrappedObj.parentbonename not in self.boneMap:
+                raise Exception("Parent bone specified by "
+                        + newChild.getName() + " is not present: "
+                        + newChild.wrappedObj.parentbonename)
+            self.boneMap[newChild.wrappedObj.parentbonename].addChild(newChild)
+        else:
+            raise Exception(
+                    "Unexpected parentType for " + newChild.getName() + ": "
+                    + newChild.wrappedObj.parentType)
+        self.__regenChildren()
 
     def getXmlEl(self, autoRotate):
-        if len(self.children) > 2:
-            print "WARNING: The Skin&Bone will probably not work with > 1 skin"
+        # Due to constraints in constructor and addChild(), assertion is true
+        # that boneTree != None, 0 or 1 skin, and
+        # children = boneTree + skin + plainChildren
 
         addlTransform = self.wrappedObj.mat.copy()
         # We couldn't set backoutTransform until now, because we didn't know
         # if the Skin object or parent Blender object were being exported.
         print "addlTransform WAS " + str(addlTransform)
         # Critical to update addlTransform before any bones are written
-        if len(self.children) > 1:
-            print "Parenting skeleton to Skin mesh"
+        if self.skin != None:
+            print "Adjusting Skin transform to parenting skeleton"
             addlTransform *= self.children[1].wrappedObj.mat.copy().invert()
             # Bones will be relative to the Skin object
         elif self.backoutTransform != None:
-            print "Parenting skeleton to some other Object"
+            print "Adjusting Skin transform to some other object"
             addlTransform *= self.backoutTransform.copy().invert()
         print "addlTransform NOW " + str(addlTransform)
 
@@ -1159,8 +1239,10 @@ class JmeSkinAndBone(object):
                 self.matrix = JmeSkinAndBone.BLENDERTOJME_FLIP_MAT4
             else:
                 self.matrix *= JmeSkinAndBone.BLENDERTOJME_FLIP_MAT4
-        if len(self.children) == 1 and self.matrix == None:
+        if (self.skin == None
+                and self.plainChildren == None and self.matrix == None):
             return self.boneTree.getXmlEl(False, addlTransform)
+            # Makes for economical, simple XML if only exporting the bones
 
         tag = _XmlTag('com.jme.scene.Node', {'name':self.getName()})
 
@@ -1187,29 +1269,31 @@ class JmeSkinAndBone(object):
             addRotationEl(tag, rQuat)
 
         childrenTag = _XmlTag('children', {'size':len(self.children)})
-        childrenTag.addChild(self.boneTree.getXmlEl(False, addlTransform))
-        if len(self.children) == 1:
-            tag.addChild(childrenTag)
-            return tag
-        meshChild = None  # we'll only skin the last skin child, for now
-        skinRef = None
-        for skinChild in self.children[1:]:
-            for grandChild in skinChild.children:
-                if isinstance(grandChild, JmeMesh): meshChild = grandChild
-            if meshChild == None:
-                raise Exception("No child of Skin object is a mesh: "
-                        + skinChild.getName())
-            skinTag = _XmlTag('com.jme.animation.SkinNode',
-                    {'name':skinChild.getName() + "Skin"})
-            skinChildrenTag = _XmlTag('children', {'size':1})
-            skinChildTag = skinChild.getXmlEl(False)
-            skinRef = skinChild.getName()
-            skinChildTag.addAttr("reference_ID", skinRef)
-            skinChildrenTag.addChild(skinChildTag)
-            skinTag.addChild(skinChildrenTag)
-            childrenTag.addChild(skinTag)
         tag.addChild(childrenTag)
-        if meshChild == None: return tag
+        childrenTag.addChild(self.boneTree.getXmlEl(False, addlTransform))
+        if self.plainChildren != None:
+            for child in self.plainChildren:
+                child.backoutTransform = self.wrappedObj.mat  # Correct?
+                childrenTag.addChild(child.getXmlEl(False))
+        if self.skin == None: return tag
+        skinRef = self.skin.getName()
+
+        meshChild = None
+        for grandChild in self.skin.children:
+            if isinstance(grandChild, JmeMesh):
+                meshChild = grandChild
+                break
+        if meshChild == None:
+            raise Exception("No child of Skin object is a mesh: "
+                    + self.skin.getName())
+        skinTag = _XmlTag('com.jme.animation.SkinNode',
+                {'name':skinRef + "Skin"})
+        skinChildrenTag = _XmlTag('children', {'size':1})
+        skinChildTag = self.skin.getXmlEl(False)
+        skinChildTag.addAttr("reference_ID", skinRef)
+        skinChildrenTag.addChild(skinChildTag)
+        skinTag.addChild(skinChildrenTag)
+        childrenTag.addChild(skinTag)
         mesh = meshChild.wrappedMesh
         vGroups = mesh.getVertGroupNames()
         if vGroups == None or len(vGroups) < 1: return tag
@@ -1288,7 +1372,7 @@ class NodeTree(object):
 
     __slots__ = ('__memberMap', '__memberKeys', '__maxWeightings',
             '__matMap1side', '__matMap2side', 'root',
-            '__textureHash', '__textureStates')
+            '__textureHash', '__textureStates', '__exportActions')
     # N.b. __memberMap does not have a member for each node, but a member
     #      for each saved Blender object.
     # __memberKeys is just because Python has no ordered maps/dictionaries
@@ -1296,7 +1380,7 @@ class NodeTree(object):
     # __textureHash is named *Hash instead of *Map only to avoid confusion
     # with "texture maps", which these are not.
 
-    def __init__(self):
+    def __init__(self, maxWeightings, exportActions):
         object.__init__(self)
         self.__memberMap = {}
         self.__memberKeys = []
@@ -1307,6 +1391,13 @@ class NodeTree(object):
         self.__maxWeightings = None
         self.root = None
         ActionData.updateFrameRate()
+        if not isinstance(maxWeightings, int):
+            raise Exception("Illegal form at for weightings value: "
+                    + str(maxWeightings))
+        if maxWeightings < 1:
+            raise Exception("maxWeightings must be > 0")
+        self.__maxWeightings = maxWeightings
+        self.__exportActions = exportActions
 
     def includeTex(self, mtex):
         """include* instead of add*, because we don't necessarily 'add'.  We
@@ -1349,14 +1440,6 @@ class NodeTree(object):
         matMap[bMat] = jmeMat
         return jmeMat
 
-    def setMaxWeightings(self, maxWeightings):
-        if not isinstance(maxWeightings, int):
-            raise Exception("Illegal form at for weightings value: "
-                    + str(maxWeightings))
-        if maxWeightings < 1:
-            raise Exception("maxWeightings must be > 0")
-        self.__maxWeightings = maxWeightings
-
     def addSupported(self, blenderObj, skipObjs):
         """Creates a JmeNode or JmeSkinAndBone for the given Blender Object,
         The specified object MUST BE PRE-VALIDATED AS BEING SUPPORTED!"""
@@ -1367,8 +1450,8 @@ class NodeTree(object):
         if blenderObj.type == "Armature":
             if self.__maxWeightings == None:
                 raise Exception("Assertion failed:  maxWeightings not set")
-            self.__memberMap[blenderObj] =  \
-                    JmeSkinAndBone(blenderObj, self.__maxWeightings)
+            self.__memberMap[blenderObj] = JmeSkinAndBone(
+                    blenderObj, self.__maxWeightings, self.__exportActions)
         else:
             self.__memberMap[blenderObj] = JmeNode(blenderObj, self)
         self.__memberKeys.append(blenderObj)

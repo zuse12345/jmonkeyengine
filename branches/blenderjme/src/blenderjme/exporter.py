@@ -39,6 +39,7 @@ from blenderjme.wrapperclasses import JmeSkinAndBone as _JmeSkinAndBone
 from blenderjme.wrapperclasses import JmeNode as _JmeNode
 from Blender.Modifier import Type as _bModifierType
 from Blender.Modifier import Settings as _bModifierSettings
+from Blender.Object import ParentTypes as _bParentTypes
 import Blender.Mathutils as _bmath
 import blenderjme
 
@@ -50,7 +51,8 @@ def descendantOf(meNode, ancestor):
     if meNode.parent == ancestor: return True
     return descendantOf(meNode.parent, ancestor)
 
-def gen(saveAll, autoRotate, skipObjs=True, maxWeightings=4):
+def gen(saveAll, autoRotate, skipObjs=True,
+        maxWeightings=4, exportActions=True):
     global recordTimestamp
 
     reparenteds = {}
@@ -69,8 +71,7 @@ def gen(saveAll, autoRotate, skipObjs=True, maxWeightings=4):
             candidates = _bdata.objects
         else:
             candidates = _bdata.scenes.active.objects.selected
-        nodeTree = _NodeTree()
-        nodeTree.setMaxWeightings(maxWeightings)
+        nodeTree = _NodeTree(maxWeightings, exportActions)
         for bo in candidates:
             if _JmeNode.supported(bo, skipObjs):
                 supportedCandidates.append(bo)
@@ -88,9 +89,13 @@ def gen(saveAll, autoRotate, skipObjs=True, maxWeightings=4):
                 modObject = mod[_bModifierSettings.OBJECT]
                 if (modObject in supportedCandidates
                         and modObject != bo.parent):
+                    if bo.parentType != _bParentTypes["OBJECT"]:
+                        raise Exception(
+                            "Unexpected parent type for Arma-modified Object: "
+                            + str(bo.parentType))
                     reparenteds[bo] = bo.parent
-                    modObject.makeParent([bo])
-            if (bo.parent == None or bo.parent.type != "Armature"
+                    modObject.makeParentDeform([bo])
+            if (bo.parent == None or bo.parentType != _bParentTypes["ARMATURE"]
                     or bo.parent not in supportedCandidates): continue
                # Not a skin node
             activeActions[bo.parent] = bo.parent.getAction()
@@ -113,6 +118,9 @@ def gen(saveAll, autoRotate, skipObjs=True, maxWeightings=4):
             if origParentMat == bo.parent.matrixLocal:
                 raise Exception("Internal problem:  Parent Matrix was not "
                 + "changed when transformed by:\n" + str(inversion))
+        # At this point we have converted all exporting skin meshes to be
+        # parentType ARMATURE, with corresponding parent, whether or not the
+        # skinning is done via modifier.
         for bo in supportedCandidates:
             jmeObj = nodeTree.addSupported(bo, skipObjs)
             if isinstance(jmeObj, _JmeSkinAndBone) and bo in relocateds:
@@ -152,6 +160,7 @@ def gen(saveAll, autoRotate, skipObjs=True, maxWeightings=4):
         for bo, par in reparenteds.iteritems():
             print "Restoring parent "+ str(par) + " to " + bo.getName()
             if par == None:
+                bo.parent.makeParent([bo]) # This just clears .parentType
                 bo.clrParent()
             else:
                 par.makeParent([bo])

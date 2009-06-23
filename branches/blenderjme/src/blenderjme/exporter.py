@@ -55,6 +55,7 @@ def gen(saveAll, autoRotate, skipObjs=True, maxWeightings=4):
 
     reparenteds = {}
     relocateds = {}
+    activeActions = {}
     os = []
     candidates = []
     supportedCandidates = []
@@ -89,27 +90,29 @@ def gen(saveAll, autoRotate, skipObjs=True, maxWeightings=4):
                         and modObject != bo.parent):
                     reparenteds[bo] = bo.parent
                     modObject.makeParent([bo])
-            if (bo.parent != None and bo.parent.type == "Armature"
-                    and bo.parent in supportedCandidates
-                    and bo.parent.matrixLocal * bo.matrixLocal != IDENTITY_4x4):
-                # This is a Skin node.
-                # We must zero the Skin node Object's transform from the
-                # skin node and the Arma obj. to avoid serious problems
-                # with bone locations and with model location jumping when
-                # animations start up.
-                origParentMat = bo.parent.matrixLocal.copy()
-                origMat = bo.matrixLocal.copy()
-                relocateds[bo.parent] = origParentMat
-                relocateds[bo] = origMat
-                inversion = (bo.matrixLocal * bo.parent.matrixLocal).invert()
-                bo.parent.matrixLocal *= inversion
-                bo.matrixLocal *= inversion
-                if origMat == bo.matrixLocal:
-                    raise Exception("Internal problem:  Matrix was not "
-                    + "changed when transformed by:\n" + str(inversion))
-                if origParentMat == bo.parent.matrixLocal:
-                    raise Exception("Internal problem:  Parent Matrix was not "
-                    + "changed when transformed by:\n" + str(inversion))
+            if (bo.parent == None or bo.parent.type != "Armature"
+                    or bo.parent not in supportedCandidates): continue
+               # Not a skin node
+            activeActions[bo.parent] = bo.parent.getAction()
+            if bo.parent.matrixLocal * bo.matrixLocal == IDENTITY_4x4: continue
+            # This is a Skin node.
+            # We must zero the Skin node Object's transform from the
+            # skin node and the Arma obj. to avoid serious problems
+            # with bone locations and with model location jumping when
+            # animations start up.
+            origParentMat = bo.parent.matrixLocal.copy()
+            origMat = bo.matrixLocal.copy()
+            relocateds[bo.parent] = origParentMat
+            relocateds[bo] = origMat
+            inversion = (bo.matrixLocal * bo.parent.matrixLocal).invert()
+            bo.parent.matrixLocal *= inversion
+            bo.matrixLocal *= inversion
+            if origMat == bo.matrixLocal:
+                raise Exception("Internal problem:  Matrix was not "
+                + "changed when transformed by:\n" + str(inversion))
+            if origParentMat == bo.parent.matrixLocal:
+                raise Exception("Internal problem:  Parent Matrix was not "
+                + "changed when transformed by:\n" + str(inversion))
         for bo in supportedCandidates:
             jmeObj = nodeTree.addSupported(bo, skipObjs)
             if isinstance(jmeObj, _JmeSkinAndBone) and bo in relocateds:
@@ -152,4 +155,15 @@ def gen(saveAll, autoRotate, skipObjs=True, maxWeightings=4):
                 bo.clrParent()
             else:
                 par.makeParent([bo])
+        for armaBo, action in activeActions.iteritems():
+            if action == None:
+                print "Restoring None action to " + armaBo.getName()
+                armaBo.action = None
+            else:
+                print("Restoring action "
+                        + action.getName() + " to " + armaBo.getName())
+                action.setActive(armaBo)
         if origEditMode != 0: _bEditMode(origEditMode)
+        _bdata.scenes.active.update(1)
+        # This update() prevents Blender from showing the user a disconcerting
+        # view of the modified scene before it refreshes with our restorations.

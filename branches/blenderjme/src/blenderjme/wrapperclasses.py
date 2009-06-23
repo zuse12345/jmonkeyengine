@@ -954,9 +954,11 @@ class JmeAnimation(object):
         self.__data = actionData;
 
     def getXmlEl(self, autoRotate, addlTransform):
-        tag = _XmlTag('com.jme.animation.BoneAnimation',
-                {'name':self.__data.getName(),
-                    'endFrame':(len(self.__data.keyframeTimes)-1)})
+        tag = _XmlTag('com.jme.animation.BoneAnimation', {
+                'name': self.__data.getName(),
+                'startFrame': self.__data.startFrame,
+                'endFrame': self.__data.endFrame
+        })
         # endFrame is the 0-based INDEX of the last frame that will play.
         # Would like to allow for lengthening or shortening with the Blender
         # renderer's last frame setting, but that would not allow for different
@@ -1109,10 +1111,10 @@ class JmeSkinAndBone(object):
             if len(set(bAction.getChannelNames()) - set(
                     self.wrappedObj.getData(False, True).bones.keys())) > 0:
                 continue
-            actionData = ActionData(bAction,
-                    self.wrappedObj.getData(False, True).bones)
 
             bAction.setActive(self.wrappedObj)
+            actionData = ActionData(bAction,
+                    self.wrappedObj.getData(False, True).bones)
             for frameNum in actionData.blenderFrames:
                 print("Posing frame #" + str(int(frameNum-1.)) + " @"
                         + str(ActionData.frameRate) + " fps")
@@ -1120,6 +1122,7 @@ class JmeSkinAndBone(object):
                 _Window.Redraw()
                 self.wrappedObj.evaluatePose(int(frameNum))
                 actionData.addPose(self.wrappedObj.getPose().bones)
+            actionData.restoreFrame()
             print("Posed anim " + self.getName() + " at frame times: "
                     + str(actionData.keyframeTimes))
             if actionData.blenderFrames != None:
@@ -1533,9 +1536,6 @@ class NodeTree(object):
         for m in self.__matMap2side.itervalues(): m.written = False
         for t in self.__textureHash.itervalues(): m.written = False
         for ts in self.__textureStates: ts.written = False
-        # URGENT TODO:
-        # Store action and frame state before root.getXmlEl run and restore
-        # after, because JmeAnimation.getXmlEl() executes poses.
         xml = self.root.getXmlEl(autoRotate)
         self.__inlineBones(xml)
         NodeTree.__uniquifyNames(self.root, None, set())

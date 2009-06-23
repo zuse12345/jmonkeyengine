@@ -20,8 +20,8 @@ $Id$
 * Write armatures (including without actions or weightings)
 * Write armature actions
 * Write armature bone weightings
-* Support nesting of Objects under armature skins (though these objects will
-  not deform through either Blender nor jME-side bone manipulation.
+* Support nesting of Objects under armature skins (though, consistenly with
+  Blender, these objects will not follow bone movements).
 * Support both old-fashioned parenting and modifier for associating skin
   object to armature object.
 

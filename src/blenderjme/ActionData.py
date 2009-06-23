@@ -31,6 +31,8 @@ __url__ = 'http://www.jmonkeyengine.com'
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from bpy.data import scenes as _bScenes
+from Blender import Get as _bGet
+from Blender import Set as _bSet
 
 class ActionData(object):
     """
@@ -42,8 +44,8 @@ class ActionData(object):
 
     The key sets for locs, rots, mats is always the same FOR NOW.
     """
-    __slots__ = ('blenderFrames', 'keyframeTimes', 'locs', 'rots',
-            'mats', 'name', 'boneMap')
+    __slots__ = ('blenderFrames', 'keyframeTimes', 'locs', 'rots', 'mats',
+            'name', 'boneMap', 'startFrame', 'endFrame', 'origBlenderFrame')
     # Not sure which of rots and/or mats will be used.
     # For now, using 'rots' just to cull <rotations> with no rotations.
     # boneMap is the map of the armature bones, not the pose bones.  We need
@@ -61,8 +63,15 @@ class ActionData(object):
         return self.name
 
     def __init__(self, bAction, boneMap):
+        "CRITICALLY IMPORTANT to call this only when this action is 'active'"
+
         object.__init__(self)
         self.name = bAction.name
+        # Most frame index vars are key FRAME indexes starting at 0.
+        # *BlenderFrame vars are absolute Blender frame number starting at 1.
+        self.origBlenderFrame = _bGet("curframe")
+        blenderStaFrame = _bGet("staframe")
+        blenderEndFrame = _bGet("endframe")
         self.boneMap = boneMap
         if ActionData.frameRate == None:
             raise Exception("You can't instantiate ActionData until the "
@@ -99,8 +108,25 @@ class ActionData(object):
         self.blenderFrames = list(frameSet)
         self.blenderFrames.sort()
         self.keyframeTimes = []
-        for frameNum in self.blenderFrames:
-            self.keyframeTimes.append((frameNum-1.) / ActionData.frameRate)
+        self.startFrame = None
+        self.endFrame = None
+        keyFrameNum = -1
+        for blenderFrameNum in self.blenderFrames:
+            keyFrameNum += 1
+            if self.startFrame == None and blenderStaFrame <= blenderFrameNum:
+                self.startFrame = keyFrameNum
+            if self.endFrame == None and blenderEndFrame <= blenderFrameNum:
+                self.endFrame = keyFrameNum
+            self.keyframeTimes.append(
+                    (blenderFrameNum-1.) / ActionData.frameRate)
+        if self.startFrame == None: self.startFrame = 0
+        # Default to first key frame
+        if self.endFrame == None: self.endFrame = len(self.blenderFrames) - 1
+        # Default to last key frame
+
+    def restoreFrame(self):
+        "CRITICALLY IMPORTANT to call this only when this action is 'active'"
+        _bSet("curframe", self.origBlenderFrame)
 
     def addPose(self, poseBones):
         "Add a pose for a single frame"
@@ -143,7 +169,7 @@ class ActionData(object):
         if armaBone.children == None: return
         newInv = matInv * self.mats[armaBone.name][-1].copy().invert()
         for childBone in armaBone.children:
-            print childBone.name + " childof " + armaBone.name
+            #print childBone.name + " childof " + armaBone.name
             self.applyMat(childBone, newInv)
 
     def cull(self):

@@ -38,10 +38,10 @@
     <BR/>
     <p>
     This document explains the constraints that your scene must satisfy in
-    order to be exported;it describes the steps needed to create and
+    order to be exported; it describes the steps needed to create and
     export a conventional Blender Skin &amp; Bones animation;
-    and it explains some details that people doing involved work with skeletons
-    will need to know.
+    and it describes some important, non-intuitive aspects of this exporter and
+    of Skin &amp; Bones animation in general.
     </p> <p>
     The exporter supports many Armature use cases in addition to the one
     described here.
@@ -269,11 +269,11 @@
     </p>
   </ol>
     <HR/>
-    <h4>Details about Bones</h4>
+    <h4>Tips</h4>
     <p>
       If you move bones without an animation controller, like with
       <code>Spatial.setLocal*()</code>, you must run<pre><code>
-          skinNode.boneChaned(null);
+          skinNode.boneChained(null);
       </code></pre> on the corresponding
       <code>com.jme.animation.SkinNode</code> in order for the skin to update
       accordingly.
@@ -305,6 +305,14 @@
       Debugger, because the root bone will lay right on top of it.
       In this case, if you apply a translation to the root bone, the
       <i>Super Bone</i> will appear.
+    </p> <p>
+      Remember that to use the Blender Weight Painter, you must have the
+      Armature in Pose mode before setting the skin mesh to Weight Painter mode.
+    </p> <p>
+      Very similarly to the previous paragraph, in order to parent a skin mesh
+      to a bone (as opposed to the Armature Object or the Armature itself), you
+      must put the Armature into pose mode, then parent the skin mesh object to
+      the Armature object.
     </p>
     <HR/>
     <DIV class="footer">

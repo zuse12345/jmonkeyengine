@@ -267,14 +267,13 @@ class JmeNode(object):
 
         # Set local variables just to reduce typing in this block.
         loc = matrix.translationPart()
-        if (round(loc[0], 6) == 0. and round(loc[1], 6) == 0.
-                and round(loc[2], 6) == 0.): loc = None
+        if _esmath.floatsEq(loc, 0., 6): loc = None
         # N.b. Blender.Mathutils.Quaternines ARE NOT COMPATIBLE WITH jME!
         # Blender Quaternion functions give different results from the
         # algorithms at euclideanspace.com, especially for the X rot
         # element.  However, until I don't want to introduce the risk of
         # several new ESQuaternion methods until I am certain that we can
-        # successfully match Ogre exporte behavior with Blender's quats.
+        # successfully match Ogre exporter behavior with Blender's quats.
         #rQuat = _esmath.ESQuaternion(e, True)
         rQuat = matrix.toQuat()
         if (round(rQuat.x, 6) == 0 and round(rQuat.y, 6) == 0
@@ -284,9 +283,7 @@ class JmeNode(object):
         else:
             scaleMat = matrix * rQuat.copy().inverse().toMatrix().resize4x4()
         scale = [scaleMat[0][0], scaleMat[1][1], scaleMat[2][2]]
-        if (round(scale[0], 6) == 1.
-                and round(scale[1], 6) == 1. and round(scale[2], 6) == 1.):
-            scale = None
+        if _esmath.floatsEq(scale, 1., 6): scale = None
         if autoRotate:
             if loc != None:
                 hold = loc[1]
@@ -851,7 +848,8 @@ class JmeBone(object):
         else:
             invParentMat = self.parentBone.inverseTotalTrans
         if (self.parentBone != None and addlTransform != None
-                and addlTransform != JmeBone.IDENTITY_4x4):
+                and not _esmath.floats2dEq(
+                    addlTransform, JmeBone.IDENTITY_4x4, 6)):
             #print "Applying addl to " + self.getName() + ": " + str(addlTransform)
             self.matrix *= addlTransform
         bindTag = _XmlTag("bindMatrix", {'class':'com.jme.math.Matrix4f'})
@@ -898,8 +896,7 @@ class JmeBone(object):
         # Real Blender bones, which have only translation + rotation.
         # Take care of this simpler case first.
         loc = self.matrix.translationPart()
-        if (round(loc[0], 6) != 0 or round(loc[1], 6) != 0
-                or round(loc[2], 6) != 0):
+        if not _esmath.floatsEq(loc, 0., 6):
             if autoRotate:
                 hold = loc[1]
                 loc[1] = loc[2]
@@ -915,8 +912,7 @@ class JmeBone(object):
             addRotationEl(tag, quatRot)
         # N.b. bones have no scale
         scale = self.matrix.scalePart()
-        if (round(scale[0], 6) != 1 or round(scale[1], 6) != 1
-                or round(scale[2], 6) != 1):
+        if not _esmath.floatsEq(scale, 1., 6):
             if autoRotate:
                 hold = scale[1]
                 scale[1] = scale[2]
@@ -1250,8 +1246,7 @@ class JmeSkinAndBone(object):
             # This block for writing local transforms is copied directly from
             # JmeNode above.  See that section for commentary.
             loc = self.matrix.translationPart()
-            if (round(loc[0], 6) == 0. and round(loc[1], 6) == 0.
-                    and round(loc[2], 6) == 0.): loc = None
+            if _esmath.floatsEq(loc, 0., 6): loc = None
             rQuat = self.matrix.toQuat()
             if (round(rQuat.x, 6) == 0 and round(rQuat.y, 6) == 0
                     and round(rQuat.z, 6) == 0 and round(rQuat.w) == 1):
@@ -1261,9 +1256,7 @@ class JmeSkinAndBone(object):
                 scaleMat = self.matrix * (
                         rQuat.copy().inverse().toMatrix().resize4x4())
             scale = [scaleMat[0][0], scaleMat[1][1], scaleMat[2][2]]
-            if (round(scale[0], 6) == 1.
-                    and round(scale[1], 6) == 1. and round(scale[2], 6) == 1.):
-                scale = None
+            if _esmath.floatsEq(scale, 1., 6): scale = None
             addTranslationEl(tag, loc)
             addScaleEl(tag, scale)
             addRotationEl(tag, rQuat)
@@ -1668,7 +1661,7 @@ class JmeMaterial(object):
         if bMat.enableSSS:
             raise UnsupportedException("Subsurface Scattering (sss)")
         # Users should know that we don't support Mirroring, Halo, IPO,
-        # lightGropus, etc., so we ignore all of these
+        # lightGroups, etc., so we ignore all of these
         # Mirroring settings include Raytrace, Fresnel, Transp.
         # bMat.glossTra?
         if bMat.rbFriction != 0.5 or bMat.rbRestitution != 0:

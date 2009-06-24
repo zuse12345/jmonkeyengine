@@ -157,3 +157,33 @@ class ESQuaternion(object):
     def __repr__(self):
         return ("Rot axis: (" + str(self.x) + ', ' + str(self.y) + ', '
                 + str(self.z) + "), w: " + str(self.w))
+
+def floatsEq(alist, val, precision):
+    """Returns true if all elements of the specified list are equal to the
+    specified value, within the specified precision.
+    Input 'precision' is not the number of significant digits, but the number
+    of significant digits after the decimal point.
+    """
+    roundedVal = round(val, precision)
+    for i in range(len(alist)):
+        if round(alist[i], precision) != roundedVal: return False
+    return True
+
+def floats2dEq(a, b, precision):
+    """Compares two two-dimensional float arrays, to the specified precision,
+    and returns True or False.
+    Input 'precision' is not the number of significant digits, but the number
+    of significant digits after the decimal point.
+    """
+    if a == None and b == None: return True
+    if a == None or b == None: return False
+    if len(a) != len(b): return False
+    for i in range(len(a)):
+        if a[i] == None and b[i] == None: continue
+        if a[i] == None or b[i] == None: return False
+        for j in range(len(a[i])):
+            if a[i][j] == None and b[i][j] == None: continue
+            if a[i][j] == None or b[i][j] == None: return False
+            if round(a[i][j], precision) != round(b[i][j], precision):
+                return False
+    return True

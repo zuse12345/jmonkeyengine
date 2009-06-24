@@ -42,6 +42,7 @@ from Blender.Modifier import Settings as _bModifierSettings
 from Blender.Object import ParentTypes as _bParentTypes
 import Blender.Mathutils as _bmath
 import blenderjme
+import jme.esmath as _esmath
 
 recordTimestamp = "--nostamps" not in blenderjme.blenderArgs
 IDENTITY_4x4 = _bmath.Matrix()
@@ -99,7 +100,8 @@ def gen(saveAll, autoRotate, skipObjs=True,
                     or bo.parent not in supportedCandidates): continue
                # Not a skin node
             activeActions[bo.parent] = bo.parent.getAction()
-            if bo.parent.matrixLocal * bo.matrixLocal == IDENTITY_4x4: continue
+            if _esmath.floats2dEq(bo.parent.matrixLocal * bo.matrixLocal,
+                    IDENTITY_4x4, 6): continue
             # This is a Skin node.
             # We must zero the Skin node Object's transform from the
             # skin node and the Arma obj. to avoid serious problems
@@ -114,10 +116,10 @@ def gen(saveAll, autoRotate, skipObjs=True,
             bo.matrixLocal *= inversion
             if origMat == bo.matrixLocal:
                 raise Exception("Internal problem:  Matrix was not "
-                + "changed when transformed by:\n" + str(inversion))
+                        + "changed when transformed by:\n" + str(inversion))
             if origParentMat == bo.parent.matrixLocal:
                 raise Exception("Internal problem:  Parent Matrix was not "
-                + "changed when transformed by:\n" + str(inversion))
+                        + "changed when transformed by:\n" + str(inversion))
         # At this point we have converted all exporting skin meshes to be
         # parentType ARMATURE, with corresponding parent, whether or not the
         # skinning is done via modifier.

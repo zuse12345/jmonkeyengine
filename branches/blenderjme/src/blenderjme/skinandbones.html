@@ -64,6 +64,16 @@
         If you export 4 armatures with 10 bones each, you need 40 unique bone
         names.
         (You could avoid this constraint by making 4 separate exports).
+        <LI>The skin mesh object must have no scale or rotation.
+        You can easily accommodate this by using CTRL-A on the skin, in Object
+        mode.  If you want your model saved <i>with</i> skin mesh scaling or
+        rotation, then just don't save after this operation.
+        This operation to remove scale and rotation doesn't break existing bone
+        weightings or actions.
+        <LI>On the jME side, animations will interpolate <i>linearly</i>
+        between key frames, regardless of what interpolation algorithm Blender
+        uses.
+        This is a limitation of <code>com.jme.animation</code>.
       </UL>
       Any or all of these constraints may be removed as we improve the
         exporter.
@@ -94,6 +104,9 @@
           Multi.
           <li>Eliminate any rotation or scaling to your skin Object by
           selecting it, Ctrl-A, "Scale and Rotation to ObjData".
+          (This can be done any time before the export.
+          If you want your model saved with scale or rotation, then postpone
+          this step to immediately before you write the export).
         </ul>
       <li>Create your skeleton.
         <ul>
@@ -215,19 +228,23 @@
       The closer to Blue, the less the selected bone influences.
     </ul>
   <li>Export
-    <p>
-    Export from Object mode.
-    Make sure to select both the skin mesh object and the armature object.
+    <ul>
+      <li>Save your scene, in case something crashes and hoses it.
+      Just like most (or all) exporters that handle animations, this exporter
+      does work with your scene objects in order to gather the data it needs.
+      <li>Make sure to select both the skin mesh object and the armature object
+      from Object mode.
+      <li>Hit the <code>Export</code> button.
+    </ul>
     All armature actions (animations), if any, will get exported along with the
-    armature.
+    armature (unless you select <code>Exclude</code> on the exporter screen.
     Use the Blender "Anim" button panel to narrow the start and end frames if
     you wish.
-    Be aware that exporters only export the key frames, so if you specify frame
-    numbers that aren't key frames, the exporter will raise them up to the next
-    key frame.
-    </p><p>
-    If there are Blender animations (actions) for the armature, they will
-    export with the skeleton, and you can run the animations without skin.
+    This is the case even if you don't export a skin (in this case, you can
+    still animate the skeleton in jME).
+    Be aware that interpolation-retaining exporters like ours only export the
+    key frames, so if you specify frame numbers that aren't key frames, the
+    exporter will raise them up to the next key frame.
     </p><p>
     The exporter handles the various objects in a very modular fashion, and
     there are many good reasons why you might want to export just portions of

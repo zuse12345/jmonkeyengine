@@ -1,0 +1,37 @@
+#summary What libraries are required for jME3
+#labels Featured
+
+= jMonkeyEngine 3.0 dependencies =
+
+jME3 can use either LWJGL or JOGL for rendering. If using the SimpleApplication class, you will be asked which renderer to use, otherwise, you need to specify the renderer in the `AppSettings` using `setRenderer()`.
+
+== Using LWJGL renderer ==
+
+If using LWJGL, jME3 can automatically extract the needed libraries, simply include jME3-natives`*`.jar in the classpath. Where `*` is the LWJGL version to use. If using version 2.1 (preferred), include `jME3-natives2.1.jar` in the lib/lwjgl folder, and include lwjgl.jar & jinput.jar in the lib/lwjgl/2.1_jar folder. 
+
+
+== Using JOGL renderer ==
+
+If using JOGL, include `gluegen-rt.jar` and `jogl.jar`, located in lib/jogl, in your classpath. The native path must be specified manually, if using NetBeans IDE, go to File -> Project Properties, select "Run" from the left, then enter the following into "VM Options":
+
+{{{
+-Djava.library.path=<PATH TO JME3>\lib\jogl\<OS>\
+}}}
+
+
+Where:
+`<`PATH TO JME3`>` is the complete path to jME3.
+`<`OS`>` is the operating system name, e.g: win32, win64, linux32, linux64, macosx_ppc, macosx_universal. 
+
+Example:
+Windows 32 bit
+
+{{{
+-Djava.library.path=D:\Projects\jME3\lib\jogl\win32\
+}}}
+
+Linux 64 bit
+
+{{{
+-Djava.library.path=/media/disk/jME3/lib/jogl/linux64/
+}}}

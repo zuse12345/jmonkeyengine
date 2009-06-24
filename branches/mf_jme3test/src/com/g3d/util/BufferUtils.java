@@ -138,6 +138,26 @@ public final class BufferUtils {
     }
 
     /**
+     * Sets the data contained in the given color into the FloatBuffer at the
+     * specified index.
+     *
+     * @param color
+     *            the data to insert
+     * @param buf
+     *            the buffer to insert into
+     * @param index
+     *            the postion to place the data; in terms of colors not floats
+     */
+    public static void setInBuffer(ColorRGBA color, FloatBuffer buf,
+            int index) {
+        buf.position(index*4);
+        buf.put(color.r);
+        buf.put(color.g);
+        buf.put(color.b);
+        buf.put(color.a);
+    }
+
+    /**
      * Sets the data contained in the given Vector3F into the FloatBuffer at the
      * specified index.
      *
@@ -864,6 +884,20 @@ public final class BufferUtils {
         if ( buffer == null || ( buffer.remaining() < required ) ) {
             int position = ( buffer != null ? buffer.position() : 0 );
             FloatBuffer newVerts = createFloatBuffer( position + required );
+            if ( buffer != null ) {
+                buffer.rewind();
+                newVerts.put( buffer );
+                newVerts.position( position );
+            }
+            buffer = newVerts;
+        }
+        return buffer;
+    }
+
+    public static ShortBuffer ensureLargeEnough( ShortBuffer buffer, int required ) {
+        if ( buffer == null || ( buffer.remaining() < required ) ) {
+            int position = ( buffer != null ? buffer.position() : 0 );
+            ShortBuffer newVerts = createShortBuffer( position + required );
             if ( buffer != null ) {
                 buffer.rewind();
                 newVerts.put( buffer );

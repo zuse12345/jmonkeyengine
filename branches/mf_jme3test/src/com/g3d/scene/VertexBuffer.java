@@ -17,6 +17,7 @@ public class VertexBuffer extends GLObject {
         Position,
         Normal,
         TexCoord,
+        Color,
         Tangent,
         Binormal,
         MiscAttrib, // <- NOTE: Special handling for user specified attributes
@@ -37,7 +38,7 @@ public class VertexBuffer extends GLObject {
         Float(FloatBuffer.class, 4),
         Double(DoubleBuffer.class, 8),
 
-        // Fixed formats
+        // Integer formats
         Byte(ByteBuffer.class, 1),
         UnsignedByte(ByteBuffer.class, 1),
         Short(ShortBuffer.class, 2),
@@ -110,6 +111,17 @@ public class VertexBuffer extends GLObject {
         this.usage = usage;
         this.format = format;
         this.componentsLength = components * format.getComponentSize();
+        setUpdateNeeded();
+    }
+
+    public void updateData(Buffer data){
+        if (id != -1){
+            // request to update data is okay
+        }
+
+        // will force renderer to call glBufferData again
+        this.data = data;
+        setUpdateNeeded();
     }
 
     public void convertToHalf(){
@@ -135,6 +147,18 @@ public class VertexBuffer extends GLObject {
             halfData.putShort(half);
         }
         this.data = halfData;
+    }
+
+    @Override
+    public String toString(){
+        String dataTxt = null;
+        if (data != null){
+            dataTxt = ", elements="+data.capacity();
+        }
+        return getClass().getSimpleName() + "[fmt="+format.name()
+                                            +", type="+bufType.name()
+                                            +", usage="+usage.name()
+                                            +dataTxt+"]";
     }
 
     @Override

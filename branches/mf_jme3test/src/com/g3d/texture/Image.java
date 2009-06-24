@@ -61,9 +61,12 @@ public class Image implements Savable {
 
         Luminance8(8),
         Luminance16(16),
-
+        Luminance16F(16),
+        Luminance32F(32),
+        
         Luminance8Alpha8(16),
         Luminance16Alpha16(32),
+        Luminance16FAlpha16F(32),
 
         Intensity8(8),
         Intensity16(16),
@@ -76,22 +79,28 @@ public class Image implements Savable {
         RGBA8(32),
         RGBA16(64),
 
-        DXT1(4),
-        DXT1A(4),
-        DXT3(8),
-        DXT5(8),
+        DXT1(4,false,true),
+        DXT1A(4,false,true),
+        DXT3(8,false,true),
+        DXT5(8,false,true),
 
         Depth(0,true),
         Depth16(16,true),
         Depth24(24,true),
         Depth32(32,true),
+        Depth32F(32,true),
 
+        RGB16F_to_RGB111110F(48),
         RGB111110F(32),
+        RGB16F_to_RGB9E5(48),
+        RGB9E5(32),
+        
         RGB16F(48),
         RGB32F(96);
 
         private int bpp;
         private boolean isDepth;
+        private boolean isCompressed;
 
         private Format(int bpp){
             this.bpp = bpp;
@@ -102,12 +111,21 @@ public class Image implements Savable {
             this.isDepth = isDepth;
         }
 
+        private Format(int bpp, boolean isDepth, boolean isCompressed){
+            this(bpp,isDepth);
+            this.isCompressed = isCompressed;
+        }
+
         public int getBitsPerPixel(){
             return bpp;
         }
 
         public boolean isDepthFormat(){
             return isDepth;
+        }
+
+        public boolean isCompressed() {
+            return isCompressed;
         }
 
     }

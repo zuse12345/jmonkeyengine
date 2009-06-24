@@ -6,7 +6,9 @@ import java.nio.ByteBuffer;
 import org.lwjgl.opengl.ARBHalfFloatPixel;
 import org.lwjgl.opengl.ARBTextureFloat;
 import org.lwjgl.opengl.EXTPackedFloat;
-import static org.lwjgl.opengl.ARBTextureCompression.*;
+import org.lwjgl.opengl.EXTTextureArray;
+import org.lwjgl.opengl.EXTTextureSharedExponent;
+import org.lwjgl.opengl.NVDepthBufferFloat;
 import static org.lwjgl.opengl.EXTTextureCompressionS3TC.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
@@ -37,6 +39,10 @@ public class TextureUtil {
                 return GL_DEPTH_COMPONENT24;
             case Depth32:
                 return GL_DEPTH_COMPONENT32;
+            case Depth32F:
+                return NVDepthBufferFloat.GL_DEPTH_COMPONENT32F_NV;
+            case Luminance16FAlpha16F:
+                return ARBTextureFloat.GL_LUMINANCE_ALPHA16F_ARB;
             case Intensity8:
                 return GL_INTENSITY8;
             case Intensity16:
@@ -45,12 +51,18 @@ public class TextureUtil {
                 return GL_LUMINANCE8;
             case Luminance16:
                 return GL_LUMINANCE16;
+            case Luminance16F:
+                return ARBTextureFloat.GL_LUMINANCE16F_ARB;
+             case Luminance32F:
+                return ARBTextureFloat.GL_LUMINANCE32F_ARB;
             case RGB10:
                 return GL_RGB10;
             case RGB16:
                 return GL_RGB16;
             case RGB111110F:
                 return EXTPackedFloat.GL_R11F_G11F_B10F_EXT;
+            case RGB9E5:
+                return EXTTextureSharedExponent.GL_RGB9_E5_EXT;
             case RGB16F:
                 return ARBTextureFloat.GL_RGB16F_ARB;
             case RGB32F:
@@ -69,13 +81,14 @@ public class TextureUtil {
     }
 
     public static void uploadTexture(Image img,
-                                     int target, 
+                                     int target,
+                                     int index,
                                      int border){
 
         Image.Format fmt = img.getFormat();
         ByteBuffer data;
-        if (img.getData() != null && img.getData().size() > 0){
-            data = img.getData(0);
+        if (index >= 0 || img.getData() != null && img.getData().size() > 0){
+            data = img.getData(index);
         }else{
             data = null;
         }
@@ -129,6 +142,30 @@ public class TextureUtil {
                 format = GL_DEPTH_COMPONENT;
                 dataType = GL_UNSIGNED_BYTE;
                 break;
+            case Depth16:
+                internalFormat = GL_DEPTH_COMPONENT16;
+                format = GL_DEPTH_COMPONENT;
+                dataType = GL_UNSIGNED_BYTE;
+                break;
+            case Depth24:
+                internalFormat = GL_DEPTH_COMPONENT24;
+                format = GL_DEPTH_COMPONENT;
+                dataType = GL_UNSIGNED_BYTE;
+                break;
+            case Depth32:
+                internalFormat = GL_DEPTH_COMPONENT32;
+                format = GL_DEPTH_COMPONENT;
+                dataType = GL_UNSIGNED_BYTE;
+                break;
+            case Depth32F:
+                internalFormat = NVDepthBufferFloat.GL_DEPTH_COMPONENT32F_NV;
+                format = GL_DEPTH_COMPONENT;
+                dataType = GL_FLOAT;
+                break;
+            case Luminance16FAlpha16F:
+                internalFormat = ARBTextureFloat.GL_LUMINANCE_ALPHA16F_ARB;
+                format = GL_LUMINANCE_ALPHA;
+                dataType = GL_UNSIGNED_BYTE;
             case Intensity8:
                 internalFormat = GL_INTENSITY8;
                 format = GL_INTENSITY;
@@ -139,15 +176,25 @@ public class TextureUtil {
                 format = GL_INTENSITY;
                 dataType = GL_UNSIGNED_BYTE;
                 break;
+            case Luminance8:
+                internalFormat = GL_LUMINANCE8;
+                format = GL_LUMINANCE;
+                dataType = GL_UNSIGNED_BYTE;
+                break;
             case Luminance16:
                 internalFormat = GL_LUMINANCE16;
                 format = GL_LUMINANCE;
                 dataType = GL_UNSIGNED_BYTE;
                 break;
-            case Luminance8:
-                internalFormat = GL_LUMINANCE8;
+            case Luminance16F:
+                internalFormat = ARBTextureFloat.GL_LUMINANCE16F_ARB;
                 format = GL_LUMINANCE;
-                dataType = GL_UNSIGNED_BYTE;
+                dataType = ARBHalfFloatPixel.GL_HALF_FLOAT_ARB;
+                break;
+            case Luminance32F:
+                internalFormat = ARBTextureFloat.GL_LUMINANCE32F_ARB;
+                format = GL_LUMINANCE;
+                dataType = GL_FLOAT;
                 break;
             case RGB10:
                 internalFormat = GL_RGB10;
@@ -163,6 +210,21 @@ public class TextureUtil {
                 internalFormat = EXTPackedFloat.GL_R11F_G11F_B10F_EXT;
                 format = GL_RGB;
                 dataType = EXTPackedFloat.GL_UNSIGNED_INT_10F_11F_11F_REV_EXT;
+                break;
+            case RGB16F_to_RGB111110F:
+                internalFormat = EXTPackedFloat.GL_R11F_G11F_B10F_EXT;
+                format = GL_RGB;
+                dataType = ARBHalfFloatPixel.GL_HALF_FLOAT_ARB;
+                break;
+            case RGB16F_to_RGB9E5:
+                internalFormat = EXTTextureSharedExponent.GL_RGB9_E5_EXT;
+                format = GL_RGB;
+                dataType = ARBHalfFloatPixel.GL_HALF_FLOAT_ARB;
+                break;
+            case RGB9E5:
+                internalFormat = EXTTextureSharedExponent.GL_RGB9_E5_EXT;
+                format = GL_RGB;
+                dataType = EXTTextureSharedExponent.GL_UNSIGNED_INT_5_9_9_9_REV_EXT;
                 break;
             case RGB16F:
                 internalFormat = ARBTextureFloat.GL_RGB16F_ARB;
@@ -198,7 +260,9 @@ public class TextureUtil {
                 throw new UnsupportedOperationException("Unrecognized format: "+fmt);
         }
 
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        if (data != null)
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
         int[] mipSizes = img.getMipMapSizes();
         int pos = 0;
         if (mipSizes == null){
@@ -226,14 +290,6 @@ public class TextureUtil {
                                            mipWidth,
                                            border,
                                            data);
-                }else if (target == GL_TEXTURE_2D){
-                    glCompressedTexImage2D(target,
-                                           i,
-                                           internalFormat,
-                                           mipWidth,
-                                           mipHeight,
-                                           border,
-                                           data);
                 }else if (target == GL_TEXTURE_3D){
                     glCompressedTexImage3D(target,
                                            i,
@@ -241,6 +297,15 @@ public class TextureUtil {
                                            mipWidth,
                                            mipHeight,
                                            mipDepth,
+                                           border,
+                                           data);
+                }else{
+                    //all other targets use 2D: array, cubemap, 2d
+                    glCompressedTexImage2D(target,
+                                           i,
+                                           internalFormat,
+                                           mipWidth,
+                                           mipHeight,
                                            border,
                                            data);
                 }
@@ -254,16 +319,6 @@ public class TextureUtil {
                                  format,
                                  dataType,
                                  data);
-                }else if (target == GL_TEXTURE_2D){
-                    glTexImage2D(target,
-                                 i,
-                                 internalFormat,
-                                 mipWidth,
-                                 mipHeight,
-                                 border,
-                                 format,
-                                 dataType,
-                                 data);
                 }else if (target == GL_TEXTURE_3D){
                     glTexImage3D(target,
                                  i,
@@ -271,6 +326,43 @@ public class TextureUtil {
                                  mipWidth,
                                  mipHeight,
                                  mipDepth,
+                                 border,
+                                 format,
+                                 dataType,
+                                 data);
+                }else if (target == EXTTextureArray.GL_TEXTURE_2D_ARRAY_EXT){
+                    // prepare data for 2D array
+                    // or upload slice
+                    if (index == -1){
+                        glTexImage3D(target,
+                                     0,
+                                     internalFormat,
+                                     mipWidth,
+                                     mipHeight,
+                                     img.getData().size(), //# of slices
+                                     border,
+                                     format,
+                                     dataType,
+                                     0);
+                    }else{
+                        glTexSubImage3D(target,
+                                        i, // level
+                                        0, // xoffset
+                                        0, // yoffset
+                                        index, // zoffset
+                                        width, // width
+                                        height, // height
+                                        1, // depth
+                                        format,
+                                        dataType,
+                                        data);
+                    }
+                }else{
+                    glTexImage2D(target,
+                                 i,
+                                 internalFormat,
+                                 mipWidth,
+                                 mipHeight,
                                  border,
                                  format,
                                  dataType,

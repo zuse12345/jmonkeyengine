@@ -229,6 +229,7 @@ public class Camera implements Savable {
      */
     private boolean parallelProjection;
 
+    protected Matrix4f projectionMatrixOverride;
     protected final Matrix4f viewMatrix = new Matrix4f();
     protected final Matrix4f projectionMatrix = new Matrix4f();
     protected final Matrix4f viewProjectionMatrix = new Matrix4f();
@@ -505,6 +506,22 @@ public class Camera implements Savable {
     }
 
     /**
+     * <code>setRotation</code> sets the orientation of this camera. 
+     * This will be equivelant to setting each of the axes:
+     * <code><br>
+     * cam.setLeft(rotation.getRotationColumn(0));<br>
+     * cam.setUp(rotation.getRotationColumn(1));<br>
+     * cam.setDirection(rotation.getRotationColumn(2));<br>
+     * </code>
+     *
+     * @param rotation the rotation of this camera
+     */
+    public void setRotation(Quaternion rotation) {
+        this.rotation.set(rotation);
+        onFrameChange();
+    }
+
+    /**
      * <code>setDirection</code> sets the direction this camera is facing. In
      * most cases, this changes the up and left vectors of the camera. If your
      * left or up vectors change, you must updates those as well for correct
@@ -514,7 +531,10 @@ public class Camera implements Savable {
      * @see Camera#setDirection(com.jme.math.Vector3f)
      */
     public void setDirection(Vector3f direction) {
-        this.rotation.lookAt(direction, getUp());
+        //this.rotation.lookAt(direction, getUp());
+        Vector3f left = getLeft();
+        Vector3f up = getUp();
+        this.rotation.fromAxes(left, up, direction);
         onFrameChange();
     }
 
@@ -636,9 +656,28 @@ public class Camera implements Savable {
      */
     public void lookAt(Vector3f pos, Vector3f worldUpVector) {
         Vector3f newDirection = TempVars.get().vect1;
+        Vector3f newUp = TempVars.get().vect2;
+        Vector3f newLeft = TempVars.get().vect3;
 
         newDirection.set(pos).subtractLocal(location).normalizeLocal();
-        this.rotation.lookAt(newDirection, worldUpVector);
+
+        newUp.set(worldUpVector).normalizeLocal();
+        if (newUp.equals(Vector3f.ZERO))
+            newUp.set(Vector3f.UNIT_Y);
+
+        newLeft.set(newUp).crossLocal(newDirection).normalizeLocal();
+        if (newLeft.equals(Vector3f.ZERO)){
+            if (newDirection.x != 0) {
+                newLeft.set(newDirection.y, -newDirection.x, 0f);
+            } else {
+                newLeft.set(0f, newDirection.z, -newDirection.y);
+            }
+        }
+
+        newUp.set(newDirection).crossLocal(newLeft).normalizeLocal();
+
+        this.rotation.fromAxes(newLeft, newUp, newDirection);
+        this.rotation.normalize();
 
         onFrameChange();
     }
@@ -796,7 +835,17 @@ public class Camera implements Savable {
      * <code>contains</code> tests a bounding volume against the planes of the
      * camera's frustum. The frustums planes are set such that the normals all
      * face in towards the viewable scene. Therefore, if the bounding volume is
-     * on the negative side of the plane is can be culled out. 
+     * on the negative side of the plane is can be culled out.
+     *
+     * NOTE: This method is used internally for culling, for public usage,
+     * the plane state of the bounding volume must be saved and restored, e.g:
+     * <code>BoundingVolume bv;<br/>
+     * Camera c;<br/>
+     * int planeState = bv.getPlaneState();<br/>
+     * bv.setPlaneState(0);<br/>
+     * c.contains(bv);<br/>
+     * bv.setPlaneState(plateState);<br/>
+     * </code>
      *
      * @param bound the bound to check for culling
      * @return See enums in <code>FrustumIntersect</code>
@@ -850,12 +899,27 @@ public class Camera implements Savable {
     }
 
     /**
+     * Overrides the projection matrix used by the camera. Will
+     * use the matrix for computing the view projection matrix as well.
+     * Use null argument to return to normal functionality.
+     *
+     * @param projMatrix
+     */
+    public void setProjectionMatrix(Matrix4f projMatrix){
+        projectionMatrixOverride = projMatrix;
+        updateViewProjection();
+    }
+
+    /**
      * @return the projection matrix of the camera.
      * The view matrix transforms eye space into clip space.
      * This matrix is usually defined by the viewport and perspective settings
      * of the camera.
      */
     public Matrix4f getProjectionMatrix(){
+        if (projectionMatrixOverride != null)
+            return projectionMatrixOverride;
+
         return projectionMatrix;
     }
 
@@ -863,8 +927,12 @@ public class Camera implements Savable {
      * Updates the view projection matrix.
      */
     public void updateViewProjection(){
-        //viewProjectionMatrix.set(viewMatrix).multLocal(projectionMatrix);
-        viewProjectionMatrix.set(projectionMatrix).multLocal(viewMatrix);
+        if (projectionMatrixOverride != null){
+            viewProjectionMatrix.set(projectionMatrixOverride).multLocal(viewMatrix);
+        }else{
+            //viewProjectionMatrix.set(viewMatrix).multLocal(projectionMatrix);
+            viewProjectionMatrix.set(projectionMatrix).multLocal(viewMatrix);
+        }
     }
 
     /**
@@ -945,7 +1013,7 @@ public class Camera implements Savable {
         }
 
         projectionMatrix.fromFrustum(frustumNear, frustumFar, frustumLeft, frustumRight, frustumTop, frustumBottom, parallelProjection);
-        projectionMatrix.transposeLocal();
+//        projectionMatrix.transposeLocal();
         updateViewProjection();
     }
 
@@ -1016,7 +1084,7 @@ public class Camera implements Savable {
         worldPlane[NEAR_PLANE].setConstant( dirDotLocation + frustumNear );
 
         viewMatrix.fromFrame(location, direction, up, left);
-        viewMatrix.transposeLocal();
+//        viewMatrix.transposeLocal();
         updateViewProjection();
     }
 

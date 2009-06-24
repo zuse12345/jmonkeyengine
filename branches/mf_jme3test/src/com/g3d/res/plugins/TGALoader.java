@@ -33,6 +33,7 @@
 package com.g3d.res.plugins;
 
 import com.g3d.math.FastMath;
+import com.g3d.res.ContentKey;
 import com.g3d.res.ContentLoader;
 import com.g3d.res.ContentManager;
 import com.g3d.texture.Image;
@@ -77,8 +78,8 @@ public final class TGALoader implements ContentLoader {
     public static final int TYPE_BLACKANDWHITE_RLE = 11;
 
 
-    public Object load(ContentManager owner, InputStream is, String extension) throws IOException {
-        return loadImage(is, true);
+    public Object load(ContentManager owner, InputStream is, String extension, ContentKey key) throws IOException {
+        return loadImage(is, owner.getProperty("FlipImages") != null && owner.getProperty("FlipImages").equals("true"));
     }
 
     /**

@@ -15,6 +15,8 @@ public class RenderQueue {
     private SpatialList guiList;
     private SpatialList transparentList;
     private SpatialList skyList;
+    private SpatialList shadowRecv;
+    private SpatialList shadowCast;
 
     public RenderQueue(Renderer renderer){
         this.renderer = renderer;
@@ -22,6 +24,9 @@ public class RenderQueue {
         this.guiList = new SpatialList(new GuiComparator());
         this.transparentList = new SpatialList(new TransparentComparator(renderer));
         this.skyList = new SpatialList(new NullComparator());
+        
+        this.shadowRecv = new SpatialList(new OpaqueComparator(renderer));
+        this.shadowCast = new SpatialList(new OpaqueComparator(renderer));
     }
 
     public enum Bucket {
@@ -29,10 +34,38 @@ public class RenderQueue {
         Opaque,
         Sky,
         Transparent,
+        Inherit,
+    }
+
+    public enum ShadowMode {
+        Off,
+        Cast,
+        Recieve,
+        CastAndRecieve,
+        Inherit
     }
 
     public Camera getCamera(){
         return renderer.getCamera();
+    }
+
+    public void addToShadowQueue(Geometry g, ShadowMode shadBucket){
+        switch (shadBucket){
+            case Inherit: break;
+            case Off: break;
+            case Cast:
+                shadowCast.add(g);
+                break;
+            case Recieve:
+                shadowRecv.add(g);
+                break;
+            case CastAndRecieve:
+                shadowCast.add(g);
+                shadowRecv.add(g);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unrecognized shadow bucket type: "+shadBucket);
+        }
     }
 
     public void addToQueue(Geometry g, Bucket bucket) {
@@ -54,26 +87,18 @@ public class RenderQueue {
         }
     }
 
-    public void renderQueue(Bucket bucket){
-        SpatialList list = null;
-        switch (bucket){
-            case Gui:
-                list = guiList;
-                break;
-            case Opaque:
-                list = opaqueList;
-                break;
-            case Sky:
-                list = skyList;
-                break;
-            case Transparent:
-                list = transparentList;
-                break;
+    public SpatialList getShadowQueueContent(ShadowMode shadBucket){
+        switch (shadBucket){
+            case Cast:
+                return shadowCast;
+            case Recieve:
+                return shadowRecv;
+            default:
+                return null;
         }
+    }
 
-        if (list == null)
-            throw new UnsupportedOperationException("Unknown bucket type: "+bucket);
-
+    private void renderSpatialList(SpatialList list){
         list.sort();
         for (int i = 0; i < list.size(); i++){
             Spatial obj = list.get(i);
@@ -89,11 +114,43 @@ public class RenderQueue {
         list.clear();
     }
 
+    public void renderShadowQueue(ShadowMode shadBucket){
+        switch (shadBucket){
+            case Cast:
+                renderSpatialList(shadowCast);
+                break;
+            case Recieve:
+                renderSpatialList(shadowRecv);
+                break;
+        }
+    }
+
+    public void renderQueue(Bucket bucket){
+        switch (bucket){
+            case Gui:
+                renderSpatialList(guiList);
+                break;
+            case Opaque:
+                renderSpatialList(opaqueList);
+                break;
+            case Sky:
+                renderSpatialList(skyList);
+                break;
+            case Transparent:
+                renderSpatialList(transparentList);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unsupported bucket type: "+bucket);
+        }
+    }
+
     public void clear(){
         opaqueList.clear();
         guiList.clear();
         transparentList.clear();
         skyList.clear();
+        shadowCast.clear();
+        shadowRecv.clear();
     }
 
 }

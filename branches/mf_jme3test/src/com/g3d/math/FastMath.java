@@ -624,6 +624,15 @@ final public class FastMath {
             return (short) 0x0000;
         }else if (flt == -0f){
             return (short) 0x8000;
+        }else if (flt > 65504f){
+            // max value supported by half float
+            return 0x7bff;
+        }else if (flt < -65504f){
+            return (short)(0x7bff | 0x8000);
+        }else if (flt > 0f && flt < 5.96046E-8f){
+            return 0x0001;
+        }else if (flt < 0f && flt > -5.96046E-8f){
+            return (short) 0x8001;
         }
 
         int f = Float.floatToIntBits(flt);

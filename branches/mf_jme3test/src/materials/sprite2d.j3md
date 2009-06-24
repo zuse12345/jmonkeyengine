@@ -1,9 +1,8 @@
 MaterialDef Sprite 2D {
     MaterialParameters {
         Texture2D m_Texture
-        Boolean m_AlphaTest
-
     }
+
     Technique {
         VertexShader GLSL100: sprite2d.vert
         FragmentShader GLSL100: sprite2d.frag

@@ -1,6 +1,7 @@
 package com.g3d.material;
 
 import com.g3d.renderer.Renderer;
+import com.g3d.res.ContentManager;
 import com.g3d.shader.Uniform;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,10 +25,10 @@ public class MaterialDef {
         Matrix3(false),
         Matrix4(false),
 
-        Texture1D(true),
+        TextureBuffer(true),
         Texture2D(true),
         Texture3D(true),
-        TextureCube(true),
+        TextureCubeMap(true),
         TextureArray(true);
         
         private boolean textureType;
@@ -59,11 +60,17 @@ public class MaterialDef {
     }
 
     private String name;
-    private final Map<String, Technique> techniques = new HashMap<String, Technique>();
+    private final ContentManager contentManager;
+    private final Map<String, TechniqueDef> techniques = new HashMap<String, TechniqueDef>();
     private final Map<String, MatParam> matParams = new HashMap<String, MatParam>();
     
-    public MaterialDef(String name){
+    public MaterialDef(ContentManager contentManager, String name){
+        this.contentManager = contentManager;
         this.name = name;
+    }
+
+    public ContentManager getContentManager(){
+        return contentManager;
     }
 
     public String getName(){
@@ -78,11 +85,11 @@ public class MaterialDef {
         return matParams.get(name);
     }
 
-    public void addTechnique(Technique technique){
+    public void addTechniqueDef(TechniqueDef technique){
         techniques.put(technique.getName(), technique);
     }
 
-    public Technique getTechnique(String name) {
+    public TechniqueDef getTechniqueDef(String name) {
         return techniques.get(name);
     }
 

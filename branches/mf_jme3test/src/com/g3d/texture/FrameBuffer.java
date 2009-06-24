@@ -108,14 +108,18 @@ public class FrameBuffer extends GLObject {
         colorBuf.format = img.getFormat();
     }
 
-//    public void setDepthTexture(Texture2D depthTex){
-//        if (id != -1)
-//            throw new UnsupportedOperationException("FrameBuffer already initialized.");
-//
-//        checkSetTexture(depthTex, true);
-//        depthFormat = depthTex.getImage().getFormat();
-//        depthTexture = depthTex;
-//    }
+    public void setDepthTexture(Texture2D tex){
+        if (id != -1)
+            throw new UnsupportedOperationException("FrameBuffer already initialized.");
+
+        Image img = tex.getImage();
+        checkSetTexture(tex, true);
+        
+        depthBuf = new RenderBuffer();
+        depthBuf.slot = -100; // indicates GL_DEPTH_ATTACHMENT
+        depthBuf.tex = tex;
+        depthBuf.format = img.getFormat();
+    }
 
     public RenderBuffer getColorBuffer() {
         return colorBuf;

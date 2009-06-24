@@ -18,5 +18,5 @@ public interface ContentLoader {
      * @return An object representing the resource.
      * @throws java.io.IOException If an I/O error occurs while loading
      */
-    public Object load(ContentManager owner, InputStream stream, String extension) throws IOException;
+    public Object load(ContentManager owner, InputStream stream, String extension, ContentKey key) throws IOException;
 }

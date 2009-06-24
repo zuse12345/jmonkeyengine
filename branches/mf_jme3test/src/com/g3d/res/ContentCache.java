@@ -14,11 +14,11 @@ import java.util.Hashtable;
 public class ContentCache {
 
     private final ReferenceQueue<Object> refQueue = new ReferenceQueue<Object>();
-    private final Hashtable<String, Object> loadedObjects = new Hashtable<String, Object>();
+    private final Hashtable<ContentKey, Object> loadedObjects = new Hashtable<ContentKey, Object>();
 
     private class ContentRef extends WeakReference<Object>{
-        private String key;
-        public ContentRef(String key, Object obj){
+        private ContentKey key;
+        public ContentRef(ContentKey key, Object obj){
             super(obj, refQueue);
             this.key = key;
         }
@@ -30,7 +30,7 @@ public class ContentCache {
      * For resource retrieval,
      * @see #getFromCache(java.lang.String)
      */
-    public void addToCache(String key, Object obj){
+    public void addToCache(ContentKey key, Object obj){
         synchronized (loadedObjects){
             deleteUnused();
             new ContentRef(key, obj);
@@ -38,7 +38,7 @@ public class ContentCache {
         }
     }
 
-    public Object getFromCache(String key){
+    public Object getFromCache(ContentKey key){
         synchronized (loadedObjects){
             deleteUnused();
             return loadedObjects.get(key);

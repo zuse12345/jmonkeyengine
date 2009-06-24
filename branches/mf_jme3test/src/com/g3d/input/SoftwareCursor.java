@@ -3,7 +3,7 @@ package com.g3d.input;
 import com.g3d.input.binding.BindingListener;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
-import com.g3d.scene.Quad;
+import com.g3d.scene.shape.Quad;
 import com.g3d.texture.Image;
 import com.g3d.texture.Texture.MagFilter;
 import com.g3d.texture.Texture.MinFilter;

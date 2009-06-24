@@ -70,19 +70,32 @@ public class FlyByCamera implements BindingListener {
 
         dispacher.registerMouseAxisBinding("FLYCAM_ZoomIn", 2, false);
         dispacher.registerMouseAxisBinding("FLYCAM_ZoomOut", 2, true);
-        
-        dispacher.registerKeyBinding("FLYCAM_Left", Keyboard.KEY_LEFT);
-        dispacher.registerKeyBinding("FLYCAM_Right", Keyboard.KEY_RIGHT);
-        dispacher.registerKeyBinding("FLYCAM_Up", Keyboard.KEY_UP);
-        dispacher.registerKeyBinding("FLYCAM_Down", Keyboard.KEY_DOWN);
 
-        dispacher.registerKeyBinding("FLYCAM_StrafeLeft", Keyboard.KEY_A);
-        dispacher.registerKeyBinding("FLYCAM_StrafeRight", Keyboard.KEY_D);
-        dispacher.registerKeyBinding("FLYCAM_Forward", Keyboard.KEY_W);
-        dispacher.registerKeyBinding("FLYCAM_Backward", Keyboard.KEY_S);
+        dispacher.registerKeyBinding("FLYCAM_Left", KeyInput.KEY_LEFT);
+        dispacher.registerKeyBinding("FLYCAM_Right", KeyInput.KEY_RIGHT);
+        dispacher.registerKeyBinding("FLYCAM_Up", KeyInput.KEY_UP);
+        dispacher.registerKeyBinding("FLYCAM_Down", KeyInput.KEY_DOWN);
 
-        dispacher.registerKeyBinding("FLYCAM_Rise", Keyboard.KEY_Q);
-        dispacher.registerKeyBinding("FLYCAM_Lower", Keyboard.KEY_Z);
+        dispacher.registerKeyBinding("FLYCAM_StrafeLeft", KeyInput.KEY_A);
+        dispacher.registerKeyBinding("FLYCAM_StrafeRight", KeyInput.KEY_D);
+        dispacher.registerKeyBinding("FLYCAM_Forward", KeyInput.KEY_W);
+        dispacher.registerKeyBinding("FLYCAM_Backward", KeyInput.KEY_S);
+
+        dispacher.registerKeyBinding("FLYCAM_Rise", KeyInput.KEY_Q);
+        dispacher.registerKeyBinding("FLYCAM_Lower", KeyInput.KEY_Z);
+
+//        dispacher.registerKeyBinding("FLYCAM_Left", Keyboard.KEY_LEFT);
+//        dispacher.registerKeyBinding("FLYCAM_Right", Keyboard.KEY_RIGHT);
+//        dispacher.registerKeyBinding("FLYCAM_Up", Keyboard.KEY_UP);
+//        dispacher.registerKeyBinding("FLYCAM_Down", Keyboard.KEY_DOWN);
+//
+//        dispacher.registerKeyBinding("FLYCAM_StrafeLeft", Keyboard.KEY_A);
+//        dispacher.registerKeyBinding("FLYCAM_StrafeRight", Keyboard.KEY_D);
+//        dispacher.registerKeyBinding("FLYCAM_Forward", Keyboard.KEY_W);
+//        dispacher.registerKeyBinding("FLYCAM_Backward", Keyboard.KEY_S);
+//
+//        dispacher.registerKeyBinding("FLYCAM_Rise", Keyboard.KEY_Q);
+//        dispacher.registerKeyBinding("FLYCAM_Lower", Keyboard.KEY_Z);
 
         dispacher.addTriggerListener(this);
     }

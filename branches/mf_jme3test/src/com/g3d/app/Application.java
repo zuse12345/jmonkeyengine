@@ -8,14 +8,22 @@ import com.g3d.system.*;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
 import com.g3d.renderer.Renderer;
+import com.g3d.renderer.queue.RenderQueue;
 import com.g3d.res.ContentManager;
+import com.g3d.scene.Geometry;
+import com.g3d.scene.Node;
+import com.g3d.scene.Spatial;
 import com.g3d.system.AppSettings.Template;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * The <code>Application</code> class represents an instance of a
  * real-time 3D rendering application.
  */
 public class Application implements ContextListener {
+
+    private static final Logger logger = Logger.getLogger(Application.class.getName());
 
     /**
      * The content manager. Typically initialized outside the GL thread
@@ -84,7 +92,7 @@ public class Application implements ContextListener {
         cam = new Camera(settings.getWidth(), settings.getHeight());
 
         cam.setFrustumPerspective(45f, (float)cam.getWidth() / cam.getHeight(), 1f, 1000f);
-        cam.setLocation(new Vector3f(0f, 0f, -10f));
+        cam.setLocation(new Vector3f(0f, 0f, 10f));
         cam.lookAt(new Vector3f(0f, 0f, 0f), Vector3f.UNIT_Y);
 
         renderer.setCamera(cam);
@@ -156,11 +164,51 @@ public class Application implements ContextListener {
         return cam;
     }
 
+    private void renderShadow(Spatial s, Renderer r){
+        if (s instanceof Node){
+            Node n = (Node) s;
+            List<Spatial> children = n.getChildren();
+            for (int i = 0; i < children.size(); i++){
+                renderShadow(children.get(i), r);
+            }
+        }else if (s instanceof Geometry){
+            Geometry gm = (Geometry) s;
+            RenderQueue.ShadowMode shadowMode = s.getShadowMode();
+            if (shadowMode != RenderQueue.ShadowMode.Off)
+                r.addToShadowQueue(gm, shadowMode);
+        }
+    }
+
+    public void render(Spatial s, Renderer r){
+        if (!s.checkCulling(cam)){
+            // move on to shadow-only render
+            if (s.getShadowMode() != RenderQueue.ShadowMode.Off)
+                renderShadow(s,r);
+
+            return;
+        }
+        if (s instanceof Node){
+            Node n = (Node) s;
+            List<Spatial> children = n.getChildren();
+            for (int i = 0; i < children.size(); i++){
+                render(children.get(i), r);
+            }
+        }else if (s instanceof Geometry){
+            Geometry gm = (Geometry) s;
+            r.addToQueue(gm, s.getQueueBucket());
+
+            RenderQueue.ShadowMode shadowMode = s.getShadowMode();
+            if (shadowMode != RenderQueue.ShadowMode.Off)
+                r.addToShadowQueue(gm, shadowMode);
+        }
+    }
+
     /**
      * Starts the application. Creating a display and running the main loop.
      */
     public void start(){
         if (context != null && context.isCreated()){
+            logger.warning("start() called when application already created!");
             return;
         }
 
@@ -168,10 +216,14 @@ public class Application implements ContextListener {
             settings = new AppSettings(Template.Default640x480);
         }
         
+        logger.fine("Starting application: "+getClass().getName());
         context = G3DSystem.newDisplay(settings);
         context.setContextListener(this);
-
         context.create();
+    }
+
+    public void restart(){
+        context.restart(true);
     }
 
     /**
@@ -179,6 +231,7 @@ public class Application implements ContextListener {
      * and making neccessary cleanup operations.
      */
     public void stop(){
+        logger.fine("Closing application: "+getClass().getName());
         context.destroy();
     }
 
@@ -253,8 +306,9 @@ public class Application implements ContextListener {
         destroyInput();
         timer.reset();
         renderer.cleanup();
-        context.destroy();
-        G3DSystem.destroy();
+        // NOTE: May cause issues with programs
+        // that use multiple Application instances
+//        G3DSystem.destroy();
     }
 
 }

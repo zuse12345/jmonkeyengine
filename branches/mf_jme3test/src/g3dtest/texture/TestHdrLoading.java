@@ -4,7 +4,7 @@ import com.g3d.app.SimpleApplication;
 import com.g3d.material.Material;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
-import com.g3d.scene.Quad;
+import com.g3d.scene.shape.Quad;
 import com.g3d.system.AppSettings;
 import com.g3d.texture.Image;
 import com.g3d.texture.Texture2D;
@@ -26,9 +26,8 @@ public class TestHdrLoading extends SimpleApplication {
 //        Image tmImg = ToneMapper.toneMap(img, exposure);
 
         Material mat = new Material(manager, "plain_texture.j3md");
-//        mat.setTexture("m_ColorMap", new Texture2D(tmImg));
+        mat.setTexture("m_ColorMap", new Texture2D(img));
         quad.setMaterial(mat);
-//        quad.setMaterial(new TextureMaterial(new Texture2D(tmImg), true));
 
         float aspect = img.getWidth() / (float) img.getHeight();
         quad.setLocalScale(new Vector3f(5, 5 / aspect, 1));
@@ -43,9 +42,9 @@ public class TestHdrLoading extends SimpleApplication {
         quadMesh.updateBound();
 
         Image original = manager.loadImage("nave.hdr");
-        createToneMappedPanel(new Vector3f(-5,0,0), original, 0.3f);
+//        createToneMappedPanel(new Vector3f(-5,0,0), original, 0.3f);
         createToneMappedPanel(new Vector3f(0,0,0),  original, 1.5f);
-        createToneMappedPanel(new Vector3f(5,0,0),  original, 4f);
+//        createToneMappedPanel(new Vector3f(5,0,0),  original, 4f);
     }
 
 }

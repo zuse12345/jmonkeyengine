@@ -3,6 +3,7 @@ package com.g3d.system.jogl;
 import com.g3d.input.JoyInput;
 import com.g3d.input.KeyInput;
 import com.g3d.input.MouseInput;
+import com.g3d.input.awt.AwtKeyInput;
 import com.g3d.input.dummy.DummyKeyInput;
 import com.g3d.input.dummy.DummyMouseInput;
 import com.g3d.renderer.Renderer;
@@ -19,9 +20,11 @@ public abstract class JoglContext implements G3DContext {
 
     protected AtomicBoolean created = new AtomicBoolean(false);
     protected AppSettings settings = new AppSettings();
-    protected Renderer renderer;
+    protected JoglRenderer renderer;
     protected Timer timer;
     protected ContextListener listener;
+
+    protected AwtKeyInput keyInput;
 
     public void setContextListener(ContextListener listener){
         this.listener = listener;
@@ -44,7 +47,7 @@ public abstract class JoglContext implements G3DContext {
     }
 
     public KeyInput getKeyInput() {
-        return new DummyKeyInput();
+        return keyInput;
     }
 
     public JoyInput getJoyInput() {
@@ -61,9 +64,8 @@ public abstract class JoglContext implements G3DContext {
 
     public void create() {
         timer = new NanoTimer();
-        renderer = new JoglRenderer();
-//        renderer.initialize();
         created.set(true);
+        // renderer initialization must happen in subclass.
     }
 
     protected void internalDestroy() {

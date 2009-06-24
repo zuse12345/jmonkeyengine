@@ -31,15 +31,12 @@
  */
 package com.g3d.res.plugins;
 
-import com.g3d.util.LittleEndien;
 import com.g3d.res.*;
 import com.g3d.util.*;
 import com.g3d.math.FastMath;
 import com.g3d.res.ContentLoader;
 import com.g3d.texture.Image;
 import com.g3d.texture.Image.Format;
-import com.g3d.texture.Texture;
-import com.g3d.texture.Texture2D;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
@@ -106,7 +103,7 @@ public class DDSLoader implements ContentLoader {
     public DDSLoader() {
     }
 
-    public Object load(ContentManager owner, InputStream in, String extension) throws IOException{
+    public Object load(ContentManager owner, InputStream in, String extension, ContentKey key) throws IOException{
         return loadImage(in);
     }
 

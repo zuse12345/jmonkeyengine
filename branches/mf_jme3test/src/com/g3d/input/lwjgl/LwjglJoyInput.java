@@ -73,13 +73,13 @@ public class LwjglJoyInput implements JoyInput {
             Controller c = Controllers.getEventSource();
             if (Controllers.isEventXAxis()){
                 JoyAxisEvent evt = new JoyAxisEvent(c.getIndex(),
-                                                    JoyAxisEvent.AXIS_X,
+                                                    JoyInput.AXIS_X,
                                                     Controllers.getEventControlIndex(),
                                                     c.getXAxisValue());
                 listener.onJoyAxisEvent(evt);
             }else if (Controllers.isEventYAxis()){
                 JoyAxisEvent evt = new JoyAxisEvent(c.getIndex(),
-                                                    JoyAxisEvent.AXIS_Y,
+                                                    JoyInput.AXIS_Y,
                                                     Controllers.getEventControlIndex(),
                                                     c.getYAxisValue());
                 listener.onJoyAxisEvent(evt);
@@ -88,9 +88,9 @@ public class LwjglJoyInput implements JoyInput {
                 String axisName = c.getAxisName(realAxis);
                 int axisId = -1;
                 if (axisName.equals("Z Axis")){
-                    axisId = JoyAxisEvent.AXIS_Z;
+                    axisId = JoyInput.AXIS_Z;
                 }else if (axisName.equals("Z Rotation")){
-                    axisId = JoyAxisEvent.AXIS_Z_ROT;
+                    axisId = JoyInput.AXIS_Z_ROT;
                 }
                 JoyAxisEvent evt = new JoyAxisEvent(c.getIndex(),
                                                     axisId,
@@ -99,13 +99,13 @@ public class LwjglJoyInput implements JoyInput {
                 listener.onJoyAxisEvent(evt);
             }else if (Controllers.isEventPovX()){
                 JoyAxisEvent evt = new JoyAxisEvent(c.getIndex(),
-                                                    JoyAxisEvent.POV_X,
+                                                    JoyInput.POV_X,
                                                     -1,
                                                     c.getPovX());
                 listener.onJoyAxisEvent(evt);
             }else if (Controllers.isEventPovY()){
                 JoyAxisEvent evt = new JoyAxisEvent(c.getIndex(),
-                                                    JoyAxisEvent.POV_Y,
+                                                    JoyInput.POV_Y,
                                                     -1,
                                                     c.getPovY());
                 listener.onJoyAxisEvent(evt);

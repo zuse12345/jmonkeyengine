@@ -1,0 +1,29 @@
+const float epsilon = 0.0001;
+const vec3 lumConv = vec3(0.27, 0.67, 0.06);
+
+float HDR_GetLuminance(in vec3 color){
+    return dot(color, lumConv);
+}
+
+float HDR_GetLogLum(in vec3 color){
+    return log(epsilon + HDR_GetLuminance(color));
+}
+
+float HDR_GetExpLum(in float lum){
+    return exp(lum);
+}
+
+vec3 HDR_ToneMap(in vec3 color, in float lumAvg, in float a, in float white){
+    white *= white;
+    float lumHDR = HDR_GetLuminance(color);
+    float L = (a / lumAvg) * lumHDR;
+    float Ld = 1.0 + (L / white);
+    Ld = (Ld * L) / (1.0 + L);
+    return (color / lumHDR) * Ld;
+    //return color * vec3(Ld);
+}
+
+vec3 HDR_ToneMap2(in vec3 color, in float lumAvg, in float a, in float white){
+    float scale = a / (lumAvg + 0.001);
+    return (vec3(scale) * color) / (color + vec3(1.0));
+}

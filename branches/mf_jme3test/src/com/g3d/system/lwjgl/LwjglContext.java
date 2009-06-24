@@ -7,7 +7,6 @@ import com.g3d.system.ContextListener;
 import com.g3d.system.G3DContext;
 import com.g3d.system.Timer;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.lwjgl.opengl.DisplayMode;
 
 /**
  * A LWJGL implementation of a graphics context.

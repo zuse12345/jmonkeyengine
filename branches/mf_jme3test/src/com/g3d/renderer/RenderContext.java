@@ -1,5 +1,6 @@
 package com.g3d.renderer;
 
+import com.g3d.material.RenderState;
 import com.g3d.scene.VertexBuffer;
 import com.g3d.texture.Texture;
 
@@ -12,12 +13,31 @@ public class RenderContext {
     /**
      * If back-face culling is enabled.
      */
-    public boolean cullingEnabled = false;
+    public RenderState.FaceCullMode cullMode = RenderState.FaceCullMode.Off;
 
     /**
      * If Depth testing is enabled.
      */
     public boolean depthTestEnabled = false;
+
+    public boolean alphaTestEnabled = false;
+
+    public boolean depthWriteEnabled = false;
+
+    public boolean colorWriteEnabled = true;
+
+    public boolean polyOffsetEnabled = false;
+    public float polyOffsetFactor = 0;
+    public float polyOffsetUnits = 0;
+
+    public int matrixMode = -1;
+
+    public RenderState.BlendMode blendMode = RenderState.BlendMode.Off;
+
+    /**
+     * If wireframe rendering is enabled. False if fill rendering is enabled.
+     */
+    public boolean wireframe = false;
 
     /**
      * The currently bound shader program.
@@ -33,6 +53,16 @@ public class RenderContext {
      * Currently bound Renderbuffer
      */
     public int boundRB = 0;
+
+    /**
+     * Currently bound draw buffer
+     * -2 = GL_NONE
+     * -1 = GL_BACK
+     *  0 = GL_COLOR_ATTACHMENT0
+     *  n = GL_COLOR_ATTACHMENTn
+     *  where n is an integer greater than 1
+     */
+    public int boundDrawBuf = -1;
 
     /**
      * Currently bound element array vertex buffer.

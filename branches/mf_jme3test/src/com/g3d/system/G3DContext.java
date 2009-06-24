@@ -95,6 +95,13 @@ public interface G3DContext {
     public Timer getTimer();
 
     /**
+     * Sets the title of the display (if available). This does nothing
+     * for fullscreen, headless, or canvas contexts.
+     * @param title The new title of the display.
+     */
+    public void setTitle(String title);
+
+    /**
      * @return True if the context has been created but not yet destroyed.
      */
     public boolean isCreated();

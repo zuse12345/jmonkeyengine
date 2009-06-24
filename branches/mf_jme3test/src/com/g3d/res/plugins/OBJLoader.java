@@ -246,7 +246,7 @@ public class OBJLoader implements ContentLoader {
     }
 
     @SuppressWarnings("empty-statement")
-    public Object load(ContentManager owner, InputStream in, String extension){
+    public Object load(ContentManager owner, InputStream in, String extension, ContentKey key){
         scan = new Scanner(in);
         while (readLine());
         return constructMesh();

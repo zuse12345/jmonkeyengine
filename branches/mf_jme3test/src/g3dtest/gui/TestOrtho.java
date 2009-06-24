@@ -4,7 +4,6 @@ import com.g3d.app.SimpleApplication;
 import com.g3d.renderer.Renderer;
 import com.g3d.scene.Node;
 import com.g3d.scene.Spatial.CullHint;
-import com.g3d.system.AppSettings;
 import com.g3d.ui.Picture;
 
 public class TestOrtho extends SimpleApplication {
@@ -13,7 +12,6 @@ public class TestOrtho extends SimpleApplication {
 
     public static void main(String[] args){
         TestOrtho app = new TestOrtho();
-        app.setSettings(new AppSettings(AppSettings.Template.Default320x240));
         app.start();
     }
 
@@ -22,8 +20,8 @@ public class TestOrtho extends SimpleApplication {
 
         Picture p = new Picture("Picture");
         p.setPosition(0, 0);
-        p.setWidth(640);
-        p.setHeight(480);
+        p.setWidth(settings.getWidth());
+        p.setHeight(settings.getHeight());
         p.setImage(manager, "Monkey.png", false);
 
         // attach geometry to orthoNode

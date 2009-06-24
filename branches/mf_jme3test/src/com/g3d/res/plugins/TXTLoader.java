@@ -1,5 +1,6 @@
 package com.g3d.res.plugins;
 
+import com.g3d.res.ContentKey;
 import com.g3d.res.ContentLoader;
 import com.g3d.res.ContentManager;
 import java.io.IOException;
@@ -8,7 +9,7 @@ import java.io.InputStreamReader;
 
 public class TXTLoader implements ContentLoader {
 
-    public Object load(ContentManager owner, InputStream in, String extension) throws IOException {
+    public Object load(ContentManager owner, InputStream in, String extension, ContentKey key) throws IOException {
         StringBuilder sb = new StringBuilder();
 
         InputStreamReader r = new InputStreamReader(in);

@@ -20,7 +20,8 @@ public class HDRLoader implements ContentLoader {
     private ByteBuffer rleTempBuffer;
     private ByteBuffer dataStore;
     
-    private static final Format imageFormat = Format.RGB32F;
+    private static Format imageFormat;
+    private static float maxBright = 10f;
 
     private static void convertRGBEtoFloat(byte[] rgbe, float[] store){
         if (rgbe.length != 4 || store.length != 3)
@@ -62,16 +63,22 @@ public class HDRLoader implements ContentLoader {
         }else if (imageFormat == Format.RGB16){
             float[] temp = new float[3];
             convertRGBEtoFloat(rgbe, temp);
-            dataStore.order(ByteOrder.BIG_ENDIAN);
-            dataStore.putShort((short)(temp[0] * Short.MAX_VALUE))
-                     .putShort((short)(temp[1] * Short.MAX_VALUE))
-                     .putShort((short)(temp[2] * Short.MAX_VALUE));
+//            dataStore.order(ByteOrder.LITTLE_ENDIAN);
+            short v = flip( (int)(temp[0] * maxBright) );
+            dataStore.putShort(v);
+            v = flip( (int)(temp[1] * maxBright) );
+            dataStore.putShort(v);
+            v = flip( (int)(temp[2] * maxBright) );
+            dataStore.putShort(v);
+
         }else if (imageFormat == Format.RGBA16){
             dataStore.putShort(flip(rgbe[0] * 255))
                      .putShort(flip(rgbe[1] * 255))
                      .putShort(flip(rgbe[2] * 255))
                      .putShort(flip(rgbe[3] * 255));
-        }else if (imageFormat == Format.RGB16F){
+        }else if (imageFormat == Format.RGB16F
+               || imageFormat == Format.RGB16F_to_RGB111110F
+               || imageFormat == Format.RGB16F_to_RGB9E5){
             float[] temp = new float[3];
             convertRGBEtoFloat(rgbe, temp);
             dataStore.putShort(FastMath.convertFloatToHalf(temp[0]))
@@ -186,7 +193,7 @@ public class HDRLoader implements ContentLoader {
         }
     }
     
-    public Object load(ContentManager owner, InputStream is, String extension) throws IOException {
+    public Object load(ContentManager owner, InputStream is, String extension, ContentKey key) throws IOException {
         float gamma = -1f;
         float exposure = -1f;
         float[] colorcorr = new float[]{ -1f, -1f, -1f };
@@ -252,11 +259,28 @@ public class HDRLoader implements ContentLoader {
         
         if (!verifiedFormat)
             logger.warning("Unsure if specified image is Radiance HDR");
-        
+
+        String formatStr = owner.getProperty("HDRFormat");
+        if (formatStr != null){
+            imageFormat = Format.valueOf(formatStr);
+        }else{
+            imageFormat = Format.RGB16F;
+        }
+
+        // some HDR images can get pretty big
+        System.gc();
+
         // each pixel times size of component times # of components
         dataStore = BufferUtils.createByteBuffer(width * height * imageFormat.getBitsPerPixel());
 
+        String flipImage = owner.getProperty("FlipImages");
+        boolean flip = flipImage != null && flipImage.equals("true");
+        int bytesPerPixel = imageFormat.getBitsPerPixel() / 8;
+        int scanLineBytes = bytesPerPixel * width;
         for (int y = height - 1; y >= 0; y--) {
+            if (flip)
+                dataStore.position(scanLineBytes * y);
+            
             decodeScanline(is, width);
         }
         

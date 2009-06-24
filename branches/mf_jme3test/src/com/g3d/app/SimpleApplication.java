@@ -1,16 +1,21 @@
 package com.g3d.app;
 
+import com.g3d.font.BitmapFont;
+import com.g3d.font.BitmapText;
 import com.g3d.input.FlyByCamera;
+import com.g3d.input.KeyInput;
 import com.g3d.input.binding.BindingListener;
+import com.g3d.material.RenderState;
+import com.g3d.math.Quaternion;
+import com.g3d.math.Vector3f;
+import com.g3d.renderer.Camera;
 import com.g3d.renderer.Renderer;
-import com.g3d.renderer.queue.RenderQueue;
-import com.g3d.scene.Geometry;
+import com.g3d.renderer.queue.RenderQueue.Bucket;
 import com.g3d.scene.Node;
-import com.g3d.scene.Spatial;
+import com.g3d.scene.Spatial.CullHint;
 import com.g3d.system.AppSettings;
 import com.g3d.system.AppSettings.Template;
-import java.util.List;
-import org.lwjgl.input.Keyboard;
+import java.net.URL;
 
 /**
  * <code>SimpleApplication</code> extends the <code>Application</code> class
@@ -20,28 +25,48 @@ import org.lwjgl.input.Keyboard;
 public abstract class SimpleApplication extends Application {
 
     protected Node rootNode = new Node("Root Node");
+    protected Node guiNode = new Node("Gui Node");
+
     protected float secondCounter = 0.0f;
+    protected BitmapText fpsText;
 
     protected FlyByCamera flyCam;
 
     public SimpleApplication(){
+        super();
+        
+        // set some default settings in-case
+        // settings dialog is not shown
         setSettings(new AppSettings(Template.Default640x480));
     }
 
-    protected void render(Spatial s, Renderer r){
-        if (!s.checkCulling(cam)){
-                return;
+    
+
+    @Override
+    public void start(){
+        // show settings dialog
+        URL iconUrl = SimpleApplication.class.getResource("Monkey.png");
+        SettingsDialog dialog = new SettingsDialog(settings, iconUrl);
+        dialog.showDialog();
+        if (dialog.waitForSelection() == SettingsDialog.CANCEL_SELECTION){
+            // user pressed cancel/exit
+            return;
         }
-        if (s instanceof Node){
-            Node n = (Node) s;
-            List<Spatial> children = n.getChildren();
-            for (int i = 0; i < children.size(); i++){
-                render(children.get(i), r);
-            }
-        }else if (s instanceof Geometry){
-            Geometry gm = (Geometry) s;
-            r.addToQueue(gm, RenderQueue.Bucket.Opaque);
-        }
+        
+        super.start();
+    }
+
+    public void loadFPSText(){
+        // enable image flipping for this font
+        String prevVal = manager.getProperty("FlipImages");
+        manager.setProperty("FlipImages", "true");
+        BitmapFont font = manager.loadFont("cooper.fnt");
+        manager.setProperty("FlipImages", prevVal);
+
+        fpsText = new BitmapText(font, false);
+        fpsText.setSize(font.getCharSet().getRenderedSize());
+        fpsText.setLocalTranslation(0, fpsText.getLineHeight(), 0);
+        guiNode.attachChild(fpsText);
     }
 
     @Override
@@ -49,19 +74,32 @@ public abstract class SimpleApplication extends Application {
         super.initialize();
 
         // enable depth test and back-face culling for performance
-        renderer.setDepthTest(true);
-        renderer.setBackfaceCulling(true);
+        renderer.applyRenderState(RenderState.DEFAULT);
+
+        guiNode.setQueueBucket(Bucket.Gui);
+        guiNode.setCullHint(CullHint.Never);
+        loadFPSText();
 
         if (dispatcher != null){
             flyCam = new FlyByCamera(cam);
             flyCam.setMoveSpeed(1f);
             flyCam.registerWithDispatcher(dispatcher);
         
-            dispatcher.registerKeyBinding("SIMPLEAPP_Exit", Keyboard.KEY_ESCAPE);
+            dispatcher.registerKeyBinding("SIMPLEAPP_Exit", KeyInput.KEY_ESCAPE);
+            dispatcher.registerKeyBinding("SIMPLEAPP_CameraPos", KeyInput.KEY_C);
             dispatcher.addTriggerListener(new BindingListener() {
                 public void onBinding(String binding, float value) {
                     if (binding.equals("SIMPLEAPP_Exit")){
                         stop();
+                    }else if (binding.equals("SIMPLEAPP_CameraPos")){
+                        Camera cam = renderer.getCamera();
+                        if (cam != null){
+                            Vector3f loc = cam.getLocation();
+                            Quaternion rot = cam.getRotation();
+                            System.out.println("Camera Position: ("+
+                                    loc.x+", "+loc.y+", "+loc.z+")");
+                            System.out.println("Camera Position: "+rot);
+                        }
                     }
                 }
             });
@@ -78,17 +116,20 @@ public abstract class SimpleApplication extends Application {
         float tpf = timer.getTimePerFrame();
 
         secondCounter += tpf;
-        float fps = timer.getFrameRate();
+        int fps = (int) timer.getFrameRate();
         if (secondCounter >= 1.0f){
-//            System.out.println(fps);
+            fpsText.setText("FPS: "+fps);
+            fpsText.assemble();
             secondCounter = 0.0f;
         }
         
         simpleUpdate(tpf);
         rootNode.updateGeometricState(tpf, true);
+        guiNode.updateGeometricState(tpf, true);
 
         renderer.clearBuffers(true, true, true);
         render(rootNode, renderer);
+        render(guiNode, renderer);
         simpleRender(renderer);
         renderer.renderQueue();
     }

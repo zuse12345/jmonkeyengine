@@ -37,16 +37,18 @@
     Covers version ${product.version}.
     <BR/>
     <p>
-    This document explains the constraints that your scene must satisfy in
-    order to be exported; it describes the steps needed to create and
-    export a conventional Blender Skin &amp; Bones animation;
-    and it describes some important, non-intuitive aspects of this exporter and
-    of Skin &amp; Bones animation in general.
+    This document <ol>
+      <li>explains the constraints that your scene must satisfy in
+      order to be exported
+      <li>describes the steps needed to create and export a conventional
+      Blender Skin &amp; Bones animation
+      <li>Lists some important, non-intuitive aspects of this exporter
+      and of Skin &amp; Bones animation in general.
+    </ol>
     </p> <p>
     The exporter supports many Armature use cases in addition to the one
-    described here.
-    I intend to write tutorials covering the most useful of these, so look
-    for them <A target="other_frame"
+    described here.  I intend to write tutorials covering the most useful of
+    these, so look for them <A target="other_frame"
     href="http://www.jmonkeyengine.com/wiki/doku.php?id=the_tutorials_-_jme_2">
     on the jME Wiki</A>.
     </p>
@@ -270,16 +272,16 @@
   </ol>
     <HR/>
     <h4>Tips</h4>
-    <p>
-      If you move bones without an animation controller, like with
+    <ul>
+      <li>If you move bones without an animation controller, like with
       <code>Spatial.setLocal*()</code>, you must run<pre><code>
           skinNode.boneChained(null);
       </code></pre> on the corresponding
       <code>com.jme.animation.SkinNode</code> in order for the skin to update
       accordingly.
-    </p> <p>
+    <li>
       Use the Bone Debugger in jME to examine and learn to use your skeletons.
-    </p> <p>
+    <li>
       To see what leaf bones are really doing, you will need to add dummy leaf
       bones to your skeleton in Blender.
       This is because jME only loads information about a single location of a
@@ -291,7 +293,7 @@
       invisible.
       You have to turn it off from both Edit and Pose modes in order for it to
       always be invisible.
-    </p> <p>
+    <li>
       If you examine the bones on the jME side, you may notice that the
       exporter adds an extra root bone above the Blender bones.
       From the jME perspective, this is the skeleton's <i>root bone</i>.
@@ -305,15 +307,23 @@
       Debugger, because the root bone will lay right on top of it.
       In this case, if you apply a translation to the root bone, the
       <i>Super Bone</i> will appear.
-    </p> <p>
+    <li>
+      Your actions/animations will be accessed from jME through a
+      <code>com.jme.animation.AnimationController</code> of the automatically
+      created <i>Super Bone</i>.  As described in the previous item, the
+      <i>Super Bone</i> node is a child of the node corresponding to your
+      Blender Armature, and parent of the Blender root bones.
+      This <code>AnimationController</code> can select and control
+      <code>com.jme.animation.BoneAnimation</code>s, one for each Blender
+      Action (and named from same).
+    <li>
       Remember that to use the Blender Weight Painter, you must have the
       Armature in Pose mode before setting the skin mesh to Weight Painter mode.
-    </p> <p>
+    <li>
       Very similarly to the previous paragraph, in order to parent a skin mesh
       to a bone (as opposed to the Armature Object or the Armature itself), you
       must put the Armature into pose mode, then parent the skin mesh object to
       the Armature object.
-    </p>
     <HR/>
     <DIV class="footer">
       $Revision$

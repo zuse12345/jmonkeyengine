@@ -4,10 +4,12 @@ import com.g3d.math.Eigen3f;
 import com.g3d.math.Matrix4f;
 import com.g3d.math.Matrix3f;
 import com.g3d.math.Quaternion;
+import com.g3d.math.Triangle;
 import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 /**
@@ -36,6 +38,12 @@ public class TempVars {
      */
     public final IntBuffer intBuffer1 = BufferUtils.createIntBuffer(1);
     public final IntBuffer intBuffer16 = BufferUtils.createIntBuffer(16);
+    public final FloatBuffer floatBuffer16 = BufferUtils.createFloatBuffer(16);
+
+    /**
+     * Fetching triangle from mesh
+     */
+    public final Triangle triangle = new Triangle();
 
     /**
      * General vectors.

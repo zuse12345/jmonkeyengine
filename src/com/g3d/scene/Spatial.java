@@ -20,6 +20,8 @@ import com.g3d.math.Quaternion;
 import com.g3d.math.Transform;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
+import com.g3d.renderer.queue.RenderQueue;
+import com.g3d.renderer.queue.RenderQueue.ShadowMode;
 import com.g3d.util.TempVars;
 import java.io.IOException;
 
@@ -88,6 +90,10 @@ public abstract class Spatial implements Savable {
 
     // scale values
     protected transient Camera.FrustumIntersect frustrumIntersects = Camera.FrustumIntersect.Intersects;
+
+    protected RenderQueue.Bucket queueBucket = RenderQueue.Bucket.Inherit;
+
+    protected ShadowMode shadowMode = RenderQueue.ShadowMode.Inherit;
 
     public transient float queueDistance = Float.NEGATIVE_INFINITY;
 
@@ -376,43 +382,35 @@ public abstract class Spatial implements Savable {
         }
     }
 
-//    /**
-//     * Convert a vector (in) from this spatials local coordinate space to world
-//     * coordinate space.
-//     *
-//     * @param in
-//     *            vector to read from
-//     * @param store
-//     *            where to write the result (null to create a new vector, may be
-//     *            same as in)
-//     * @return the result (store)
-//     */
-//    public Vector3f localToWorld(final Vector3f in, Vector3f store) {
-//        if (store == null)
-//            store = new Vector3f();
-//        // multiply with scale first, then rotate, finally translate (cf.
-//        // Eberly)
-//        return getWorldRotation().mult(
-//                store.set(in).multLocal(getWorldScale()), store).addLocal(
-//                getWorldTranslation());
-//    }
-//
-//    /**
-//     * Convert a vector (in) from world coordinate space to this spatials local
-//     * coordinate space.
-//     *
-//     * @param in
-//     *            vector to read from
-//     * @param store
-//     *            where to write the result
-//     * @return the result (store)
-//     */
-//    public Vector3f worldToLocal(final Vector3f in, final Vector3f store) {
-//        in.subtract(getWorldTranslation(), store).divideLocal(getWorldScale());
-//        getWorldRotation().inverse().mult(store, store);
-//        return store;
-//    }
-//
+    /**
+     * Convert a vector (in) from this spatials local coordinate space to world
+     * coordinate space.
+     *
+     * @param in
+     *            vector to read from
+     * @param store
+     *            where to write the result (null to create a new vector, may be
+     *            same as in)
+     * @return the result (store)
+     */
+    public Vector3f localToWorld(final Vector3f in, Vector3f store) {
+        return worldTransform.transformVector(in, store);
+    }
+
+    /**
+     * Convert a vector (in) from world coordinate space to this spatials local
+     * coordinate space.
+     *
+     * @param in
+     *            vector to read from
+     * @param store
+     *            where to write the result
+     * @return the result (store)
+     */
+    public Vector3f worldToLocal(final Vector3f in, final Vector3f store) {
+        return worldTransform.transformInverseVector(in, store);
+    }
+
     /**
      * <code>getParent</code> retrieve's this node's parent. If the parent is
      * null this is the root node.
@@ -658,20 +656,29 @@ public abstract class Spatial implements Savable {
     }
 
 
-//    /**
-//     * Returns this spatial's renderqueue mode. If the mode is set to inherit,
-//     * then the spatial gets its renderqueue mode from its parent.
-//     *
-//     * @return The spatial's current renderqueue mode.
-//     */
-//    public int getRenderQueueMode() {
-//        if (renderQueueMode != Renderer.QUEUE_INHERIT)
-//            return renderQueueMode;
-//        else if (parent != null)
-//            return parent.getRenderQueueMode();
-//        else
-//            return Renderer.QUEUE_SKIP;
-//    }
+    /**
+     * Returns this spatial's renderqueue bucket. If the mode is set to inherit,
+     * then the spatial gets its renderqueue bucket from its parent.
+     *
+     * @return The spatial's current renderqueue mode.
+     */
+    public RenderQueue.Bucket getQueueBucket() {
+        if (queueBucket != RenderQueue.Bucket.Inherit)
+            return queueBucket;
+        else if (parent != null)
+            return parent.getQueueBucket();
+        else
+            return RenderQueue.Bucket.Opaque;
+    }
+
+    public RenderQueue.ShadowMode getShadowMode() {
+        if (shadowMode != RenderQueue.ShadowMode.Inherit)
+            return shadowMode;
+        else if (parent != null)
+            return parent.getShadowMode();
+        else
+            return ShadowMode.Off;
+    }
 
 //
 //    /**
@@ -689,25 +696,6 @@ public abstract class Spatial implements Savable {
 //            return NormalsMode.NormalizeIfScaled;
 //    }
 //
-//    /**
-//     * Called during updateRenderState(Stack[]), this function goes up the scene
-//     * graph tree until the parent is null and pushes RenderStates onto the
-//     * states Stack array.
-//     *
-//     * @param states
-//     *            The Stack[] to push states onto.
-//     */
-//    @SuppressWarnings("unchecked")
-//    public void propagateStatesFromRoot(Stack[] states) {
-//        // traverse to root to allow downward state propagation
-//        if (parent != null)
-//            parent.propagateStatesFromRoot(states);
-//
-//        // push states onto current render state stack
-//        for (int x = 0; x < RenderState.RS_MAX_STATE; x++)
-//            if (getRenderState(x) != null)
-//                states[x].push(getRenderState(x));
-//    }
 //    /**
 //     * <code>calculateCollisions</code> calls findCollisions to populate the
 //     * CollisionResults object then processes the collision results.
@@ -878,16 +866,6 @@ public abstract class Spatial implements Savable {
         return worldBound;
     }
 
-//    /**
-//     * <code>draw</code> abstract method that handles drawing data to the
-//     * renderer if it is geometry and passing the call to it's children if it is
-//     * a node.
-//     *
-//     * @param r
-//     *            the renderer used for display.
-//     */
-//    public abstract void draw(Renderer r);
-
     /**
      * <code>setCullHint</code> sets how scene culling should work on this
      * spatial during drawing. CullHint.Dynamic: Determine via the defined
@@ -914,49 +892,43 @@ public abstract class Spatial implements Savable {
     }
 
     /**
-     * <code>updateWorldBound</code> updates the bounding volume of the world.
-     * Abstract, geometry transforms the bound while node merges the children's
-     * bound. In most cases, users will want to call updateModelBound() and let
-     * this function be called automatically during updateGeometricState().
+     * <code>setQueueBucket</code> determines at what phase of the
+     * rendering proces this Spatial will rendered. There are 4 different
+     * phases: Bucket.Opaque - The renderer will
+     * try to find the optimal order for rendering all objects using this mode.
+     * You should use this mode for most normal objects, except transparant
+     * ones, as it could give a nice performance boost to your application.
+     * Bucket.Transparent - This is the mode you should use for object with
+     * transparancy in them. It will ensure the objects furthest away are
+     * rendered first. That ensures when another transparent object is drawn on
+     * top of previously drawn objects, you can see those (and the object drawn
+     * using Opaque) through the tranparant parts of the newly drawn
+     * object. Bucket.Gui - This is a special mode, for drawing 2D object
+     * without prespective (such as GUI or HUD parts) Lastly, there is a special
+     * mode, Bucket.Inherit, that will ensure that this spatial uses the same
+     * mode as the parent Node does.
+     *
+     * @param queueBucket
+     *            The bucket to use for this Spatial.
      */
-//    public abstract void updateWorldBound();
+    public void setQueueBucket(RenderQueue.Bucket queueBucket) {
+        this.queueBucket = queueBucket;
+    }
 
-//
-//    public void sortLights() {
-//    }
-//
-//
-//    /**
-//     * <code>setRenderQueueMode</code> determines at what phase of the
-//     * rendering proces this Spatial will rendered. There are 4 different
-//     * phases: QUEUE_SKIP - The spatial will be drawn as soon as possible,
-//     * before the other phases of rendering. QUEUE_OPAQUE - The renderer will
-//     * try to find the optimal order for rendering all objects using this mode.
-//     * You should use this mode for most normal objects, except transparant
-//     * ones, as it could give a nice performance boost to your application.
-//     * QUEUE_TRANSPARENT - This is the mode you should use for object with
-//     * transparancy in them. It will ensure the objects furthest away are
-//     * rendered first. That ensures when another transparent object is drawn on
-//     * top of previously drawn objects, you can see those (and the object drawn
-//     * using SKIP and OPAQUE) through the tranparant parts of the newly drawn
-//     * object. QUEUE_ORTHO - This is a special mode, for drawing 2D object
-//     * without prespective (such as GUI or HUD parts) Lastly, there is a special
-//     * mode, QUEUE_INHERIT, that will ensure that this spatial uses the same
-//     * mode as the parent Node does.
-//     *
-//     * @param renderQueueMode
-//     *            The mode to use for this Spatial.
-//     */
-//    public void setRenderQueueMode(int renderQueueMode) {
-//        this.renderQueueMode = renderQueueMode;
-//    }
-//
-//    /**
-//     * @return
-//     */
-//    public int getLocalRenderQueueMode() {
-//        return renderQueueMode;
-//    }
+    public void setShadowMode(RenderQueue.ShadowMode shadowMode){
+        this.shadowMode = shadowMode;
+    }
+
+    /**
+     * @return
+     */
+    public RenderQueue.Bucket getLocalQueueBucket() {
+        return queueBucket;
+    }
+
+    public RenderQueue.ShadowMode getLocalShadowMode() {
+        return shadowMode;
+    }
 //
 //    /**
 //     * @param zOrder

@@ -35,6 +35,7 @@ package com.g3d.bounding;
 import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
 import com.g3d.export.Savable;
+import com.g3d.math.Matrix4f;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 
@@ -115,6 +116,9 @@ public abstract class BoundingVolume implements Savable {
 	 * @return the new bounding volume.
 	 */
 	public abstract BoundingVolume transform(Transform trans, BoundingVolume store);
+
+
+    public abstract BoundingVolume transform(Matrix4f trans, BoundingVolume store);
 
 	/**
 	 * 

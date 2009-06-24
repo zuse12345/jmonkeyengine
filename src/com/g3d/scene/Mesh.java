@@ -1,15 +1,12 @@
 package com.g3d.scene;
 
 import com.g3d.bounding.BoundingBox;
-import com.g3d.bounding.BoundingSphere;
 import com.g3d.bounding.BoundingVolume;
 import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
-import com.g3d.export.InputCapsule;
 import com.g3d.export.OutputCapsule;
 import com.g3d.export.Savable;
 import com.g3d.math.Triangle;
-import com.g3d.math.Vector3f;
 import com.g3d.scene.VertexBuffer.*;
 import com.g3d.util.BufferUtils;
 import java.io.IOException;
@@ -18,9 +15,18 @@ import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.Collection;
 import java.util.EnumMap;
-import java.util.Iterator;
 
 public class Mesh implements Savable {
+
+    public enum Mode {
+        Points,
+        Lines,
+        LineLoop,
+        LineStrip,
+        Triangles,
+        TriangleStrip,
+        TriangleFan,
+    }
 
     /**
      * The bounding volume that contains the mesh entirely.
@@ -32,7 +38,20 @@ public class Mesh implements Savable {
 
     private transient int vertexArrayID = -1;
 
+    private int vertCount = -1;
+    private int elementCount = -1;
+
+    private Mode mode = Mode.Triangles;
+
     public Mesh(){
+    }
+
+    public Mode getMode() {
+        return mode;
+    }
+
+    public void setMode(Mode mode) {
+        this.mode = mode;
     }
 
     /**
@@ -51,10 +70,95 @@ public class Mesh implements Savable {
         }
     }
 
+    /**
+     * Converts all single floating-point vertex buffers
+     * into half percision floating-point. Reduces memory and bandwidth
+     * when sending to GPU, but may cause percision issues with large values.
+     */
     public void convertToHalf() {
         for (VertexBuffer vb : buffers.values()){
             if (vb.getFormat() == Format.Float)
                 vb.convertToHalf();
+        }
+    }
+
+    public void updateCounts(){
+        VertexBuffer pb = getBuffer(Type.Position);
+        VertexBuffer ib = getBuffer(Type.Index);
+        if (pb != null){
+            vertCount = pb.getData().capacity() / 3;
+        }
+        if (ib != null){
+            switch (mode){
+                case Triangles:
+                    elementCount = ib.getData().capacity() / 3;
+                case TriangleFan:
+                case TriangleStrip:
+                    elementCount = ib.getData().capacity() - 2;
+                case Points:
+                    elementCount = ib.getData().capacity();
+                case Lines:
+                    elementCount = ib.getData().capacity() / 2;
+                case LineLoop:
+                    elementCount = ib.getData().capacity();
+                case LineStrip:
+                    elementCount = ib.getData().capacity() - 1;
+            }
+            
+        }
+    }
+
+    public int getTriangleCount(){
+        return elementCount;
+    }
+
+    public int getVertexCount(){
+        return vertCount;
+    }
+
+    public void setTriangleCount(int count){
+        this.elementCount = count;
+    }
+
+    public void setVertexCount(int count){
+        this.vertCount = count;
+    }
+
+    public void getTriangle(int index, Triangle store){
+        VertexBuffer pb = getBuffer(Type.Position);
+        VertexBuffer ib = getBuffer(Type.Index);
+
+        if (pb.getFormat() == Format.Float){
+            FloatBuffer fpb = (FloatBuffer) pb.getData();
+
+            if (ib.getFormat() == Format.Short){
+                // accepted format for buffers
+                ShortBuffer sib = (ShortBuffer) ib.getData();
+
+                // aquire triangle's vertex indices
+                int vertIndex = index * 3;
+                int vert1 = sib.get(vertIndex);
+                int vert2 = sib.get(vertIndex+1);
+                int vert3 = sib.get(vertIndex+2);
+
+                BufferUtils.populateFromBuffer(store.get(0), fpb, vert1);
+                BufferUtils.populateFromBuffer(store.get(1), fpb, vert2);
+                BufferUtils.populateFromBuffer(store.get(2), fpb, vert3);
+            }
+        }
+    }
+
+    public void getTriangle(int index, int[] indices){
+        VertexBuffer ib = getBuffer(Type.Index);
+        if (ib.getFormat() == Format.Short){
+            // accepted format for buffers
+            ShortBuffer sib = (ShortBuffer) ib.getData();
+
+            // aquire triangle's vertex indices
+            int vertIndex = index * 3;
+            indices[0] = sib.get(vertIndex);
+            indices[1] = sib.get(vertIndex+1);
+            indices[2] = sib.get(vertIndex+2);
         }
     }
 
@@ -83,6 +187,7 @@ public class Mesh implements Savable {
         }else{
             vb.setupData(Usage.Dynamic, components, Format.Float, buf);
         }
+        updateCounts();
     }
 
     public void setBuffer(Type type, int components, float[] buf){
@@ -95,6 +200,7 @@ public class Mesh implements Savable {
             vb = new VertexBuffer(type);
             vb.setupData(Usage.Dynamic, components, Format.UnsignedInt, buf);
             buffers.put(type, vb);
+            updateCounts();
         }
     }
 
@@ -108,6 +214,7 @@ public class Mesh implements Savable {
             vb = new VertexBuffer(type);
             vb.setupData(Usage.Dynamic, components, Format.UnsignedShort, buf);
             buffers.put(type, vb);
+            updateCounts();
         }
     }
 

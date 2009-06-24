@@ -2,6 +2,7 @@ MaterialDef Plain Texture {
 
     MaterialParameters {
         Texture2D m_ColorMap
+        Boolean m_YCoCg
     }
 
     Technique {
@@ -10,6 +11,10 @@ MaterialDef Plain Texture {
 
         WorldParameters {
             WorldViewProjectionMatrix
+        }
+
+        Defines {
+            DXT_YCOCG : m_YCoCg
         }
     }
 

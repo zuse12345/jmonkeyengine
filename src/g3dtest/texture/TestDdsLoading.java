@@ -5,7 +5,7 @@ import com.g3d.scene.Geometry;
 import com.g3d.app.SimpleApplication;
 import com.g3d.material.Material;
 import com.g3d.math.ColorRGBA;
-import com.g3d.scene.Quad;
+import com.g3d.scene.shape.Quad;
 import com.g3d.system.AppSettings;
 import com.g3d.texture.Texture;
 
@@ -13,7 +13,6 @@ public class TestDdsLoading extends SimpleApplication {
 
     public static void main(String[] args){
         TestDdsLoading app = new TestDdsLoading();
-        app.setSettings(new AppSettings(AppSettings.Template.Default640x480));
         app.start();
     }
 
@@ -25,8 +24,8 @@ public class TestDdsLoading extends SimpleApplication {
         Geometry quad = new Geometry("Textured Quad", quadMesh);
         quad.updateModelBound();
         
-        Texture tex = manager.loadTexture("Monkey.dds");
-        
+        Texture tex = manager.loadTexture("Monkey.DDS");
+
         Material mat = new Material(manager, "plain_texture.j3md");
         mat.setTexture("m_ColorMap", tex);
         quad.setMaterial(mat);

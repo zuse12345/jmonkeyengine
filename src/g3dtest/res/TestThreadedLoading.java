@@ -9,7 +9,7 @@ import com.g3d.app.SimpleApplication;
 import com.g3d.material.Material;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
-import com.g3d.scene.Quad;
+import com.g3d.scene.shape.Quad;
 import com.g3d.system.AppSettings;
 import com.g3d.texture.Texture;
 import java.util.concurrent.ExecutionException;

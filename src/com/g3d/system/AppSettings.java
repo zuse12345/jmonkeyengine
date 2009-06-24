@@ -1,5 +1,6 @@
 package com.g3d.system;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 public class AppSettings extends HashMap<String, Object> {
@@ -18,12 +19,15 @@ public class AppSettings extends HashMap<String, Object> {
         defaults.put("DepthBits", 24);
         defaults.put("StencilBits", 0);
         defaults.put("Samples", 0);
-        defaults.put("VSync", false);
         defaults.put("Fullscreen", false);
         defaults.put("Title", G3DSystem.getFullName());
-        defaults.put("Renderer", JOGL);
+        defaults.put("Renderer", LWJGL_OPENGL2);
         defaults.put("DisableJoysticks", true);
         defaults.put("UseInput", true);
+
+        // disable these settings to benchmark speed
+        defaults.put("VSync", false);
+        defaults.put("FrameRate", -1);
     }
 
     private Template template;
@@ -80,6 +84,8 @@ public class AppSettings extends HashMap<String, Object> {
         this.template = other.template;
     }
 
+    public void save() throws IOException{
+    }
 
     public int getInteger(String key){
         Integer i = (Integer) get(key);
@@ -115,6 +121,10 @@ public class AppSettings extends HashMap<String, Object> {
 
     public void putString(String key, String value){
         put(key, value);
+    }
+
+    public void setFrameRate(int frameRate){
+        putInteger("FrameRate", frameRate);
     }
 
     public void setUseInput(boolean use){
@@ -160,6 +170,10 @@ public class AppSettings extends HashMap<String, Object> {
 
     public void setVSync(boolean value){
         putBoolean("VSync", value);
+    }
+
+    public int getFrameRate(){
+        return getInteger("FrameRate");
     }
 
     public boolean useInput(){

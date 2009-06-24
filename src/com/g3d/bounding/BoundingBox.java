@@ -41,11 +41,13 @@ import java.nio.FloatBuffer;
 
 import com.g3d.math.FastMath;
 import com.g3d.math.Matrix3f;
+import com.g3d.math.Matrix4f;
 import com.g3d.math.Plane;
 import com.g3d.math.Ray;
 import com.g3d.math.Transform;
 import com.g3d.math.Triangle;
 import com.g3d.math.Vector3f;
+import com.g3d.scene.Mesh;
 import com.g3d.util.BufferUtils;
 import com.g3d.util.TempVars;
 //import com.jme.scene.TriMesh;
@@ -134,33 +136,37 @@ public class BoundingBox extends BoundingVolume {
         zExtent = max.z - center.z;
     }
     
-//    public void computeFromTris(int[] indices, Mesh mesh, int start, int end) {
-//    	if (end - start <= 0) {
-//            return;
-//        }
-//
-//        TempVars vars = TempVars.get();
-//    	Vector3f min = vars.compVect1.set(new Vector3f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY));
-//        Vector3f max = vars.compVect2.set(new Vector3f(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY));
-//        Vector3f point;
-//
-//        for (int i = start; i < end; i++) {
-//        	mesh.getTriangle(indices[i], verts);
-//        	point = verts[0];
-//            checkMinMax(min, max, point);
-//            point = verts[1];
-//            checkMinMax(min, max, point);
-//            point = verts[2];
-//            checkMinMax(min, max, point);
-//        }
-//
-//        center.set(min.addLocal(max));
-//        center.multLocal(0.5f);
-//
-//        xExtent = max.x - center.x;
-//        yExtent = max.y - center.y;
-//        zExtent = max.z - center.z;
-//    }
+    public void computeFromTris(int[] indices, Mesh mesh, int start, int end) {
+    	if (end - start <= 0) {
+            return;
+        }
+
+        TempVars vars = TempVars.get();
+        Vector3f vect1 = vars.vect1;
+        Vector3f vect2 = vars.vect2;
+        Triangle triangle = vars.triangle;
+
+    	Vector3f min = vect1.set(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY);
+        Vector3f max = vect2.set(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
+        Vector3f point;
+
+        for (int i = start; i < end; i++) {
+        	mesh.getTriangle(indices[i], triangle);
+        	point = triangle.get(0);
+            checkMinMax(min, max, point);
+            point = triangle.get(1);
+            checkMinMax(min, max, point);
+            point = triangle.get(2);
+            checkMinMax(min, max, point);
+        }
+
+        center.set(min.addLocal(max));
+        center.multLocal(0.5f);
+
+        xExtent = max.x - center.x;
+        yExtent = max.y - center.y;
+        zExtent = max.z - center.z;
+    }
 
     private void checkMinMax(Vector3f min, Vector3f max, Vector3f point) {
         if (point.x < min.x)
@@ -264,6 +270,35 @@ public class BoundingBox extends BoundingVolume {
         box.xExtent = FastMath.abs(vars.vect2.getX());
         box.yExtent = FastMath.abs(vars.vect2.getY());
         box.zExtent = FastMath.abs(vars.vect2.getZ());
+
+        return box;
+    }
+
+    public BoundingVolume transform(Matrix4f trans, BoundingVolume store){
+        BoundingBox box;
+        if (store == null || store.getType() != Type.AABB) {
+            box = new BoundingBox();
+        } else {
+            box = (BoundingBox) store;
+        }
+        TempVars vars = TempVars.get();
+
+        float w = trans.multProj(center, box.center);
+        box.center.divideLocal(w);
+
+        Matrix3f transMatrix = vars.tempMat3;
+        trans.toRotationMatrix(transMatrix);
+
+        // Make the rotation matrix all positive to get the maximum x/y/z extent
+        transMatrix.absoluteLocal();
+
+        vars.vect1.set(xExtent, yExtent, zExtent);
+        transMatrix.mult(vars.vect1, vars.vect1);
+        
+        // Assign the biggest rotations after scales.
+        box.xExtent = FastMath.abs(vars.vect1.getX());
+        box.yExtent = FastMath.abs(vars.vect1.getY());
+        box.zExtent = FastMath.abs(vars.vect1.getZ());
 
         return box;
     }
@@ -765,6 +800,34 @@ public class BoundingBox extends BoundingVolume {
             store = new Vector3f();
         }
         store.set(xExtent, yExtent, zExtent);
+        return store;
+    }
+
+    public float getXExtent(){
+        return xExtent;
+    }
+
+    public float getYExtent(){
+        return yExtent;
+    }
+
+    public float getZExtent(){
+        return zExtent;
+    }
+
+    public Vector3f getMin(Vector3f store){
+        if (store == null) {
+            store = new Vector3f();
+        }
+        store.set(center).subtractLocal(xExtent, yExtent, zExtent);
+        return store;
+    }
+
+    public Vector3f getMax(Vector3f store){
+        if (store == null) {
+            store = new Vector3f();
+        }
+        store.set(center).addLocal(xExtent, yExtent, zExtent);
         return store;
     }
 

@@ -10,22 +10,6 @@ import java.util.Map;
 
 public class Shader extends GLObject {
 
-    public static final Shader DEFAULT_GLSL = new Shader("GLSL100");
-
-    static {
-        DEFAULT_GLSL.addSource(ShaderType.Vertex,
-                          "uniform mat4 g_WorldViewProjectionMatrix;\n" +
-                          "in vec4 inPosition;\n" +
-                          "\n" +
-                          "void main(){\n" +
-                          "    gl_Position = g_WorldViewProjectionMatrix * inPosition;\n" +
-                          "}\n");
-        DEFAULT_GLSL.addSource(ShaderType.Fragment,
-                          "void main(){\n" +
-                          "   gl_FragColor = vec4(1.0);\n" +
-                          "}\n");
-    }
-
     private String language;
 
     /**
@@ -73,30 +57,28 @@ public class Shader extends GLObject {
      * Shader source describes a shader object in OpenGL. Each shader source
      * is assigned a certain pipeline which it controls (described by it's type).
      */
-    public class ShaderSource {
+    public class ShaderSource extends GLObject {
 
         final ShaderType shaderType;
-//        final Shader parent;
 
         boolean usable = false;
+        String name = null;
         String source = null;
-//        String name = "Untitled";
+        String defines = null;
 
-        int id = -1;
-
-        public ShaderSource(Shader parent, ShaderType type){
+        public ShaderSource(ShaderType type){
+            super(Type.ShaderSource);
             this.shaderType = type;
             if (type == null)
                 throw new NullPointerException("The shader type must be specified");
-//            this.parent = parent;
         }
 
-        public int getId(){
-            return id;
+        public void setName(String name){
+            this.name = name;
         }
 
-        public void setId(int id){
-            this.id = id;
+        public String getName(){
+            return name;
         }
 
         public ShaderType getType() {
@@ -108,15 +90,23 @@ public class Shader extends GLObject {
                 throw new NullPointerException("Shader source cannot be null");
 
             this.source = source;
-            updateNeeded = true;
+            setUpdateNeeded();
         }
 
-//        public void setName(String name){
-//            this.name = name;
-//        }
+        public void setDefines(String defines){
+            if (defines == null)
+                throw new NullPointerException("Shader defines cannot be null");
+
+            this.defines = defines;
+            setUpdateNeeded();
+        }
 
         public String getSource(){
             return source;
+        }
+
+        public String getDefines(){
+            return defines;
         }
         
         public boolean isUsable(){
@@ -126,10 +116,28 @@ public class Shader extends GLObject {
         public void setUsable(boolean usable){
             this.usable = usable;
         }
-        
-        public void reset(){
+
+        @Override
+        public String toString(){
+            String nameTxt = "";
+            if (name != null)
+                nameTxt = "name="+name+", ";
+            if (defines != null)
+                nameTxt += "defines, ";
+            
+
+            return getClass().getSimpleName() + "["+nameTxt+"type="
+                                              + shaderType.name()+"]";
+        }
+
+        public void resetObject(){
             id = -1;
             usable = false;
+            setUpdateNeeded();
+        }
+
+        public void deleteObject(Renderer r){
+            r.deleteShaderSource(this);
         }
     }
 
@@ -142,17 +150,61 @@ public class Shader extends GLObject {
     }
 
     /**
+     * Creates a deep clone of the shader, where the sources are available
+     * but have not been compiled yet. Does not copy the uniforms or attribs.
+     * @return
+     */
+//    public Shader createDeepClone(String defines){
+//        Shader newShader = new Shader(language);
+//        for (ShaderSource source : shaderList){
+//            if (!source.getDefines().equals(defines)){
+//                // need to clone the shadersource so
+//                // the correct defines can be placed
+//                ShaderSource newSource = new ShaderSource(source.getType());
+//                newSource.setSource(source.getSource());
+//                newSource.setDefines(defines);
+//                newShader.addSource(newSource);
+//            }else{
+//                // no need to clone source, also saves
+//                // having to compile the shadersource
+//                newShader.addSource(source);
+//            }
+//        }
+//        return newShader;
+//    }
+
+    /**
      * Adds source code to a certain pipeline.
      *
      * @param type The pipeline to control
      * @param source The shader source code (in GLSL).
      */
-    public void addSource(ShaderType type, String source){
-        ShaderSource shader = new ShaderSource(this, type);
-
+    public void addSource(ShaderType type, String name, String source, String defines){
+        ShaderSource shader = new ShaderSource(type);
         shader.setSource(source);
+        shader.setName(name);
+        if (defines != null)
+            shader.setDefines(defines);
+        
         shaderList.add(shader);
-        updateNeeded = true;
+        setUpdateNeeded();
+    }
+
+    public void addSource(ShaderType type, String source, String defines){
+        addSource(type, null, source, defines);
+    }
+
+    public void addSource(ShaderType type, String source){
+        addSource(type, source, null);
+    }
+
+    /**
+     * Adds an existing shader source to this shader.
+     * @param source
+     */
+    public void addSource(ShaderSource source){
+        shaderList.add(source);
+        setUpdateNeeded();
     }
 
     public Uniform getUniform(String name){
@@ -181,6 +233,12 @@ public class Shader extends GLObject {
 
     public Collection<ShaderSource> getSources(){
         return shaderList;
+    }
+
+    public String toString(){
+        return getClass().getSimpleName() + "[language="+language
+                                           + ", numSources="+shaderList.size()
+                                           + ", numUniforms="+uniforms.size()+"]";
     }
 
     /**
@@ -218,10 +276,7 @@ public class Shader extends GLObject {
         this.id = -1;
         this.usable = false;
         setUpdateNeeded();
-        for (ShaderSource source : shaderList){
-            source.id = -1;
-            source.usable = false;
-        }
+        // NOTE: Shader sources will be reset seperately from the shader itself.
         for (Uniform uniform : uniforms.values()){
             uniform.location = -1;
         }

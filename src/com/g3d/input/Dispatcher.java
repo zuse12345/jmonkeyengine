@@ -56,7 +56,7 @@ public class Dispatcher implements RawInputListener {
             throw new IllegalArgumentException("Mouse and key input cannot be null");
 
         this.keyInput = keyInput;
-        keyboard = new boolean[keyInput.getKeyCount()];
+        keyboard = new boolean[255];
         keyInput.setInputListener(this);
 
         this.mouseInput = mouseInput;

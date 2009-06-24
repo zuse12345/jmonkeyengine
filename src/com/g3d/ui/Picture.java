@@ -3,9 +3,10 @@ package com.g3d.ui;
 import com.g3d.bounding.BoundingBox;
 import com.g3d.material.Material;
 import com.g3d.math.Vector3f;
+import com.g3d.renderer.queue.RenderQueue.Bucket;
 import com.g3d.res.ContentManager;
 import com.g3d.scene.Geometry;
-import com.g3d.scene.Quad;
+import com.g3d.scene.shape.Quad;
 import com.g3d.texture.Texture2D;
 
 /**
@@ -21,6 +22,7 @@ public class Picture extends Geometry {
 
     public Picture(String name){
         super(name, new Quad(1, 1, false));
+        setQueueBucket(Bucket.Gui);
         setCullHint(CullHint.Never);
     }
 

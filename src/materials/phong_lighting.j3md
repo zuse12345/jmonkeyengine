@@ -5,6 +5,7 @@ MaterialDef Phong Lighting {
         Texture2D m_DiffuseMap
         Texture2D m_NormalMap
         Texture2D m_SpecularMap
+        Boolean m_UseAlpha
     }
 
     Technique {
@@ -20,6 +21,13 @@ MaterialDef Phong Lighting {
             WorldMatrix
             WorldViewMatrix
             ViewMatrix
+        }
+
+        Defines {
+            HAS_DIFFUSEMAP : m_DiffuseMap
+            HAS_NORMALMAP : m_NormalMap
+            HAS_SPECULARMAP : m_SpecularMap
+            USE_ALPHA : m_UseAlpha
         }
     }
 

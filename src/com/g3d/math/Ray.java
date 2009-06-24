@@ -368,6 +368,10 @@ public class Ray  implements Serializable, Savable, Cloneable {
         direction.set(source.getDirection());
     }
 
+    public String toString(){
+        return getClass().getSimpleName()+" [Origin: "+origin+", Direction: "+direction+"]";
+    }
+
     public void write(G3DExporter e) throws IOException {
         OutputCapsule capsule = e.getCapsule(this);
         capsule.write(origin, "origin", Vector3f.ZERO);

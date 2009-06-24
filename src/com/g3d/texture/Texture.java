@@ -253,6 +253,37 @@ public abstract class Texture extends GLObject implements Savable {
     }
 
     /**
+     * If this texture is a depth texture (the format is Depth*) then
+     * this value may be used to compare the texture depth to the R texture
+     * coordinate. 
+     */
+    public enum ShadowCompareMode {
+        /**
+         * Shadow comparison mode is disabled.
+         * Texturing is done normally.
+         */
+        Off,
+
+        /**
+         * Compares the 3rd texture coordinate R to the value
+         * in this depth texture. If R <= texture value then result is 1.0,
+         * otherwise, result is 0.0. If filtering is set to bilinear or trilinear
+         * the implementation may sample the texture multiple times to provide
+         * smoother results in the range [0, 1].
+         */
+        LessOrEqual,
+
+        /**
+         * Compares the 3rd texture coordinate R to the value
+         * in this depth texture. If R >= texture value then result is 1.0,
+         * otherwise, result is 0.0. If filtering is set to bilinear or trilinear
+         * the implementation may sample the texture multiple times to provide
+         * smoother results in the range [0, 1].
+         */
+        GreaterOrEqual
+    }
+
+    /**
      * The name of the texture (if loaded as a resource).
      */
     private String name = null;
@@ -265,6 +296,7 @@ public abstract class Texture extends GLObject implements Savable {
 
     private MinFilter minificationFilter = MinFilter.BilinearNoMipMaps;
     private MagFilter magnificationFilter = MagFilter.Bilinear;
+    private ShadowCompareMode shadowCompareMode = ShadowCompareMode.Off;
     private int anisotropicFilter;
 
     /**
@@ -315,6 +347,29 @@ public abstract class Texture extends GLObject implements Savable {
                     "magnificationFilter can not be null.");
         }
         this.magnificationFilter = magnificationFilter;
+    }
+
+    /**
+     * @return The ShadowCompareMode of this texture.
+     * @see ShadowCompareMode
+     */
+    public ShadowCompareMode getShadowCompareMode(){
+        return shadowCompareMode;
+    }
+
+    /**
+     * @param compareMode
+     *            the new ShadowCompareMode for this texture.
+     * @throws IllegalArgumentException
+     *             if compareMode is null
+     * @see ShadowCompareMode
+     */
+    public void setShadowCompareMode(ShadowCompareMode compareMode){
+        if (compareMode == null){
+            throw new IllegalArgumentException(
+                    "compareMode can not be null.");
+        }
+        this.shadowCompareMode = compareMode;
     }
 
     /**
@@ -400,6 +455,22 @@ public abstract class Texture extends GLObject implements Savable {
             anisotropicFilter = 1;
         else
             anisotropicFilter = level;
+    }
+
+    @Override
+    public String toString(){
+        String imgTxt = null;
+        if (image != null){
+            imgTxt = ", img="+image.getWidth()
+                    +"x"+image.getHeight();
+            if (image.getDepth() > 1)
+                imgTxt += "x"+image.getDepth();
+            imgTxt += "-"+image.getFormat().name();
+            if (image.hasMipmaps())
+                imgTxt += "/mips";
+        }
+
+        return getClass().getSimpleName() + "[name="+name+imgTxt+"]";
     }
 
     @Override

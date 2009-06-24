@@ -65,7 +65,7 @@ public class AWTLoader implements ContentLoader {
         }
     }
 
-    public Object load(ContentManager owner, InputStream in, String extension) throws IOException {
+    public Object load(ContentManager owner, InputStream in, String extension, ContentKey key) throws IOException {
         if (ImageIO.getImageWritersBySuffix(extension) != null){
             return loadAWT(owner, in);
         }

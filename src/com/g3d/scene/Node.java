@@ -232,6 +232,7 @@ public class Node extends Spatial implements Savable {
                 // tree stemming from the attached child. Also forces
                 // transform update down the tree-
                 child.setTransformRefresh();
+                child.setLightListRefresh();
                 if (logger.isLoggable(Level.INFO)) {
                     logger.info("Child (" + child.getName()
                             + ") attached to this" + " node (" + getName()
@@ -264,6 +265,7 @@ public class Node extends Spatial implements Savable {
                 child.setParent(this);
                 children.add(index, child);
                 child.setTransformRefresh();
+                child.setLightListRefresh();
                 if (logger.isLoggable(Level.INFO)) {
                     logger.info("Child (" + child.getName()
                             + ") attached to this" + " node (" + getName()
@@ -343,6 +345,8 @@ public class Node extends Spatial implements Savable {
             // XXX: Not neccessary? Since child will have transform updated
             // when attached anyway.
             child.setTransformRefresh();
+            // lights are also inherited from parent
+            child.setLightListRefresh();
         }
         return child;
     }

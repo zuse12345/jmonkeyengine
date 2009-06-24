@@ -1,11 +1,15 @@
 package com.g3d.renderer;
 
+import com.g3d.material.Material;
+import com.g3d.material.RenderState;
+import com.g3d.math.ColorRGBA;
 import com.g3d.math.Matrix4f;
 import com.g3d.renderer.queue.RenderQueue;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.VertexBuffer;
 import com.g3d.shader.Shader;
+import com.g3d.shader.Shader.ShaderSource;
 import com.g3d.shader.Uniform;
 import com.g3d.texture.FrameBuffer;
 import com.g3d.texture.Texture;
@@ -24,14 +28,16 @@ public interface Renderer {
     public void clearBuffers(boolean color, boolean depth, boolean stencil);
 
     /**
-     * @param enabled Enable/disable depth testing (passing closer primitives).
+     * Sets the background (aka clear) color.
+     * @param color
      */
-    public void setDepthTest(boolean enabled);
+    public void setBackgroundColor(ColorRGBA color);
 
     /**
-     * @param enabled Enable/disable back-face culling.
+     * Applies the given renderstate, making the neccessary
+     * GL calls so that the state is applied.
      */
-    public void setBackfaceCulling(boolean enabled);
+    public void applyRenderState(RenderState state);
 
     /**
      * Called when a new frame has been rendered.
@@ -80,6 +86,13 @@ public interface Renderer {
     public void updateLightListUniforms(Shader shader, Geometry geom, int numLights);
 
     /**
+     * Updates the shader source, creating an ID and registering
+     * with the object manager.
+     * @param source
+     */
+    public void updateShaderSourceData(ShaderSource source);
+
+    /**
      * Uploads the shader source code and prepares it for use.
      * @param shader
      */
@@ -96,6 +109,12 @@ public interface Renderer {
      * the attached shader sources.
      */
     public void deleteShader(Shader shader);
+
+    /**
+     * Deletes the provided shader source.
+     * @param source
+     */
+    public void deleteShaderSource(ShaderSource source);
 
     /**
      * Prepares the texture for use and uploads its image data if neceessary.
@@ -172,7 +191,7 @@ public interface Renderer {
      *
      * @param count The number of triangles to draw from the buffer
      */
-    public void drawTriangleList(VertexBuffer indexBuf, int count);
+    public void drawTriangleList(VertexBuffer indexBuf, Mesh.Mode mode, int count);
 
     /**
      * Clears all vertex attributes set with <code>setVertexAttrib</code>.
@@ -186,12 +205,41 @@ public interface Renderer {
     public void renderQueue();
 
     /**
+     * Renders all geometry objects in the specified shadow queue.
+     * Use addToShadowQueue() to add objects to shadow queues.
+     * @param shadBucket
+     */
+    public void renderShadowQueue(RenderQueue.ShadowMode shadBucket);
+
+    /**
+     * @return the render queue
+     */
+    public RenderQueue getRenderQueue();
+
+    /**
      * Adds an element to the queue.
      * 
      * @param geom
      * @param bucket The bucket into which to place the goemetry.
      */
     public void addToQueue(Geometry geom, RenderQueue.Bucket bucket);
+
+    /**
+     * Adds an element to the specified shadow queue.
+     * @param geom
+     * @param shadBucket 
+     */
+    public void addToShadowQueue(Geometry geom, RenderQueue.ShadowMode shadBucket);
+
+    /**
+     * Set the material to use to render all future objects.
+     * This overrides the material set on the geometry and renders
+     * with the provided material instead.
+     * Use null to clear the material and return renderer to normal
+     * functionality.
+     * @param mat
+     */
+    public void setForcedMaterial(Material mat);
 
     /**
      * Renders <code>count</code> meshes, with the geometry data supplied.

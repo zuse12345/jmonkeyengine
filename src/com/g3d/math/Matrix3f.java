@@ -112,7 +112,7 @@ public class Matrix3f implements Savable, Cloneable {
      *            the matrix to copy.
      */
     public Matrix3f(Matrix3f mat) {
-        copy(mat);
+        set(mat);
     }
 
     /**
@@ -138,7 +138,7 @@ public class Matrix3f implements Savable, Cloneable {
      * @param matrix
      *            the matrix to copy.
      */
-    public void copy(Matrix3f matrix) {
+    public void set(Matrix3f matrix) {
         if (null == matrix) {
             loadIdentity();
         } else {

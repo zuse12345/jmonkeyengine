@@ -9,7 +9,7 @@ import com.g3d.math.FastMath;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Spatial;
-import com.g3d.scene.Sphere;
+import com.g3d.scene.shape.Sphere;
 import com.g3d.system.AppSettings;
 import com.g3d.util.TangentBinormalGenerator;
 
@@ -27,6 +27,8 @@ public class TestBumpModel extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
+        manager.setProperty("FlipImages", "true");
+
         Spatial signpost = manager.loadModel("signpost.obj");
         signpost.setMaterial(manager.loadMaterial("signpost.j3m"));
         rootNode.attachChild(signpost);

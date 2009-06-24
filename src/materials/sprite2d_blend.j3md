@@ -1,0 +1,19 @@
+MaterialDef Sprite 2D with Blending {
+    MaterialParameters {
+        Texture2D m_Texture
+    }
+
+    Technique {
+        VertexShader GLSL100: sprite2d.vert
+        FragmentShader GLSL100: sprite2d.frag
+
+        WorldParameters {
+            WorldOrthoMatrix
+        }
+
+        RenderState {
+            Blend Alpha
+        }
+    }
+
+}

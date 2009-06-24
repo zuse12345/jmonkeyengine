@@ -5,11 +5,11 @@ import com.g3d.material.MaterialDef.MatParamType;
 import com.g3d.math.ColorRGBA;
 import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
+import com.g3d.res.ContentKey;
 import com.g3d.res.ContentLoader;
 import com.g3d.res.ContentManager;
-import com.g3d.shader.Shader;
 import com.g3d.shader.Shader.ShaderType;
-import com.g3d.shader.Uniform;
+import com.g3d.shader.ShaderMasterKey;
 import com.g3d.texture.Image;
 import com.g3d.texture.Image.Format;
 import com.g3d.texture.Texture2D;
@@ -17,6 +17,7 @@ import com.g3d.util.BufferUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class J3MLoader implements ContentLoader {
@@ -26,8 +27,12 @@ public class J3MLoader implements ContentLoader {
 
     private MaterialDef materialDef;
     private Material material;
-    private Technique technique;
-    private Shader shader;
+    private TechniqueDef technique;
+    private RenderState renderState;
+
+    private String shaderLang;
+    private String vertName;
+    private String fragName;
 
     public J3MLoader(){
     }
@@ -47,7 +52,7 @@ public class J3MLoader implements ContentLoader {
             }else if (scan.hasNext("[\n;]")){
                 scan.next();
             }else if (scan.hasNext("//")){
-                scan.useDelimiter("[\n;]");
+                scan.useDelimiter("\n");
                 scan.next();
                 scan.useDelimiter("\\p{javaWhitespace}+");
             }else{
@@ -91,16 +96,12 @@ public class J3MLoader implements ContentLoader {
         word = readString("[\n;(\\})]"); // new line, semicolon, comment or brace will end a statement
         // locate source code
 
-        String source = (String) owner.loadContent(word);
-        if (source == null)
-            throw new IOException("Cannot find shader named "+word);
-        
-        if (shader == null){
-            shader = new Shader(lang);
-            technique.setShader(shader);
-        }
+        if (type == ShaderType.Vertex)
+            vertName = word;
+        else if (type == ShaderType.Fragment)
+            fragName = word;
 
-        shader.addSource(type, source);
+        shaderLang = lang;
     }
 
     private void readParam() throws IOException{
@@ -143,9 +144,11 @@ public class J3MLoader implements ContentLoader {
             }else{
                 img =  owner.loadImage(texturePath);
             }
-                        // parse texture
-            
+
+            // parse texture
             if (type == MatParamType.Texture2D){
+                material.setTextureParam(name, type, new Texture2D(img));
+            }else if (type == MatParamType.TextureCubeMap){
                 material.setTextureParam(name, type, new Texture2D(img));
             }
         }else{
@@ -170,6 +173,9 @@ public class J3MLoader implements ContentLoader {
                     break;
                 case Int:
                     material.setParam(name, type, scan.nextInt());
+                    break;
+                case Boolean:
+                    material.setParam(name, type, scan.nextBoolean());
                     break;
                 default:
                     throw new UnsupportedOperationException("Unknown type: "+p.getType());
@@ -230,9 +236,111 @@ public class J3MLoader implements ContentLoader {
             }
 
             word = readString("[\n;(//)(\\})]");
-            technique.addWorldParam(word);
+            if (word != null && !word.equals("")){
+                technique.addWorldParam(word);
+            }
             nextStatement();
         }
+    }
+
+    private boolean parseBoolean(String word){
+        return word != null && word.equals("On");
+    }
+
+    private void readRenderStateStatement() throws IOException{
+        String word = scan.next();
+        if (word.equals("Wireframe")){
+            renderState.wireframe = parseBoolean(scan.next());
+        }else if (word.equals("FaceCull")){
+            renderState.cullMode = RenderState.FaceCullMode.valueOf(scan.next());
+        }else if (word.equals("DepthWrite")){
+            renderState.depthWrite = parseBoolean(scan.next());
+        }else if (word.equals("DepthTest")){
+            renderState.depthTest = parseBoolean(scan.next());
+        }else if (word.equals("Blend")){
+            renderState.blendMode = RenderState.BlendMode.valueOf(scan.next());
+        }else if (word.equals("AlphaTestFalloff")){
+            renderState.alphaFallOff = scan.nextFloat();
+        }else if (word.equals("PolyOffset")){
+            float factor = scan.nextFloat();
+            float units = scan.nextFloat();
+            renderState.setPolyOffset(factor, units);
+        }else if (word.equals("ColorWrite")){
+            renderState.colorWrite = parseBoolean(scan.next());
+        }else{
+            throwIfNequal(null, word);
+        }
+    }
+
+    private void readRenderState() throws IOException{
+        nextStatement();
+
+        String word = scan.next();
+        throwIfNequal("{", word);
+
+        nextStatement();
+
+        renderState = new RenderState();
+
+        while (true){
+            if (scan.hasNext("\\}")){
+                scan.next();
+                break;
+            }
+
+            readRenderStateStatement();
+            nextStatement();
+        }
+        
+        technique.setRenderState(renderState);
+        renderState = null;
+    }
+    
+    private void readDefine(){
+        // stops at either next statement or colon
+        // ways to end a statement:
+        /*
+        Block {
+            Statement<new line>
+            Statement;
+            Statement //comment
+            Statement }
+        */
+        String defineName = readString("[\n;:(//)(\\})]");
+        if (defineName.equals(""))
+            return;
+
+        String matParamName = null;
+        if (scan.hasNext(":")){
+            scan.next();
+            // this time without colon
+            matParamName = readString("[\n;(//)(\\})]");
+            // add define <-> param mapping
+            technique.addShaderParamDefine(matParamName, defineName);
+        }else{
+            // add preset define
+            technique.addShaderPresetDefine(defineName, "1");
+        }
+    }
+
+    private void readDefines() throws IOException{
+        nextStatement();
+
+        String word = scan.next();
+        throwIfNequal("{", word);
+
+        nextStatement();
+
+        while (true){
+            if (scan.hasNext("\\}")){
+                scan.next();
+                break;
+            }
+
+            readDefine();
+            nextStatement();
+        }
+
     }
 
 //    private void readAttributes() throws IOException{
@@ -265,6 +373,10 @@ public class J3MLoader implements ContentLoader {
             technique.setUsesLighting(true);
         }else if (word.equals("WorldParameters")){
             readWorldParams();
+        }else if (word.equals("RenderState")){
+            readRenderState();
+        }else if (word.equals("Defines")){
+            readDefines();
 //        }else if (word.equals("Attributes")){
 //            readAttributes();
         }else{
@@ -278,7 +390,7 @@ public class J3MLoader implements ContentLoader {
         if (!scan.hasNext("\\{")){
             name = scan.next();
         }
-        technique = new Technique(name);
+        technique = new TechniqueDef(name);
 
         String word = scan.next();
         throwIfNequal("{", word);
@@ -294,12 +406,18 @@ public class J3MLoader implements ContentLoader {
             readTechniqueStatement();
         }
 
-        materialDef.addTechnique(technique);
+        if (vertName != null && fragName != null){
+            technique.setShaderFile(vertName, fragName, shaderLang);
+        }
+        
+        materialDef.addTechniqueDef(technique);
         technique = null;
-        shader = null;
+        vertName = null;
+        fragName = null;
+        shaderLang = null;
     }
 
-    public Object load(ContentManager owner, InputStream stream, String extension) throws IOException {
+    public Object load(ContentManager owner, InputStream stream, String extension, ContentKey key) throws IOException {
         this.owner = owner;
         load(stream);
         if (material != null){
@@ -313,6 +431,7 @@ public class J3MLoader implements ContentLoader {
 
     public void load(InputStream in) throws IOException{
         scan = new Scanner(in);
+        scan.useLocale(Locale.US);
 
         nextStatement();
 
@@ -329,11 +448,13 @@ public class J3MLoader implements ContentLoader {
 
         nextStatement();
 
-        word = readString("[(\\{):]");
+        word = readString("[(\\{)(//)\n:]");
         if (word == null || word.equals(""))
             throw new IOException("Material name cannot be empty");
 
         name = word;
+
+        nextStatement();
 
         if (scan.hasNext(":")){
             if (!extending){
@@ -352,7 +473,7 @@ public class J3MLoader implements ContentLoader {
             if (extending){
                 throw new IOException("Expected ':', got '{'");
             }
-            materialDef = new MaterialDef(name);
+            materialDef = new MaterialDef(owner,name);
         }
         scan.next(); // skip {
 
@@ -378,7 +499,7 @@ public class J3MLoader implements ContentLoader {
                     readMaterialParams();
                     nextStatement();
                 }else{
-                    throw new IOException("Expected 'Technique', got '"+scan.next()+"'");
+                    throw new IOException("Expected material statement, got '"+scan.next()+"'");
                 }
             }
         }

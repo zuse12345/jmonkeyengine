@@ -210,6 +210,24 @@ public class Transform implements Savable, Cloneable {
         scale.set(x,y,z);
     }
 
+    public Vector3f transformVector(final Vector3f in, Vector3f store){
+        if (store == null)
+            store = new Vector3f();
+
+        // multiply with scale first, then rotate, finally translate (cf.
+        // Eberly)
+        return rot.mult(store.set(in).multLocal(scale), store).addLocal(translation);
+    }
+
+    public Vector3f transformInverseVector(final Vector3f in, Vector3f store){
+        if (store == null)
+            store = new Vector3f();
+
+        in.subtract(translation, store).divideLocal(scale);
+        rot.inverse().mult(store, store);
+        return store;
+    }
+
     /**
      * Loads the identity.  Equal to translation=1,1,1 scale=0,0,0 rot=0,0,0,1.
      */

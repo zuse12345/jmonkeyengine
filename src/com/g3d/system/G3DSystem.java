@@ -59,7 +59,7 @@ public class G3DSystem {
         
         initialized = true;
         try {
-            Handler fileHandler = new FileHandler("gorilla3d.log");
+            Handler fileHandler = new FileHandler("jme.log");
             Handler consoleHandler = new ConsoleHandler();
             G3DFormatter formatter = new G3DFormatter();
             fileHandler.setFormatter(formatter);
@@ -92,16 +92,16 @@ public class G3DSystem {
         }
     }
 
-    public static void destroy() {
-        if (!initialized)
-            return;
-
-        initialized = false;
-        logger.finer(getFullName() + " closing.");
-    }
+//    public static void destroy() {
+//        if (!initialized)
+//            return;
+//
+//        initialized = false;
+//        logger.finer(getFullName() + " closing.");
+//    }
 
     public static String getFullName(){
-        return "Gorilla3D Engine 0.11";
+        return "jMonkeyEngine 0.13";
     }
 
     public static void reportError(String errorMsg){

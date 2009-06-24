@@ -2,11 +2,11 @@
 // DEFINES
 
 // if m_DiffuseMap contains valid diffuse/color map
-#define HAS_DIFFUSEMAP
+//#define HAS_DIFFUSEMAP
 
 // if m_NormalMap contains valid normal map
 // if not defined, uses vertex normal instead
-#define HAS_NORMALMAP
+//#define HAS_NORMALMAP
 
 // if m_SpecularMap contains valid specular map
 //#define HAS_SPECULARMAP
@@ -15,7 +15,7 @@
 //#define USE_ALPHA
 
 // number of lights sent in g_Light params
-#define NUM_LIGHTS 2
+//#define NUM_LIGHTS 4
 
 //============================================
 // BEGIN PHONG LIGHTING SHADER
@@ -38,8 +38,8 @@ uniform sampler2D m_SpecularMap;
 
 // PER-MESH PARAMS
 // see Renderer.updateLightListUniforms() for more info about these params
-uniform vec4 g_LightColor[NUM_LIGHTS];
-uniform vec4 g_LightPosition[NUM_LIGHTS];
+uniform vec4 g_LightColor[4];
+uniform vec4 g_LightPosition[4];
 
 // world -> eye space matrix
 uniform mat4 g_ViewMatrix;
@@ -122,19 +122,16 @@ void main(){
    #ifdef HAS_SPECULARMAP
     vec3 specularColor = texture2D(m_SpecularMap, texCoord).xyz;
    #else
-    vec3 specularColor = diffuseColor * diffuseColor * 2.0;
+    vec3 specularColor = diffuseColor.rgb * diffuseColor.rgb * vec3(2.0);
    #endif
-
-   if (diffuseColor.a < 0.5){
-       discard;
-   }
 
    mat3 tbnMat = lightComputeTangentBasis();
 
    vec3 totalSpecular = vec3(0.0);
    vec3 totalDiffuse = vec3(0.0);
-   lightComputeAll(tanNormal, tbnMat, NUM_LIGHTS, totalDiffuse, totalSpecular);
+   lightComputeAll(tanNormal, tbnMat, 4, totalDiffuse, totalSpecular);
 
+   //gl_FragColor = vec4(g_LightColor[0].xyz, 1.0);
    gl_FragColor = vec4(specularColor * totalSpecular
                      + diffuseColor.rgb * totalDiffuse, diffuseColor.a);
 

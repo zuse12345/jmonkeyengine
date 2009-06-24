@@ -40,6 +40,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.g3d.math.FastMath;
+import com.g3d.math.Matrix4f;
 import com.g3d.math.Plane;
 import com.g3d.math.Ray;
 import com.g3d.math.Transform;
@@ -400,6 +401,22 @@ public class BoundingSphere extends BoundingVolume {
         trans.getRotation().mult(sphere.center, sphere.center);
         sphere.center.addLocal(trans.getTranslation());
         sphere.radius = FastMath.abs(getMaxAxis(trans.getScale()) * radius) + RADIUS_EPSILON - 1f;
+        return sphere;
+    }
+
+    public BoundingVolume transform(Matrix4f trans, BoundingVolume store) {
+        BoundingSphere sphere;
+        if (store == null || store.getType() != BoundingVolume.Type.Sphere) {
+            sphere = new BoundingSphere(1, new Vector3f(0, 0, 0));
+        } else {
+            sphere = (BoundingSphere) store;
+        }
+
+        trans.mult(center, sphere.center);
+        Vector3f axes = new Vector3f(1,1,1);
+        trans.mult(axes, axes);
+        float ax = getMaxAxis(axes);
+        sphere.radius = FastMath.abs(ax * radius) + RADIUS_EPSILON - 1f;
         return sphere;
     }
 

@@ -68,6 +68,15 @@ public class Vector3f implements Savable, Cloneable {
 	public final static Vector3f UNIT_Y = new Vector3f(0, 1, 0);
     public final static Vector3f UNIT_Z = new Vector3f(0, 0, 1);
     public final static Vector3f UNIT_XYZ = new Vector3f(1, 1, 1);
+    public final static Vector3f POSITIVE_INFINITY = new Vector3f(
+                                                        Float.POSITIVE_INFINITY,
+                                                        Float.POSITIVE_INFINITY,
+                                                        Float.POSITIVE_INFINITY);
+    public final static Vector3f NEGATIVE_INFINITY = new Vector3f(
+                                                        Float.NEGATIVE_INFINITY,
+                                                        Float.NEGATIVE_INFINITY,
+                                                        Float.NEGATIVE_INFINITY);
+
     
 	/**
      * the x value of the vector.
@@ -746,6 +755,30 @@ public class Vector3f implements Savable, Cloneable {
         }
         
         return this;        
+    }
+
+    /**
+     * <code>maxLocal</code> computes the maximum value for each 
+     * component in this and <code>other</code> vector. The result is stored
+     * in this vector.
+     * @param other 
+     */
+    public void maxLocal(Vector3f other){
+        x = other.x > x ? other.x : x;
+        y = other.y > y ? other.y : y;
+        z = other.z > z ? other.z : z;
+    }
+
+    /**
+     * <code>minLocal</code> computes the minimum value for each
+     * component in this and <code>other</code> vector. The result is stored
+     * in this vector.
+     * @param other
+     */
+    public void minLocal(Vector3f other){
+        x = other.x < x ? other.x : x;
+        y = other.y < y ? other.y : y;
+        z = other.z < z ? other.z : z;
     }
 
     /**

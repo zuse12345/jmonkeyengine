@@ -40,7 +40,6 @@ import com.g3d.export.Savable;
 import com.g3d.util.BufferUtils;
 import com.g3d.util.TempVars;
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.FloatBuffer;
 import java.util.logging.Logger;
 
@@ -68,6 +67,8 @@ public class Matrix4f implements Savable, Cloneable {
     protected float m10, m11, m12, m13;
     protected float m20, m21, m22, m23;
     protected float m30, m31, m32, m33;
+
+    public static final Matrix4f IDENTITY = new Matrix4f();
 
     /**
      * Constructor instantiates a new <code>Matrix</code> that is set to the
@@ -159,26 +160,47 @@ public class Matrix4f implements Savable, Cloneable {
 
     public void fromFrame(Vector3f location, Vector3f direction, Vector3f up, Vector3f left) {
         loadIdentity();
-        m00 = -left.x;
-        m10 = -left.y;
-        m20 = -left.z;
 
-        m01 = up.x;
-        m11 = up.y;
-        m21 = up.z;
+        Vector3f f = new Vector3f(direction);
+        Vector3f s = f.cross(up);
+        Vector3f u = s.cross(f);
+        s.normalizeLocal();
+        u.normalizeLocal();
 
-        m02 = -direction.x;
-        m12 = -direction.y;
-        m22 = -direction.z;
+        m00 = s.x;
+        m01 = s.y;
+        m02 = s.z;
 
+        m10 = u.x;
+        m11 = u.y;
+        m12 = u.z;
+
+        m20 = -f.x;
+        m21 = -f.y;
+        m22 = -f.z;
+
+//        m00 = -left.x;
+//        m10 = -left.y;
+//        m20 = -left.z;
+//
+//        m01 = up.x;
+//        m11 = up.y;
+//        m21 = up.z;
+//
+//        m02 = -direction.x;
+//        m12 = -direction.y;
+//        m22 = -direction.z;
+//
         Matrix4f transMatrix = TempVars.get().tempMat4;
         transMatrix.loadIdentity();
-        transMatrix.m30 = -location.x;
-        transMatrix.m31 = -location.y;
-        transMatrix.m32 = -location.z;
+        transMatrix.m03 = -location.x;
+        transMatrix.m13 = -location.y;
+        transMatrix.m23 = -location.z;
 
-        transMatrix.multLocal(this);
-        set(transMatrix);
+        this.multLocal(transMatrix);
+//        transMatrix.multLocal(this);
+
+//        set(transMatrix);
     }
 
     /**
@@ -700,22 +722,35 @@ public class Matrix4f implements Savable, Cloneable {
     public void fromFrustum(float near, float far, float left, float right, float top, float bottom, boolean parallel){
         loadIdentity();
         if (parallel) {
+            // scale
             m00 = 2.0f / (right - left);
-            m11 = 2.0f / (bottom - top);
+            //m11 = 2.0f / (bottom - top);
+            m11 = 2.0f / (top - bottom);
             m22 = -2.0f / (far - near);
             m33 = 1f;
-            m30 = -(right + left) / (right - left);
-            m31 = -(bottom + top) / (bottom - top);
-            m32 = -(far + near) / (far - near);
+            
+            // translation
+            m03 = -(right + left) / (right - left);
+            //m31 = -(bottom + top) / (bottom - top);
+            m13 = -(top + bottom) / (top - bottom);
+            m23 = -(far + near) / (far - near);
         } else {
             m00 = (2.0f * near) / (right - left);
             m11 = (2.0f * near) / (top - bottom);
-            m20 = (right + left) / (right - left);
-            m21 = (top + bottom) / (top - bottom);
-            m22 = -(far + near) / (far - near);
-            m32 = -(2.0f * far * near) / (far - near);
-            m23 = -1.0f;
+            m32 = -1.0f;
             m33 = -0.0f;
+
+            // A
+            m02 = (right + left) / (right - left);
+            
+            // B 
+            m12 = (top + bottom) / (top - bottom);
+            
+            // C
+            m22 = -(far + near) / (far - near);
+            
+            // D
+            m23 = -(2.0f * far * near) / (far - near);
         }
     }
 
@@ -963,6 +998,25 @@ public class Matrix4f implements Savable, Cloneable {
         store.z = m20 * vx + m21 * vy + m22 * vz + m23;
 
         return store;
+    }
+
+    /**
+     * <code>mult</code> multiplies a vector about a rotation matrix and adds
+     * translation. The w value is returned as a result of
+     * multiplying the last column of the matrix by 1.0
+     * 
+     * @param vec
+     *            vec to multiply against.
+     * @param store
+     *            a vector to store the result in. 
+     * @return the W value
+     */
+    public float multProj(Vector3f vec, Vector3f store) {
+        float vx = vec.x, vy = vec.y, vz = vec.z;
+        store.x = m00 * vx + m01 * vy + m02 * vz + m03;
+        store.y = m10 * vx + m11 * vy + m12 * vz + m13;
+        store.z = m20 * vx + m21 * vy + m22 * vz + m23;
+        return    m30 * vx + m31 * vy + m32 * vz + m33;
     }
 
     /**

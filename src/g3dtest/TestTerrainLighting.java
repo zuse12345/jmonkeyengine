@@ -3,11 +3,13 @@ package g3dtest;
 import com.g3d.app.SimpleApplication;
 import com.g3d.light.DirectionalLight;
 import com.g3d.light.PointLight;
+import com.g3d.material.Material;
 import com.g3d.math.ColorRGBA;
 import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Mesh;
+import com.g3d.scene.shape.Sphere;
 import com.g3d.terrain.Geomap;
 import com.g3d.terrain.GeomapLoader;
 import java.io.IOException;
@@ -31,12 +33,13 @@ public class TestTerrainLighting extends SimpleApplication {
         Mesh terrainMesh = null;
         try {
             // create Geomap from image
-            URL imageUrl = TestTerrainLighting.class.getResource("/com/g3d/test/data/heightmap.png");
+            URL imageUrl = TestTerrainLighting.class.getResource("/textures/heightmap.png");
             Geomap heightmap = GeomapLoader.fromImage(imageUrl);
 
             // generate mesh from the geomap
-            terrainMesh = heightmap.createMesh(new Vector3f(1f, 0.005f, 1f), Vector2f.UNIT_XY, true);
-            terrainMesh.setStatic();
+            //terrainMesh = heightmap.createMesh(new Vector3f(1f, 0.005f, 1f), Vector2f.UNIT_XY, true);
+            //terrainMesh.setStatic();
+            terrainMesh = new Sphere(32,32,1);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -47,7 +50,9 @@ public class TestTerrainLighting extends SimpleApplication {
 //        terrainMesh.convertToHalf();
 
         // use phong shading material
-//        terrain.setMaterial(new PhongMaterial(16f));
+        Material mat = new Material(manager, "phong_lighting.j3md");
+//        Material mat = manager.loadMaterial("red_color.j3m");
+        terrain.setMaterial(mat);
         rootNode.attachChild(terrain);
 
         // create point light at the center with radius 100

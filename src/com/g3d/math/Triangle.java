@@ -36,7 +36,6 @@ import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
 import com.g3d.export.Savable;
 import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * <code>Triangle</code> defines a object for containing triangle information.

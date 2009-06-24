@@ -17,6 +17,7 @@
       table, div {
           margin:0;
       }
+      .gotcha { background-color:orange; }
       body { background-color:white; margin:10px; }
       code { font-family:monospace; }
       table.data { background-color:silver; }
@@ -60,7 +61,7 @@
           You can modify the weightings as much as you wish afterwards, but
           you must apply Bone Heat once.
         <LI>Armatures may only have one bone-weighted skin.
-        <LI>All bones in a single exporte must be named uniquely.
+        <LI>All bones in a single export must be named uniquely.
         If you export 4 armatures with 10 bones each, you need 40 unique bone
         names.
         (You could avoid this constraint by making 4 separate exports).
@@ -74,6 +75,13 @@
         between key frames, regardless of what interpolation algorithm Blender
         uses.
         This is a limitation of <code>com.jme.animation</code>.
+        <LI>There seems to be a bug in <code>com.jme.animation</code> wrt
+        start and end frame.
+        If you change the default start and end frames (as described below),
+        the first cycle in jME will still play the entire animation.
+        The specified limits take hold for following cycles
+        (I have not tried for a non-repeating animation).
+        At least, this has been my experience.
       </UL>
       Any or all of these constraints may be removed as we improve the
         exporter.
@@ -141,20 +149,20 @@
           Bones panel.
           You can then position this bone without effecting the Tail of the
           parent bone.
-          <p style="background-color:orange;">
+          <p class="gotcha">
           <b>GOTCHA:</b> I have to select another bone and go back in order for
           this to take effect.</p>
           <li>To create additional root bones (one often wants independent root
           bones for spine and eyes or thighs or shoulders), extrude the bone
           from anywhere, then select it and in the Armature Bones panel use the
           "child of" pulldown to set the parent bone to nothing.
-          <p style="background-color:orange;">
+          <p class="gotcha">
           <b>GOTCHA:</b> I have to select another bone and go back in order for
           this to take effect.</p>
           <li>To create more than one children bones of any bone, select the
           Root of any existing bone (one that you want to create a peer of),
           and E to extrude from that.
-          <li style="background-color:orange;">
+          <li class="gotchae"> 
           <b>GOTCHA:</b>  It is very easy to accidentally create extra bones
           that you can't see.
           I keep an eye on the Outliner View to prevent this.</li>
@@ -195,7 +203,7 @@
       Now, select the skin mesh and switch to Weight Paint mode.
       Now, due to the Armature being in pose mode, you can skin weight painter
       knows about the bones.
-      <p style="background-color:orange;">
+      <p class="gotcha">
       <b>IMPORTANT!</b>
       For the time being, you must apply "bone heats" to your model.
       This is a work-around which prevents artifacts from wrecking the export.
@@ -263,6 +271,13 @@
     <HR/>
     <h4>Details about Bones</h4>
     <p>
+      If you move bones without an animation controller, like with
+      <code>Spatial.setLocal*()</code>, you must run<pre><code>
+          skinNode.boneChaned(null);
+      </code></pre> on the corresponding
+      <code>com.jme.animation.SkinNode</code> in order for the skin to update
+      accordingly.
+    </p> <p>
       Use the Bone Debugger in jME to examine and learn to use your skeletons.
     </p> <p>
       To see what leaf bones are really doing, you will need to add dummy leaf

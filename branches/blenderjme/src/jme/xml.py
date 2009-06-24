@@ -78,6 +78,8 @@ class XmlTag(object):
     __slots__ = ['name', '__textLinks', 'children',
         '__commentLinks', 'quotedattrs', 'spacesPerIndent', '__attrKeys']
         # The attrKeys is just to preserve the sequence of the attr hash
+    ZERO_FLOAT_STRING = str(.0)
+    QUOTED_ZERO_FLOAT_STRING = quoteattr(ZERO_FLOAT_STRING)
 
     def __init__(self, name, attrs=None, attrsPrecision=None):
         """Warning:  Do not use give more than one attr in this cons. if you
@@ -181,11 +183,6 @@ class XmlTag(object):
         only applicable if value is a list type"""
         # N.b., we store the surrounding quotes with each attr value
         validateXmlKeyword(name)
-        formatStr = None
-        if precision != None:
-            #formatStr = "{0:." + str(precision) + "f}"
-            # Blender Python doesnt' support string.format() yet.
-            formatStr = "%." + str(precision) + "f"
         if self.quotedattrs == None:
             self.quotedattrs = {}
             self.__attrKeys = []
@@ -199,20 +196,22 @@ class XmlTag(object):
                 else:
                     # Enforce that every element is a str type, as required
                     # by join()
-                    if formatStr == None:
+                    if precision == None:
                         joinlist.append(str(val[i]))
                     else:
-                        #joinlist.append(formatStr.format(val[i]))
-                        # See above
-                        joinlist.append(formatStr % val[i])
+                        if round(val[i], precision) == 0.:
+                            joinlist.append(XmlTag.ZERO_FLOAT_STRING)
+                        else:
+                            joinlist.append(str(round(val[i], precision)))
             val = " ".join(joinlist)
         if name in self.__attrKeys: self.__attrKeys.remove(name)
-        if formatStr == None or isinstance(val, basestring):
+        if precision == None or isinstance(val, basestring):
             self.quotedattrs[name] = quoteattr(val)
         else:
-            #self.quotedattrs[name] = quoteattr(formatStr.format(val))
-            # See above
-            self.quotedattrs[name] = quoteattr(formatStr % val)
+            if round(val, precision) == 0.:
+                self.quotedattrs[name] = XmlTag.QUOTED_ZERO_FLOAT_STRING
+            else:
+                self.quotedattrs[name] = quoteattr(round(val, precision))
         self.__attrKeys.append(name)
 
     def addComment(self, text):
@@ -296,37 +295,35 @@ class PITag(object):
         only applicable if value is a list type"""
         # N.b., we store the surrounding quotes with each attr value
         validateXmlKeyword(name)
-        formatStr = None
-        if precision != None:
-            #formatStr = "{0:." + str(precision) + "f}"
-            # Blender Python doesnt' support string.format() yet.
-            formatStr = "%." + str(precision) + "f"
         if self.quotedattrs == None:
             self.quotedattrs = {}
             self.__attrKeys = []
         if isinstance(val, list):
             joinlist = []
             for i in range(len(val)):
-                if i > 0 and tupleSpacing: joinlist.append('')
+                if tupleSpacing and i > 0 and i % tupleSpacing == 0:
+                    joinlist.append('')
                 if isinstance(val[i], basestring):
                     joinlist.append(val[i])
                 else:
                     # Enforce that every element is a str type, as required
                     # by join()
-                    if formatStr == None:
+                    if precision == None:
                         joinlist.append(str(val[i]))
                     else:
-                        #joinlist.append(formatStr.format(val[i]))
-                        # See above
-                        joinlist.append(formatStr % val[i])
+                        if round(val[i], precision) == 0.:
+                            joinlist.append(XmlTag.ZERO_FLOAT_STRING)
+                        else:
+                            joinlist.append(str(round(val[i], precision)))
             val = " ".join(joinlist)
         if name in self.__attrKeys: self.__attrKeys.remove(name)
-        if formatStr == None or isinstance(val, basestring):
+        if precision == None or isinstance(val, basestring):
             self.quotedattrs[name] = quoteattr(val)
         else:
-            #self.quotedattrs[name] = quoteattr(formatStr.format(val))
-            # See above
-            self.quotedattrs[name] = quoteattr(formatStr % val)
+            if round(val, precision) == 0.:
+                self.quotedattrs[name] = XmlTag.QUOTED_ZERO_FLOAT_STRING
+            else:
+                self.quotedattrs[name] = quoteattr(round(val, precision))
         self.__attrKeys.append(name)
 
     def addComment(self, text):

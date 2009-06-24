@@ -47,4 +47,6 @@ This satisfies 2 use cases:  1: where one BV type is either required (e.g. the
 game may require an OBB to support model movement) or more accurate*;
 2: where animations (Blender-designed or jME-controlled) will extend the mesh
 beyond a load-time generated BV.
+POSTNOTE:  The Blender API has an object boundingBox attribute for Objects.
+I don't know how or if the user can modify the box itself though.
 * boxes are more accurately bound by BBs, spheres by BSs, angled boxes by OBBs.

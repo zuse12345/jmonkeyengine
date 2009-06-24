@@ -5,7 +5,7 @@ $Id$
 -->
 
   <property file="local.properties"/>
-  <property name="product.version" value="0.2a"/>
+  <property name="product.version" value="0.2b"/>
 
   <target name="clean" description="Wipe out all derived artifacts">
     <delete dir="dist"/>

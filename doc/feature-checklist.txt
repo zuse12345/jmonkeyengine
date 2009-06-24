@@ -24,6 +24,9 @@ $Id$
   Blender, these objects will not follow bone movements).
 * Support both old-fashioned parenting and modifier for associating skin
   object to armature object.
+* Arbitray nesting for any number of objects as children of the Armature
+  object, the Armature itself, and any individual bones.
 
+  Support multiple skin objects skinned by a single Armature.
   Add support for Object RB* game settings.  These would be very useful for
    jME games.  Like, custom Bondary objects, Physics integration, action hooks.

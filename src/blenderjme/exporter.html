@@ -31,11 +31,24 @@
     </STYLE>
   </HEAD>
   <BODY>
-    <h3>Blender / jME Exporter Help</h3>
+    <h3>Blender &#x21d2; jME Exporter Help</h3>
     Covers version ${product.version}.
     <BR/>
-    Copyright 2009 by Blaine Simpson and the jME team,
+    Copyright 2009 by Blaine Simpson and the jME Dev Team,
     with the included BSD open source license.
+    <HR/>
+    <h4>Acknowledgements</h4>
+    <p>
+    The 0.2 series of the exporter introduces detailed support for Skin &amp;
+    Bones.
+    </p><p>
+    Ashton V. was extremely helpful to the 0.2 effort, both for his keen
+    insight, and for his continual enthusiasm.
+    Without his encouragement, I would not have stuck it out to the end.
+    </p><p>
+    Sincere thanks also to Jushua Slack, for fixing an animation bug which had
+    halted all progress.
+    </p>
     <HR/>
     <h4>Interface</h4>
     <table cellspacing="0"><tr><td>
@@ -46,7 +59,7 @@
         Choose to export either all SELECTED exportable objects,
         or all exportable objects in the active scene.
         Toggle back and forth to see how many objects qualify each way.
-      <LI><b>Overwrite...</b>
+      <LI><b>Export file overwrites</b>
         Choose whether to overwrite export files without confirmation.
         If the target file does not exist yet, this setting has no effect.
       <LI><b>Make axes jME-conformant</b>
@@ -58,6 +71,15 @@
         or to export such objects without the unsupported materials.
         Toggle back and forth to see how many objects qualify each way
         (export object counts are shown inside the top button).
+       <LI><b>Max bone weightings/vert.</b>
+         This has no effect unless you export Armatures which have Actions,
+         and you have selected "Include" for the following item.
+         If you have a 16 bone armature, it is very unlikely that more than 4
+         bones <i>should</i> influence the deformation of a single skin mesh
+         vertex.  This limits the influence to the most influential X bones.
+       <LI><b>Blender animation</b>
+         If set to "Include", then when you export an Armature, the Actions for
+         that Amature will be exported also.  "Exclude" and they will not.
     </UL>
       </td></tr></table>
     <HR/>
@@ -99,10 +121,21 @@
     <h4>Usage Tips</h4>
       <UL>
         <LI><b>Details</b>
+          <span style="background-color:orange">
           To find out details about why the exporter refuses to export
           specific objects; or details about any failure, start Blender from the
           command-line.  When you attempt to export, messages about failures, or
           why items are rejected are written to stdout.
+          </span>
+        <LI>Look for tutorials about how to use this exporter <A target="oth_fr"
+          href="http://www.jmonkeyengine.com/wiki/doku.php?id=the_tutorials_-_jme_2">
+          on the jME Wiki</A>.
+        <LI><b>Armatures and Skin &amp; Bones</b>
+          If you are exporting Armatures or Armature animations, definitely
+          read the <A href="skinandbones.html">
+            Skin &amp; Bones Export Procedure</A>.
+          Besides laying out the procedure, this lists some significant
+          constraints which your model must satisfy.
         <LI><b>Real Program Problems</b>
           I do not have time to teach you Blender or jME, but if you have taken
           the time to produce evidence (like test cases) that a problem is due
@@ -120,6 +153,8 @@
             <LI>Export your model
             <LI>Re-open your blend-file to restore the pre-modified modifiers.
           </OL>
+        <LI><b>Use a recent jME 2.x distribution</b>
+          Use a recent build or build from Subversion.
         <LI><b>Use .blend-file-relative resource files</b>
           If selecting a resource file for loading or saving, make sure that
           you have already saved your scene to a .blend file (so Blender can
@@ -137,24 +172,20 @@
           file.
           </P>
         <LI><b>On the jME side, make the resource files available</b>
-          Subversion revision 4263 and later of jMonkeyEngine v. 2 contain my
-          modification to seek relative texture files relative to the
-          containing XML file.
-          If you are using a jME code base without this enhancement, you will
-          need to make the resource files
-          visible to the static ResourceLocatorTool that XMLImporter uses
-          (not that static discovery tools are bad, but static storage of
-          application state discovery paths is).
-          I recommend this approach temporarily:<PRE style="background-color:#FFFFE0;"><CODE style="background-color:#FFFFE0;">
-    ResourceLocator modelResLocator = new SimpleResourceLocator(
-            xmlFile.getParentFile().toURI());
-    ResourceLocatorTool.addResourceLocator(ResourceLocatorTool.TYPE_TEXTURE,
-            modelResLocator);
-    Object o =importer.load(file);
-    ResourceLocatorTool.removeResourceLocator(ResourceLocatorTool.TYPE_TEXTURE,
-            modelResLocator));
-          </CODE></PRE>
-          For brevity, I leave implementation of the try/finally block to you.
+          If you put use the <i>current directory strategy</i> explained in
+          the previous item, you are all set.
+          Sometimes, though, it makes more sense to organize your components in
+          different directories, or even to load them from a different location
+          over a network.
+          In this case, 
+          containing XML file, you will need to make the resource files
+          visible to the static ResourceLocatorTool that XMLImporter uses.
+          For real applications, I recommend use of my resource locators:
+          <CODE>com.jme.util.resource.AbsoluteResourceLoator</CODE>,
+          <CODE>com.jme.util.resource.ClasspathResourceLoator</CODE>, or
+          <CODE>com.jme.util.resource.RelativeResourceLoator</CODE>.
+          These are more efficient and do not pollute your name space like
+          <CODE>SimpleResourceLocator</CODE> does.
         <LI><b>Ambient Coloring</b>
           jMonkeyEngine has much more fine-grained support for ambient coloring
           than Blender has.

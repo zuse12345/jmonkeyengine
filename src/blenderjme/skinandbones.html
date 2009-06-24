@@ -1,0 +1,286 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- $Id$ -->
+<HTML>
+  <HEAD>
+    <TITLE>Skin &amp; Bones Exporting</TITLE>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<html>
+<head>
+    <STYLE>
+      body, table, div {
+          font-family:sans-serif:0;
+          font-size:14px;
+          border:0;
+          padding:0;
+      }
+      table, div {
+          margin:0;
+      }
+      body { background-color:white; margin:10px; }
+      code { font-family:monospace; }
+      table.data { background-color:silver; }
+      table.data td, table.data th { border:solid gray 1px; }
+      th { font-size:80%; }
+      td, th { padding:3px; }
+      tr.odd td { background-color:#E6E6FA; }
+      tr.even td { background-color:#E0FFFF; }
+      li { margin-top:3; margin-bottom:3px; }
+      div.footer { font-size:12px; }
+      span.addr { font-style:italic; white-space:nowrap; }
+    </STYLE>
+  </HEAD>
+  <BODY>
+    <h3>Skin &amp; Bones Exporting with<br/>
+      Blender &#x21d2; jME Exporter</h3>
+    Covers version ${product.version}.
+    <BR/>
+    <p>
+    This document explains the constraints that your scene must satisfy in
+    order to be exported;it describes the steps needed to create and
+    export a conventional Blender Skin &amp; Bones animation;
+    and it explains some details that people doing involved work with skeletons
+    will need to know.
+    </p> <p>
+    The exporter supports many Armature use cases in addition to the one
+    described here.
+    I intend to write tutorials covering the most useful of these, so look
+    for them <A target="other_frame"
+    href="http://www.jmonkeyengine.com/wiki/doku.php?id=the_tutorials_-_jme_2">
+    on the jME Wiki</A>.
+    </p>
+    <BR/>
+    Copyright 2009 by Blaine Simpson and the jME Dev Team,
+    with the included BSD open source license.
+    <HR/>
+    <h4>Constraints</h4>
+      <UL>
+        <LI>Armatures must be at the root level
+        <LI>For Armature skin weighting, <b>you must apply Bone Heat</b>.
+          You can modify the weightings as much as you wish afterwards, but
+          you must apply Bone Heat once.
+        <LI>Armatures may only have one bone-weighted skin.
+        <LI>All bones in a single exporte must be named uniquely.
+        If you export 4 armatures with 10 bones each, you need 40 unique bone
+        names.
+        (You could avoid this constraint by making 4 separate exports).
+      </UL>
+      Any or all of these constraints may be removed as we improve the
+        exporter.
+    <HR/>
+    <h4>Conventional Skin &amp; Bones Export Procedure</h4>
+    This section describes the procedure, but it is not a tutorial,
+    Advanced Blender and jME users will probably learn a lot from reading this
+    section.
+    Beginners may want to start by looking for a tutorial <A target="oth_frame"
+    href="http://www.jmonkeyengine.com/wiki/doku.php?id=the_tutorials_-_jme_2">
+    on the jME Wiki</A>, then returning here once you have a grasp on the work
+    flow.
+    <ol>
+      <li>Obtain or create, and prepare your skin mesh Object.
+        <ul>
+          <li>If your skin is composed of multiple meshes, join them into a
+          single mesh with Ctrl-J.
+          <li>If you start your skin object with very low vertex polies, you
+          will need to add more vertexes around joints so that skin
+          deformations will result in smooth skin curves.
+          One way that is often efficient and easy is to go into
+          EDIT mode and use A and B to select just Edges around the joints,
+          then W Subdivide Multi.
+          You may need to move your view around to get orthogonal to the
+          desired edges to select just the ones you want.
+          If you want to use the same multiplier on multiple areas, you can
+          select edges for all of these joints and perform a single Subdivide
+          Multi.
+          <li>Eliminate any rotation or scaling to your skin Object by
+          selecting it, Ctrl-A, "Scale and Rotation to ObjData".
+        </ul>
+      <li>Create your skeleton.
+        <ul>
+          <li>Set insertion cursor on the skin mesh location.
+          While the skin mesh Object is selected, do SHIFT-S, Cursor->Selection.
+          <li>Pulldown Add / Armature.
+          <b>Do not do anything to the new bone or Arma yet!</b>
+          <li>In the Mesh button panel, click on the Armature "X-Ray" toggle so
+          that you will be able to see the bone inside of the skin.
+          Rename the root bone if you wish to.
+          <li>Position and size the root bone.
+          In EDIT mode, select the Bone (not the armature or anything else!)
+          and move it to position the Root/Head where you want it.
+          Don't worry about the tip or the bone size: we'll take care of that
+          next.
+          In most cases you will want your bone location to stay aligned with
+          an axis of the body/armature base.
+          To move the bone while keeping it aligned on that axis, select the
+          Bone (in EDIT mode), hit G, hit Z to lock movement on the Z axis (or
+          X for X axis, etc.).
+          To scale and rotate the bone, you just move the tip:
+          Select just the Bone Tip/Tail and move it in the same exact way that
+          you just moved the Root.
+          You can use R to rotate bones, but 99% of the time it's easier to
+          place the Root where you want it, then position the Tip to set
+          rotation and size.
+          <li>Extract all other bones by hitting E and positioning new Bone
+          Tips in EDIT mode.
+          <li>Often, you will want a couple Roots to not be directly connected
+          to their parent.
+          To do this, just select the bone and toggle off "Co" in the Armature
+          Bones panel.
+          You can then position this bone without effecting the Tail of the
+          parent bone.
+          <p style="background-color:orange;">
+          <b>GOTCHA:</b> I have to select another bone and go back in order for
+          this to take effect.</p>
+          <li>To create additional root bones (one often wants independent root
+          bones for spine and eyes or thighs or shoulders), extrude the bone
+          from anywhere, then select it and in the Armature Bones panel use the
+          "child of" pulldown to set the parent bone to nothing.
+          <p style="background-color:orange;">
+          <b>GOTCHA:</b> I have to select another bone and go back in order for
+          this to take effect.</p>
+          <li>To create more than one children bones of any bone, select the
+          Root of any existing bone (one that you want to create a peer of),
+          and E to extrude from that.
+          <li style="background-color:orange;">
+          <b>GOTCHA:</b>  It is very easy to accidentally create extra bones
+          that you can't see.
+          I keep an eye on the Outliner View to prevent this.</li>
+          <li>Name your Bones appropriately.
+          There are several ways to do this.
+          I prefer to do (nearly) all of my item renaming by Ctrl-clicking on
+          the names in the Outliner View.
+          <li>As always in any 3D visualizer, make sure to view placements from
+          at least two orthogonal positions.
+        </ul>
+      <li>Initialize Bone Weights to skin vertexes.
+      <p style="font-family:mono-space;">
+    [You can accomplish the same thing as described in this section by just
+    parenting the skin Object to the armature Object and choosing Bone Heat
+    when prompted, then perform bone weighting adjustment as described below.
+    I explain the Modifier method because this seems to be the procedure
+    recommended by the most recent Blender docs.]</p>
+
+      <ul>
+        <li>Create an "Armature" modifier for the skin mesh, and key in the
+        precise name of the Armature object in the "Ob:" field.
+        Pay attention that you enter the "Object" name here, not the name of
+        the Armature itself (which is its child).
+        <span style="font-family:mono-space;">
+        [It would be great if they supplied a pulldown populated with just the
+        appropriate Object names.  Maybe some day.]</span>
+      <li>De-select the "Envelopes" option.
+      You can convert from envelopes to vertex groups, but unless you are
+      starting with a model that already has envelopes, just stick with the
+      Vert. Groups option.
+      Eventually, you must have vertexes weighted by Vertex Groups, since that
+      is how the exporter (and most other programs other than Blender itself)
+      apply the specified weights.
+      <li>This step consists of one of the quirkiest operations in Blender.
+      First, select the Armature object and switch to pose mode.
+      Blender remembers this as the "current" mode for the Armature even when
+      you select another object.
+      Now, select the skin mesh and switch to Weight Paint mode.
+      Now, due to the Armature being in pose mode, you can skin weight painter
+      knows about the bones.
+      <p style="background-color:orange;">
+      <b>IMPORTANT!</b>
+      For the time being, you must apply "bone heats" to your model.
+      This is a work-around which prevents artifacts from wrecking the export.
+      When we have time to dig into the issue and fix the real problem, we'll
+      eliminate this requirement.</p>
+      <li>Right click on any bone.
+      Click W and choose "Apply Bone Heat...".
+      Repeat this operation until you have applied Bone Heat to each bone.
+      (The Weight Paint interface doesn't allow you to select multiple bones at
+      once :( ).
+    </ul>
+  <li>Adjust Bone Weights
+    <p>
+    You can adjust bone weights anytime.
+    It may well be the case that the automatic bone heat weightings are
+    adequate for your model, and you don't need to make any adjustments.
+    </p><p>
+    You must enter the Weight Paint editor as described in the previous step,
+    so that Blender can associate the skin vertexes with the bones.
+    Select bones and rotate them.
+    I like to use R to do that.
+    See whether you are satisfied with the skin deformations.
+    <p>
+    <ul>
+      <li>Click N, which just duplicates the Paint button panel up in the
+      Weight Paint Viewer.
+      With the controlling bone selected, "Add" or "Remove" bone weight
+      to pixels by painting.
+      The closer to Red, the more the selected bone influences.
+      The closer to Blue, the less the selected bone influences.
+    </ul>
+  <li>Export
+    <p>
+    Export from Object mode.
+    Make sure to select both the skin mesh object and the armature object.
+    All armature actions (animations), if any, will get exported along with the
+    armature.
+    Use the Blender "Anim" button panel to narrow the start and end frames if
+    you wish.
+    Be aware that exporters only export the key frames, so if you specify frame
+    numbers that aren't key frames, the exporter will raise them up to the next
+    key frame.
+    </p><p>
+    If there are Blender animations (actions) for the armature, they will
+    export with the skeleton, and you can run the animations without skin.
+    </p><p>
+    The exporter handles the various objects in a very modular fashion, and
+    there are many good reasons why you might want to export just portions of
+    what is described above.
+    You can export the skin &amp; bones without the Blender animations
+    (say, if you want to use a jME controller, or program your own
+    <code>setLocal*()</code> methods.
+    You can export just the skeleton, with or without its animations.
+    You can export just the skin.
+    You can also add non-bone-weighted meshe objects to the Armature object or
+    to any specific bones, and you can nest onto these objects.
+    Exporting components this way isn't just for learning, testing, or theory--
+    the are the basis for some very efficient methods of game animation.
+    </p>
+  </ol>
+    <HR/>
+    <h4>Details about Bones</h4>
+    <p>
+      Use the Bone Debugger in jME to examine and learn to use your skeletons.
+    </p> <p>
+      To see what leaf bones are really doing, you will need to add dummy leaf
+      bones to your skeleton in Blender.
+      This is because jME only loads information about a single location of a
+      bone-- the Base/Root.
+      Therefore, if a bone has no child, it's impossible to make out anything
+      about the bone's rotation (if the bone is rotating, you may make out a
+      glimmer as it rotates, but that's about it).
+      In Blender, you can use the Outliner to set these dummy bones to be
+      invisible.
+      You have to turn it off from both Edit and Pose modes in order for it to
+      always be invisible.
+    </p> <p>
+      If you examine the bones on the jME side, you may notice that the
+      exporter adds an extra root bone above the Blender bones.
+      From the jME perspective, this is the skeleton's <i>root bone</i>.
+      To distinguish it from the Blender root bones, we call this automatically
+      created bone the <i><b>Super Bone</b></i>.
+      This is a work-around for the single-root-bone limitation of
+      <code>com.jme.animation</code>.
+      It is not unusual to have a single root bone, with no offset, in your
+      Blender Armature.
+      If that is the case, you won't see the <i>Super Bone</i> in the jME Bone
+      Debugger, because the root bone will lay right on top of it.
+      In this case, if you apply a translation to the root bone, the
+      <i>Super Bone</i> will appear.
+    </p>
+    <HR/>
+    <DIV class="footer">
+      $Revision$
+      <BR/>
+      Last modified $Date$
+      <BR/>
+      <span class="addr">blaine (dot) simpson (at) admc (dot) com</span>
+    </DIV>
+  </BODY>
+</HTML>

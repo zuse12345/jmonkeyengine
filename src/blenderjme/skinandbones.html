@@ -29,6 +29,7 @@
       li { margin-top:3; margin-bottom:3px; }
       div.footer { font-size:12px; }
       span.addr { font-style:italic; white-space:nowrap; }
+      a { color:black; }
     </STYLE>
   </HEAD>
   <BODY>
@@ -36,6 +37,18 @@
       Blender &#x21d2; jME Exporter</h3>
     Covers version ${product.version}.
     <BR/>
+    Copyright 2009 by Blaine Simpson and the jME Dev Team,
+    with the included BSD open source license.
+    <HR/>
+    <h4 id="contents">Contents</h4>
+    <ol>
+      <li><a href="#purpose">Purpose</a>
+      <li><a href="constraints">Constraints</a>
+      <li><a href="procedure">Conventional Skin &amp; Bones Export Procedure</a>
+      <li><a href="tips">Tips</a>
+    </ol>
+    <HR/>
+    <h4 id="purpose">Purpose</h4>
     <p>
     This document <ol>
       <li>explains the constraints that your scene must satisfy in
@@ -52,11 +65,8 @@
     href="http://www.jmonkeyengine.com/wiki/doku.php?id=the_tutorials_-_jme_2">
     on the jME Wiki</A>.
     </p>
-    <BR/>
-    Copyright 2009 by Blaine Simpson and the jME Dev Team,
-    with the included BSD open source license.
     <HR/>
-    <h4>Constraints</h4>
+    <h4 id="constraints">Constraints</h4>
       <UL>
         <LI>Armatures must be at the root level
         <LI>For Armature skin weighting, <b>you must apply Bone Heat</b>.
@@ -88,7 +98,7 @@
       Any or all of these constraints may be removed as we improve the
         exporter.
     <HR/>
-    <h4>Conventional Skin &amp; Bones Export Procedure</h4>
+    <h4 id="procedure">Conventional Skin &amp; Bones Export Procedure</h4>
     This section describes the procedure, but it is not a tutorial,
     Advanced Blender and jME users will probably learn a lot from reading this
     section.
@@ -271,14 +281,21 @@
     </p>
   </ol>
     <HR/>
-    <h4>Tips</h4>
+    <h4 id="tips">Tips</h4>
     <ul>
+      <p>
       <li>If you move bones without an animation controller, like with
       <code>Spatial.setLocal*()</code>, you must run<pre><code>
           skinNode.boneChained(null);
       </code></pre> on the corresponding
       <code>com.jme.animation.SkinNode</code> in order for the skin to update
       accordingly.
+      <p> </p>
+      If you use Modeler, the minus key performs this action (I'll add a button
+      or menu item to make this more obvious sometime).
+      You will need to select the <code>SkinNode</code> before-hand, to tell
+      Modeler which skin to update.
+      </p>
     <li>
       Use the Bone Debugger in jME to examine and learn to use your skeletons.
     <li>

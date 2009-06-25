@@ -37,6 +37,8 @@ import java.util.ArrayList;
 import java.net.URL;
 import java.net.MalformedURLException;
 
+import com.jme.input.MouseInput;
+import com.jme.input.FirstPersonHandler;
 import com.jme.util.export.xml.XMLImporter;
 import com.jme.bounding.BoundingBox;
 import com.jme.scene.Spatial;
@@ -81,10 +83,21 @@ public class XmlWorld extends SimpleGame {
     }
 
     protected void simpleInitGame() {
-        if (modelUrls == null)
-            throw new IllegalStateException(XmlWorld.class.getName()
-                    + " not initialized properly");
-        for (URL url : modelUrls) loadModel(url);
+        try {
+            MouseInput.get().setCursorVisible(true);
+            ((FirstPersonHandler) input).setButtonPressRequired(true);
+            // Windowed mode is extremely irritating without these two settings.
+
+            if (modelUrls == null)
+                throw new IllegalStateException(XmlWorld.class.getName()
+                        + " not initialized properly");
+            for (URL url : modelUrls) loadModel(url);
+        } catch (Exception e) {
+            // Programs should not just continue obvliviously when exceptions
+            // are thrown.  Since we aren't handling them, we exit gracefully.
+            e.printStackTrace();
+            finish();
+        }
     }
 
     protected void loadModel(URL modelUrl) {

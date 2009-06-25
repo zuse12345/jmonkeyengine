@@ -100,9 +100,12 @@ class ActionData(object):
                 for bp in curve.bezierPoints:
                     frameFloat = bp.vec[1][0]
                     # Remember that Blender frames are 1-based, not 0-based
-                    if frameFloat % 1 != 0: raise Exception(
-                            "A curve Bezier pt has non-integral frame num: "
-                            + str(frameFloat))
+                    # This number is usually just the float form of an integer,
+                    # but if user has copied and moved an action, it can be
+                    # non-integral.  TODO: REMOVE FOLLOWING ONCE CONFIRMED SAFE
+                    #if frameFloat % 1 != 0: framekkkk
+                            #"A curve Bezier pt has non-integral frame num: "
+                            #+ str(frameFloat))
                     frameSet.add(frameFloat)
                     # Leaving value a float so float division will occur below
         self.blenderFrames = list(frameSet)

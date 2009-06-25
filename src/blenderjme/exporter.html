@@ -88,7 +88,12 @@
          and you have selected "Include" for the following item.
          If you have a 16 bone armature, it is very unlikely that more than 4
          bones <i>should</i> influence the deformation of a single skin mesh
-         vertex.  This limits the influence to the most influential X bones.
+         vertex.  This limits the influence to the most influential X bones,
+         saving your game from what could be significant unnecessary skinning
+         computations.
+         If you look your model over and realize that no vertex should be
+         influenced by more than two bones, then do yourself a favor and turn
+         this setting down.
        <LI><b>Blender animations</b>
          If set to "Include", then when you export an Armature, the Actions for
          that Amature will be exported also.  "Exclude" and they will not.

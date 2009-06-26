@@ -47,6 +47,7 @@
       <li><a href="#mapping">Mapping Blender items to jME items</a>
       <li><a href="#uvcoords">UV Coordinates and Values</a>
       <li><a href="#jme">Importing into jME</a>
+      <a href="skinandbones.html">Skin &amp; Bones Exporting</a>
     </ol>
     <HR/>
     <h4 id="acknowledgements">Acknowledgements</h4>
@@ -158,7 +159,7 @@
           the time to produce evidence (like test cases) that a problem is due
           to the exporter itself, please contact me.
           <span class="addr">blaine (dot) simpson (at) admc (dot) com</span>
-          <LI><b>Apply modifiers</b>
+          <LI><b>Apply modifiers, except for <i>Armature</i> type modifiers</b>
           If you want your export to reflect your modifiers, such as
           <i>subsurf</i>, you need to apply them.
           In general, you should not save applied modifiers to your .blend
@@ -166,7 +167,8 @@
           effects of modifers.
           Therefore, the suggested procedure is to <OL>
             <LI>Save your image (to normal .blend file)
-            <LI>Apply all of your mesh modifiers
+            <LI>Apply all of your mesh modifiers, other than <i>Armature</i>
+                type modifiers.
             <LI>Export your model
             <LI>Re-open your blend-file to restore the pre-modified modifiers.
           </OL>
@@ -223,6 +225,16 @@
           color that you intend for your objects to show in shadows, so that
           color, attenuated by the materials' "emit" value, is exactly what we
           save as the jME Material State's ambient color.
+        <LI><b>Texture application Mode</b>
+          For realistic combining of light and textures in jME, when setting up
+          set up the texture mapping, set the mode to <code>Multiply</code>
+          int the Materials <code>Map To</code> tab, instead of the default of
+          <code>Mix</code>.
+        <LI><b>Blender Nodes</b>
+          I don't know anything about the new Blender <i>Nodes</i>, so it's
+          unlikely that anything to do with them will export.
+          If I weren't busy writing Help pages and tutorials, the exporter
+          would probably support them already.
     </UL>
     <HR/>
     <h4 id="mapping">Mapping Blender items to jME items</h4>

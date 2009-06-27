@@ -1120,7 +1120,7 @@ class JmeSkinAndBone(object):
         self.matrix = None
 
         self.boneTree = JmeBone(bObj)
-        if self.boneTree.name == self.name: self.boneTree.name += "RootBone"
+        if self.boneTree.name == self.name: self.boneTree.name += "SuperBone"
         self.__regenChildren()
         if self.actionDataList != None:
             for data in self.actionDataList: self.boneTree.addAction(data)

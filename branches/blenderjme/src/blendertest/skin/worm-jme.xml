@@ -7,7 +7,7 @@
 <com.jme.scene.Node name="Armature">
   <localRotation x="-0.707107" y="0.0" z="0.0" w="0.707107"/>
   <children size="2">
-    <com.jme.animation.Bone name="ArmatureRootBone" reference_ID="ArmatureRootBone">
+    <com.jme.animation.Bone name="ArmatureSuperBone" reference_ID="ArmatureSuperBone">
       <bindMatrix class="com.jme.math.Matrix4f" m23="-2.0"/>
       <children size="1">
         <com.jme.animation.Bone name="Bone01" reference_ID="Bone01">
@@ -55,7 +55,7 @@
         </com.jme.scene.Node>
       </children>
       <skins ref="SkinObj" class="com.jme.scene.Node"/>
-      <skeleton ref="ArmatureRootBone" class="com.jme.animation.Bone" name="ArmatureRootBone"/>
+      <skeleton ref="ArmatureSuperBone" class="com.jme.animation.Bone" name="ArmatureSuperBone"/>
       <cache size="1">
         <SavableArrayListArray_0 size="386">
           <SavableArrayList_0 size="1">

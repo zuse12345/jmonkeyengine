@@ -3,7 +3,7 @@
 Exporter (not this file!) copyright by
   Blaine Simpson, blaine (dot) simpson (at) admc (dot) com + the jME Dev Team -->
 
-<com.jme.animation.Bone name="ArmatureRootBone">
+<com.jme.animation.Bone name="ArmatureSuperBone">
   <children size="1">
     <com.jme.animation.Bone name="Bone01">
       <children size="1">

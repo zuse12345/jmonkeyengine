@@ -45,6 +45,8 @@ import com.jme.scene.Spatial;
 import com.jme.app.SimpleGame;
 
 /**
+ * Sample SimpleGame class that loads *-jme.xml model files from URLs.
+ *
  * @author Blaine Simpson (blaine dot simpson at admc dot com)
  * @see #main(String[])
  */
@@ -64,9 +66,13 @@ public class XmlWorld extends SimpleGame {
      *
      */
     static public void main(String[] args) throws MalformedURLException {
+        XmlWorld.parseAndRun(new XmlWorld(), args);
+    }
+
+    static protected void parseAndRun(XmlWorld xmlWorld, String[] args)
+            throws MalformedURLException {
         int counter = -1;
         List<URL> urls = new ArrayList<URL>();
-        XmlWorld xmlWorld = new XmlWorld();
         for (String urlString : args) {
             if (urlString.equals("-r")) {
                 xmlWorld.setConfigShowMode(ConfigShowMode.AlwaysShow);

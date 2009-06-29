@@ -972,9 +972,6 @@ class JmeAnimation(object):
                 'endFrame': self.__data.endFrame
         })
         # endFrame is the 0-based INDEX of the last frame that will play.
-        # Would like to allow for lengthening or shortening with the Blender
-        # renderer's last frame setting, but that would not allow for different
-        # values for different animations.
 
         keyframeTimeTag = _XmlTag(
                 'keyframeTime', {'size': len(self.__data.keyframeTimes)})
@@ -1007,9 +1004,9 @@ class JmeAnimation(object):
                 translationsTag.addAttr("size", len(self.__data.keyframeTimes))
                 # Sanity check:
                 if (len(self.__data.keyframeTimes)
-                        )!= len(self.__data.locs[boneName]):
-                    raise Exception("Bone " + boneName + " has " +
-                            + str(len(self.__data.boneList[boneName]))
+                        ) != len(self.__data.locs[boneName]):
+                    raise Exception("Bone " + boneName + " has "
+                            + str(len(self.__data.locs[boneName]))
                             + " locs, but there are "
                             + str(len(self.__data.keyframeTimes))
                             + " key frames")

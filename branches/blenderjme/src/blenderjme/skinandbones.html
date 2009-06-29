@@ -88,13 +88,6 @@
         between key frames, regardless of what interpolation algorithm Blender
         uses.
         This is a limitation of <code>com.jme.animation</code>.
-        <LI>There seems to be a bug in <code>com.jme.animation</code> wrt
-        start and end frame.
-        If you change the default start and end frames (as described below),
-        the first cycle in jME will still play the entire animation.
-        The specified limits take hold for following cycles
-        (I have not tried for a non-repeating animation).
-        At least, this has been my experience.
       </UL>
       Any or all of these constraints may be removed as we improve the
         exporter.
@@ -259,13 +252,12 @@
     </ul>
     All armature actions (animations), if any, will get exported along with the
     armature (unless you select <code>Exclude</code> on the exporter screen.
-    Use the Blender "Anim" button panel to narrow the start and end frames if
-    you wish.
     This is the case even if you don't export a skin (in this case, you can
     still animate the skeleton in jME).
-    Be aware that interpolation-retaining exporters like ours only export the
-    key frames, so if you specify frame numbers that aren't key frames, the
-    exporter will raise them up to the next key frame.
+    Use the Blender "Anim" button panel to narrow the start and end frames if
+    you wish.
+    See the <A href="#tips">Tips section below</A> for important information
+    about start and end frames.
     </p><p>
     The exporter handles the various objects in a very modular fashion, and
     there are many good reasons why you might want to export just portions of
@@ -279,6 +271,15 @@
     to any specific bones, and you can nest onto these objects.
     Exporting components this way isn't just for learning, testing, or theory--
     the are the basis for some very efficient methods of game animation.
+    </p>
+    <li>Import into jME
+    <p>
+        See the bundled sample class code
+        <a href="XmlAnimator.java"><code>XmlAnimator.java</code></A>.
+        (If your web browser doesn't let you view or download this file,
+        get a better browser).
+        This sample extends <a href="XmlWorld.java"><code>XmlWorld</code></A>
+        to list and execute animations.
     </p>
   </ol>
     <HR/>
@@ -297,6 +298,11 @@
       You will need to select the <code>SkinNode</code> before-hand, to tell
       Modeler which skin to update.
       </p>
+      <li>To restart an animation (for example to re-run an animation of
+      repeat type <i>Clamp</i>), you need to run
+      <code>BoneAnimation.reset()</code> before setting the animation active
+      (which is how you <i>start</i> an animation), to reset the frame and
+      time back to the start of the animation.
     <li>
       Use the Bone Debugger in jME to examine and learn to use your skeletons.
     <li>
@@ -338,10 +344,24 @@
       Remember that to use the Blender Weight Painter, you must have the
       Armature in Pose mode before setting the skin mesh to Weight Painter mode.
     <li>
-      Very similarly to the previous paragraph, in order to parent a skin mesh
+      Very similarly to the previous item, in order to parent a skin mesh
       to a bone (as opposed to the Armature Object or the Armature itself), you
       must put the Armature into pose mode, then parent the skin mesh object to
       the Armature object.
+    <li><b>Action Start and End frames.</b>
+      Blender animations must end with a key frame if you want the tail segment
+      of the animation to show interpolation in Blender.
+      Interpolation-retaining exporters like ours only export the key frames.
+      Our exporter generates jME-only keyframes for start and/or end frames, if
+      the specified frame numbers are not keyframe frames.
+      This feature can be exploited to eliminate the duplicate frame joining
+      the first frame with the last frame of an animation sequence of repeat
+      type <i>Wrap</i>.
+      When designing a Blender animation intended for usage with repeat type
+      <i>Wrap</i>, set the end frame to one frame before the final keyframe.
+      The exporter will generate that keyframe, and in jME the animation will
+      smoothly transition from that frame to the first frame of the animation,
+      without the momentary pause in animation which you would have otherwise.
     <HR/>
     <DIV class="footer">
       $Revision$

@@ -72,6 +72,10 @@ class ActionData(object):
         self.origBlenderFrame = _bGet("curframe")
         blenderStaFrame = _bGet("staframe")
         blenderEndFrame = _bGet("endframe")
+        if blenderStaFrame >= blenderEndFrame:
+            raise Exception("Specified start frame is not before specified "
+                    + "end frame: " + str(blenderStaFrame)
+                    + " vs. " + str(blenderEndFrame))
         self.boneMap = boneMap
         if ActionData.frameRate == None:
             raise Exception("You can't instantiate ActionData until the "
@@ -114,18 +118,35 @@ class ActionData(object):
         self.startFrame = None
         self.endFrame = None
         keyFrameNum = -1
-        for blenderFrameNum in self.blenderFrames:
+        for blenderFrameNum in self.blenderFrames[:]:
             keyFrameNum += 1
-            if self.startFrame == None and blenderStaFrame <= blenderFrameNum:
-                self.startFrame = keyFrameNum
-            if self.endFrame == None and blenderEndFrame <= blenderFrameNum:
-                self.endFrame = keyFrameNum
+            if self.startFrame == None:
+                if blenderStaFrame == blenderFrameNum:
+                    self.startFrame = keyFrameNum
+                elif blenderStaFrame < blenderFrameNum:
+                    self.startFrame = keyFrameNum
+                    self.blenderFrames.insert(keyFrameNum, blenderStaFrame)
+                    self.keyframeTimes.append(
+                            (blenderStaFrame-1.) / ActionData.frameRate)
+                    keyFrameNum += 1
+            if self.endFrame == None:
+                if blenderEndFrame == blenderFrameNum:
+                    self.endFrame = keyFrameNum
+                elif blenderEndFrame < blenderFrameNum:
+                    self.endFrame = keyFrameNum
+                    self.blenderFrames.insert(keyFrameNum, blenderEndFrame)
+                    self.keyframeTimes.append(
+                            (blenderEndFrame-1.) / ActionData.frameRate)
+                    keyFrameNum += 1
             self.keyframeTimes.append(
                     (blenderFrameNum-1.) / ActionData.frameRate)
-        if self.startFrame == None: self.startFrame = 0
-        # Default to first key frame
+        if self.startFrame == None:
+            raise Exception("Start frame set to frame after end of animation: "
+                    + str(blenderStaFrame))
         if self.endFrame == None: self.endFrame = len(self.blenderFrames) - 1
-        # Default to last key frame
+        # We do not allow extrapolating past end of keyframes, because this
+        # is the (poor) default that Blender sets, yet this is not what users
+        # usually want.  The default should be to stop at the last key frame.
 
     def restoreFrame(self):
         "CRITICALLY IMPORTANT to call this only when this action is 'active'"

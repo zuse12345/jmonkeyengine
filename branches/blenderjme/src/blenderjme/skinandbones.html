@@ -88,6 +88,10 @@
         between key frames, regardless of what interpolation algorithm Blender
         uses.
         This is a limitation of <code>com.jme.animation</code>.
+        <LI>As suggested in Blender documentation, the skin Object and the
+        Armature Object should both have zero rotations and scale values of 1;
+        and the translation (location) of these two objects should be exactly
+        the same.
       </UL>
       Any or all of these constraints may be removed as we improve the
         exporter.
@@ -139,15 +143,15 @@
           In most cases you will want your bone location to stay aligned with
           an axis of the body/armature base.
           To move the bone while keeping it aligned on that axis, select the
-          Bone (in EDIT mode), hit G, hit Z to lock movement on the Z axis (or
-          X for X axis, etc.).
+          Bone (in EDIT mode), hit "g", hit "z" to lock movement on the Z axis
+          (or X for X axis, etc.).
           To scale and rotate the bone, you just move the tip:
           Select just the Bone Tip/Tail and move it in the same exact way that
           you just moved the Root.
           You can use R to rotate bones, but 99% of the time it's easier to
           place the Root where you want it, then position the Tip to set
           rotation and size.
-          <li>Extract all other bones by hitting E and positioning new Bone
+          <li>Extract all other bones by hitting "e" and positioning new Bone
           Tips in EDIT mode.
           <li>Often, you will want a couple Roots to not be directly connected
           to their parent.
@@ -159,12 +163,14 @@
           <b>GOTCHA:</b> I have to select another bone and go back in order for
           this to take effect.</p>
           <li>To create additional root bones (one often wants independent root
-          bones for spine and eyes or thighs or shoulders), extrude the bone
-          from anywhere, then select it and in the Armature Bones panel use the
-          "child of" pulldown to set the parent bone to nothing.
+          bones for spine and eyes or thighs or shoulders), select an existing
+          root bone's Root and extract from that.
+          You can, alternatively, extrude the bone from anywhere, then select
+          it and in the Armature Bones panel use the "child of" pulldown to set
+          the parent bone to nothing.
           <p class="gotcha">
           <b>GOTCHA:</b> I have to select another bone and go back in order for
-          this to take effect.</p>
+          either of these tactics to take effect.</p>
           <li>To create more than one children bones of any bone, select the
           Root of any existing bone (one that you want to create a peer of),
           and E to extrude from that.
@@ -188,6 +194,11 @@
     recommended by the most recent Blender docs.]</p>
 
       <ul>
+        <li>Before using any system that generates skin/bone weights
+        automatically, make sure to toggle off the <code>Deform</code>
+        property of all bones that you do not want to influence the skin mesh.
+        This is done by selecting each bone in Edit mode and clicking the
+        toggle in the Mesh Button window's Armature Bones panel.
         <li>Create an "Armature" modifier for the skin mesh, and key in the
         precise name of the Armature object in the "Ob:" field.
         Pay attention that you enter the "Object" name here, not the name of
@@ -216,10 +227,12 @@
       When we have time to dig into the issue and fix the real problem, we'll
       eliminate this requirement.</p>
       <li>Right click on any bone.
-      Click W and choose "Apply Bone Heat...".
+      Click "w" and choose "Apply Bone Heat...".
       Repeat this operation until you have applied Bone Heat to each bone.
       (The Weight Paint interface doesn't allow you to select multiple bones at
       once :( ).
+      Though you are allowed to paint weights for non-Deform bones, such
+      weightings will never be applied to a mesh.
     </ul>
   <li>Adjust Bone Weights
     <p>
@@ -234,7 +247,7 @@
     See whether you are satisfied with the skin deformations.
     <p>
     <ul>
-      <li>Click N, which just duplicates the Paint button panel up in the
+      <li>Click "n", which just duplicates the Paint button panel up in the
       Weight Paint Viewer.
       With the controlling bone selected, "Add" or "Remove" bone weight
       to pixels by painting.
@@ -348,6 +361,9 @@
       to a bone (as opposed to the Armature Object or the Armature itself), you
       must put the Armature into pose mode, then parent the skin mesh object to
       the Armature object.
+    <li>Make sure when saving key frames which will be used as animation start
+      frames, that you choose <code>LocRot</code> and select every bone that
+      will be used at all in this animation.
     <li><b>Action Start and End frames.</b>
       Blender animations must end with a key frame if you want the tail segment
       of the animation to show interpolation in Blender.

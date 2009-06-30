@@ -823,9 +823,6 @@ class JmeBone(object):
             return
         self.children = []
         for blenderBone in blenderChildren:
-            # TODO:  May not belong here, but somewhere we need to
-            # skip bones with option NO_DEFORM (need to still recurse
-            # to their children though).
             # Recursive instantiation:
             self.children.append(JmeBone(blenderBone, self))
 

@@ -40,28 +40,15 @@
     <HR/>
     <h4 id="contents">Contents</h4>
     <ol>
-      <li><a href="#acknowledgements">Acknowledgements</a>
+      <li><a href="releasenotes.html">Release Notes</a>
       <li><a href="#interface">Interface</a>
       <li><a href="#supportedsettings">Blender Settings Supported</a>
       <li><a href="#tips">Usage Tips</a>
       <li><a href="#mapping">Mapping Blender items to jME items</a>
       <li><a href="#uvcoords">UV Coordinates and Values</a>
       <li><a href="#jme">Importing into jME</a>
-      <a href="skinandbones.html">Skin &amp; Bones Exporting</a>
+      <li><a href="skinandbones.html">Skin &amp; Bones Exporting</a>
     </ol>
-    <HR/>
-    <h4 id="acknowledgements">Acknowledgements</h4>
-    <p>
-    The 0.2 series of the exporter introduces detailed support for Skin &amp;
-    Bones.
-    </p><p>
-    Ashton V. was extremely helpful to the 0.2 effort, both for his keen
-    insight, and for his continual enthusiasm.
-    Without his encouragement, I would not have stuck it out to the end.
-    </p><p>
-    Sincere thanks also to Joshua Slack, for fixing an animation bug which had
-    halted all progress.
-    </p>
     <HR/>
     <h4 id="interface">Interface</h4>
     <table cellspacing="0"><tr><td>
@@ -134,6 +121,9 @@
           Supported modes combine as they should.
           You can, for example, overlay a file with transparency and see
           through the transparent parts to the material beneath.
+        <LI>Animation start and stop frames (start and stop key frames are
+          automatically generated if the numbers are not set to key
+          frame numbers).
       </UL>
     <HR/>
     <h4 id="tips">Usage Tips</h4>
@@ -236,6 +226,12 @@
           unlikely that anything to do with them will export.
           If I weren't busy writing Help pages and tutorials, the exporter
           would probably support them already.
+        <LI><b>Texture Image Sharing</b>
+          I haven't tried to fix it yet, but it looks jME does not share
+          texture images right.  The exporter takes pains to share different
+          levels of material objects as much as possible.  On the jME side,
+          however, textures clobber each other just by virtue of the
+          text image file name, even if settings like scale differ.
     </UL>
     <HR/>
     <h4 id="mapping">Mapping Blender items to jME items</h4>

@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- $Id$ -->
+<HTML>
+  <HEAD>
+    <TITLE>Blender / jME Exporter Help</TITLE>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<html>
+<head>
+    <STYLE>
+      body, table, div {
+          font-family:sans-serif:0;
+          font-size:14px;
+          border:0;
+          padding:0;
+      }
+      table, div {
+          margin:0;
+      }
+      body { background-color:white; margin:10px; }
+      code { font-family:monospace; }
+      table.data { background-color:silver; }
+      table.data td, table.data th { border:solid gray 1px; }
+      th { font-size:80%; }
+      td, th { padding:3px; }
+      tr.odd td { background-color:#E6E6FA; }
+      tr.even td { background-color:#E0FFFF; }
+      li { margin-top:3; margin-bottom:3px; }
+      div.footer { font-size:12px; }
+      span.addr { font-style:italic; white-space:nowrap; }
+      a { color:black; }
+    </STYLE>
+  </HEAD>
+  <BODY>
+    <h3>Blender &#x21d2; jME Exporter Help</h3>
+    Covers version ${product.version}.
+    <BR/>
+    Copyright 2009 by Blaine Simpson and the jME Dev Team,
+    with the included BSD open source license.
+    <HR/>
+    This incremental beta release adds minor enhancements and fixes beyond 0.2c,
+    with substantial improvements to documentation and bundled examples.
+    <h4 id="contents">Contents</h4>
+    <ol>
+      <li><a href="#acknowledgements">Acknowledgements</a>
+      <li><a href="#changelist">Changes since previous releases</a>
+    </ol>
+    <a href="exporter.html">Main Help Page</a>
+    <HR/>
+    <h4 id="acknowledgements">Acknowledgements</h4>
+    <p>
+    The 0.2 series of the exporter introduces detailed support for Skin &amp;
+    Bones.
+    </p><p>
+    Ashton V. was extremely helpful to the 0.2 effort, both for his keen
+    insight, and for his continual enthusiasm.
+    Without his encouragement, I would not have stuck it out to the end.
+    </p><p>
+    Sincere thanks also to Joshua Slack, for fixing an animation bug which had
+    halted all progress.
+    </p>
+    <HR/>
+    <h4 id="changelist">Change List</h4>
+    <ul>
+      <li>Changes since 0.1<ol>
+        <li>General support for Blender Armatures.
+            It would take too much work to list the individual features here.
+            With a few significant exceptions, we extend our support for
+            arbitrary object to the realm of armatures.
+            See the <A href="skinandbones.html">Skin &amp; Bones page</A> for
+            details on exporter support for Armatures.
+      </ol>
+      <li>Changes since 0.2c<ol>
+        <li>Enhanced existing Java sample class, and added new sample to
+        exemplify jME-side usage of animation exports.
+        <li>Support arbitrary start and end frame settings (except can't be
+        within the range of the animations frame set).
+        <li>Many fixes and enhancements to online docs, including addition of
+        the page you are now reading.
+        <li>Added support for <code>Empty</code> object types.
+        <li>Added support for <code>Empty Mesh</code> object types, including
+         support for our material inheritance feature.
+        <li>Several TODO items taken care of, which verified proper handling
+         of items such as no-deform bones, envelope options, arbitrary mixing
+         of Loc + Rot + LocRot frames and channel selections.  The net effect
+         to the software is primarily removal of TODO items and warnings in
+         the code.
+        <li>Documented requirements and suggestions for content of starting
+         frames.  If these suggestions are followed, users can freely optimize
+         following frames without dangers which would otherwise be incurred.
+      </ol>
+    </ul>
+    <HR/>
+    <DIV class="footer">
+      $Revision$
+      <BR/>
+      Last modified $Date$
+      <BR/>
+      <span class="addr">blaine (dot) simpson (at) admc (dot) com</span>
+    </DIV>
+  </BODY>
+</HTML>

@@ -191,7 +191,9 @@ class JmeNode(object):
                                 + " due to: " + str(ue))
             if len(jmeTexs) > 0:
                 self.jmeTextureState = nodeTree.includeJmeTextureList(jmeTexs)
-        if bMesh == None: return
+        if bMesh == None or len(bMesh.verts) == 0: return
+         # An unused Blender "EmptyMesh" will have 0 verts.
+         # This is useful for our Material inheritance feature
 
         # From here on, we know we have a Blender direct Mesh data member
         objColor = None
@@ -319,21 +321,17 @@ class JmeNode(object):
         # Ignore animation, action, constraints, ip, and keyframing settings.
         # Users should know that we don't support them.
 
-        if bObj.type not in ['Mesh', 'Armature']: return 0
+        if bObj.type not in ['Mesh', 'Armature', 'Empty']: return 0
         if bObj.type == 'Armature':
             arma = bObj.getData(False, True)
-            #if arma.vertexGroups:
-                #print "ATTEMPTING a VG-weighted Armature, " + bObj.name + "..."
-            #if arma.envelopes:
-                #print "ATTEMPTING an Env-weighted Armature, " + bObj.name + "..."
-            for bone in arma.bones.values():
-                if _Armature.HINGE in bone.options:
-                    print "HINGE bone option not supported"
-                    return 0
+            # Don't test for arma.vertexGroups or arma.envelopes.
+            # We support non-weighted skeletons; and it does us no harm if the
+            # user plays with envelopes just on the Blender side.
+            # Don't check any bone.options.  These are blender-side items to
+            # facilitate laying out bones, constraints, and animations.
             return True
         bMesh = bObj.getData(False, True)
-        if not bMesh: raise Exception("Mesh Object has no data member?")
-        if bMesh.multires:
+        if bMesh != None and bMesh.multires:
             print "multires data"
             return 0
         if skipObjs:
@@ -343,13 +341,14 @@ class JmeNode(object):
                         JmeMaterial(bMat, False) # twoSided param doesn't matter
                         for j in bMat.enabledTextures:
                             JmeTexture.supported(bMat.textures[j])
-                for i in range(len(bMesh.materials)):
-                    if 0 != (bObj.colbits & (1<<i)): continue
-                    if bMesh.materials[i] == None: continue
-                      # This will happen if the mat has been removed
-                    JmeMaterial(bMesh.materials[i], False) # ditto
-                    for j in bMesh.materials[i].enabledTextures:
-                        JmeTexture.supported(bMesh.materials[i].textures[j])
+                if bMesh != None:
+                    for i in range(len(bMesh.materials)):
+                        if 0 != (bObj.colbits & (1<<i)): continue
+                        if bMesh.materials[i] == None: continue
+                          # This will happen if the mat has been removed
+                        JmeMaterial(bMesh.materials[i], False) # ditto
+                        for j in bMesh.materials[i].enabledTextures:
+                            JmeTexture.supported(bMesh.materials[i].textures[j])
                 # Following test was misplaced, because the nodes with the
                 # texcoords may be descendants, not necessarily "this" node.
                 #if anyTextures and (not bMesh.vertexUV) and not bMesh.faceUV:
@@ -359,12 +358,6 @@ class JmeNode(object):
             except UnsupportedException, ue:
                 print ue
                 return 0
-        if bMesh.texMesh != None:
-            print "Texture coords by Mesh-ref"
-            return 0
-        if bMesh.faceUV and bMesh.vertexUV:
-            print "Mesh contains both sticky and per-face texture coords"
-            return 0
         if bObj.isSoftBody:
             print "WARNING:  Soft Body settings not supported yet.  Ignoring."
         if bObj.piType != _bPITypes['NONE']:
@@ -376,9 +369,19 @@ class JmeNode(object):
             # value 0.  Poorly designed constants.
         if bObj.track != None:
             print "WARNING: Object tracking not supported yet.  Ignoring."
-        vpf = JmeMesh.vertsPerFace(bObj.getData(False, True).faces)
+        if not bMesh: return 1   # Accept non-Mesh-containing Object
+        if bMesh.texMesh != None:
+            print "Texture coords by Mesh-ref"
+            return 0
+        if bMesh.faceUV and bMesh.vertexUV:
+            print "Mesh contains both sticky and per-face texture coords"
+            return 0
+        vpf = JmeMesh.vertsPerFace(bMesh.faces)
         if vpf == None:
-            print "FYI:  Accepting object '" + bObj.name + "' with no faces"
+            raise Exception(
+                    "Internal problem.  vertsPerFace() should no longer return None");
+        if len(vpf) == 0:
+            print "FYI:  Accepting object '" + bObj.name + "' with no vert faces"
             return 3
         if vpf == set([0]):
             print "FYI:  Accepting object '" + bObj.name + "' with 0 vert faces"
@@ -432,7 +435,7 @@ class JmeMesh(object):
 
     def getXmlEl(self, autoRotate):
         if self.wrappedMesh.verts == None:
-            raise Exception("Mesh '" + self.getName() + "' has no vertexes")
+            raise Exception("Mesh '" + self.getName() + "' has None vertexes")
         mesh = self.wrappedMesh.copy()
         # This does do a deep copy! (like we need)
         # Note that the last param here doesn't calculate norms anew, it just
@@ -738,10 +741,9 @@ class JmeMesh(object):
         return tag
 
     def vertsPerFace(faces):
-        """Static method returns 0 if type not supported; non-0 if supported.
-           2 if will require face niggling; 3 if faceless"""
-        if faces == None: return None
+        "Static method returns list of unique verts-per-face in the mesh."
         facings = set()
+        if faces == None: return facings
         for f in faces:
             if f.verts == None: raise Exception("Face with no vertexes?")
             facings.add(len(f.verts))

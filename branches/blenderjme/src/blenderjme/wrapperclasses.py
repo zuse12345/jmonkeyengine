@@ -1665,9 +1665,12 @@ class JmeMaterial(object):
         if bMat.diffuseShader != _bShaders['DIFFUSE_LAMBERT']:
             raise UnsupportedException("diffuse shader", bMat.diffuseShader,
                     "Only Lambert diffuse supported")
-        if bMat.specShader != _bShaders['SPEC_COOKTORR']:
+        if (bMat.specShader != _bShaders['SPEC_COOKTORR']
+                and bMat.specShader != _bShaders['SPEC_PHONG']):
+            # These two make "normal" specular effect, similar to the goal of
+            # jME shading.  (Whether that goal is achieved is another question).
             raise UnsupportedException("specular shader", bMat.specShader,
-                    "Only Cook-Torr specular supported")
+                    "Only Cook-Torr and Phong specular supported")
         if bMat.enableSSS:
             raise UnsupportedException("Subsurface Scattering (sss)")
         # Users should know that we don't support Mirroring, Halo, IPO,
@@ -1704,7 +1707,8 @@ class JmeMaterial(object):
         if (abs(bMat.hard - 50)) > 1:
             print ("WARNING: Hardness setting ignored.  " +
                     "Adjust spec setting to compensate")
-        self.shininess = bMat.spec * .5 * 128
+        self.shininess = 128 - bMat.spec * .5 * 128
+        # jME "shininess" is actually UNshininess!
         if bMat.emit == 0.:
             self.emissive = None
         else:

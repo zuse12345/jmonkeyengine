@@ -59,6 +59,23 @@ def quoteattr(text):
         delim = '"'
     return delim + escape(text) + delim
 
+def ecoformat(v, p):
+    """real-to-String formatting in a consistent yet 'economical' format.
+    Viz, float format (non-exponential) with no trailing decimal zeroes,
+    excepting total decimal of ".0" .
+    Also automatically removes negative sign from returned zero strings.
+    """
+    wzeroes = "%.*f" % (p, v)
+    if p < 1:
+        if wzeroes == "-0": return "0"
+        return wzeroes
+    lastSignif = len(wzeroes) - 1  # Index of last significant decimal digit
+    while True:
+        if wzeroes[lastSignif] != '0' or wzeroes[lastSignif - 1] == '.': break
+        lastSignif -= 1
+    if lastSignif == 3 and wzeroes[:lastSignif + 1] == "-0.0": return "0.0"
+    return wzeroes[:lastSignif + 1]
+
 from re import compile as _re_compile
 XML_KEYWORD_RE = _re_compile("[a-zA-Z0-9_:][a-zA-Z0-9_:.-]*")
 def validateXmlKeyword(word):
@@ -199,19 +216,13 @@ class XmlTag(object):
                     if precision == None:
                         joinlist.append(str(val[i]))
                     else:
-                        if round(val[i], precision) == 0.:
-                            joinlist.append(XmlTag.ZERO_FLOAT_STRING)
-                        else:
-                            joinlist.append(str(round(val[i], precision)))
+                        joinlist.append(ecoformat(val[i], precision))
             val = " ".join(joinlist)
         if name in self.__attrKeys: self.__attrKeys.remove(name)
         if precision == None or isinstance(val, basestring):
             self.quotedattrs[name] = quoteattr(val)
         else:
-            if round(val, precision) == 0.:
-                self.quotedattrs[name] = XmlTag.QUOTED_ZERO_FLOAT_STRING
-            else:
-                self.quotedattrs[name] = quoteattr(round(val, precision))
+            self.quotedattrs[name] = quoteattr(ecoformat(val, precision))
         self.__attrKeys.append(name)
 
     def addComment(self, text):
@@ -311,19 +322,13 @@ class PITag(object):
                     if precision == None:
                         joinlist.append(str(val[i]))
                     else:
-                        if round(val[i], precision) == 0.:
-                            joinlist.append(XmlTag.ZERO_FLOAT_STRING)
-                        else:
-                            joinlist.append(str(round(val[i], precision)))
+                        joinlist.append(ecoformat(val[i], precision))
             val = " ".join(joinlist)
         if name in self.__attrKeys: self.__attrKeys.remove(name)
         if precision == None or isinstance(val, basestring):
             self.quotedattrs[name] = quoteattr(val)
         else:
-            if round(val, precision) == 0.:
-                self.quotedattrs[name] = XmlTag.QUOTED_ZERO_FLOAT_STRING
-            else:
-                self.quotedattrs[name] = quoteattr(round(val, precision))
+            self.quotedattrs[name] = quoteattr(ecoformat(val, precision))
         self.__attrKeys.append(name)
 
     def addComment(self, text):

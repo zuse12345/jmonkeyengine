@@ -31,6 +31,7 @@ __url__ = 'http://www.jmonkeyengine.com'
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from bpy.data import scenes as _bScenes
+import jme.esmath as _esmath
 from Blender import Get as _bGet
 from Blender import Set as _bSet
 
@@ -40,9 +41,13 @@ class ActionData(object):
     applied to a single Armature.
 
     Usage:  instantiate, addPose for all 'blenderFrames', then cull().
-    The locs and mats dictionaries are then good to use.
+    The mats, locs, rots dictionaries are then good to use.
 
-    The key sets for locs, rots, mats is always the same FOR NOW.
+    The key sets for locs, rots, mats are always the same FOR NOW, so always
+    use mats so we can eliminate the superfluous when time allows.
+
+    .blenderFrames == None or .keyframeTimes == None means that the Action
+    has no meaningful frames, and should therefore be discarded.
     """
     __slots__ = ('blenderFrames', 'keyframeTimes', 'locs', 'rots', 'mats',
             'name', 'boneMap', 'startFrame', 'endFrame', 'origBlenderFrame')
@@ -57,7 +62,7 @@ class ActionData(object):
     frameRate = None
 
     def getChannelNames(self):
-        return set(self.locs.keys() + self.rots.keys() + self.mats.keys())
+        return set(self.mats.keys())
 
     def getName(self):
         return self.name
@@ -73,7 +78,8 @@ class ActionData(object):
         blenderStaFrame = _bGet("staframe")
         blenderEndFrame = _bGet("endframe")
         if blenderStaFrame >= blenderEndFrame:
-            raise Exception("Specified start frame is not before specified "
+            raise Exception("Specified start frame for Action '" + self.name
+                    + "' is not before specified "
                     + "end frame: " + str(blenderStaFrame)
                     + " vs. " + str(blenderEndFrame))
         self.boneMap = boneMap
@@ -103,6 +109,11 @@ class ActionData(object):
                 if curve.name not in ['LocX', 'QuatW']: continue
                 for bp in curve.bezierPoints:
                     frameFloat = bp.vec[1][0]
+                    if frameFloat < 1:
+                        print("Discarding off-the-chart bezier frame value "
+                                + str(frameFloat)
+                                + " from anim '" + self.name + "'.")
+                        continue
                     # Remember that Blender frames are 1-based, not 0-based
                     # This number is usually just the float form of an integer,
                     # but if user has copied and moved an action, it can be
@@ -112,6 +123,10 @@ class ActionData(object):
                             #+ str(frameFloat))
                     frameSet.add(frameFloat)
                     # Leaving value a float so float division will occur below
+        if len(frameSet) < 1:
+            self.blenderFrames = None
+            self.keyframeTimes = None
+            return
         self.blenderFrames = list(frameSet)
         self.blenderFrames.sort()
         self.keyframeTimes = []
@@ -141,7 +156,8 @@ class ActionData(object):
             self.keyframeTimes.append(
                     (blenderFrameNum-1.) / ActionData.frameRate)
         if self.startFrame == None:
-            raise Exception("Start frame set to frame after end of animation: "
+            raise Exception("Start frame for Action '" + self.name
+                    + "' is set to frame after end of animation: "
                     + str(blenderStaFrame))
         if self.endFrame == None: self.endFrame = len(self.blenderFrames) - 1
         # We do not allow extrapolating past end of keyframes, because this
@@ -157,21 +173,25 @@ class ActionData(object):
         # First we get concentrate on setting the last mats element for each
         # bone, then we go back and set the last locs and rots elements,
         # based on the new mats element.
-        for boneName in self.locs.iterkeys():  # equivalent to self.rots...
+        for boneName in self.mats.iterkeys():  # equivalent to self.rots...
+            # TODO:  IF this is a Blender key frame (not a generated start or
+            # end keyframe), then it would be better to not store the channel
+            # if the channel is not present in the keyframe, so that jME can
+            # interpolate, just like it happens in Blender.
             if boneName in poseBones.keys():
                 self.mats[boneName].append(poseBones[boneName].poseMatrix.copy())
             else:
                 raise Exception(
-            "TODO:  Figure out what to do when channel has no val for a frame");
-                self.mats[boneName].append(None)
+                        "Internal error: Channel has no val for a frame, "
+                        + "in Action '" + self.name + "'");
 
-        for boneName in self.locs.iterkeys():
+        for boneName in self.mats.iterkeys():
             if poseBones[boneName].parent == None:
                 matInv = self.mats[boneName][-1].copy().invert()
                 for childBone in self.boneMap[boneName].children:
                     self.applyMat(childBone, matInv)
 
-        for boneName in self.locs.iterkeys():  # equivalent to self.rots...
+        for boneName in self.mats.iterkeys():
             locs = self.locs[boneName]
             rots = self.rots[boneName]
             mat = self.mats[boneName][-1]
@@ -180,9 +200,8 @@ class ActionData(object):
                 rots.append(mat.rotationPart().toQuat())
             else:
                 raise Exception(
-            "TODO:  Figure out what to do when channel has no val for a frame");
-                locs.append(None)
-                rots.append(None)
+                        "Internal error: Channel data gone missing in Action '"
+                        + self.name + "'");
 
     def applyMat(self, armaBone, matInv):
         """Updates the matrixes of all descendant Pose Bones (not Armature Bones)
@@ -197,6 +216,7 @@ class ActionData(object):
             self.applyMat(childBone, newInv)
 
     def cull(self):
+        if self.blenderFrames == None: return
         usedRotChannels = set()
         usedLocChannels = set()
         for boneName, oneBoneRots in self.rots.iteritems():
@@ -206,8 +226,7 @@ class ActionData(object):
                     usedRotChannels.add(boneName)
         for boneName, oneBoneLocs in self.locs.iteritems():
             for loc in oneBoneLocs:
-                if (round(loc[0], 6) != 0. or round(loc[1], 6) != 0.
-                        or round(loc[2], 6) != 0.):
+                if not _esmath.floatsEq(loc, 0., 6):
                     usedLocChannels.add(boneName)
 
         # It is likely that we can remove items from just the loc or the rot
@@ -216,20 +235,23 @@ class ActionData(object):
         # non-zero rot; and that a non-zero raw rot could produce derived
         # non-zero loc.
         for zapBone in (
-            set(self.boneRots.keys()) - (usedRotChannels & usedLocChannels)):
-                del self.boneRots[zapbone]
-                del self.boneLocs[zapbone]
-                del self.boneMats[zapbone]
-        if len(self.boneRots + self.boneLocs + self.boneMast) < 1:
-            print "No significant channels"
+            set(self.mats.keys()) - (usedRotChannels & usedLocChannels)):
+                del self.rots[zapBone]
+                del self.locs[zapBone]
+                del self.mats[zapBone]
+        if len(self.mats) < 1:
+            print "No significant channels for Action '" + self.name + "'."
             self.blenderFrames = None
+            self.keyframeTimes = None
         return   # READ COMMENT ABOVE about the more liberal culling below.
 
         for rotZapBone in set(self.boneRots.keys()) - usedRotChannels:
-            print "Zapping bone '" + rotZapBone + "' from rotations"
+            print("Zapping bone '" + rotZapBone + "' from Action '"
+                    + self.name + "' rotations")
             del self.rots[rotZapBone]
         for locZapBone in set(self.boneLocs.keys()) - usedLocChannels:
-            print "Zapping bone '" + locZapBone + "' from locations"
+            print("Zapping bone '" + locZapBone + "' from Action '"
+                    + self.name + "' translations")
             del self.locs[locZapBone]
             if locZapBone not in set(self.bonRots.keys()):
                 del self.mats[locZapBone]

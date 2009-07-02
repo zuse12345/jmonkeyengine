@@ -181,7 +181,11 @@ class JmeNode(object):
             self.jmeMats = []
             jmeTexs = []
             for bMat in self.wrappedObj.getMaterials():
-                self.jmeMats.append(nodeTree.includeMat(bMat, twoSided))
+                try:
+                    self.jmeMats.append(nodeTree.includeMat(bMat, twoSided))
+                except UnsupportedException, ue:
+                    print ("Skipping a texture of object " + self.name
+                            + " due to: " + str(ue))
                 for j in bMat.enabledTextures:
                     try:
                         JmeTexture.supported(bMat.textures[j])
@@ -1156,21 +1160,31 @@ class JmeSkinAndBone(object):
             bAction.setActive(self.wrappedObj)
             actionData = ActionData(bAction,
                     self.wrappedObj.getData(False, True).bones)
-            for frameNum in actionData.blenderFrames:
-                print("Posing frame #" + str(int(frameNum-1.)) + " @"
-                        + str(ActionData.frameRate) + " fps")
-                _bSet('curframe', int(frameNum))
-                _Window.Redraw()
-                self.wrappedObj.evaluatePose(int(frameNum))
-                actionData.addPose(self.wrappedObj.getPose().bones)
-            actionData.restoreFrame()
-            #self.wrappedObj.evaluatePose(ORIG_FRAME_NUM)  Seems unnecessary
-            print("Posed anim " + self.getName() + " at frame times: "
-                    + str(actionData.keyframeTimes))
-            if actionData.blenderFrames != None:
-                self.actionDataList.append(actionData)
-            # blenderFrames may == None if no channels are significant to this
-            # Armature
+            try:
+                if actionData.blenderFrames == None:
+                    print "No-op Action '" + actionData.getName() + " skipped"
+                    continue
+                for frameNum in actionData.blenderFrames:
+                    print("Posing " + self.name + "/" + actionData.getName()
+                            + " frame #" + str(int(frameNum-1.)) + " @"
+                            + str(ActionData.frameRate) + " fps")
+                    _bSet('curframe', int(frameNum))
+                    _Window.Redraw()
+                    self.wrappedObj.evaluatePose(int(frameNum))
+                    actionData.addPose(self.wrappedObj.getPose().bones)
+                #self.wrappedObj.evaluatePose(ORIG_FRAME_NUM)  Seems unnecessary
+                print("Posed Action '" + actionData.getName()
+                        + " of Arma " + self.getName() + " at frame times: "
+                        + str(actionData.keyframeTimes))
+                actionData.cull()
+                if actionData.blenderFrames == None:
+                    print "Action '" + actionData.getName() + " culled"
+            finally:
+                actionData.restoreFrame()
+                if actionData.blenderFrames != None:
+                    self.actionDataList.append(actionData)
+                # blenderFrames may == None if no channels are significant to
+                # this Armature
 
     def getName(self):
         return self.name
@@ -1651,9 +1665,9 @@ class JmeMaterial(object):
         if bMat.diffuseShader != _bShaders['DIFFUSE_LAMBERT']:
             raise UnsupportedException("diffuse shader", bMat.diffuseShader,
                     "Only Lambert diffuse supported")
-        if bMat.specShader != _bShaders['DIFFUSE_LAMBERT']:
+        if bMat.specShader != _bShaders['SPEC_COOKTORR']:
             raise UnsupportedException("specular shader", bMat.specShader,
-                    "Only Lambert specular supported")
+                    "Only Cook-Torr specular supported")
         if bMat.enableSSS:
             raise UnsupportedException("Subsurface Scattering (sss)")
         # Users should know that we don't support Mirroring, Halo, IPO,

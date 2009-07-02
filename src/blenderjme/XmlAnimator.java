@@ -33,14 +33,16 @@
 
 
 import java.net.MalformedURLException;
+import java.util.List;
 import com.jme.scene.Controller;
 import com.jme.scene.Spatial;
 import com.jme.animation.AnimationController;
 import com.jme.animation.BoneAnimation;
+import com.jme.animation.Bone;
 
 /**
  * Sample SimpleGame class which extends the behavior of XmlWorld to execute
- * the first animation of a Spatial named 'ArmatureSuperBone.
+ * the first animation of a Bone named with suffix 'SuperBone.
  * This Spatial will be created automatically by the * Blender ==> jME Exporter
  * if your Blender scene has an Armature with Blender's default name of
  * 'Armature' (and you select it for export).
@@ -79,18 +81,20 @@ public class XmlAnimator extends XmlWorld {
     }
 
     /**
-     * Gets the AnimationController of the Spatial named 'ArmatureSuperBone'"
+     * Gets the AnimationController of the descendant Bone Spatial named
+     * 'ArmatureSuperBone'"
      */
     public AnimationController getAnimationController() {
-        Spatial armature = rootNode.getChild("ArmatureSuperBone");
-        if (armature == null)
+        List<Spatial> armatures =
+                rootNode.descendantMatches(Bone.class, ".+SuperBone");
+        if (armatures.size() < 1)
             throw new IllegalStateException("Sorry.  Program assumes "
-                    + "you have a node named 'ArmatureSuperBone'");
-        if (armature.getControllerCount() != 1)
+                    + "you have a node named with suffix 'SuperBone'");
+        if (armatures.get(0).getControllerCount() != 1)
             throw new IllegalStateException(
                     "Armature should have 1 controller, but has "
-                    + armature.getControllerCount());
-        Controller controller = armature.getController(0);
+                    + armatures.get(0).getControllerCount());
+        Controller controller = armatures.get(0).getController(0);
         if (!(controller instanceof AnimationController))
             throw new IllegalStateException(
                     "Controller is of unexpected type: "

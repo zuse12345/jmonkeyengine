@@ -62,13 +62,17 @@
     <HR/>
     <h4 id="changelist">Change List</h4>
     <ul>
-      <li>Changes since 0.1<ol>
-        <li>General support for Blender Armatures.
-            It would take too much work to list the individual features here.
-            With a few significant exceptions, we extend our support for
-            arbitrary object to the realm of armatures.
-            See the <A href="skinandbones.html">Skin &amp; Bones page</A> for
-            details on exporter support for Armatures.
+      <li>Changes since 0.2d<ol>
+        <li>Fix big where mat rejections cause export to abort, regardless of
+          settings.
+        <li>Improved animation/posing diagnostics
+        <li>Animation optimization/culling algorithm reinstated
+        <li>Fix to incorrect shader test (confused diffuse and specular shaders)
+        <li>Added detection and graceful omission of bad frame numbers and
+          empty animations
+        <li>Fixed imperfect tests for non-effective matrix transformations
+        <li>Added new function to once-and-for-all format floats exactly as I
+          want them written.
       </ol>
       <li>Changes since 0.2c<ol>
         <li>Enhanced existing Java sample class, and added new sample to
@@ -88,6 +92,14 @@
         <li>Documented requirements and suggestions for content of starting
          frames.  If these suggestions are followed, users can freely optimize
          following frames without dangers which would otherwise be incurred.
+      </ol>
+      <li>Changes since 0.1<ol>
+        <li>General support for Blender Armatures.
+            It would take too much work to list the individual features here.
+            With a few significant exceptions, we extend our support for
+            arbitrary object to the realm of armatures.
+            See the <A href="skinandbones.html">Skin &amp; Bones page</A> for
+            details on exporter support for Armatures.
       </ol>
     </ul>
     <HR/>

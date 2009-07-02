@@ -100,8 +100,10 @@ def gen(saveAll, autoRotate, skipObjs=True,
                     or bo.parent not in supportedCandidates): continue
                # Not a skin node
             activeActions[bo.parent] = bo.parent.getAction()
-            if _esmath.floats2dEq(bo.parent.matrixLocal * bo.matrixLocal,
+            if _esmath.floats2dEq(bo.matrixLocal * bo.parent.matrixLocal,
                     IDENTITY_4x4, 6): continue
+             # Test above just shortcuts useless attempt.
+             # The real test whether we will change transform is below.
             # This is a Skin node.
             # We must zero the Skin node Object's transform from the
             # skin node and the Arma obj. to avoid serious problems
@@ -109,17 +111,19 @@ def gen(saveAll, autoRotate, skipObjs=True,
             # animations start up.
             origParentMat = bo.parent.matrixLocal.copy()
             origMat = bo.matrixLocal.copy()
-            relocateds[bo.parent] = origParentMat
-            relocateds[bo] = origMat
             inversion = (bo.matrixLocal * bo.parent.matrixLocal).invert()
             bo.parent.matrixLocal *= inversion
             bo.matrixLocal *= inversion
             if origMat == bo.matrixLocal:
-                raise Exception("Internal problem:  Matrix was not "
-                        + "changed when transformed by:\n" + str(inversion))
+                print("Matrix was not changed when transformed by:\n"
+                        + str(inversion))
+            else:
+                relocateds[bo] = origMat
             if origParentMat == bo.parent.matrixLocal:
-                raise Exception("Internal problem:  Parent Matrix was not "
-                        + "changed when transformed by:\n" + str(inversion))
+                print ("Parent Matrix was not changed when transformed by:\n"
+                        + str(inversion))
+            else:
+                relocateds[bo.parent] = origParentMat
         # At this point we have converted all exporting skin meshes to be
         # parentType ARMATURE, with corresponding parent, whether or not the
         # skinning is done via modifier.
@@ -134,7 +138,6 @@ def gen(saveAll, autoRotate, skipObjs=True,
             for bo in _bdata.scenes.active.objects:
                 if bo in relocateds: continue
                 if descendantOf(bo, skinBo):
-                    print "Backing up t of " + bo.getName()
                     relocateds[bo] = bo.matrixLocal.copy()
         root = nodeTree.nest()
 

@@ -201,20 +201,20 @@
           In Blender, you see ambient coloration only if you have set the
           World object's ambient lighting color, and every object will have
           this as it's ambient color.
-          This results in pretty unrelealistic coloring on the shadow sides of
+          This results in pretty unrealistic coloring on the shadow sides of
           objects.
           The exporter applies the following behavior if you leave World
           ambient coloring off (which is the default state).
           It sets the Material's ambient color to a mix of a gray and the
-          material's diffuse color, attenuated by the material's "emit"
+          material's diffuse color, attenuated by the material's "ambient"
           value.
           I.e., a <i>washed out version</i> of the object's diffuse color.
           This gives a realistic appearance in JME when you have light
           source(s) that emanate ambient and other light types.
           If you have set a world ambient color, then this is obviously the
           color that you intend for your objects to show in shadows, so that
-          color, attenuated by the materials' "emit" value, is exactly what we
-          save as the jME Material State's ambient color.
+          color, attenuated by the materials' "ambient" value, is exactly what
+          we save as the jME Material State's ambient color.
         <LI><b>Texture application Mode</b>
           For realistic combining of light and textures in jME, when setting up
           set up the texture mapping, set the mode to <code>Multiply</code>

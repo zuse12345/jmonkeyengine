@@ -181,11 +181,12 @@ class JmeNode(object):
             self.jmeMats = []
             jmeTexs = []
             for bMat in self.wrappedObj.getMaterials():
-                try:
-                    self.jmeMats.append(nodeTree.includeMat(bMat, twoSided))
-                except UnsupportedException, ue:
-                    print ("Skipping a texture of object " + self.name
-                            + " due to: " + str(ue))
+                if not bMat.mode & _matModes['TEXFACE']:
+                    try:
+                        self.jmeMats.append(nodeTree.includeMat(bMat, twoSided))
+                    except UnsupportedException, ue:
+                        print ("Skipping a texture of object " + self.name
+                                + " due to: " + str(ue))
                 for j in bMat.enabledTextures:
                     try:
                         JmeTexture.supported(bMat.textures[j])
@@ -215,19 +216,22 @@ class JmeNode(object):
         meshMats = []
         jmeTexs = []
         for i in range(len(bMesh.materials)):
-            #print "Bit " + str(i) + " for " + self.getName() + " = " + str(self.wrappedObj.colbits & (1<<i))
+            print "Bit " + str(i) + " for " + self.getName() + " = " + str(self.wrappedObj.colbits & (1<<i))
             if 0 != (self.wrappedObj.colbits & (1<<i)): continue
             if bMesh.materials[i] == None: continue
               # This will happen if the mat has been removed
-            try:
-                meshMats.append(
-                        nodeTree.includeMat(bMesh.materials[i], twoSided))
-            except UnsupportedException, ue:
-                print ("Skipping a mat of mesh " + jmeMesh.getName()
-                        + " due to: " + str(ue))
-                continue
+            print "Adding Mesh Mat " + bMesh.materials[i].name
+            if not bMesh.materials[i].mode & _matModes['TEXFACE']:
+                try:
+                    meshMats.append(
+                            nodeTree.includeMat(bMesh.materials[i], twoSided))
+                except UnsupportedException, ue:
+                    print ("Skipping a mat of mesh " + jmeMesh.getName()
+                            + " due to: " + str(ue))
+                    continue
             for j in bMesh.materials[i].enabledTextures:
                 try:
+                    print "**** Adding Texture for Mat: " + bMesh.materials[i].name
                     JmeTexture.supported(bMesh.materials[i].textures[j])
                     jmeTexs.append(nodeTree.includeTex(
                             bMesh.materials[i].textures[j]))
@@ -247,9 +251,10 @@ class JmeNode(object):
     def getXmlEl(self, autoRotate):
         tag = _XmlTag('com.jme.scene.Node', {'name':self.getName()})
 
-        if self.jmeMats != None:
+        if self.jmeMats != None or self.jmeTextureState != None:
             rsTag = _XmlTag('renderStateList')
-            for mat in self.jmeMats: rsTag.addChild(mat.getXmlEl())
+            if self.jmeMats != None:
+                for mat in self.jmeMats: rsTag.addChild(mat.getXmlEl())
             if self.jmeTextureState != None:
                 rsTag.addChild(self.jmeTextureState.getXmlEl())
             tag.addChild(rsTag)
@@ -342,7 +347,9 @@ class JmeNode(object):
             try:
                 if len(bObj.getMaterials()) > 0:
                     for bMat in bObj.getMaterials():
-                        JmeMaterial(bMat, False) # twoSided param doesn't matter
+                        if not bMat.mode & _matModes['TEXFACE']:
+                            JmeMaterial(bMat, False)
+                            # twoSided param doesn't matter
                         for j in bMat.enabledTextures:
                             JmeTexture.supported(bMat.textures[j])
                 if bMesh != None:
@@ -350,7 +357,8 @@ class JmeNode(object):
                         if 0 != (bObj.colbits & (1<<i)): continue
                         if bMesh.materials[i] == None: continue
                           # This will happen if the mat has been removed
-                        JmeMaterial(bMesh.materials[i], False) # ditto
+                        if not bMesh.materials[i].mode & _matModes['TEXFACE']:
+                            JmeMaterial(bMesh.materials[i], False) # ditto
                         for j in bMesh.materials[i].enabledTextures:
                             JmeTexture.supported(bMesh.materials[i].textures[j])
                 # Following test was misplaced, because the nodes with the
@@ -468,7 +476,7 @@ class JmeMesh(object):
             colorTag.addAttr("b", self.defaultColor[2])
             colorTag.addAttr("a", self.defaultColor[3])
 
-        if self.jmeMats == None:
+        if self.jmeMats == None and self.jmeTextureState == None:
             # Tough call here.
             # Since default object coloring and vertex coloring are useless
             # with jME lighting enabled, we are disabling lighting if either
@@ -484,7 +492,8 @@ class JmeMesh(object):
                 tag.addAttr("lightCombineMode", "Off")
         else:
             rsTag = _XmlTag('renderStateList')
-            for mat in self.jmeMats: rsTag.addChild(mat.getXmlEl())
+            if self.jmeMats != None:
+                for mat in self.jmeMats: rsTag.addChild(mat.getXmlEl())
             tag.addChild(rsTag)
             if self.jmeTextureState != None:
                 rsTag.addChild(self.jmeTextureState.getXmlEl())
@@ -1684,21 +1693,9 @@ class JmeMaterial(object):
         if bMat.specTransp != 1.0:
             raise UnsupportedException("specular transp.", bMat.specTransp)
 
-        if bMat.mode & _matModes['VCOL_PAINT']:
-            # TODO:  API says replaces "basic colors".  Need to verify that
-            # that means diffuse, a.o.t. diffuse + specular + mirror.
-            self.colorMaterial = "Diffuse"
-        elif bMat.mode & _matModes['VCOL_LIGHT']:
-            # TODO:  API says "add... as extra light".  ?  Test.
-            # If by this they mean light-source-independent-light, then we
-            # want to set this to "Ambient".
-            self.colorMaterial = "AmbientAndDiffuse"
-        else:
-            self.colorMaterial = None
-        self.diffuse = bMat.rgbCol
-        self.diffuse.append(bMat.alpha)
-        self.specular = bMat.specCol
-        self.specular.append(bMat.alpha)
+        if twoSided: self.materialFace = "FrontAndBack"
+        else: self.materialFace = None
+
         #softnessPercentage = 1. - (bMat.hard - 1.) / 510.
         # Softness increases specular spread.
         # Unfortunately, it's far from linear, and the Python math functions
@@ -1709,14 +1706,31 @@ class JmeMaterial(object):
                     "Adjust spec setting to compensate")
         self.shininess = 128 - bMat.spec * .5 * 128
         # jME "shininess" is actually UNshininess!
+
+        if bMat.mode & _matModes['VCOL_PAINT']:
+            # TODO:  API says replaces "basic colors".  Need to verify that
+            # that means diffuse, a.o.t. diffuse + specular + mirror.
+            self.colorMaterial = "Diffuse"
+        elif bMat.mode & _matModes['VCOL_LIGHT']:
+            # TODO:  API says "add... as extra light".  ?  Test.
+            # If by this they mean light-source-independent-light, then we
+            # want to set this to "Ambient".
+            self.colorMaterial = "AmbientAndDiffuse"
+        elif bMat.mode & _matModes['TEXFACE']:
+            raise Exception("Internal problem.  "
+                    + "Should not add Mat node for a Texture Material")
+        else:
+            self.colorMaterial = None
+        self.diffuse = bMat.rgbCol
+        self.diffuse.append(bMat.alpha)
+        self.specular = bMat.specCol
+        self.specular.append(bMat.alpha)
         if bMat.emit == 0.:
             self.emissive = None
         else:
             self.emissive = [bMat.rgbCol[0] * bMat.emit,
                     bMat.rgbCol[1] * bMat.emit,
                     bMat.rgbCol[2] * bMat.emit, bMat.alpha]
-        if twoSided: self.materialFace = "FrontAndBack"
-        else: self.materialFace = None
 
         # Ambient setting needs special attention.
         # Blender's ambient value applies the "World Ambient Light" color",
@@ -1732,12 +1746,11 @@ class JmeMaterial(object):
         # Therefore, if World ambient light is off, we will make this washing
         # out effect more subtle, by combining diffuse + world lighting.
         world = _bScenes.active.world
-        if world == None or (
-                world.amb[0] == 0 and world.amb[1] == 0 and world.amb[2] == 0):
-            # Add some material coloring into ambient coloring.  Details above.
-            # Weighted average of mat diffuse coloring + white (the white
-            # portion will take the color of ambient-generating lights).
-            # local vars just for conciseness.
+        if world == None or _esmath.floatsEq(world.amb, 0., 3):
+            # Add some material coloring into gray ambient coloring.  Details
+            # above.  Weighted average of mat diffuse coloring + white (the
+            # white portion will take the color of ambient-generating lights).
+            # Local vars just for conciseness.
             diffuseFactor = JmeMaterial.AMBIENT_OBJDIF_WEIGHTING
             whiteFactor = 1.0 - diffuseFactor
             self.ambient = [
@@ -1746,7 +1759,7 @@ class JmeMaterial(object):
                 (diffuseFactor * self.diffuse[2] + whiteFactor) * bMat.amb,
                 bMat.alpha]
         else:
-            self.ambient = [bMat.amb, bMat.amb, bMat.amb, 1]
+            self.ambient = [world.amb[0], world.amb[1], world.amb[2], 1]
 
     def getXmlEl(self):
         tag = _XmlTag('com.jme.scene.state.MaterialState',

@@ -78,6 +78,13 @@
         <li>Now allow user to specify either Phong or Cook Torr specular
           shader.  jME does nothing special with these, but these to are an
           indication that the user basically wants a "typical" specular look.
+        <li>Fixed bug with ambient color calculation.
+        <li>Fixed mistake in ambient color calculation description in online
+          docs.
+        <li>Use the Blender TexFace option as a hook to allow for a jME
+          material-overlay trick.  This allows for overlaying a base material
+          with an overlay texture where the base bleeds through transparent
+          areas.
       </ol>
       <li>Changes since 0.2c<ol>
         <li>Enhanced existing Java sample class, and added new sample to

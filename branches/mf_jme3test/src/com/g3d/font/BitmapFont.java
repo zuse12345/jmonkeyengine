@@ -11,9 +11,9 @@ import com.g3d.material.Material;
 public class BitmapFont {
 
     public enum Align {
-
         Left, Center, Right
     }
+
     private BitmapCharacterSet charSet;
     private Material[] pages;
 
@@ -70,7 +70,7 @@ public class BitmapFont {
         float wordWidth = 0f;
         boolean firstCharOfLine = true;
         boolean useKerning = block.isKerning();
-        target.ensureSize(text.length());
+        target.setActualSize(text.length());
 
         float incrScale = rightToLeft ? -1f : 1f;
 
@@ -197,7 +197,7 @@ public class BitmapFont {
         boolean useKerning = b.isKerning();
         Align alignment = b.getAlignment();
 
-        target.ensureSize(text.length());
+        target.setActualSize(text.length());
 
         for (int i = 0; i < text.length(); i++){
             BitmapCharacter c = charSet.getCharacter((int) text.charAt(i));

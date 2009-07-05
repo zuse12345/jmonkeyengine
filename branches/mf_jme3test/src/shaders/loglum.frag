@@ -22,7 +22,7 @@ vec4 blocks(vec2 halfBlockSize, vec2 pixelSize, float numPixels){
             vec4 color = texture2D(m_Texture, vec2(x,y));
 
             #ifdef ENCODE_LUM
-            color.r = HDR_GetLogLum(color);
+            color.r = HDR_GetLogLum(color.rgb);
             #endif
             #ifdef COMPUTE_MAX
             maxLum = max(color.r, maxLum);
@@ -45,8 +45,8 @@ vec4 blocks(vec2 halfBlockSize, vec2 pixelSize, float numPixels){
 vec4 fetch(){
     vec4 color = texture2D(m_Texture, texCoord);
     #ifdef ENCODE_LUM
-       return vec4(HDR_GetLogLum(color));
-    #elif DECODE_LUM
+       return vec4(HDR_GetLogLum(color.rgb));
+    #elif defined DECODE_LUM
        return vec4(HDR_GetExpLum(color.r));
     #else
        return color;

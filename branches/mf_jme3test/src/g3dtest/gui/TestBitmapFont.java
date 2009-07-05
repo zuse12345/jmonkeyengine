@@ -12,16 +12,8 @@ public class TestBitmapFont extends SimpleApplication {
 
     private Node orthoNode = new Node("Ortho Node");
 
-    private String txtA = "אני מאוד ממליץ לך להשתמש DXT/S3TC על מרקם ואדיו זיכרון.";
     private String txtB =
-    "This extension provides a mechanism to specify vertex attrib and "+
-    "element array locations using GPU addresses. "+
-    "Binding vertex buffers is one of the most frequent and expensive "+
-    "operations in many GL applications, due to the cost of chasing "+
-    "pointers and binding objects described in the Overview of "+
-    "NV_shader_buffer_load. The intent of this extension is to enable a "+
-    "way for the application to specify vertex attrib state that alleviates "+
-    "the overhead of object binds and driver memory management.";
+    "ABCDEFGHIKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-=_+[]\\;',./{}|:<>?";
 
     public static void main(String[] args){
         TestBitmapFont app = new TestBitmapFont();
@@ -32,16 +24,25 @@ public class TestBitmapFont extends SimpleApplication {
     public void simpleInitApp() {
         manager.setProperty("FlipImages", "true");
 
-        BitmapFont fnt = manager.loadFont("cooper.fnt");
-        BitmapText txt = new BitmapText(fnt, false);
-        txt.setBox(new Rectangle(0, 0, settings.getWidth(), settings.getHeight()));
-        txt.setSize(32);
-        txt.setText(txtB);
-        txt.assemble();
+        BitmapFont fnt = manager.loadFont("angelFont.fnt");
+//        BitmapText txt = new BitmapText(fnt, false);
+//        txt.setBox(new Rectangle(0, 0, settings.getWidth(), settings.getHeight()));
+//        txt.setSize(64);
+//        txt.setText(txtB);
+//        txt.assemble();
+
+        BitmapText txt4 = new BitmapText(fnt, false);
+        txt4.setSize(32);
+        txt4.setText("Text without restriction. Text without restriction. Text without restriction. Text without restriction");
+        txt4.assemble();
+        txt4.setLocalTranslation(40, -settings.getHeight() + txt4.getLineHeight() * 2, 0);
+
+        txt4.setText("Shortened it! :)");
+        txt4.assemble();
 
         orthoNode.setLocalTranslation(0, settings.getHeight(), 0);
         orthoNode.setCullHint(CullHint.Never);
-        orthoNode.attachChild(txt);
+        orthoNode.attachChild(txt4);
     }
 
     @Override

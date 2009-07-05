@@ -51,7 +51,11 @@ varying vec3 wvTangent;
 // WorldView position
 varying vec3 wvPosition;
 
+#if defined HAS_DIFFUSEMAP || defined HAS_NORMALMAP || defined HAS_SPECULARMAP
 varying vec2 texCoord;
+#endif
+
+
 varying vec3 viewDir;
 //=====
 

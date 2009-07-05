@@ -93,6 +93,8 @@ public class FrameBuffer extends GLObject {
             throw new IllegalArgumentException("Texture image resolution " +
                                                "must match FB resolution");
 
+        if (samples > 1)
+            throw new IllegalStateException("Cannot attach texture to multisampled FB");
     }
 
     public void setColorTexture(Texture2D tex) {

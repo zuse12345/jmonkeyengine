@@ -14,6 +14,8 @@ void main(){
     gl_Position = g_WorldViewProjectionMatrix * vec4(inPosition,1.0);
 
     vec3 worldPos = (g_WorldMatrix * vec4(inPosition,1.0)).xyz;
+
+    // WARNING: Not allowed to create matrix from matrix
     mat3 worldMat3 = mat3(g_WorldMatrix);
 
     vec3 I = normalize(worldPos - g_CameraPosition).xyz;

@@ -1,7 +1,6 @@
 package com.g3d.shadow;
 
 import com.g3d.material.Material;
-import com.g3d.math.Matrix4f;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
 import com.g3d.renderer.Renderer;

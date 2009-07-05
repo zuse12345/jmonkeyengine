@@ -260,7 +260,7 @@ class JmeNode(object):
             tag.addChild(rsTag)
 
         if self.children != None:
-            childrenTag = _XmlTag('children', {'size':len(self.children)})
+            childrenTag = _XmlTag('children')
             tag.addChild(childrenTag)
             for child in self.children:
                 if self.wrappedObj != None and not isinstance(child, JmeMesh):
@@ -703,18 +703,18 @@ class JmeMesh(object):
             print ("WARNING: " + str(nonUvVertexes)
                 + " uv vals set to (-1,-1) because no face to derive uv from")
 
-        vertTag = _XmlTag("vertBuf", {"size":len(coArray)})
+        vertTag = _XmlTag("vertBuf")
         vertTag.addAttr("data", coArray, 6, 3)
         tag.addChild(vertTag)
-        normTag = _XmlTag("normBuf", {"size":len(noArray)})
+        normTag = _XmlTag("normBuf")
         normTag.addAttr("data", noArray, 6, 3)
         tag.addChild(normTag)
         if texArray != None:
-            coordsTag = _XmlTag("coords", {"size":len(texArray)})
+            coordsTag = _XmlTag("coords")
             coordsTag.addAttr("data", texArray, 6, 3)
             texCoordsTag = _XmlTag("com.jme.scene.TexCoords", {"perVert":2})
             texCoordsTag.addChild(coordsTag)
-            texTag = _XmlTag("texBuf", {"size":1})
+            texTag = _XmlTag("texBuf")
             texTag.addChild(texCoordsTag)
             tag.addChild(texTag)
         if colArray != None:
@@ -730,7 +730,7 @@ class JmeMesh(object):
                     rgbaArray.append(c.g/255.)
                     rgbaArray.append(c.b/255.)
                     rgbaArray.append(c.a/255.)
-            vertColTag = _XmlTag("colorBuf", {"size":len(rgbaArray)})
+            vertColTag = _XmlTag("colorBuf")
             vertColTag.addAttr("data", rgbaArray, 3, 4)
             tag.addChild(vertColTag)
         if 3 not in self.__vpf and 4 not in self.__vpf: return tag
@@ -746,7 +746,7 @@ class JmeMesh(object):
             else:
                 for j in range(len(faceVertToNewVert[i])):
                     faceVertIndexes.append(faceVertToNewVert[i][j])
-        indTag = _XmlTag("indexBuffer", {"size":len(faceVertIndexes)})
+        indTag = _XmlTag("indexBuffer")
         if len(face.verts) == 4 and not unify: outputVpf = 4
         else: outputVpf = 3
         indTag.addAttr("data", faceVertIndexes, None, outputVpf)
@@ -851,8 +851,8 @@ class JmeBone(object):
         """addlTransform is the same for all bones and animation channels of
         an Armature."""
         tag = _XmlTag('com.jme.animation.Bone', {'name':self.getName()})
-        tag.addAttr("reference_ID", self.getName())
-        # The reference_ID is not strictly needed if a bone is not skinned
+        tag.addAttr("id", self.getName())
+        # The id is not strictly needed if a bone is not skinned
         # and not the target of a bone influence.
         # Since nearly all bones are skinned, easier to id them all.
         if self.parentBone == None:
@@ -892,7 +892,7 @@ class JmeBone(object):
         # Must have calculated self.inverseTotalTrans before recursing,
         # since children use it.
         if self.children != None:
-            childrenTag = _XmlTag('children', {'size':len(self.children)})
+            childrenTag = _XmlTag('children')
             tag.addChild(childrenTag)
             for child in self.children:
                 if isinstance(child, JmeBone):
@@ -936,10 +936,10 @@ class JmeBone(object):
             addScaleEl(tag, scale)
         if self.actions == None: return tag
 
-        gConTag = _XmlTag("geometricalControllers", {'size': 1})
+        gConTag = _XmlTag("geometricalControllers")
         conTag = _XmlTag("com.jme.animation.AnimationController",
-                {'repeatType': 1, "reference_ID": "AC_" + self.getName()})
-        animsTag = _XmlTag("animationSets", {'size': len(self.actions)})
+                {'repeatType': 1, "id": "AC_" + self.getName()})
+        animsTag = _XmlTag("animationSets")
 
         for anim in self.actions:
             animsTag.addChild(anim.getXmlEl(autoRotate, addlTransform))
@@ -985,8 +985,7 @@ class JmeAnimation(object):
         })
         # endFrame is the 0-based INDEX of the last frame that will play.
 
-        keyframeTimeTag = _XmlTag(
-                'keyframeTime', {'size': len(self.__data.keyframeTimes)})
+        keyframeTimeTag = _XmlTag('keyframeTime')
         keyframeTimeTag.addAttr("data", self.__data.keyframeTimes, 6)
         # keyframe times are relative to Animation start time of 0
         # Normally you should have 0 for first frame.  Otherwise, if
@@ -994,8 +993,7 @@ class JmeAnimation(object):
         # If repeatType is 0, at the final time motion will freeze with the
         # last transform.  If repeatType is 1, motion flips immediately from
         # the final transform to the 0 position.
-        interpolationTypeTag = _XmlTag(
-                'interpolationType', {'size': len(self.__data.keyframeTimes)})
+        interpolationTypeTag = _XmlTag('interpolationType')
         # Use no interpolationType tag for No interpolation, or set a value
         # for each frame: 0 for Linear, 1 for Bezier.
         # SWITCH TO BEZIER ONCE com.jme.animation BEZIER IS FIXED!
@@ -1005,15 +1003,13 @@ class JmeAnimation(object):
 
         channelNames = self.__data.getChannelNames()
 
-        transformsTag = _XmlTag(
-                'boneTransforms', {'size': len(channelNames)})
+        transformsTag = _XmlTag('boneTransforms')
         for boneName in channelNames:
             # com.jme.BoneAnimation requires rotations and translations
             # elements, even if the size is 0.  The code below can be
             # streamlined once this is fixed.
             translationsTag = _XmlTag("translations")
             if boneName in self.__data.locs:
-                translationsTag.addAttr("size", len(self.__data.keyframeTimes))
                 # Sanity check:
                 if (len(self.__data.keyframeTimes)
                         ) != len(self.__data.locs[boneName]):
@@ -1028,12 +1024,9 @@ class JmeAnimation(object):
                         loc[1] = loc[2]
                         loc[2] = -hold
                     addVector3fEl(translationsTag, None, loc)
-            else:
-                translationsTag.addAttr("size", 0)
 
             rotationsTag = _XmlTag("rotations")
             if boneName in self.__data.rots.keys():
-                rotationsTag.addAttr("size", len(self.__data.keyframeTimes))
                 # Sanity check:
                 if (len(self.__data.keyframeTimes)
                         != len(self.__data.rots[boneName])):
@@ -1053,8 +1046,6 @@ class JmeAnimation(object):
                     quatTag.addAttr("z", quat.z, 6)
                     quatTag.addAttr("w", quat.w, 6)
                     rotationsTag.addChild(quatTag)
-            else:
-                rotationsTag.addAttr("size", 0)
 
             transformTag = _XmlTag('com.jme.animation.BoneTransform')
             transformTag.addChild(translationsTag)
@@ -1280,7 +1271,7 @@ class JmeSkinAndBone(object):
             addScaleEl(tag, scale)
             addRotationEl(tag, rQuat)
 
-        childrenTag = _XmlTag('children', {'size':len(self.children)})
+        childrenTag = _XmlTag('children')
         tag.addChild(childrenTag)
         childrenTag.addChild(self.boneTree.getXmlEl(False, addlTransform))
         if self.plainChildren != None:
@@ -1300,9 +1291,9 @@ class JmeSkinAndBone(object):
                     + self.skin.getName())
         skinTag = _XmlTag('com.jme.animation.SkinNode',
                 {'name':skinRef + "Skin"})
-        skinChildrenTag = _XmlTag('children', {'size':1})
+        skinChildrenTag = _XmlTag('children')
         skinChildTag = self.skin.getXmlEl(False)
-        skinChildTag.addAttr("reference_ID", skinRef)
+        skinChildTag.addAttr("id", skinRef)
         skinChildrenTag.addChild(skinChildTag)
         skinTag.addChild(skinChildrenTag)
         childrenTag.addChild(skinTag)
@@ -1335,8 +1326,8 @@ class JmeSkinAndBone(object):
                 "name":self.boneTree.getName()
         }))
 
-        cacheTag = _XmlTag('cache', {'size':1})
-        salaTag = _XmlTag('SavableArrayListArray_0', {'size':len(vertexWeights)})
+        cacheTag = _XmlTag('cache')
+        salaTag = _XmlTag('SavableArrayListArray_0')
         for vi, vWeightMap in vertexWeights.iteritems():
             if len(vWeightMap.values()) > self.maxWeightings:
                 allWeights = list(vWeightMap.values())
@@ -1364,7 +1355,6 @@ class JmeSkinAndBone(object):
                 influenceTag.addChild(_XmlTag("bone", {
                     "class":"com.jme.animation.Bone", "ref":group
                 }))
-            salTag.addAttr("size", influenceCount)
             # ASSERTION.  For performance reasons, may want to remove this
             # after the Assertion is known to always be true:
             if limit != 0 and influenceCount != self.maxWeightings:
@@ -1561,7 +1551,7 @@ class NodeTree(object):
         #     elements underneath ../children (storing the name).
         # 4:  For every bone element under the gC, swap the
         #     gC/.../bone for the children/.../com.jme.animation.Bone of
-        #     same name  Set reference_ID and ref attrs.
+        #     same name  Set id and ref attrs.
         print "Inlining..."
         allBones = xml.tagsMatching("com.jme.animation.Bone", "name")
         geoParentingBones = []
@@ -1768,8 +1758,8 @@ class JmeMaterial(object):
             tag.addAttr('ref', self.blenderName)
             return tag
         self.written = True
-        #if self.refCount > 0: tag.addAttr("reference_ID", self.blenderName)
-        tag.addAttr("reference_ID", self.blenderName)
+        #if self.refCount > 0: tag.addAttr("id", self.blenderName)
+        tag.addAttr("id", self.blenderName)
         # Blender users have the ability to use these names, and to pull them
         # in from shared libraries, so it can be useful to propagate the names
         # even if not needed for our own refs.
@@ -1984,12 +1974,11 @@ class JmeTexture(object):
             self.filepath = mtex.tex.image.filename[2:]
         else:
             self.filepath = mtex.tex.image.filename
-        if mtex.size[0] == 1. and mtex.size[1] == 1. and mtex.size[2] == 1.:
+        if _esmath.floatsEq(mtex.size, 1., 6):
             self.scale = None
         else:
             self.scale = mtex.size
-        if (mtex.ofs[0] == 0. and mtex.ofs[1] == 0. and mtex.ofs[2] == 0.
-                and self.scale == None):
+        if _esmath.floatsEq(mtex.ofs, 0., 6) and self.scale == None:
             self.translation = None
         else:
             translBase = [mtex.ofs[0], -mtex.ofs[1], mtex.ofs[2]]
@@ -2010,7 +1999,7 @@ class JmeTexture(object):
             tag.addAttr('ref', self.refid)
             return tag
         self.written = True
-        if self.refCount > 0: tag.addAttr("reference_ID", self.refid)
+        if self.refCount > 0: tag.addAttr("id", self.refid)
 
         tag.addAttr("apply", self.applyMode)
         tag.addAttr("wrapS", self.wrapMode)
@@ -2047,13 +2036,12 @@ class JmeTextureState(object):
             tag.addAttr('ref', id(self))
             return tag
         self.written = True
-        if self.refCount > 0: tag.addAttr("reference_ID", id(self))
+        if self.refCount > 0: tag.addAttr("id", id(self))
 
         textureGroupingTag = _XmlTag("texture")
         tag.addChild(textureGroupingTag)
         for texture in self.__jmeTextures:
             textureGroupingTag.addChild(texture.getXmlEl())
-        textureGroupingTag.addAttr("size", len(self.__jmeTextures))
         return tag
 
 class UpdatableMVert:

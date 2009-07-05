@@ -209,8 +209,10 @@ public class ContentManager {
 
         Texture tex = new Texture2D(); // TODO: add support for 1D/3D/Cube images
 
+        String genMips = getProperty("EnableMipmapGen");
         // enable mipmaps if image has them
-        if (img.hasMipmaps())
+        // or generate them if requested by user
+        if (img.hasMipmaps() || (genMips != null && genMips.equals("true")))
             tex.setMinFilter(Texture.MinFilter.Trilinear);
 
         String aniso = getProperty("TexAnisoLevel");

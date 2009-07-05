@@ -1,3 +1,7 @@
+#ifndef NUM_LIGHTS
+    #define NUM_LIGHTS 4
+#endif
+
 uniform mat4 g_ViewMatrix;
 uniform vec4 g_LightPosition[NUM_LIGHTS];
 uniform vec4 g_g_LightColor[NUM_LIGHTS];

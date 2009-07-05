@@ -7,7 +7,7 @@
 #endif
 
 vec2 Bump_DoOcclusionParallax(in sampler2D heightMap, in vec2 texCoord, in vec3 tanViewDir){
-    float size = 1.0 / BIN_ITER;
+    float size = 1.0 / float(BIN_ITER);
 
      // depth
     float d = 1.0;

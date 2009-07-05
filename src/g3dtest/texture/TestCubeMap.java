@@ -32,7 +32,6 @@ public class TestCubeMap extends SimpleApplication {
 
     public void loadEnvMap(Format imgFormat){
         manager.setProperty("FlipImages", "true");
-
         // select image format?
         manager.setProperty("HDRFormat", imgFormat.name());
 
@@ -71,8 +70,11 @@ public class TestCubeMap extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
+        manager.setProperty("EnableMipmapGen", "true");
+        manager.setProperty("TexAnisoLevel", "16");
+
         initHDR(Format.RGB111110F);
-        loadEnvMap(Format.RGB16F_to_RGB111110F);
+        loadEnvMap(Format.RGB16F_to_RGB9E5);
 
         skyGeom.updateModelBound();
         skyGeom.setQueueBucket(Bucket.Sky);

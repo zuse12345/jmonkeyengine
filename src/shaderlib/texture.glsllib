@@ -3,7 +3,7 @@
 vec3 Texture_GetNormal(in sampler2D normalMap, vec2 texCoord){
     #ifdef NORMAL_SIGNED_RG
         return Common_UnpackNormalRG( texture2D(normalMap, texCoord).rg );
-    #elif NORMAL_DXT5nm
+    #elif defined(NORMAL_DXT5nm)
         return Common_UnpackNormal( texture2D(normalMap, texCoord).rga );
     #else
         return Common_UnpackNormal( texture2D(normalMap, texCoord).rgb );

@@ -72,7 +72,7 @@ import static org.lwjgl.opengl.EXTFramebufferBlit.*;
 public class LwjglRenderer implements Renderer {
 
     private static final Logger logger = Logger.getLogger(LwjglRenderer.class.getName());
-    private static final boolean VALIDATE_SHADER = false;
+    private static final boolean VALIDATE_SHADER = true;
 
     private ByteBuffer nameBuf = BufferUtils.createByteBuffer(250);
     private StringBuilder stringBuf = new StringBuilder(250);
@@ -700,23 +700,35 @@ public class LwjglRenderer implements Renderer {
         glGetShader(id, GL_COMPILE_STATUS, temp);
 
         boolean compiledOK = temp.get(0) == GL_TRUE;
-        if (compiledOK){
-            logger.fine(source.getType().name()+" compile success");
-        }else{
-            // check for error log
+        String infoLog = null;
+
+        if (VALIDATE_SHADER || !compiledOK){
+            // even if compile succeeded, check
+            // log for warnings
             glGetShader(id, GL_INFO_LOG_LENGTH, temp);
             int length = temp.get(0);
-            if (length > 0){
+            if (length > 3){
                 // get infos
                 ByteBuffer logBuf = BufferUtils.createByteBuffer(length);
                 glGetShaderInfoLog(id, null, logBuf);
                 byte[] logBytes = new byte[length];
                 logBuf.get(logBytes, 0, length);
                  // convert to string, etc
-                String infoLog = new String(logBytes);
-                logger.warning(source.getType().name()+" compile error: "+infoLog);
+                infoLog = new String(logBytes);
+            }
+        }
+
+        if (compiledOK){
+            if (infoLog != null){
+                logger.info(source.getName()+" compile success\n" + infoLog);
             }else{
-                logger.warning(source.getType().name()+" compile error: ?");
+                logger.fine(source.getName()+" compile success");
+            }
+        }else{
+            if (infoLog != null){
+                logger.warning(source.getName()+" compile error: "+infoLog);
+            }else{
+                logger.warning(source.getName()+" compile error: ?");
             }
         }
 
@@ -765,23 +777,12 @@ public class LwjglRenderer implements Renderer {
 
         glGetProgram(id, GL_LINK_STATUS, temp);
         boolean linkOK = temp.get(0) == GL_TRUE;
-
-        if (linkOK){
-            if (VALIDATE_SHADER){
-                glValidateProgram(id);
-                glGetProgram(id, GL_VALIDATE_STATUS, temp);
-                boolean validateOK = temp.get(0) == GL_TRUE;
-                if (validateOK)
-                    logger.fine("shader validate success");
-                else
-                    logger.warning("shader validate failure");
-            }
-
-            logger.fine("shader link success");
-        }else{
+        String infoLog = null;
+        
+        if (VALIDATE_SHADER || !linkOK){
             glGetProgram(id, GL_INFO_LOG_LENGTH, temp);
             int length = temp.get(0);
-            if (length > 0){
+            if (length > 3){
                 // get infos
                 ByteBuffer logBuf = BufferUtils.createByteBuffer(length);
                 glGetProgramInfoLog(id, null, logBuf);
@@ -789,10 +790,21 @@ public class LwjglRenderer implements Renderer {
                 // convert to string, etc
                 byte[] logBytes = new byte[length];
                 logBuf.get(logBytes, 0, length);
-                String infoLog = new String(logBytes);
-                logger.warning("shader link failure: "+infoLog);
+                infoLog = new String(logBytes);
+            }
+        }
+
+        if (linkOK){
+            if (infoLog != null){
+                logger.info("shader link success. \n"+infoLog);
             }else{
-                logger.fine("shader link failure");
+                logger.fine("shader link success");
+            }
+        }else{
+            if (infoLog != null){
+                logger.warning("shader link failure. \n"+infoLog);
+            }else{
+                logger.warning("shader link failure");
             }
         }
 
@@ -827,6 +839,19 @@ public class LwjglRenderer implements Renderer {
 
             updateShaderUniforms(shader);
             if (context.boundShaderProgram != shader.getId()){
+                if (VALIDATE_SHADER){
+                    // check if shader can be used
+                    // with current state
+                    glValidateProgram(shader.getId());
+                    glGetProgram(shader.getId(), GL_VALIDATE_STATUS, TempVars.get().intBuffer1);
+                    boolean validateOK = TempVars.get().intBuffer1.get(0) == GL_TRUE;
+                    if (validateOK){
+                        logger.fine("shader validate success");
+                    }else{
+                        logger.warning("shader validate failure");
+                    }
+                }
+
                 glUseProgram(shader.getId());
                 context.boundShaderProgram = shader.getId();
                 boundShader = shader;
@@ -1062,10 +1087,10 @@ public class LwjglRenderer implements Renderer {
                 context.boundFBO = 0;
             }
             // select back buffer
-            if (context.boundDrawBuf != -1){
-                glDrawBuffer(GL_BACK);
-                context.boundDrawBuf = -1;
-            }
+//            if (context.boundDrawBuf != -1){
+//                glDrawBuffer(GL_BACK);
+//                context.boundDrawBuf = -1;
+//            }
         }else{
             if (fb.isUpdateNeeded())
                updateFrameBuffer(fb);
@@ -1083,6 +1108,7 @@ public class LwjglRenderer implements Renderer {
                 // make sure to select NONE as draw buf
                 // no color buffer attached. select NONE
                 if (context.boundDrawBuf != -2){
+                    glReadBuffer(GL_NONE);
                     glDrawBuffer(GL_NONE);
                     context.boundDrawBuf = -2;
                 }

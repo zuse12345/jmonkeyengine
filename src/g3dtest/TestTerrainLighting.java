@@ -47,7 +47,6 @@ public class TestTerrainLighting extends SimpleApplication {
         // put the mesh in the geometry
         terrain = new Geometry("Terrain", terrainMesh);
         terrain.updateModelBound();
-//        terrainMesh.convertToHalf();
 
         // use phong shading material
         Material mat = new Material(manager, "phong_lighting.j3md");

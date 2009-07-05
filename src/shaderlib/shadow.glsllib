@@ -1,9 +1,11 @@
 #ifdef NO_SHADOW2DPROJ
 #define SHADOWMAP sampler2D
 #define SHADOWTEX texture2D
+#define SHADCOORD(coord) coord.xy
 #else
 #define SHADOWMAP sampler2DShadow
-#define SHADOWTEX texture2DShadow
+#define SHADOWTEX shadow2D
+#define SHADCOORD(coord) vec3(coord.xy,0.0)
 #endif
 
 //float shadowDepth = texture2DProj(tex, projCoord);
@@ -13,11 +15,11 @@ const float pixSize = 1.0 / texSize;
 const vec2 pixSize2 = vec2(pixSize);
 
 float Shadow_DoShadowCompareOffset(in SHADOWMAP tex, vec4 projCoord, vec2 offset){
-     return step(projCoord.z, texture2D(tex, vec2(projCoord.xy + offset * pixSize2)).r);
+     return step(projCoord.z, SHADOWTEX(tex, SHADCOORD(projCoord.xy + offset * pixSize2)).r);
 }
 
 float Shadow_DoShadowCompare(in SHADOWMAP tex, vec4 projCoord){
-    return step(projCoord.z, texture2D(tex, projCoord.xy).r);
+    return step(projCoord.z, SHADOWTEX(tex, SHADCOORD(projCoord.xy)).r);
 }
 
 float Shadow_BorderCheck(in vec2 coord){
@@ -37,18 +39,6 @@ float Shadow_BorderCheck(in vec2 coord){
     vec4 t = vec4(coord.xy, 0.0, 1.0);
     t = step(t.wwxy, t.xyzz);
     return dot(t,t);
-}
-
-float Shadow_GetShadow2(in SHADOWMAP tex, vec4 projCoord){
-    #ifdef NO_SHADOW2DPROJ
-        float shadowDepth = texture2D(tex, projCoord.xy).r;
-
-        
-
-        return step(projCoord.z, shadowDepth);
-    #else
-        return shadow2DProj(tex, projCoord);
-    #endif
 }
 
 float Shadow_DoDither_2x2(in SHADOWMAP tex, in vec4 projCoord){
@@ -75,7 +65,7 @@ float Shadow_DoDither_2x2(in SHADOWMAP tex, in vec4 projCoord){
 
 }
 
-float Shadow_DoPCF_2x2(in sampler2D tex, in vec4 projCoord){
+float Shadow_DoPCF_2x2(in SHADOWMAP tex, in vec4 projCoord){
     float shadow[4];
     shadow[0] = Shadow_DoShadowCompare(tex, projCoord);
     shadow[1] = Shadow_DoShadowCompareOffset(tex,projCoord,vec2(1.0,0.0));
@@ -83,8 +73,8 @@ float Shadow_DoPCF_2x2(in sampler2D tex, in vec4 projCoord){
     shadow[3] = Shadow_DoShadowCompareOffset(tex,projCoord,vec2(1.0));
     
     vec2 fac;
-    fac.x = frac(texSize * projCoord.x);
-    fac.y = frac(texSize * projCoord.y);
+    fac.x = fract(texSize * projCoord.x);
+    fac.y = fract(texSize * projCoord.y);
     return mix(shadow[0], shadow[1], 1.0 - fac.x);
     //return mix(mix(shadow[1], shadow[0], fac.x),
     //           mix(shadow[3], shadow[2], fac.x),

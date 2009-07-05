@@ -25,6 +25,9 @@ import com.g3d.util.TangentBinormalGenerator;
 public class TestRenderToTexture extends SimpleApplication {
 
     private Node fbNode = new Node("Framebuffer Node");
+
+    // uncomment to test multisampled FB
+    private FrameBuffer msFb = null; //new FrameBuffer(512, 512, 4);
     private FrameBuffer fb = new FrameBuffer(512, 512, 0);
     private Camera fbCam = new Camera(512, 512);
 
@@ -38,11 +41,20 @@ public class TestRenderToTexture extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
+        manager.setProperty("EnableMipmapGen", "true");
+        manager.setProperty("TexAnisoLevel", "4"); //maximum
+
         cam.setLocation(new Vector3f(3, 3, 3));
         cam.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
         
         //setup framebuffer
+        if (msFb != null){
+           msFb.setDepthBuffer(Format.Depth);
+           msFb.setColorBuffer(Format.RGB8);
+        }
+
         Texture2D fbTex = new Texture2D(512, 512, Format.RGB8);
+        fbTex.setAnisotropicFilter(4);
         fb.setDepthBuffer(Format.Depth);
         fb.setColorTexture(fbTex);
 
@@ -89,7 +101,10 @@ public class TestRenderToTexture extends SimpleApplication {
         r.renderQueue();
 
         //do FBO rendering
-        r.setFrameBuffer(fb);
+        if (msFb != null)
+            r.setFrameBuffer(msFb);
+        else
+            r.setFrameBuffer(fb);
 
         r.setCamera(fbCam);
         r.setBackgroundColor(ColorRGBA.DarkGray);
@@ -101,6 +116,8 @@ public class TestRenderToTexture extends SimpleApplication {
         //go back to default rendering and let
         //SimpleApplication render the default scene
         r.setFrameBuffer(null);
+        if (msFb != null)
+            r.copyFrameBuffer(msFb, fb);
         
         r.setCamera(cam);
     }

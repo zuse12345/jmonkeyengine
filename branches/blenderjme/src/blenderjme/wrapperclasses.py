@@ -216,11 +216,11 @@ class JmeNode(object):
         meshMats = []
         jmeTexs = []
         for i in range(len(bMesh.materials)):
-            print "Bit " + str(i) + " for " + self.getName() + " = " + str(self.wrappedObj.colbits & (1<<i))
+            #print "Bit " + str(i) + " for " + self.getName() + " = " + str(self.wrappedObj.colbits & (1<<i))
             if 0 != (self.wrappedObj.colbits & (1<<i)): continue
             if bMesh.materials[i] == None: continue
               # This will happen if the mat has been removed
-            print "Adding Mesh Mat " + bMesh.materials[i].name
+            #print "Adding Mesh Mat " + bMesh.materials[i].name
             if not bMesh.materials[i].mode & _matModes['TEXFACE']:
                 try:
                     meshMats.append(
@@ -1629,7 +1629,7 @@ class NodeTree(object):
         if self.root == None and self.nest() == None: return None
         for m in self.__matMap1side.itervalues(): m.written = False
         for m in self.__matMap2side.itervalues(): m.written = False
-        for t in self.__textureHash.itervalues(): m.written = False
+        for t in self.__textureHash.itervalues(): t.written = False
         for ts in self.__textureStates: ts.written = False
         xml = self.root.getXmlEl(autoRotate)
         self.__inlineBones(xml)

@@ -6,9 +6,13 @@ $Id$
 
   <property file="local.properties"/>
   <property name="product.version" value="0.2d"/>
+  <property name="javac.debug" value="true"/>
+  <property name="javac.source" value="1.5" />
+  <property name="javac.target" value="1.5" />
 
   <target name="clean" description="Wipe out all derived artifacts">
     <delete dir="dist"/>
+    <delete dir="classes"/>
     <delete dir="tmp/stage"/>
     <delete dir="." includes="*.pyc"/>
     <delete dir="src" includes="**/*.pyc"/>
@@ -44,5 +48,19 @@ $Id$
       <zipfileset dir="doc" includes="blenderjme/**" excludes="**/.*/**"/>
       -->
     </zip>
+  </target>
+
+  <target name="java-compile" description="Compile Java classes">
+    <fail unless="jmejar.path" message="Property required: 'jmejar.path'"/>
+    <available property="jmejar.present" type="file" file="${jmejar.path}"/>
+    <fail unless="jmejar.present"
+          message="JME jar file missing: ${jmejar.path}"/>
+    <mkdir dir="classes"/>
+    <javac classpath="${jmejar.path}" srcdir="java-src"
+           destdir="classes" debug="${javac.debug}"
+           source="${javac.source}" target="${javac.target}"/>
+    <javac classpath="classes:${jmejar.path}" srcdir="src/blenderjme"
+           destdir="classes" debug="${javac.debug}"
+           source="${javac.source}" target="${javac.target}"/>
   </target>
 </project>

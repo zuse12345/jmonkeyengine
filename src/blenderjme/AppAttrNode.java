@@ -57,7 +57,6 @@ public class AppAttrNode extends Node {
      * will be used.
      */
     public AppAttrNode() {
-        super();
         System.err.println("No-param " + AppAttrNode.class.getName()
                 + " instantiated");
     }

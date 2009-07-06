@@ -272,23 +272,9 @@ class JmeNode(object):
                 len(self.wrappedObj.game_properties) > 1 or (
                 len(self.wrappedObj.game_properties) == 1 and
                 self.wrappedObj.game_properties[0].name != "implClass")):
-            propsTag = _XmlTag('gameProperties')
-            tag.addChild(propsTag)
-            strCounter = -1
-            for prop in  self.wrappedObj.game_properties:
-                if prop.name == "implClass": continue
-                strCounter += 1
-                propsTag.addChild(_XmlTag("String_" + str(strCounter),
-                        {'value': prop.name}))
-                strCounter += 1
-                strTag = _XmlTag("String_" + str(strCounter))
-                propsTag.addChild(strTag)
-                if prop.type == "STRING":
-                    strTag.addAttr("value", prop.data)
-                elif prop.type == "FLOAT":
-                    strTag.addAttr("value", prop.data, 6)
-                else:
-                    strTag.addAttr("value", str(prop.data))
+            udTag = _XmlTag('userData')
+            tag.addChild(udTag)
+            _addPropertiesXml(udTag, self.wrappedObj.game_properties)
 
         if self.children != None:
             childrenTag = _XmlTag('children')
@@ -1294,24 +1280,9 @@ class JmeSkinAndBone(object):
                 len(self.wrappedObj.game_properties) > 1 or (
                 len(self.wrappedObj.game_properties) == 1 and
                 self.wrappedObj.game_properties[0].name != "implClass")):
-            propsTag = _XmlTag('gameProperties')
-            tag.addChild(propsTag)
-            strCounter = -1
-            for prop in  self.wrappedObj.game_properties:
-                if prop.name == "implClass": continue
-                strCounter += 1
-                propsTag.addChild(_XmlTag("String_" + str(strCounter),
-                        {'value': prop.name}))
-                strCounter += 1
-                strTag = _XmlTag("String_" + str(strCounter))
-                propsTag.addChild(strTag)
-                if prop.type == "STRING":
-                    strTag.addAttr("value", prop.data)
-                elif prop.type == "FLOAT":
-                    strTag.addAttr("value", prop.data, 6)
-                else:
-                    strTag.addAttr("value", str(prop.data))
-
+            udTag = _XmlTag('userData')
+            tag.addChild(udTag)
+            _addPropertiesXml(udTag, self.wrappedObj.game_properties)
 
         if self.matrix != None:
             # This block for writing local transforms is copied directly from
@@ -2125,3 +2096,92 @@ class UpdatableMVert:
         self.no = mvert.no
         #self.sel = mvert.sel
         if mesh.vertexUV: self.uvco = mvert.uvco
+
+
+def _addPropertiesXml(parentTag, gameProps):
+    stringPropKeys = []
+    stringPropVals = []
+    intPropKeys = []
+    intPropVals = []
+    floatPropKeys = []
+    floatPropVals = []
+    boolPropKeys = []
+    boolPropVals = []
+    for prop in gameProps:
+        if prop.name == "implClass": continue
+        if prop.type == "INT":
+            intPropKeys.append(prop.name)
+            intPropVals.append(prop.data)
+        elif prop.type == "BOOL":
+            boolPropKeys.append(prop.name)
+            if(prop.data):
+                boolPropVals.append("true")
+            else:
+                boolPropVals.append("false")
+        elif prop.type == "FLOAT":
+            floatPropKeys.append(prop.name)
+            floatPropVals.append(prop.data)
+        elif prop.type == "STRING":
+            stringPropKeys.append(prop.name)
+            stringPropVals.append(prop.data)
+        else:
+            stringPropKeys.append(prop.name)
+            stringPropVals.append(str(prop.data))
+    if len(stringPropKeys) > 0:
+        savableTag = _XmlTag("Savable",
+                {'class':'com.jme.util.export.StringStringMap'})
+        entryTag = _XmlTag("MapEntry",
+                {'key':'stringSpatialAppAttrs'})
+        keysTag = _XmlTag("keys")
+        valsTag = _XmlTag("vals")
+        parentTag.addChild(entryTag)
+        entryTag.addChild(savableTag)
+        savableTag.addChild(keysTag)
+        savableTag.addChild(valsTag)
+        for i in range(len(stringPropKeys)):
+            keysTag.addChild(_XmlTag("String_" + str(i),
+                    {'value': stringPropKeys[i]}))
+            valsTag.addChild(_XmlTag("String_" + str(i),
+                    {'value': stringPropVals[i]}))
+    if len(intPropKeys) > 0:
+        savableTag = _XmlTag("Savable",
+                {'class':'com.jme.util.export.StringIntMap'})
+        entryTag = _XmlTag("MapEntry",
+                {'key':'intSpatialAppAttrs'})
+        keysTag = _XmlTag("keys")
+        valsTag = _XmlTag("vals", {'data':intPropVals})
+        parentTag.addChild(entryTag)
+        entryTag.addChild(savableTag)
+        savableTag.addChild(keysTag)
+        savableTag.addChild(valsTag)
+        for i in range(len(intPropKeys)):
+            keysTag.addChild(_XmlTag("String_" + str(i),
+                    {'value': intPropKeys[i]}))
+    if len(boolPropKeys) > 0:
+        savableTag = _XmlTag("Savable",
+                {'class':'com.jme.util.export.StringBoolMap'})
+        entryTag = _XmlTag("MapEntry",
+                {'key':'boolSpatialAppAttrs'})
+        keysTag = _XmlTag("keys")
+        valsTag = _XmlTag("vals", {'data':boolPropVals})
+        parentTag.addChild(entryTag)
+        entryTag.addChild(savableTag)
+        savableTag.addChild(keysTag)
+        savableTag.addChild(valsTag)
+        for i in range(len(boolPropKeys)):
+            keysTag.addChild(_XmlTag("String_" + str(i),
+                    {'value': boolPropKeys[i]}))
+    if len(floatPropKeys) > 0:
+        savableTag = _XmlTag("Savable",
+                {'class':'com.jme.util.export.StringFloatMap'})
+        entryTag = _XmlTag("MapEntry",
+                {'key':'floatSpatialAppAttrs'})
+        keysTag = _XmlTag("keys")
+        valsTag = _XmlTag("vals", {'data':floatPropVals}, 6)
+        parentTag.addChild(entryTag)
+        entryTag.addChild(savableTag)
+        savableTag.addChild(keysTag)
+        savableTag.addChild(valsTag)
+        for i in range(len(floatPropKeys)):
+            keysTag.addChild(_XmlTag("String_" + str(i),
+                    {'value': floatPropKeys[i]}))

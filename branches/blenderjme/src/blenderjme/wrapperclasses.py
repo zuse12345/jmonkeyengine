@@ -34,6 +34,7 @@ __url__ = 'http://www.jmonkeyengine.com'
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from jme.xml import XmlTag as _XmlTag
+from jme.xml import ecoformat as _ecoformat
 import jme.esmath as _esmath
 import Blender.Mathutils as _bmath
 from Blender.Material import Modes as _matModes
@@ -146,7 +147,7 @@ def addVector3fEl(parentEl, tagName, inVecList):
 from Blender.Object import PITypes as _bPITypes
 class JmeNode(object):
     __slots__ = ('wrappedObj', 'children', 'jmeMats', 'jmeTextureState',
-            'name', 'backoutTransform')
+            'name', 'backoutTransform', 'implClass')
 
     def __init__(self, bObjOrName, nodeTree=None):
         """
@@ -165,6 +166,7 @@ class JmeNode(object):
         self.backoutTransform = None
         self.jmeMats = None
         self.jmeTextureState = None
+        self.implClass = "com.jme.scene.Node"
 
         if isinstance(bObjOrName, basestring):
             self.name = bObjOrName
@@ -175,6 +177,11 @@ class JmeNode(object):
                     + "param nodeTree must be set")
         self.wrappedObj = bObjOrName
         self.name = self.wrappedObj.name
+        try:
+            icProp = self.wrappedObj.getProperty("implClass")
+            if icProp.type == 'STRING': self.implClass = icProp.data
+        except Exception, e:
+            pass # gets an exceptins.RuntimeError
         bMesh = self.wrappedObj.getData(False, True)
         twoSided = bMesh != None and (bMesh.mode & _meshModes['TWOSIDED'])
         if len(self.wrappedObj.getMaterials()) > 0:
@@ -231,7 +238,7 @@ class JmeNode(object):
                     continue
             for j in bMesh.materials[i].enabledTextures:
                 try:
-                    print "**** Adding Texture for Mat: " + bMesh.materials[i].name
+                    #print "**** Adding Texture for Mat: " + bMesh.materials[i].name
                     JmeTexture.supported(bMesh.materials[i].textures[j])
                     jmeTexs.append(nodeTree.includeTex(
                             bMesh.materials[i].textures[j]))
@@ -248,8 +255,10 @@ class JmeNode(object):
 
     def getName(self): return self.name
 
+    def getImplClass(self): return self.implClass
+
     def getXmlEl(self, autoRotate):
-        tag = _XmlTag('com.jme.scene.Node', {'name':self.getName()})
+        tag = _XmlTag(self.getImplClass(), {'name':self.getName()})
 
         if self.jmeMats != None or self.jmeTextureState != None:
             rsTag = _XmlTag('renderStateList')
@@ -258,6 +267,28 @@ class JmeNode(object):
             if self.jmeTextureState != None:
                 rsTag.addChild(self.jmeTextureState.getXmlEl())
             tag.addChild(rsTag)
+
+        if self.wrappedObj != None and (
+                len(self.wrappedObj.game_properties) > 1 or (
+                len(self.wrappedObj.game_properties) == 1 and
+                self.wrappedObj.game_properties[0].name != "implClass")):
+            propsTag = _XmlTag('gameProperties')
+            tag.addChild(propsTag)
+            strCounter = -1
+            for prop in  self.wrappedObj.game_properties:
+                if prop.name == "implClass": continue
+                strCounter += 1
+                propsTag.addChild(_XmlTag("String_" + str(strCounter),
+                        {'value': prop.name}))
+                strCounter += 1
+                strTag = _XmlTag("String_" + str(strCounter))
+                propsTag.addChild(strTag)
+                if prop.type == "STRING":
+                    strTag.addAttr("value", prop.data)
+                elif prop.type == "FLOAT":
+                    strTag.addAttr("value", prop.data, 6)
+                else:
+                    strTag.addAttr("value", str(prop.data))
 
         if self.children != None:
             childrenTag = _XmlTag('children')
@@ -1095,7 +1126,7 @@ class JmeSkinAndBone(object):
     skin Object's matrix.
     """
     __slots__ = ('wrappedObj', 'backoutTransform', 'matrix', 'boneMap', 'skin',
-            'plainChildren',
+            'plainChildren', 'implClass',
             'boneTree', 'name', 'children', 'actionDataList', 'maxWeightings')
     WEIGHT_THRESHOLD = .001
     BLENDERTOJME_FLIP_MAT4 = _bmath.RotationMatrix(-90, 4, 'x')
@@ -1112,6 +1143,12 @@ class JmeSkinAndBone(object):
         self.maxWeightings = maxWeightings
         self.wrappedObj = bObj
         self.name = bObj.name
+        self.implClass = "com.jme.scene.Node"
+        try:
+            icProp = self.wrappedObj.getProperty("implClass")
+            if icProp.type == 'STRING': self.implClass = icProp.data
+        except Exception, e:
+            pass # gets an exceptins.RuntimeError
         self.skin = None
         self.plainChildren = None
         self.actionDataList = None
@@ -1186,8 +1223,9 @@ class JmeSkinAndBone(object):
                 # blenderFrames may == None if no channels are significant to
                 # this Armature
 
-    def getName(self):
-        return self.name
+    def getName(self): return self.name
+
+    def getImplClass(self): return self.implClass
 
     def addChild(self, newChild):
         """This is the method which currently enforces the 1-skin-per-arma
@@ -1250,7 +1288,30 @@ class JmeSkinAndBone(object):
             return self.boneTree.getXmlEl(False, addlTransform)
             # Makes for economical, simple XML if only exporting the bones
 
-        tag = _XmlTag('com.jme.scene.Node', {'name':self.getName()})
+        tag = _XmlTag(self.getImplClass(), {'name':self.getName()})
+
+        if self.wrappedObj != None and (
+                len(self.wrappedObj.game_properties) > 1 or (
+                len(self.wrappedObj.game_properties) == 1 and
+                self.wrappedObj.game_properties[0].name != "implClass")):
+            propsTag = _XmlTag('gameProperties')
+            tag.addChild(propsTag)
+            strCounter = -1
+            for prop in  self.wrappedObj.game_properties:
+                if prop.name == "implClass": continue
+                strCounter += 1
+                propsTag.addChild(_XmlTag("String_" + str(strCounter),
+                        {'value': prop.name}))
+                strCounter += 1
+                strTag = _XmlTag("String_" + str(strCounter))
+                propsTag.addChild(strTag)
+                if prop.type == "STRING":
+                    strTag.addAttr("value", prop.data)
+                elif prop.type == "FLOAT":
+                    strTag.addAttr("value", prop.data, 6)
+                else:
+                    strTag.addAttr("value", str(prop.data))
+
 
         if self.matrix != None:
             # This block for writing local transforms is copied directly from
@@ -1318,7 +1379,7 @@ class JmeSkinAndBone(object):
         if len(vertexWeights) < 1: return tag
 
         skinTag.addChild(_XmlTag('skins', {
-                "class":"com.jme.scene.Node", "ref":skinRef
+                "class":self.skin.getImplClass(), "ref":skinRef
         }))
         skinTag.addChild(_XmlTag('skeleton', {
                 "class":"com.jme.animation.Bone",

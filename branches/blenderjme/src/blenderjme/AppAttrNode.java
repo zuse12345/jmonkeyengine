@@ -65,9 +65,10 @@ public class AppAttrNode extends Node {
     /**
      * Use this constructor to populate an instance with test attr values.
      */
-    public AppAttrNode(String s) { super(s);
+    public AppAttrNode(String s) {
+        super(s);
         System.err.println(AppAttrNode.class.getName() + " (" + getName()
-                + ") instantiated.  Writing 2 String attrs");
+                + ") instantiated.  Writing several sample attrs");
         StringStringMap strAttrMap = new StringStringMap();
         strAttrMap.put("myName", s);
         strAttrMap.put("digit two", Integer.toString(2));

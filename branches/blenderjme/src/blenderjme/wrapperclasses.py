@@ -915,6 +915,7 @@ class JmeBone(object):
                 if isinstance(child, JmeBone):
                     childrenTag.addChild(child.getXmlEl(autoRotate, addlTransform))
                 elif isinstance(child, JmeNode):
+                    # There is a bug right here.
                     child.backoutTransform = bindMatrix
                     childrenTag.addChild(child.getXmlEl(autoRotate))
                 else:

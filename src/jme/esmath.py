@@ -187,3 +187,14 @@ def floats2dEq(a, b, precision):
             if round(a[i][j], precision) != round(b[i][j], precision):
                 return False
     return True
+
+def isIdentity(m, precision):
+    """Returns true if the specified 2-dimensional float matrix is equal to the
+    identity matrix of the same size, within the specified precision."""
+    for row in range(len(m)):
+        for col in range(len(m[row])):
+            if row == col:
+                if round(m[row][col], precision) != 1.0: return False
+            else:
+                if round(m[row][col], precision) != 0.0: return False
+    return True

@@ -164,9 +164,11 @@ class ActionData(object):
         # is the (poor) default that Blender sets, yet this is not what users
         # usually want.  The default should be to stop at the last key frame.
 
-    def restoreFrame(self):
-        "CRITICALLY IMPORTANT to call this only when this action is 'active'"
+    def reset(self, pose):
+        """CRITICALLY IMPORTANT to call this only when this action is 'active'
+        Restores current frame number and sets rest pose for channels."""
         _bSet("curframe", self.origBlenderFrame)
+        ActionData.zeroPose(pose)
 
     def addPose(self, poseBones):
         "Add a pose for a single frame"
@@ -260,4 +262,11 @@ class ActionData(object):
         ActionData.frameRate =  \
                 _bScenes.active.getRenderingContext().framesPerSec()
 
+    def zeroPose(pose):
+        for poseBone in pose.bones.values(): poseBone.localMatrix.identity()
+        # To see results in 3DView, need to run scene.update(1) plus Blender.redraw()
+        #_bScenes.active.update(1)  # Needed???  If ineffective, try enabeing this
+        #pose.update()   # ... and maybe this.
+
     updateFrameRate = staticmethod(updateFrameRate)
+    zeroPose = staticmethod(zeroPose)

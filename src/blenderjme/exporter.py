@@ -45,7 +45,6 @@ import blenderjme
 import jme.esmath as _esmath
 
 recordTimestamp = "--nostamps" not in blenderjme.blenderArgs
-IDENTITY_4x4 = _bmath.Matrix()
 
 def descendantOf(meNode, ancestor):
     if meNode.parent == None: return False
@@ -77,11 +76,13 @@ def gen(saveAll, autoRotate, skipObjs=True,
             if _JmeNode.supported(bo, skipObjs):
                 supportedCandidates.append(bo)
         for bo in supportedCandidates:
-            if (bo.type == "Armature" and bo.parent != None
-                    and bo.parent in supportedCandidates):
+            if bo.type != "Armature": continue
+            if  bo.parent != None and bo.parent in supportedCandidates:
                 print("Rejecting Armature '" + bo.getName()
                         + "' because we only support root-level Arma Objs")
                 zapees.append(bo)
+            else:
+                activeActions[bo] = bo.getAction()
         for bo in zapees: supportedCandidates.remove(bo)
         for bo in supportedCandidates:
             for mod in bo.modifiers:
@@ -99,9 +100,8 @@ def gen(saveAll, autoRotate, skipObjs=True,
             if (bo.parent == None or bo.parentType != _bParentTypes["ARMATURE"]
                     or bo.parent not in supportedCandidates): continue
                # Not a skin node
-            activeActions[bo.parent] = bo.parent.getAction()
-            if _esmath.floats2dEq(bo.matrixLocal * bo.parent.matrixLocal,
-                    IDENTITY_4x4, 6): continue
+            if _esmath.isIdentity(bo.matrixLocal * bo.parent.matrixLocal, 6):
+                continue
              # Test above just shortcuts useless attempt.
              # The real test whether we will change transform is below.
             # This is a Skin node.
@@ -132,6 +132,20 @@ def gen(saveAll, autoRotate, skipObjs=True,
             if isinstance(jmeObj, _JmeSkinAndBone) and bo in relocateds:
                 jmeObj.setMatrix(relocateds[bo])
         # This backs up all objects under skin nodes, since they may get moved
+
+        # Don't know why this is needed here, but exports without skin are
+        # totally hosed without the following block (which duplicates what is
+        # done in the finally block at the end).
+        for armaBo, action in activeActions.iteritems():
+            if action == None:
+                print "Restoring None action to " + armaBo.getName()
+                armaBo.action = None
+            else:
+                print("Restoring action "
+                        + action.getName() + " to " + armaBo.getName())
+                action.setActive(armaBo)
+        _bdata.scenes.active.update(1)
+
         for skinBo in relocateds.keys()[:]:
             if skinBo.parent == None: continue  # Armature object
             # skinBo really is a Skin Object now

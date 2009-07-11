@@ -147,7 +147,7 @@ def addVector3fEl(parentEl, tagName, inVecList):
 from Blender.Object import PITypes as _bPITypes
 class JmeNode(object):
     __slots__ = ('wrappedObj', 'children', 'jmeMats', 'jmeTextureState',
-            'name', 'backoutTransform', 'implClass')
+            'name', 'backoutTransform', 'implClass', 'postFlip')
 
     def __init__(self, bObjOrName, nodeTree=None):
         """
@@ -167,6 +167,7 @@ class JmeNode(object):
         self.jmeMats = None
         self.jmeTextureState = None
         self.implClass = "com.jme.scene.Node"
+        self.postFlip = False
 
         if isinstance(bObjOrName, basestring):
             self.name = bObjOrName
@@ -178,10 +179,10 @@ class JmeNode(object):
         self.wrappedObj = bObjOrName
         self.name = self.wrappedObj.name
         try:
-            icProp = self.wrappedObj.getProperty("implClass")
+            icProp = self.wrappedObj.getProperty("jme.implClass")
             if icProp.type == 'STRING': self.implClass = icProp.data
         except Exception, e:
-            pass # gets an exceptins.RuntimeError
+            pass # gets an exceptions.RuntimeError
         bMesh = self.wrappedObj.getData(False, True)
         twoSided = bMesh != None and (bMesh.mode & _meshModes['TWOSIDED'])
         if len(self.wrappedObj.getMaterials()) > 0:
@@ -258,6 +259,20 @@ class JmeNode(object):
     def getImplClass(self): return self.implClass
 
     def getXmlEl(self, autoRotate):
+        if (self.wrappedObj.parent != None
+                and self.wrappedObj.parent.getPose() != None):
+            #print "Verifying non-null poses for " + self.getName() + "..."
+            for poseBone in self.wrappedObj.parent.getPose().bones.values():
+                if not _esmath.isIdentity(poseBone.localMatrix, 6):
+                    raise Exception(
+                            "You must have a rest pose loaded before exporting")
+                    # The reset below DOES NOT WORK
+                    #raise Exception("Node " + self.getName()
+                    print("Node " + self.getName()
+                        + " has non-zero pose matrix for bone '"
+                        + poseBone.name + "'")
+                    ActionData.zeroPose(self.wrappedObj.parent.getPose())
+                    break
         tag = _XmlTag(self.getImplClass(), {'name':self.getName()})
 
         if self.jmeMats != None or self.jmeTextureState != None:
@@ -271,7 +286,7 @@ class JmeNode(object):
         if self.wrappedObj != None and (
                 len(self.wrappedObj.game_properties) > 1 or (
                 len(self.wrappedObj.game_properties) == 1 and
-                self.wrappedObj.game_properties[0].name != "implClass")):
+                self.wrappedObj.game_properties[0].name != "jme.implClass")):
             udTag = _XmlTag('userData')
             tag.addChild(udTag)
             _addPropertiesXml(udTag, self.wrappedObj.game_properties)
@@ -292,6 +307,8 @@ class JmeNode(object):
             matrix = self.wrappedObj.mat
         else:
             matrix = self.wrappedObj.mat * self.backoutTransform.copy().invert()
+        if self.postFlip:
+            matrix *= JmeSkinAndBone.BLENDERTOJME_FLIP_MAT4.copy().invert()
 
         # Set local variables just to reduce typing in this block.
         loc = matrix.translationPart()
@@ -815,8 +832,6 @@ class JmeBone(object):
     # For now, we support only a single animation controller. All Actions get
     # added as Animations of that Controller.
 
-    IDENTITY_4x4 = _bmath.Matrix()
-
     def __init__(self, objOrBone, parentBone=None):
         object.__init__(self)
         blenderChildren = []
@@ -864,7 +879,7 @@ class JmeBone(object):
     def getName(self):
         return self.name
 
-    def getXmlEl(self, autoRotate, addlTransform):
+    def getXmlEl(self, autoRotate, addlTransform, nonDefoBackout):
         """addlTransform is the same for all bones and animation channels of
         an Armature."""
         tag = _XmlTag('com.jme.animation.Bone', {'name':self.getName()})
@@ -872,13 +887,16 @@ class JmeBone(object):
         # The id is not strictly needed if a bone is not skinned
         # and not the target of a bone influence.
         # Since nearly all bones are skinned, easier to id them all.
+        boutTrans = self.matrix.copy()
+        if nonDefoBackout != None: boutTrans *= nonDefoBackout
+        # boutTrans  is the arma space transform without intermediate bones
+        # backed out.
         if self.parentBone == None:
             invParentMat = None
         else:
             invParentMat = self.parentBone.inverseTotalTrans
         if (self.parentBone != None and addlTransform != None
-                and not _esmath.floats2dEq(
-                    addlTransform, JmeBone.IDENTITY_4x4, 6)):
+                and not _esmath.isIdentity(addlTransform, 6)):
             #print "Applying addl to " + self.getName() + ": " + str(addlTransform)
             self.matrix *= addlTransform
         bindTag = _XmlTag("bindMatrix", {'class':'com.jme.math.Matrix4f'})
@@ -913,14 +931,20 @@ class JmeBone(object):
             tag.addChild(childrenTag)
             for child in self.children:
                 if isinstance(child, JmeBone):
-                    childrenTag.addChild(child.getXmlEl(autoRotate, addlTransform))
+                    childrenTag.addChild(child.getXmlEl(
+                        autoRotate, addlTransform, nonDefoBackout))
                 elif isinstance(child, JmeNode):
-                    # There is a bug right here.
-                    child.backoutTransform = bindMatrix
+                    child.backoutTransform = boutTrans
+                    if autoRotate: child.postFlip = True
                     childrenTag.addChild(child.getXmlEl(autoRotate))
                 else:
                     raise Exception("Unexpected child of bone: "
                             + child.getName() + " of type " + str(type(child)))
+
+        autoRotate = False
+        # Transforms for skel or animation just will not work right with a
+        # proper axis flip.  Until we fix this, bones will always have +Y
+        # forward.
 
         #if self.parentBone != None:
         # Real Blender bones, which have only translation + rotation.
@@ -1132,10 +1156,10 @@ class JmeSkinAndBone(object):
         self.name = bObj.name
         self.implClass = "com.jme.scene.Node"
         try:
-            icProp = self.wrappedObj.getProperty("implClass")
+            icProp = self.wrappedObj.getProperty("jme.implClass")
             if icProp.type == 'STRING': self.implClass = icProp.data
         except Exception, e:
-            pass # gets an exceptins.RuntimeError
+            pass # gets an exceptions.RuntimeError
         self.skin = None
         self.plainChildren = None
         self.actionDataList = None
@@ -1204,11 +1228,13 @@ class JmeSkinAndBone(object):
                 if actionData.blenderFrames == None:
                     print "Action '" + actionData.getName() + " culled"
             finally:
-                actionData.restoreFrame()
+                actionData.reset(self.wrappedObj.getPose())
                 if actionData.blenderFrames != None:
                     self.actionDataList.append(actionData)
                 # blenderFrames may == None if no channels are significant to
                 # this Armature
+                #self.wrappedObj.action = None
+                #_bScenes.active.update(1)
 
     def getName(self): return self.name
 
@@ -1217,11 +1243,12 @@ class JmeSkinAndBone(object):
     def addChild(self, newChild):
         """This is the method which currently enforces the 1-skin-per-arma
         constraint."""
-        if newChild.wrappedObj.type != "Mesh":
+        if (newChild.wrappedObj.type != "Mesh"
+                and newChild.wrappedObj.type != "Empty"):
             raise Exception(
                     "Don't know how to parent the type of " + newChild.getName()
                     + " to an Armature: " + newChild.wrappedObj.type)
-        if (newChild.wrappedObj.parentType == _bParentTypes["OBJECT"]):
+        if newChild.wrappedObj.parentType == _bParentTypes["OBJECT"]:
             if self.plainChildren == None: self.plainChildren = []
             self.plainChildren.append(newChild)
         elif (newChild.wrappedObj.parentType == _bParentTypes["ARMATURE"]):
@@ -1257,14 +1284,20 @@ class JmeSkinAndBone(object):
         print "addlTransform WAS " + str(addlTransform)
         # Critical to update addlTransform before any bones are written
         if self.skin != None:
-            print "Adjusting Skin transform to parenting skeleton"
+            print "Adjusting bone transforms to Skin Object"
             addlTransform *= self.children[1].wrappedObj.mat.copy().invert()
             # Bones will be relative to the Skin object
         elif self.backoutTransform != None:
-            print "Adjusting Skin transform to some other object"
+            print "Adjusting transforms to some other parent Object"
             addlTransform *= self.backoutTransform.copy().invert()
         print "addlTransform NOW " + str(addlTransform)
 
+        # It is quite a hack, but the best I can do:
+        # The armature skin  and bones are not properly axis-flipped.  They
+        # just depend on this object to rotate and make them look right.
+        # This necessitates other hacks to back out this flip from
+        # non-bone/non-skin children (both Armature Object Object children,
+        # and non-deforming bone Object children).
         if autoRotate:
             if self.matrix == None:
                 self.matrix = JmeSkinAndBone.BLENDERTOJME_FLIP_MAT4
@@ -1272,7 +1305,7 @@ class JmeSkinAndBone(object):
                 self.matrix *= JmeSkinAndBone.BLENDERTOJME_FLIP_MAT4
         if (self.skin == None
                 and self.plainChildren == None and self.matrix == None):
-            return self.boneTree.getXmlEl(False, addlTransform)
+            return self.boneTree.getXmlEl(autoRotate, addlTransform)
             # Makes for economical, simple XML if only exporting the bones
 
         tag = _XmlTag(self.getImplClass(), {'name':self.getName()})
@@ -1280,7 +1313,7 @@ class JmeSkinAndBone(object):
         if self.wrappedObj != None and (
                 len(self.wrappedObj.game_properties) > 1 or (
                 len(self.wrappedObj.game_properties) == 1 and
-                self.wrappedObj.game_properties[0].name != "implClass")):
+                self.wrappedObj.game_properties[0].name != "jme.implClass")):
             udTag = _XmlTag('userData')
             tag.addChild(udTag)
             _addPropertiesXml(udTag, self.wrappedObj.game_properties)
@@ -1305,12 +1338,21 @@ class JmeSkinAndBone(object):
             addRotationEl(tag, rQuat)
 
         childrenTag = _XmlTag('children')
+        boutTrans = self.wrappedObj.mat.copy()
+        #if self.matrix != None: boutTrans *= self.matrix
+        #print "boutTrans = " + str(boutTrans)
         tag.addChild(childrenTag)
-        childrenTag.addChild(self.boneTree.getXmlEl(False, addlTransform))
+        childrenTag.addChild(
+                self.boneTree.getXmlEl(autoRotate, addlTransform, boutTrans))
         if self.plainChildren != None:
+            # boutTrans backs out the axis flip hack, as well as other parents.
             for child in self.plainChildren:
-                child.backoutTransform = self.wrappedObj.mat  # Correct?
-                childrenTag.addChild(child.getXmlEl(False))
+                child.backoutTransform = self.matrix
+                childrenTag.addChild(child.getXmlEl(autoRotate))
+                # Not quite perfect here.
+                # With no auto-rotate the chilren Objects have Z forward
+                # instead of Y forward like it is in Blender.
+                # Other cases work great.
         if self.skin == None: return tag
         skinRef = self.skin.getName()
 
@@ -2109,7 +2151,7 @@ def _addPropertiesXml(parentTag, gameProps):
     boolPropKeys = []
     boolPropVals = []
     for prop in gameProps:
-        if prop.name == "implClass": continue
+        if prop.name == "jme.implClass": continue
         if prop.type == "INT":
             intPropKeys.append(prop.name)
             intPropVals.append(prop.data)

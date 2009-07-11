@@ -69,25 +69,6 @@
     <HR/>
     <h4 id="constraints">Constraints</h4>
       <UL>
-        <LI>By far the worse bug in the exporter is that transforms generated
-          for non-deforming Mesh Object children of Armature bones are so bad
-          as to be unusable.
-          We are talking about non-skin children of bones here.
-          It's not uncommon to parent eyes or teeth directly to bones.
-          If you do that in Blender, it may or may not transfer to jME
-          correctly.
-          Until somebody figures out how to get these transforms to behave, the
-          work-around is to not export these child objects as children of the
-          bones, and to attach them on the jME side.
-          Due to the differences between jME and Blender, this means you'll
-          have to use a tool like Modeler or SceneMonitor to figure out the
-          needed offset and rotation relative to the parenting bone.
-          Since this is basic information needed to reconstitute your model in
-          jME, you may want to keep the rotation and translation values with
-          your model.
-          I do this by setting Blender game properties of type float.
-          These can be retrieved in jME with
-          <code>Node.getUserData("floatSpatialAppAttrs").get("yourPropName")</code>.
         <LI>Armatures must be at the root level
         <LI>We haven't yet figured out the exact criteria, but bone weighting
           problems can arise if you never apply Bone Heat to your skin.

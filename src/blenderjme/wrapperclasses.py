@@ -259,7 +259,7 @@ class JmeNode(object):
     def getImplClass(self): return self.implClass
 
     def getXmlEl(self, autoRotate):
-        if (self.wrappedObj.parent != None
+        if (self.wrappedObj != None and self.wrappedObj.parent != None
                 and self.wrappedObj.parent.getPose() != None):
             #print "Verifying non-null poses for " + self.getName() + "..."
             for poseBone in self.wrappedObj.parent.getPose().bones.values():
@@ -348,6 +348,7 @@ class JmeNode(object):
         return tag
 
     def getType(self):
+        if self.wrappedObj == None: return None
         return self.wrappedObj.type
 
     def supported(bObj, skipObjs):
@@ -1347,7 +1348,8 @@ class JmeSkinAndBone(object):
         if self.plainChildren != None:
             # boutTrans backs out the axis flip hack, as well as other parents.
             for child in self.plainChildren:
-                child.backoutTransform = self.matrix
+                #child.backoutTransform = self.matrix
+                if autoRotate: child.postFlip = True
                 childrenTag.addChild(child.getXmlEl(autoRotate))
                 # Not quite perfect here.
                 # With no auto-rotate the chilren Objects have Z forward

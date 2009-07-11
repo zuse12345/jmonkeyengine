@@ -93,8 +93,8 @@ def gen(saveAll, autoRotate, skipObjs=True,
                         and modObject != bo.parent):
                     if bo.parentType != _bParentTypes["OBJECT"]:
                         raise Exception(
-                            "Unexpected parent type for Arma-modified Object: "
-                            + str(bo.parentType))
+                            "Unexpected parent type for Arma-modified Object '"
+                            + bo.getName() + "': " + str(bo.parentType))
                     reparenteds[bo] = bo.parent
                     modObject.makeParentDeform([bo])
             if (bo.parent == None or bo.parentType != _bParentTypes["ARMATURE"]

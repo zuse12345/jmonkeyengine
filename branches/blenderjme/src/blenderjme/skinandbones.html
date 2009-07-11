@@ -43,9 +43,9 @@
     <h4 id="contents">Contents</h4>
     <ol>
       <li><a href="#purpose">Purpose</a>
-      <li><a href="constraints">Constraints</a>
-      <li><a href="procedure">Conventional Skin &amp; Bones Export Procedure</a>
-      <li><a href="tips">Tips</a>
+      <li><a href="#constraints">Constraints</a>
+      <li><a href="#procedure">Conventional Skin &amp; Bones Export Procedure</a>
+      <li><a href="#tips">Tips</a>
     </ol>
     <a href="exporter.html">Main Help Page</a>
     <HR/>
@@ -81,20 +81,17 @@
         If you export 4 armatures with 10 bones each, you need 40 unique bone
         names.
         (You could avoid this constraint by making 4 separate exports).
-        <LI>The skin mesh object must have no scale or rotation.
-        You can easily accommodate this by using CTRL-A on the skin, in Object
-        mode.  If you want your model saved <i>with</i> skin mesh scaling or
-        rotation, then just don't save after this operation.
-        This operation to remove scale and rotation doesn't break existing bone
-        weightings or actions.
+        <LI>The entire transform of the skin mesh object and the associated
+        armature object must be exactly equal.
+        If using an Armature modifier, you must make sure that all
+        Loc, Scale, and Rot values are exactly equal for the two objects.
+        If using traditional parenting, use ALT-p,
+        <code>Clear Parent Inverse</code>, then set the Loc, Scale, and Rot
+        values to <code>(0, 0, 0), (1, 1, 1), (0, 0, 0)</code>.
         <LI>On the jME side, animations will interpolate <i>linearly</i>
         between key frames, regardless of what interpolation algorithm Blender
         uses.
         This is a limitation of <code>com.jme.animation</code>.
-        <LI>As suggested in Blender documentation, the skin Object and the
-        Armature Object should both have zero rotations and scale values of 1;
-        and the translation (location) of these two objects should be exactly
-        the same.
       </UL>
       Any or all of these constraints may be removed as we improve the
         exporter.
@@ -133,6 +130,10 @@
         <ul>
           <li>Set insertion cursor on the skin mesh location.
           While the skin mesh Object is selected, do SHIFT-S, Cursor->Selection.
+          However you create it, the final requirement is that the transform
+          on the skin object and the armature object are exactly equal.
+          See the relevant item in the
+          <a href="#constraints">Constraints section</a> above for details.
           <li>Pulldown Add / Armature.
           <b>Do not do anything to the new bone or Arma yet!</b>
           <li>In the Mesh button panel, click on the Armature "X-Ray" toggle so
@@ -191,10 +192,14 @@
       <li>Initialize Bone Weights to skin vertexes.
       <p style="font-family:mono-space;">
     [You can accomplish the same thing as described in this section by just
-    parenting the skin Object to the armature Object and choosing Bone Heat
+    parenting the skin Object to the armature Object
+    (<b>when the Armature is in Pose Mode</b>) and choosing Bone Heat
     when prompted, then perform bone weighting adjustment as described below.
     I explain the Modifier method because this seems to be the procedure
-    recommended by the most recent Blender docs.]</p>
+    recommended by the most recent Blender docs.  See the note in the
+    <A href="#tips">Constraints section</A> about setting the skin location
+    with traditional parenting.
+    ]</p>
 
       <ul>
         <li>Before using any system that generates skin/bone weights
@@ -218,6 +223,7 @@
       apply the specified weights.
       <li>This step consists of one of the quirkiest operations in Blender.
       First, select the Armature object and switch to pose mode.
+      "a" until all bones are selected.
       Blender remembers this as the "current" mode for the Armature even when
       you select another object.
       Now, select the skin mesh and switch to Weight Paint mode.
@@ -225,17 +231,19 @@
       knows about the bones.
       <p class="gotcha">
       <b>IMPORTANT!</b>
-      For the time being, you must apply "bone heats" to your model.
+      For the time being, in some cases you must apply "bone heats" to your
+      model.
       This is a work-around which prevents artifacts from wrecking the export.
       When we have time to dig into the issue and fix the real problem, we'll
-      eliminate this requirement.</p>
-      <li>Right click on any bone.
-      Click "w" and choose "Apply Bone Heat...".
-      Repeat this operation until you have applied Bone Heat to each bone.
-      (The Weight Paint interface doesn't allow you to select multiple bones at
-      once :( ).
-      Though you are allowed to paint weights for non-Deform bones, such
-      weightings will never be applied to a mesh.
+      eliminate this requirement, or at lease document <i>when</i> Bone Heat is
+      required.</p>
+      Since you selected all bones for the Armature in Pose Mode, all bones
+      will be selected now in the weight painter (there is no way to select
+      multiple bones after you aer in weight painter).
+      Click "w" and choose "Apply Bone Heat..." to apply the bone heat to all
+      bones (non-deform bones will be automatically excluded).
+      Though you are allowed to manually paint weights for non-Deform bones,
+      such weightings will never be applied to a mesh.
     </ul>
   <li>Adjust Bone Weights
     <p>
@@ -257,8 +265,24 @@
       The closer to Red, the more the selected bone influences.
       The closer to Blue, the less the selected bone influences.
     </ul>
+  <li>Create and set a <i>Rest Pose Frame</i>
+    If you already have a frame in any action with every bone set to its rest
+    pose, then skip this section.
+    Otherwise, read on...
+      <ol>
+        <li>If you don't have an Action for static poses, then create a new
+        Action.
+        <li>In Pose mode, select the desired frame to save to.
+        Select frame 1 if you have no preference.
+        <li>"a" to select all bones, then zero all bone poses with
+        ALT-p and ALT-s and ALT-g.
+        <li>"i" to save the ''LocRot''.
+      </ol>
+      <p>
   <li>Export
     <ul>
+      <li>With the armature selected in pose mode, select the
+      <i>rest pose frame</i> (as defined in the previous item).
       <li>Save your scene, in case something crashes and hoses it.
       Just like most (or all) exporters that handle animations, this exporter
       does work with your scene objects in order to gather the data it needs.
@@ -272,7 +296,7 @@
     still animate the skeleton in jME).
     Use the Blender "Anim" button panel to narrow the start and end frames if
     you wish.
-    See the <A href="#tips">Tips section below</A> for important information
+    See the <A href="#tips">Tips section</A> below for important information
     about start and end frames.
     </p><p>
     The exporter handles the various objects in a very modular fashion, and
@@ -301,7 +325,11 @@
     <HR/>
     <h4 id="tips">Tips</h4>
     <ul>
-      <p>
+      <li>Due to the Blender API amazingly having no clean way for script
+      developers to clear poses, if you have any Action, we have to insist that
+      you create a pose frame in at least one action, saving all rest positions
+      to that frame.
+      See the relevant steps in the procedure above.
       <li>If you move bones without an animation controller, like with
       <code>Spatial.setLocal*()</code>, you must run<pre><code>
           skinNode.boneChanged(null);
@@ -329,8 +357,9 @@
       Therefore, if a bone has no child, it's impossible to make out anything
       about the bone's rotation (if the bone is rotating, you may make out a
       glimmer as it rotates, but that's about it).
-      In Blender, you can use the Outliner to set these dummy bones to be
-      invisible.
+      In Blender, you can use the Outliner or Edit Buttons window to set these
+      dummy bones to be invisible; and you should definitley toggle off the
+      <code>Deform</code> option toggle.
       You have to turn it off from both Edit and Pose modes in order for it to
       always be invisible.
     <li>
@@ -359,6 +388,8 @@
     <li>
       Remember that to use the Blender Weight Painter, you must have the
       Armature in Pose mode before setting the skin mesh to Weight Painter mode.
+      Also, if you plan to apply Bone Heat to all (deforming) bones, make sure
+      to select all bones in Pose mode before switching to the Weight Painter.
     <li>
       Very similarly to the previous item, in order to parent a skin mesh
       to a bone (as opposed to the Armature Object or the Armature itself), you
@@ -381,6 +412,9 @@
       The exporter will generate that keyframe, and in jME the animation will
       smoothly transition from that frame to the first frame of the animation,
       without the momentary pause in animation which you would have otherwise.
+      A real limitation with this work-around is that Blender only allows one
+      start frame and end frame setting, regardless of how many actions you
+      have.  We're thinking about how to accommodate this limitation.
     <HR/>
     <DIV class="footer">
       $Revision$

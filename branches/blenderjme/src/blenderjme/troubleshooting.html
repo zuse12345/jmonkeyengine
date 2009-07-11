@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- $Id$ -->
+<HTML>
+  <HEAD>
+    <TITLE>Blender / jME Exporter Troubleshooting</TITLE>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<html>
+<head>
+    <STYLE>
+      body, table, div {
+          font-family:sans-serif:0;
+          font-size:14px;
+          border:0;
+          padding:0;
+      }
+      table, div {
+          margin:0;
+      }
+      body { background-color:white; margin:10px; }
+      code { font-family:monospace; }
+      table.data { background-color:silver; }
+      table.data td, table.data th { border:solid gray 1px; }
+      th { font-size:80%; }
+      td, th { padding:3px; }
+      tr.odd td { background-color:#E6E6FA; }
+      tr.even td { background-color:#E0FFFF; }
+      li { margin-top:3; margin-bottom:3px; }
+      div.footer { font-size:12px; }
+      span.addr { font-style:italic; white-space:nowrap; }
+      a { color:black; }
+      div.problem { font-weight:bold}
+    </STYLE>
+  </HEAD>
+  <BODY>
+    <h3>Blender &#x21d2; jME Exporter Troubleshooting</h3>
+    Covers version ${product.version}.
+    <BR/>
+    Copyright 2009 by Blaine Simpson and the jME Dev Team,
+    with the included BSD open source license.
+    <HR/>
+    <h4 id="contents"></h4>
+    <ol>
+      <li><a href="#execution">Exporter Execution Problems</a>
+      <li><a href="#static">Problems with Static Models</a>
+      <li><a href="#anim">Animation-specific Problems</a>
+    </ol>
+    <a href="exporter.html">Main Help Page</a>
+    <HR/>
+    <h4 id="static">Exporter Execution Problems</h4>
+    We put much effort into providing high precision in the exporters.
+    In order to attain this goal, we have to ensure that extraneous settings
+    don't influence the exporter.
+    Because Blender is so freaking sloppy about isolating state changes, we
+    are forced to be strict about modes and settings.
+    If we had unlimited time, we could back up all settings, clear everything,
+    and restore when we're done.
+    Unfortunately, we're busy working on more important things.
+    Consequently, if we detect something which could adversely effect the
+    export, we will often just abort the export and leave it up to you to
+    correct the problem.
+    <ol>
+      <li><div class="problem">Abort with complaint about <i>parent types</i></div>
+      We depend on the parent type setting to determine the correct way to
+      set up relationships of exported items.
+      In some cases, Blender does not set the parent type properly.
+      If you get this message about an unparented object, back up, then parent
+      the indicated object to another normal Blender object, then clear the
+      parent with ALT-p.
+      <li><div class="problem">Abort with complaint about <i>rest poses</i></div>
+      If an object-to-be-exported's armature has an Action, then  you need to
+      create a frame containing the rest pose for each bone, and that pose must
+      be the last one selected for its Armature.
+      See the instructions on this topic on the 
+      <a href="skinandbones.html">Skin &amp; Bones page</a>.
+    </ol>
+    <HR/>
+    <h4 id="static">Problems with Static Models</h4>
+    <ol>
+      <li><div class="problem">Items missing</div>
+      <ul>
+        <li>Make sure to either Select all desired Blender Objects before
+        invoking the exporter, or to toggle the first button on the exporter
+        screen to export all supported objects in the scene.
+        <li>As explained on the main help page, check the object count on the
+        exporter screen as you toggle the <code>Include/Exclude</code> button.
+        <li>Run Blender from your shell command line and see Blender's output
+        to that shell for details.
+        If you know how to redirect program stdout output to a file, that 
+        works too.
+      </ul>
+    </ol>
+    <HR/>
+    <h4 id="static">Problems with Animated Models</h4>
+    <ol>
+      <li><div class="problem">Positions or orientations are messed up</div>
+      <ul>
+        <li>Check the scale and rotation of both the Armature Object (the
+        Blender Object which is parent to the Armature) and the Skin mesh.
+        They must be <code>(0, 0, 0)</code> and <code>(1, 1, 1)</code>
+        correspondingly.
+        You can fix this by using CTRL-a, but you will probaby then have to
+        readjust other things to work with the new scale or rotation.
+        <li>Don't use both traditional parenting and an Armature Modifier.
+        There must be one and only one association between the skin and the
+        Armature.
+        <li>Verify that the Armature Object translation exactly matches the
+        skin translation. <ul>
+          <li>If you are using an Armature Modifier, then set the skin object's
+          LocX/LocY/LocZ exactly equal to that of the Armature Object.
+          <li>If you are using traditional parenting, select the skin mesh
+          Object, ALT-p, ''Clear Parent Inverse'', then se LocX/LocY/LocZ to
+          <code>(0, 0, 0)</code>.
+          By clearing the wacky, complicating Blender
+          <code>.matrixParentInverse</code> in this way, it becomes easy to see
+          the positition of the skin relative to the Armature, which should
+          always be <code>(0,0,0)</code>.
+          <li>If you are using a modifier,
+        </ul>
+        You may well need to adjust other things if you had to change a
+        location setting.
+      </ul>
+    </ol>
+    <HR/>
+    <DIV class="footer">
+      $Revision$
+      <BR/>
+      Last modified $Date$
+      <BR/>
+      <span class="addr">blaine (dot) simpson (at) admc (dot) com</span>
+    </DIV>
+  </BODY>
+</HTML>

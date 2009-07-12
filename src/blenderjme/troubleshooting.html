@@ -94,6 +94,15 @@
         If you know how to redirect program stdout output to a file, that 
         works too.
       </ul>
+      <li><div class="problem">Orientation wrong for jME-side-mounted items</div>
+      If you use the exporter to export multiple items, then attach them to
+      one another on the jME side, you should use the same Rotate X setting for
+      all exports.
+      Setting Rotate X causes the exporter to generate jME Spatials with +Z
+      forward.
+      Without, it will use -Y forward like Blender.
+      (Bones are an exception and are always tip direction +Y in both Blender
+      and jME).
     </ol>
     <HR/>
     <h4 id="static">Problems with Animated Models</h4>

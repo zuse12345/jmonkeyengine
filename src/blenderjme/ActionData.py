@@ -77,11 +77,12 @@ class ActionData(object):
         self.origBlenderFrame = _bGet("curframe")
         blenderStaFrame = _bGet("staframe")
         blenderEndFrame = _bGet("endframe")
-        if blenderStaFrame >= blenderEndFrame:
+        if blenderStaFrame > blenderEndFrame:
             raise Exception("Specified start frame for Action '" + self.name
-                    + "' is not before specified "
-                    + "end frame: " + str(blenderStaFrame)
+                    + "' is after the specified end frame:  "
+                    + str(blenderStaFrame)
                     + " vs. " + str(blenderEndFrame))
+            # The Blender UI enforces this, but it doesn't hurt to be safe
         self.boneMap = boneMap
         if ActionData.frameRate == None:
             raise Exception("You can't instantiate ActionData until the "
@@ -117,10 +118,7 @@ class ActionData(object):
                     # Remember that Blender frames are 1-based, not 0-based
                     # This number is usually just the float form of an integer,
                     # but if user has copied and moved an action, it can be
-                    # non-integral.  TODO: REMOVE FOLLOWING ONCE CONFIRMED SAFE
-                    #if frameFloat % 1 != 0: framekkkk
-                            #"A curve Bezier pt has non-integral frame num: "
-                            #+ str(frameFloat))
+                    # non-integral.
                     frameSet.add(frameFloat)
                     # Leaving value a float so float division will occur below
         if len(frameSet) < 1:
@@ -264,9 +262,11 @@ class ActionData(object):
 
     def zeroPose(pose):
         for poseBone in pose.bones.values(): poseBone.localMatrix.identity()
-        # To see results in 3DView, need to run scene.update(1) plus Blender.redraw()
-        #_bScenes.active.update(1)  # Needed???  If ineffective, try enabeing this
-        #pose.update()   # ... and maybe this.
+        # When I do this interactively, to see results in 3DView, need to run
+        # scene.update(1) plus Blender.redraw().  But here, the same update
+        # seems to invalidate the identity setting. ??
+        #_bScenes.active.update(1)
+        #pose.update()   # Docs say this is needed, but never helped me.
 
     updateFrameRate = staticmethod(updateFrameRate)
     zeroPose = staticmethod(zeroPose)

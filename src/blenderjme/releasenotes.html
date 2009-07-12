@@ -63,7 +63,7 @@
     <h4 id="changelist">Change List</h4>
     <ul>
       <li>Changes since 0.2d<ol>
-        <li>Fix big where mat rejections cause export to abort, regardless of
+        <li>Fix bug where mat rejections cause export to abort, regardless of
           settings.
         <li>Improved animation/posing diagnostics
         <li>Animation optimization/culling algorithm reinstated
@@ -86,10 +86,19 @@
           with an overlay texture where the base bleeds through transparent
           areas.
         <li>Support automatic jME instantiation of Spatial subclasses by use
-          of a Blender String game property of name "implClass".
+          of a Blender String game property of name "jme.implClass".
         <li>Support automatic loading of all Blender game properties into jME
           UserData maps.  See sample file
           <code>src/blenderjme/AppAttrNode.java</code>.
+        <li>Refactored transform translations so that jME side will always get
+          +Z-forward or -Y-forward Objects, depending on whether
+          <code>Rotate X</code> is set.
+        <li>Fixed nasty bug with non-deforming-bone-children.
+          Not this, as well as normal object nesting under the Armature Object
+          work very consistently and precisely.
+        <li>The <i>Mountpoint</i> strategy was borne out of the fruits of the
+          previous two items.  As I write this, Ashton is uploading his new
+          video featuring Mountpoints.
       </ol>
       <li>Changes since 0.2c<ol>
         <li>Enhanced existing Java sample class, and added new sample to

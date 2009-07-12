@@ -265,8 +265,8 @@ class JmeNode(object):
             for poseBone in self.wrappedObj.parent.getPose().bones.values():
                 if not _esmath.isIdentity(poseBone.localMatrix, 6):
                     raise Exception(
-                            "You must have a rest pose loaded before exporting")
-                    # The reset below DOES NOT WORK
+                    "Rest Pose Frame is not active.  Consult the Online Help.")
+                    # The reset below DOES NOT WORK.  Why???
                     #raise Exception("Node " + self.getName()
                     print("Node " + self.getName()
                         + " has non-zero pose matrix for bone '"

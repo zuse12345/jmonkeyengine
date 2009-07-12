@@ -133,16 +133,11 @@ def gen(saveAll, autoRotate, skipObjs=True,
                 jmeObj.setMatrix(relocateds[bo])
         # This backs up all objects under skin nodes, since they may get moved
 
-        # Don't know why this is needed here, but exports without skin are
-        # totally hosed without the following block (which duplicates what is
-        # done in the finally block at the end).
+        # Don't know why this is needed here, but exports invoked with
+        # non-rest pose get totally hosed without the following block (which is
+        # a duplicate of some code in the finally block).
         for armaBo, action in activeActions.iteritems():
-            if action == None:
-                print "Restoring None action to " + armaBo.getName()
-                armaBo.action = None
-            else:
-                print("Restoring action "
-                        + action.getName() + " to " + armaBo.getName())
+            if action != None:
                 action.setActive(armaBo)
         _bdata.scenes.active.update(1)
 

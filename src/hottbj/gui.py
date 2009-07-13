@@ -42,14 +42,14 @@ from bpy import data as _bdata
 import exporter as _exporter
 from os.path import abspath as _abspath
 from os.path import isfile as _isfile
-import blenderjme
-from blenderjme.wrapperclasses import JmeNode as _JmeNode
+import hottbj
+from hottbj.wrapperclasses import JmeNode as _JmeNode
 from traceback import tb_lineno as _tb_lineno
 from sys import exc_info as _exc_info
 import webbrowser as _webbrowser
 
 defaultFilePath = _abspath("default-jme.xml")
-helpUrl = "file://" + blenderjme.resFileAbsPath("exporter.html")
+helpUrl = "file://" + hottbj.resFileAbsPath("exporter.html")
 saveAll = False
 xmlFile = None
 axisFlip = True
@@ -171,7 +171,7 @@ class GuiBox(object):
     def __loadImages(self):
         self.__imgs = []
         for path in self.__imgpaths:
-            self.__imgs.append(_bLoad(blenderjme.resFileAbsPath(path)))
+            self.__imgs.append(_bLoad(hottbj.resFileAbsPath(path)))
         for img in self.__imgs: img.glLoad()
 
     def free(self):
@@ -222,8 +222,8 @@ def mkGuiBox():
     global guiBox
     if guiBox != None:
         raise Exception("Attempted to create 2nd GuiBox.  Ignoring.")
-    guiBox = GuiBox(330, 300,
-            ['bje-1.png', 'bje-2.png', 'bje-3.png', 'bje-4.png', 'bje-5.png'])
+    guiBox = GuiBox(330, 300, ['hottbj-1.png', 'hottbj-2.png',
+        'hottbj-3.png', 'hottbj-4.png', 'hottbj-5.png'])
 
 def redrawDummy(x, y): _bDraw.Redraw()
 

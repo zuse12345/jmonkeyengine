@@ -4,7 +4,7 @@ INTERACTIVE TESTING
 
 To test by running Blender interactively (without our test scripts), just set
 variable PYTHONPATH to include our "src" directory, and put our registration
-script(s) (currently just "src/blenderjmeexp_reg.py") in place directly in
+script(s) (currently just "src/hottbj_reg.py") in place directly in
 your Python script directory.  It is bad practice to use a wrapper script that
 changes your directory before the Blender binary runs, but if your Blender
 distribution includes such a script, test whether you need it (you probably do

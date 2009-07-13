@@ -1,11 +1,15 @@
 #!BPY
-"""Blender ==> jME XML format Exporter
+"""HottBJ Exporter
 Name: 'JMonkeyEngine (*-jme.xml)'
 Blender: 248
 Group: 'Export'
 Tip: 'Export to jMonkeyEngine XML file'"""
+
+# SEE FILES hottbj/install.txt and hottbj/license.txt for the obvious purposes.
+
+
 # TODO:  install archived version of Blender and set the Blender version
-# above to the older version that this product works with.
+# above to the oldest version that this product works with.
 
 __version__ = '${product.version}'
 __date__ = '${build.time}'
@@ -43,7 +47,7 @@ __bpydoc__ = "Run the exporter and hit the Help button in the Gui."
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from blenderjme import gui
+from hottbj import gui
 from Blender.Draw import Register
 
 # As there is little point to unit testing this script, it always assumes

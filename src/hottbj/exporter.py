@@ -34,17 +34,17 @@ from Blender.Window import EditMode as _bEditMode
 from jme.xml import XmlFile as _XmlFile
 from datetime import datetime as _datetime
 from bpy import data as _bdata
-from blenderjme.wrapperclasses import NodeTree as _NodeTree
-from blenderjme.wrapperclasses import JmeSkinAndBone as _JmeSkinAndBone
-from blenderjme.wrapperclasses import JmeNode as _JmeNode
+from hottbj.wrapperclasses import NodeTree as _NodeTree
+from hottbj.wrapperclasses import JmeSkinAndBone as _JmeSkinAndBone
+from hottbj.wrapperclasses import JmeNode as _JmeNode
 from Blender.Modifier import Type as _bModifierType
 from Blender.Modifier import Settings as _bModifierSettings
 from Blender.Object import ParentTypes as _bParentTypes
 import Blender.Mathutils as _bmath
-import blenderjme
+import hottbj
 import jme.esmath as _esmath
 
-recordTimestamp = "--nostamps" not in blenderjme.blenderArgs
+recordTimestamp = "--nostamps" not in hottbj.blenderArgs
 
 def descendantOf(meNode, ancestor):
     if meNode.parent == None: return False
@@ -152,7 +152,7 @@ def gen(saveAll, autoRotate, skipObjs=True,
 
         if root == None: raise Exception("Nothing to do...")
 
-        stampText = "Blender export by Blender-to-jME Exporter"
+        stampText = "Blender export by HottBJ Exporter"
         if recordTimestamp: stampText += (" at " + _datetime.now().isoformat())
         stampText += ("\n     Exporter (not this file!) copyright by\n"
                 + "     " + __author__ + "\n     + the jMonkeyEngine Dev Team")

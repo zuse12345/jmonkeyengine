@@ -43,7 +43,7 @@ import com.jme.animation.Bone;
 /**
  * Sample SimpleGame class which extends the behavior of XmlWorld to execute
  * the first animation of a Bone named with suffix 'SuperBone.
- * This Spatial will be created automatically by the * Blender ==> jME Exporter
+ * This Spatial will be created automatically by the HottBJ Exporter
  * if your Blender scene has an Armature with Blender's default name of
  * 'Armature' (and you select it for export).
  *

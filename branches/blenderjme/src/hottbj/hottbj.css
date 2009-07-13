@@ -1,0 +1,27 @@
+/* $Id$ */
+
+body, table, div {
+    font-family:sans-serif:0;
+    font-size:14px;
+    border:0;
+    padding:0;
+}
+table, div {
+    margin:0;
+}
+body { background-color:white; margin:10px; }
+code { font-family:monospace; }
+table.data { background-color:silver; }
+table.data td, table.data th { border:solid gray 1px; }
+th { font-size:80%; }
+td, th { padding:3px; }
+tr.odd td { background-color:#E6E6FA; }
+tr.even td { background-color:#E0FFFF; }
+li { margin-top:3; margin-bottom:3px; }
+div.footer { font-size:12px; }
+span.addr { font-style:italic; white-space:nowrap; }
+.alert { background-color:yellow; }
+.gotcha { background-color:yellow; }
+a { color:black; }
+hr { color: #f28a3d; height:3px; }
+h1, h2, h3, h4, h5 { background-color: #f28a3d; }

@@ -107,7 +107,7 @@ Development Environment
 Gotcha:  Be aware that Blender.Load() wipes clean much of the current Python
 namespace.  Imports generally have to be repeated after a Load.
 
-The Python code in modules other than "blenderjme" are standalone.  That
+The Python code in modules other than "hottbj" are standalone.  That
 means you can execute and test them independently of Blender.
 
 With the exception graphical files (which use Blender.Draw or menu
@@ -150,7 +150,7 @@ This applies to both deliverable scripts and unit tests.  Limitations:
 
     The gui.py script definitely requires a graphical screen to run
     (blenderscript.bash draws no Gui in order to make it run very fast).
-    I don't know about blenderjmeexp_reg.py (not much in it can be tested
+    I don't know about hottbj_reg.py (not much in it can be tested
     non-interactively).
 
 Even if you prefer to run your scripts from inside Blender, it should still be

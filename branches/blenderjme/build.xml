@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="blenderjme" default="dist">
+<project name="hottbj" default="dist">
 <!--
 $Id$
 -->
@@ -29,8 +29,8 @@ $Id$
     <property name="distro.basename"
               value="${ant.project.name}-${product.version}"/>
     
-    <mkdir dir="tmp/stage"/>
-    <fixcrlf destDir="tmp/stage" srcDir="doc"
+    <mkdir dir="tmp/stage/hottbj"/>
+    <fixcrlf destDir="tmp/stage/hottbj" srcDir="doc"
              includes="install.txt, license.txt"
              preservelastmodified='true' eol="crlf"/>
      <copy todir="tmp/stage">
@@ -45,7 +45,7 @@ $Id$
                 excludes="**/.*/**, **/*.pyc, *test*/**, **/*.py, **/*.html"/>
       <!--  To simplify dev env. PYTHONPATH issues, moving docs into src/
             branch for now.
-      <zipfileset dir="doc" includes="blenderjme/**" excludes="**/.*/**"/>
+      <zipfileset dir="doc" includes="hottbj/**" excludes="**/.*/**"/>
       -->
     </zip>
   </target>
@@ -59,7 +59,7 @@ $Id$
     <javac classpath="${jmejar.path}" srcdir="java-src"
            destdir="classes" debug="${javac.debug}"
            source="${javac.source}" target="${javac.target}"/>
-    <javac classpath="classes:${jmejar.path}" srcdir="src/blenderjme"
+    <javac classpath="classes:${jmejar.path}" srcdir="src/hottbj"
            destdir="classes" debug="${javac.debug}"
            source="${javac.source}" target="${javac.target}"/>
   </target>

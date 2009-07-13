@@ -39,14 +39,14 @@ __url__ = 'http://www.jmonkeyengine.com'
 
 print "Watch console for errors..."
 try:
-    #from blenderjme.gui import...  Gui will not work w/out real screen
+    #from hottbj.gui import...  Gui will not work w/out real screen
     import jme as dummy01
     import jme.esmath as dummy02
     import jme.xml as dummy03
-    import blenderjme as dummy04
-    import blenderjme.gui as dummy05
-    import blenderjme.exporter as dummy06
-    import blenderjme.wrapperclasses as dummy07
+    import hottbj as dummy04
+    import hottbj.gui as dummy05
+    import hottbj.exporter as dummy06
+    import hottbj.wrapperclasses as dummy07
 
 except Exception, e:
     print "jME module is broken or is not available in execution environment."

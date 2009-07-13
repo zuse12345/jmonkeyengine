@@ -37,8 +37,8 @@ __url__ = 'http://www.jmonkeyengine.com'
 import Blender
 import unittest
 from unittest import *
-from blenderjme import exporter
-from blenderjme.exporter import gen
+from hottbj import exporter
+from hottbj.exporter import gen
 from blendertest import resFileContent, resFileAbsPath
 import blendertest
 

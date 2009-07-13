@@ -120,7 +120,7 @@ public class XmlWorld extends SimpleGame {
          * This setModelBound is not suitable for general usage.
          * If the model file contains specific model bounds for nested
          * Geometries, this will replace them all with new BoundingBoxes.
-         * Since the Blender => jME Exporter doesn't store bounding volumes
+         * Since the HottBJ Exporter doesn't store bounding volumes
          * yet, that's ok, but there's also no opportunity to choose a
          * BoundingSphere or OBB instead of a plain box.
          */

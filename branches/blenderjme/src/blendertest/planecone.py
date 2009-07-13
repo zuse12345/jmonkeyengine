@@ -41,8 +41,8 @@ Blender.Load(resFileAbsPath("planecone.blend"))
 
 import unittest
 from unittest import *
-from blenderjme import exporter
-from blenderjme.exporter import gen
+from hottbj import exporter
+from hottbj.exporter import gen
 from blendertest import resFileContent
 
 class Tests(unittest.TestCase):

@@ -2,7 +2,7 @@ $Id$
 
 TODO LIST
 
-Use Python subclassing for the main jme/xml and blenderjme/wrapperclasses
+Use Python subclassing for the main jme/xml and hottbj/wrapperclasses
 classes.  When I first wrote those classes, I didn't know how they needed to
 diverge.  Now it is time to eliminate all of the redundant code.
 
@@ -39,7 +39,7 @@ require explicit links in every material-using node.
 Per nymon:  ...give the option of exporting with the modifiers applied, instead of having to save, apply them, export, then reload. The OBJ exporter that comes with Blender does this...
 
 Install archived version of Blender and set the Blender version in
-"blenderjmeexp_reg.py" to the oldest version that this product works with.
+"hottbj_reg.py" to the oldest version that this product works with.
 
 Consider refactoring the huge amount of code in JmeNode.getXmlEl concerned
 with accommodating face-specific colors and uv values.  I think this could be

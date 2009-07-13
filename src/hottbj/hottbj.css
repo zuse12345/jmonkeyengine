@@ -25,3 +25,4 @@ span.addr { font-style:italic; white-space:nowrap; }
 a { color:black; }
 hr { color: #f28a3d; height:3px; }
 h1, h2, h3, h4, h5 { background-color: #f28a3d; }
+div.problem { font-weight:bold; }

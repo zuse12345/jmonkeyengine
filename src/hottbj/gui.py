@@ -87,7 +87,14 @@ def updateExportableCounts():
     global selCount, allCount, skipObjs
     selCount = 0
     allCount = 0
-    for o in _bdata.scenes.active.objects:
+    activeScene = _bdata.scenes.active
+    for o in activeScene.objects:
+        layerIsActive = False
+        for layer in o.layers:
+            if layer in activeScene.layers:
+                layerIsActive = True
+                break
+        if not layerIsActive: continue
         if not _JmeNode.supported(o, skipObjs): continue
         allCount = allCount + 1
         if o.sel: selCount = selCount + 1

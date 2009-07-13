@@ -66,13 +66,20 @@ def gen(saveAll, autoRotate, skipObjs=True,
                  # objects.
     origEditMode = _bEditMode()
     if origEditMode != 0: _bEditMode(0)
+    activeScene = _bdata.scenes.active
     try:
         if saveAll:
             candidates = _bdata.objects
         else:
-            candidates = _bdata.scenes.active.objects.selected
+            candidates = activeScene.objects.selected
         nodeTree = _NodeTree(maxWeightings, exportActions)
         for bo in candidates:
+            layerIsActive = False
+            for layer in bo.layers:
+                if layer in activeScene.layers:
+                    layerIsActive = True
+                    break
+            if not layerIsActive: continue
             if _JmeNode.supported(bo, skipObjs):
                 supportedCandidates.append(bo)
         for bo in supportedCandidates:
@@ -139,12 +146,12 @@ def gen(saveAll, autoRotate, skipObjs=True,
         for armaBo, action in activeActions.iteritems():
             if action != None:
                 action.setActive(armaBo)
-        _bdata.scenes.active.update(1)
+        activeScene.update(1)
 
         for skinBo in relocateds.keys()[:]:
             if skinBo.parent == None: continue  # Armature object
             # skinBo really is a Skin Object now
-            for bo in _bdata.scenes.active.objects:
+            for bo in activeScene.objects:
                 if bo in relocateds: continue
                 if descendantOf(bo, skinBo):
                     relocateds[bo] = bo.matrixLocal.copy()
@@ -187,6 +194,6 @@ def gen(saveAll, autoRotate, skipObjs=True,
                         + action.getName() + " to " + armaBo.getName())
                 action.setActive(armaBo)
         if origEditMode != 0: _bEditMode(origEditMode)
-        _bdata.scenes.active.update(1)
+        activeScene.update(1)
         # This update() prevents Blender from showing the user a disconcerting
         # view of the modified scene before it refreshes with our restorations.

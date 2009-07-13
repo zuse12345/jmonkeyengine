@@ -41,6 +41,10 @@
     <HR/>
     <h4 id="changelist">Change List</h4>
     <ul>
+      <li>Changes since 0.3a<ol>
+        <li>Objects in non-selected Blender layers are automatically excluded
+        from exports, regardless of all-in-scene or selected-item mode.
+      </ol>
       <li>Changes since 0.2d<ol>
         <li>This product rebranded from "Blender ==> jME Exporter"
           to "HottBJ Exporter".
@@ -57,7 +61,7 @@
         <li>Inverse value of stored "shiness" value, to accommodate jME's crazy
           implementation where the value actually indicates "unshininess".
         <li>Now allow user to specify either Phong or Cook Torr specular
-          shader.  jME does nothing special with these, but these to are an
+          shader.  jME does nothing special with these, but these two are an
           indication that the user basically wants a "typical" specular look.
         <li>Fixed bug with ambient color calculation.
         <li>Fixed mistake in ambient color calculation description in online
@@ -80,33 +84,6 @@
         <li>The <i>Mountpoint</i> strategy was borne out of the fruits of the
           previous two items.  As I write this, Ashton is uploading his new
           video featuring Mountpoints.
-      </ol>
-      <li>Changes since 0.2c<ol>
-        <li>Enhanced existing Java sample class, and added new sample to
-        exemplify jME-side usage of animation exports.
-        <li>Support arbitrary start and end frame settings (except can't be
-        within the range of the animations frame set).
-        <li>Many fixes and enhancements to online docs, including addition of
-        the page you are now reading.
-        <li>Added support for <code>Empty</code> object types.
-        <li>Added support for <code>Empty Mesh</code> object types, including
-         support for our material inheritance feature.
-        <li>Several TODO items taken care of, which verified proper handling
-         of items such as no-deform bones, envelope options, arbitrary mixing
-         of Loc + Rot + LocRot frames and channel selections.  The net effect
-         to the software is primarily removal of TODO items and warnings in
-         the code.
-        <li>Documented requirements and suggestions for content of starting
-         frames.  If these suggestions are followed, users can freely optimize
-         following frames without dangers which would otherwise be incurred.
-      </ol>
-      <li>Changes since 0.1<ol>
-        <li>General support for Blender Armatures.
-            It would take too much work to list the individual features here.
-            With a few significant exceptions, we extend our support for
-            arbitrary object to the realm of armatures.
-            See the <A href="skinandbones.html">Skin &amp; Bones page</A> for
-            details on exporter support for Armatures.
       </ol>
     </ul>
     <HR/>

@@ -60,3 +60,5 @@ beyond a load-time generated BV.
 POSTNOTE:  The Blender API has an object boundingBox attribute for Objects.
 I don't know how or if the user can modify the box itself though.
 * boxes are more accurately bound by BBs, spheres by BSs, angled boxes by OBBs.
+
+Export Vertex Groups so that specific model geometries can be identified and used as bases for effects (such as particles, etc.). 

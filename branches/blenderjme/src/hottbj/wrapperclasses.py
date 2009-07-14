@@ -1885,7 +1885,12 @@ from Blender.Texture import BlendModes as _bBlendModes
 from Blender.Texture import Mappings as _bTexMappings
 from Blender.Texture import MapTo as _bTexMapTo
 class JmeTexture(object):
-    "A Texture corresponding to a single jME Texture"
+    """A Texture corresponding to a single jME Texture.
+    This encompasses a unique aggregation of a Blender texture-mapper ("MTex")
+    + texture ("Texture")."""
+    # If you add support for any additional direct MTex attributes, you must
+    # add a hash value for it to the idFor() method.
+    # (By "direct", I mean excluding .tex, which is uniquized by its name).
 
     REQUIRED_IMGFLAGS = \
         _bImgFlags['MIPMAP'] | _bImgFlags['USEALPHA'] | _bImgFlags['INTERPOL']
@@ -2000,15 +2005,16 @@ class JmeTexture(object):
             raise UnsupportedException("MTex zproj" + mtex.zproj)
 
     def idFor(mtex):
-        """Static method that validates mtex and returns a unique JmeTexture id
+        """Static method that returns a unique JmeTexture id.
         Input MTex must already have been validated."""
 
-        hashVal = 2 * id(mtex.tex)
-        hashVal += 3 * id(mtex.blendmode)
-        # Remember that the mtex.tex hash code above encompasses hashes of
-        # all of the mtex.tex.* values.  We only need to be concerned about
-        # direct and significant mtex attributes here.
-        return hashVal
+        return (hash(mtex.tex.name) +  97 * mtex.size[0] + 89 * mtex.size[1]
+                + 83 * mtex.size[2] + 79 * mtex.ofs[0] + 73 * mtex.ofs[1]
+                + 71 * mtex.ofs[2] + 67 * mtex.texco + mtex.blendmode * 61)
+        # Remember that the mtex.tex.name takes care of all uniqueness for the
+        # .tex.  We must be vigilant to add something unique for each direct
+        # mtex attribute THAT MAY VARY.  We constrain most mtex values so that
+        # they may not vary.
 
     __slots__ = (
             'written', 'refCount', 'applyMode', 'filepath', 'wrapMode',

@@ -198,6 +198,10 @@ class ActionData(object):
             if boneName in poseBones.keys():
                 locs.append(mat.translationPart())
                 rots.append(mat.rotationPart().toQuat())
+                if not _esmath.floatsEq(mat.scalePart(), 1.):
+                    raise Exception(
+                    "Remove bone scalings from anim '" + self.getName()
+                    + "'.  They are not compatible with jME.");
             else:
                 raise Exception(
                         "Internal error: Channel data gone missing in Action '"
@@ -226,7 +230,7 @@ class ActionData(object):
                     usedRotChannels.add(boneName)
         for boneName, oneBoneLocs in self.locs.iteritems():
             for loc in oneBoneLocs:
-                if not _esmath.floatsEq(loc, 0., 6):
+                if not _esmath.floatsEq(loc, 0.):
                     usedLocChannels.add(boneName)
 
         # It is likely that we can remove items from just the loc or the rot
@@ -235,7 +239,9 @@ class ActionData(object):
         # non-zero rot; and that a non-zero raw rot could produce derived
         # non-zero loc.
         for zapBone in (
-            set(self.mats.keys()) - (usedRotChannels & usedLocChannels)):
+            set(self.mats.keys()) - (usedRotChannels | usedLocChannels)):
+                print ("Zapping unused channel '" + zapBone
+                        + "' from animation '" + self.getName() + "'.")
                 del self.rots[zapBone]
                 del self.locs[zapBone]
                 del self.mats[zapBone]

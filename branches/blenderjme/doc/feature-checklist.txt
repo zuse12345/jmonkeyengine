@@ -25,14 +25,14 @@ $Id$
 * Support both old-fashioned parenting and modifier for associating skin
   object to armature object.
 * Arbitray nesting for any number of objects as children of the Armature
-  object, the Armature itself, and any individual bones.
+  object (non-deforming), the Armature itself (deforming == skin), and any
+  individual bones (non-deforming).
 * Start/end frames numbers are written according to user specification, and the
   start/end frames themselves are generated when needed.
 * Write Empty objects
 * Write EmptyMesh objects.  Object Materials can be attached to these to
   exploit our material inheritance feature.
-
-
-  Support multiple skin objects skinned by a single Armature.
+* Retain proper object orientation whether X-Axis flip used or Blender axes.
+* Multiple skin objects skinned by a single Armature.
   Add support for Object RB* game settings.  These would be very useful for
    jME games.  Like, custom Boundary objects, Physics integration, action hooks.

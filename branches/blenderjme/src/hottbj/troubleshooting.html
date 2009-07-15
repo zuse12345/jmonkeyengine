@@ -30,7 +30,7 @@
     Please see Tips and Constraints secions on the other Help pages for now.
     </p>
     <HR/>
-    <h4 id="static">Exporter Execution Problems</h4>
+    <h4 id="execution">Exporter Execution Problems</h4>
     We put much effort into providing high precision in the exporters.
     In order to attain this goal, we have to ensure that extraneous settings
     don't influence the exporter.
@@ -56,6 +56,10 @@
       that pose must be the last one selected for its Armature.
       See the instructions on this topic on the 
       <a href="skinandbones.html">Skin &amp; Bones page</a>.
+      <li><div class="problem">The exporter undoes my poses!</div>
+      Like similar exporters that handle animations, if you have Actions and
+      currently have posed bones which you have not saved to a key frame,
+      these pose positions will be lost.
     </ol>
     <HR/>
     <h4 id="static">Problems with Static Models</h4>
@@ -111,7 +115,7 @@
       to the basic color settings will have no effect.
     </ol>
     <HR/>
-    <h4 id="static">Problems with Animated Models</h4>
+    <h4 id="anim">Problems with Animated Models</h4>
     <ol>
       <li><div class="problem">Positions or orientations are messed up</div>
       <ul>

@@ -53,25 +53,33 @@
           some cases, you must apply Bone Heat once.
           If you have no reason to avoid it (like you don't want to change
           pre-existing weightings), make sure to apply Bone Heat.
-        <LI>Armatures may only have one bone-weighted skin.
         <LI>All bones in a single export must be named uniquely.
         If you export 4 armatures with 10 bones each, you need 40 unique bone
         names.
         (You could avoid this constraint by making 4 separate exports).
+        This constraint is due to the Blender API's terrible support for
+        access to Action channels (which can only be done with global bone
+        names).
         <LI>The entire transform of the skin mesh object and the associated
         armature object must be exactly equal.
         If using an Armature modifier, you must make sure that all
         Loc, Scale, and Rot values are exactly equal for the two objects.
-        If using traditional parenting, use ALT-p,
+        If using traditional parenting, do this to the skin object: ALT-p,
         <code>Clear Parent Inverse</code>, then set the Loc, Scale, and Rot
         values to <code>(0, 0, 0), (1, 1, 1), (0, 0, 0)</code>.
         <LI>On the jME side, animations will interpolate <i>linearly</i>
         between key frames, regardless of what interpolation algorithm Blender
         uses.
         This is a limitation of <code>com.jme.animation</code>.
+        <LI>Do not set the scale on any bone (i.e. leave the scale values at 1).
+        Blender's funny implementation of bone scaling is not compatible with
+        jME, where Bones are Nodes and scaling must effect descendants.
+        Everything you could want to do with bone scaling can be done with
+        simple placement of bone root or tip (using Location or Rotation).
+        The exception to this is for setting Blender envelope influence,
+        and bone envelopes are not used for portable models.
       </UL>
-      Any or all of these constraints may be removed as we improve the
-        exporter.
+      Some these constraints may be removed as we improve the exporter.
     <HR/>
     <h4 id="procedure">Conventional Skin &amp; Bones Export Procedure</h4>
     This section describes the procedure, but it is not a tutorial,
@@ -166,7 +174,7 @@
           <li>As always in any 3D visualizer, make sure to view placements from
           at least two orthogonal positions.
         </ul>
-      <li>Initialize Bone Weights to skin vertexes.
+      <li>Initialize Bone Weights for skin vertexes.
       <p style="font-family:mono-space;">
     [You can accomplish the same thing as described in this section by just
     parenting the skin Object to the armature Object
@@ -198,6 +206,8 @@
       Eventually, you must have vertexes weighted by Vertex Groups, since that
       is how the exporter (and most other programs other than Blender itself)
       apply the specified weights.
+      If you convert from envelopes, you must clear all bone scales
+      afterwards.
       <li>This step consists of one of the quirkiest operations in Blender.
       First, select the Armature object and switch to pose mode.
       "a" until all bones are selected.
@@ -264,7 +274,9 @@
       Just like most (or all) exporters that handle animations, this exporter
       does work with your scene objects in order to gather the data it needs.
       <li>Make sure to select both the skin mesh object and the armature object
-      from Object mode.
+      from Object mode (or just toggle on the top button on the exporter screen
+      to save all supported objects in the selected layer(s) of the active
+      scene).
       <li>Hit the <code>Export</code> button.
     </ul>
     All armature actions (animations), if any, will get exported along with the
@@ -283,8 +295,8 @@
     (say, if you want to use a jME controller, or program your own
     <code>setLocal*()</code> methods.
     You can export just the skeleton, with or without its animations.
-    You can export just the skin.
-    You can also add non-bone-weighted meshe objects to the Armature object or
+    You can export just the skin(s).
+    You can also add non-bone-weighted mesh objects to the Armature object or
     to any specific bones, and you can nest onto these objects.
     Exporting components this way isn't just for learning, testing, or theory--
     the are the basis for some very efficient methods of game animation.
@@ -392,6 +404,10 @@
       A real limitation with this work-around is that Blender only allows one
       start frame and end frame setting, regardless of how many actions you
       have.  We're thinking about how to accommodate this limitation.
+    <li>If you have any Actions, then unsaved (to frames) poses will be lost
+      when you run the exporter.
+      This is typical behavior for animation-supporting exporters, due to
+      Blender's poor API support for pose states.
     <HR/>
     <DIV class="footer">
       $Revision$

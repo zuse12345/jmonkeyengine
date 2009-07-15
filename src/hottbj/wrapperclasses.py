@@ -328,6 +328,11 @@ class JmeNode(object):
                         childrenTag.addChild(meshTag)
                         child.populateXml(meshTag, autoRotate)
                 else:
+                    if self.join:
+                        raise Exception(
+                                "Sorry, since skins are jME Geometries, "
+                                + "you may not export '" + self.getName()
+                                + "' with any children")
                     if self.wrappedObj != None:
                         child.backoutTransform = self.wrappedObj.mat
                     # N.b. DO NOT USE .matrixParentInverse.  That is a static

@@ -97,6 +97,18 @@
       If you have exported more than once from the same Blender session, this
       is probably a Blender bug.  Save your .blend if needed, and restart
       Blender.
+      <li><div class="problem">Where my texture image is transparent, the
+        default material color shows through, instead of being invisible.
+        If I turn alpha of the material down, that effects the texture too.
+      </div>
+      Toggle on the <code>TexFac</code> option.
+      Though most Blender docs tell you that this option is critically
+      important, several of us have realized that is has no effect.
+      Therefore, the exporter has taken over this option as a way to specify
+      to not write a MaterialState for the Blender material, but just a
+      TextureState.
+      Remember, if you have a texture and <code>TextFac</code> on, then changes
+      to the basic color settings will have no effect.
     </ol>
     <HR/>
     <h4 id="static">Problems with Animated Models</h4>

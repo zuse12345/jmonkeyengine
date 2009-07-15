@@ -158,7 +158,7 @@ class ESQuaternion(object):
         return ("Rot axis: (" + str(self.x) + ', ' + str(self.y) + ', '
                 + str(self.z) + "), w: " + str(self.w))
 
-def floatsEq(alist, val, precision):
+def floatsEq(alist, val, precision=6):
     """Returns true if all elements of the specified list are equal to the
     specified value, within the specified precision.
     Input 'precision' is not the number of significant digits, but the number
@@ -169,7 +169,7 @@ def floatsEq(alist, val, precision):
         if round(alist[i], precision) != roundedVal: return False
     return True
 
-def floats2dEq(a, b, precision):
+def floats2dEq(a, b, precision=6):
     """Compares two two-dimensional float arrays, to the specified precision,
     and returns True or False.
     Input 'precision' is not the number of significant digits, but the number
@@ -188,7 +188,7 @@ def floats2dEq(a, b, precision):
                 return False
     return True
 
-def isIdentity(m, precision):
+def isIdentity(m, precision=5):
     """Returns true if the specified 2-dimensional float matrix is equal to the
     identity matrix of the same size, within the specified precision."""
     for row in range(len(m)):

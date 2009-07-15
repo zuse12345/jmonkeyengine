@@ -11,10 +11,6 @@ Scale values are generally not just the values of the matrix diagonals, but
 the sqrt of the sums of the squares of row elements.  (Probably needs to be
 applied to columns with Blender's screwy matrixes, so check that).
 
-Check for scaled bones in armatures selected for export.  If any, abort with
-message explaining that scaled bones unsupported.  Update docs to explain that
-bone scaling is incompatible with jME.
-
 
 GUI
     Add Linear Interp toggle forces Linear animation interpolation (work-around

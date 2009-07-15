@@ -16,8 +16,15 @@
     <BR/>
     Copyright 2009 by Blaine Simpson and the jME Dev Team,
     with the included BSD open source license.
-    <HR/>
+    </p><p>
     This incremental beta release adds minor enhancements and fixes beyond 0.3a.
+    The 0.2 series of the exporter introduced detailed support for Skin &amp;
+    Bones.
+    The 0.3 series introduced <i>Mountpoints</i>, general support for
+    Blender-managed game-specific features (like custom classes and game
+    properties), and support for multiple skins per Armature.
+    </p>
+    <HR/>
     <h4 id="contents">Contents</h4>
     <ol>
       <li><a href="#acknowledgements">Acknowledgements</a>
@@ -27,12 +34,6 @@
     <HR/>
     <h4 id="acknowledgements">Acknowledgements</h4>
     <p>
-    The 0.2 series of the exporter introduced detailed support for Skin &amp;
-    Bones.
-    The 0.3 series introduced <i>Mountpoints</i> and general support for
-    Blender-managed game-specific features (like custom classes and game
-    properties).
-    </p><p>
     Ashton V. was extremely helpful to the 0.2 effort, both for his keen
     insight, and for his continual enthusiasm.
     Without his encouragement, I would not have stuck it out to the end.
@@ -44,8 +45,15 @@
     <h4 id="changelist">Change List</h4>
     <ul>
       <li>Changes since 0.3b<ol>
+        <li>One armature may now skin multiple deforming meshes (via parenting
+         and/or modifier associations).
         <li>Fixed bug with texture sharing which sometimes caused some
         textures to be replaced with references to others in the same export.
+        <li>Added rigorous checking for bone scales which could produce
+        inaccurate exports.
+        <li>Fixed logic bug which somes resulted in valid animation channels
+        being dropped.
+        <li>Fixed bug which broke export of non-skinned bone animations.
       </ol>
       <li>Changes since 0.3a<ol>
         <li>Objects in non-selected Blender layers are automatically excluded
@@ -72,10 +80,10 @@
         <li>Fixed bug with ambient color calculation.
         <li>Fixed mistake in ambient color calculation description in online
           docs.
-        <li>Use the Blender TexFace option as a hook to allow for a jME
-          material-overlay trick.  This allows for overlaying a base material
-          with an overlay texture where the base bleeds through transparent
-          areas.
+        <li>Use the Blender TexFace option as a hook to tell the exporter to
+          not export the base material, but only the texture.
+          This is important, since otherwise texture transparency would be
+          filled with the material color.
         <li>Support automatic jME instantiation of Spatial subclasses by use
           of a Blender String game property of name "jme.implClass".
         <li>Support automatic loading of all Blender game properties into jME

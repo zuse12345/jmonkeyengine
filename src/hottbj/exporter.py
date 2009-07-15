@@ -107,7 +107,7 @@ def gen(saveAll, autoRotate, skipObjs=True,
             if (bo.parent == None or bo.parentType != _bParentTypes["ARMATURE"]
                     or bo.parent not in supportedCandidates): continue
                # Not a skin node
-            if _esmath.isIdentity(bo.matrixLocal * bo.parent.matrixLocal, 6):
+            if _esmath.isIdentity(bo.matrixLocal * bo.parent.matrixLocal):
                 continue
              # Test above just shortcuts useless attempt.
              # The real test whether we will change transform is below.

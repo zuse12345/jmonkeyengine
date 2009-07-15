@@ -53,6 +53,11 @@ def descendantOf(meNode, ancestor):
 
 def gen(saveAll, autoRotate, skipObjs=True,
         maxWeightings=4, exportActions=True):
+    # An unfortunate consequence of object interdependencies is that though we
+    # have pre-validated as much as possible, some objects may be rejected due
+    # relationships with other "selected" items.  In that case, we must just
+    # abort, since our UI doesn't have any other way to notify the user.
+    # Otherwise it would look as if everything selected exported successfully.
     global recordTimestamp
 
     reparenteds = {}
@@ -61,9 +66,6 @@ def gen(saveAll, autoRotate, skipObjs=True,
     os = []
     candidates = []
     supportedCandidates = []
-    zapees = []  # Blender Objs which are supported atomically, but
-                 # rejected due to interdependencies with other selected
-                 # objects.
     origEditMode = _bEditMode()
     if origEditMode != 0: _bEditMode(0)
     activeScene = _bdata.scenes.active
@@ -82,16 +84,9 @@ def gen(saveAll, autoRotate, skipObjs=True,
             if not layerIsActive: continue
             if _JmeNode.supported(bo, skipObjs):
                 supportedCandidates.append(bo)
+
         for bo in supportedCandidates:
-            if bo.type != "Armature": continue
-            if  bo.parent != None and bo.parent in supportedCandidates:
-                print("Rejecting Armature '" + bo.getName()
-                        + "' because we only support root-level Arma Objs")
-                zapees.append(bo)
-            else:
-                activeActions[bo] = bo.getAction()
-        for bo in zapees: supportedCandidates.remove(bo)
-        for bo in supportedCandidates:
+            if bo.type == "Armature": activeActions[bo] = bo.getAction()
             for mod in bo.modifiers:
                 if (mod.type != _bModifierType.ARMATURE
                         or mod[_bModifierSettings.OBJECT] == None): continue
@@ -107,6 +102,9 @@ def gen(saveAll, autoRotate, skipObjs=True,
             if (bo.parent == None or bo.parentType != _bParentTypes["ARMATURE"]
                     or bo.parent not in supportedCandidates): continue
                # Not a skin node
+            if not _esmath.floats2dEq(bo.mat, bo.parent.mat):
+                raise Exception("Set skin " + bo.getName()
+                  + "'s transform to match that of its Armature")
             if _esmath.isIdentity(bo.matrixLocal * bo.parent.matrixLocal):
                 continue
              # Test above just shortcuts useless attempt.

@@ -147,7 +147,7 @@ def addVector3fEl(parentEl, tagName, inVecList):
 from Blender.Object import PITypes as _bPITypes
 class JmeNode(object):
     __slots__ = ('wrappedObj', 'children', 'jmeMats', 'jmeTextureState',
-            'name', 'backoutTransform', 'implClass', 'postFlip')
+            'name', 'backoutTransform', 'implClass', 'postFlip', 'join')
 
     def __init__(self, bObjOrName, nodeTree=None):
         """
@@ -168,6 +168,7 @@ class JmeNode(object):
         self.jmeTextureState = None
         self.implClass = "com.jme.scene.Node"
         self.postFlip = False
+        self.join = False  # Means to write one Mesh XML node a.o.t. Node+Mesh
 
         if isinstance(bObjOrName, basestring):
             self.name = bObjOrName
@@ -178,16 +179,28 @@ class JmeNode(object):
                     + "param nodeTree must be set")
         self.wrappedObj = bObjOrName
         self.name = self.wrappedObj.name
+        if self.wrappedObj.parentType == _bParentTypes["ARMATURE"]:
+            self.join = True
+            # As first cut, ALWAYS joining Node+Mesh for Skins, even if it is
+            # being exported independently.  TODO:  Consider if this is right.
         try:
             icProp = self.wrappedObj.getProperty("jme.implClass")
-            if icProp.type == 'STRING': self.implClass = icProp.data
+            if icProp.type == 'STRING':
+                self.implClass = icProp.data
+                if self.join:
+                    raise Exception("An impl class may not be specified for a "
+                            + "skin.  This is because it must be written as an "
+                            + "appropriate Geometry type");
         except Exception, e:
             pass # gets an exceptions.RuntimeError
         bMesh = self.wrappedObj.getData(False, True)
         twoSided = bMesh != None and (bMesh.mode & _meshModes['TWOSIDED'])
+        jmeTexs = []
+        self.jmeMats = []
+        # The local above must be at this scope because for the 'join' case, we
+        # will append to and use it again later.  self.jmeMats is not required
+        # by scope, but its easier to use it again later knowing it's defined.
         if len(self.wrappedObj.getMaterials()) > 0:
-            self.jmeMats = []
-            jmeTexs = []
             for bMat in self.wrappedObj.getMaterials():
                 if not bMat.mode & _matModes['TEXFACE']:
                     try:
@@ -202,8 +215,10 @@ class JmeNode(object):
                     except UnsupportedException, ue:
                         print ("Skipping a texture of object " + self.name
                                 + " due to: " + str(ue))
-            if len(jmeTexs) > 0:
-                self.jmeTextureState = nodeTree.includeJmeTextureList(jmeTexs)
+            if len(jmeTexs) > 0 and not self.join:
+                self.jmeTextureState =  \
+                        nodeTree.includeJmeTextureList(jmeTexs[:])
+                del(jmeTexs[:])  # clear list
         if bMesh == None or len(bMesh.verts) == 0: return
          # An unused Blender "EmptyMesh" will have 0 verts.
          # This is useful for our Material inheritance feature
@@ -222,7 +237,9 @@ class JmeNode(object):
         # object.colbits specify how the Mesh's materials are to be
         # interpreted, we add the Mesh's materials and textures here.
         meshMats = []
-        jmeTexs = []
+        if self.join:
+            meshMats += self.jmeMats
+            del(self.jmeMats[:])
         for i in range(len(bMesh.materials)):
             #print "Bit " + str(i) + " for " + self.getName() + " = " + str(self.wrappedObj.colbits & (1<<i))
             if 0 != (self.wrappedObj.colbits & (1<<i)): continue
@@ -259,6 +276,7 @@ class JmeNode(object):
     def getImplClass(self): return self.implClass
 
     def getXmlEl(self, autoRotate):
+        if self.jmeMats != None and len(self.jmeMats) < 1: self.jmeMats = None
         if (self.wrappedObj != None and self.wrappedObj.parent != None
                 and self.wrappedObj.parent.getPose() != None):
             #print "Verifying non-null poses for " + self.getName() + "..."
@@ -273,7 +291,11 @@ class JmeNode(object):
                         + poseBone.name + "'")
                     ActionData.zeroPose(self.wrappedObj.parent.getPose())
                     break
-        tag = _XmlTag(self.getImplClass(), {'name':self.getName()})
+        if self.join:
+            tagName = "Dummy"
+        else:
+            tagName = self.getImplClass()
+        tag = _XmlTag(tagName, {'name':self.getName()})
 
         if self.jmeMats != None or self.jmeTextureState != None:
             rsTag = _XmlTag('renderStateList')
@@ -293,13 +315,21 @@ class JmeNode(object):
 
         if self.children != None:
             childrenTag = _XmlTag('children')
-            tag.addChild(childrenTag)
             for child in self.children:
-                if self.wrappedObj != None and not isinstance(child, JmeMesh):
-                    child.backoutTransform = self.wrappedObj.mat
+                if isinstance(child, JmeMesh):
+                    if self.join:
+                        child.populateXml(tag, autoRotate)
+                    else:
+                        meshTag = _XmlTag('dummy')
+                        childrenTag.addChild(meshTag)
+                        child.populateXml(meshTag, autoRotate)
+                else:
+                    if self.wrappedObj != None:
+                        child.backoutTransform = self.wrappedObj.mat
                     # N.b. DO NOT USE .matrixParentInverse.  That is a static
                     #  value for funky Blender behavior we don't want to retain.
-                childrenTag.addChild(child.getXmlEl(autoRotate))
+                    childrenTag.addChild(child.getXmlEl(autoRotate))
+            if len(childrenTag.children) > 0: tag.addChild(childrenTag)
 
         if self.wrappedObj == None: return tag
 
@@ -480,7 +510,7 @@ class JmeMesh(object):
 
     def getName(self): return self.name
 
-    def getXmlEl(self, autoRotate):
+    def populateXml(self, tag, autoRotate):
         if self.wrappedMesh.verts == None:
             raise Exception("Mesh '" + self.getName() + "' has None vertexes")
         mesh = self.wrappedMesh.copy()
@@ -498,8 +528,8 @@ class JmeMesh(object):
         #       + self.wrappedMesh.name + "' has a vector with no normal")
         #   This is a Blender convention, not a 3D or JME convention
         #   (requirement for normals).
-        tag = _XmlTag('com.jme.scene.' + meshType + 'Mesh',
-                {'name':self.getName()})
+        tag.name = 'com.jme.scene.' + meshType + 'Mesh'
+        if tag.getAttr("name") == None: tag.addAttr("name", self.getName())
         colorTag = None  # so we can tell later on whether we wrote it
         if (self.defaultColor != None and
             (self.defaultColor[0] != 1 or self.defaultColor[1] != 1
@@ -1259,6 +1289,8 @@ class JmeSkinAndBone(object):
                         + " and " + newChild.getName() + " as skins for "
                         + self.getName())
             self.skin = newChild
+            if not newChild.join:
+                raise Exception("Internal error.  Skin node not joined.")
         elif (newChild.wrappedObj.parentType == _bParentTypes["BONE"]):
             if newChild.wrappedObj.parentbonename == None:
                 raise Exception("Attempted to add " + newChild.getName()
@@ -1356,21 +1388,22 @@ class JmeSkinAndBone(object):
                 # instead of Y forward like it is in Blender.
                 # Other cases work great.
         if self.skin == None: return tag
-        skinRef = self.skin.getName()
 
         meshChild = None
         for grandChild in self.skin.children:
             if isinstance(grandChild, JmeMesh):
                 meshChild = grandChild
                 break
+            # Blender doesn't allow > 1 mesh child, so don't need to check that
         if meshChild == None:
             raise Exception("No child of Skin object is a mesh: "
                     + self.skin.getName())
-        skinTag = _XmlTag('com.jme.animation.SkinNode',
-                {'name':skinRef + "Skin"})
+        skinTag = _XmlTag('com.jme.animation.SkinNode', {
+            'name':self.getName() + "Skins",
+            'id': self.getName() + "Skins"
+        })
         skinChildrenTag = _XmlTag('children')
         skinChildTag = self.skin.getXmlEl(False)
-        skinChildTag.addAttr("id", skinRef)
         skinChildrenTag.addChild(skinChildTag)
         skinTag.addChild(skinChildrenTag)
         childrenTag.addChild(skinTag)
@@ -1395,7 +1428,8 @@ class JmeSkinAndBone(object):
         if len(vertexWeights) < 1: return tag
 
         skinTag.addChild(_XmlTag('skins', {
-                "class":self.skin.getImplClass(), "ref":skinRef
+                "class":self.skin.getImplClass(),
+                "ref":self.getName() + "Skins"
         }))
         skinTag.addChild(_XmlTag('skeleton', {
                 "class":"com.jme.animation.Bone",

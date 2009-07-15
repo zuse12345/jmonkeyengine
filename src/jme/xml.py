@@ -241,6 +241,7 @@ class XmlTag(object):
         #return map
 
     def getAttr(self, key):
+        if self.quotedattrs == None: return None
         if key not in self.quotedattrs: return None
         quotedAttr = self.quotedattrs[key]
         return quotedAttr[1:-1]

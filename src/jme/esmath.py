@@ -169,7 +169,7 @@ def floatsEq(alist, val, precision=6):
         if round(alist[i], precision) != roundedVal: return False
     return True
 
-def floats2dEq(a, b, precision=6):
+def floats2dEq(a, b, precision=5):
     """Compares two two-dimensional float arrays, to the specified precision,
     and returns True or False.
     Input 'precision' is not the number of significant digits, but the number

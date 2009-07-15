@@ -389,6 +389,9 @@ class JmeNode(object):
         """
         Static method returns 0 if type not supported; non-0 if supported.
         2 if will require face niggling; 3 if faceless.
+        An anomaly here is that this method is called for all sorts of
+        Blender Objects, since we don't yet know what kind of exporter class
+        (if any) corresponds.
         This method doesn't, and cannot, validate dependencies based upon
         other Blender Objects, since we don't necessarily know if the other
         objects are selected for export or not.
@@ -407,6 +410,10 @@ class JmeNode(object):
             # user plays with envelopes just on the Blender side.
             # Don't check any bone.options.  These are blender-side items to
             # facilitate laying out bones, constraints, and animations.
+            if bObj.parent != None:
+                print ("Rejecting Armature '" + bObj.getName()
+                        + " because it is not at (object parenting) root level")
+                return 0
             return True
         bMesh = bObj.getData(False, True)
         if bMesh != None and bMesh.multires:

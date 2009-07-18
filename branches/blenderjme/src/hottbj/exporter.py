@@ -46,6 +46,7 @@ import jme.esmath as _esmath
 
 recordTimestamp = "--nostamps" not in hottbj.blenderArgs
 skinParents = None
+skinParentTypes = None
 skinLocals = None
 skinMPIs = None
 
@@ -57,10 +58,11 @@ def descendantOf(meNode, ancestor):
 def backup(bo):
     """Back up specified Blender object and its descendants, if it hasn't been
     already."""
-    global recordTimestamp, skinParents, skinLocals, skinMPIs
+    global recordTimestamp, skinParents, skinParentTypes, skinLocals, skinMPIs
     if bo in skinParents: return
     # Since these lists are all parallel (same keys), an object is non or in all
     skinParents[bo] = bo.parent
+    skinParentTypes[bo] = bo.parentType
     skinLocals[bo] = bo.matrixLocal.copy()
     #print "backing up loc for " + bo.name + " from\n" + str(bo.matrixLocal)
     #print "\n  ...to " + str(skinLocals[bo])
@@ -71,6 +73,7 @@ def backup(bo):
         if dob in skinParents: continue
         if not descendantOf(dob, bo): continue
         skinParents[dob] = dob.parent
+        skinParentTypes[dob] = dob.parentType
         skinLocals[dob] = dob.matrixLocal.copy()
         skinMPIs[dob] = dob.matrixParentInverse.copy()
 
@@ -86,9 +89,10 @@ def gen(saveAll, autoRotate, skipObjs=True,
     # relationships with other "selected" items.  In that case, we must just
     # abort, since our UI doesn't have any other way to notify the user.
     # Otherwise it would look as if everything selected exported successfully.
-    global recordTimestamp, skinParents, skinLocals, skinMPIs
+    global recordTimestamp, skinParents, skinParentTypes, skinLocals, skinMPIs
 
     skinParents = {}
+    skinParentTypes = {}
     skinLocals = {}
     skinMPIs = {}
     armaLocals = {}
@@ -212,7 +216,12 @@ def gen(saveAll, autoRotate, skipObjs=True,
         for bo, localMat in armaLocals.iteritems():
             bo.setMatrix(localMat)
         for bo, par in skinParents.iteritems():
-            if par == None:
+            if par == bo.parent:
+                print "Restoring only transforms of " + bo.name
+                # This is to prevent unnecessary reparenting, since this would
+                # fail if parenting other than normal makeParent is needed
+                # (like makeParentDeform et. al.).
+            elif par == None:
                 print ("Restoring " + bo.name + " to root, with Transforms")
                 bo.parent.makeParent([bo]) # This just clears .parentType
                 bo.clrParent()
@@ -237,15 +246,23 @@ def gen(saveAll, autoRotate, skipObjs=True,
         # view of the modified scene before it refreshes with our restorations.
 
         # VALIDATION
+        for bo, localMat in armaLocals.iteritems():
+            if not _esmath.floats2dEq(bo.matrixLocal, localMat):
+                print ("! Restoration of local arma matrix of " + bo.name
+                        + " failed.  It remains:\n" + str(bo.matrixLocal))
         for bo, par in skinParents.iteritems():
             if bo.parent != par:
                 print ("! Restoration of parent of " + bo.name
                 + " failed (it remains '" + str(bo.parent) + "')")
+        for bo, parType in skinParentTypes.iteritems():
+            if bo.parentType != parType:
+                print ("! Restoration of parent type of " + bo.name
+                + " failed (it remains '" + str(bo.parentType) + "')")
         for bo, mpi in skinMPIs.iteritems():
             if not _esmath.floats2dEq(bo.matrixParentInverse, mpi):
                 print ("! Restoration of MPI of " + bo.name
-                + " failed (it remains '" + str(bo.matrixParentInverse) + "')")
+                + " failed.  It remains\n" + str(bo.matrixParentInverse))
         for bo, localMat in skinLocals.iteritems():
-            if not _esmath.floats2dEq(bo.matrixParentInverse, mpi):
-                print ("! Restoration of local matrix of " + bo.name
-                + " failed (it remains '" + str(bo.matrixLocal) + "')")
+            if not _esmath.floats2dEq(bo.matrixLocal, localMat):
+                print ("! Restoration of local skin matrix of " + bo.name
+                        + " failed.  It remains:\n" + str(bo.matrixLocal))

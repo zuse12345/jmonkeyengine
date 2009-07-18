@@ -45,11 +45,34 @@ import hottbj
 import jme.esmath as _esmath
 
 recordTimestamp = "--nostamps" not in hottbj.blenderArgs
+skinParents = None
+skinLocals = None
+skinMPIs = None
 
 def descendantOf(meNode, ancestor):
     if meNode.parent == None: return False
     if meNode.parent == ancestor: return True
     return descendantOf(meNode.parent, ancestor)
+
+def backup(bo):
+    """Back up specified Blender object and its descendants, if it hasn't been
+    already."""
+    global recordTimestamp, skinParents, skinLocals, skinMPIs
+    if bo in skinParents: return
+    # Since these lists are all parallel (same keys), an object is non or in all
+    skinParents[bo] = bo.parent
+    skinLocals[bo] = bo.matrixLocal.copy()
+    #print "backing up loc for " + bo.name + " from\n" + str(bo.matrixLocal)
+    #print "\n  ...to " + str(skinLocals[bo])
+    skinMPIs[bo] = bo.matrixParentInverse.copy()
+    # This is like this for historical reasons.
+    # Should be refactored to work completely recursively or completely flat.
+    for dob in _bdata.scenes.active.objects:
+        if dob in skinParents: continue
+        if not descendantOf(dob, bo): continue
+        skinParents[dob] = dob.parent
+        skinLocals[dob] = dob.matrixLocal.copy()
+        skinMPIs[dob] = dob.matrixParentInverse.copy()
 
 def gen(saveAll, autoRotate, skipObjs=True,
         maxWeightings=4, exportActions=True):
@@ -63,10 +86,12 @@ def gen(saveAll, autoRotate, skipObjs=True,
     # relationships with other "selected" items.  In that case, we must just
     # abort, since our UI doesn't have any other way to notify the user.
     # Otherwise it would look as if everything selected exported successfully.
-    global recordTimestamp
+    global recordTimestamp, skinParents, skinLocals, skinMPIs
 
-    reparenteds = {}
-    relocateds = {}
+    skinParents = {}
+    skinLocals = {}
+    skinMPIs = {}
+    armaLocals = {}
     activeActions = {}
     os = []
     candidates = []
@@ -102,7 +127,7 @@ def gen(saveAll, autoRotate, skipObjs=True,
                         raise Exception(
                             "Unexpected parent type for Arma-modified Object '"
                             + bo.getName() + "': " + str(bo.parentType))
-                    reparenteds[bo] = bo.parent
+                    backup(bo)
                     #print ("\n\nPRE for " + bo.name + "\n"
                     #+ str(bo.matrixLocal) + "\n" + str(bo.matrixParentInverse)
                     modObject.makeParentDeform([bo])
@@ -110,28 +135,36 @@ def gen(saveAll, autoRotate, skipObjs=True,
                     #+ "\n" + str(bo.matrixParentInverse)
             if (bo.parent == None or bo.parentType != _bParentTypes["ARMATURE"]
                     or bo.parent not in supportedCandidates): continue
-               # Not a skin node
-            if bo.parent in relocateds:
-                origParentMat = relocateds[bo.parent]
+            # From this point, we know we will store 'bo' as a skin.
+
+            # No-ops if backed up before .makeParentDeform() above:
+            backup(bo)
+            if bo.parent in armaLocals:
+                origParentMat = armaLocals[bo.parent]
+                adjustedParent = True
             else:
                 origParentMat = bo.parent.matrixLocal.copy()
+                armaLocals[bo.parent] = origParentMat
+                adjustedParent = False
             #if not _esmath.floats2dEq(bo.mat, bo.parent.mat):
                 #raise Exception("Set skin " + bo.getName()
                   #+ "'s transform to match that of its Armature")
             if _esmath.isIdentity(bo.matrixLocal * origParentMat):
                 continue
-             # Test above just shortcuts useless attempt.
-             # The real test whether we will change transform is below.
-            # This is a Skin node.
+            # Test above just shortcuts useless attempt.
+            # The real test whether we will change transform is below.
+            # Doesn't seem right with multiple skins.
+            # Move the arma according to one skin but maybe not for others?
+
             # We must zero the Skin node Object's transform from the
             # skin node and the Arma obj. to avoid serious problems
             # with bone locations and with model location jumping when
             # animations start up.
             origMat = bo.matrixLocal.copy()
             inversion = (bo.matrixLocal * origParentMat).invert()
-            if bo.parent not in relocateds: bo.parent.matrixLocal *= inversion
+            if not adjustedParent: bo.parent.matrixLocal *= inversion
             #bo.matrixLocal *= inversion
-            bo.setMatrix(_bmath.Matrix())
+            bo.setMatrix(_bmath.Matrix()) # .identity sometimes does not work
             if origMat == bo.matrixLocal:
                 print("Matrix was not changed when identitied:\n"
                         + str(bo.matrixLocal))
@@ -139,37 +172,26 @@ def gen(saveAll, autoRotate, skipObjs=True,
                 print "Relocated " + bo.name + " to\n" + str(bo.matrixLocal)
             if not _esmath.isIdentity(bo.matrixLocal):
                 print bo.name + " NOT zeroed:\n" + str(bo.matrixLocal)
-            relocateds[bo] = origMat
-            if bo.parent in relocateds: continue
+            if adjustedParent: continue
             if origParentMat == bo.parent.matrixLocal:
                 print ("Parent Matrix was not changed when transformed by:\n"
                         + str(inversion))
-            else:
-                relocateds[bo.parent] = origParentMat
         # At this point we have converted all exporting skin meshes to be
         # parentType ARMATURE, with corresponding parent, whether or not the
         # skinning is done via modifier.
         for bo in supportedCandidates:
             jmeObj = nodeTree.addSupported(bo, skipObjs)
-            if isinstance(jmeObj, _JmeSkinAndBone) and bo in relocateds:
-                jmeObj.setMatrix(relocateds[bo])
-        # This backs up all objects under skin nodes, since they may get moved
+            if (isinstance(jmeObj, _JmeSkinAndBone)
+                    and not _esmath.isIdentity(armaLocals[bo])):
+                jmeObj.setMatrix(armaLocals[bo])
 
         # Don't know why this is needed here, but exports invoked with
         # non-rest pose get totally hosed without the following block (which is
         # a duplicate of some code in the finally block).
         for armaBo, action in activeActions.iteritems():
-            if action != None:
-                action.setActive(armaBo)
+            if action != None: action.setActive(armaBo)
         activeScene.update(1)
 
-        for skinBo in relocateds.keys()[:]:
-            if skinBo.parent == None: continue  # Armature object
-            # skinBo really is a Skin Object now
-            for bo in activeScene.objects:
-                if bo in relocateds: continue
-                if descendantOf(bo, skinBo):
-                    relocateds[bo] = bo.matrixLocal.copy()
         root = nodeTree.nest()
 
         if root == None: raise Exception("Nothing to do...")
@@ -182,33 +204,48 @@ def gen(saveAll, autoRotate, skipObjs=True,
         xmlFile.addComment(stampText)
         return xmlFile
     finally:
-        for bo, mat in relocateds.iteritems():
-            #if bo.matrixLocal == mat: continue  # sometimes gives false posit.
-            origMat = bo.matrixLocal.copy()
-            bo.matrixLocal = mat
-            print("Restoring transform matrix of " + bo.type + " '"
-                    + bo.getName() + "'")
-            if origMat == bo.matrixLocal:
-                print("WARNING:  Internal problem:  " + bo.getName()
-                        + " Matrix was not changed when restored")
-                        #+ " with:\n" + str(mat) + "\nFROM:\n" + str(origMat)
-                        #+ "\n==>\n" + str(bo.matrixLocal))
-        for bo, par in reparenteds.iteritems():
-            print "Restoring parent "+ str(par) + " to " + bo.getName()
+        # Restoration sequence is significant, since parenting can magically
+        # change transforms.  I don't know about about the 2 transforms, but
+        # it seems more likely that matrixParentInverse would effect local
+        # than vice versa.
+        # Armas are always are root level and are never reparented
+        for bo, localMat in armaLocals.iteritems():
+            bo.setMatrix(localMat)
+        for bo, par in skinParents.iteritems():
             if par == None:
+                print ("Restoring " + bo.name + " to root, with Transforms")
                 bo.parent.makeParent([bo]) # This just clears .parentType
                 bo.clrParent()
             else:
+                print ("Restoring " + bo.name
+                        + " to parent " + par.name + ", with Transforms")
                 par.makeParent([bo])
+        for bo, mpi in skinMPIs.iteritems():
+            _esmath.setFloats2d(bo.matrixParentInverse, mpi)
+        for bo, localMat in skinLocals.iteritems():
+            bo.setMatrix(localMat)
         for armaBo, action in activeActions.iteritems():
             if action == None:
-                print "Restoring None action to " + armaBo.getName()
+                print "Restoring None action to " + armaBo.name
                 armaBo.action = None
             else:
-                print("Restoring action "
-                        + action.getName() + " to " + armaBo.getName())
+                print("Restoring action " + action.name + " to " + armaBo.name)
                 action.setActive(armaBo)
         if origEditMode != 0: _bEditMode(origEditMode)
         activeScene.update(1)
         # This update() prevents Blender from showing the user a disconcerting
         # view of the modified scene before it refreshes with our restorations.
+
+        # VALIDATION
+        for bo, par in skinParents.iteritems():
+            if bo.parent != par:
+                print ("! Restoration of parent of " + bo.name
+                + " failed (it remains '" + str(bo.parent) + "')")
+        for bo, mpi in skinMPIs.iteritems():
+            if not _esmath.floats2dEq(bo.matrixParentInverse, mpi):
+                print ("! Restoration of MPI of " + bo.name
+                + " failed (it remains '" + str(bo.matrixParentInverse) + "')")
+        for bo, localMat in skinLocals.iteritems():
+            if not _esmath.floats2dEq(bo.matrixParentInverse, mpi):
+                print ("! Restoration of local matrix of " + bo.name
+                + " failed (it remains '" + str(bo.matrixLocal) + "')")

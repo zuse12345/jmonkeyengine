@@ -41,6 +41,8 @@ import java.util.Map;
  * A Savable String-to-Float map.
  */
 public class StringFloatMap extends AbstractStringKeyMap<Float> {
+    static final long serialVersionUID = -8682192698360702812L;
+
     public StringFloatMap() {
         super();
     }

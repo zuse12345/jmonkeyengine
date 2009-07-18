@@ -41,19 +41,21 @@ import java.util.Map;
  * A Savable String-to-Boolean map.
  */
 public class StringBoolMap extends AbstractStringKeyMap<Boolean> {
-public StringBoolMap() {
-    super();
-}
+    static final long serialVersionUID = -5837233710783391923L;
 
-public StringBoolMap(int initialCapacity) {
-    super(initialCapacity);
-}
+    public StringBoolMap() {
+        super();
+    }
 
-public StringBoolMap(int initialCapacity, float loadFactor) {
-    super(initialCapacity, loadFactor);
-}
+    public StringBoolMap(int initialCapacity) {
+        super(initialCapacity);
+    }
 
-public StringBoolMap(Map<? extends String, ? extends Boolean> m) {
+    public StringBoolMap(int initialCapacity, float loadFactor) {
+        super(initialCapacity, loadFactor);
+    }
+
+    public StringBoolMap(Map<? extends String, ? extends Boolean> m) {
         super(m);
     }
 

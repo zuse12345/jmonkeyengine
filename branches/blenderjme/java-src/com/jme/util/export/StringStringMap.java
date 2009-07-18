@@ -41,19 +41,21 @@ import java.util.Map;
 * A Savable String-to-String map.
 */
 public class StringStringMap extends AbstractStringKeyMap<String> {
-public StringStringMap() {
-    super();
-}
+    static final long serialVersionUID = -623465544177088110L;
 
-public StringStringMap(int initialCapacity) {
-    super(initialCapacity);
-}
+    public StringStringMap() {
+        super();
+    }
 
-public StringStringMap(int initialCapacity, float loadFactor) {
-    super(initialCapacity, loadFactor);
-}
+    public StringStringMap(int initialCapacity) {
+        super(initialCapacity);
+    }
 
-public StringStringMap(Map<? extends String, ? extends String> m) {
+    public StringStringMap(int initialCapacity, float loadFactor) {
+        super(initialCapacity, loadFactor);
+    }
+
+    public StringStringMap(Map<? extends String, ? extends String> m) {
         super(m);
     }
 

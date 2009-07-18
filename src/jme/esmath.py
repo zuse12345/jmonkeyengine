@@ -188,6 +188,16 @@ def floats2dEq(a, b, precision=5):
                 return False
     return True
 
+def setFloats2d(a, b):
+    "Copies all float elements from 2-dimensional array 'b' to 'a'."
+    if a == None and b == None: return True
+    if a == None or b == None: raise Exception("One args is null, other is not")
+    if len(a) != len(b):
+        raise Exception("Matrix row counts differ: " + len(a) + " vs." + len(b))
+    for i in range(len(a)):
+        if a[i] == None and b[i] == None: continue
+        for j in range(len(a[i])): a[i][j] = b[i][j]
+
 def isIdentity(m, precision=5):
     """Returns true if the specified 2-dimensional float matrix is equal to the
     identity matrix of the same size, within the specified precision."""

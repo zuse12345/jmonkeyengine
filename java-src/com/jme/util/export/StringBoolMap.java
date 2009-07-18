@@ -36,8 +36,6 @@ package com.jme.util.export;
 
 import java.io.IOException;
 import java.util.Map;
-import com.jme.util.export.JMEExporter;
-import com.jme.util.export.JMEImporter;
 
 /**
  * A Savable String-to-Boolean map.

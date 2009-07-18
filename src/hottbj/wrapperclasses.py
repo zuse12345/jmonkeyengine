@@ -946,19 +946,19 @@ class JmeBone(object):
                 and not _esmath.isIdentity(addlTransform)):
             #print "Applying addl to " + self.getName() + ": " + str(addlTransform)
             self.matrix *= addlTransform
-        bindTag = _XmlTag("bindMatrix", {'class':'com.jme.math.Matrix4f'})
-        # This makes unconventional sequence 00 10 20 instead of 00 01 02...
-        # Can fix that by just swapping the next 2 lines.  Keeping this way
-        # for now because that's how XMLExporter writes and it's easier to
-        # compare regression runs with the same ordering.
-        for y in range(4):
-            for x in range(4):
-                if ((x == y and round(self.matrix[x][y], 6) != 1.)
-                        or (x != y and round(self.matrix[x][y], 6) != 0.)):
-                    bindTag.addAttr(("m" + str(y) + str(x)),
-                            self.matrix[x][y], 6)
-        bindMatrix = self.matrix.copy()
-        tag.addChild(bindTag)
+        if not _esmath.isIdentity(self.matrix):
+            bindTag = _XmlTag("bindMatrix", {'class':'com.jme.math.Matrix4f'})
+            # This makes unconventional sequence 00 10 20 instead of 00 01 02...
+            # Can fix that by just swapping the next 2 lines.  Keeping this way
+            # for now because that's how XMLExporter writes and it's easier to
+            # compare regression runs with the same ordering.
+            for y in range(4):
+                for x in range(4):
+                    if ((x == y and round(self.matrix[x][y], 6) != 1.)
+                            or (x != y and round(self.matrix[x][y], 6) != 0.)):
+                        bindTag.addAttr(("m" + str(y) + str(x)),
+                                self.matrix[x][y], 6)
+            tag.addChild(bindTag)
         self.inverseTotalTrans = self.matrix.copy().invert()
             # N.b. .matrix is in an intermediate state here
         if invParentMat != None: self.matrix *= invParentMat
@@ -1239,7 +1239,7 @@ class JmeSkinAndBone(object):
                 self.__recursiveAddToBoneMap(childBone)
 
     def setMatrix(self, matrix):
-        self.matrix = matrix
+        self.matrix = matrix.copy()
 
     def __runPoses(self):
         """Execute poses to gather data.
@@ -1328,6 +1328,10 @@ class JmeSkinAndBone(object):
             for extraskin in self.skins[1:]:
                 if not _esmath.floats2dEq(self.skins[0].wrappedObj.mat,
                         extraskin.wrappedObj.mat):
+                    print ("Skin " + self.skins[0].wrappedObj.name + "\n"
+                            + str(self.skins[0].wrappedObj.mat) + "\nSkin "
+                            + extraskin.wrappedObj.name + "\n"
+                            + str(extraskin.wrappedObj.mat))
                     raise Exception(
                         "Skins for same Armature have differing transforms: "
                         + self.skins[0].name + " vs. " + extraskin.name)
@@ -1401,16 +1405,8 @@ class JmeSkinAndBone(object):
         if len(self.skins) < 1: return tag
 
         skinNodeTag = _XmlTag('com.jme.animation.SkinNode', {
-            'name':self.getName() + "Skins",
-            'id': self.getName() + "Skins"
-        })
-        skinChildrenTag = _XmlTag('children')
-        skinNodeTag.addChild(skinChildrenTag)
+                'name':self.getName() + "SkinNode" })
         childrenTag.addChild(skinNodeTag)
-        skinNodeTag.addChild(_XmlTag('skins', {
-                "class":self.getImplClass(),
-                "ref":self.getName() + "Skins"
-        }))
         skinNodeTag.addChild(_XmlTag('skeleton', {
                 "class":"com.jme.animation.Bone",
                 "ref":self.boneTree.getName(),
@@ -1418,11 +1414,28 @@ class JmeSkinAndBone(object):
         }))
         cacheTag = _XmlTag('cache')
         skinNodeTag.addChild(cacheTag)
+        skinChildrenTag = _XmlTag('children')
+         # Useless but required.  Will only ever have just 1 child.
+        skinNodeTag.addChild(skinChildrenTag)
+        skinsNodeTag = _XmlTag("com.jme.scene.Node", {
+                # Notice the subtle "s" diff:  skinNodeTag vs. skinsNodeTag
+                'name':self.getName() + "Skins",
+                'id': self.getName() + "Skins"
+        })
+        skinChildrenTag.addChild(skinsNodeTag) # the only purpose for skinsC...
+        skinsChildrenTag = _XmlTag('children')
+        skinsNodeTag.addChild(skinsChildrenTag)
         for i in range(len(self.skins)):
-            self.populateSkinXml(self.skins[i], i, skinChildrenTag, cacheTag)
+            self.populateSkinXml(self.skins[i], i, skinsChildrenTag, cacheTag)
+        skinNodeTag.addChild(_XmlTag('skins', {
+                "class":"com.jme.scene.Node",
+                'ref': self.getName() + "Skins"
+        }))
+         # Adding this tag last to eliminate possible consequences of using the
+         # "reference" too early.
         return tag
 
-    def populateSkinXml(self, skin, skinIndex, skinChildrenTag, cacheTag):
+    def populateSkinXml(self, skin, skinIndex, skinsChildrenTag, cacheTag):
         meshChild = None
         for grandChild in skin.children:
             if isinstance(grandChild, JmeMesh):
@@ -1433,7 +1446,7 @@ class JmeSkinAndBone(object):
             raise Exception(
                     "No child of Skin object is a mesh: " + skin.getName())
         skinChildTag = skin.getXmlEl(False)
-        skinChildrenTag.addChild(skinChildTag)
+        skinsChildrenTag.addChild(skinChildTag)
         mesh = meshChild.wrappedMesh
         vGroups = mesh.getVertGroupNames()
         if vGroups == None or len(vGroups) < 1: return

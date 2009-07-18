@@ -53,6 +53,11 @@ def descendantOf(meNode, ancestor):
 
 def gen(saveAll, autoRotate, skipObjs=True,
         maxWeightings=4, exportActions=True):
+    # There is unfortunately WAY TOO MUCH CRAZY behavior in this method.
+    # This is because of Blender wackiness.  Changes to matrixLocal can't
+    # be seen right away.  Hidden effects of magical .matrixParentInverse.
+    # Different behavior from .setMatrix() and .matrixLocal =...
+
     # An unfortunate consequence of object interdependencies is that though we
     # have pre-validated as much as possible, some objects may be rejected due
     # relationships with other "selected" items.  In that case, we must just
@@ -98,14 +103,22 @@ def gen(saveAll, autoRotate, skipObjs=True,
                             "Unexpected parent type for Arma-modified Object '"
                             + bo.getName() + "': " + str(bo.parentType))
                     reparenteds[bo] = bo.parent
+                    #print ("\n\nPRE for " + bo.name + "\n"
+                    #+ str(bo.matrixLocal) + "\n" + str(bo.matrixParentInverse)
                     modObject.makeParentDeform([bo])
+                    #print "\n\nPOST\n" + str(bo.matrixLocal)
+                    #+ "\n" + str(bo.matrixParentInverse)
             if (bo.parent == None or bo.parentType != _bParentTypes["ARMATURE"]
                     or bo.parent not in supportedCandidates): continue
                # Not a skin node
-            if not _esmath.floats2dEq(bo.mat, bo.parent.mat):
-                raise Exception("Set skin " + bo.getName()
-                  + "'s transform to match that of its Armature")
-            if _esmath.isIdentity(bo.matrixLocal * bo.parent.matrixLocal):
+            if bo.parent in relocateds:
+                origParentMat = relocateds[bo.parent]
+            else:
+                origParentMat = bo.parent.matrixLocal.copy()
+            #if not _esmath.floats2dEq(bo.mat, bo.parent.mat):
+                #raise Exception("Set skin " + bo.getName()
+                  #+ "'s transform to match that of its Armature")
+            if _esmath.isIdentity(bo.matrixLocal * origParentMat):
                 continue
              # Test above just shortcuts useless attempt.
              # The real test whether we will change transform is below.
@@ -114,16 +127,20 @@ def gen(saveAll, autoRotate, skipObjs=True,
             # skin node and the Arma obj. to avoid serious problems
             # with bone locations and with model location jumping when
             # animations start up.
-            origParentMat = bo.parent.matrixLocal.copy()
             origMat = bo.matrixLocal.copy()
-            inversion = (bo.matrixLocal * bo.parent.matrixLocal).invert()
-            bo.parent.matrixLocal *= inversion
-            bo.matrixLocal *= inversion
+            inversion = (bo.matrixLocal * origParentMat).invert()
+            if bo.parent not in relocateds: bo.parent.matrixLocal *= inversion
+            #bo.matrixLocal *= inversion
+            bo.setMatrix(_bmath.Matrix())
             if origMat == bo.matrixLocal:
-                print("Matrix was not changed when transformed by:\n"
-                        + str(inversion))
+                print("Matrix was not changed when identitied:\n"
+                        + str(bo.matrixLocal))
             else:
-                relocateds[bo] = origMat
+                print "Relocated " + bo.name + " to\n" + str(bo.matrixLocal)
+            if not _esmath.isIdentity(bo.matrixLocal):
+                print bo.name + " NOT zeroed:\n" + str(bo.matrixLocal)
+            relocateds[bo] = origMat
+            if bo.parent in relocateds: continue
             if origParentMat == bo.parent.matrixLocal:
                 print ("Parent Matrix was not changed when transformed by:\n"
                         + str(inversion))

@@ -37,8 +37,6 @@ package com.jme.util.export;
 import java.util.HashMap;
 import java.util.Map;
 import java.io.IOException;
-import com.jme.util.export.JMEExporter;
-import com.jme.util.export.JMEImporter;
 
 /**
  * This class implements persistence for the String keys of a Savable map.

@@ -62,11 +62,17 @@
         names).
         <LI>The entire transform of the skin mesh object and the associated
         armature object must be exactly equal.
-        If using an Armature modifier, you must make sure that all
-        Loc, Scale, and Rot values are exactly equal for the two objects.
-        If using traditional parenting, do this to the skin object: ALT-p,
-        <code>Clear Parent Inverse</code>, then set the Loc, Scale, and Rot
-        values to <code>(0, 0, 0), (1, 1, 1), (0, 0, 0)</code>.
+        <ol>
+          <li>First, get rid of Blender's magical <i>.matrixParentInverse</i>,
+          a hidden factor which hides the real transform values from you.
+          To clear it, select each skin object and do: ALT-p,
+          <code>Clear Parent Inverse</code>.
+          <li>
+          If using an Armature modifier, you must make sure that all
+          Loc, Scale, and Rot values are exactly equal for the two objects.
+          If using traditional parenting, then set the Loc, Scale, and Rot
+          values to <code>(0, 0, 0), (1, 1, 1), (0, 0, 0)</code>.
+        </ol>
         If there are multiple skins, then this constraint obviously applies to
         all of the skin objects for the armature.
         Note that this does not mean that any of these objects must be

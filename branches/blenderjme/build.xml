@@ -58,9 +58,13 @@ $Id$
     <mkdir dir="classes"/>
     <javac classpath="${jmejar.path}" srcdir="java-src"
            destdir="classes" debug="${javac.debug}"
-           source="${javac.source}" target="${javac.target}"/>
+           source="${javac.source}" target="${javac.target}">
+           <compilerarg value="-Xlint"/>
+    </javac>
     <javac classpath="classes:${jmejar.path}" srcdir="src/hottbj"
            destdir="classes" debug="${javac.debug}"
-           source="${javac.source}" target="${javac.target}"/>
+           source="${javac.source}" target="${javac.target}">
+           <compilerarg value="-Xlint"/>
+    </javac>
   </target>
 </project>

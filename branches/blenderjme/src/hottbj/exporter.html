@@ -108,6 +108,10 @@
         <LI>Animation start and stop frames (start and stop key frames are
           automatically generated if the numbers are not set to key
           frame numbers).
+        <LI>IPO Interpolation types Linear and Constant, with the significant
+          constraints that all frames of an action must use the same type.
+          Type <code>Bezier</code> is automatically changed to Linear, until
+          such time as <code>com.jme.animation</code> implements Bezier.
       </UL>
     <HR/>
     <h4 id="tips">Usage Tips</h4>
@@ -289,6 +293,9 @@
           this (just replace "UV values" where that description talks about
           color values).
           <P/>
+        <LI><b>Interpolation types</b>
+          Blender interpolation type Bezier is translated to LINEAR, since
+          <code>com.jme.animation.BoneAnimation.BEZIER</code> doesn't work.
       </UL>
     <HR/>
     <h4 id="uvcoords">UV Coordinates and Values</h4>

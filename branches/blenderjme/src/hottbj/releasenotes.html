@@ -44,6 +44,15 @@
     <HR/>
     <h4 id="changelist">Change List</h4>
     <ul>
+      <li>Changes since 0.3c<ol>
+        <li>Improvements to pre-validation of animation setup.
+        <li>State restoration is now reliable.
+        <li>Write SkinNode components with relationships exactly matching that
+         used by jME natively.
+        <li>Game properties of format "jme.*" stripped from exported UserData
+          in a general and efficient way.  These properties are for internal
+          use of the exporter.  Users should use their own name prefix, or none.
+      </ol>
       <li>Changes since 0.3b<ol>
         <li>One armature may now skin multiple deforming meshes (via parenting
          and/or modifier associations).

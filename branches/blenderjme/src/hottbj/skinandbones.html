@@ -90,6 +90,10 @@
         simple placement of bone root or tip (using Location or Rotation).
         The exception to this is for setting Blender envelope influence,
         and bone envelopes are not used for portable models.
+        <LI>All IPOs of an action must use the same IPO interpolation type.
+        <LI>code>com.jme.animation.BoneAnimation.BEZIER</code> does not work.
+        Therefore, interp type <code>Bezier</code> is automatically translated
+        to type <code>LINEAR</code>.
       </UL>
       Some these constraints may be removed as we improve the exporter.
     <HR/>
@@ -277,6 +281,17 @@
         ALT-p and ALT-s and ALT-g.
         <li>"i" to save the ''LocRot''.
       </ol>
+    For any Action that you don't intend to use for motion
+    interpolation, you should set the interpolation type to
+    <code>Linear</code> (which means <i>no interpolation</i>).
+      <ol>
+        <li>Open a Action Editor window (if one's not already open).
+        <li>With the cursor over the channel listing panel to the left, "a"
+        until all channels are selected.
+        <li>Use pulldown menu Key / Interpolation Mode / Linear.
+      </ol>
+      If in the future you add new channels to the Action, you'll need to
+      set the interp mode of these channels to Linear too.
       <p>
   <li>Export
     <ul>
@@ -420,6 +435,17 @@
       when you run the exporter.
       This is typical behavior for animation-supporting exporters, due to
       Blender's poor API support for pose states.
+    <li>By default, animations will run with linear interpolation in jME.
+      To disable interpolation, set the IPO interpolation type of the Action's
+      channels to <code>Linear</code>.
+      The Action will then behave the same in jME as in Blender.
+      To do this, use the Action Editor window.<ol>
+        <li>With the cursor over the channel listing panel to the left, "a"
+        until all channels are selected.
+        <li>Use pulldown menu Key / Interpolation Mode / Linear.
+      </ol>
+      Remember that you must set the current frame back to a Rest Pose Frame
+      before invoking the exporter.
     <HR/>
     <DIV class="footer">
       $Revision$

@@ -78,7 +78,7 @@ def backup(bo):
         skinMPIs[dob] = dob.matrixParentInverse.copy()
 
 def gen(saveAll, autoRotate, skipObjs=True,
-        maxWeightings=4, exportActions=True):
+        maxWeightings=4, exportActions=True, skinTransfers=True):
     # There is unfortunately WAY TOO MUCH CRAZY behavior in this method.
     # This is because of Blender wackiness.  Changes to matrixLocal can't
     # be seen right away.  Hidden effects of magical .matrixParentInverse.
@@ -100,6 +100,11 @@ def gen(saveAll, autoRotate, skipObjs=True,
     os = []
     candidates = []
     supportedCandidates = []
+    if skinTransfers:
+        skinTransferNodes = []
+    else:
+        skinTransferNodes = None
+        # None means do not create SkinTransferNodes.
     origEditMode = _bEditMode()
     if origEditMode != 0: _bEditMode(0)
     activeScene = _bdata.scenes.active
@@ -125,7 +130,8 @@ def gen(saveAll, autoRotate, skipObjs=True,
                 if (mod.type != _bModifierType.ARMATURE
                         or mod[_bModifierSettings.OBJECT] == None): continue
                 modObject = mod[_bModifierSettings.OBJECT]
-                if (modObject in supportedCandidates
+                if ((modObject in supportedCandidates
+                        or skinTransferNodes != None)
                         and modObject != bo.parent):
                     if bo.parentType != _bParentTypes["OBJECT"]:
                         raise Exception(
@@ -138,8 +144,13 @@ def gen(saveAll, autoRotate, skipObjs=True,
                     #print "\n\nPOST\n" + str(bo.matrixLocal)
                     #+ "\n" + str(bo.matrixParentInverse)
             if (bo.parent == None or bo.parentType != _bParentTypes["ARMATURE"]
-                    or bo.parent not in supportedCandidates): continue
+                    or (bo.parent not in supportedCandidates
+                    and skinTransferNodes == None)): continue
             # From this point, we know we will store 'bo' as a skin.
+
+            if (bo.parent not in supportedCandidates
+                    and bo.parent not in skinTransferNodes):
+                skinTransferNodes.append(bo.parent)
 
             # No-ops if backed up before .makeParentDeform() above:
             backup(bo)
@@ -188,6 +199,15 @@ def gen(saveAll, autoRotate, skipObjs=True,
             if (isinstance(jmeObj, _JmeSkinAndBone)
                     and not _esmath.isIdentity(armaLocals[bo])):
                 jmeObj.setMatrix(armaLocals[bo])
+        if skinTransferNodes != None:
+            for bo in skinTransferNodes:
+                jmeObj = nodeTree.addSupported(bo, skipObjs, True)
+                if not isinstance(jmeObj, _JmeSkinAndBone):
+                    raise Exception("Assertion failed:  Wrapped class for "
+                            + bo.name + " not a JmeSkinAndBone: "
+                            + str(type(jmeObj)))
+                if not _esmath.isIdentity(armaLocals[bo]):
+                    jmeObj.setMatrix(armaLocals[bo])
 
         # Don't know why this is needed here, but exports invoked with
         # non-rest pose get totally hosed without the following block (which is

@@ -55,6 +55,7 @@ xmlFile = None
 axisFlip = True
 skipObjs = True  # Unsupported Mat Objs
 exportActions = True
+skinTransfers = True
 maxWeightings = 4
 BTNID_SAVEALL = 1
 BTNID_SAVE = 2
@@ -65,6 +66,7 @@ BTNID_SKIPOBJS = 6
 BTNID_HELP = 7
 BTNID_MAXWEIGHTINGS = 8
 BTNID_EXPORTACTIONS = 9
+BTNID_SKINTRANSFERS = 10
 selCount = None
 allCount = None      # Does double-duty.  (allCount != None) means Gui is up.
 fileOverwrite = False
@@ -101,7 +103,7 @@ def updateExportableCounts():
 
 def btnHandler(btnId):
     global saveAll, xmlFile, defaultFilePath, fileOverwrite, axisFlip, \
-            skipObjs, helpUrl, maxWeightings, exportActions
+            skipObjs, helpUrl, maxWeightings, exportActions, skinTransfers
     if btnId == BTNID_SKIPOBJS:
         skipObjs = not skipObjs
         updateExportableCounts()
@@ -121,8 +123,8 @@ def btnHandler(btnId):
         return
     if btnId == BTNID_SAVE:
         try:
-            xmlFile = _exporter.gen(
-                    saveAll, axisFlip, skipObjs, maxWeightings, exportActions)
+            xmlFile = _exporter.gen(saveAll, axisFlip,
+                    skipObjs, maxWeightings, exportActions, skinTransfers)
         except Exception, e:
             # Python 2.5 does not support "except X as y:" syntax
             ei = _exc_info()[2]
@@ -147,6 +149,10 @@ def btnHandler(btnId):
         return
     if btnId == BTNID_EXPORTACTIONS:
         exportActions = not exportActions
+        _bDraw.Redraw()
+        return
+    if btnId == BTNID_SKINTRANSFERS:
+        skinTransfers = not skinTransfers
         _bDraw.Redraw()
         return
     raise Exception("Unexpected button ID: " + btnId)
@@ -310,39 +316,47 @@ def drawer():
     else: flipText = "No"
     if exportActions: actionsText = "Include"
     else: actionsText = "Exclude"
+    if skinTransfers: skinTransferText = "TransferNode"
+    else: skinTransferText = "Non-Skin"
     _bDraw.Toggle(toggleText,
-            BTNID_SAVEALL, guiBox.x + 15, guiBox.y + 200, 75, 17, saveAll,
+            BTNID_SAVEALL, guiBox.x + 15, guiBox.y + 210, 75, 17, saveAll,
             "Choose to export supported SELECTED objects or ALL objects",
             redrawDummy)
             # Would prefer to make a 2-line button, but _bDraw does not
             # support that... or basically anything other than vanilla.
     _bDraw.Toggle(overwriteText, BTNID_OVERWRITE,
-            guiBox.x + 15, guiBox.y + 175, 47, 17, fileOverwrite,
+            guiBox.x + 15, guiBox.y + 185, 47, 17, fileOverwrite,
             "Whether to confirm before overwriting existing export files")
     _bDraw.Toggle(flipText, BTNID_FLIP,
-            guiBox.x + 15, guiBox.y + 150, 55, 17, axisFlip,
+            guiBox.x + 15, guiBox.y + 160, 55, 17, axisFlip,
             "Rotate X axis -90 degress in export so -Y axis becomes +Z")
     _bDraw.Toggle(skipText, BTNID_SKIPOBJS,
-            guiBox.x + 15, guiBox.y + 125, 60, 17, skipObjs,
+            guiBox.x + 15, guiBox.y + 135, 60, 17, skipObjs,
             "Choose to skip just the Mats or the containing Objs", redrawDummy)
     maxWeightingsNumber = _bDraw.Number("", BTNID_MAXWEIGHTINGS,
-            guiBox.x + 15, guiBox.y + 100, 50, 17, maxWeightings, 1, 10000,
+            guiBox.x + 15, guiBox.y + 110, 50, 17, maxWeightings, 1, 10000,
             "Max number of the highest weighted bones which can influence an "
             + "animated vertex")
     _bDraw.Toggle(actionsText, BTNID_EXPORTACTIONS,
-            guiBox.x + 15, guiBox.y + 75, 50, 17, exportActions,
+            guiBox.x + 15, guiBox.y + 85, 50, 17, exportActions,
             "Whether to export all Actions for selected Armatures")
+    _bDraw.Toggle(skinTransferText, BTNID_SKINTRANSFERS,
+            guiBox.x + 15, guiBox.y + 60, 78, 17, skinTransfers,
+            "Non-parented Skin Mesh objects exported as non-skin Mesh "
+            + "objects or as SkinTransferNodes skins")
     _bDraw.PushButton("Export", BTNID_SAVE,
             guiBox.x + 150, guiBox.y + 10, 50, 17,
             "Proceed to select file to save to")
-    _bDraw.Label("Object(s) to export", guiBox.x + 100, guiBox.y + 200,200,17)
+    _bDraw.Label("Object(s) to export", guiBox.x + 100, guiBox.y + 210,200,17)
     _bDraw.Label("Export file overwrites",
-            guiBox.x + 100, guiBox.y + 175,200,17)
+            guiBox.x + 100, guiBox.y + 185,200,17)
     _bDraw.Label("Make axes jME-conformant",
-            guiBox.x + 100, guiBox.y + 150,200,17)
+            guiBox.x + 100, guiBox.y + 160,200,17)
     _bDraw.Label("Unsupported Material-handling",
-            guiBox.x + 100, guiBox.y + 125,200,17)
+            guiBox.x + 100, guiBox.y + 135,200,17)
     _bDraw.Label("Max bone weightings/vert.",
-            guiBox.x + 100, guiBox.y + 100,200,17)
+            guiBox.x + 100, guiBox.y + 110,200,17)
     _bDraw.Label("Blender animations",
-            guiBox.x + 100, guiBox.y + 75,200,17)
+            guiBox.x + 100, guiBox.y + 85,200,17)
+    _bDraw.Label("Orphaned skin meshes",
+            guiBox.x + 100, guiBox.y + 60,200,17)

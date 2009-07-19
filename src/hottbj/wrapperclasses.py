@@ -45,6 +45,7 @@ from Blender import Set as _bSet
 from ActionData import ActionData
 from bpy.data import actions as _bActionSeq
 from Blender.Object import ParentTypes as _bParentTypes
+from Blender.IpoCurve import InterpTypes as _bInterpTypes
 
 # GENERAL DEVELOPMENT NOTES:
 #
@@ -309,13 +310,10 @@ class JmeNode(object):
                 rsTag.addChild(self.jmeTextureState.getXmlEl())
             tag.addChild(rsTag)
 
-        if self.wrappedObj != None and (
-                len(self.wrappedObj.game_properties) > 1 or (
-                len(self.wrappedObj.game_properties) == 1 and
-                self.wrappedObj.game_properties[0].name != "jme.implClass")):
+        if self.wrappedObj != None:
             udTag = _XmlTag('userData')
-            tag.addChild(udTag)
             _addPropertiesXml(udTag, self.wrappedObj.game_properties)
+            if len(udTag.children) > 0: tag.addChild(udTag)
 
         if self.children != None:
             childrenTag = _XmlTag('children')
@@ -1082,13 +1080,26 @@ class JmeAnimation(object):
         # If repeatType is 0, at the final time motion will freeze with the
         # last transform.  If repeatType is 1, motion flips immediately from
         # the final transform to the 0 position.
-        interpolationTypeTag = _XmlTag('interpolationType')
-        # Use no interpolationType tag for No interpolation, or set a value
-        # for each frame: 0 for Linear, 1 for Bezier.
-        # SWITCH TO BEZIER ONCE com.jme.animation BEZIER IS FIXED!
-        interpTypes = []
-        for i in range(len(self.__data.keyframeTimes)): interpTypes.append(0)
-        interpolationTypeTag.addAttr("data", interpTypes)
+        if self.__data.interpType == _bInterpTypes.CONST:
+            interpolationTypeTag = None
+        elif (self.__data.interpType == _bInterpTypes.LINEAR
+                or self.__data.interpType == _bInterpTypes.BEZIER):
+            interpolationTypeTag = _XmlTag('interpolationType')
+            # Use no interpolationType tag for No interpolation, or set a value
+            # for each frame: 0 for Linear, 1 for Bezier.
+            # SWITCH TO BEZIER ONCE com.jme.animation BEZIER IS FIXED!
+            interpTypes = []
+            for i in range(len(self.__data.keyframeTimes)): interpTypes.append(0)
+            interpolationTypeTag.addAttr("data", interpTypes)
+            if self.__data.interpType == _bInterpTypes.BEZIER:
+                print("WARNING:  Interp type for action '"
+                        + self.__data.getName()
+                        + "' stored as LINEAR instead of BEZIER, due to "
+                        + "com.jme.animation limitation")
+        else:
+            raise Exception("Unsupported IPO Interpolation type for '"
+                    + self.__data.getName() + "': "
+                    + str(self.__data.interpType))
 
         channelNames = self.__data.getChannelNames()
 
@@ -1145,7 +1156,7 @@ class JmeAnimation(object):
             transformsTag.addChild(transformTag)
 
         tag.addChild(keyframeTimeTag)
-        tag.addChild(interpolationTypeTag)
+        if interpolationTypeTag != None: tag.addChild(interpolationTypeTag)
         tag.addChild(transformsTag)
         return tag
 
@@ -1361,13 +1372,10 @@ class JmeSkinAndBone(object):
 
         tag = _XmlTag(self.getImplClass(), {'name':self.getName()})
 
-        if self.wrappedObj != None and (
-                len(self.wrappedObj.game_properties) > 1 or (
-                len(self.wrappedObj.game_properties) == 1 and
-                self.wrappedObj.game_properties[0].name != "jme.implClass")):
+        if self.wrappedObj != None:
             udTag = _XmlTag('userData')
-            tag.addChild(udTag)
             _addPropertiesXml(udTag, self.wrappedObj.game_properties)
+            if len(udTag.children) > 0: tag.addChild(udTag)
 
         if self.matrix != None:
             # This block for writing local transforms is copied directly from
@@ -2214,6 +2222,10 @@ class UpdatableMVert:
 
 
 def _addPropertiesXml(parentTag, gameProps):
+    """Takes a parentTag so that caller may write jME User Data independently
+    of these game properties.
+    Automatically filters out all properties with names beginning with 'jme.'.
+    """
     stringPropKeys = []
     stringPropVals = []
     intPropKeys = []
@@ -2223,7 +2235,7 @@ def _addPropertiesXml(parentTag, gameProps):
     boolPropKeys = []
     boolPropVals = []
     for prop in gameProps:
-        if prop.name == "jme.implClass": continue
+        if prop.name[:4] == "jme.": continue
         if prop.type == "INT":
             intPropKeys.append(prop.name)
             intPropVals.append(prop.data)

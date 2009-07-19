@@ -50,7 +50,8 @@ class ActionData(object):
     has no meaningful frames, and should therefore be discarded.
     """
     __slots__ = ('blenderFrames', 'keyframeTimes', 'locs', 'rots', 'mats',
-            'name', 'boneMap', 'startFrame', 'endFrame', 'origBlenderFrame')
+            'name', 'boneMap', 'startFrame', 'endFrame', 'origBlenderFrame',
+            'interpType')
     # Not sure which of rots and/or mats will be used.
     # For now, using 'rots' just to cull <rotations> with no rotations.
     # boneMap is the map of the armature bones, not the pose bones.  We need
@@ -92,6 +93,7 @@ class ActionData(object):
         self.locs = {}
         self.rots = {}
         self.mats = {}
+        self.interpType = None
         for boneName in bAction.getChannelNames():
             self.locs[boneName] = []
             self.rots[boneName] = []
@@ -108,6 +110,13 @@ class ActionData(object):
                 # and if there is a Loc IP, all 3 Loc* will be present.
                 # Therefore, just test one of each.
                 if curve.name not in ['LocX', 'QuatW']: continue
+                if self.interpType == None:
+                    self.interpType = curve.interpolation
+                else:
+                    if self.interpType != curve.interpolation:
+                        raise Exception("Animation '" + self.getName()
+                                + "' mixes animation types.  "
+                                + "This is not supported.")
                 for bp in curve.bezierPoints:
                     frameFloat = bp.vec[1][0]
                     if frameFloat < 1:

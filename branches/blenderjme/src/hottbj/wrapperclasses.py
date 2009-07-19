@@ -46,6 +46,8 @@ from ActionData import ActionData
 from bpy.data import actions as _bActionSeq
 from Blender.Object import ParentTypes as _bParentTypes
 from Blender.IpoCurve import InterpTypes as _bInterpTypes
+from Blender.Modifier import Type as _bModifierType
+from Blender.Modifier import Settings as _bModifierSettings
 
 # GENERAL DEVELOPMENT NOTES:
 #
@@ -180,10 +182,20 @@ class JmeNode(object):
                     + "param nodeTree must be set")
         self.wrappedObj = bObjOrName
         self.name = self.wrappedObj.name
+
+        # The join tactic here is the most simple and consistent way.
+        # Skins are ALWAYS joined, regardless of whether orphaned.
+        # Difficult to non-join orphans, since we don't have the exporting
+        # parenting information at instantiation time.
         if self.wrappedObj.parentType == _bParentTypes["ARMATURE"]:
             self.join = True
-            # As first cut, ALWAYS joining Node+Mesh for Skins, even if it is
-            # being exported independently.  TODO:  Consider if this is right.
+        else:
+            for mod in self.wrappedObj.modifiers:
+                if (mod.type == _bModifierType.ARMATURE
+                        and mod[_bModifierSettings.OBJECT] != None):
+                    self.join = True
+                    break
+
         try:
             icProp = self.wrappedObj.getProperty("jme.implClass")
             if icProp.type == 'STRING':
@@ -1195,13 +1207,13 @@ class JmeSkinAndBone(object):
     skin Object's matrix.
     """
     __slots__ = ('wrappedObj', 'backoutTransform', 'matrix', 'boneMap', 'skins',
-            'plainChildren', 'implClass',
+            'plainChildren', 'implClass', 'skinTransferNode',
             'boneTree', 'name', 'children', 'actionDataList', 'maxWeightings')
     WEIGHT_THRESHOLD = .001
     BLENDERTOJME_FLIP_MAT4 = _bmath.RotationMatrix(-90, 4, 'x')
     # boneMap is a flat map of bone names to JmeBones, not blender bones.
 
-    def __init__(self, bObj, maxWeightings, animate):
+    def __init__(self, bObj, maxWeightings, animate, skinTransferNode=False):
         """
         N.b. the bObj param is not the data object (like we take for Mesh
         Objects), but a Blender Object.
@@ -1211,8 +1223,12 @@ class JmeSkinAndBone(object):
         object.__init__(self)
         self.maxWeightings = maxWeightings
         self.wrappedObj = bObj
-        self.name = bObj.name
+        if skinTransferNode:
+            self.name = "XFER" + bObj.name
+        else:
+            self.name = bObj.name
         self.implClass = "com.jme.scene.Node"
+        self.skinTransferNode = skinTransferNode
         try:
             icProp = self.wrappedObj.getProperty("jme.implClass")
             if icProp.type == 'STRING': self.implClass = icProp.data
@@ -1221,7 +1237,7 @@ class JmeSkinAndBone(object):
         self.skins = []
         self.plainChildren = None
         self.actionDataList = None
-        if animate: self.__runPoses()
+        if animate and not skinTransferNode: self.__runPoses()
         # Need to run this before instantiating bones, I think
         self.matrix = None
 
@@ -1305,6 +1321,9 @@ class JmeSkinAndBone(object):
                     "Don't know how to parent the type of " + newChild.getName()
                     + " to an Armature: " + newChild.wrappedObj.type)
         if newChild.wrappedObj.parentType == _bParentTypes["OBJECT"]:
+            if self.skinTransferNode:
+                raise Exception("Can't add non-skin child '"
+                        + newChild.name + "' to Transfer Node " + getName())
             if self.plainChildren == None: self.plainChildren = []
             self.plainChildren.append(newChild)
         elif (newChild.wrappedObj.parentType == _bParentTypes["ARMATURE"]):
@@ -1312,6 +1331,9 @@ class JmeSkinAndBone(object):
             if not newChild.join:
                 raise Exception("Internal error.  Skin node not joined.")
         elif (newChild.wrappedObj.parentType == _bParentTypes["BONE"]):
+            if self.skinTransferNode:
+                raise Exception("Can't add non-deforming bone-child '"
+                        + newChild.name + "' to Transfer Node " + getName())
             if newChild.wrappedObj.parentbonename == None:
                 raise Exception("Attempted to add " + newChild.getName()
                         + " to a bone, but no specific bone is named")
@@ -1366,6 +1388,9 @@ class JmeSkinAndBone(object):
                 self.matrix *= JmeSkinAndBone.BLENDERTOJME_FLIP_MAT4
         if (len(self.skins) < 1
                 and self.plainChildren == None and self.matrix == None):
+            if self.skinTransferNode:
+                raise Exception("Assertion failed.  No skins for "
+                        + "skinTransferNode '" + getName() + "'")
             return self.boneTree.getXmlEl(
                     autoRotate, addlTransform, self.wrappedObj.mat.copy())
             # Makes for economical, simple XML if only exporting the bones
@@ -1377,7 +1402,7 @@ class JmeSkinAndBone(object):
             _addPropertiesXml(udTag, self.wrappedObj.game_properties)
             if len(udTag.children) > 0: tag.addChild(udTag)
 
-        if self.matrix != None:
+        if self.matrix != None and not self.skinTransferNode:
             # This block for writing local transforms is copied directly from
             # JmeNode above.  See that section for commentary.
             loc = self.matrix.translationPart()
@@ -1410,16 +1435,14 @@ class JmeSkinAndBone(object):
                 # With no auto-rotate the chilren Objects have Z forward
                 # instead of Y forward like it is in Blender.
                 # Other cases work great.
-        if len(self.skins) < 1: return tag
+        if len(self.skins) < 1:
+            if self.skinTransferNode:
+                raise Exception("Assertion failed.  No skins for "
+                        + "skinTransferNode '" + getName() + "'")
+            return tag
 
         skinNodeTag = _XmlTag('com.jme.animation.SkinNode', {
                 'name':self.getName() + "SkinNode" })
-        childrenTag.addChild(skinNodeTag)
-        skinNodeTag.addChild(_XmlTag('skeleton', {
-                "class":"com.jme.animation.Bone",
-                "ref":self.boneTree.getName(),
-                "name":self.boneTree.getName()
-        }))
         cacheTag = _XmlTag('cache')
         skinNodeTag.addChild(cacheTag)
         skinChildrenTag = _XmlTag('children')
@@ -1439,8 +1462,18 @@ class JmeSkinAndBone(object):
                 "class":"com.jme.scene.Node",
                 'ref': self.getName() + "Skins"
         }))
-         # Adding this tag last to eliminate possible consequences of using the
-         # "reference" too early.
+        # Adding this tag last to eliminate possible consequences of using the
+        # "reference" too early.  Well... not last any more.
+        if self.skinTransferNode:
+            skinNodeTag.name = "com.jme.animation.SkinTransferNode"
+            return skinNodeTag
+
+        childrenTag.addChild(skinNodeTag)
+        skinNodeTag.addChild(_XmlTag('skeleton', {
+                "class":"com.jme.animation.Bone",
+                "ref":self.boneTree.getName(),
+                "name":self.boneTree.getName()
+        }))
         return tag
 
     def populateSkinXml(self, skin, skinIndex, skinsChildrenTag, cacheTag):
@@ -1589,7 +1622,7 @@ class NodeTree(object):
         matMap[bMat] = jmeMat
         return jmeMat
 
-    def addSupported(self, blenderObj, skipObjs):
+    def addSupported(self, blenderObj, skipObjs, skipTransferNode=False):
         """Creates a JmeNode or JmeSkinAndBone for the given Blender Object,
         The specified object MUST BE PRE-VALIDATED AS BEING SUPPORTED!"""
         if not JmeNode.supported(blenderObj, skipObjs):
@@ -1599,9 +1632,13 @@ class NodeTree(object):
         if blenderObj.type == "Armature":
             if self.__maxWeightings == None:
                 raise Exception("Assertion failed:  maxWeightings not set")
-            self.__memberMap[blenderObj] = JmeSkinAndBone(
-                    blenderObj, self.__maxWeightings, self.__exportActions)
+            self.__memberMap[blenderObj] = JmeSkinAndBone(blenderObj,
+                self.__maxWeightings, self.__exportActions, skipTransferNode)
         else:
+            if skipTransferNode:
+                raise Exception(
+                    "Assertion failed.  skipTransferNode set for non-Armature "
+                    + blenderObj.name + ":  " + blenderObj.type)
             self.__memberMap[blenderObj] = JmeNode(blenderObj, self)
         self.__memberKeys.append(blenderObj)
         return self.__memberMap[blenderObj]

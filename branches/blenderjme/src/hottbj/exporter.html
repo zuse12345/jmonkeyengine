@@ -225,6 +225,14 @@
           levels of material objects as much as possible.  On the jME side,
           however, textures clobber each other just by virtue of the
           text image file name, even if settings like scale differ.
+        <LI><b>Avoid special characters in Blender Object names</b>
+          For advanced features such as skin region and morph support, the
+          exporter gives special significance to the characters "<code>@</code>"
+          and "<code>:</code>"
+          in object names.
+          I don't know what other special characters we will leverage in the
+          future, so to be safe, just stick to normal alpha-numeric and
+          dot (period), hyphen and underscore.
     </UL>
     <HR/>
     <h4 id="mapping">Mapping Blender items to jME items</h4>

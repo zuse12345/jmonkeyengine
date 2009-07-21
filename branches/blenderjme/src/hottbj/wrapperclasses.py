@@ -151,7 +151,7 @@ from Blender.Object import PITypes as _bPITypes
 class JmeNode(object):
     __slots__ = ('wrappedObj', 'children', 'jmeMats', 'jmeTextureState',
             'name', 'backoutTransform', 'implClass', 'postFlip', 'join',
-            'skinRegion')
+            'skinRegion', 'atIndex')
 
     def __init__(self, bObjOrName, nodeTree=None):
         """
@@ -171,6 +171,7 @@ class JmeNode(object):
         self.jmeMats = None
         self.jmeTextureState = None
         self.skinRegion = None
+        self.atIndex = None
         self.implClass = "com.jme.scene.Node"
         self.postFlip = False
         self.join = False  # Means to write one Mesh XML node a.o.t. Node+Mesh
@@ -184,6 +185,11 @@ class JmeNode(object):
                     + "param nodeTree must be set")
         self.wrappedObj = bObjOrName
         self.name = self.wrappedObj.name
+        self.atIndex = self.name.rfind("@")
+        if self.atIndex > 0 and self.atIndex < len(self.name) - 1:
+            self.skinRegion = self.name[self.atIndex + 1:]
+        else:
+            self.atIndex = None
 
         # The join tactic here is the most simple and consistent way.
         # Skins are ALWAYS joined, regardless of whether orphaned.
@@ -319,7 +325,11 @@ class JmeNode(object):
             tagName = "Dummy"
         else:
             tagName = self.getImplClass()
-        tag = _XmlTag(tagName, {'name':self.getName()})
+        tag = _XmlTag(tagName)
+        if self.atIndex == None:
+            tag.addAttr("name", self.getName())
+        else:
+            tag.addAttr("name", self.name[:self.atIndex])
 
         if self.jmeMats != None or self.jmeTextureState != None:
             rsTag = _XmlTag('renderStateList')
@@ -1329,8 +1339,8 @@ class JmeSkinAndBone(object):
                     + " to an Armature: " + newChild.wrappedObj.type)
         if newChild.wrappedObj.parentType == _bParentTypes["OBJECT"]:
             if self.skinTransferNode:
-                raise Exception("Can't add non-skin child '"
-                        + newChild.name + "' to Transfer Node " + getName())
+                raise Exception("Can't add non-skin child '" + newChild.name
+                        + "' to Transfer Node " + self.getName())
             if self.plainChildren == None: self.plainChildren = []
             self.plainChildren.append(newChild)
         elif (newChild.wrappedObj.parentType == _bParentTypes["ARMATURE"]):
@@ -1482,8 +1492,12 @@ class JmeSkinAndBone(object):
                 for i in range(len(self.skins)):
                     if transferNodeRegions[i] != None:
                         if len(regionsMap) > 0: regionsMap += ","
-                        regionsMap += self.skins[i].getName()  \
-                                + ":" + transferNodeRegions[i]
+                        if self.skins[i].atIndex == None:
+                            regionsMap += self.skins[i].getName()
+                        else:
+                            regionsMap += self.skins[i].getName()[
+                                    :self.skins[i].atIndex]
+                        regionsMap += ":" + transferNodeRegions[i]
                 skinNodeTag.addAttr("geometryRegions", regionsMap)
         skinNodeTag.addChild(_XmlTag('skins', {
                 "class":"com.jme.scene.Node",

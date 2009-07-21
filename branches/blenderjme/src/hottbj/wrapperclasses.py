@@ -2229,10 +2229,10 @@ class JmeTexture(object):
     def getXmlEl(self):
         tag = _XmlTag('com.jme.image.Texture2D')
         if self.written:
-            tag.addAttr('ref', self.refid)
+            tag.addAttr('ref', ("%d" % self.refid), 0)
             return tag
         self.written = True
-        if self.refCount > 0: tag.addAttr("id", self.refid)
+        if self.refCount > 0: tag.addAttr("id", ("%d" % self.refid))
 
         tag.addAttr("apply", self.applyMode)
         tag.addAttr("wrapS", self.wrapMode)

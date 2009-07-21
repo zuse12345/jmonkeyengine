@@ -154,6 +154,28 @@
         components in Blender.
         (This won't work if you need object nesting for purposes like
         differentiated materials or texturing).
+        <li><div class="problem">My Constant interpolation Action ("staticPoses"
+          or otherwise) never shows the last frame when I run it.
+          If I run in Cycle mode, the first frame never shows.
+        </div>
+        This is because with no interpolation, the last frame in the series
+        only signifies the end point and is never rendered.
+        I would have liked to add a dummy frame to the end, but it would be
+        impossible for me to know how long you want that frame to appear, plus
+        that would just exacerbate the corresponding problem with Cycle mode.
+        The way to handle this is to add a dummy frame to the end of your
+        animation.  If you plan on running in Cycle mode, then add a dummy
+        frame to the beginning too.
+        <p>
+        You don't need to mess with animated motion at all if you just want to
+        <i>see</i> the frames in jME.
+        You can use the method
+        <code>com.jme.animation.BoneAnimation.setCurrentFrame()</code> for that
+        purpose.  (I just recently fixed this method).
+        Remember to call <code>SkinNode.boneChanged()</code> after running
+        <code>setCurrentFrame</code>, as explained in the
+        <a href="skinandbones.html#tips">Skin &amp; Bones Tips section</a>.
+        </p>
     </ol>
     <HR/>
     <DIV class="footer">

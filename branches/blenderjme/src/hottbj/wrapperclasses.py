@@ -150,7 +150,8 @@ def addVector3fEl(parentEl, tagName, inVecList):
 from Blender.Object import PITypes as _bPITypes
 class JmeNode(object):
     __slots__ = ('wrappedObj', 'children', 'jmeMats', 'jmeTextureState',
-            'name', 'backoutTransform', 'implClass', 'postFlip', 'join')
+            'name', 'backoutTransform', 'implClass', 'postFlip', 'join',
+            'skinRegion')
 
     def __init__(self, bObjOrName, nodeTree=None):
         """
@@ -169,6 +170,7 @@ class JmeNode(object):
         self.backoutTransform = None
         self.jmeMats = None
         self.jmeTextureState = None
+        self.skinRegion = None
         self.implClass = "com.jme.scene.Node"
         self.postFlip = False
         self.join = False  # Means to write one Mesh XML node a.o.t. Node+Mesh
@@ -204,6 +206,11 @@ class JmeNode(object):
                     raise Exception("An impl class may not be specified for a "
                             + "skin.  This is because it must be written as an "
                             + "appropriate Geometry type");
+        except Exception, e:
+            pass # gets an exceptions.RuntimeError
+        try:
+            srProp = self.wrappedObj.getProperty("jme.skinRegion")
+            if srProp.type == 'STRING': self.skinRegion = srProp.data
         except Exception, e:
             pass # gets an exceptions.RuntimeError
         bMesh = self.wrappedObj.getData(False, True)
@@ -1333,7 +1340,8 @@ class JmeSkinAndBone(object):
         elif (newChild.wrappedObj.parentType == _bParentTypes["BONE"]):
             if self.skinTransferNode:
                 raise Exception("Can't add non-deforming bone-child '"
-                        + newChild.name + "' to Transfer Node " + getName())
+                        + newChild.name + "' to Transfer Node "
+                        + self.getName())
             if newChild.wrappedObj.parentbonename == None:
                 raise Exception("Attempted to add " + newChild.getName()
                         + " to a bone, but no specific bone is named")
@@ -1390,7 +1398,7 @@ class JmeSkinAndBone(object):
                 and self.plainChildren == None and self.matrix == None):
             if self.skinTransferNode:
                 raise Exception("Assertion failed.  No skins for "
-                        + "skinTransferNode '" + getName() + "'")
+                        + "skinTransferNode '" + self.getName() + "'")
             return self.boneTree.getXmlEl(
                     autoRotate, addlTransform, self.wrappedObj.mat.copy())
             # Makes for economical, simple XML if only exporting the bones
@@ -1438,7 +1446,7 @@ class JmeSkinAndBone(object):
         if len(self.skins) < 1:
             if self.skinTransferNode:
                 raise Exception("Assertion failed.  No skins for "
-                        + "skinTransferNode '" + getName() + "'")
+                        + "skinTransferNode '" + self.getName() + "'")
             return tag
 
         skinNodeTag = _XmlTag('com.jme.animation.SkinNode', {
@@ -1456,8 +1464,27 @@ class JmeSkinAndBone(object):
         skinChildrenTag.addChild(skinsNodeTag) # the only purpose for skinsC...
         skinsChildrenTag = _XmlTag('children')
         skinsNodeTag.addChild(skinsChildrenTag)
+        transferNodeRegions = []
         for i in range(len(self.skins)):
+            transferNodeRegions.append(self.skins[i].skinRegion)
             self.populateSkinXml(self.skins[i], i, skinsChildrenTag, cacheTag)
+        if self.skinTransferNode:
+            if len(set(transferNodeRegions)) != 1:
+                raise Exception("All skins of a non-exported armature must "
+                        + "have the same skin region, but '" + self.getName()
+                        + "' has " + str(transferNodeRegions))
+            if transferNodeRegions[0] != None:
+                skinNodeTag.addAttr("region", transferNodeRegions[0])
+        else:
+            if (len(set(transferNodeRegions)) > 1
+                    or transferNodeRegions[0] != None):
+                regionsMap = ""
+                for i in range(len(self.skins)):
+                    if transferNodeRegions[i] != None:
+                        if len(regionsMap) > 0: regionsMap += ","
+                        regionsMap += self.skins[i].getName()  \
+                                + ":" + transferNodeRegions[i]
+                skinNodeTag.addAttr("geometryRegions", regionsMap)
         skinNodeTag.addChild(_XmlTag('skins', {
                 "class":"com.jme.scene.Node",
                 'ref': self.getName() + "Skins"

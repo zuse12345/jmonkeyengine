@@ -176,6 +176,12 @@
         <code>setCurrentFrame</code>, as explained in the
         <a href="skinandbones.html#tips">Skin &amp; Bones Tips section</a>.
         </p>
+      <li><div class="problem">When trying to assimilate skins in jME, I get
+         an error message about rest post frame not being set up.</div>
+         You need to create a Rest Pose Frame in any Action for the skin's
+         Armature.
+         The exporter will find that and tell the jME
+         <code>AnimationController</code> about it.
     </ol>
     <HR/>
     <DIV class="footer">

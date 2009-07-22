@@ -51,7 +51,7 @@ class ActionData(object):
     """
     __slots__ = ('blenderFrames', 'keyframeTimes', 'locs', 'rots', 'mats',
             'name', 'boneMap', 'startFrame', 'endFrame', 'origBlenderFrame',
-            'interpType')
+            'interpType', 'restPoseFrame', 'channels')
     # Not sure which of rots and/or mats will be used.
     # For now, using 'rots' just to cull <rotations> with no rotations.
     # boneMap is the map of the armature bones, not the pose bones.  We need
@@ -73,6 +73,8 @@ class ActionData(object):
 
         object.__init__(self)
         self.name = bAction.name
+        self.restPoseFrame = None
+        self.channels = None
         # Most frame index vars are key FRAME indexes starting at 0.
         # *BlenderFrame vars are absolute Blender frame number starting at 1.
         self.origBlenderFrame = _bGet("curframe")
@@ -182,6 +184,7 @@ class ActionData(object):
         # First we get concentrate on setting the last mats element for each
         # bone, then we go back and set the last locs and rots elements,
         # based on the new mats element.
+        allRests = self.restPoseFrame == None
         for boneName in self.mats.iterkeys():  # equivalent to self.rots...
             # TODO:  IF this is a Blender key frame (not a generated start or
             # end keyframe), then it would be better to not store the channel
@@ -189,10 +192,13 @@ class ActionData(object):
             # interpolate, just like it happens in Blender.
             if boneName in poseBones.keys():
                 self.mats[boneName].append(poseBones[boneName].poseMatrix.copy())
+                if allRests and not _esmath.isIdentity(
+                        poseBones[boneName].localMatrix): allRests = False
             else:
                 raise Exception(
                         "Internal error: Channel has no val for a frame, "
                         + "in Action '" + self.name + "'");
+        if allRests: self.restPoseFrame = len(self.mats[self.mats.keys()[0]])-1
 
         for boneName in self.mats.iterkeys():
             if poseBones[boneName].parent == None:
@@ -229,6 +235,9 @@ class ActionData(object):
             self.applyMat(childBone, newInv)
 
     def cull(self):
+        # We are not culling any frames here, only channels.
+        # The designer creates frames where he wantes them, therefore we honor
+        # the frames.
         if self.blenderFrames == None: return
         usedRotChannels = set()
         usedLocChannels = set()
@@ -258,6 +267,7 @@ class ActionData(object):
             print "No significant channels for Action '" + self.name + "'."
             self.blenderFrames = None
             self.keyframeTimes = None
+        self.channels = len(self.mats)
         return   # READ COMMENT ABOVE about the more liberal culling below.
 
         for rotZapBone in set(self.boneRots.keys()) - usedRotChannels:

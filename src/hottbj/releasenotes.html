@@ -58,6 +58,9 @@
         "jme.skinRegion" or object names with suffix @regionName.
         <li>Fixed poor formatting when hash value for Texture exceeds Python
         data type's value range.
+        <li>Since a Rest Pose Frame is required for skin assimilation in jME,
+        the exporter now looks for one and identifies the best one to the
+        <code>AnimationController</code>.
       </ol>
       <li>Changes since 0.3b<ol>
         <li>One armature may now skin multiple deforming meshes (via parenting

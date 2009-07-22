@@ -1057,8 +1057,19 @@ class JmeBone(object):
                 {'repeatType': 1, "id": "AC_" + self.getName()})
         animsTag = _XmlTag("animationSets")
 
+        maxRestChannels = -1
+        restAnim = None
+        restPoseFrame = None
         for anim in self.actions:
             animsTag.addChild(anim.getXmlEl(autoRotate, addlTransform))
+            if (anim.getRestPoseFrame() != None
+                    and anim.getChannels() > maxRestChannels):
+                maxRestChannels = anim.getChannels()
+                restAnim = anim.getName()
+                restPoseFrame = anim.getRestPoseFrame()
+        if restAnim != None:
+            conTag.addAttr("restPoseAnimName", restAnim)
+            conTag.addAttr("restPoseFrame", restPoseFrame)
 
         conTag.addChild(animsTag)
         conTag.addChild(_XmlTag('skeleton', {
@@ -1092,6 +1103,15 @@ class JmeAnimation(object):
     def __init__(self, actionData):
         object.__init__(self)
         self.__data = actionData;
+
+    def getChannels(self):
+        return self.__data.channels
+
+    def getRestPoseFrame(self):
+        return self.__data.restPoseFrame
+
+    def getName(self):
+        return self.__data.getName()
 
     def getXmlEl(self, autoRotate, addlTransform):
         tag = _XmlTag('com.jme.animation.BoneAnimation', {

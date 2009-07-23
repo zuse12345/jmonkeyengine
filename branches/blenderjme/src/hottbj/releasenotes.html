@@ -61,6 +61,13 @@
         <li>Since a Rest Pose Frame is required for skin assimilation in jME,
         the exporter now looks for one and identifies the best one to the
         <code>AnimationController</code>.
+        <li>Since Actions are always written with Armatures, I've switched the
+        corresponding <code>AnimationController</code> to be <i>inactive</i>.
+        Easy enough for the developer to set to active when needed.
+        <li>Per-Action frame names are now transferred and used by jME's
+        <code>BoneAnimation</code>.  For now, user must set a game property of
+        name <code>jme.frameNames.YOUR_ACTION_NAME</code>, but want to use
+        Blender's pose markers automatically in the future.
       </ol>
       <li>Changes since 0.3b<ol>
         <li>One armature may now skin multiple deforming meshes (via parenting

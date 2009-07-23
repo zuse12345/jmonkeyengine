@@ -1054,7 +1054,7 @@ class JmeBone(object):
 
         gConTag = _XmlTag("geometricalControllers")
         conTag = _XmlTag("com.jme.animation.AnimationController",
-                {'repeatType': 1, "id": "AC_" + self.getName()})
+            {"id": "AC_" + self.getName(), 'repeatType': 1, 'active':'false'})
         animsTag = _XmlTag("animationSets")
 
         maxRestChannels = -1
@@ -1085,7 +1085,9 @@ class JmeBone(object):
 
     def addAction(self, actionData):
         if self.actions == None: self.actions = []
-        self.actions.append(JmeAnimation(actionData))
+        newAction = JmeAnimation(actionData)
+        self.actions.append(newAction)
+        return newAction
 
     def addChild(self, newChild):
         if not isinstance(newChild, JmeNode):
@@ -1098,10 +1100,12 @@ class JmeBone(object):
 class JmeAnimation(object):
     """We have distinct ActionData and JmeAnimation objects because ActionData
     are just tentative JME animations."""
-    __slots__ = ('__data')
+    __slots__ = ('__data', 'frameNames')
+    # frameNames is a map from String to jME-0-based-frame-index
 
     def __init__(self, actionData):
         object.__init__(self)
+        self.frameNames = None
         self.__data = actionData;
 
     def getChannels(self):
@@ -1205,6 +1209,17 @@ class JmeAnimation(object):
             transformsTag.addChild(transformTag)
 
         tag.addChild(keyframeTimeTag)
+        if self.frameNames != None:
+            fnTag = _XmlTag("frameNames",
+                    {'class':'com.jme.util.export.StringIntMap'})
+            keysTag = _XmlTag("keys")
+            tag.addChild(fnTag)
+            fnTag.addChild(keysTag)
+            fnTag.addChild(_XmlTag("vals", {'data':self.frameNames.values()}))
+            i = -1
+            for key in self.frameNames.iterkeys():
+                i += 1
+                keysTag.addChild(_XmlTag("String_" + str(i), {'value': key}))
         if interpolationTypeTag != None: tag.addChild(interpolationTypeTag)
         tag.addChild(transformsTag)
         return tag
@@ -1282,7 +1297,15 @@ class JmeSkinAndBone(object):
         if self.boneTree.name == self.name: self.boneTree.name += "SuperBone"
         self.__regenChildren()
         if self.actionDataList != None:
-            for data in self.actionDataList: self.boneTree.addAction(data)
+            for data in self.actionDataList:
+                try:
+                    anim = self.boneTree.addAction(data)
+                    fnProp = self.wrappedObj.getProperty(
+                            "jme.frameNames." + anim.getName())
+                    if fnProp.type == 'STRING':
+                        JmeSkinAndBone.__hackFrameNames(anim, fnProp.data)
+                except Exception, e:
+                    pass # gets an exceptions.RuntimeError
         self.backoutTransform = None
         self.boneMap = {}
         # N.b., we populate boneMap BEFORE any mesh children are added, so that
@@ -1508,17 +1531,25 @@ class JmeSkinAndBone(object):
         else:
             if (len(set(transferNodeRegions)) > 1
                     or transferNodeRegions[0] != None):
-                regionsMap = ""
+                regionsTag = _XmlTag("geometryRegions",
+                        {'class':"com.jme.util.export.StringStringMap"})
+                regionKeys = _XmlTag("keys")
+                regionVals = _XmlTag("vals")
+                skinNodeTag.addChild(regionsTag)
+                regionsTag.addChild(regionKeys)
+                regionsTag.addChild(regionVals)
                 for i in range(len(self.skins)):
+                    kvTagName = "String_" + str(i)
                     if transferNodeRegions[i] != None:
-                        if len(regionsMap) > 0: regionsMap += ","
                         if self.skins[i].atIndex == None:
-                            regionsMap += self.skins[i].getName()
+                            regionKeys.addChild(_XmlTag(kvTagName,
+                                { 'value': self.skins[i].getName() }))
                         else:
-                            regionsMap += self.skins[i].getName()[
-                                    :self.skins[i].atIndex]
-                        regionsMap += ":" + transferNodeRegions[i]
-                skinNodeTag.addAttr("geometryRegions", regionsMap)
+                            regionKeys.addChild(_XmlTag(kvTagName,
+                                { 'value': self.skins[i].getName()[
+                                    :self.skins[i].atIndex] }))
+                        regionVals.addChild(_XmlTag(kvTagName,
+                            { 'value': transferNodeRegions[i] }))
         skinNodeTag.addChild(_XmlTag('skins', {
                 "class":"com.jme.scene.Node",
                 'ref': self.getName() + "Skins"
@@ -1595,6 +1626,9 @@ class JmeSkinAndBone(object):
                         "boneId":group })
                 influenceTag.addAttr("weight", weight/weightSum, 6)
                 salTag.addChild(influenceTag)
+                # The ref below is redundant and adds unwanted dependencies.
+                # Although XMLExporter writes without these and it works, to
+                # my dismay, out exports do not work without it.
                 influenceTag.addChild(_XmlTag("bone", {
                     "class":"com.jme.animation.Bone", "ref":group
                 }))
@@ -1606,6 +1640,16 @@ class JmeSkinAndBone(object):
                         + str(influenceCount) + " weight influences for skin '"
                         + skin.getName() + "'")
         cacheTag.addChild(salaTag)
+
+    def __hackFrameNames(anim, inString):
+        nameHash = {}
+        i = -1
+        for n in inString.split(","):
+            i += 1
+            nameHash[n] = i
+        anim.frameNames = nameHash
+
+    __hackFrameNames = staticmethod(__hackFrameNames)
 
 
 class NodeTree(object):
@@ -2374,11 +2418,10 @@ def _addPropertiesXml(parentTag, gameProps):
         entryTag = _XmlTag("MapEntry",
                 {'key':'intSpatialAppAttrs'})
         keysTag = _XmlTag("keys")
-        valsTag = _XmlTag("vals", {'data':intPropVals})
         parentTag.addChild(entryTag)
         entryTag.addChild(savableTag)
         savableTag.addChild(keysTag)
-        savableTag.addChild(valsTag)
+        savableTag.addChild(_XmlTag("vals", {'data':intPropVals}))
         for i in range(len(intPropKeys)):
             keysTag.addChild(_XmlTag("String_" + str(i),
                     {'value': intPropKeys[i]}))
@@ -2388,11 +2431,10 @@ def _addPropertiesXml(parentTag, gameProps):
         entryTag = _XmlTag("MapEntry",
                 {'key':'boolSpatialAppAttrs'})
         keysTag = _XmlTag("keys")
-        valsTag = _XmlTag("vals", {'data':boolPropVals})
         parentTag.addChild(entryTag)
         entryTag.addChild(savableTag)
         savableTag.addChild(keysTag)
-        savableTag.addChild(valsTag)
+        savableTag.addChild(_XmlTag("vals", {'data':boolPropVals}))
         for i in range(len(boolPropKeys)):
             keysTag.addChild(_XmlTag("String_" + str(i),
                     {'value': boolPropKeys[i]}))
@@ -2402,11 +2444,10 @@ def _addPropertiesXml(parentTag, gameProps):
         entryTag = _XmlTag("MapEntry",
                 {'key':'floatSpatialAppAttrs'})
         keysTag = _XmlTag("keys")
-        valsTag = _XmlTag("vals", {'data':floatPropVals}, 6)
         parentTag.addChild(entryTag)
         entryTag.addChild(savableTag)
         savableTag.addChild(keysTag)
-        savableTag.addChild(valsTag)
+        savableTag.addChild(_XmlTag("vals", {'data':floatPropVals}, 6))
         for i in range(len(floatPropKeys)):
             keysTag.addChild(_XmlTag("String_" + str(i),
                     {'value': floatPropKeys[i]}))

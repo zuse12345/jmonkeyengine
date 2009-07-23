@@ -6,10 +6,14 @@ Use Python subclassing for the main jme/xml and hottbj/wrapperclasses
 classes.  When I first wrote those classes, I didn't know how they needed to
 diverge.  Now it is time to eliminate all of the redundant code.
 
-FIX non-equal scale algorithms.
+FIX asymmetrical (i.e., xScale != yScale != zScale) scale algorithms.
 Scale values are generally not just the values of the matrix diagonals, but
 the sqrt of the sums of the squares of row elements.  (Probably needs to be
 applied to columns with Blender's screwy matrixes, so check that).
+
+Find out how to retrieve the pose markers for a Blender Action and use those to
+write frameNames using that instead of the jme.frameNames game property.
+http://blenderartists.org/forum/showthread.php?p=1430654
 
 
 GUI

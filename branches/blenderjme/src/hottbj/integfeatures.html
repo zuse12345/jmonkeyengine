@@ -1,0 +1,263 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- $Id$ -->
+<HTML>
+  <HEAD>
+    <TITLE>HottBJ Game Integration Features</TITLE>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<html>
+<head>
+    <LINK rel="stylesheet" type="text/css" href="hottbj.css"/>
+  </HEAD>
+  <BODY>
+    <h3>HottBJ Game Integration Features</h3>
+    Covers version ${product.version} of the
+    <b><i>Handy Object Transfer Tool, Blender to jME</i></b>.
+    <BR/>
+    Copyright 2009 by Blaine Simpson and the jME Dev Team,
+    with the included BSD open source license.
+    <HR/>
+    <h4 id="contents">Contents</h4>
+    <ol>
+      <li><a href="#purpose">Purpose</a>
+      <li><a href="#poses">Poses / Frame Names</a>
+      <li><a href="#mountpoints">Mountpoints</a>
+      <li><a href="#skintransfernodes">Skin Transfer Nodes &amp Skin Regions</a>
+      <li><a href="#morphs">Morphs</a>
+    </ol>
+    <a href="exporter.html">Main Help Page</a>
+    <HR/>
+    <h4 id="purpose">Purpose</h4>
+    <p>
+      This document explains optional features which you can completely ignore
+      if you don't want to use them.
+      For lack of a better term to group these features, I'm calling them
+      <i>game integration</i>.
+      I would call them <i>advanced</i>, but as some of these features are very
+      effective at <i>reducing</i> complexity, I didn't want to scare off users
+      with the false inference that these features are difficult to use.
+    </p> <p>
+      If your game is highly dynamic though, these features can drastically
+      reduce the complexity of your artwork pipeline.
+    </p> <p>
+      I don't know what proportion of HottBJ users will use these features, so
+      I am not giving detailed information on how to use the features
+      until and if I get requests for more details.
+      For the same reason, as I am writing this, there are no tutorials for
+      these features.
+    </p> <p>
+      The features described here are game-specific and have no direct support
+      in Blender.
+      Since your development slaves don't have unlimited time to work on
+      custom user interfaces for every new feature we add, we have used naming
+      conventions (of Blender Objects) and Blender game properties as general
+      mechanisms to allow settings for these features to be controlled through
+      the Blender GUI and to be persisted natively in your .blend files.
+      Game properties in Blender are set in the Logic Buttons panel.
+      Click the pacman-like icon in the Buttons window toolbar and use the
+      <code>Add Property</code> button to add properties.
+      Game properties are Blender Object-specific and may only be set at the
+      Blender Object level.
+    </p>
+    <HR/>
+    <h4 id="poses">Poses / Frame Names</h4>
+      <p>
+        I recently added to jME, the ability to load an individual frame from
+        an animation.
+        This is what a <i>Pose</i> is, from the jME perspective.
+        The <code>BoneAnimation.setCurrentFrame(int)</code> method now works
+        reliably.
+        I have also added methods
+        <code>BoneAnimation.setFrameNames</code>,
+        <code>BoneAnimation.getFrameNames</code>,
+        <code>BoneAnimation.setCurrentFrame(String)</code> and overloaded
+        <code>SkinNode.pose</code> methods which work on the active or
+        specified Animation of an animation skin.
+      </p> <p>
+        The only special thing you need to design for poses on the Blender side
+        is how to assign meaningful names to poses, instead of having to code
+        your jME program with frame index numbers (which will not match Blender
+        frame numbers, since Blender and jME use entirely different frame
+        numbering systems).
+        What I would like to do is to use Blender's <i>pose markers</i>, but
+        there seems to be no Python support for this Blender feature.
+        Therefore, to assign frame names in Blender which can be used in jME,
+        you must use set Blender game properties.
+        You set one String property for each Action which has named frames.
+        The name is of the format <code>jme.frameNames.</code> +
+        <code>ACTIONNAME</code>, where <code>ACTIONNAME</code> is the name of
+        the Blender Action containing the frames.
+        The value must be the frame names separated with commas (without any
+        spaces).
+        The sequence must be in output frame order (the sequence that the
+        frames will have in jME), regardless of <i>startFrame</i> or
+        <i>endFrame</i> settings.
+      </p>
+    <HR/>
+    <h4 id="mountpoints">Mountpoints</h4>
+      <p>
+      Mountpoints are an easy way to specify a location and orientation on your
+      model's skeleton so that you may easily attach other Spatials in jME with
+      perfect position.
+      The traditional use case is weapon swapping, but also has great
+      performance for other non-deforming items that you want to be able to
+      runtime-swap, such as boots.
+      </p> <p>
+      There is no built-in HottBJ hook for Mountpoints.
+      They work just by virtue of HottBJ precisely transferring transformations
+      between Blender scenes and jME.
+      For Mountpoints to work, you must strictly adhere to your own convention
+      for your <i>mountable</i> items.
+      These Blender items must all be created with the same 3D world scale, and
+      positioned the same way with respect to how they would be <i>held</i>.
+      For hand-held mountables, my convention is to create them positioned
+      pointed towards -Y as if held by a gripped hand with the thumb pointing
+      +Y with the top of the thumb +Z.
+      </p> <p>
+      You create a Blender Object for the dedicated purpose of positioning (I
+      recommend using Empties for this).
+      Parent a copy of any qualifying mountable object to this Mountpoint
+      Object.
+      When you export the model, export the Mountpoint object but not the
+      mountable object, which was just used for positioning.
+      (If you want to, you can export the mountable object also, in which case
+      your model will load with it mounted in jME and you could swap it out
+      thereafter).
+      </p>
+    <HR/>
+    <h4 id="skintransfernodes">Skin Transfer Nodes &amp; Skin Regions</h4>
+    <HR/>
+      <p>
+      I recently added the ability to hot load skins to an animated model in
+      jME.
+      jME <code>SkinTransferNode</code>s give you the ability to add skins to
+      a live skin &amp; bones model.
+      Without them, you can remove skins from a live model in jME, but you
+      can't add them.
+      In jME, to hot add a skin, you <i>assimilate</i> Geometries to the
+      <code>SkinNode</code>.
+      </p> <p>
+      Skin Regions is an optional feature for <code>SkinTransferNode</code>
+      that allows you to swap <i>sets</i> of skin geometries with single method
+      method calls.
+      This facilitates great performance improvement by automatically remove
+      loaded Geometries which would be entirely obscured by the Geometries
+      being loaded.
+      Just as importantly, it eliminates most of the skin bleed-through where
+      one mesh should not show through an overlaying mesh.
+      </p> <p>
+      Generating SkinTransferNodes with HottBJ is completely intuitive.
+      Just export Blender Objects which are skin mesh objects, <i>without the
+      associated armature</i>.
+      This is what the <code>Orphaned skin meshes</code> button is for on the
+      exporter screen, and it's default setting is to export the orphaned skins
+      as <code>SkinTransferNode</code>s.
+      </p> <p>
+      To use Skin Regions, you can use either game properties or a Blender
+      Object naming convention as the hook.
+      If you use both for an Object, the game property will override.
+      <ul>
+        <li>Set a game property String of name <code>jme.skinRegion</code> with
+        value being the skin region name.
+        Use any skin region name that you want.
+        The important thing is to use the same for all SkinTransferNodes which
+        will automatically swap each other out.
+        <li>Name each such skin Object with a name ending with @ plus the
+        region name.
+        (Same naming considerations apply as described in the previous item).
+      </ul>
+      The one non-intuitive aspect of this is that, although our goal is to
+      manage the mesh, you apply the skin region settings to the Blender Mesh
+      Object, not to the Mesh itself.
+      That's a no-brainer if you use game properties for the hook, since you
+      can't set a game property on a Mesh, but for consistency we require the
+      same thing if you use the object naming convention.
+      </p>
+    <h4 id="morphs">Morphs</h4>
+    <HR/>
+      <p>
+        I just added <i>morphing</i> to jME by implementing
+        <code>MorphingGeometry</code>.
+        A MorphingGeometry consists of a <i>Base Geometry</i>,
+        what you could think of as the <i>base mesh Object</i> in Blender,
+        and one or more alternate morph Geometries.
+        In jME the <i>morph</i> action will merge the base and morph
+        Geometries together at game runtime.
+        In Blender, a regular Mesh Object will automatically be exported as a
+        morph base Geometry just by exporting that object along with one or more
+        alternate morph meshes for it.
+        I.e., you don't do anything special with the base mesh Object:
+        You just specify (as instructed immediately hereafter) the
+        <i>morphBase</i> for one or more morph mesh alternates.
+      </p> <p>
+        To manage the <i>morphs</i>, the individual Geometries to be
+        runtime-merged, from Blender, you can use either game properties or
+        Blender Object naming convention as describe above for
+        SkinTransferNode skin regions (including the idiosyncracy to name the
+        Object instead of the Mesh), with the following additional details.
+        Most importantly, the key name is <code>morphbase</code>, the morphBase
+        value is the name of the Blender morphObject Mesh Object (not the Mesh
+        itself), and the name suffix delimiter is <i>colon</i>
+        instead of <i>at</i> (":" instead of "@").
+      </p> <p>
+        The exporter won't stop you, but morphing will not work in jME unless
+        the morphBase's Mesh and all alternate Meshes have the exact same
+        number of vertexes.
+        The exporter won't stop you because the constraint is on the jME side,
+        and I may well eliminate the constraint in the future.
+      </p> <p>
+        The normal procedure to create a morph in Blender is to make a regular
+        copy of the base mesh object and move it to a different layer.
+        Lock the transform of the copy, to prevent you from accidentally
+        changing it.  You may only change the transform of an alternate morph
+        mesh to match a change in the base mesh.
+        You can leave materials on or even change them so the object looks
+        good in Blender, but be aware that HottBJ will only export the materials
+        for the base mesh (and jME will apply these to all of the morphs).
+      </p> <p>
+        Now about Morph Influence values.
+        These values specify the amount of each morph alternate mesh to be
+        merged into the base.
+        For example, my MorphGeometry could have a base geometry of an
+        octagon and a single alternate mesh geometry of a circle.
+        A Morph Influence of 0 would look like an octagon, a Morph influence of
+        1.0 would make it look like a circle, and an influence of 0.5 would
+        make it look like a rounded octagon.
+        I've explained everything you need to export a MorphingGeometry.
+        If you are going to control the morph influences (the amount of
+        each morph alternate mesh merged into the base) by some other Object
+        (a <code>MorphInfluencesMapProvider</code>), then you are all set.
+        More likely than not, you are trying this for the first time, and you
+        want your morphing object to be standalone.
+        In order to be able to attach a MorphingGeometry as-is and have it
+        automatically morph (i.e. to be <i>standalone</i>), you need to
+        assign morph influence values, one for each alternate morph mesh.
+        By virtue of assigning a morph influence value, you will make
+        the MorphingGeometry standalone.
+        (You can easily change back and forth from delegating to standalone
+        with Java code).
+        The hook for assigning morph influence values is with Blender Float
+        game properties.
+      </p> <p>
+        In order for standalone MorphingGeometries to work with total
+        automation on the jME side, you need to assign a float value for every
+        alternate mesh.
+        For each alternate mesh, create a Float property with name
+        <code>jme.morphInfluence.ALTMESHOBJNAME</code>, where
+        <code>ALTMESHOBJNAME</code> is the name of the Blender Object for an
+        alternate morph mesh.
+        If you set every such value to 0.0, then when you load up the
+        MorphingGeometry in jME, it will look exactly like the base mesh.
+        These values are loaded into morphInfluencesMap fields in jME.
+        To change morph influences at runtime in jME, you use the method
+        <code>MorphingGeometry.setMorphInfluences(&lt;Map ? extends String, ? extends Float&gt;)</code>.
+      </p>
+    <DIV class="footer">
+      $Revision$
+      <BR/>
+      Last modified $Date$
+      <BR/>
+      <span class="addr">blaine (dot) simpson (at) admc (dot) com</span>
+    </DIV>
+  </BODY>
+</HTML>

@@ -151,7 +151,8 @@ from Blender.Object import PITypes as _bPITypes
 class JmeNode(object):
     __slots__ = ('wrappedObj', 'children', 'jmeMats', 'jmeTextureState',
             'name', 'backoutTransform', 'implClass', 'postFlip', 'join',
-            'skinRegion', 'atIndex')
+            'morphKey', 'morphInfluences',
+            'skinRegion', 'atIndex', 'colonIndex', 'morphBase', 'morphNode')
 
     def __init__(self, bObjOrName, nodeTree=None):
         """
@@ -172,6 +173,11 @@ class JmeNode(object):
         self.jmeTextureState = None
         self.skinRegion = None
         self.atIndex = None
+        self.morphBase = None
+        self.morphInfluences = None
+        self.colonIndex = None
+        self.morphKey = None
+        self.morphNode = False
         self.implClass = "com.jme.scene.Node"
         self.postFlip = False
         self.join = False  # Means to write one Mesh XML node a.o.t. Node+Mesh
@@ -186,10 +192,19 @@ class JmeNode(object):
         self.wrappedObj = bObjOrName
         self.name = self.wrappedObj.name
         self.atIndex = self.name.rfind("@")
+        self.colonIndex = self.name.rfind(":")
         if self.atIndex > 0 and self.atIndex < len(self.name) - 1:
             self.skinRegion = self.name[self.atIndex + 1:]
         else:
             self.atIndex = None
+        if self.colonIndex > 0 and self.colonIndex < len(self.name) - 1:
+            self.morphBase = self.name[self.colonIndex + 1:]
+        else:
+            self.colonIndex = None
+
+        # The setting of self.morphBase in this constructor is tentative.
+        # NodeTree will unset this if the target morph object is not in the
+        # exporte set.
 
         # The join tactic here is the most simple and consistent way.
         # Skins are ALWAYS joined, regardless of whether orphaned.
@@ -204,21 +219,27 @@ class JmeNode(object):
                     self.join = True
                     break
 
-        try:
-            icProp = self.wrappedObj.getProperty("jme.implClass")
-            if icProp.type == 'STRING':
-                self.implClass = icProp.data
-                if self.join:
-                    raise Exception("An impl class may not be specified for a "
-                            + "skin.  This is because it must be written as an "
-                            + "appropriate Geometry type");
-        except Exception, e:
-            pass # gets an exceptions.RuntimeError
-        try:
-            srProp = self.wrappedObj.getProperty("jme.skinRegion")
-            if srProp.type == 'STRING': self.skinRegion = srProp.data
-        except Exception, e:
-            pass # gets an exceptions.RuntimeError
+        for prop in self.wrappedObj.game_properties:
+            if prop.name[:4] != "jme.": continue
+            if prop.type == "FLOAT":
+                if prop.name[:19] == "jme.morphInfluence.":
+                    if self.morphInfluences == None: self.morphInfluences = {}
+                    self.morphInfluences[prop.name[19:]] = prop.data
+            elif prop.type == "STRING":
+                if prop.name == "jme.implClass":
+                    self.implClass = prop.data
+                    if self.join:
+                        raise Exception("An impl class may not be specified "
+                                + "for a skin or morph.  This is because it "
+                                + "must be written as an appropriate Geometry "
+                                + "type")
+                elif prop.name == "jme.skinRegion":
+                    self.skinRegion = prop.data
+                elif prop.name == "jme.morphBase":
+                    self.morphBase = prop.data
+                elif prop.name == "jme.morphKey":
+                    self.morphKey = prop.data
+
         bMesh = self.wrappedObj.getData(False, True)
         twoSided = bMesh != None and (bMesh.mode & _meshModes['TWOSIDED'])
         jmeTexs = []
@@ -303,7 +324,8 @@ class JmeNode(object):
 
     def getXmlEl(self, autoRotate):
         if self.jmeMats != None and len(self.jmeMats) < 1: self.jmeMats = None
-        if (self.wrappedObj != None and self.wrappedObj.parent != None
+        if (not self.morphBase
+                and self.wrappedObj != None and self.wrappedObj.parent != None
                 and self.wrappedObj.parent.getPose() != None):
             #print "Verifying non-null poses for " + self.getName() + "..."
             for poseBone in self.wrappedObj.parent.getPose().bones.values():
@@ -326,12 +348,15 @@ class JmeNode(object):
         else:
             tagName = self.getImplClass()
         tag = _XmlTag(tagName)
-        if self.atIndex == None:
-            tag.addAttr("name", self.getName())
-        else:
+        if self.atIndex != None:
             tag.addAttr("name", self.name[:self.atIndex])
+        elif self.colonIndex != None:
+            tag.addAttr("name", self.name[:self.colonIndex])
+        else:
+            tag.addAttr("name", self.getName())
 
-        if self.jmeMats != None or self.jmeTextureState != None:
+        if not self.morphBase and (
+                self.jmeMats != None or self.jmeTextureState != None):
             rsTag = _XmlTag('renderStateList')
             if self.jmeMats != None:
                 for mat in self.jmeMats: rsTag.addChild(mat.getXmlEl())
@@ -344,22 +369,84 @@ class JmeNode(object):
             _addPropertiesXml(udTag, self.wrappedObj.game_properties)
             if len(udTag.children) > 0: tag.addChild(udTag)
 
+        # Create MorphingTriMesh tag.
+        # It would be much cleaner to have a separate class for this, but since
+        # the JmeNode itself will become the MorphingTriMesh in case it is 
+        # 'join', we really can't.
+        childrenTag = None
+        if self.morphNode:
+            if self.join:
+                tag.name = "com.jme.scene.MorphingTriMesh"
+                mtmTag = tag
+            else:
+                mtmTag = _XmlTag("com.jme.scene.MorphingTriMesh",
+                        {'name': "morphing" + self.getName()})
+                childrenTag = _XmlTag('children')
+                childrenTag.addChild(mtmTag)
+            morphsTag = _XmlTag("morphs")
+            mtmTag.addChild(morphsTag)
+            morphKeys = []
+        else:
+            mtmTag = None
+            morphsTag = None
+            morphKeys = None
+        if self.morphInfluences != None:
+            # Writing this to the Mesh object, because in practice it's too
+            # difficult to attach a map right to the MTM otherwise.
+            miTag = _XmlTag("morphInfluences", {
+                    'class': "com.jme.util.export.ListenableStringFloatMap" })
+            if mtmTag == None:
+                tag.addChild(miTag)
+            else:
+                mtmTag.addChild(miTag)
+            keysTag = _XmlTag("keys")
+            miTag.addChild(keysTag)
+            i = -1
+            for key in self.morphInfluences.iterkeys():
+                i += 1
+                keysTag.addChild(_XmlTag("String_" + str(i), {'value': key}))
+            miTag.addChild(
+                    _XmlTag("vals", {'data': self.morphInfluences.values()}))
+        beenHere = False
         if self.children != None:
-            childrenTag = _XmlTag('children')
+            if childrenTag == None: childrenTag = _XmlTag('children')
             for child in self.children:
                 if isinstance(child, JmeMesh):
-                    if self.join:
-                        child.populateXml(tag, autoRotate)
+                    if beenHere: raise Exception(
+                            "Assertion failed.  > 1 Blender Mesh child?")
+                    beenHere = True
+                    if mtmTag == None:
+                        if self.join:
+                            child.populateXml(tag, autoRotate)
+                        else:
+                            meshTag = _XmlTag('dummy')
+                            childrenTag.addChild(meshTag)
+                            child.populateXml(meshTag, autoRotate)
                     else:
-                        meshTag = _XmlTag('dummy')
-                        childrenTag.addChild(meshTag)
+                        meshTag = _XmlTag("dummy")
+                        mtmTag.addChild(meshTag)
                         child.populateXml(meshTag, autoRotate)
+                        meshTag.addAttr("class", meshTag.name)
+                        meshTag.name = "baseMorph"  # overwrite
                 else:
+                    if (isinstance(child, JmeNode) and child.morphBase != None
+                            and morphsTag != None):
+                        morphsTag.addChild(child.getXmlEl(autoRotate))
+                        if child.morphKey == None:
+                            if (child.colonIndex > 0
+                                    and child.colonIndex < len(child.name) - 1):
+                                morphKeys.append(
+                                        child.name[:child.colonIndex])
+                            else:
+                                morphKeys.append(child.name)
+                        else:
+                            morphKeys.append(child.morphKey)
+                        continue
                     if self.join:
                         raise Exception(
-                                "Sorry, since skins are jME Geometries, "
-                                + "you may not export '" + self.getName()
-                                + "' with any children")
+                                "Sorry, since skins and morph geos are jME "
+                                + "Geometries, you may not export '"
+                                + self.getName() + "' with any children")
                     if self.wrappedObj != None:
                         child.backoutTransform = self.wrappedObj.mat
                     # N.b. DO NOT USE .matrixParentInverse.  That is a static
@@ -367,7 +454,16 @@ class JmeNode(object):
                     childrenTag.addChild(child.getXmlEl(autoRotate))
             if len(childrenTag.children) > 0: tag.addChild(childrenTag)
 
-        if self.wrappedObj == None: return tag
+        if morphKeys != None:
+            i = -1
+            morphKeysTag = _XmlTag("morphKeys")
+            mtmTag.addChild(morphKeysTag)
+            for key in morphKeys:
+                i += 1
+                morphKeysTag.addChild(
+                        _XmlTag("String_" + str(i), {'value': key}))
+
+        if self.wrappedObj == None or self.morphBase != None: return tag
 
         if self.backoutTransform == None:
             matrix = self.wrappedObj.mat
@@ -499,7 +595,7 @@ class JmeNode(object):
         vpf = JmeMesh.vertsPerFace(bMesh.faces)
         if vpf == None:
             raise Exception(
-                    "Internal problem.  vertsPerFace() should no longer return None");
+              "Internal problem.  vertsPerFace() should no longer return None")
         if len(vpf) == 0:
             print "FYI:  Accepting object '" + bObj.name + "' with no vert faces"
             return 3
@@ -1106,7 +1202,7 @@ class JmeAnimation(object):
     def __init__(self, actionData):
         object.__init__(self)
         self.frameNames = None
-        self.__data = actionData;
+        self.__data = actionData
 
     def getChannels(self):
         return self.__data.channels
@@ -1609,7 +1705,7 @@ class JmeSkinAndBone(object):
                 limit = allWeights[-4]
                 weightCount = self.maxWeightings
             else:
-                limit = 0;
+                limit = 0
                 weightCount = len(vWeightMap)
             salTag = _XmlTag('SavableArrayList_' + str(vi))
             salaTag.addChild(salTag)
@@ -1809,12 +1905,30 @@ class NodeTree(object):
         # many objects nested within both Bone and SkinNode.
 
         parentedBos = []
+        potentialMorphBases = {}
+        for bo, jmeObj in self.__memberMap.iteritems():
+            if not isinstance(jmeObj, JmeNode): continue
+            if jmeObj.atIndex == None:
+                key = jmeObj.getName()
+            else:
+                key = jmeObj.getName()[:jmeObj.atIndex]
+            potentialMorphBases[key] = jmeObj
         for bo in self.__memberKeys:
+            jmeObj = self.__memberMap[bo]
+            if isinstance(jmeObj, JmeNode) and jmeObj.morphBase != None:
+                if jmeObj.morphBase in potentialMorphBases:
+                    morphBase = potentialMorphBases[jmeObj.morphBase]
+                    morphBase.addChild(jmeObj)
+                    morphBase.morphNode = True
+                    jmeObj.join = True
+                    parentedBos.append(bo)
+                    continue
+                self.__memberMap[bo].morphBase = None
             if bo.parent != None and bo.parent in self.__memberKeys:
                 #print ("Nesting " + bo.getType() + "/" + bo.getName()
                         #+ " to  " + bo.parent.getType() + "/"
                         #+ bo.parent.getName())
-                self.__memberMap[bo.parent].addChild(self.__memberMap[bo])
+                self.__memberMap[bo.parent].addChild(jmeObj)
                 parentedBos.append(bo)
         for bo in parentedBos:
             del self.__memberMap[bo]

@@ -27,6 +27,7 @@
       <li><a href="#uvcoords">UV Coordinates and Values</a>
       <li><a href="#jme">Importing into jME</a>
       <li><a href="skinandbones.html">Skin &amp; Bones Exporting</a>
+      <li><a href="integfeatures.html">Game Integration Features</a>
       <li><a href="troubleshooting.html">Troubleshooting</a>
     </ol>
     <HR/>
@@ -237,6 +238,16 @@
           I don't know what other special characters we will leverage in the
           future, so to be safe, just stick to normal alpha-numeric and
           dot (period), hyphen and underscore.
+        <LI><b>Set Smooth, Set Solid, Auto-smooth <i>at will</i></b>
+          These functions in the mesh Editing buttons window have no effect on
+          exports.
+          I am unable to find any information about how jME smooths normals
+          (though I don't have the time to search forums or start a discussion
+          about it).  Perhaps more importantly though, I see nothing in the jME
+          API about adjust the normal smoothing/averaging algorithm.
+          Therefore, knowing of no way to adjust jME normal smoothing, the
+          Blender smoothing functions are not exported, and therefore will just
+          effect how things look in Blender.
     </UL>
     <HR/>
     <h4 id="mapping">Mapping Blender items to jME items</h4>

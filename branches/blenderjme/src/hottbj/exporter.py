@@ -113,6 +113,7 @@ def gen(saveAll, autoRotate, skipObjs=True,
             candidates = _bdata.objects
         else:
             candidates = activeScene.objects.selected
+        print "Cands # " + str(len(candidates))
         nodeTree = _NodeTree(maxWeightings, exportActions)
         for bo in candidates:
             layerIsActive = False
@@ -196,8 +197,9 @@ def gen(saveAll, autoRotate, skipObjs=True,
         # skinning is done via modifier.
         for bo in supportedCandidates:
             jmeObj = nodeTree.addSupported(bo, skipObjs)
-            if (isinstance(jmeObj, _JmeSkinAndBone)
-                    and not _esmath.isIdentity(armaLocals[bo])):
+            if not isinstance(jmeObj, _JmeSkinAndBone): continue
+            if bo not in armaLocals: armaLocals[bo] = bo.matrixLocal.copy()
+            if not _esmath.isIdentity(armaLocals[bo]):
                 jmeObj.setMatrix(armaLocals[bo])
         if skinTransferNodes != None:
             for bo in skinTransferNodes:

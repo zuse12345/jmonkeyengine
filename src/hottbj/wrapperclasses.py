@@ -2157,8 +2157,7 @@ class JmeMaterial(object):
             self.ambient = [world.amb[0], world.amb[1], world.amb[2], 1]
 
     def getXmlEl(self):
-        tag = _XmlTag('com.jme.scene.state.MaterialState',
-                {'class':"com.jme.scene.state.lwjgl.LWJGLMaterialState"})
+        tag = _XmlTag('com.jme.scene.state.MaterialState')
         if self.written:
             tag.addAttr('ref', self.blenderName)
             return tag
@@ -2441,8 +2440,7 @@ class JmeTextureState(object):
         return set(self.__jmeTextures) == set(jmeTextureList)
 
     def getXmlEl(self):
-        tag = _XmlTag('com.jme.scene.state.TextureState',
-                {'class':"com.jme.scene.state.lwjgl.LWJGLTextureState"})
+        tag = _XmlTag('com.jme.scene.state.TextureState')
         if self.written:
             tag.addAttr('ref', id(self))
             return tag

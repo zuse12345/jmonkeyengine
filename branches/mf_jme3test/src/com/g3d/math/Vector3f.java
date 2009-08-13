@@ -749,12 +749,17 @@ public class Vector3f implements Savable, Cloneable {
      * @return this.
      */
     public Vector3f normalizeLocal() {
-        float length = length();
-        if (length != 0) {
-            return divideLocal(length);
+        // NOTE: this implementation is more optimized
+        // than the old jme normalize as this method
+        // is commonly used.
+        float length = x * x + y * y + z * z;
+        if (length != 1f && length != 0f){
+            length = 1.0f / FastMath.sqrt(length);
+            x *= length;
+            y *= length;
+            z *= length;
         }
-        
-        return this;        
+        return this;
     }
 
     /**

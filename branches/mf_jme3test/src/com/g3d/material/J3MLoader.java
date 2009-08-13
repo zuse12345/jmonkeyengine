@@ -260,6 +260,7 @@ public class J3MLoader implements ContentLoader {
         }else if (word.equals("Blend")){
             renderState.blendMode = RenderState.BlendMode.valueOf(scan.next());
         }else if (word.equals("AlphaTestFalloff")){
+            renderState.alphaTest = true;
             renderState.alphaFallOff = scan.nextFloat();
         }else if (word.equals("PolyOffset")){
             float factor = scan.nextFloat();

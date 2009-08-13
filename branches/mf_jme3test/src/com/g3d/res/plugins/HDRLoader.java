@@ -5,12 +5,9 @@ import com.g3d.util.*;
 import com.g3d.math.FastMath;
 import com.g3d.texture.Image;
 import com.g3d.texture.Image.Format;
-import com.g3d.texture.Texture;
-import com.g3d.texture.Texture2D;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.logging.Logger;
 
 public class HDRLoader implements ContentLoader {
@@ -19,89 +16,74 @@ public class HDRLoader implements ContentLoader {
     
     private ByteBuffer rleTempBuffer;
     private ByteBuffer dataStore;
+    private final float[] tempF = new float[3];
     
     private static Format imageFormat;
     private static float maxBright = 10f;
 
-    private static void convertRGBEtoFloat(byte[] rgbe, float[] store){
-        if (rgbe.length != 4 || store.length != 3)
-            throw new IllegalArgumentException();
-        
+    private void convertRGBEtoFloat(byte[] rgbe){
         int R = rgbe[0] & 0xFF, 
             G = rgbe[1] & 0xFF,
             B = rgbe[2] & 0xFF, 
             E = rgbe[3] & 0xFF;
         
         float e = (float) Math.pow(2f, E - (128 + 8) );
-        store[0] = R * e;
-        store[1] = G * e;
-        store[2] = B * e;
+        tempF[0] = R * e;
+        tempF[1] = G * e;
+        tempF[2] = B * e;
     }
     
-    private static void convertRGBEtoFloat2(byte[] rgbe, float[] store){
-        if (rgbe.length != 4 || store.length != 3)
-            throw new IllegalArgumentException();
-        
-        int R = rgbe[0] & 0xFF, 
-            G = rgbe[1] & 0xFF,
-            B = rgbe[2] & 0xFF, 
-            E = rgbe[3] & 0xFF;
-        
-        float e = (float) Math.pow(2f, E - 128);
-        store[0] = (R / 256.0f) * e;
-        store[1] = (G / 256.0f) * e;
-        store[2] = (B / 256.0f) * e;
-    }
+//    private static void convertRGBEtoFloat2(byte[] rgbe, float[] store){
+//        if (rgbe.length != 4 || store.length != 3)
+//            throw new IllegalArgumentException();
+//
+//        int R = rgbe[0] & 0xFF,
+//            G = rgbe[1] & 0xFF,
+//            B = rgbe[2] & 0xFF,
+//            E = rgbe[3] & 0xFF;
+//
+//        float e = (float) Math.pow(2f, E - 128);
+//        store[0] = (R / 256.0f) * e;
+//        store[1] = (G / 256.0f) * e;
+//        store[2] = (B / 256.0f) * e;
+//    }
     
     private short flip(int in){
         return (short) ((in << 8 & 0xFF00) | (in >> 8));
     }
     
     private void writeRGBE(byte[] rgbe){
-        if (imageFormat == Format.RGBA8){
-            dataStore.put(rgbe[0]).put(rgbe[1]).put(rgbe[2]).put(rgbe[3]);
-        }else if (imageFormat == Format.RGB16){
-            float[] temp = new float[3];
-            convertRGBEtoFloat(rgbe, temp);
-//            dataStore.order(ByteOrder.LITTLE_ENDIAN);
-            short v = flip( (int)(temp[0] * maxBright) );
-            dataStore.putShort(v);
-            v = flip( (int)(temp[1] * maxBright) );
-            dataStore.putShort(v);
-            v = flip( (int)(temp[2] * maxBright) );
-            dataStore.putShort(v);
+        switch (imageFormat){
+            case RGBA8:
+                dataStore.put(rgbe[0]).put(rgbe[1]).put(rgbe[2]).put(rgbe[3]);
+                break;
+            case RGB16:
+                convertRGBEtoFloat(rgbe);
+                short v = flip((int) (tempF[0] * maxBright));
+                dataStore.putShort(v);
+                v = flip((int) (tempF[1] * maxBright));
+                dataStore.putShort(v);
+                v = flip((int) (tempF[2] * maxBright));
+                dataStore.putShort(v);
+                break;
+            case RGBA16:
+                dataStore.putShort(flip(rgbe[0] * 255)).putShort(flip(rgbe[1] * 255)).putShort(flip(rgbe[2] * 255)).putShort(flip(rgbe[3] * 255));
+                break;
+            case RGB16F:
+            case RGB16F_to_RGB111110F:
+            case RGB16F_to_RGB9E5:
+                convertRGBEtoFloat(rgbe);
+                dataStore.putShort(FastMath.convertFloatToHalf(tempF[0])).putShort(FastMath.convertFloatToHalf(tempF[1])).putShort(FastMath.convertFloatToHalf(tempF[2]));
+                break;
+            case RGB32F:
+                convertRGBEtoFloat(rgbe);
+                dataStore.putFloat(tempF[0]).putFloat(tempF[1]).putFloat(tempF[2]);
+                break;
 
-        }else if (imageFormat == Format.RGBA16){
-            dataStore.putShort(flip(rgbe[0] * 255))
-                     .putShort(flip(rgbe[1] * 255))
-                     .putShort(flip(rgbe[2] * 255))
-                     .putShort(flip(rgbe[3] * 255));
-        }else if (imageFormat == Format.RGB16F
-               || imageFormat == Format.RGB16F_to_RGB111110F
-               || imageFormat == Format.RGB16F_to_RGB9E5){
-            float[] temp = new float[3];
-            convertRGBEtoFloat(rgbe, temp);
-            dataStore.putShort(FastMath.convertFloatToHalf(temp[0]))
-                     .putShort(FastMath.convertFloatToHalf(temp[1]))
-                     .putShort(FastMath.convertFloatToHalf(temp[2]));
-        }else if (imageFormat == Format.RGB32F){
-            float[] temp = new float[3];
-            convertRGBEtoFloat(rgbe, temp);
-            dataStore.putFloat(temp[0]).putFloat(temp[1]).putFloat(temp[2]);
         }
-        
-        
-//        if (DECODE_TO_RGBA8){
-            //dataStore.put(rgbe[0]).put(rgbe[1]).put(rgbe[2]).put(rgbe[3]);
-//        }else{
-//            float[] temp = new float[3];
-//            convertRGBEtoFloat(rgbe, temp);
-//            //data
-//            dataStore.putFloat(temp[0]).putFloat(temp[1]).putFloat(temp[2]);
-//        }
     }
     
-    public String readString(InputStream is) throws IOException{
+    private String readString(InputStream is) throws IOException{
         StringBuffer sb = new StringBuffer();
         while (true){
             int i = is.read();
@@ -170,7 +152,7 @@ public class HDRLoader implements ContentLoader {
         return true;
     }
     
-    public void decodeScanline(InputStream in, int width) throws IOException{
+    private void decodeScanline(InputStream in, int width) throws IOException{
         if (width < 8 || width > 0x7fff){
             // too short/long for RLE compression
             decodeScanlineUncompressed(in, width);

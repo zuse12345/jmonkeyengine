@@ -9,6 +9,7 @@ public class RenderState {
         Off,
         Additive,
         PremultAlpha,
+        AlphaAdditive,
         Alpha,
         Modulate,
         ModulateX2

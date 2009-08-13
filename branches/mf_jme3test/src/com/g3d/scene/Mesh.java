@@ -4,6 +4,7 @@ import com.g3d.bounding.BoundingBox;
 import com.g3d.bounding.BoundingVolume;
 import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
 import com.g3d.export.OutputCapsule;
 import com.g3d.export.Savable;
 import com.g3d.math.Triangle;
@@ -218,6 +219,13 @@ public class Mesh implements Savable {
         }
     }
 
+    public void setBuffer(VertexBuffer vb){
+        if (buffers.get(vb.getBufferType()) != null)
+            throw new IllegalArgumentException("Buffer type already set: "+vb.getBufferType());
+
+        buffers.put(vb.getBufferType(), vb);
+    }
+
     public void setBuffer(Type type, int components, short[] buf){
         setBuffer(type, components, BufferUtils.createShortBuffer(buf));
     }
@@ -248,10 +256,32 @@ public class Mesh implements Savable {
     public void write(G3DExporter ex) throws IOException {
         OutputCapsule out = ex.getCapsule(this);
         out.write(meshBound, "modelBound", null);
-
+        out.write(vertCount, "vertCount", -1);
+        out.write(elementCount, "elementCount", -1);
+        out.write(mode, "mode", Mode.Triangles);
+        out.write(buffers.size(), "numBuffers", 0);
+        if (buffers.size() > 0){
+            int i = 0;
+            for (VertexBuffer vb : buffers.values()){
+                out.write(vb, "buf"+i, null);
+                i++;
+            }
+        }
     }
 
     public void read(G3DImporter im) throws IOException {
+        InputCapsule in = im.getCapsule(this);
+        meshBound = (BoundingVolume) in.readSavable("modelBound", null);
+        vertCount = in.readInt("vertCount", -1);
+        elementCount = in.readInt("elementCount", -1);
+        mode = in.readEnum("mode", Mode.class, Mode.Triangles);
+        int numBufs = in.readInt("numBuffers", -1);
+        if (numBufs > 0){
+            for (int i = 0; i < numBufs; i++){
+                VertexBuffer vb = (VertexBuffer) in.readSavable("buf"+i, null);
+                buffers.put(vb.getBufferType(), vb);
+            }
+        }
     }
 
 }

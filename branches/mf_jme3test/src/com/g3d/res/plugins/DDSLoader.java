@@ -40,9 +40,13 @@ import com.g3d.texture.Image.Format;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Random;
 import java.util.logging.Logger;
 
 /**
@@ -108,7 +112,7 @@ public class DDSLoader implements ContentLoader {
     }
 
     public Image loadImage(InputStream fis) throws IOException {
-        return loadImage(fis, false);
+        return loadImage(fis, true);
     }
 
     public Image loadImage(InputStream fis, boolean flip) throws IOException {
@@ -132,10 +136,7 @@ public class DDSLoader implements ContentLoader {
         if (!is(flags, DDSD_MANDATORY)) {
             throw new IOException("Mandatory flags missing");
         }
-        if (is(flags, DDSD_DEPTH)) {
-            throw new IOException("Depth not supported");
-        }
-
+        
         height = in.readInt();
         width = in.readInt();
         pitchOrSize = in.readInt();
@@ -151,11 +152,8 @@ public class DDSLoader implements ContentLoader {
             throw new IOException("File is not a texture");
         }
 
-        if (is(caps2, DDSCAPS2_VOLUME)) {
-            throw new IOException("Volume textures not supported");
-        } else {
-            depth = 0;
-        }
+        if (depth <= 0)
+            depth = 1;
 
         int expectedMipmaps = 1 + (int) Math.ceil(Math.log(Math.max(height, width)) / LOG2);
 
@@ -240,17 +238,23 @@ public class DDSLoader implements ContentLoader {
                 } else {
                     pixelFormat = Format.RGB8;
                 }
+            } else if (is(pfFlags, DDPF_GRAYSCALE) && is(pfFlags, DDPF_ALPHAPIXELS)){
+                switch (bpp) {
+                    case 16:
+                        pixelFormat = Format.Luminance8Alpha8;
+                        break;
+                    case 32:
+                        pixelFormat = Format.Luminance16Alpha16;
+                        break;
+                    default:
+                        throw new IOException("Unsupported GrayscaleAlpha BPP: " + bpp);
+                }
+                grayscaleOrAlpha = true;
             } else if (is(pfFlags, DDPF_GRAYSCALE)) {
                 switch (bpp) {
-//                    case 4:
-//                        pixelFormat_ = Format.Luminance4;
-//                        break;
                     case 8:
                         pixelFormat = Format.Luminance8;
                         break;
-//                    case 12:
-//                        pixelFormat_ = Format.Luminance12;
-//                        break;
                     case 16:
                         pixelFormat = Format.Luminance16;
                         break;
@@ -260,15 +264,9 @@ public class DDSLoader implements ContentLoader {
                 grayscaleOrAlpha = true;
             } else if (is(pfFlags, DDPF_ALPHA)) {
                 switch (bpp) {
-//                    case 4:
-//                        pixelFormat_ = Format.Alpha4;
-//                        break;
                     case 8:
                         pixelFormat = Format.Alpha8;
                         break;
-//                    case 12:
-//                        pixelFormat_ = Format.Alpha12;
-//                        break;
                     case 16:
                         pixelFormat = Format.Alpha16;
                         break;
@@ -438,63 +436,128 @@ public class DDSLoader implements ContentLoader {
         return dataBuffer;
     }
 
-    public void flipDXT1Block(ByteBuffer block, ByteBuffer flipped, int h){
-        assert block.remaining() == 8;
-        assert flipped.remaining() == 8;
+    private static long alphaBitsToLong(byte[] block){
+        return  (block[7] & 0xFF)
+             | ((block[6] & 0xFF) << 8)
+             | ((block[5] & 0xFF) << 16)
+             | ((block[4] & 0xFF) << 24)
+             | ((block[3] & 0xFF) << 32)
+             | ((block[2] & 0xFF) << 48);
+    }
 
-        int oldPos = block.position();
-        int oldLimit = block.limit();
+    private static void longToAlphaBits(long block, byte[] store){
+        store[2] = (byte) (block & 0xFF);
+        store[3] = (byte) ((block >> 8) & 0xFF);
+        store[4] = (byte) ((block >> 16) & 0xFF);
+        store[5] = (byte) ((block >> 24) & 0xFF);
+        store[6] = (byte) ((block >> 32) & 0xFF);
+        store[7] = (byte) ((block >> 48) & 0xFF);
+    }
 
-        if (h == 1){
-            flipped.put(block);
-        }if (h == 2){
-            // write header (the two colors)
-            block.limit(block.capacity());
-            block.position(oldPos);
-            block.limit(oldPos + 4);
-            flipped.put(block);
+    private static final BitSet fromByteArray(byte[] bytes) {
+        BitSet bits = new BitSet();
+        for (int i=0; i<bytes.length*8; i++) {
+            if ((bytes[bytes.length-i/8-1]&(1<<(i%8))) > 0) {
+                bits.set(i);
+            }
+        }
+        return bits;
+    }
 
-            // grab 2nd row (1 byte)
-            block.limit(block.capacity());
-            block.position(oldPos + 4 + 1);
-            block.limit(block.position() + 1);
-            flipped.put(block);
+    public static byte[] toByteArray(BitSet bits) {
+        byte[] bytes = new byte[bits.length()/8+1];
+        for (int i=0; i<bits.length(); i++) {
+            if (bits.get(i)) {
+                bytes[bytes.length-i/8-1] |= 1<<(i%8);
+            }
+        }
+        return bytes;
+    }
 
-            // grab 1st row
-            block.limit(block.capacity());
-            block.position(oldPos + 4);
-            block.limit(block.position() + 1);
-            flipped.put(block);
-        }else if (h >= 4){
-            // write header (the two colors)
-            block.limit(block.capacity());
-            block.position(oldPos);
-            block.limit(oldPos + 4);
-            flipped.put(block);
+    private static final void copyBits(BigInteger bi, int start1, int len1, int start2){
+        int i2 = start2;
+        for (int i = start1; i < start1 + len1; i++){
+            boolean bit = bi.testBit(i);
+            boolean bit2 = bi.testBit(i2);
+            if (bit2 == bit)
+                continue;
+            else{
+                bi.flipBit(i2);
+            }
+            
+            i2 ++;
+        }
+    }
 
-            // grab 4th row (1 byte)
-            block.limit(block.capacity());
-            block.position(oldPos + 4 + 3);
-            block.limit(block.position() + 1);
-            flipped.put(block);
+    private static final int idx(int x, int y){
+        return 16 + y * 12 + x;
+    }
 
-            // grab 3rd row
-            block.limit(block.capacity());
-            block.position(oldPos + 4 + 2);
-            block.limit(block.position() + 1);
-            flipped.put(block);
+    private void flipDXT5AlphaBlock(byte[] block, int h){
+        byte tmp;
+        switch (h){
+            case 1:
+                return;
+            case 2:
+                // top left to bottom left
+                tmp = block[0];
+                block[0] = block[2];
+                block[2] = tmp;
 
-            // grab 2nd row
-            block.limit(block.capacity());
-            block.position(oldPos + 4 + 1);
-            block.limit(block.position() + 1);
-            flipped.put(block);
+                // top right to bottom right
+                tmp = block[1];
+                block[1] = block[3];
+                block[3] = tmp;
+                return;
+            default:
+                BigInteger bi = new BigInteger(block);
 
-            // grab 1st row
-            block.limit(block.capacity());
-            block.position(oldPos + 4);
-            block.limit(block.position() + 1);
-            flipped.put(block);
+                // first two bytes are alpha, keep the same
+                copyBits(bi, idx(0,0), 12, idx(0,3));
+                copyBits(bi, idx(0,1), 12, idx(0,2));
+                copyBits(bi, idx(0,2), 12, idx(0,1));
+                copyBits(bi, idx(0,3), 12, idx(0,0));
+
+                byte[] out = bi.toByteArray();
+                System.arraycopy(out, 0, block, 0, 8);
+                
+                return;
+        }
+    }
+
+    /**
+     * Flips a DXT color block or a DXT3 alpha block
+     * @param block
+     * @param h
+     */
+    public void flipDXTBlock(byte[] block, int h){
+        byte tmp;
+        switch (h){
+            case 1:
+                return;
+            case 2:
+                // keep header intact (the two colors)
+                // header takes 4 bytes
+
+                // flip only two top rows
+                tmp = block[4+1];
+                block[4+1] = block[4+0];
+                block[4+0] = tmp;
+                return;
+            default:
+                // keep header intact (the two colors)
+                // header takes 4 bytes
+
+                // flip first & fourth row
+                tmp = block[4+3];
+                block[4+3] = block[4+0];
+                block[4+0] = tmp;
+
+                // flip second and third row
+                tmp = block[4+2];
+                block[4+2] = block[4+1];
+                block[4+1] = tmp;
+                return;
         }
     }
 
@@ -502,71 +565,86 @@ public class DDSLoader implements ContentLoader {
         int blocksX = (int) FastMath.ceil((float)w / 4f);
         int blocksY = (int) FastMath.ceil((float)h / 4f);
 
-        ByteBuffer retImg = BufferUtils.createByteBuffer(blocksX * blocksY * 8);
-        retImg.rewind();
+        int type = 0;
+        if (pixelFormat == Format.DXT1 || pixelFormat == Format.DXT1A){
+            type = 1;
+        }else if (pixelFormat == Format.DXT3){
+            type = 2;
+        }else if (pixelFormat == Format.DXT5){
+            type = 3;
+        }
+        
+        // DXT1 uses 8 bytes per block,
+        // DXT3 & DXT5 use 16 bytes per block
+        int bpb = type == 1 ? 8 : 16;
 
-//        img.position(blocksX * 8);
-//        img.limit(img.position() + 8);
+        ByteBuffer retImg = BufferUtils.createByteBuffer(blocksX * blocksY * bpb);
 
         if (h == 1){
             retImg.put(img);
             retImg.rewind();
             return retImg;
         }else if (h == 2){
-            ByteBuffer temp = BufferUtils.createByteBuffer(8);
-            temp.rewind();
+            byte[] colorBlock = new byte[8];
+            byte[] alphaBlock = type != 1 ? new byte[8] : null;
             for (int x = 0; x < blocksX; x++){
                 // prepeare for block reading
-                int blockByteOffset = x * 8;
+                int blockByteOffset = x * bpb;
                 img.position(blockByteOffset);
-                img.limit(blockByteOffset + 8);
+                img.limit(blockByteOffset + bpb);
 
-                // create block
-                ByteBuffer block = img.slice();
-
-                // flip block
-                flipDXT1Block(block, temp, h);
-                temp.rewind();
+                img.get(colorBlock);
+                flipDXTBlock(colorBlock, h);
 
                 // write block (no need to flip block indexes, only pixels
                 // inside block
-                retImg.put(temp);
-                temp.rewind();
+                retImg.put(colorBlock);
+
+                if (alphaBlock != null){
+                    img.get(alphaBlock);
+                    switch (type){
+                        case 2: flipDXTBlock(alphaBlock, h); break;
+                        case 3: flipDXT5AlphaBlock(alphaBlock, h); break;
+                    }
+                    retImg.put(alphaBlock);
+                }
             }
             retImg.rewind();
             return retImg;
         }else if (h >= 4){
-            ByteBuffer temp = BufferUtils.createByteBuffer(8);
-            temp.rewind();
+            byte[] colorBlock = new byte[8];
+            byte[] alphaBlock = type != 1 ? new byte[8] : null;
             for (int y = 0; y < blocksY; y++){
                 for (int x = 0; x < blocksX; x++){
-//                    int offset = 8 * (FastMath.ceil(w / 4f) * floor(y / 4f) + floor(<x>/4)).
-
                     // prepeare for block reading
                     int blockIdx = y * blocksX + x;
-                    int blockByteOffset = blockIdx * 8; // 1 block is 8 bytes
+                    int blockByteOffset = blockIdx * bpb;
 
                     img.position(blockByteOffset);
-                    img.limit(blockByteOffset + 8);
-                    ByteBuffer block = img.slice();
+                    img.limit(blockByteOffset + bpb);
 
-
-                    flipDXT1Block(block, temp, h);
-                    temp.rewind();
-
-                    // flip block location in image
-                    blockIdx = blocksX + x;
-                    blockByteOffset = blockIdx * 8;
+                    blockIdx = (blocksY - y - 1) * blocksX + x;
+                    blockByteOffset = blockIdx * bpb;
 
                     retImg.position(blockByteOffset);
-                    retImg.limit(blockByteOffset + 8);
-                    retImg.put(temp);
-//                    if (x % 2 == 0 && y % 2 == 0)
-//                        retImg.put(block);
-                    temp.rewind();
+                    retImg.limit(blockByteOffset + bpb);
+
+                    if (alphaBlock != null){
+                        img.get(alphaBlock);
+                        switch (type){
+                            case 2: flipDXTBlock(alphaBlock, h); break;
+                            case 3: flipDXT5AlphaBlock(alphaBlock, h); break;
+                        }
+                        retImg.put(alphaBlock);
+                    }
+
+                    img.get(colorBlock);
+                    flipDXTBlock(colorBlock, h);
+                    retImg.put(colorBlock);
                 }
             }
-            retImg.rewind();
+            retImg.limit(retImg.capacity());
+            retImg.position(0);
             return retImg;
         }else{
             return null;
@@ -591,7 +669,6 @@ public class DDSLoader implements ContentLoader {
         int offset = 0;
         for (int mip = 0; mip < mipMapCount; mip++) {
             if (flip){
-                // flip the stuff.. etc
                 byte[] data = new byte[sizes[mip]];
                 in.readFully(data);
                 ByteBuffer wrapped = ByteBuffer.wrap(data);
@@ -638,6 +715,16 @@ public class DDSLoader implements ContentLoader {
         ArrayList<ByteBuffer> allMaps = new ArrayList<ByteBuffer>();
         if (is(caps2, DDSCAPS2_CUBEMAP)) {
             for (int i = 0; i < 6; i++) {
+                if (compressed) {
+                    allMaps.add(readDXT2D(flip,totalSize));
+                } else if (grayscaleOrAlpha) {
+                    allMaps.add(readGrayscale2D(flip, totalSize));
+                } else {
+                    allMaps.add(readRGB2D(flip, totalSize));
+                }
+            }
+        } else if (depth > 1){
+            for (int i = 0; i < depth; i++){
                 if (compressed) {
                     allMaps.add(readDXT2D(flip,totalSize));
                 } else if (grayscaleOrAlpha) {

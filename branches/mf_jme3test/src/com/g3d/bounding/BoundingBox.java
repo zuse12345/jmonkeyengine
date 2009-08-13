@@ -707,6 +707,18 @@ public class BoundingBox extends BoundingVolume {
 
     }
 
+    /**
+     * TODO: For octree support
+     * @param tri
+     */
+    public void intersects(Triangle tri) {
+        throw new UnsupportedOperationException();
+
+//        Plane p = new Plane();
+//        p.setPlanePoints(tri);
+
+    }
+
     @Override
     public boolean contains(Vector3f point) {
         return FastMath.abs(center.x - point.x) < xExtent

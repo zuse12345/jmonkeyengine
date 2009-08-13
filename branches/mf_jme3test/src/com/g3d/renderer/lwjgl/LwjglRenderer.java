@@ -57,6 +57,7 @@ import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
 import org.lwjgl.opengl.GLContext;
 import org.lwjgl.opengl.NVHalfFloat;
 
+import org.lwjgl.opengl.Util;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL13.*;
@@ -124,7 +125,12 @@ public class LwjglRenderer implements Renderer {
         TempVars vars = TempVars.get();
 
         String version = glGetString(GL_SHADING_LANGUAGE_VERSION);
-        if (version.startsWith("1.4")){
+        if (version == null || version.equals("")){
+            glslVer = -1;
+            throw new UnsupportedOperationException("GLSL and OpenGL2 is " +
+                                                    "required for the LWJGL " +
+                                                    "renderer!");
+        }else if (version.startsWith("1.4")){
             glslVer = 140;
         }else if (version.startsWith("1.3")){
             glslVer = 130;
@@ -134,8 +140,6 @@ public class LwjglRenderer implements Renderer {
             glslVer = 110;
         }else if (version.startsWith("1.")){
             glslVer = 100;
-        }else if (version == null || version.equals("")){
-            glslVer = -1;
         }
 
         glGetInteger(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, vars.intBuffer16);
@@ -308,6 +312,9 @@ public class LwjglRenderer implements Renderer {
                 case Additive:
                     glBlendFunc(GL_ONE, GL_ONE);
                     break;
+                case AlphaAdditive:
+                    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+                    break;
                 case Alpha:
                     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                     break;
@@ -329,23 +336,23 @@ public class LwjglRenderer implements Renderer {
         }
     }
 
-    public void setupDepthPass(){
-        glEnable(GL_DEPTH_TEST);
-        glStencilMask(0x0);
-        glDepthMask(true);
-        glColorMask(false, false, false, false);
-        glDepthFunc(GL_LESS);
-        context.depthTestEnabled = true;
-    }
-
-    public void setupColorPass(){
-        glEnable(GL_DEPTH_TEST);
-        glStencilMask(0x0);
-        glDepthMask(false);
-        glColorMask(true, true, true, true);
-        glDepthFunc(GL_EQUAL);
-        context.depthTestEnabled = false;
-    }
+//    public void setupDepthPass(){
+//        glEnable(GL_DEPTH_TEST);
+//        glStencilMask(0x0);
+//        glDepthMask(true);
+//        glColorMask(false, false, false, false);
+//        glDepthFunc(GL_LESS);
+//        context.depthTestEnabled = true;
+//    }
+//
+//    public void setupColorPass(){
+//        glEnable(GL_DEPTH_TEST);
+//        glStencilMask(0x0);
+//        glDepthMask(false);
+//        glColorMask(true, true, true, true);
+//        glDepthFunc(GL_EQUAL);
+//        context.depthTestEnabled = false;
+//    }
 
     /*********************************************************************\
     |* Camera and World transforms                                       *|
@@ -402,14 +409,26 @@ public class LwjglRenderer implements Renderer {
     |* Shaders                                                           *|
     \*********************************************************************/
 
+    protected void updateUniformLocation(Shader shader, Uniform uniform){
+        stringBuf.setLength(0);
+        stringBuf.append(uniform.getName()).append('\0');
+        updateNameBuffer();
+        int loc = glGetUniformLocation(shader.getId(), nameBuf);
+        if (loc < 0){
+            uniform.setLocation(-1);
+            // uniform is not declared in shader
+            logger.warning("Uniform "+uniform.getName()+" is not declared in shader.");
+        }else{
+            uniform.setLocation(loc);
+        }
+    }
+
     protected void updateUniform(Shader shader, Uniform uniform){
-        if (uniform.getName() == null)
-            throw new IllegalArgumentException("Uniform must have a name!");
-
         int shaderId = shader.getId();
-        if (shaderId == -1)
-            throw new IllegalArgumentException("Shader has not been uploaded yet.");
 
+        assert uniform.getName() != null;
+        assert shader.getId() != -1;
+        
         if (context.boundShaderProgram != shaderId){
             glUseProgram(shaderId);
             boundShader = shader;
@@ -422,18 +441,13 @@ public class LwjglRenderer implements Renderer {
         
         if (loc == -2){
             // get uniform location
-            stringBuf.setLength(0);
-            stringBuf.append(uniform.getName()).append('\0');
-            updateNameBuffer();
-            loc = glGetUniformLocation(shader.getId(), nameBuf);
-            if (loc < 0){
-                uniform.setLocation(-1);
+            updateUniformLocation(shader, uniform);
+            if (uniform.getLocation() == -1){
+                // not declared, ignore
                 uniform.clearUpdateNeeded();
-                // uniform is not declared in shader
-                logger.warning("Uniform "+uniform.getName()+" is not declared in shader.");
                 return;
             }
-            uniform.setLocation(loc);
+            loc = uniform.getLocation();
         }
 
         uniform.clearUpdateNeeded();
@@ -1087,10 +1101,11 @@ public class LwjglRenderer implements Renderer {
                 context.boundFBO = 0;
             }
             // select back buffer
-//            if (context.boundDrawBuf != -1){
-//                glDrawBuffer(GL_BACK);
-//                context.boundDrawBuf = -1;
-//            }
+            if (context.boundDrawBuf != -1){
+                glDrawBuffer(GL_BACK);
+                glReadBuffer(GL_BACK);
+                context.boundDrawBuf = -1;
+            }
         }else{
             if (fb.isUpdateNeeded())
                updateFrameBuffer(fb);
@@ -1312,7 +1327,7 @@ public class LwjglRenderer implements Renderer {
                      TextureUtil.uploadTexture(img, target, i, 0);
                 }
             }else{
-                TextureUtil.uploadTexture(img, target, 0, 0);
+                TextureUtil.uploadTexture(img, target, tex.getImageDataIndex(), 0);
             }
         }
 
@@ -1555,7 +1570,7 @@ public class LwjglRenderer implements Renderer {
                     context.boundArrayVBO = bufId;
                 }
 
-                glVertexAttribPointer(loc, vb.getNumComponents(), convertFormat(vb.getFormat()), false, 0, 0);
+                glVertexAttribPointer(loc, vb.getNumComponents(), convertFormat(vb.getFormat()), vb.isNormalized(), 0, 0);
                 attribs[loc] = vb;
             }
         }else{
@@ -1563,7 +1578,7 @@ public class LwjglRenderer implements Renderer {
         }
     }
 
-    public void drawTriangleList(VertexBuffer indexBuf, Mesh.Mode mode, int count){
+    public void drawTriangleList(VertexBuffer indexBuf, Mesh.Mode mode, int count, int vertCount){
         if (indexBuf.getBufferType() != VertexBuffer.Type.Index)
             throw new IllegalArgumentException("Only index buffers are allowed as triangle lists.");
 
@@ -1577,6 +1592,10 @@ public class LwjglRenderer implements Renderer {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufId);
             context.boundElementArrayVBO = bufId;
         }
+
+//        glDisable(GL_POINT_SMOOTH);
+//        glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+
 //        if (count > 1){
 //            glDrawElementsInstancedARB(mode,
 //                                       indexBuf.getData().capacity(),
@@ -1584,10 +1603,17 @@ public class LwjglRenderer implements Renderer {
 //                                       0,
 //                                       count);
 //        }else{
-            glDrawElements(convertElementMode(mode),
-                           indexBuf.getData().capacity(),
-                           convertFormat(indexBuf.getFormat()),
-                           0);
+            glDrawRangeElements(convertElementMode(mode),
+                                0,
+                                vertCount,
+                                indexBuf.getData().capacity(),
+                                convertFormat(indexBuf.getFormat()),
+                                0);
+
+//            glDrawElements(convertElementMode(mode),
+//                           indexBuf.getData().capacity(),
+//                           convertFormat(indexBuf.getFormat()),
+//                           0);
 //        }
     }
 
@@ -1655,12 +1681,14 @@ public class LwjglRenderer implements Renderer {
             }
         }
         if (indices != null){
-            drawTriangleList(indices, mesh.getMode(), 1);
+            drawTriangleList(indices, mesh.getMode(), 1, mesh.getVertexCount());
         }else{
             glDrawArrays(convertElementMode(mesh.getMode()), 0, mesh.getVertexCount());
         }
         clearVertexAttribs();
         clearTextureUnits();
+        
+        Util.checkGLError();
     }
 
 //    public void updateVertexArray(Mesh mesh){

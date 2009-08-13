@@ -107,7 +107,6 @@ public abstract class SimpleApplication extends Application {
 
         // call user code
         simpleInitApp();
-        // TODO: Add fps display
     }
 
     @Override

@@ -4,9 +4,7 @@ import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
 import com.g3d.app.SimpleApplication;
 import com.g3d.material.Material;
-import com.g3d.math.ColorRGBA;
 import com.g3d.scene.shape.Quad;
-import com.g3d.system.AppSettings;
 import com.g3d.texture.Texture;
 
 public class TestDdsLoading extends SimpleApplication {
@@ -17,6 +15,8 @@ public class TestDdsLoading extends SimpleApplication {
     }
 
     public void simpleInitApp() {
+        manager.setProperty("FlipImages", "true");
+
         // create a simple plane/quad
         Quad quadMesh = new Quad(1, 1);
         quadMesh.updateGeometry(1, 1, true);
@@ -24,7 +24,7 @@ public class TestDdsLoading extends SimpleApplication {
         Geometry quad = new Geometry("Textured Quad", quadMesh);
         quad.updateModelBound();
         
-        Texture tex = manager.loadTexture("Monkey.DDS");
+        Texture tex = manager.loadTexture("alphamonkey.dds");
 
         Material mat = new Material(manager, "plain_texture.j3md");
         mat.setTexture("m_ColorMap", tex);

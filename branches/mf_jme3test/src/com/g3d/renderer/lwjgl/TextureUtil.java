@@ -41,6 +41,10 @@ public class TextureUtil {
                 return GL_DEPTH_COMPONENT32;
             case Depth32F:
                 return NVDepthBufferFloat.GL_DEPTH_COMPONENT32F_NV;
+            case Luminance8Alpha8:
+                return GL_LUMINANCE8_ALPHA8;
+            case Luminance16Alpha16:
+                return GL_LUMINANCE16_ALPHA16;
             case Luminance16FAlpha16F:
                 return ARBTextureFloat.GL_LUMINANCE_ALPHA16F_ARB;
             case Intensity8:
@@ -181,6 +185,14 @@ public class TextureUtil {
                 format = GL_LUMINANCE;
                 dataType = GL_UNSIGNED_BYTE;
                 break;
+            case Luminance8Alpha8:
+                internalFormat = GL_LUMINANCE8_ALPHA8;
+                format = GL_LUMINANCE_ALPHA;
+                dataType = GL_UNSIGNED_BYTE;
+            case Luminance16Alpha16:
+                internalFormat = GL_LUMINANCE16_ALPHA16;
+                format = GL_LUMINANCE_ALPHA;
+                dataType = GL_UNSIGNED_BYTE;
             case Luminance16:
                 internalFormat = GL_LUMINANCE16;
                 format = GL_LUMINANCE;

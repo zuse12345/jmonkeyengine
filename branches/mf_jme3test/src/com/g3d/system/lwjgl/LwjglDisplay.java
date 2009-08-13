@@ -18,10 +18,11 @@ import com.g3d.system.AppSettings;
 import com.g3d.system.AppSettings.Template;
 import com.g3d.system.G3DSystem;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.ContextAttribs;
+//import org.lwjgl.opengl.ContextAttribs;
 import org.lwjgl.opengl.GLContext;
 import org.lwjgl.opengl.OpenGLException;
 import static org.lwjgl.opengl.GL11.*;
@@ -51,7 +52,7 @@ public class LwjglDisplay extends LwjglContext implements Runnable {
     protected void applySettings(AppSettings settings){
         DisplayMode displayMode = null;
         if (settings.getTemplate() == Template.DesktopFullscreen){
-            displayMode = org.lwjgl.opengl.Display.getDesktopDisplayMode();
+//            displayMode = org.lwjgl.opengl.Display.getDesktopDisplayMode();
             settings.setResolution(displayMode.getWidth(), displayMode.getHeight());
         }else if (settings.isFullscreen()){
             displayMode = getFullscreenDisplayMode(settings.getWidth(), settings.getHeight(),
@@ -71,11 +72,6 @@ public class LwjglDisplay extends LwjglContext implements Runnable {
             Display.setVSyncEnabled(settings.isVSync());
         } catch (LWJGLException ex){
             throw new RuntimeException("Failed to create display.", ex);
-        } finally {
-            if (!created.get()){
-                if (Display.isCreated())
-                    Display.destroy();
-            }
         }
     }
 
@@ -89,39 +85,37 @@ public class LwjglDisplay extends LwjglContext implements Runnable {
         try{
             applySettings(settings);
             String rendererStr = settings.getString("Renderer");
-            if (rendererStr.startsWith("LWJGL-OpenGL3")){
-                ContextAttribs attribs;
-                if (rendererStr.equals("LWJGL-OpenGL3.1")){
-                    attribs = new ContextAttribs(3, 1);
-                }else{
-                    attribs = new ContextAttribs(3, 0);
-                }
-                attribs.withForwardCompatible(true);
-                attribs.withDebug(false);
-                Display.create(pf, attribs);
-            }else{
+//            if (rendererStr.startsWith("LWJGL-OpenGL3")){
+//                ContextAttribs attribs;
+//                if (rendererStr.equals("LWJGL-OpenGL3.1")){
+//                    attribs = new ContextAttribs(3, 1);
+//                }else{
+//                    attribs = new ContextAttribs(3, 0);
+//                }
+//                attribs.withForwardCompatible(true);
+//                attribs.withDebug(false);
+//                Display.create(pf, attribs);
+//            }else{
                 Display.create(pf);
-            }
+//                Display.create();
+//            }
 
-            if (!Display.isFullscreen()){
-                // put it in the center
-                DisplayMode desktop = Display.getDesktopDisplayMode();
-                DisplayMode displayMode = Display.getDisplayMode();
-                Display.setLocation((desktop.getWidth() - displayMode.getWidth()) / 2,
-                                  (desktop.getHeight() - displayMode.getHeight()) / 2);
-            }
-
-            Display.makeCurrent();
-            Display.update();
+//            if (!Display.isFullscreen()){
+//                // put it in the center
+//                DisplayMode desktop = Display.getDesktopDisplayMode();
+//                DisplayMode displayMode = Display.getDisplayMode();
+//                Display.setLocation((desktop.getWidth() - displayMode.getWidth()) / 2,
+//                                  (desktop.getHeight() - displayMode.getHeight()) / 2);
+//            }
 
             logger.info("Display created.");
             logger.fine("Running on thread: "+Thread.currentThread().getName());
 
-            try{
-                 Util.checkGLError();
-            } catch (OpenGLException ex){
-                System.out.println(ex.getMessage());
-            }
+//            try{
+//                 Util.checkGLError();
+//            } catch (OpenGLException ex){
+//                System.out.println(ex.getMessage());
+//            }
 
             Keyboard.poll();
             Mouse.poll();
@@ -163,8 +157,12 @@ public class LwjglDisplay extends LwjglContext implements Runnable {
         listener.update();
         
         // calls swap buffers, etc.
-        Display.update();
-       
+        try {
+            Display.update();
+        } catch (Throwable ex){
+            logger.log(Level.WARNING, "Error while swapping buffers", ex);
+        }
+
         if (frameRate > 0)
             Display.sync(frameRate);
 

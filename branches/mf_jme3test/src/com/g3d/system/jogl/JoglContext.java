@@ -4,6 +4,7 @@ import com.g3d.input.JoyInput;
 import com.g3d.input.KeyInput;
 import com.g3d.input.MouseInput;
 import com.g3d.input.awt.AwtKeyInput;
+import com.g3d.input.awt.AwtMouseInput;
 import com.g3d.input.dummy.DummyKeyInput;
 import com.g3d.input.dummy.DummyMouseInput;
 import com.g3d.renderer.Renderer;
@@ -25,6 +26,7 @@ public abstract class JoglContext implements G3DContext {
     protected ContextListener listener;
 
     protected AwtKeyInput keyInput;
+    protected AwtMouseInput mouseInput;
 
     public void setContextListener(ContextListener listener){
         this.listener = listener;
@@ -43,7 +45,7 @@ public abstract class JoglContext implements G3DContext {
     }
 
     public MouseInput getMouseInput() {
-        return new DummyMouseInput();
+        return mouseInput;
     }
 
     public KeyInput getKeyInput() {

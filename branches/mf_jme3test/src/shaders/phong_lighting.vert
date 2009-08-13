@@ -22,6 +22,7 @@ void lightComputeTangentVS(out vec3 outNormal, out vec3 outTangent){
 void main(){
    vec4 pos = vec4(inPosition, 1.0);
    gl_Position = g_WorldViewProjectionMatrix * pos;
+   wvPosition = (g_WorldViewMatrix * pos).xyz;
    viewDir = normalize(-(g_WorldViewMatrix * pos).xyz);
 
    texCoord = inTexCoord;

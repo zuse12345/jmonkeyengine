@@ -189,9 +189,9 @@ public interface Renderer {
      * The int variable gl_VertexID can be used to access the current
      * vertex index inside the vertex shader.
      *
-     * @param count The number of triangles to draw from the buffer
+     * @param count The number of instances to draw
      */
-    public void drawTriangleList(VertexBuffer indexBuf, Mesh.Mode mode, int count);
+    public void drawTriangleList(VertexBuffer indexBuf, Mesh.Mode mode, int count, int vertCount);
 
     /**
      * Clears all vertex attributes set with <code>setVertexAttrib</code>.

@@ -22,7 +22,7 @@ public class AwtKeyInput implements KeyInput, KeyListener {
     private static final Logger logger = Logger.getLogger(AwtKeyInput.class.getName());
     private RawInputListener listener;
     private boolean inited = false;
-    private List<KeyInputEvent> eventQueue = new LinkedList();
+    private List<KeyInputEvent> eventQueue = new LinkedList<KeyInputEvent>();
     private Component component;
 
     public AwtKeyInput(Component comp){

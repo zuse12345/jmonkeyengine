@@ -122,7 +122,7 @@ public class GLSLLoader implements ContentLoader {
     }
 
     private String resolveDependencies(DependencyNode root){
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         List<DependencyNode> checkedNodes = new ArrayList<DependencyNode>();
         checkedNodes.add(root);

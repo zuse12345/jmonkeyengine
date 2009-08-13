@@ -231,6 +231,10 @@ public class Shader extends GLObject {
         return uniforms.values();
     }
 
+    public Collection<Attribute> getAttributes() {
+        return attribs.values();
+    }
+
     public Collection<ShaderSource> getSources(){
         return shaderList;
     }
@@ -267,6 +271,28 @@ public class Shader extends GLObject {
     }
 
     /**
+     * Usually called when the shader itself changes or during any
+     * time when the var locations need to be refreshed.
+     */
+    public void resetLocations(){
+        // NOTE: Shader sources will be reset seperately from the shader itself.
+        for (Uniform uniform : uniforms.values()){
+            // fixed mistake: was -1 which was incorrect
+            // would cause shader to not work after reset
+            uniform.location = -2;
+        }
+        for (Attribute attrib : attribs.values()){
+            attrib.location = -2;
+        }
+    }
+
+    @Override
+    public void setUpdateNeeded(){
+        super.setUpdateNeeded();
+        resetLocations();
+    }
+
+    /**
      * Called by the object manager to reset all object IDs. This causes
      * the shader to be reuploaded to the GPU incase the display was restarted.
      * @param r
@@ -276,13 +302,7 @@ public class Shader extends GLObject {
         this.id = -1;
         this.usable = false;
         setUpdateNeeded();
-        // NOTE: Shader sources will be reset seperately from the shader itself.
-        for (Uniform uniform : uniforms.values()){
-            uniform.location = -1;
-        }
-        for (Attribute attrib : attribs.values()){
-            attrib.location = -1;
-        }
+        resetLocations();
     }
 
     @Override

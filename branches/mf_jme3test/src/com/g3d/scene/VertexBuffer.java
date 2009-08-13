@@ -1,9 +1,13 @@
 package com.g3d.scene;
 
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.Savable;
 import com.g3d.math.FastMath;
 import com.g3d.renderer.GLObject;
 import com.g3d.renderer.Renderer;
 import com.g3d.util.BufferUtils;
+import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
@@ -11,10 +15,11 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
-public class VertexBuffer extends GLObject {
+public class VertexBuffer extends GLObject implements Savable {
 
     public static enum Type {
         Position,
+        Size,
         Normal,
         TexCoord,
         Color,
@@ -65,6 +70,7 @@ public class VertexBuffer extends GLObject {
     protected Usage usage = Usage.Stream;
     protected Type bufType = Type.Position;
     protected Format format = Format.Float;
+    protected boolean normalized = false;
 
     /**
      * Creates an empty, uninitialized buffer.
@@ -88,6 +94,14 @@ public class VertexBuffer extends GLObject {
             throw new UnsupportedOperationException("Data has already been sent. Cannot set usage.");
 
         this.usage = usage;
+    }
+
+    public void setNormalized(boolean normalized){
+        this.normalized = normalized;
+    }
+
+    public boolean isNormalized(){
+        return normalized;
     }
 
     public Type getBufferType(){
@@ -171,6 +185,14 @@ public class VertexBuffer extends GLObject {
     @Override
     public void deleteObject(Renderer r) {
         r.deleteBuffer(this);
+    }
+
+    public void write(G3DExporter ex) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void read(G3DImporter im) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

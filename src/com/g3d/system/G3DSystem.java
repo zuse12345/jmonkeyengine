@@ -101,7 +101,7 @@ public class G3DSystem {
 //    }
 
     public static String getFullName(){
-        return "jMonkeyEngine 0.13";
+        return "jMonkeyEngine 0.16";
     }
 
     public static void reportError(String errorMsg){

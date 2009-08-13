@@ -1,5 +1,5 @@
 #summary Wiki Sidebar
 
  * CoreTeam
- * [jME3Build] 
- * [jME3Depends]
+ * jME3Build
+ * jME3Depends

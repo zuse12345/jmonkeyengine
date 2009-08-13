@@ -1,5 +1,5 @@
 #summary Simple listing of jME's core team
-#labels Featured
+#labels Featured,Administrative
 
 = Introduction =
 

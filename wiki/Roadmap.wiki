@@ -2,4 +2,4 @@
 
 = Introduction =
 
-Please refer to [issue tracker http://code.google.com/p/jmonkeyengine/issues/list?can=2&q=milestone=Release3.0&colspec=ID%20Type%20Status%20Component%20Priority%20Milestone%20Owner%20Summary] this page for a basic roadmap of future features. If you got considerable time and experience on your hands, please consider commenting on whichever issue grabs your attention, be it just for helpful comments or even to pick up the task.
+Please refer to the 3.0 filtered [http://code.google.com/p/jmonkeyengine/issues/list?can=2&q=milestone=Release3.0&colspec=ID%20Type%20Status%20Component%20Priority%20Milestone%20Owner%20Summary issue tracker]  for a basic roadmap of future features. If you got considerable time and experience on your hands, please consider commenting on whichever issue grabs your attention, be it just for helpful comments or even to pick up the task.

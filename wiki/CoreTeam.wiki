@@ -24,7 +24,7 @@ Please note that regardless of key descriptions, most members take part in field
 === Savas Ziplies - "..." ===
  * *Post:* Android, mobile development
  * *Fields:* OpenGL ES, android
- * *Status: employee at ?
+ * *Status:* employee at ?
 
 == Managers ==
 

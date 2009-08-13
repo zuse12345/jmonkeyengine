@@ -1,0 +1,6 @@
+#summary Future tasks to be completed for jMonkeyEngine 3.0
+#labels Featured
+
+= Introduction =
+
+Please refer to [link] this page for a basic roadmap of future features. If you got considerable time and experience on your hands, please consider commenting on whichever issue grabs your attention, be it just for helpful comments or even to pick up the task.

@@ -229,7 +229,7 @@ final public class FastMath {
      * @return The sine of fValue.
      * @see java.lang.Math#sin(double)
      */
-    public static float sin(float fValue) {
+    public static float sin2(float fValue) {
         fValue = reduceSinAngle(fValue); // limits angle to between -PI/2 and +PI/2
         if (Math.abs(fValue)<=Math.PI/4){
            return (float)Math.sin(fValue);
@@ -246,8 +246,16 @@ final public class FastMath {
      * @return The cosine of fValue.
      * @see java.lang.Math#cos(double)
      */
-    public static float cos(float fValue) {
-        return sin(fValue+HALF_PI);
+    public static float cos2(float fValue) {
+        return sin2(fValue+HALF_PI);
+    }
+
+    public static float cos(float v){
+        return (float) Math.cos(v);
+    }
+
+    public static float sin(float v){
+        return (float) Math.sin(v);
     }
 
     /**
@@ -289,6 +297,15 @@ final public class FastMath {
      */
     public static float invSqrt(float fValue) {
         return (float) (1.0f / Math.sqrt(fValue));
+    }
+
+    public static float fastInvSqrt(float x) {
+        float xhalf = 0.5f * x;
+        int i = Float.floatToIntBits(x); // get bits for floating value
+        i = 0x5f375a86 - (i >> 1); // gives initial guess y0
+        x = Float.intBitsToFloat(i); // convert bits back to float
+        x = x * (1.5f - xhalf * x * x); // Newton step, repeating increases accuracy
+        return x;
     }
 
     /**

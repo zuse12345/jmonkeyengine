@@ -12,9 +12,10 @@ varying vec2 texCoord;
 vec4 blocks(vec2 halfBlockSize, vec2 pixelSize, float numPixels){
     vec2 startUV = texCoord - halfBlockSize;
     vec2 endUV = texCoord + halfBlockSize;
-    float sum = 0.0;
+
+    vec4 sum = vec4(0.0);
     float numPix = 0.0;
-    float maxLum = 0.0;
+    //float maxLum = 0.0;
 
     for (float x = startUV.x; x < endUV.x; x += pixelSize.x){
         for (float y = startUV.y; y < endUV.y; y += pixelSize.y){
@@ -22,32 +23,32 @@ vec4 blocks(vec2 halfBlockSize, vec2 pixelSize, float numPixels){
             vec4 color = texture2D(m_Texture, vec2(x,y));
 
             #ifdef ENCODE_LUM
-            color.r = HDR_GetLogLum(color.rgb);
+            color = HDR_EncodeLum(HDR_GetLum(color.rgb));
             #endif
-            #ifdef COMPUTE_MAX
-            maxLum = max(color.r, maxLum);
-            #endif
-            sum += color.r;
+            //#ifdef COMPUTE_MAX
+            //maxLum = max(color.r, maxLum);
+            //#endif
+            sum += color;
         }
     }
     sum /= numPix;
 
     #ifdef DECODE_LUM
-    sum = HDR_GetExpLum(sum);
-       #ifdef COMPUTE_MAX
-       maxLum = HDR_GetExpLum(maxLum);
-       #endif
+    sum = vec4(HDR_DecodeLum(sum));
+       //#ifdef COMPUTE_MAX
+       //maxLum = HDR_GetExpLum(maxLum);
+       //#endif
     #endif
 
-    return vec4(sum, maxLum, 0.0, 1.0);
+    return sum;
 }
 
 vec4 fetch(){
     vec4 color = texture2D(m_Texture, texCoord);
     #ifdef ENCODE_LUM
-       return vec4(HDR_GetLogLum(color.rgb));
+       return HDR_EncodeLum(HDR_GetLum(color.rgb));
     #elif defined DECODE_LUM
-       return vec4(HDR_GetExpLum(color.r));
+       return vec4(HDR_DecodeLum(color));
     #else
        return color;
     #endif

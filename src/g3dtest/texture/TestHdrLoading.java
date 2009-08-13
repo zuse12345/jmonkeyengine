@@ -8,7 +8,6 @@ import com.g3d.scene.shape.Quad;
 import com.g3d.system.AppSettings;
 import com.g3d.texture.Image;
 import com.g3d.texture.Texture2D;
-import com.g3d.util.ToneMapper;
 
 public class TestHdrLoading extends SimpleApplication {
 

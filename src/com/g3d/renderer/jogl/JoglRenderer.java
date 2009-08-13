@@ -562,7 +562,7 @@ public class JoglRenderer implements Renderer {
             }
         }
         if (indices != null){
-            drawTriangleList(indices, mesh.getMode(), 1);
+            drawTriangleList(indices, mesh.getMode(), 1, mesh.getVertexCount());
         }else{
             gl.glDrawArrays(convertElementMode(mesh.getMode()), 0, mesh.getVertexCount());
         }
@@ -612,7 +612,7 @@ public class JoglRenderer implements Renderer {
         }
     }
 
-    public void drawTriangleList(VertexBuffer indexBuf, Mode mode, int count) {
+    public void drawTriangleList(VertexBuffer indexBuf, Mode mode, int count, int vertCount) {
         indexBuf.getData().rewind();
         gl.glDrawElements(convertElementMode(mode),
                           indexBuf.getData().capacity(),

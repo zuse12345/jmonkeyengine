@@ -35,6 +35,14 @@ public class Geometry extends Spatial {
         this.mesh = mesh;
     }
 
+    public void setMesh(Mesh mesh){
+        if (mesh == null)
+            throw new NullPointerException();
+
+        this.mesh = mesh;
+        setBoundRefresh();
+    }
+
     public Mesh getMesh(){
         return mesh;
     }

@@ -298,6 +298,7 @@ public abstract class Texture extends GLObject implements Savable {
     private MagFilter magnificationFilter = MagFilter.Bilinear;
     private ShadowCompareMode shadowCompareMode = ShadowCompareMode.Off;
     private int anisotropicFilter;
+    private int imageIndex = 0;
 
     /**
      * Constructor instantiates a new <code>Texture</code> object with default
@@ -391,6 +392,14 @@ public abstract class Texture extends GLObject implements Savable {
      */
     public Image getImage() {
         return image;
+    }
+
+    public void setImageDataIndex(int index){
+        this.imageIndex = index;
+    }
+
+    public int getImageDataIndex() {
+        return imageIndex;
     }
 
     /**

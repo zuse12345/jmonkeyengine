@@ -85,6 +85,10 @@ void lightComputeDir(vec3 worldPos, vec4 color, vec4 position, out vec4 lightDir
     lightDir.xyz = tempVec / dist;
 }
 
+void lightComputeDir2(vec3 worldPos, vec4 color, vec4 position, out vec4 lightDir){
+    lightDir.xyz = normalize(position.xyz - worldPos);
+}
+
 void lightComputeAll(vec3 tanNormal, mat3 tbnMat,
                      int lightCount, out vec3 outDiffuse, out vec3 outSpecular){
    // find tangent view dir & vert pos
@@ -135,7 +139,6 @@ void main(){
    vec3 totalDiffuse = vec3(0.0);
    lightComputeAll(tanNormal, tbnMat, 4, totalDiffuse, totalSpecular);
 
-   //gl_FragColor = vec4(g_LightColor[0].xyz, 1.0);
    gl_FragColor = vec4(specularColor * totalSpecular
                      + diffuseColor.rgb * totalDiffuse, diffuseColor.a);
 

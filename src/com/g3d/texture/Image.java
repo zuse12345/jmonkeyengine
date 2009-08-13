@@ -135,6 +135,7 @@ public class Image implements Savable {
     protected int width, height, depth;
     protected int[] mipMapSizes;
     protected transient List<ByteBuffer> data;
+//    protected int mipOffset = 0;
 
     /**
      * Constructor instantiates a new <code>Image</code> object. All values

@@ -168,7 +168,7 @@ public class Uniform extends ShaderVariable {
         fb.flip();
         value = fb;
 
-        dataType = Type.Vector3Array;
+        dataType = Type.Vector4Array;
         updateNeeded = true;
     }
 

@@ -1,7 +1,9 @@
 package com.g3d.system.jogl;
 
 import com.g3d.input.KeyInput;
+import com.g3d.input.MouseInput;
 import com.g3d.input.awt.AwtKeyInput;
+import com.g3d.input.awt.AwtMouseInput;
 import com.g3d.renderer.jogl.JoglRenderer;
 import com.g3d.system.AppSettings;
 import com.g3d.system.AppSettings.Template;
@@ -215,6 +217,11 @@ public class JoglDisplay extends JoglContext implements GLEventListener {
     @Override
     public KeyInput getKeyInput(){
         return new AwtKeyInput(canvas);
+    }
+
+    @Override
+    public MouseInput getMouseInput(){
+        return new AwtMouseInput(canvas);
     }
 
     public void destroy(){

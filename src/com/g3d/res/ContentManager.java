@@ -11,7 +11,9 @@ import com.g3d.res.plugins.ClasspathLocator;
 import com.g3d.res.plugins.GLSLLoader;
 import com.g3d.res.plugins.HDRLoader;
 import com.g3d.res.plugins.OBJLoader;
+import com.g3d.res.plugins.PFMLoader;
 import com.g3d.res.plugins.TGALoader;
+import com.g3d.res.plugins.WAVLoader;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.Spatial;
@@ -55,18 +57,21 @@ public class ContentManager {
             //setup loading of resources from the classpath.
             registerLocator("/textures/",
                             ClasspathLocator.class,
-                            "dds", "hdr", "tga",
+                            "dds", "hdr", "pfm", "tga",
                             "bmp", "png",
                             "jpg", "jpeg", "gif");
+            registerLocator("/sounds/", ClasspathLocator.class, "wav", "ogg", "spx");
             registerLocator("/materials/", ClasspathLocator.class, "j3md", "j3m");
             registerLocator("/shaders/", ClasspathLocator.class, "glsl", "vert", "frag");
             registerLocator("/shaderlib/", ClasspathLocator.class, "glsllib");
             registerLocator("/models/", ClasspathLocator.class, "obj");
             registerLocator("/fonts/", ClasspathLocator.class, "fnt");
             registerLoader(AWTLoader.class, "jpg", "bmp", "gif", "png", "jpeg");
+            registerLoader(WAVLoader.class, "wav");
             registerLoader(J3MLoader.class, "j3m");
             registerLoader(J3MLoader.class, "j3md"); // use seperate loader
             registerLoader(BitmapFontLoader.class, "fnt");
+            registerLoader(PFMLoader.class, "pfm");
             registerLoader(HDRLoader.class, "hdr");
             registerLoader(DDSLoader.class, "dds");
             registerLoader(TGALoader.class, "tga");

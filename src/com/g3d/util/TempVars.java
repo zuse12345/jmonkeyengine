@@ -7,8 +7,6 @@ import com.g3d.math.Quaternion;
 import com.g3d.math.Triangle;
 import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -31,6 +29,54 @@ public class TempVars {
 
     public static TempVars get(){
         return varsLocal.get();
+    }
+
+    private TempVars(){
+    }
+
+    private boolean locked = false;
+    private StackTraceElement[] lockerStack;
+
+    public final boolean lock(){
+        if (locked){
+           System.err.println("INTERNAL ERROR");
+           System.err.println("Offending trace: ");
+
+           StackTraceElement[] stack = new Throwable().getStackTrace();
+           for (int i = 1; i < stack.length; i++){
+               System.err.println("\tat "+stack[i].toString());
+           }
+
+           System.err.println("Attempted to aquire TempVars lock owned by");
+           for (int i = 1; i < lockerStack.length; i++){
+               System.err.println("\tat "+lockerStack[i].toString());
+           }
+           System.exit(1);
+           return false;
+        }
+
+        lockerStack = new Throwable().getStackTrace();
+        locked = true;
+        return true;
+    }
+
+    public final boolean unlock(){
+        if (!locked){
+            System.err.println("INTERNAL ERROR");
+            System.err.println("Attempted to release non-existent lock: ");
+
+            StackTraceElement[] stack = new Throwable().getStackTrace();
+            for (int i = 1; i < stack.length; i++){
+                System.err.println("\tat "+stack[i].toString());
+            }
+
+            System.exit(1);
+            return false;
+        }
+
+        lockerStack = null;
+        locked = false;
+        return true;
     }
 
     /**

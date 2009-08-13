@@ -41,9 +41,11 @@ public class TestYCoCgDds extends SimpleApplication {
     }
 
     public void simpleInitApp() {
+        manager.setProperty("FlipImages", "true");
+
         // create a simple plane/quad
         quadMesh = new Quad(1, 1);
-        quadMesh.updateGeometry(1, 1, true);
+        quadMesh.updateGeometry(1, 1, false);
 
         rootNode.attachChild(createQuad(-1f, "TestRGB.tga", false));
         rootNode.attachChild(createQuad(0f, "TestYCoCgDXT5.dds", true));

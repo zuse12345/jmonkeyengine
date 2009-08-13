@@ -10,35 +10,30 @@ The jMonkeyEngine project consists of a 'core team' of managers and developers w
 
 Please note that regardless of key descriptions, most members take part in fields beyond the ones ascribed to them.
 
-== Programmers ==
-=== Kirill Vainer - "Momoko_Fan" ===
+== [http://www.jmonkeyengine.com/forum/Themes/jME/images/jme-developer.png] Programmers ==
+==== Kirill Vainer - "Momoko_Fan" ====
  * *Post:* Lead programmer and 'jME3 visionary'
  * *Fields:* Architecture, sound, graphics
  * *Status:* Student at ?
 
-=== Doug Twilleager - "..." ===
+==== Doug Twilleager - "..." ====
  * *Post:* Associate architect
  * *Fields:* Architecture, threading
  * *Status:* Senior Sun employee, head programmer of Project Wonderland
 
-=== Savas Ziplies - "..." ===
+==== Savas Ziplies - "..." ====
  * *Post:* Android, mobile development
- * *Fields:* OpenGL ES, android
+ * *Fields:* OpenGL ES, Android
  * *Status:* employee at ?
 
-== Managers ==
+== [http://www.jmonkeyengine.com/forum/Themes/jME/images/jme-manager.png] Managers ==
 
-=== Erlend Sogge Heggen - "erlend_sh" ===
- * Project Manager
- * *Fields:* Public relations, 
+==== Erlend Sogge Heggen - "[http://www.jmonkeyengine.com/forum/index.php?action=profile;u=1092 erlend_sh]" ====
+ * *Post:* Project Manager
+ * *Fields:* Public relations, project management
  * *Status:* Student at Vancouver Film School, game design course.
 
-=== Skye Books - "sbook" ===
+==== Skye Books - "sbook" ====
  * *Post:* Webmaster
  * *Fields:* Back-end website management, public relations
- * *Status: Student at ?, working on Betaville
-
-===  ===
- * *Post:*
- * *Fields:*
- * *Status:
+ * *Status:* Student at ?, working on Betaville

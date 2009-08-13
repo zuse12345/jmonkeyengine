@@ -1,4 +1,5 @@
 #summary Future tasks to be completed for jMonkeyEngine 3.0
+#labels Featured,Administrative
 
 = Introduction =
 

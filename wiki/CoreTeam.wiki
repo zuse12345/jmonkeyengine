@@ -26,6 +26,11 @@ Please note that regardless of key descriptions, most members take part in field
  * *Fields:* OpenGL ES, Android
  * *Status:* employee at ?
 
+==== Aleksey N (?) - "lex" ====
+ * *Post:* Graphics
+ * *Fields:* Graphics rendering, shaders, OpenGL and GLSL
+ * *Status:* employee/student at? also working with EngineName(?)
+
 == [http://www.jmonkeyengine.com/forum/Themes/jME/images/jme-manager.png] Managers ==
 
 ==== Erlend Sogge Heggen - "[http://www.jmonkeyengine.com/forum/index.php?action=profile;u=1092 erlend_sh]" ====

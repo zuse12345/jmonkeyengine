@@ -25,8 +25,8 @@ public class FlyByCamera implements BindingListener {
 
     private Camera cam;
     private Vector3f initialUpVec;
-    private float rotationSpeed = 0.2f;
-    private float moveSpeed = 1f;
+    private float rotationSpeed = 1f;
+    private float moveSpeed = 3f;
 
     /**
      * Creates a new FlyByCamera to control the given Camera object.
@@ -43,6 +43,14 @@ public class FlyByCamera implements BindingListener {
      */
     public void setMoveSpeed(float moveSpeed){
         this.moveSpeed = moveSpeed;
+    }
+
+    /**
+     * Sets the rotation speed.
+     * @param rotationSpeed
+     */
+    public void setRotationSpeed(float rotationSpeed){
+        this.rotationSpeed = rotationSpeed;
     }
 
     /**

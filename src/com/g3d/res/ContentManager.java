@@ -1,5 +1,6 @@
 package com.g3d.res;
 
+import com.g3d.audio.AudioData;
 import com.g3d.font.BitmapFont;
 import com.g3d.font.BitmapFontLoader;
 import com.g3d.material.J3MLoader;
@@ -10,6 +11,7 @@ import com.g3d.res.plugins.AWTLoader;
 import com.g3d.res.plugins.ClasspathLocator;
 import com.g3d.res.plugins.GLSLLoader;
 import com.g3d.res.plugins.HDRLoader;
+import com.g3d.res.plugins.JOGGLoader;
 import com.g3d.res.plugins.OBJLoader;
 import com.g3d.res.plugins.PFMLoader;
 import com.g3d.res.plugins.TGALoader;
@@ -68,6 +70,7 @@ public class ContentManager {
             registerLocator("/fonts/", ClasspathLocator.class, "fnt");
             registerLoader(AWTLoader.class, "jpg", "bmp", "gif", "png", "jpeg");
             registerLoader(WAVLoader.class, "wav");
+            registerLoader(JOGGLoader.class, "ogg");
             registerLoader(J3MLoader.class, "j3m");
             registerLoader(J3MLoader.class, "j3md"); // use seperate loader
             registerLoader(BitmapFontLoader.class, "fnt");
@@ -265,6 +268,11 @@ public class ContentManager {
         
         Geometry g = new Geometry("Geometry: "+name, m);
         return g;
+    }
+
+    public AudioData loadAudio(String name, boolean stream){
+        setProperty("AudioStreaming", Boolean.toString(stream));
+        return (AudioData) loadContent(new ContentKey(name), !stream);
     }
 
     public MaterialDef loadMaterialDef(String name) {

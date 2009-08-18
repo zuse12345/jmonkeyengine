@@ -37,9 +37,9 @@ public class TestTerrainLighting extends SimpleApplication {
             Geomap heightmap = GeomapLoader.fromImage(imageUrl);
 
             // generate mesh from the geomap
-            //terrainMesh = heightmap.createMesh(new Vector3f(1f, 0.005f, 1f), Vector2f.UNIT_XY, true);
-            //terrainMesh.setStatic();
-            terrainMesh = new Sphere(32,32,1);
+            terrainMesh = heightmap.createMesh(new Vector3f(1f, 0.005f, 1f), Vector2f.UNIT_XY, true);
+            terrainMesh.setStatic();
+//            terrainMesh = new Sphere(32,32,1);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -48,6 +48,8 @@ public class TestTerrainLighting extends SimpleApplication {
         terrain = new Geometry("Terrain", terrainMesh);
         terrain.updateModelBound();
 
+//        terrainMesh.convertToHalf();
+
         // use phong shading material
         Material mat = new Material(manager, "phong_lighting.j3md");
 //        Material mat = manager.loadMaterial("red_color.j3m");
@@ -55,17 +57,19 @@ public class TestTerrainLighting extends SimpleApplication {
         rootNode.attachChild(terrain);
 
         // create point light at the center with radius 100
-        PointLight pl = new PointLight();
-        pl.setColor(ColorRGBA.Green);
-        pl.setPosition(new Vector3f(0, 100, 0));
-        pl.setRadius(100);
-        rootNode.addLight(pl);
-
+//        PointLight pl = new PointLight();
+//        pl.setColor(ColorRGBA.Green);
+//        pl.setPosition(new Vector3f(0, 100, 0));
+//        pl.setRadius(100);
+//        rootNode.addLight(pl);
+//
         // create directional light from the front
         DirectionalLight dl = new DirectionalLight();
         dl.setDirection(new Vector3f(0f, -1f, -1f).normalizeLocal());
         dl.setColor(ColorRGBA.Red.multLocal(0.3f));
         rootNode.addLight(dl);
+
+        cam.setLocation(new Vector3f(0, 200, 0));
     }
 
     @Override

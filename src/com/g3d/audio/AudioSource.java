@@ -1,6 +1,7 @@
 package com.g3d.audio;
 
 import com.g3d.math.Vector3f;
+import com.g3d.res.ContentManager;
 
 public class AudioSource extends ALObject {
 
@@ -9,9 +10,11 @@ public class AudioSource extends ALObject {
 
     private boolean positional = true;
     private boolean loop = false;
+    private boolean reverbEnabled = true;
     private float volume = 1;
     private float pitch = 1;
     private float timeOffset = 0;
+    private float maxDistance = 20; // 20 meters
 
     private AudioData data = null;
     private Status status = Status.Stopped;
@@ -30,6 +33,14 @@ public class AudioSource extends ALObject {
         setAudioData(ad);
     }
 
+    public AudioSource(ContentManager manager, String name, boolean stream){
+        this(manager.loadAudio(name, stream));
+    }
+    
+    public AudioSource(ContentManager manager, String name){
+        this(manager, name, false);
+    }
+    
     public void setAudioData(AudioData ad){
         if (data != null)
             throw new IllegalStateException("AudioData already set");
@@ -56,6 +67,22 @@ public class AudioSource extends ALObject {
 
     public void setPositional(boolean positional) {
         this.positional = positional;
+    }
+
+    public boolean isReverbEnabled() {
+        return reverbEnabled;
+    }
+
+    public void setReverbEnabled(boolean reverbEnabled) {
+        this.reverbEnabled = reverbEnabled;
+    }
+
+    public float getMaxDistance() {
+        return maxDistance;
+    }
+
+    public void setMaxDistance(float maxDistance) {
+        this.maxDistance = maxDistance;
     }
 
     public Vector3f getPosition() {

@@ -2,6 +2,7 @@ package com.g3d.res.plugins;
 
 import com.g3d.audio.AudioBuffer;
 import com.g3d.audio.AudioData;
+import com.g3d.audio.AudioStream;
 import com.g3d.res.ContentKey;
 import com.g3d.res.ContentLoader;
 import com.g3d.res.ContentManager;
@@ -26,6 +27,7 @@ public class WAVLoader implements ContentLoader {
     private boolean readStream = false;
 
     private AudioBuffer audioBuffer;
+    private AudioStream audioStream;
     private AudioData audioData;
     private int bytesPerSec;
     private int dataLength;
@@ -102,8 +104,12 @@ public class WAVLoader implements ContentLoader {
         if (in.readInt() != i_WAVE)
             throw new IOException("WAVE File does not contain audio");
 
+        String streamProp = owner.getProperty("AudioStreaming");
+        readStream = streamProp != null && streamProp.equals("true");
+
         if (readStream){
-            // ..
+            audioStream = new AudioStream();
+            audioData = audioStream;
         }else{
             audioBuffer = new AudioBuffer();
             audioData = audioBuffer;
@@ -118,7 +124,11 @@ public class WAVLoader implements ContentLoader {
                     readFormatChunk(len);
                     break;
                 case i_data:
-                    readDataChunkForBuffer(len);
+                    if (readStream){
+                        audioStream.updateData(stream);
+                    }else{
+                        readDataChunkForBuffer(len);
+                    }
                     return audioData;
                 default:
                     int skipped = in.skipBytes(len);

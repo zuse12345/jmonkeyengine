@@ -52,7 +52,7 @@ public class G3DSystem {
         }
         return ctx;
     }
-
+    
     public static void initialize(){
         if (initialized)
             return;

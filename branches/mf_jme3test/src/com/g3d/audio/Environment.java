@@ -42,6 +42,7 @@ public class Environment {
         // skip room size
         // e[1]
 
+//        density = 0;
         diffusion = e[2];
         gain = eaxDbToAmp(e[3]); // convert
         gainHf = eaxDbToAmp(e[4]) / eaxDbToAmp(e[5]); // convert

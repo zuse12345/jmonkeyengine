@@ -392,8 +392,12 @@ public class LwjglRenderer implements Renderer {
         orthoMatrix.setScale(new Vector3f(m00,m11,m22));
     }
 
+    @Override
     public void onFrame(){
         objManager.deleteUnused(this);
+
+        if (camera == null)
+            return;
 
         if (camera.isViewportChanged()){
             updateViewPort(camera.getWidth(), camera.getHeight());
@@ -401,6 +405,7 @@ public class LwjglRenderer implements Renderer {
         }
     }
 
+    @Override
     public void setWorldMatrix(Matrix4f worldMatrix){
         this.worldMatrix.set(worldMatrix);
     }

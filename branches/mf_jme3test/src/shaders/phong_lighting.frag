@@ -89,26 +89,44 @@ void lightComputeDir2(vec3 worldPos, vec4 color, vec4 position, out vec4 lightDi
     lightDir.xyz = normalize(position.xyz - worldPos);
 }
 
-void lightComputeAll(vec3 tanNormal, mat3 tbnMat,
+void lightComputeAll(vec3 normal, mat3 tbnMat,
                      int lightCount, out vec3 outDiffuse, out vec3 outSpecular){
-   // find tangent view dir & vert pos
-   vec3 tanViewDir = viewDir * tbnMat;
+    #ifdef HAS_NORMALMAP
+        // find tangent view dir & vert pos
+        vec3 tanViewDir = viewDir * tbnMat;
 
-   for (int i = 0; i < lightCount; i++){
-       // find light dir in tangent space, works for point & directional lights
-       vec4 wvLightPos = (g_ViewMatrix * vec4(g_LightPosition[i].xyz, g_LightColor[i].w));
-       wvLightPos.w = g_LightPosition[i].w;
+        for (int i = 0; i < lightCount; i++){
+           // find light dir in tangent space, works for point & directional lights
+           vec4 wvLightPos = (g_ViewMatrix * vec4(g_LightPosition[i].xyz, g_LightColor[i].w));
+           wvLightPos.w = g_LightPosition[i].w;
 
-       vec4 tanLightDir;
-       lightComputeDir(wvPosition, g_LightColor[i], wvLightPos, tanLightDir);
-       tanLightDir.xyz = tanLightDir.xyz * tbnMat;
+           vec4 tanLightDir;
+           lightComputeDir(wvPosition, g_LightColor[i], wvLightPos, tanLightDir);
+           tanLightDir.xyz = tanLightDir.xyz * tbnMat;
 
-       vec3 lightScale = g_LightColor[i].rgb * tanLightDir.w;
-       float specular = lightComputeSpecular(tanNormal, tanViewDir, tanLightDir.xyz, m_Shininess);
-       float diffuse = lightComputeDiffuse(tanNormal, tanLightDir.xyz);
-       outSpecular += specular * lightScale * step(0.01, diffuse) * g_LightColor[i].rgb;
-       outDiffuse += diffuse * lightScale * g_LightColor[i].rgb;
-   }
+           vec3 lightScale = g_LightColor[i].rgb * tanLightDir.w;
+           float specular = lightComputeSpecular(normal, tanViewDir, tanLightDir.xyz, m_Shininess);
+           float diffuse = lightComputeDiffuse(normal, tanLightDir.xyz);
+           outSpecular += specular * lightScale * step(0.01, diffuse) * g_LightColor[i].rgb;
+           outDiffuse += diffuse * lightScale * g_LightColor[i].rgb;
+        }
+    #else
+        // no normal map - use model view coordinates
+        for (int i = 0; i < lightCount; i++){
+           // find light dir in tangent space, works for point & directional lights
+           vec4 wvLightPos = (g_ViewMatrix * vec4(g_LightPosition[i].xyz, g_LightColor[i].w));
+           wvLightPos.w = g_LightPosition[i].w;
+
+           vec4 lightDir;
+           lightComputeDir(wvPosition, g_LightColor[i], wvLightPos, lightDir);
+
+           vec3 lightScale = g_LightColor[i].rgb * lightDir.w;
+           float specular = lightComputeSpecular(normal, viewDir, lightDir.xyz, m_Shininess);
+           float diffuse = lightComputeDiffuse(normal, lightDir.xyz);
+           outSpecular += specular * lightScale * step(0.01, diffuse) * g_LightColor[i].rgb;
+           outDiffuse += diffuse * lightScale * g_LightColor[i].rgb;
+        }
+    #endif
 }
 
 //=====
@@ -117,8 +135,6 @@ void main(){
    // read normal from texture
    #ifdef HAS_NORMALMAP
     vec3 tanNormal = (texture2D(m_NormalMap, texCoord).xyz * vec3(2.0) - vec3(1.0));
-   #else
-    vec3 tanNormal = vec3(0.0, 0.0, 1.0);
    #endif
 
    #ifdef HAS_DIFFUSEMAP
@@ -137,7 +153,12 @@ void main(){
 
    vec3 totalSpecular = vec3(0.0);
    vec3 totalDiffuse = vec3(0.0);
-   lightComputeAll(tanNormal, tbnMat, 4, totalDiffuse, totalSpecular);
+
+   #ifdef HAS_NORMALMAP
+    lightComputeAll(tanNormal, tbnMat, 4, totalDiffuse, totalSpecular);
+   #else
+    lightComputeAll(wvNormal, tbnMat, 4, totalDiffuse, totalSpecular);
+   #endif
 
    gl_FragColor = vec4(specularColor * totalSpecular
                      + diffuseColor.rgb * totalDiffuse, diffuseColor.a);

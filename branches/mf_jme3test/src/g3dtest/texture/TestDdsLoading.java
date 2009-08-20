@@ -14,6 +14,7 @@ public class TestDdsLoading extends SimpleApplication {
         app.start();
     }
 
+    @Override
     public void simpleInitApp() {
         manager.setProperty("FlipImages", "true");
 

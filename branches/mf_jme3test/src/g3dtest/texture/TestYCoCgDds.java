@@ -47,7 +47,7 @@ public class TestYCoCgDds extends SimpleApplication {
         quadMesh = new Quad(1, 1);
         quadMesh.updateGeometry(1, 1, false);
 
-        rootNode.attachChild(createQuad(-1f, "TestRGB.tga", false));
+        rootNode.attachChild(createQuad(-1f, "TestRGB.png", false));
         rootNode.attachChild(createQuad(0f, "TestYCoCgDXT5.dds", true));
         rootNode.attachChild(createQuad(1f, "TestDXT1.dds", false));
     }

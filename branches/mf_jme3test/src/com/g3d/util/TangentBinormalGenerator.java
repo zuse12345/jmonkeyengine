@@ -17,10 +17,7 @@ import java.util.logging.Logger;
 import static com.g3d.util.BufferUtils.*;
 
 /*
- * TODO:
- *  +add simplified tangent and complete tangent + binormal
- *  +add support for triangle strips and fans,
- *  +add support for rebuilding problematic meshes.
+ * Maybe add support for rebuilding problematic meshes.
  */
 public class TangentBinormalGenerator {
 
@@ -108,7 +105,10 @@ public class TangentBinormalGenerator {
     }
 
     public static void generate(Mesh mesh) {
-        System.out.println("generating");
+        generate(mesh, true);
+    }
+
+    public static void generate(Mesh mesh, boolean approxTangents) {
         int[] index = new int[3];
         Vector3f[] v = new Vector3f[3];
         Vector2f[] t = new Vector2f[3];
@@ -129,8 +129,7 @@ public class TangentBinormalGenerator {
                     mesh.getMode() + " is not supported.");
         }
 
-        //compute average tangents
-
+        processTriangleData(mesh, vertices, approxTangents);
     }
 
     private static VertexData[] processTriangles(Mesh mesh,
@@ -162,12 +161,91 @@ public class TangentBinormalGenerator {
     private static VertexData[] processTriangleStrip(Mesh mesh,
             int[] index, Vector3f[] v, Vector2f[] t)
     {
-        return null;
+        IndexWrapper indexBuffer =  getIndexWrapper(mesh.getBuffer(Type.Index).getData());
+        FloatBuffer vertexBuffer = (FloatBuffer) mesh.getBuffer(Type.Position).getData();
+        FloatBuffer textureBuffer = (FloatBuffer) mesh.getBuffer(Type.TexCoord).getData();
+
+        VertexData[] vertices = initVertexData(vertexBuffer.capacity() / 3);
+
+        index[0] = indexBuffer.get(0);
+        index[1] = indexBuffer.get(1);
+
+        populateFromBuffer(v[0], vertexBuffer, index[0]);
+        populateFromBuffer(v[1], vertexBuffer, index[1]);
+
+        populateFromBuffer(t[0], textureBuffer, index[0]);
+        populateFromBuffer(t[1], textureBuffer, index[1]);
+
+        for (int i = 2; i < vertexBuffer.capacity() / 3; i++) {
+            index[2] = indexBuffer.get(i);
+            BufferUtils.populateFromBuffer(v[2], vertexBuffer, index[2]);
+            BufferUtils.populateFromBuffer(t[2], textureBuffer, index[2]);
+
+            TriangleData triData = processTriangle(index, v, t);
+            if (triData != null) {
+                vertices[index[0]].triangles.add(triData);
+                vertices[index[1]].triangles.add(triData);
+                vertices[index[2]].triangles.add(triData);
+            }
+
+            Vector3f vTemp = v[0];
+            v[0] = v[1];
+            v[1] = v[2];
+            v[2] = vTemp;
+
+            Vector2f tTemp = t[0];
+            t[0] = t[1];
+            t[1] = t[2];
+            t[2] = tTemp;
+
+            index[0] = index[1];
+            index[1] = index[2];
+        }
+
+        return vertices;
     }
     private static VertexData[] processTriangleFan(Mesh mesh,
             int[] index, Vector3f[] v, Vector2f[] t)
     {
-        return null;
+        IndexWrapper indexBuffer =  getIndexWrapper(mesh.getBuffer(Type.Index).getData());
+        FloatBuffer vertexBuffer = (FloatBuffer) mesh.getBuffer(Type.Position).getData();
+        FloatBuffer textureBuffer = (FloatBuffer) mesh.getBuffer(Type.TexCoord).getData();
+
+        VertexData[] vertices = initVertexData(vertexBuffer.capacity() / 3);
+
+        index[0] = indexBuffer.get(0);
+        index[1] = indexBuffer.get(1);
+
+        populateFromBuffer(v[0], vertexBuffer, index[0]);
+        populateFromBuffer(v[1], vertexBuffer, index[1]);
+
+        populateFromBuffer(t[0], textureBuffer, index[0]);
+        populateFromBuffer(t[1], textureBuffer, index[1]);
+
+        for (int i = 2; i < vertexBuffer.capacity() / 3; i++) {
+            index[2] = indexBuffer.get(i);
+            populateFromBuffer(v[2], vertexBuffer, index[2]);
+            populateFromBuffer(t[2], textureBuffer, index[2]);
+
+            TriangleData triData = processTriangle(index, v, t);
+            if (triData != null) {
+                vertices[index[0]].triangles.add(triData);
+                vertices[index[1]].triangles.add(triData);
+                vertices[index[2]].triangles.add(triData);
+            }
+
+            Vector3f vTemp = v[1];
+            v[1] = v[2];
+            v[2] = vTemp;
+
+            Vector2f tTemp = t[1];
+            t[1] = t[2];
+            t[2] = tTemp;
+
+            index[1] = index[2];
+        }
+
+        return vertices;
     }
 
     private static TriangleData processTriangle(int[] index,
@@ -187,9 +265,11 @@ public class TangentBinormalGenerator {
         float det = edge1uv.x*edge2uv.y - edge1uv.y*edge2uv.x;
 
         if (Math.abs(det) < FastMath.ZERO_TOLERANCE) {
-            log.log(Level.WARNING, "Linearly dependent texture coordinates " +
-                    "for triangle [{0}, {1}, {2}].",
-                    new Object[]{ index[0], index[1], index[2] });
+            log.log(Level.WARNING, "Bad uv coordinates for triangle " +
+                    "[{0}, {1}, {2}]; tex0 = [{3}, {4}], " +
+                    "tex1 = [{5}, {6}], tex2 = [{7}, {8}]",
+                    new Object[]{ index[0], index[1], index[2],
+                    t[0].x, t[0].y, t[1].x, t[1].y, t[2].x, t[2].y });
             return null;
         }
 
@@ -240,7 +320,9 @@ public class TangentBinormalGenerator {
         toleranceAngle = angle;
     }
 
-    private void processTriangleData(Mesh mesh, VertexData[] vertices) {
+    private static void processTriangleData(Mesh mesh, VertexData[] vertices,
+            boolean approxTangent)
+    {
         FloatBuffer normalBuffer = (FloatBuffer) mesh.getBuffer(Type.Normal).getData();
 
         FloatBuffer tangents = BufferUtils.createFloatBuffer(vertices.length * 3);
@@ -271,12 +353,14 @@ public class TangentBinormalGenerator {
 
                 if (tangent.dot(triangleData.tangent) < toleranceDot) {
                     log.log(Level.WARNING,
-                            "Angle between tangents exceeds tolerance.");
+                        "Angle between tangents exceeds tolerance " +
+                        "for vertex {0}.", i);
                     break;
                 }
                 if (binormal.dot(triangleData.binormal) < toleranceDot) {
                     log.log(Level.WARNING,
-                            "Angle between binormals exceeds tolerance.");
+                            "Angle between binormals exceeds tolerance " +
+                            "for vertex {0}.", i);
                     break;
                 }
             }
@@ -329,18 +413,23 @@ public class TangentBinormalGenerator {
                 continue;
             }
 
-            // FIXME: add simplified tangent and complete tangent + binormal
-            givenNormal.cross(tangent, binormal);
-            binormal.cross(givenNormal, tangent);
-            tangent.normalizeLocal();
+            // TODO: add additional checking for approx vs actual
+            if (approxTangent) {
+                givenNormal.cross(tangent, binormal);
+                binormal.cross(givenNormal, tangent);
+                tangent.normalizeLocal();
+                
+                setInBuffer(tangent, tangents, i);
+            }
+            else {
+                setInBuffer(tangent, tangents, i);
+                setInBuffer(binormal, binormals, i);
+            }
 
-            // store the computed values
-            setInBuffer(tangent, tangents, i);
-            setInBuffer(binormal, binormals, i);
         }
 
         mesh.setBuffer(Type.Tangent,  3, tangents);
-        mesh.setBuffer(Type.Binormal, 3, binormals);
+        if (!approxTangent) mesh.setBuffer(Type.Binormal, 3, binormals);
     }
     
 }

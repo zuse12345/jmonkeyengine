@@ -13,8 +13,8 @@ Please note that regardless of key descriptions, most members take part in field
 == [http://www.jmonkeyengine.com/forum/Themes/jME/images/jme-developer.png] Programmers ==
 ==== Kirill Vainer - "Momoko_Fan" ====
  * *Post:* Lead programmer and 'jME3 visionary'
- * *Fields:* Architecture, sound, graphics
- * *Status:* Student at ?
+ * *Fields:* Architecture, and everything else
+ * *Status:* Student at New Jersey Institute of Technology (NJIT)
 
 ==== Doug Twilleager - "..." ====
  * *Post:* Associate architect

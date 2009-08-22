@@ -1,7 +1,6 @@
 #summary Wiki Sidebar
 
- * [CoreTeam]
- * [Roadmap]
- * [jME3Build]
- * [jME3Depends]
+ * CoreTeam
+ * Roadmap
+ * DependsJme3
  * BuildJme3

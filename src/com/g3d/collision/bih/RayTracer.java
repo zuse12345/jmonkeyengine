@@ -100,21 +100,7 @@ public class RayTracer extends javax.swing.JFrame {
                         for (int y2 = 0; y2 < packSize; y2++){
                             int fx = x*packSize+x2;
                             int fy = y*packSize+y2;
-
-                            // find loc
-//                            store.set((float)fx / (float)getWidth(),
-//                                      1f - (float)fy / (float)getHeight(), 0);
-//                            float w = inverseMat.multProj(store, out);
-//                            out.multLocal(1f / w);
-//                            r.setOrigin(out);
-//
-//                            // find dir
-//                            store.setZ(1);
-//                            w = inverseMat.multProj(store, out);
-//                            out.multLocal(1f / w);
-//                            store.set(out).subtractLocal(r.getOrigin()).normalizeLocal();
-//                            r.setDirection(store);
-
+                            
                             Vector3f pix = cam.getWorldCoordinates(new Vector2f(fx,getHeight()-fy), 0f);
                             Vector3f dir = cam.getWorldCoordinates(new Vector2f(fx,getHeight()-fy), 1f);
                             dir.subtractLocal(pix);
@@ -132,21 +118,28 @@ public class RayTracer extends javax.swing.JFrame {
 
                                 float ndotl = tNorm.dot(diff);
                                 ndotl = Math.min(ndotl, 1f);
+
+                                Vector3f pixPos = r.getDirection().clone();
+                                pixPos.multLocal(results.getClosestDistance());
+                                pixPos.addLocal(r.getOrigin());
+
+                                Vector3f pixDir = lightPos.subtract(pixPos).normalizeLocal();
+
                                 if (ndotl > 0){
                                     c = new Color(ndotl, ndotl, ndotl);
+                                    Ray r2 = new Ray(pixPos, pixDir);
+                                    tree.intersect(r2, results);
+                                    if (results.getClosestTriangle() != null)
+                                        c = Color.black;
                                 }else{
                                     c = Color.black;
                                 }
 
-                                //g2d.setColor(c);
-                                //g2d.drawLine(fx, fy, fx, fy);
                                 img.setRGB(fx, fy, c.getRGB());
                                 continue;
                             }
 
                             img.setRGB(fx, fy, Color.black.getRGB());
-                            //g2d.setColor(Color.black);
-                            //g2d.drawLine(fx, fy, fx, fy);
                         }
                     }
                 }

@@ -1,6 +1,7 @@
 package com.g3d.collision.bih;
 
 import com.g3d.bounding.BoundingBox;
+import com.g3d.bounding.BoundingSphere;
 import com.g3d.collision.TrianglePickResults;
 import com.g3d.math.Ray;
 import com.g3d.math.Vector3f;
@@ -68,48 +69,6 @@ public class BIHNode {
                 return 0;
         }
     }
-
-//    private static final float getArea(Triangle t){
-//        Vector3f tmpA = TempVars.get().vect1;
-//        Vector3f tmpB = TempVars.get().vect2;
-//
-//        tmpA.set(t.get(1)).subtractLocal(t.get(0));
-//        tmpB.set(t.get(2)).subtractLocal(t.get(0));
-//        tmpA.crossLocal(tmpB);
-//        return tmpA.lengthSquared();
-//    }
-//
-//    private static final int getCost(Triangle[] triangles, int index){
-//        float leftArea = 0, rightArea = 0;
-//        for (int i = 0; i < index; i++){
-//            leftArea  += getArea(triangles[i]);
-//        }
-//        for (int i = index; i < triangles.length; i++){
-//            rightArea += getArea(triangles[i]);
-//        }
-//        float leftCount  = index;
-//        float rightCount = triangles.length - index;
-//
-//        return (int) (1f + 3f * (leftArea * leftCount + rightArea * rightCount));
-//    }
-//
-//    private static final int getOptimalSplitPos(Triangle[] tris, int axis){
-//        int bestCost = Integer.MAX_VALUE;
-//        int bestPos  = -1;
-//        int rate = tris.length / 32;
-//        if (tris.length < 64)
-//            rate = 1;
-//
-//        for (int i = 0; i < tris.length; i+=rate){
-//            int cost;
-//            if ( (cost = getCost(tris, i)) < bestCost){
-//                bestCost = cost;
-//                bestPos = i;
-//            }
-//        }
-//
-//        return bestPos;
-//    }
 
     public void computeFromTris(BIHTriangle[] tris, BoundingBox store) {
         TempVars vars = TempVars.get();
@@ -227,7 +186,7 @@ public class BIHNode {
         BIHTriangle[] rightTris = new BIHTriangle[triangles.length - splitIndex];
         System.arraycopy(triangles, splitIndex, rightTris, 0, rightTris.length);
 
-        left = new BIHNode(leftTris,   (axis + 1) % 3);
+        left  = new BIHNode(leftTris,   (axis + 1) % 3);
         right = new BIHNode(rightTris, (axis + 1) % 3);
 
         // no longer a leaf
@@ -251,6 +210,47 @@ public class BIHNode {
 
     public static long  hits = 0,
                         misses = 0;
+
+    public final void intersectWhere(BoundingBox box, int minTrisPerNode, TrianglePickResults results){
+        stack.clear();
+
+        float[] minExts  = { box.getCenter().x - box.getXExtent(),
+                             box.getCenter().y - box.getYExtent(),
+                             box.getCenter().z - box.getZExtent() };
+
+        float[] maxExts  = { box.getCenter().x + box.getXExtent(),
+                             box.getCenter().y + box.getYExtent(),
+                             box.getCenter().z + box.getZExtent() };
+
+        stack.add(new BIHStackData(this, 0,0));
+
+        stackloop: while (stack.size() > 0){
+            BIHNode node = stack.remove(stack.size()-1).node;
+
+            while (node.triangles == null){
+                int a = node.axis;
+
+                float maxExt = minExts[a];
+                float minExt = maxExts[a];
+
+                boolean intersectLeft = minExt < node.leftPlane &&
+                                        node.leftPlane < maxExt;
+                boolean intersectRight = minExt < node.rightPlane &&
+                                        node.rightPlane < maxExt;
+
+                if (intersectLeft && intersectRight){
+                    stack.add(new BIHStackData(node.right, 0, 0));
+                    node = node.left;
+                }else if (intersectLeft){
+                    node = node.left;
+                }else if (intersectRight){
+                    node = node.right;
+                }else{
+                    continue stackloop;
+                }
+            }
+        }
+    }
 
     public final void intersectWhere(Ray r, float sceneMin, float sceneMax, int minTrisPerNode,
                                             TrianglePickResults results){
@@ -357,10 +357,6 @@ public class BIHNode {
 //            if (results.size() > 0)
 //                return;
         }
-
-//        System.out.println("Hits: "+hits+", misses: "+misses);
-//        hits = 0;
-//        misses = 0;
     }
 
 }

@@ -1,0 +1,12 @@
+#summary How to download and build jME3
+#labels Featured
+
+== Check out jME3 from SVN using _NetBeans IDE 6.5_ ==
+
+  # Go to "Versioning" -> "Check out.."
+  # Enter "http://jmonkeyengine.googlecode.com/svn" for Repository URL.
+  # Click "Next"
+  # Click "Browse..." to the right of "Repository Folder(s)".
+  # In the new window, open "branches" tree, and select "mf_jme3test"
+  # Under "Local Folder" specify the folder where you want the jME3 project.
+  # Click "Finish"

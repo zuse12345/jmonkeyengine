@@ -4,3 +4,4 @@
  * [Roadmap]
  * [jME3Build]
  * [jME3Depends]
+ * BuildJME3

@@ -168,6 +168,15 @@ public class Plane implements Savable, Cloneable {
         return constant;
     }
 
+    public Vector3f getClosestPoint(Vector3f point, Vector3f store){
+        float t = (constant - normal.dot(point)) / normal.dot(normal);
+        return store.set(normal).multLocal(t).addLocal(point);
+    }
+
+    public Vector3f getClosestPoint(Vector3f point){
+        return getClosestPoint(point, new Vector3f());
+    }
+
     /**
      * <code>pseudoDistance</code> calculates the distance from this plane to
      * a provided point. If the point is on the negative side of the plane the

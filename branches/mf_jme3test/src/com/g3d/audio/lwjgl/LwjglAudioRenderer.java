@@ -54,7 +54,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
         nativeBuf.order(ByteOrder.nativeOrder());
     }
 
-    @Override
+    
     public void initialize(){
         try{
             AL.create();
@@ -192,7 +192,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
         return active;
     }
 
-    @Override
+    
     public void update(float tpf){
         // delete channel-based sources that finished playing
         for (int i = 0; i < channels.length; i++){
@@ -249,7 +249,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
             freeChans.add(index);
     }
 
-    @Override
+    
     public void setListener(Camera listener) {
         this.listener = listener;
     }
@@ -289,7 +289,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
         System.out.println("Playing on "+index);
     }
 
-    @Override
+    
     public void playSource(AudioSource src) {
         if (src.isUpdateNeeded())
             updateSource(src);
@@ -301,7 +301,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
         }
     }
 
-    @Override
+    
     public void pauseSource(AudioSource src) {
         if (src.isUpdateNeeded())
             updateSource(src);
@@ -313,7 +313,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
         }
     }
 
-    @Override
+    
     public void stopSource(AudioSource src) {
         if (src.isUpdateNeeded())
             updateSource(src);
@@ -349,7 +349,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
         src.clearUpdateNeeded();
     }
 
-    @Override
+    
     public void deleteSource(AudioSource src) {
         int id = src.getId();
         if (id != -1){
@@ -419,7 +419,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
         }
     }
 
-    @Override
+    
     public void deleteAudioData(AudioData ad){
         if (ad instanceof AudioBuffer){
             AudioBuffer ab = (AudioBuffer) ad;

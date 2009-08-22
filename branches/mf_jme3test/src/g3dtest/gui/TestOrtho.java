@@ -22,6 +22,8 @@ public class TestOrtho extends SimpleApplication {
         p.setPosition(0, 0);
         p.setWidth(settings.getWidth());
         p.setHeight(settings.getHeight());
+
+        manager.setProperty("FlipImages", "true");
         p.setImage(manager, "Monkey.png", false);
 
         // attach geometry to orthoNode

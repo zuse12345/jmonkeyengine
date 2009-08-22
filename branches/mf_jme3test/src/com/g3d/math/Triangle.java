@@ -91,6 +91,18 @@ public class Triangle implements Savable {
         }
     }
 
+    public Vector3f get1(){
+        return pointa;
+    }
+
+    public Vector3f get2(){
+        return pointb;
+    }
+
+    public Vector3f get3(){
+        return pointc;
+    }
+    
     /**
      *
      * <code>set</code> sets one of the triangles points to that specified as

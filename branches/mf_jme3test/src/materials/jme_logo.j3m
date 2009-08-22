@@ -1,5 +1,5 @@
 Material jME Logo : plain_texture.j3md {
     MaterialParameters {
-        m_ColorMap : MonkeyHQ2.dds
+        m_ColorMap : MonkeyHQ.dds
     }
 }

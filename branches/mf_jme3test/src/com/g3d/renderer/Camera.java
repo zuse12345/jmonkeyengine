@@ -1124,15 +1124,14 @@ public class Camera implements Savable {
 
         Matrix4f inverseMat = new Matrix4f(viewProjectionMatrix);
         inverseMat.invertLocal();
-        Quaternion tmp_quat = TempVars.get().quat1;
 
-        tmp_quat.set(
+        store.set(
                 ( screenPosition.x / getWidth() - viewPortLeft ) / ( viewPortRight - viewPortLeft ) * 2 - 1,
                 ( screenPosition.y / getHeight() - viewPortBottom ) / ( viewPortTop - viewPortBottom ) * 2 - 1,
-                zPos * 2 - 1, 1 );
-        inverseMat.mult( tmp_quat, tmp_quat );
-        tmp_quat.multLocal( 1.0f / tmp_quat.getW() );
-        store.set(tmp_quat.getX(), tmp_quat.getY(), tmp_quat.getZ());
+                zPos * 2 - 1);
+        
+        float w = inverseMat.multProj(store, store);
+        store.multLocal(1f / w);
 
         return store;
     }

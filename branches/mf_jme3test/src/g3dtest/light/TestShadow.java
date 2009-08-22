@@ -3,6 +3,7 @@ package g3dtest.light;
 import com.g3d.app.SimpleApplication;
 import com.g3d.material.Material;
 import com.g3d.math.ColorRGBA;
+import com.g3d.math.FastMath;
 import com.g3d.math.Quaternion;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Renderer;
@@ -68,6 +69,8 @@ public class TestShadow extends SimpleApplication {
 
     @Override
     public void simpleUpdate(float tpf){
+        // rotate teapot around Y axis
+        teapot.rotate(0, tpf * 0.25f, 0);
     }
 
     @Override

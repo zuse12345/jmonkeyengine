@@ -90,9 +90,9 @@ public class Ray  implements Serializable, Savable, Cloneable {
      * @param t the Triangle to test against.
      * @return true if the ray collides.
      */
-    public boolean intersect(Triangle t) {
-        return intersect(t.get(0), t.get(1), t.get(2));
-    }
+//    public boolean intersect(Triangle t) {
+//        return intersect(t.get(0), t.get(1), t.get(2));
+//    }
 
     /**
      * <code>intersect</code> determines if the Ray intersects a triangle
@@ -106,9 +106,9 @@ public class Ray  implements Serializable, Savable, Cloneable {
      *            third point of the triangle.
      * @return true if the ray collides.
      */
-    public boolean intersect(Vector3f v0,Vector3f v1,Vector3f v2){
-        return intersectWhere(v0, v1, v2, null);
-    }
+//    public boolean intersect(Vector3f v0,Vector3f v1,Vector3f v2){
+//        return intersectWhere(v0, v1, v2, null);
+//    }
 
     /**
      * <code>intersectWhere</code> determines if the Ray intersects a triangle. It then
@@ -255,7 +255,74 @@ public class Ray  implements Serializable, Savable, Cloneable {
         }
         return false;
     }
-    
+
+    public float intersects(Vector3f v0, Vector3f v1, Vector3f v2){
+        float edge1X = v1.x - v0.x;
+        float edge1Y = v1.y - v0.y;
+        float edge1Z = v1.z - v0.z;
+
+        float edge2X = v2.x - v0.x;
+        float edge2Y = v2.y - v0.y;
+        float edge2Z = v2.z - v0.z;
+
+        float normX = ((edge1Y * edge2Z) - (edge1Z * edge2Y));
+        float normY = ((edge1Z * edge2X) - (edge1X * edge2Z));
+        float normZ = ((edge1X * edge2Y) - (edge1Y * edge2X));
+
+        float dirDotNorm = direction.x * normX + direction.y * normY + direction.z * normZ;
+
+        if (dirDotNorm > 0)
+            return Float.POSITIVE_INFINITY;
+
+        float diffX = origin.x - v0.x;
+        float diffY = origin.y - v0.y;
+        float diffZ = origin.z - v0.z;
+
+        float sign;
+        if (dirDotNorm > FastMath.FLT_EPSILON) {
+            sign = 1;
+        } else if (dirDotNorm < -FastMath.FLT_EPSILON) {
+            sign = -1f;
+            dirDotNorm = -dirDotNorm;
+        } else {
+            // ray and triangle/quad are parallel
+            return Float.POSITIVE_INFINITY;
+        }
+
+        float diffEdge2X = ((diffY * edge2Z) - (diffZ * edge2Y));
+        float diffEdge2Y = ((diffZ * edge2X) - (diffX * edge2Z));
+        float diffEdge2Z = ((diffX * edge2Y) - (diffY * edge2X));
+
+        float dirDotDiffxEdge2 = sign * (direction.x * diffEdge2X
+                                       + direction.y * diffEdge2Y
+                                       + direction.z * diffEdge2Z);
+
+        if (dirDotDiffxEdge2 >= 0.0f) {
+            diffEdge2X = ((edge1Y * diffZ) - (edge1Z * diffY));
+            diffEdge2Y = ((edge1Z * diffX) - (edge1X * diffZ));
+            diffEdge2Z = ((edge1X * diffY) - (edge1Y * diffX));
+
+            float dirDotEdge1xDiff = sign * (direction.x * diffEdge2X
+                                          +  direction.y * diffEdge2Y
+                                          +  direction.z * diffEdge2Z);
+
+            if (dirDotEdge1xDiff >= 0.0f) {
+                if (dirDotDiffxEdge2 + dirDotEdge1xDiff <= dirDotNorm) {
+                    float diffDotNorm = -sign * (diffX * normX + diffY * normY + diffZ * normZ);
+                    if (diffDotNorm >= 0.0f) {
+                        // ray intersects triangle
+                        // fill in.
+                        float inv = 1f / dirDotNorm;
+                        float t = diffDotNorm * inv;
+                        return t;
+                    }
+                }
+            }
+        }
+
+        return Float.POSITIVE_INFINITY;
+    }
+
     /**
      * <code>intersectWherePlanar</code> determines if the Ray intersects a
      * quad defined by the specified points and if so it stores the point of
@@ -336,7 +403,7 @@ public class Ray  implements Serializable, Savable, Cloneable {
      * @param origin the origin of the ray.
      */
     public void setOrigin(Vector3f origin) {
-        this.origin = origin;
+        this.origin.set(origin);
     }
 
     /**
@@ -354,7 +421,7 @@ public class Ray  implements Serializable, Savable, Cloneable {
      * @param direction the direction of the ray.
      */
     public void setDirection(Vector3f direction) {
-        this.direction = direction;
+        this.direction.set(direction);
     }
 
     /**

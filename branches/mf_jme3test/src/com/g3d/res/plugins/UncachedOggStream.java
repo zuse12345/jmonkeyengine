@@ -52,7 +52,6 @@ public class UncachedOggStream implements PhysicalOggStream {
         pageCache.add(op);
     }
 
-    @Override
     public OggPage getOggPage(int index) throws IOException {
         if (eos){
             return null;
@@ -69,7 +68,6 @@ public class UncachedOggStream implements PhysicalOggStream {
         return logicalStreams.get(new Integer(serialNumber));
     }
 
-    @Override
     public Collection<LogicalOggStream> getLogicalStreams() {
         return logicalStreams.values();
     }
@@ -81,7 +79,6 @@ public class UncachedOggStream implements PhysicalOggStream {
         return false;
     }
 
-    @Override
     public boolean isOpen() {
         return !closed;
     }

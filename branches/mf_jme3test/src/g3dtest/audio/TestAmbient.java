@@ -18,7 +18,7 @@ public class TestAmbient extends AudioApp {
 
     @Override
     public void initAudioApp(){
-        waves  = new AudioSource(manager, "ocean_waves22.ogg", true);
+        waves  = new AudioSource(manager, "ocean_waves.ogg", true);
         nature = new AudioSource(manager, "nature.ogg", true);
         
 //        river  = new AudioSource(manager, "river.ogg");

@@ -138,7 +138,6 @@ public class AwtMouseInput implements MouseInput, MouseListener, MouseWheelListe
         }
     }
 
-    @Override
     public void update() {
         int newX = location.x;
         int newY = location.y;
@@ -166,7 +165,6 @@ public class AwtMouseInput implements MouseInput, MouseListener, MouseWheelListe
 //    public boolean isCursorVisible() {
 //        return( isCursorVisible );
 //    }
-//    @Override
 //	public void setHardwareCursor(URL file, int xHotspot, int yHotspot) {
 //	    //Create the image from the provided url
 //	    java.awt.Image cursorImage = new ImageIcon( file ).getImage( );
@@ -177,7 +175,6 @@ public class AwtMouseInput implements MouseInput, MouseListener, MouseWheelListe
 //	}
 
 
-    @Override
     public int getButtonCount() {
         return 3;
     }

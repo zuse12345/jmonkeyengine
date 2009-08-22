@@ -8,8 +8,10 @@ import com.g3d.export.InputCapsule;
 import com.g3d.export.OutputCapsule;
 import com.g3d.export.Savable;
 import com.g3d.math.Triangle;
+import com.g3d.math.Vector3f;
 import com.g3d.scene.VertexBuffer.*;
 import com.g3d.util.BufferUtils;
+import com.g3d.util.TempVars;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -93,17 +95,23 @@ public class Mesh implements Savable {
             switch (mode){
                 case Triangles:
                     elementCount = ib.getData().capacity() / 3;
+                    break;
                 case TriangleFan:
                 case TriangleStrip:
                     elementCount = ib.getData().capacity() - 2;
+                    break;
                 case Points:
                     elementCount = ib.getData().capacity();
+                    break;
                 case Lines:
                     elementCount = ib.getData().capacity() / 2;
+                    break;
                 case LineLoop:
                     elementCount = ib.getData().capacity();
+                    break;
                 case LineStrip:
                     elementCount = ib.getData().capacity() - 1;
+                    break;
             }
             
         }
@@ -125,14 +133,18 @@ public class Mesh implements Savable {
         this.vertCount = count;
     }
 
-    public void getTriangle(int index, Triangle store){
+    public void getTriangle(int index, Vector3f v1, Vector3f v2, Vector3f v3){
         VertexBuffer pb = getBuffer(Type.Position);
+        VertexBuffer nb = getBuffer(Type.Normal);
         VertexBuffer ib = getBuffer(Type.Index);
+
+        Vector3f temp = TempVars.get().vect1;
 
         if (pb.getFormat() == Format.Float){
             FloatBuffer fpb = (FloatBuffer) pb.getData();
+            FloatBuffer fnb = nb != null ? (FloatBuffer) nb.getData() : null;
 
-            if (ib.getFormat() == Format.Short){
+            if (ib.getFormat() == Format.UnsignedShort){
                 // accepted format for buffers
                 ShortBuffer sib = (ShortBuffer) ib.getData();
 
@@ -142,11 +154,15 @@ public class Mesh implements Savable {
                 int vert2 = sib.get(vertIndex+1);
                 int vert3 = sib.get(vertIndex+2);
 
-                BufferUtils.populateFromBuffer(store.get(0), fpb, vert1);
-                BufferUtils.populateFromBuffer(store.get(1), fpb, vert2);
-                BufferUtils.populateFromBuffer(store.get(2), fpb, vert3);
+                BufferUtils.populateFromBuffer(v1, fpb, vert1);
+                BufferUtils.populateFromBuffer(v2, fpb, vert2);
+                BufferUtils.populateFromBuffer(v3, fpb, vert3);
             }
         }
+    }
+    
+    public void getTriangle(int index, Triangle tri){
+        getTriangle(index, tri.get(0), tri.get(1), tri.get(2));
     }
 
     public void getTriangle(int index, int[] indices){

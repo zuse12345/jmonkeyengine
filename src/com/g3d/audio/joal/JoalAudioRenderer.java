@@ -106,7 +106,6 @@ public class JoalAudioRenderer implements AudioRenderer {
      * Checks support for EFX.
      * Allocates 16 channel source ids for instanced playback.
      */
-    @Override
     public void initialize() {
         alc = ALFactory.getALC();
         device = alc.alcOpenDevice(null);
@@ -155,7 +154,6 @@ public class JoalAudioRenderer implements AudioRenderer {
      * Destroys the 16 channel sources that were allocated.
      * Destroys the context and close the device.
      */
-    @Override
     public void cleanup(){
         // delete channel-based sources
         ib.rewind();
@@ -327,7 +325,7 @@ public class JoalAudioRenderer implements AudioRenderer {
         return active;
     }
 
-    @Override
+    
     public void update(float tpf){
         // delete channel-based sources that finished playing
         for (int i = 0; i < channels.length; i++){
@@ -564,7 +562,7 @@ public class JoalAudioRenderer implements AudioRenderer {
         }
     }
 
-    @Override
+    
     public void deleteAudioData(AudioData ad){
         if (ad instanceof AudioBuffer){
             AudioBuffer ab = (AudioBuffer) ad;

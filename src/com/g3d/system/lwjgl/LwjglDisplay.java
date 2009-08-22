@@ -53,7 +53,7 @@ public class LwjglDisplay extends LwjglContext implements Runnable {
         DisplayMode displayMode = null;
         if (settings.getTemplate() == Template.DesktopFullscreen){
 //            displayMode = org.lwjgl.opengl.Display.getDesktopDisplayMode();
-            settings.setResolution(displayMode.getWidth(), displayMode.getHeight());
+//            settings.setResolution(displayMode.getWidth(), displayMode.getHeight());
         }else if (settings.isFullscreen()){
             displayMode = getFullscreenDisplayMode(settings.getWidth(), settings.getHeight(),
                                                    settings.getBitsPerPixel(), settings.getFrequency());
@@ -67,7 +67,9 @@ public class LwjglDisplay extends LwjglContext implements Runnable {
         logger.info("Selected display mode: "+displayMode);
         try{
             Display.setTitle(settings.getTitle());
-            Display.setDisplayMode(displayMode);
+            if (displayMode != null)
+                Display.setDisplayMode(displayMode);
+            
             Display.setFullscreen(settings.isFullscreen());
             Display.setVSyncEnabled(settings.isVSync());
         } catch (LWJGLException ex){

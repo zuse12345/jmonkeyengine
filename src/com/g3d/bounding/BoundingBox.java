@@ -168,7 +168,7 @@ public class BoundingBox extends BoundingVolume {
         zExtent = max.z - center.z;
     }
 
-    private void checkMinMax(Vector3f min, Vector3f max, Vector3f point) {
+    public static final void checkMinMax(Vector3f min, Vector3f max, Vector3f point) {
         if (point.x < min.x)
             min.x = point.x;
         else if (point.x > max.x)
@@ -827,6 +827,18 @@ public class BoundingBox extends BoundingVolume {
         return zExtent;
     }
 
+    public void setXExtent(float xExtent) {
+        this.xExtent = xExtent;
+    }
+
+    public void setYExtent(float yExtent) {
+        this.yExtent = yExtent;
+    }
+
+    public void setZExtent(float zExtent) {
+        this.zExtent = zExtent;
+    }
+    
     public Vector3f getMin(Vector3f store){
         if (store == null) {
             store = new Vector3f();

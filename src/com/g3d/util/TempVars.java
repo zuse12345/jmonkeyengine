@@ -95,9 +95,13 @@ public class TempVars {
      * General vectors.
      */
     public final Vector3f vect1 = new Vector3f();
-	public final Vector3f vect2 = new Vector3f();
-	public final Vector3f vect3 = new Vector3f();
+    public final Vector3f vect2 = new Vector3f();
+    public final Vector3f vect3 = new Vector3f();
     public final Vector3f vect4 = new Vector3f();
+
+    public final Vector3f[] tri = { new Vector3f(),
+                                    new Vector3f(),
+                                    new Vector3f() };
 
     /**
      * 2D vector

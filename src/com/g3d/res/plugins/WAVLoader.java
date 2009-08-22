@@ -83,7 +83,7 @@ public class WAVLoader implements ContentLoader {
         int bitsPerSample = in.readShort();
 
         if (!adpcm){
-            if (bitsPerSample != 8 || bitsPerSample != 16)
+            if (bitsPerSample != 8 && bitsPerSample != 16)
                 throw new IOException("Only 8 and 16 bits per sample are supported!");
 
             if ( (bitsPerSample / 8) * channels != bytesPerSample)

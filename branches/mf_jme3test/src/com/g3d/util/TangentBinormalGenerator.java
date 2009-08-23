@@ -17,10 +17,11 @@ import java.util.logging.Logger;
 import static com.g3d.util.BufferUtils.*;
 
 /*
- * Maybe add support for rebuilding problematic meshes.
+ * Needs more testing.
  */
 public class TangentBinormalGenerator {
 
+    private static final float ZERO_TOLERANCE = 0.0000001f;
     private static final Logger log = Logger.getLogger(
 			TangentBinormalGenerator.class.getName());
 
@@ -264,13 +265,15 @@ public class TangentBinormalGenerator {
         t[2].subtract(t[0], edge2uv);
         float det = edge1uv.x*edge2uv.y - edge1uv.y*edge2uv.x;
 
-        if (Math.abs(det) < FastMath.ZERO_TOLERANCE) {
-            log.log(Level.WARNING, "Bad uv coordinates for triangle " +
+        boolean normalize = false;
+        if (Math.abs(det) < ZERO_TOLERANCE) {
+            log.log(Level.WARNING, "Colinear uv coordinates for triangle " +
                     "[{0}, {1}, {2}]; tex0 = [{3}, {4}], " +
                     "tex1 = [{5}, {6}], tex2 = [{7}, {8}]",
                     new Object[]{ index[0], index[1], index[2],
                     t[0].x, t[0].y, t[1].x, t[1].y, t[2].x, t[2].y });
-            return null;
+            det = 1;
+            normalize = true;
         }
 
         v[1].subtract(v[0], edge1);
@@ -282,26 +285,26 @@ public class TangentBinormalGenerator {
         binormal.normalizeLocal();
 
         if (Math.abs(Math.abs(tangent.dot(binormal)) - 1)
-                        < FastMath.ZERO_TOLERANCE)
+                        < ZERO_TOLERANCE)
         {
             log.log(Level.WARNING, "Vertecies are on the same line " +
                     "for triangle [{0}, {1}, {2}].",
                     new Object[]{ index[0], index[1], index[2] });
-            return null;
         }
 
         float factor = 1/det;
         tangent.x = (edge2uv.y*edge1.x - edge1uv.y*edge2.x)*factor;
         tangent.y = (edge2uv.y*edge1.y - edge1uv.y*edge2.y)*factor;
         tangent.z = (edge2uv.y*edge1.z - edge1uv.y*edge2.z)*factor;
-        tangent.normalizeLocal();
+        if (normalize) tangent.normalizeLocal();
 
         binormal.x = (edge1uv.x*edge2.x - edge2uv.x*edge1.x)*factor;
         binormal.y = (edge1uv.x*edge2.y - edge2uv.x*edge1.y)*factor;
         binormal.z = (edge1uv.x*edge2.z - edge2uv.x*edge1.z)*factor;
-        binormal.normalizeLocal();
+        if (normalize) binormal.normalizeLocal();
 
         tangent.cross(binormal, normal);
+        normal.normalizeLocal();
 
         return new TriangleData(
                         tangent,
@@ -333,35 +336,44 @@ public class TangentBinormalGenerator {
         Vector3f normal = new Vector3f();
         Vector3f givenNormal = new Vector3f();
 
-        processVertex:
+        Vector3f tangentUnit = new Vector3f();
+        Vector3f binormalUnit = new Vector3f();
+
         for (int i = 0; i < vertices.length; i++) {
 
             populateFromBuffer(givenNormal, normalBuffer, i);
+            givenNormal.normalizeLocal();
+
             VertexData currentVertex = vertices[i];
             List<TriangleData> triangles = currentVertex.triangles;
 
-            if (triangles.size() == 0) {
-                log.log(Level.WARNING, "No tangents found for vertex {0}.", i);
-                continue;
-            }
-
-            // check if a vertex should be separated
+            // check tangent and binormal consistency
             tangent.set(triangles.get(0).tangent);
+            tangent.normalizeLocal();
             binormal.set(triangles.get(0).binormal);
+            binormal.normalizeLocal();
+
             for (int j = 1; j < triangles.size(); j++) {
                 TriangleData triangleData = triangles.get(j);
 
-                if (tangent.dot(triangleData.tangent) < toleranceDot) {
+                tangentUnit.set(triangleData.tangent);
+                tangentUnit.normalizeLocal();
+                if (tangent.dot(tangentUnit) < toleranceDot) {
                     log.log(Level.WARNING,
                         "Angle between tangents exceeds tolerance " +
                         "for vertex {0}.", i);
                     break;
                 }
-                if (binormal.dot(triangleData.binormal) < toleranceDot) {
-                    log.log(Level.WARNING,
-                            "Angle between binormals exceeds tolerance " +
-                            "for vertex {0}.", i);
-                    break;
+
+                if (!approxTangent) {
+                    binormalUnit.set(triangleData.binormal);
+                    binormalUnit.normalizeLocal();
+                    if (binormal.dot(binormalUnit) < toleranceDot) {
+                        log.log(Level.WARNING,
+                                "Angle between binormals exceeds tolerance " +
+                                "for vertex {0}.", i);
+                        break;
+                    }
                 }
             }
 
@@ -369,51 +381,84 @@ public class TangentBinormalGenerator {
             tangent.set(0, 0, 0);
             binormal.set(0, 0, 0);
 
+            boolean flippedNormal = false;
             for (int j = 0; j < triangles.size(); j++) {
                 TriangleData triangleData = triangles.get(j);
                 tangent.addLocal(triangleData.tangent);
                 binormal.addLocal(triangleData.binormal);
 
                 if (givenNormal.dot(triangleData.normal) < 0) {
-                    log.log(Level.WARNING,
-                        "Generated normal is flipped for vertex {0}.", i);
-                    continue processVertex;
+                    flippedNormal = true;
                 }
             }
+            if (flippedNormal && approxTangent) {
+                log.log(Level.WARNING,
+                        "Generated normal is flipped for vertex {0}.", i);
+            }
 
-            float tangentLength = tangent.length();
-            if (tangentLength < FastMath.ZERO_TOLERANCE) {
+            if (tangent.length() < ZERO_TOLERANCE) {
                 log.log(Level.WARNING,
                         "Shared tangent is zero for vertex {0}.", i);
-                continue;
+                // attempt to fix from binormal
+                if (binormal.length() >= ZERO_TOLERANCE) {
+                    binormal.cross(givenNormal, tangent);
+                    tangent.normalizeLocal();
+                }
+                // if all fails use the tangent from the first triangle
+                else {
+                    tangent.set(triangles.get(0).tangent);
+                }
             }
-            tangent.divideLocal(tangentLength);
+            else {
+                tangent.divideLocal(triangles.size());
+            }
 
-            if (Math.abs(Math.abs(tangent.dot(givenNormal)) - 1)
-                        < FastMath.ZERO_TOLERANCE)
+            tangentUnit.set(tangent);
+            tangentUnit.normalizeLocal();
+            if (Math.abs(Math.abs(tangentUnit.dot(givenNormal)) - 1)
+                        < ZERO_TOLERANCE)
             {
                 log.log(Level.WARNING,
                         "Normal and tangent are parallel for vertex {0}.", i);
-                continue;
             }
 
-            float binormalLength = binormal.length();
-            if (binormalLength < FastMath.ZERO_TOLERANCE) {
-                log.log(Level.WARNING,
-                        "Shared binormal is zero for vertex {0}.", i);
-                continue;
-            }
-            binormal.divideLocal(binormalLength);
+            
+            if (!approxTangent) {
 
-            if (Math.abs(Math.abs(binormal.dot(givenNormal)) - 1)
-                        < FastMath.ZERO_TOLERANCE)
-            {
-                log.log(Level.WARNING,
-                        "Normal and binormal are parallel for vertex {0}.", i);
-                continue;
+                if (binormal.length() < ZERO_TOLERANCE) {
+                    log.log(Level.WARNING,
+                            "Shared binormal is zero for vertex {0}.", i);
+                    // attempt to fix from tangent
+                    if (tangent.length() >= ZERO_TOLERANCE) {
+                        givenNormal.cross(tangent, binormal);
+                        binormal.normalizeLocal();
+                    }
+                    // if all fails use the binormal from the first triangle
+                    else {
+                        binormal.set(triangles.get(0).binormal);
+                    }
+                }
+                else {
+                    binormal.divideLocal(triangles.size());
+                }
+
+                binormalUnit.set(binormal);
+                binormalUnit.normalizeLocal();
+                if (Math.abs(Math.abs(binormalUnit.dot(givenNormal)) - 1)
+                            < ZERO_TOLERANCE)
+                {
+                    log.log(Level.WARNING,
+                            "Normal and binormal are parallel for vertex {0}.", i);
+                }
+                
+                if (Math.abs(Math.abs(binormalUnit.dot(tangentUnit)) - 1)
+                            < ZERO_TOLERANCE)
+                {
+                    log.log(Level.WARNING,
+                            "Tangent and binormal are parallel for vertex {0}.", i);
+                }
             }
 
-            // TODO: add additional checking for approx vs actual
             if (approxTangent) {
                 givenNormal.cross(tangent, binormal);
                 binormal.cross(givenNormal, tangent);
@@ -425,7 +470,6 @@ public class TangentBinormalGenerator {
                 setInBuffer(tangent, tangents, i);
                 setInBuffer(binormal, binormals, i);
             }
-
         }
 
         mesh.setBuffer(Type.Tangent,  3, tangents);

@@ -135,14 +135,10 @@ public class Mesh implements Savable {
 
     public void getTriangle(int index, Vector3f v1, Vector3f v2, Vector3f v3){
         VertexBuffer pb = getBuffer(Type.Position);
-        VertexBuffer nb = getBuffer(Type.Normal);
         VertexBuffer ib = getBuffer(Type.Index);
-
-        Vector3f temp = TempVars.get().vect1;
 
         if (pb.getFormat() == Format.Float){
             FloatBuffer fpb = (FloatBuffer) pb.getData();
-            FloatBuffer fnb = nb != null ? (FloatBuffer) nb.getData() : null;
 
             if (ib.getFormat() == Format.UnsignedShort){
                 // accepted format for buffers
@@ -162,7 +158,7 @@ public class Mesh implements Savable {
     }
     
     public void getTriangle(int index, Triangle tri){
-        getTriangle(index, tri.get(0), tri.get(1), tri.get(2));
+        getTriangle(index, tri.get1(), tri.get2(), tri.get3());
     }
 
     public void getTriangle(int index, int[] indices){

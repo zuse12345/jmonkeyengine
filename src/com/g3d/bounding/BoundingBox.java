@@ -86,6 +86,17 @@ public class BoundingBox extends BoundingVolume {
         this.zExtent = z;
     }
 
+    public BoundingBox(BoundingBox source){
+        this.center.set(source.center);
+        this.xExtent = source.xExtent;
+        this.yExtent = source.yExtent;
+        this.zExtent = source.zExtent;
+    }
+
+    public BoundingBox(Vector3f min, Vector3f max){
+        setMinMax(min, max);
+    }
+
     public Type getType() {
         return Type.AABB;
     }
@@ -707,17 +718,68 @@ public class BoundingBox extends BoundingVolume {
 
     }
 
+    
+
     /**
-     * TODO: For octree support
-     * @param tri
+     * C code ported from http://www.cs.lth.se/home/Tomas_Akenine_Moller/code/tribox3.txt
+     *
+     * @param v1
+     * @param v2
+     * @param v3
+     * @return
      */
-    public void intersects(Triangle tri) {
-        throw new UnsupportedOperationException();
-
-//        Plane p = new Plane();
-//        p.setPlanePoints(tri);
-
+    public boolean intersects(Vector3f v1, Vector3f v2, Vector3f v3){
+       return Intersection.intersect(this, v1, v2, v3);
     }
+
+//    public boolean intersects(Vector3f v1, Vector3f v2, Vector3f v3) {
+//        TempVars vars = TempVars.get();
+//        Vector3f min = vars.vect1.set(center).subtractLocal(xExtent, yExtent, zExtent);
+//        Vector3f max = vars.vect2.set(center).addLocal(xExtent, yExtent, zExtent);
+//
+//        Plane p = new Plane();
+//        p.setPlanePoints(v1,v2,v3);
+//        if (whichSide(p) == Plane.Side.Negative)
+//            return false;
+//
+//        // triangle to the left of box
+//        if (v1.x < min.x
+//         && v2.x < min.x
+//         && v3.x < min.x)
+//            return false;
+//
+//        // triangle to the right of box
+//        if (v1.x > max.x
+//         && v2.x > max.x
+//         && v3.x > max.x)
+//            return false;
+//
+//        // triangle above box
+//        if (v1.y > max.y
+//         && v2.y > max.y
+//         && v3.y > max.y)
+//            return false;
+//
+//        // triangle below box
+//        if (v1.y < min.y
+//         && v2.y < min.y
+//         && v3.y < min.y)
+//            return false;
+//
+//        // triangle behind box
+//        if (v1.z < min.z
+//         && v2.z < min.z
+//         && v3.z < min.z)
+//            return false;
+//
+//        // triangle in front of box
+//        if (v1.z > max.z
+//         && v2.z > max.z
+//         && v3.z > max.z)
+//            return false;
+//
+//        return true;
+//    }
 
     @Override
     public boolean contains(Vector3f point) {
@@ -853,6 +915,13 @@ public class BoundingBox extends BoundingVolume {
         }
         store.set(center).addLocal(xExtent, yExtent, zExtent);
         return store;
+    }
+
+    public void setMinMax(Vector3f min, Vector3f max){
+        this.center.set(max).addLocal(min).multLocal(0.5f);
+        xExtent = max.x - center.x;
+        yExtent = max.y - center.y;
+        zExtent = max.z - center.z;
     }
 
     @Override

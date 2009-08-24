@@ -27,8 +27,7 @@ public class RayTracer extends javax.swing.JFrame {
 
         System.out.println("Generating BIH tree for triangle array..");
         System.out.println("Scene contains "+m.getTriangleCount()+" triangles");
-        long time = System.nanoTime();
-
+        
         System.gc();
         System.gc();
         System.gc();
@@ -36,8 +35,12 @@ public class RayTracer extends javax.swing.JFrame {
 
         long mem = Runtime.getRuntime().freeMemory();
 
-        tree = new BIHTree(m,2);
+        
+        tree = new BIHTree(m);
+
+        long time = System.nanoTime();
         tree.construct();
+        long totalTime = System.nanoTime() - time;
 
         System.gc();
         System.gc();
@@ -46,7 +49,7 @@ public class RayTracer extends javax.swing.JFrame {
 
         long totalMem = mem - Runtime.getRuntime().freeMemory();
 
-        long totalTime = System.nanoTime() - time;
+        
         double millis = totalTime / 1000000.0;
         System.out.println("Generation took: "+millis+" milliseconds");
         System.out.println("Tree takes up "+totalMem+" bytes");
@@ -83,7 +86,7 @@ public class RayTracer extends javax.swing.JFrame {
             Vector3f lightPos = new Vector3f(-10,10,-10);
             TrianglePickResults results = new TrianglePickResults();
 
-            int packSize = 4;
+            int packSize = 2;
             int packetsY = getHeight() / packSize;
             int packetsX = getWidth() / packSize;
 
@@ -107,8 +110,9 @@ public class RayTracer extends javax.swing.JFrame {
                             dir.normalizeLocal();
 
                             Ray r = new Ray(pix, dir);
-                            tree.intersect(r, results);
-                            Triangle t = results.getClosestTriangle();
+                            tree.intersect(r, 1000f, null, results);
+                            TrianglePickResults.PickData pick = results.getClosestPick();
+                            Triangle t = pick.getTriangle(null);
 
                             if (t != null){
                                 Color c;
@@ -120,7 +124,7 @@ public class RayTracer extends javax.swing.JFrame {
                                 ndotl = Math.min(ndotl, 1f);
 
                                 Vector3f pixPos = r.getDirection().clone();
-                                pixPos.multLocal(results.getClosestDistance());
+                                pixPos.multLocal(pick.getDistance());
                                 pixPos.addLocal(r.getOrigin());
 
                                 Vector3f pixDir = lightPos.subtract(pixPos).normalizeLocal();
@@ -128,7 +132,7 @@ public class RayTracer extends javax.swing.JFrame {
                                 if (ndotl > 0){
                                     c = new Color(ndotl, ndotl, ndotl);
                                     Ray r2 = new Ray(pixPos, pixDir);
-                                    tree.intersect(r2, results);
+                                    tree.intersect(r2, 1000, null, results);
                                     if (results.getClosestTriangle() != null)
                                         c = Color.black;
                                 }else{
@@ -144,13 +148,6 @@ public class RayTracer extends javax.swing.JFrame {
                     }
                 }
             }
-
-            long hits = BIHNode.hits;
-            long misses = BIHNode.misses;
-            double hitRate = ((double) hits / (double) misses) * 100.0;
-            System.out.println("hits/misses: "+hitRate+"%");
-            BIHNode.hits = 0;
-            BIHNode.misses = 0;
 
             g2d.drawImage(img, null, 0, 0);
 
@@ -179,17 +176,17 @@ public class RayTracer extends javax.swing.JFrame {
         getContentPane().setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
         tracer.setMinimumSize(new java.awt.Dimension(0, 0));
-        tracer.setPreferredSize(new java.awt.Dimension(512, 512));
+        tracer.setPreferredSize(new java.awt.Dimension(1024, 768));
 
         org.jdesktop.layout.GroupLayout tracerLayout = new org.jdesktop.layout.GroupLayout(tracer);
         tracer.setLayout(tracerLayout);
         tracerLayout.setHorizontalGroup(
             tracerLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 512, Short.MAX_VALUE)
+            .add(0, 1024, Short.MAX_VALUE)
         );
         tracerLayout.setVerticalGroup(
             tracerLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 512, Short.MAX_VALUE)
+            .add(0, 768, Short.MAX_VALUE)
         );
 
         getContentPane().add(tracer);

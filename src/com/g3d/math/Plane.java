@@ -169,12 +169,24 @@ public class Plane implements Savable, Cloneable {
     }
 
     public Vector3f getClosestPoint(Vector3f point, Vector3f store){
-        float t = (constant - normal.dot(point)) / normal.dot(normal);
+        float t = constant - normal.dot(point);
         return store.set(normal).multLocal(t).addLocal(point);
+//        float t = (constant - normal.dot(point)) / normal.dot(normal);
+//        return store.set(normal).multLocal(t).addLocal(point);
     }
 
     public Vector3f getClosestPoint(Vector3f point){
         return getClosestPoint(point, new Vector3f());
+    }
+
+    public Vector3f reflect(Vector3f point, Vector3f store){
+        if (store == null)
+            store = new Vector3f();
+
+        float d = pseudoDistance(point);
+        store.set(normal).negateLocal().multLocal(d * 2f);
+        store.addLocal(point);
+        return store;
     }
 
     /**
@@ -209,6 +221,14 @@ public class Plane implements Savable, Cloneable {
         } else {
             return Side.None;
         }
+    }
+
+    public boolean isOnPlane(Vector3f point){
+        float dist = pseudoDistance(point);
+        if (dist < FastMath.FLT_EPSILON && dist > -FastMath.FLT_EPSILON)
+            return true;
+        else
+            return false;
     }
 
     /**

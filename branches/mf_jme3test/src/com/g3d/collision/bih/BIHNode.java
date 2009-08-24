@@ -1,16 +1,12 @@
 package com.g3d.collision.bih;
 
 import com.g3d.bounding.BoundingBox;
-import com.g3d.bounding.BoundingSphere;
 import com.g3d.collision.TrianglePickResults;
 import com.g3d.math.Ray;
 import com.g3d.math.Vector3f;
-import com.g3d.util.TempVars;
+import com.g3d.scene.Geometry;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 
-import java.util.Stack;
 import static java.lang.Math.min;
 import static java.lang.Math.max;
 
@@ -23,174 +19,22 @@ import static java.lang.Math.max;
  */
 public class BIHNode {
 
-    BIHTriangle[] triangles;
+    int leftIndex, rightIndex;
+
     BIHNode left;
     BIHNode right;
     float leftPlane;
     float rightPlane;
     int axis;
 
-    private static final TriangleAxisComparator[] comparators = new TriangleAxisComparator[3];
-
-    static {
-        comparators[0] = new TriangleAxisComparator(0);
-        comparators[1] = new TriangleAxisComparator(1);
-        comparators[2] = new TriangleAxisComparator(2);
+    public BIHNode(int l, int r){
+        leftIndex = l;
+        rightIndex = r;
+        axis = 3; // indicates leaf
     }
 
-    public BIHNode(BIHTriangle[] triangles, int axis){
-        this.triangles = triangles;
+    public BIHNode(int axis){
         this.axis = axis;
-    }
-
-    private static class TriangleAxisComparator implements Comparator<BIHTriangle> {
-
-        private final int axis;
-
-        public TriangleAxisComparator(int axis){
-            this.axis = axis;
-        }
-
-        public int compare(BIHTriangle o1, BIHTriangle o2) {
-            float v1, v2;
-            Vector3f c1 = o1.getCenter();
-            Vector3f c2 = o2.getCenter();
-            switch (axis){
-                case 0: v1 = c1.x; v2 = c2.x; break;
-                case 1: v1 = c1.y; v2 = c2.y; break;
-                case 2: v1 = c1.z; v2 = c2.z; break;
-                default: assert false; return 0;
-            }
-            if (v1 > v2)
-                return 1;
-            else if (v1 < v2)
-                return -1;
-            else
-                return 0;
-        }
-    }
-
-    public void computeFromTris(BIHTriangle[] tris, BoundingBox store) {
-        TempVars vars = TempVars.get();
-        Vector3f min = vars.vect1.set(new Vector3f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY));
-        Vector3f max = vars.vect2.set(new Vector3f(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY));
-
-        Vector3f point;
-        for (int i = 0; i < tris.length; i++) {
-            point = tris[i].get1();
-            BoundingBox.checkMinMax(min, max, point);
-            point = tris[i].get2();
-            BoundingBox.checkMinMax(min, max, point);
-            point = tris[i].get3();
-            BoundingBox.checkMinMax(min, max, point);
-        }
-
-        Vector3f center = store.getCenter();
-        center.set(min.addLocal(max)).multLocal(0.5f);
-        store.setXExtent(max.x - center.x);
-        store.setYExtent(max.y - center.y);
-        store.setZExtent(max.z - center.z);
-    }
-
-    public void subdivide(){
-        // choose axis and plane split location
-        BoundingBox bbox = new BoundingBox();
-        computeFromTris(triangles, bbox);
-
-        // choose axis based on longest extent
-//        if (bbox.getXExtent() > bbox.getYExtent()){
-//            if (bbox.getXExtent() > bbox.getZExtent()){
-//                axis = 0;
-//            }else{
-//                axis = 2;
-//            }
-//        }else{
-//            if (bbox.getYExtent() > bbox.getZExtent()){
-//                axis = 1;
-//            }else{
-//                axis = 2;
-//            }
-//        }
-
-
-        float middle;
-        // note: axis already set in constructor
-        switch (axis){
-            case 0: middle = bbox.getCenter().x; break;
-            case 1: middle = bbox.getCenter().y; break;
-            case 2: middle = bbox.getCenter().z; break;
-            default: assert false; return;
-        }
-
-        // sort triangles from left to right along axis
-        TriangleAxisComparator comparator = comparators[axis];
-        Arrays.sort(triangles, comparator);
-        int splitIndex = -1;
-
-        leftPlane = triangles[0].getExtreme(axis, false);
-        for (int i = 0; i < triangles.length; i++){
-            BIHTriangle tri = triangles[i];
-            if (splitIndex == -1){
-                float v;
-                switch (axis){
-                    case 0: v = tri.getCenter().x; break;
-                    case 1: v = tri.getCenter().y; break;
-                    case 2: v = tri.getCenter().z; break;
-                    default: assert false; return;
-                }
-                if (v > middle){
-                    if (i == 0){
-                        // no left plane
-                        splitIndex = -2;
-                    }else{
-                        splitIndex = i;
-                        // first triangle assigned to right
-                        rightPlane = tri.getExtreme(axis, true);
-                    }
-                }else{
-                    // triangle assigned to left
-                    float ex = tri.getExtreme(axis, false);
-                    if (ex > leftPlane)
-                        leftPlane = ex;
-                }
-            }else{
-                float ex = tri.getExtreme(axis, true);
-                if (ex < rightPlane)
-                    rightPlane = ex;
-            }
-        }
-
-        if (splitIndex < 0){
-            splitIndex = triangles.length / 2;
-//        splitIndex = getOptimalSplitPos(triangles, axis);
-        
-        leftPlane = Float.NEGATIVE_INFINITY;
-        rightPlane = Float.POSITIVE_INFINITY;
-
-            for (int i = 0; i < splitIndex; i++){
-                float ex = triangles[i].getExtreme(axis, false);
-                if (ex > leftPlane)
-                    leftPlane = ex;
-            }
-            for (int i = splitIndex; i < triangles.length; i++){
-                float ex = triangles[i].getExtreme(axis, true);
-                if (ex < rightPlane)
-                    rightPlane = ex;
-            }
-        }
-
-
-        BIHTriangle[] leftTris = new BIHTriangle[splitIndex];
-        System.arraycopy(triangles, 0, leftTris, 0, splitIndex);
-
-        BIHTriangle[] rightTris = new BIHTriangle[triangles.length - splitIndex];
-        System.arraycopy(triangles, splitIndex, rightTris, 0, rightTris.length);
-
-        left  = new BIHNode(leftTris,   (axis + 1) % 3);
-        right = new BIHNode(rightTris, (axis + 1) % 3);
-
-        // no longer a leaf
-        triangles = null;
     }
 
     private static class BIHStackData {
@@ -208,10 +52,7 @@ public class BIHNode {
 
     private static final ArrayList<BIHStackData> stack = new ArrayList<BIHStackData>();
 
-    public static long  hits = 0,
-                        misses = 0;
-
-    public final void intersectWhere(BoundingBox box, int minTrisPerNode, TrianglePickResults results){
+    public final void intersectWhere(BoundingBox box, BIHTree tree, Geometry g, int minTrisPerNode, TrianglePickResults results){
         stack.clear();
 
         float[] minExts  = { box.getCenter().x - box.getXExtent(),
@@ -224,10 +65,14 @@ public class BIHNode {
 
         stack.add(new BIHStackData(this, 0,0));
 
+        Vector3f v1 = new Vector3f(),
+                 v2 = new Vector3f(),
+                 v3 = new Vector3f();
+
         stackloop: while (stack.size() > 0){
             BIHNode node = stack.remove(stack.size()-1).node;
 
-            while (node.triangles == null){
+            while (node.axis != 2){
                 int a = node.axis;
 
                 float maxExt = minExts[a];
@@ -249,10 +94,17 @@ public class BIHNode {
                     continue stackloop;
                 }
             }
+
+            for (int i = node.leftIndex; i <= node.rightIndex; i++){
+                tree.getTriangle(i, v1,v2,v3);
+                if (box.intersects(v1,v2,v3)){
+                    results.addPick(g, tree.getTriangleIndex(i), 0);
+                }
+            }
         }
     }
 
-    public final void intersectWhere(Ray r, float sceneMin, float sceneMax, int minTrisPerNode,
+    public final void intersectWhere(Ray r, BIHTree tree, Geometry g, float sceneMin, float sceneMax,
                                             TrianglePickResults results){
         stack.clear();
 
@@ -263,6 +115,10 @@ public class BIHNode {
         float[] invDirections = { 1f / r.getDirection().x,
                                   1f / r.getDirection().y,
                                   1f / r.getDirection().z };
+
+        Vector3f v1 = new Vector3f(),
+                 v2 = new Vector3f(),
+                 v3 = new Vector3f();
 
         stack.add(new BIHStackData(this, sceneMin, sceneMax));
         stackloop: while (stack.size() > 0){
@@ -275,7 +131,7 @@ public class BIHNode {
             if (tMax < tMin)
                 continue;
             
-            leafloop: while (node.triangles == null){ // while node is not a leaf
+            leafloop: while (node.axis != 3){ // while node is not a leaf
                 int a = node.axis;
                 
                 // find the origin and direction value for the given axis
@@ -284,9 +140,6 @@ public class BIHNode {
 
                 float tNearSplit, tFarSplit;
                 BIHNode nearNode, farNode;
-
-//                if (direction == 0)
-//                    direction = FastMath.FLT_EPSILON;
 
                 tNearSplit = (node.leftPlane  - origin) * invDirection;
                 tFarSplit  = (node.rightPlane - origin) * invDirection;
@@ -302,16 +155,6 @@ public class BIHNode {
                     nearNode = farNode;
                     farNode = tmpNode;
                 }
-//                if (invDirection >= 0){
-//
-//                }else{// if (direction < 0){
-//                    // if direction on axis is negative,
-//                    // switch near split with far split
-//                    tNearSplit = (node.rightPlane  - origin) * invDirection;
-//                    tFarSplit  = (node.leftPlane   - origin) * invDirection;
-//                    nearNode = node.right;
-//                    farNode  = node.left;
-//                }
 
                 if (tMin > tNearSplit && tMax < tFarSplit){
                     continue stackloop;
@@ -325,33 +168,26 @@ public class BIHNode {
                     node = nearNode;
                 }else{
                     stack.add(new BIHStackData(farNode,  max(tMin, tFarSplit), tMax));
-//                    stack.push(new BIHStackData(nearNode, tMin, min(tMax, tNearSplit)));
-//                    continue stackloop;
                     tMax = min(tMax, tNearSplit);
                     node = nearNode;
                 }
             }
 
-            if (node.triangles.length > minTrisPerNode){
-                // on demand subdivision
-                node.subdivide();
-                stack.add(new BIHStackData(node, tMin, tMax));
-                continue stackloop;
-            }
+//            if ( (node.rightIndex - node.leftIndex) > minTrisPerNode){
+//                // on demand subdivision
+//                node.subdivide();
+//                stack.add(new BIHStackData(node, tMin, tMax));
+//                continue stackloop;
+//            }
 
             // a leaf
-            for (int i = 0; i < node.triangles.length; i++){
-                BIHTriangle tri = node.triangles[i];
-                float t = r.intersects(tri.get1(), tri.get2(), tri.get3());
-                if (t != Float.POSITIVE_INFINITY)
-                    hits ++;
-                else
-                    misses ++;
-                
+            for (int i = node.leftIndex; i <= node.rightIndex; i++){
+                tree.getTriangle(i, v1,v2,v3);
+                float t = r.intersects(v1,v2,v3);
                 if (t < tHit){
                     tHit = t;
                     tMax = min(tMax, tHit);
-                    results.addPick(tri.get1(), tri.get2(), tri.get3(), tHit);
+                    results.addPick(g, tree.getTriangleIndex(i), tHit);
                 }
             }
 //            if (results.size() > 0)

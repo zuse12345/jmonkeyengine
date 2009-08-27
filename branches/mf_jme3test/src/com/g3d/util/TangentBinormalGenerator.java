@@ -1,5 +1,6 @@
 package com.g3d.util;
 
+import com.g3d.math.ColorRGBA;
 import com.g3d.math.FastMath;
 import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
@@ -16,8 +17,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static com.g3d.util.BufferUtils.*;
 
-/*
- * Needs more testing.
+/**
+ * @author Lex
  */
 public class TangentBinormalGenerator {
 
@@ -392,8 +393,10 @@ public class TangentBinormalGenerator {
                 }
             }
             if (flippedNormal && approxTangent) {
+                // Generated normal is flipped for this vertex,
+                // so binormal = normal.cross(tangent) will be flipped in the shader
                 log.log(Level.WARNING,
-                        "Generated normal is flipped for vertex {0}.", i);
+                        "Binormal is flipped for vertex {0}.", i);
             }
 
             if (tangent.length() < ZERO_TOLERANCE) {
@@ -475,5 +478,127 @@ public class TangentBinormalGenerator {
         mesh.setBuffer(Type.Tangent,  3, tangents);
         if (!approxTangent) mesh.setBuffer(Type.Binormal, 3, binormals);
     }
-    
+
+    public static Mesh genTbnLines(Mesh mesh, float scale) {
+        if (mesh.getBuffer(Type.Tangent) == null)
+            return genNormalLines(mesh, scale);
+        else
+            return genTangentLines(mesh, scale);
+    }
+
+    public static Mesh genNormalLines(Mesh mesh, float scale) {
+        FloatBuffer vertexBuffer = (FloatBuffer) mesh.getBuffer(Type.Position).getData();
+        FloatBuffer normalBuffer = (FloatBuffer) mesh.getBuffer(Type.Normal).getData();
+
+        ColorRGBA originColor = ColorRGBA.White;
+        ColorRGBA normalColor = ColorRGBA.Blue;
+
+        Mesh lineMesh = new Mesh();
+        lineMesh.setMode(Mesh.Mode.Lines);
+
+        Vector3f origin = new Vector3f();
+        Vector3f point = new Vector3f();
+
+        FloatBuffer lineVertex = BufferUtils.createFloatBuffer(vertexBuffer.capacity() * 2);
+        FloatBuffer lineColor = BufferUtils.createFloatBuffer(vertexBuffer.capacity() / 3 * 4 * 2);
+
+        for (int i = 0; i < vertexBuffer.capacity() / 3; i++) {
+            populateFromBuffer(origin, vertexBuffer, i);
+            populateFromBuffer(point, normalBuffer, i);
+
+            int index = i * 2;
+
+            setInBuffer(origin, lineVertex, index);
+            setInBuffer(originColor, lineColor, index);
+
+            point.multLocal(scale);
+            point.addLocal(origin);
+            setInBuffer(point, lineVertex, index + 1);
+            setInBuffer(normalColor, lineColor, index + 1);
+        }
+
+        lineMesh.setBuffer(Type.Position, 3, lineVertex);
+        lineMesh.setBuffer(Type.Color, 4, lineColor);
+
+        lineMesh.setStatic();
+        return lineMesh;
+    }
+
+    private static Mesh genTangentLines(Mesh mesh, float scale) {
+        FloatBuffer vertexBuffer = (FloatBuffer) mesh.getBuffer(Type.Position).getData();
+        FloatBuffer normalBuffer = (FloatBuffer) mesh.getBuffer(Type.Normal).getData();
+        FloatBuffer tangentBuffer = (FloatBuffer) mesh.getBuffer(Type.Tangent).getData();
+        
+        FloatBuffer binormalBuffer = null;
+        if (mesh.getBuffer(Type.Binormal) != null) {
+            binormalBuffer = (FloatBuffer) mesh.getBuffer(Type.Binormal).getData();
+        }
+
+        ColorRGBA originColor = ColorRGBA.White;
+        ColorRGBA tangentColor = ColorRGBA.Red;
+        ColorRGBA binormalColor = ColorRGBA.Green;
+        ColorRGBA normalColor = ColorRGBA.Blue;
+
+        Mesh lineMesh = new Mesh();
+        lineMesh.setMode(Mesh.Mode.Lines);
+
+        Vector3f origin = new Vector3f();
+        Vector3f point = new Vector3f();
+        Vector3f tangent = new Vector3f();
+        Vector3f normal = new Vector3f();
+        
+        IntBuffer lineIndex = BufferUtils.createIntBuffer(vertexBuffer.capacity() / 3 * 6);
+        FloatBuffer lineVertex = BufferUtils.createFloatBuffer(vertexBuffer.capacity() * 4);
+        FloatBuffer lineColor = BufferUtils.createFloatBuffer(vertexBuffer.capacity() / 3 * 4 * 4);
+
+        for (int i = 0; i < vertexBuffer.capacity() / 3; i++) {
+            populateFromBuffer(origin, vertexBuffer, i);
+            populateFromBuffer(normal, normalBuffer, i);
+            populateFromBuffer(tangent, tangentBuffer, i);
+
+            int index = i * 4;
+
+            int id = i * 6;
+            lineIndex.put(id, index);
+            lineIndex.put(id + 1, index + 1);
+            lineIndex.put(id + 2, index);
+            lineIndex.put(id + 3, index + 2);
+            lineIndex.put(id + 4, index);
+            lineIndex.put(id + 5, index + 3);
+
+            setInBuffer(origin, lineVertex, index);
+            setInBuffer(originColor, lineColor, index);
+            
+            point.set(tangent);
+            point.multLocal(scale);
+            point.addLocal(origin);
+            setInBuffer(point, lineVertex, index + 1);
+            setInBuffer(tangentColor, lineColor, index + 1);
+
+            if (binormalBuffer == null) {
+                normal.cross(tangent, point);
+                point.normalizeLocal();
+            }
+            else {
+                populateFromBuffer(point, binormalBuffer, i);
+            }
+            point.multLocal(scale);
+            point.addLocal(origin);
+            setInBuffer(point, lineVertex, index + 2);
+            setInBuffer(binormalColor, lineColor, index + 2);
+
+            point.set(normal);
+            point.multLocal(scale);
+            point.addLocal(origin);
+            setInBuffer(point, lineVertex, index + 3);
+            setInBuffer(normalColor, lineColor, index + 3);
+        }
+
+        lineMesh.setBuffer(Type.Index, 1, lineIndex);
+        lineMesh.setBuffer(Type.Position, 3, lineVertex);
+        lineMesh.setBuffer(Type.Color, 4, lineColor);
+
+        lineMesh.setStatic();
+        return lineMesh;
+    }
 }

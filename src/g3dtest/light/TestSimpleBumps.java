@@ -9,29 +9,28 @@ import com.g3d.math.FastMath;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Spatial;
+import com.g3d.scene.shape.Quad;
 import com.g3d.scene.shape.Sphere;
-import com.g3d.util.TangentBinormalGenerator;
 
-public class TestNormalMapping extends SimpleApplication {
+// phong cutoff for light to normal angle > 90?
+public class TestSimpleBumps extends SimpleApplication {
 
     float angle;
     PointLight pl;
     Spatial lightMdl;
 
     public static void main(String[] args){
-        TestNormalMapping app = new TestNormalMapping();
+        TestSimpleBumps app = new TestSimpleBumps();
         app.start();
     }
 
     @Override
     public void simpleInitApp() {
-        Sphere sphMesh = new Sphere(32, 32, 1);
-        sphMesh.setTextureMode(Sphere.TextureMode.Projected);
-        sphMesh.updateGeometry(32, 32, 1, false);
-        TangentBinormalGenerator.generate(sphMesh);
+        Quad quadMesh = new Quad(1, 1);
+        quadMesh.updateGeometry(1, 1);
 
-        Geometry sphere = new Geometry("Rock Ball", sphMesh);
-        Material mat = manager.loadMaterial("pond_rock.j3m");
+        Geometry sphere = new Geometry("Rock Ball", quadMesh);
+        Material mat = manager.loadMaterial("simple_bump.j3m");
         sphere.setMaterial(mat);
         rootNode.attachChild(sphere);
 
@@ -45,7 +44,7 @@ public class TestNormalMapping extends SimpleApplication {
         rootNode.addLight(pl);
 
         DirectionalLight dl = new DirectionalLight();
-        dl.setDirection(new Vector3f(1,-1,1).normalizeLocal());
+        dl.setDirection(new Vector3f(1, -1, -1).normalizeLocal());
         dl.setColor(new ColorRGBA(0.22f, 0.15f, 0.1f, 1.0f));
         rootNode.addLight(dl);
     }

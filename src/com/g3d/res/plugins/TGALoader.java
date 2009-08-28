@@ -79,7 +79,7 @@ public final class TGALoader implements ContentLoader {
 
 
     public Object load(ContentManager owner, InputStream is, String extension, ContentKey key) throws IOException {
-        return loadImage(is, owner.getProperty("FlipImages") != null && owner.getProperty("FlipImages").equals("true"));
+        return loadImage(is, owner.getProperty("FlipImages") == null || owner.getProperty("FlipImages").equals("true"));
     }
 
     /**

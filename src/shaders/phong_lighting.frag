@@ -89,29 +89,19 @@ void lightComputeDir2(vec3 worldPos, vec4 color, vec4 position, out vec4 lightDi
     lightDir.xyz = normalize(position.xyz - worldPos);
 }
 
-void lightComputeAll(vec3 normal, mat3 tbnMat,
-                     int lightCount, out vec3 outDiffuse, out vec3 outSpecular){
-    #ifdef HAS_NORMALMAP
-        // find tangent view dir & vert pos
-        vec3 tanViewDir = viewDir * tbnMat;
+void lightComputeAll(mat3 tbnMat,
+                     int lightCount,
+                     out vec3 outDiffuse,
+                     out vec3 outSpecular){
+        #ifdef HAS_NORMALMAP
+            vec3 normal = (texture2D(m_NormalMap, texCoord).xyz * vec3(2.0) - vec3(1.0));
+            // find tangent view dir & vert pos
+            vec3 localViewDir = viewDir * tbnMat;
+        #else
+            vec3 normal = wvNormal;
+            vec3 localViewDir = viewDir;
+        #endif
 
-        for (int i = 0; i < lightCount; i++){
-           // find light dir in tangent space, works for point & directional lights
-           vec4 wvLightPos = (g_ViewMatrix * vec4(g_LightPosition[i].xyz, g_LightColor[i].w));
-           wvLightPos.w = g_LightPosition[i].w;
-
-           vec4 tanLightDir;
-           lightComputeDir(wvPosition, g_LightColor[i], wvLightPos, tanLightDir);
-           tanLightDir.xyz = tanLightDir.xyz * tbnMat;
-
-           vec3 lightScale = g_LightColor[i].rgb * tanLightDir.w;
-           float specular = lightComputeSpecular(normal, tanViewDir, tanLightDir.xyz, m_Shininess);
-           float diffuse = lightComputeDiffuse(normal, tanLightDir.xyz);
-           outSpecular += specular * lightScale * step(0.01, diffuse) * g_LightColor[i].rgb;
-           outDiffuse += diffuse * lightScale * g_LightColor[i].rgb;
-        }
-    #else
-        // no normal map - use model view coordinates
         for (int i = 0; i < lightCount; i++){
            // find light dir in tangent space, works for point & directional lights
            vec4 wvLightPos = (g_ViewMatrix * vec4(g_LightPosition[i].xyz, g_LightColor[i].w));
@@ -120,22 +110,21 @@ void lightComputeAll(vec3 normal, mat3 tbnMat,
            vec4 lightDir;
            lightComputeDir(wvPosition, g_LightColor[i], wvLightPos, lightDir);
 
+           #ifdef HAS_NORMALMAP
+            lightDir.xyz = lightDir.xyz * tbnMat;
+           #endif
+
            vec3 lightScale = g_LightColor[i].rgb * lightDir.w;
-           float specular = lightComputeSpecular(normal, viewDir, lightDir.xyz, m_Shininess);
+           float specular = lightComputeSpecular(normal, localViewDir, lightDir.xyz, m_Shininess);
            float diffuse = lightComputeDiffuse(normal, lightDir.xyz);
            outSpecular += specular * lightScale * step(0.01, diffuse) * g_LightColor[i].rgb;
            outDiffuse += diffuse * lightScale * g_LightColor[i].rgb;
         }
-    #endif
 }
 
 //=====
 // BEGIN MAIN ROUTINE
 void main(){
-   // read normal from texture
-   #ifdef HAS_NORMALMAP
-    vec3 tanNormal = (texture2D(m_NormalMap, texCoord).xyz * vec3(2.0) - vec3(1.0));
-   #endif
 
    #ifdef HAS_DIFFUSEMAP
     vec4 diffuseColor = texture2D(m_DiffuseMap, texCoord);
@@ -154,11 +143,7 @@ void main(){
    vec3 totalSpecular = vec3(0.0);
    vec3 totalDiffuse = vec3(0.0);
 
-   #ifdef HAS_NORMALMAP
-    lightComputeAll(tanNormal, tbnMat, 4, totalDiffuse, totalSpecular);
-   #else
-    lightComputeAll(wvNormal, tbnMat, 4, totalDiffuse, totalSpecular);
-   #endif
+   lightComputeAll(tbnMat, 4, totalDiffuse, totalSpecular);
 
    gl_FragColor = vec4(specularColor * totalSpecular
                      + diffuseColor.rgb * totalDiffuse, diffuseColor.a);

@@ -21,7 +21,7 @@ public class AWTLoader implements ContentLoader {
         int width = img.getWidth();
         int height = img.getHeight();
         String flipProp = owner.getProperty("FlipImages");
-        boolean flip = flipProp != null && flipProp.equals("true");
+        boolean flip = flipProp == null || flipProp.equals("true");
 
         if (img.getTransparency() == Transparency.OPAQUE){
             ByteBuffer data = BufferUtils.createByteBuffer(img.getWidth()*img.getHeight()*3);

@@ -14,6 +14,7 @@ import com.g3d.scene.shape.Quad;
 import com.g3d.scene.shape.Sphere;
 import com.g3d.util.TangentBinormalGenerator;
 
+
 public class TestTangentGen extends SimpleApplication {
 
     float angle;
@@ -37,7 +38,7 @@ public class TestTangentGen extends SimpleApplication {
         addMesh("Quad", quadMesh, new Vector3f(1, 0, 0));
         
         DirectionalLight dl = new DirectionalLight();
-        dl.setDirection(new Vector3f(1,-1,-1).normalizeLocal());
+        dl.setDirection(new Vector3f(1, -1, -1).normalizeLocal());
         dl.setColor(ColorRGBA.White);
         rootNode.addLight(dl);
     }

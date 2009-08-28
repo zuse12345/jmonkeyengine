@@ -70,7 +70,7 @@ public class PFMLoader implements ContentLoader {
         boolean needEndienFlip = order != ByteOrder.nativeOrder();
 
         String flipImage = owner.getProperty("FlipImages");
-        boolean needYFlip = flipImage != null && flipImage.equals("true");
+        boolean needYFlip = flipImage == null || flipImage.equals("true");
 
         // make sure all unneccessary stuff gets deleted from heap
         // before allocating large amount of memory

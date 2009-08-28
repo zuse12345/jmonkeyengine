@@ -256,7 +256,7 @@ public class HDRLoader implements ContentLoader {
         dataStore = BufferUtils.createByteBuffer(width * height * imageFormat.getBitsPerPixel());
 
         String flipImage = owner.getProperty("FlipImages");
-        boolean flip = flipImage != null && flipImage.equals("true");
+        boolean flip = flipImage == null || flipImage.equals("true");
         int bytesPerPixel = imageFormat.getBitsPerPixel() / 8;
         int scanLineBytes = bytesPerPixel * width;
         for (int y = height - 1; y >= 0; y--) {

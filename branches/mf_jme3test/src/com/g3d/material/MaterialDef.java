@@ -1,7 +1,7 @@
 package com.g3d.material;
 
 import com.g3d.renderer.Renderer;
-import com.g3d.res.ContentManager;
+import com.g3d.asset.AssetManager;
 import com.g3d.shader.Uniform;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,16 +60,16 @@ public class MaterialDef {
     }
 
     private String name;
-    private final ContentManager contentManager;
+    private final AssetManager contentManager;
     private final Map<String, TechniqueDef> techniques = new HashMap<String, TechniqueDef>();
     private final Map<String, MatParam> matParams = new HashMap<String, MatParam>();
     
-    public MaterialDef(ContentManager contentManager, String name){
+    public MaterialDef(AssetManager contentManager, String name){
         this.contentManager = contentManager;
         this.name = name;
     }
 
-    public ContentManager getContentManager(){
+    public AssetManager getContentManager(){
         return contentManager;
     }
 

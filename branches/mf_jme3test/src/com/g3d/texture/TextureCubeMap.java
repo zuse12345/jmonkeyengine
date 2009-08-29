@@ -67,6 +67,15 @@ public class TextureCubeMap extends Texture {
 //        PositiveX, NegativeX, PositiveY, NegativeY, PositiveZ, NegativeZ;
 //    }
 
+    public TextureCubeMap(){
+        super();
+    }
+
+    public TextureCubeMap(Image img){
+        super();
+        setImage(img);
+    }
+
     public Texture createSimpleClone() {
         return createSimpleClone(new TextureCubeMap());
     }

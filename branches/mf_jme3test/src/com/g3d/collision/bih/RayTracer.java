@@ -8,8 +8,8 @@ import com.g3d.math.Triangle;
 import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
-import com.g3d.res.ContentKey;
-import com.g3d.res.ContentManager;
+import com.g3d.asset.AssetKey;
+import com.g3d.asset.AssetManager;
 import com.g3d.scene.Mesh;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -133,7 +133,7 @@ public class RayTracer extends javax.swing.JFrame {
                                     c = new Color(ndotl, ndotl, ndotl);
                                     Ray r2 = new Ray(pixPos, pixDir);
                                     tree.intersect(r2, 1000, null, results);
-                                    if (results.getClosestTriangle() != null)
+                                    if (results.getClosestPick() != null)
                                         c = Color.black;
                                 }else{
                                     c = Color.black;
@@ -195,10 +195,10 @@ public class RayTracer extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     public static void main(String[] args) {
-        ContentManager man = new ContentManager(true);
+        AssetManager man = new AssetManager(true);
 
         System.out.println("Loading teapot.obj..");
-        final Mesh m = (Mesh) man.loadContent(new ContentKey("teapot.obj"));
+        final Mesh m = (Mesh) man.loadContent(new AssetKey("teapot.obj"));
         final Camera c = new Camera(1024, 768);
         c.setLocation(new Vector3f(1f, 1f, -1f));
         c.lookAt(m.getBound().getCenter(), Vector3f.UNIT_Y);

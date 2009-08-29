@@ -16,8 +16,6 @@ public class TestParticleEmitter extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        manager.setProperty("FlipImages", "true");
-
 //        lightMdl = new Geometry("Light", new Sphere(10, 10, 0.1f));
 //        lightMdl.setMaterial(manager.loadMaterial("red_color.j3m"));
 //        rootNode.attachChild(lightMdl);

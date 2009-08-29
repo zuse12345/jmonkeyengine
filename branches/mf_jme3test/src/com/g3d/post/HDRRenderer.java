@@ -4,7 +4,7 @@ import com.g3d.app.Application;
 import com.g3d.material.Material;
 import com.g3d.math.Vector2f;
 import com.g3d.renderer.Renderer;
-import com.g3d.res.ContentManager;
+import com.g3d.asset.AssetManager;
 import com.g3d.scene.Spatial;
 import com.g3d.texture.FrameBuffer;
 import com.g3d.texture.Image;
@@ -51,9 +51,9 @@ public class HDRRenderer {
 
     private MinFilter fbMinFilter = MinFilter.BilinearNoMipMaps;
     private MagFilter fbMagFilter = MagFilter.Bilinear;
-    private ContentManager manager;
+    private AssetManager manager;
 
-    public HDRRenderer(ContentManager manager){
+    public HDRRenderer(AssetManager manager){
         this.manager = manager;
     }
 

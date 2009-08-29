@@ -47,7 +47,7 @@ public class SoftwareCursor extends Geometry implements BindingListener {
         setLocalScale(new Vector3f(cursorWidth / (float)screenWidth, cursorHeight / (float)screenHeight, 1f));
     }
 
-    public void registerWithDispatcher(Dispatcher dispacher){
+    public void registerWithDispatcher(InputManager dispacher){
         dispacher.setCursorVisible(false);
 
         dispacher.registerMouseAxisBinding("MOUSE_Left", 0, true);

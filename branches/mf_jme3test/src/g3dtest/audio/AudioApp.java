@@ -3,7 +3,7 @@ package g3dtest.audio;
 import com.g3d.audio.AudioRenderer;
 import com.g3d.audio.joal.JoalAudioRenderer;
 import com.g3d.renderer.Camera;
-import com.g3d.res.ContentManager;
+import com.g3d.asset.AssetManager;
 import com.g3d.system.G3DSystem;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,13 +12,13 @@ public class AudioApp {
 
     private static final float UPDATE_RATE = 0.01f;
 
-    protected ContentManager manager;
+    protected AssetManager manager;
     protected Camera listener;
     protected AudioRenderer ar;
 
     public AudioApp(){
         G3DSystem.initialize();
-        manager = new ContentManager(true);
+        manager = new AssetManager(true);
 
         ar = new JoalAudioRenderer();
         ar.initialize();

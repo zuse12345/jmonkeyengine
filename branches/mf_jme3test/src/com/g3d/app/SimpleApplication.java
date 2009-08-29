@@ -57,11 +57,7 @@ public abstract class SimpleApplication extends Application {
     }
 
     public void loadFPSText(){
-        // enable image flipping for this font
-        String prevVal = manager.getProperty("FlipImages");
-        manager.setProperty("FlipImages", "true");
         BitmapFont font = manager.loadFont("cooper.fnt");
-        manager.setProperty("FlipImages", prevVal);
 
         fpsText = new BitmapText(font, false);
         fpsText.setSize(font.getCharSet().getRenderedSize());
@@ -80,14 +76,14 @@ public abstract class SimpleApplication extends Application {
         guiNode.setCullHint(CullHint.Never);
         loadFPSText();
 
-        if (dispatcher != null){
+        if (inputManager != null){
             flyCam = new FlyByCamera(cam);
             flyCam.setMoveSpeed(1f);
-            flyCam.registerWithDispatcher(dispatcher);
+            flyCam.registerWithDispatcher(inputManager);
         
-            dispatcher.registerKeyBinding("SIMPLEAPP_Exit", KeyInput.KEY_ESCAPE);
-            dispatcher.registerKeyBinding("SIMPLEAPP_CameraPos", KeyInput.KEY_C);
-            dispatcher.addTriggerListener(new BindingListener() {
+            inputManager.registerKeyBinding("SIMPLEAPP_Exit", KeyInput.KEY_ESCAPE);
+            inputManager.registerKeyBinding("SIMPLEAPP_CameraPos", KeyInput.KEY_C);
+            inputManager.addTriggerListener(new BindingListener() {
                 public void onBinding(String binding, float value) {
                     if (binding.equals("SIMPLEAPP_Exit")){
                         stop();

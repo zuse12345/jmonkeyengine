@@ -58,7 +58,7 @@ public class FlyByCamera implements BindingListener {
      * Dispatcher.
      * @param dispacher
      */
-    public void registerWithDispatcher(Dispatcher dispacher){
+    public void registerWithDispatcher(InputManager dispacher){
         dispacher.setCursorVisible(false);
 
 //        dispacher.registerJoystickAxisBinding("FLYCAM_Left",  2, JoyAxisEvent.AXIS_X, true);

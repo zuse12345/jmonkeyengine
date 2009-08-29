@@ -16,8 +16,6 @@ public class TestDdsLoading extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        manager.setProperty("FlipImages", "true");
-
         // create a simple plane/quad
         Quad quadMesh = new Quad(1, 1);
         quadMesh.updateGeometry(1, 1, true);

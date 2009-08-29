@@ -9,10 +9,10 @@ import com.g3d.math.Matrix3f;
 import com.g3d.math.Matrix4f;
 import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
-import com.g3d.res.ContentManager;
+import com.g3d.asset.AssetManager;
 import com.g3d.shader.DefineList;
 import com.g3d.shader.Shader;
-import com.g3d.shader.ShaderMasterKey;
+import com.g3d.shader.ShaderKey;
 import com.g3d.shader.Uniform;
 import com.g3d.shader.UniformBinding;
 import java.util.ArrayList;
@@ -103,7 +103,7 @@ public class Technique {
      * Prepares the technique for use by loading the shader and setting
      * the proper defines based on material parameters.
      */
-    public void makeCurrent(ContentManager manager){
+    public void makeCurrent(AssetManager manager){
         // check if reload is needed..
         DefineList newDefines = new DefineList();
         Collection<MatParam> params = owner.getParams();
@@ -125,13 +125,13 @@ public class Technique {
         }
     }
 
-    public void loadShader(ContentManager manager){
+    public void loadShader(AssetManager manager){
         // recompute define list
         DefineList allDefines = new DefineList();
         allDefines.addFrom(def.getShaderPresetDefines());
         allDefines.addFrom(defines);
 
-        ShaderMasterKey key = new ShaderMasterKey(def.getVertName(),
+        ShaderKey key = new ShaderKey(def.getVertName(),
                                                   def.getFragName(),
                                                   allDefines,
                                                   def.getShaderLanguage());

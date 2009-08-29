@@ -6,7 +6,7 @@ import com.g3d.renderer.Camera;
 import com.g3d.renderer.Renderer;
 import com.g3d.renderer.queue.RenderQueue.ShadowMode;
 import com.g3d.renderer.queue.SpatialList;
-import com.g3d.res.ContentManager;
+import com.g3d.asset.AssetManager;
 import com.g3d.texture.FrameBuffer;
 import com.g3d.texture.Image.Format;
 import com.g3d.texture.Texture2D;
@@ -25,7 +25,7 @@ public class BasicShadowRenderer {
 
     private Vector3f[] points = new Vector3f[8];
 
-    public BasicShadowRenderer(ContentManager manager, int size){
+    public BasicShadowRenderer(AssetManager manager, int size){
         shadowFB =  new FrameBuffer(size,size,0);
         shadowMap = new Texture2D(size,size,Format.Depth);
         shadowFB.setDepthTexture(shadowMap);

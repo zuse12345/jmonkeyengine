@@ -1,6 +1,5 @@
 package com.g3d.app;
 
-import com.g3d.input.Dispatcher;
 import com.g3d.input.JoyInput;
 import com.g3d.input.KeyInput;
 import com.g3d.input.MouseInput;
@@ -9,7 +8,8 @@ import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
 import com.g3d.renderer.Renderer;
 import com.g3d.renderer.queue.RenderQueue;
-import com.g3d.res.ContentManager;
+import com.g3d.asset.AssetManager;
+import com.g3d.input.InputManager;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Node;
 import com.g3d.scene.Spatial;
@@ -29,7 +29,7 @@ public class Application implements ContextListener {
      * The content manager. Typically initialized outside the GL thread
      * to allow offline loading of content.
      */
-    protected ContentManager manager;
+    protected AssetManager manager;
 
     protected Renderer renderer;
     protected G3DContext context;
@@ -41,7 +41,7 @@ public class Application implements ContextListener {
     protected MouseInput mouseInput;
     protected KeyInput keyInput;
     protected JoyInput joyInput;
-    protected Dispatcher dispatcher;
+    protected InputManager inputManager;
 
     /**
      * Create a new instance of <code>Application</code>.
@@ -118,28 +118,28 @@ public class Application implements ContextListener {
                 joyInput.initialize();
         }
 
-        dispatcher = new Dispatcher(mouseInput, keyInput, joyInput);
+        inputManager = new InputManager(mouseInput, keyInput, joyInput);
     }
 
     /**
      * Initializes the content manager.
      */
     private void initContentManager(){
-        manager = new ContentManager(true);
+        manager = new AssetManager(true);
     }
 
     /**
      * @return The content manager for this application.
      */
-    public ContentManager getContentManager(){
+    public AssetManager getContentManager(){
         return manager;
     }
 
     /**
-     * @return the input binding event dispatcher.
+     * @return the input manager.
      */
-    public Dispatcher getDispatcher(){
-        return dispatcher;
+    public InputManager getInputManager(){
+        return inputManager;
     }
 
     /**
@@ -279,7 +279,7 @@ public class Application implements ContextListener {
             if (joyInput != null)
                 joyInput.update();
 
-            dispatcher.update(timer.getTimePerFrame());
+            inputManager.update(timer.getTimePerFrame());
         }
 
         // user code here..
@@ -295,7 +295,7 @@ public class Application implements ContextListener {
         if (joyInput != null)
             joyInput.destroy();
 
-        dispatcher = null;
+        inputManager = null;
     }
 
     /**

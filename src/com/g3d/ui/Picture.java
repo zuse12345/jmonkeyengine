@@ -4,7 +4,7 @@ import com.g3d.bounding.BoundingBox;
 import com.g3d.material.Material;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.queue.RenderQueue.Bucket;
-import com.g3d.res.ContentManager;
+import com.g3d.asset.AssetManager;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.shape.Quad;
 import com.g3d.texture.Texture2D;
@@ -40,15 +40,15 @@ public class Picture extends Geometry {
         setLocalTranslation(x, y, 0);
     }
 
-    public void setImage(ContentManager manager, String imgName, boolean useAlpha){
+    public void setImage(AssetManager manager, String imgName, boolean useAlpha){
         if (getMaterial() == null){
             Material mat = new Material(manager, "sprite2d.j3md");
             setMaterial(mat);
         }
-        material.setTexture("m_Texture", manager.loadTexture(imgName));
+        material.setTexture("m_Texture", manager.loadTexture(imgName, true));
     }
 
-    public void setTexture(ContentManager manager, Texture2D tex, boolean useAlpha){
+    public void setTexture(AssetManager manager, Texture2D tex, boolean useAlpha){
         if (getMaterial() == null){
             Material mat = new Material(manager, "sprite2d.j3md");
             setMaterial(mat);

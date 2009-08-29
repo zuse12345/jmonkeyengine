@@ -30,14 +30,8 @@ public class TestCubeMap extends SimpleApplication {
         app.start();
     }
 
-    public void loadEnvMap(Format imgFormat){
-        manager.setProperty("FlipImages", "true");
-        // select image format?
-        manager.setProperty("HDRFormat", imgFormat.name());
-
-        //Image img = manager.loadImage("grace_cube.dds");
-        Image img = manager.loadImage("stpeters_probe.hdr");
-        envMap = new Texture2D(img);
+    public void loadEnvMap(){ 
+        envMap = manager.loadTexture("stpeters_probe.hdr");
     }
 
     public Geometry createReflectiveTeapot(){
@@ -70,11 +64,8 @@ public class TestCubeMap extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        manager.setProperty("EnableMipmapGen", "true");
-        manager.setProperty("TexAnisoLevel", "16");
-
         initHDR(Format.RGB111110F);
-        loadEnvMap(Format.RGB16F_to_RGB9E5);
+        loadEnvMap();
 
         skyGeom.updateModelBound();
         skyGeom.setQueueBucket(Bucket.Sky);

@@ -51,9 +51,6 @@ public class TestHDR extends SimpleApplication {
 
 //        config.setVisible(true);
 
-        manager.setProperty("FlipImages", "true");
-        manager.setProperty("HDRFormat", "RGB16F_to_RGB111110F");
-        
         fbNode.attachChild(createHDRBox());
     }
 

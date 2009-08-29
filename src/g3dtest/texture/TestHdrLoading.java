@@ -1,6 +1,7 @@
 package g3dtest.texture;
 
 import com.g3d.app.SimpleApplication;
+import com.g3d.asset.TextureKey;
 import com.g3d.material.Material;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
@@ -40,7 +41,7 @@ public class TestHdrLoading extends SimpleApplication {
         quadMesh.updateGeometry(1, 1, true);
         quadMesh.updateBound();
 
-        Image original = manager.loadImage("nave.hdr");
+        Image original = (Image) manager.loadContent(new TextureKey("nave.hdr", true));
 //        createToneMappedPanel(new Vector3f(-5,0,0), original, 0.3f);
         createToneMappedPanel(new Vector3f(0,0,0),  original, 1.5f);
 //        createToneMappedPanel(new Vector3f(5,0,0),  original, 4f);

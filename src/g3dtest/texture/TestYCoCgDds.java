@@ -41,8 +41,6 @@ public class TestYCoCgDds extends SimpleApplication {
     }
 
     public void simpleInitApp() {
-        manager.setProperty("FlipImages", "true");
-
         // create a simple plane/quad
         quadMesh = new Quad(1, 1);
         quadMesh.updateGeometry(1, 1, false);

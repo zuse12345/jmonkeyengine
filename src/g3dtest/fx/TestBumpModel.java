@@ -27,8 +27,6 @@ public class TestBumpModel extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        manager.setProperty("FlipImages", "true");
-
         Spatial signpost = manager.loadModel("signpost.obj");
         signpost.setMaterial(manager.loadMaterial("signpost.j3m"));
         rootNode.attachChild(signpost);

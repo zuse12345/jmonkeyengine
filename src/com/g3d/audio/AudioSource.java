@@ -1,7 +1,7 @@
 package com.g3d.audio;
 
 import com.g3d.math.Vector3f;
-import com.g3d.res.ContentManager;
+import com.g3d.asset.AssetManager;
 
 public class AudioSource extends ALObject {
 
@@ -33,11 +33,11 @@ public class AudioSource extends ALObject {
         setAudioData(ad);
     }
 
-    public AudioSource(ContentManager manager, String name, boolean stream){
+    public AudioSource(AssetManager manager, String name, boolean stream){
         this(manager.loadAudio(name, stream));
     }
     
-    public AudioSource(ContentManager manager, String name){
+    public AudioSource(AssetManager manager, String name){
         this(manager, name, false);
     }
     

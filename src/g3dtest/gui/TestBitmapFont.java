@@ -22,8 +22,6 @@ public class TestBitmapFont extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        manager.setProperty("FlipImages", "true");
-
         BitmapFont fnt = manager.loadFont("angelFont.fnt");
 //        BitmapText txt = new BitmapText(fnt, false);
 //        txt.setBox(new Rectangle(0, 0, settings.getWidth(), settings.getHeight()));

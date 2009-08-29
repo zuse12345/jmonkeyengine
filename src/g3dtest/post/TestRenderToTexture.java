@@ -41,9 +41,6 @@ public class TestRenderToTexture extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        manager.setProperty("EnableMipmapGen", "true");
-        manager.setProperty("TexAnisoLevel", "4"); //maximum
-
         cam.setLocation(new Vector3f(3, 3, 3));
         cam.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
         

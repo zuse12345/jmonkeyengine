@@ -6,7 +6,7 @@ import com.g3d.math.ColorRGBA;
 import com.g3d.math.Matrix4f;
 import com.g3d.math.Vector2f;
 import com.g3d.renderer.Renderer;
-import com.g3d.res.ContentManager;
+import com.g3d.asset.AssetManager;
 import com.g3d.scene.Geometry;
 import com.g3d.shader.Shader;
 import com.g3d.texture.Texture;
@@ -74,7 +74,7 @@ public class Material {
         this.def = def;
     }
 
-    public Material(ContentManager contentMan, String defName){
+    public Material(AssetManager contentMan, String defName){
         this(contentMan.loadMaterialDef(defName));
     }
 

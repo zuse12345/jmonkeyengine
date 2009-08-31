@@ -41,8 +41,8 @@ $Id$
 
     <zip destfile="dist/${distro.basename}.zip">
       <zipfileset dir="tmp/stage"/>
-      <zipfileset dir="src"
-                excludes="**/.*/**, **/*.pyc, *test*/**, **/*.py, **/*.html"/>
+      <zipfileset dir="src" excludes="
+        **/.*/**, **/*.pyc, *test*/**, **/*.py, **/*.html, **/*.class"/>
       <!--  To simplify dev env. PYTHONPATH issues, moving docs into src/
             branch for now.
       <zipfileset dir="doc" includes="hottbj/**" excludes="**/.*/**"/>

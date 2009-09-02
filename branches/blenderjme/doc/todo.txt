@@ -2,6 +2,11 @@ $Id$
 
 TODO LIST
 
+FIX Spatial uniqueness enforcement.  This is totally screwed up now.
+I think the jME recommendation for Spatials to have a unique name in a scene is
+ unrealistic and problematic.  Come up with a policy which will accommodate all
+ respectable use cases, then enforce that policy vigorously.
+
 Use Python subclassing for the main jme/xml and hottbj/wrapperclasses
 classes.  When I first wrote those classes, I didn't know how they needed to
 diverge.  Now it is time to eliminate all of the redundant code.

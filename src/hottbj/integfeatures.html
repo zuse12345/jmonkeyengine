@@ -110,23 +110,28 @@
       for your <i>mountable</i> items.
       These Blender items must all be created with the same 3D world scale, and
       positioned the same way with respect to how they would be <i>held</i>.
-      For hand-held mountables, my convention is to create them positioned
+      For example, my convention for hand-held
+      -held mountables is to create them positioned
       pointed towards -Y as if held by a gripped hand with the thumb pointing
-      +Y with the top of the thumb +Z.
+      -Y with the top (knucke side) of the thumb towards +Z;
+      and my scale convention is 1 Blender unit = 1 m.
       </p> <p>
       You create a Blender Object for the dedicated purpose of positioning (I
       recommend using Empties for this).
+      In Blender, make sure to parent your mount point Empty to a specific
+      Armature bone.
       Parent a copy of any qualifying mountable object to this Mountpoint
       Object.
+      You then adjust the position of the Empty Mountpoint in Blender... not of
+      the manikin weapon.
       When you export the model, export the Mountpoint object but not the
-      mountable object, which was just used for positioning.
+      mountable object, which was just used to facilitate positioning.
       (If you want to, you can export the mountable object also, in which case
       your model will load with it mounted in jME and you could swap it out
       thereafter).
       </p>
     <HR/>
     <h4 id="skintransfernodes">Skin Transfer Nodes &amp; Skin Regions</h4>
-    <HR/>
       <p>
       I recently added the ability to hot load skins to an animated model in
       jME.

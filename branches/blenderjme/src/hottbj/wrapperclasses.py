@@ -1694,10 +1694,12 @@ class JmeSkinAndBone(object):
             if len(vWeightMap) > 0: vertexWeights[jvi] = vWeightMap
         print (str(len(vertexWeights)) + " verts out of "
                 + str(len(meshChild.blenderVertIndexes))
-                + " weighted for skin '" + skin.getName() + "'")
+                + " weighted for skin '" + skin.getName()
+                + "'.  Max vert index = " + str(max(vertexWeights.keys())))
         if len(vertexWeights) < 1: return
 
-        salaTag = _XmlTag('SavableArrayListArray_' + str(skinIndex))
+        salaTag = _XmlTag('SavableArrayListArray_' + str(skinIndex),
+                { "size": (1 + max(vertexWeights.keys())) })
         for vi, vWeightMap in vertexWeights.iteritems():
             if len(vWeightMap.values()) > self.maxWeightings:
                 allWeights = list(vWeightMap.values())

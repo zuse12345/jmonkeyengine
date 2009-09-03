@@ -47,12 +47,6 @@
     <h4 id="constraints">Constraints</h4>
       <UL>
         <LI>Armatures must be at the root level
-        <LI>We haven't yet figured out the exact criteria, but bone weighting
-          problems can arise if you never apply Bone Heat to your skin.
-          You can modify the weightings as much as you wish afterwards, but in
-          some cases, you must apply Bone Heat once.
-          If you have no reason to avoid it (like you don't want to change
-          pre-existing weightings), make sure to apply Bone Heat.
         <LI>All bones in a single export must be named uniquely.
         If you export 4 armatures with 10 bones each, you need 40 unique bone
         names.
@@ -232,21 +226,15 @@
       Now, select the skin mesh and switch to Weight Paint mode.
       Now, due to the Armature being in pose mode, you can skin weight painter
       knows about the bones.
-      <p class="gotcha">
-      <b>IMPORTANT!</b>
-      For the time being, in some cases you must apply "bone heats" to your
-      model.
-      This is a work-around which prevents artifacts from wrecking the export.
-      When we have time to dig into the issue and fix the real problem, we'll
-      eliminate this requirement, or at lease document <i>when</i> Bone Heat is
-      required.</p>
+      <p>
       Since you selected all bones for the Armature in Pose Mode, all bones
       will be selected now in the weight painter (there is no way to select
-      multiple bones after you aer in weight painter).
+      multiple bones after you are in weight painter).
       Click "w" and choose "Apply Bone Heat..." to apply the bone heat to all
       bones (non-deform bones will be automatically excluded).
       Though you are allowed to manually paint weights for non-Deform bones,
       such weightings will never be applied to a mesh.
+      </p>
     </ul>
   <li>Adjust Bone Weights
     <p>

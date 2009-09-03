@@ -2,6 +2,10 @@ $Id$
 
 TODO LIST
 
+Add either enforcement or validation for the cases where TriMeshes vs.
+QuadMeshes are mandated, like for Morphing and Skins.  Right now, the code
+assumes these geometries are TriMeshes.
+
 FIX Spatial uniqueness enforcement.  This is totally screwed up now.
 I think the jME recommendation for Spatials to have a unique name in a scene is
  unrealistic and problematic.  Come up with a policy which will accommodate all

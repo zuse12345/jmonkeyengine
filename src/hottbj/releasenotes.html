@@ -17,9 +17,6 @@
     Copyright 2009 by Blaine Simpson and the jME Dev Team,
     with the included BSD open source license.
     </p><p>
-    This incremental beta, 0.3e, differs from 0.3d only in that it writes
-    renderer-independent *-jme.xml files, and it includes a fix for an
-    armature export bug.
     The 0.2 series of the exporter introduced detailed support for Skin &amp;
     Bones.
     The 0.3 series introduces <i>Mountpoints</i>, general support for
@@ -46,6 +43,12 @@
     <HR/>
     <h4 id="changelist">Change List</h4>
     <ul>
+      <li>Changes since 0.3e<ol>
+        <li>Support skin &amp; bones weightings where some verts have no
+        weights.
+        <li>Class files excluded from distros (they added an unnecessary
+         tight binding/dependency between HottBJ version and jME version).
+      </ol>
       <li>Changes since 0.3d<ol>
         <li>Output model files now renderer-independent.
         <li>Fixed armature export bug.

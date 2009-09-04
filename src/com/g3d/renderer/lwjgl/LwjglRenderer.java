@@ -123,7 +123,7 @@ public class LwjglRenderer implements Renderer {
 
     public void initialize(){
         TempVars vars = TempVars.get();
-
+        
         String version = glGetString(GL_SHADING_LANGUAGE_VERSION);
         if (version == null || version.equals("")){
             glslVer = -1;

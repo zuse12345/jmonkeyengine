@@ -1,5 +1,9 @@
 package com.g3d.asset.pack;
 
+/**
+ * Indicates a named entry. This is generated from a name
+ * to lookup a J3PEntry from the J3P table.
+ */
 public class NamedEntry {
 
     final String name;
@@ -15,6 +19,7 @@ public class NamedEntry {
         this.hash = hash;
     }
 
+
     @Override
     public int hashCode(){
         return hash;
@@ -28,7 +33,7 @@ public class NamedEntry {
 
         NamedEntry otherEnt = (NamedEntry) other;
         if (hash == otherEnt.hash){
-            if (name != null)
+            if (name != null && otherEnt.name != null)
                 return name.equals(otherEnt.name);
             else
                 return true;

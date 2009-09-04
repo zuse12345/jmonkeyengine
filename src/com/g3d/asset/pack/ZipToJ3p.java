@@ -3,18 +3,13 @@ package com.g3d.asset.pack;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -98,7 +93,7 @@ public class ZipToJ3p {
         long initialPos = out.position();
         long read = entry.length;
 
-        compressor.compress(in, out, entry);
+        compressor.compress(in, out, entry, entry.length);
 
         long finalPos = out.position();
         long length = finalPos - initialPos;

@@ -121,9 +121,12 @@ public class Compressor {
         System.out.println("Comprssion: Deflate");
     }
 
-    public void lzma(InputStream src, WritableByteChannel chan, J3PEntry entry) throws IOException{
+    public void lzma(InputStream src, WritableByteChannel chan, J3PEntry entry, long length) throws IOException{
         OutputStream out = Channels.newOutputStream(chan);
         jarLzma.WriteCoderProperties(out);
+        for (int i = 0; i < 8; i++)
+                out.write((byte)(length >> (8 * i)));
+
         jarLzma.Code(src, out, -1, -1, null);
         entry.flags |= J3PEntry.LZMA_COMPRESSED;
         System.out.println("Comprssion: LZMA");
@@ -141,7 +144,7 @@ public class Compressor {
         System.out.println("Comprssion: Pack200 Deflate");
     }
 
-    public void compress(InputStream src, WritableByteChannel chan, J3PEntry entry) throws IOException{
+    public void compress(InputStream src, WritableByteChannel chan, J3PEntry entry, long length) throws IOException{
         String name = entry.name;
         int idx = name.lastIndexOf(".");
         if (idx <= 0){
@@ -159,14 +162,15 @@ public class Compressor {
 
         if (name.equals("xml") || name.equals("txt") || name.equals("material")
          || name.equals("sh")){
-            lzma(src, chan, entry);
+            lzma(src, chan, entry, length);
         }else if (name.equals("jar")){
             packDeflate(src, chan, entry);
         }else if (name.equals("tga") || name.equals("dds") || name.equals("exe")){
-            lzma(src, chan, entry);
+            lzma(src, chan, entry, length);
         }else{
-            lzma(src, chan, entry);
+            lzma(src, chan, entry, length);
         }
+//        copy(src, chan);
     }
 
 }

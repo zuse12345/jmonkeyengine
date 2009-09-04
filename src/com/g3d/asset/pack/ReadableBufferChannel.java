@@ -5,6 +5,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ReadableByteChannel;
 
+/**
+ * Channel implementation for reading from ByteBuffers.
+ */
 public class ReadableBufferChannel implements ReadableByteChannel {
 
     private ByteBuffer bb;
@@ -27,6 +30,7 @@ public class ReadableBufferChannel implements ReadableByteChannel {
         bb.limit(newLim);
         assert bb.remaining() == toRead;
         dst.put(bb);
+        bb.limit(prevLim);
         return toRead;
     }
 
@@ -37,7 +41,5 @@ public class ReadableBufferChannel implements ReadableByteChannel {
     public void close() throws IOException {
         bb = null;
     }
-
-
 
 }

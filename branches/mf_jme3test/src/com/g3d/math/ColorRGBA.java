@@ -490,6 +490,14 @@ public class ColorRGBA implements Savable, Cloneable {
         return rgba;
     }
 
+    public int asIntABGR() {
+        int abgr = (((int) (a * 255) & 0xFF) << 24)
+                 | (((int) (b * 255) & 0xFF) << 16)
+                 | (((int) (g * 255) & 0xFF) << 8)
+                 | (((int) (r * 255) & 0xFF));
+        return abgr;
+    }
+
     public void fromIntARGB(int color) {
         a = ((byte) (color >> 24) & 0xFF) / 255f;
         r = ((byte) (color >> 16) & 0xFF) / 255f;

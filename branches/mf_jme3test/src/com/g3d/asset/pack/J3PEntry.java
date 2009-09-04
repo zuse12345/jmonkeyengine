@@ -1,5 +1,8 @@
 package com.g3d.asset.pack;
 
+/**
+ * Represents a single file entry in a J3P (jME3 pack) file.
+ */
 public class J3PEntry extends NamedEntry {
 
     /**
@@ -22,9 +25,19 @@ public class J3PEntry extends NamedEntry {
 
     static final int LZMA_COMPRESSED = 0x40;
 
-
+    /**
+     * Flags. See int constants in this class for more info.
+     */
     int flags;
+
+    /**
+     * Offset of this file entry's data, from the beginning of the data chunk.
+     */
     long offset;
+
+    /**
+     * Length, in bytes, of the stored file.
+     */
     int length;
 
     J3PEntry(String name){

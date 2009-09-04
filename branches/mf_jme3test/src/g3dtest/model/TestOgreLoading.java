@@ -1,6 +1,8 @@
 package g3dtest.model;
 
 import com.g3d.app.SimpleApplication;
+import com.g3d.light.PointLight;
+import com.g3d.math.Vector3f;
 import com.g3d.scene.Spatial;
 
 public class TestOgreLoading extends SimpleApplication {
@@ -11,13 +13,12 @@ public class TestOgreLoading extends SimpleApplication {
     }
 
     public void simpleInitApp() {
+        PointLight pl = new PointLight();
+        pl.setPosition(new Vector3f(10, 10, -10));
+        rootNode.addLight(pl);
+
         // create the geometry and attach it
-        Spatial teapot = manager.loadModel("Cube.mesh.xml");
-
-//        // show normals as material
-//        Material mat = new Material(manager, "debug_normals.j3md");
-//        teapot.setMaterial(mat);
-
-//        rootNode.attachChild(teapot);
+        Spatial cube = manager.loadModel("Cube.meshxml");
+        rootNode.attachChild(cube);
     }
 }

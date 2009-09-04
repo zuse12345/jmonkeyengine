@@ -15,6 +15,7 @@ public class AWTLoader implements AssetLoader {
 
     private Image loadAWT(AssetInfo info) throws IOException{
         InputStream in = info.openStream();
+        ImageIO.setUseCache(false);
         BufferedImage img = ImageIO.read(in);
         if (img == null)
             return null;

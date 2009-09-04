@@ -19,6 +19,9 @@ import com.g3d.audio.plugins.WAVLoader;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.Spatial;
+import com.g3d.scene.plugins.ogre.MaterialLoader;
+import com.g3d.scene.plugins.ogre.MeshLoader;
+import com.g3d.scene.plugins.ogre.SceneLoader;
 import com.g3d.shader.Shader;
 import com.g3d.shader.ShaderKey;
 import com.g3d.system.G3DSystem;
@@ -51,6 +54,7 @@ public class AssetManager {
 
     public AssetManager(boolean loadDefaults){
         G3DSystem.initialize();
+
         if (loadDefaults){
             //setup loading of resources from the classpath.
             registerLocator("/textures/",
@@ -62,7 +66,7 @@ public class AssetManager {
             registerLocator("/materials/", ClasspathLocator.class, "j3md", "j3m");
             registerLocator("/shaders/", ClasspathLocator.class, "glsl", "vert", "frag");
             registerLocator("/shaderlib/", ClasspathLocator.class, "glsllib");
-            registerLocator("/models/", ClasspathLocator.class, "obj");
+            registerLocator("/models/", ClasspathLocator.class, "obj", "meshxml", "material");
             registerLocator("/fonts/", ClasspathLocator.class, "fnt");
             registerLoader(AWTLoader.class, "jpg", "bmp", "gif", "png", "jpeg");
             registerLoader(WAVLoader.class, "wav");
@@ -75,6 +79,9 @@ public class AssetManager {
             registerLoader(DDSLoader.class, "dds");
             registerLoader(TGALoader.class, "tga");
             registerLoader(OBJLoader.class, "obj");
+            registerLoader(MeshLoader.class, "meshxml");
+            registerLoader(MaterialLoader.class, "material");
+            registerLoader(SceneLoader.class, "scene");
             registerLoader(GLSLLoader.class, "vert", "frag", "glsl", "glsllib");
         }
         logger.info("ContentManager created.");

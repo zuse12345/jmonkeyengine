@@ -24,6 +24,9 @@ public class ReadableBufferChannel implements ReadableByteChannel {
             throw new ClosedChannelException();
 
         int toRead = Math.min(dst.remaining(), bb.remaining());
+        if (toRead == 0)
+            return -1; // end of stream
+        
         int prevLim = bb.limit();
         int newLim = bb.position() + toRead;
         assert newLim <= prevLim;

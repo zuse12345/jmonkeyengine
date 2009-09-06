@@ -1598,6 +1598,16 @@ public class LwjglRenderer implements Renderer {
             context.boundElementArrayVBO = bufId;
         }
 
+        if (vertCount > maxVertCount){
+            logger.warning("Mesh may be rendered with reduced performance. \n" +
+                           "vertex count > max vertex count.");
+        }
+
+        if (indexBuf.getData().capacity() > maxTriCount){
+            logger.warning("Mesh may be rendered with reduced performance. \n" +
+                           "triangle count > max triangle count.");
+        }
+
 //        glDisable(GL_POINT_SMOOTH);
 //        glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 
@@ -1683,6 +1693,20 @@ public class LwjglRenderer implements Renderer {
                 indices = vb;
             }else{
                 setVertexAttrib(vb);
+            }
+        }
+        if (mesh.getVertexCount() <= 0){
+            mesh.updateCounts();
+            if (mesh.getVertexCount() <= 0){
+                logger.warning("Mesh does not contain vertex data: "+mesh);
+                return;
+            }
+        }
+        if (mesh.getTriangleCount() <= 0){
+            mesh.updateCounts();
+            if (mesh.getTriangleCount() <= 0){
+                logger.warning("Mesh does not contain index data: "+mesh);
+                return;
             }
         }
         if (indices != null){

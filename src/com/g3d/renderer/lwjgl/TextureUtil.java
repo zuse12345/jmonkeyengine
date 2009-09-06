@@ -5,6 +5,7 @@ import com.g3d.texture.Image.Format;
 import java.nio.ByteBuffer;
 import org.lwjgl.opengl.ARBHalfFloatPixel;
 import org.lwjgl.opengl.ARBTextureFloat;
+import org.lwjgl.opengl.EXTBgra;
 import org.lwjgl.opengl.EXTPackedFloat;
 import org.lwjgl.opengl.EXTTextureArray;
 import org.lwjgl.opengl.EXTTextureSharedExponent;
@@ -73,6 +74,8 @@ public class TextureUtil {
                 return ARBTextureFloat.GL_RGB32F_ARB;
             case RGB5A1:
                 return GL_RGB5_A1;
+            case BGR8:
+                return GL_RGB8;
             case RGB8:
                 return GL_RGB8;
             case RGBA16:
@@ -256,6 +259,11 @@ public class TextureUtil {
             case RGB8:
                 internalFormat = GL_RGB8;
                 format = GL_RGB;
+                dataType = GL_UNSIGNED_BYTE;
+                break;
+            case BGR8:
+                internalFormat = GL_RGB8;
+                format = GL_BGR;
                 dataType = GL_UNSIGNED_BYTE;
                 break;
             case RGBA16:

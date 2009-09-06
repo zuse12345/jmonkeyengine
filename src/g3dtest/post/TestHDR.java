@@ -46,7 +46,7 @@ public class TestHDR extends SimpleApplication {
         hdrRender.setThrottle(0.33f);
 
         hdrRender.loadInitial();
-        hdrRender.load(renderer, settings.getWidth(), settings.getHeight(), 8);
+        hdrRender.load(renderer, settings.getWidth(), settings.getHeight(), 0);
         
 
 //        config.setVisible(true);

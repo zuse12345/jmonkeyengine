@@ -20,7 +20,7 @@ public class G3DSystem {
     private static boolean initialized = false;
     
     public static boolean trackDirectMemory(){
-        return true;
+        return false;
     }
 
     public static String getPlatformID(){

@@ -20,6 +20,10 @@ public abstract class AssetInfo {
         return manager;
     }
 
+    public String toString(){
+        return getClass().getName() + "[" + "key=" + key + "]";
+    }
+
     public abstract InputStream openStream();
 
 }

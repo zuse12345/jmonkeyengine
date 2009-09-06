@@ -59,7 +59,7 @@ public class TestCubeMap extends SimpleApplication {
         hdrRender.setBufferFormat(bufFormat);
 
         hdrRender.loadInitial();
-        hdrRender.load(renderer, settings.getWidth(), settings.getHeight(), 8);
+        hdrRender.load(renderer, settings.getWidth(), settings.getHeight(), 0);
     }
 
     @Override

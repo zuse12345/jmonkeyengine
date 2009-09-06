@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.logging.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -34,8 +35,11 @@ import static com.g3d.util.xml.SAXUtil.*;
  */
 public class MeshLoader extends DefaultHandler implements AssetLoader {
 
+    private static final Logger logger = Logger.getLogger(MeshLoader.class.getName());
+
     private String meshName;
     private AssetManager assetManager;
+    private OgreMaterialList materialList;
 
     private ShortBuffer sb;
     private IntBuffer ib;
@@ -60,9 +64,9 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     @Override
     public void startDocument() {
         if (meshName == null)
-            node = new Node("OgreNode"+(++nodeIdx));
+            node = new Node("OgreMesh"+(++nodeIdx));
         else
-            node = new Node(meshName+"-node");
+            node = new Node(meshName+"-ogremesh");
     }
 
     @Override
@@ -108,7 +112,17 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
 //        Material mat = new Material(assetManager, "phong_lighting.j3md");
 //        mat.setFloat("m_Shininess", 32f);
 //        geom.setMaterial(mat);
-        geom.setMaterial(new Material(assetManager, "vertex_color.j3md"));
+//        geom.setMaterial(new Material(assetManager, "vertex_color.j3md"));
+        Material mat = null;
+        if (materialList != null){
+            mat = materialList.get(matName);
+        }
+        if (mat == null){
+            logger.warning("Material "+matName+" not found. Applying default material");
+            mat = assetManager.loadMaterial("red_color.j3m");
+        }
+            
+        geom.setMaterial(mat);
     }
 
     private void startMesh(String matName, String usesharedvertices, String use32bitIndices, String opType) throws SAXException{
@@ -299,6 +313,8 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
                 if (data.position() != 0)
                     data.flip();
             }
+            // update bounds
+            mesh.updateBound();
         }
 
     }
@@ -313,6 +329,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             meshName = info.getKey().getName();
             String ext = info.getKey().getExtension();
             meshName = meshName.substring(0, meshName.length() - ext.length() - 1);
+            materialList = ((OgreMeshKey)info.getKey()).getMaterialList();
 
             XMLReader xr = XMLReaderFactory.createXMLReader();
             xr.setContentHandler(this);
@@ -322,7 +339,9 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             r.close();
             return node;
         }catch (SAXException ex){
-            throw new IOException("Error while parsing Ogre3D mesh.xml", ex);
+            IOException ioEx = new IOException("Error while parsing Ogre3D mesh.xml");
+            ioEx.initCause(ex);
+            throw ioEx;
         }
 
     }

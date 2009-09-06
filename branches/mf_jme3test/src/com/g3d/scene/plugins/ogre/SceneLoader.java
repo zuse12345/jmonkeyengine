@@ -1,6 +1,7 @@
 package com.g3d.scene.plugins.ogre;
 
 import com.g3d.asset.AssetInfo;
+import com.g3d.asset.AssetKey;
 import com.g3d.asset.AssetLoader;
 import com.g3d.asset.AssetManager;
 import com.g3d.math.ColorRGBA;
@@ -27,6 +28,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
     private String curElement;
     private String sceneName;
     private AssetManager assetManager;
+    private OgreMaterialList materialList;
     private Node root;
     private Node node;
     private Node entityNode;
@@ -39,7 +41,6 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
 
     public static void main(String[] args) throws SAXException{
         AssetManager manager = new AssetManager(true);
-        manager.loadModel("Cube.meshxml");
     }
 
     @Override
@@ -65,13 +66,13 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
     }
 
     private Quaternion parseQuat(Attributes attribs) throws SAXException{
-        if (attribs.getValue("qx") != null){
+        if (attribs.getValue("x") != null){
             // defined as quaternion
             // qx, qy, qz, qw defined
-            float x = parseFloat(attribs.getValue("qx"));
-            float y = parseFloat(attribs.getValue("qy"));
-            float z = parseFloat(attribs.getValue("qz"));
-            float w = parseFloat(attribs.getValue("qw"));
+            float x = parseFloat(attribs.getValue("x"));
+            float y = parseFloat(attribs.getValue("y"));
+            float z = parseFloat(attribs.getValue("z"));
+            float w = parseFloat(attribs.getValue("w"));
             return new Quaternion(x,y,z,w);
         }else if (attribs.getValue("angle") != null){
             // defined as angle + axis
@@ -137,14 +138,18 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             if (meshFile == null)
                 throw new SAXException("Required attribute 'meshFile' missing for 'entity' node");
 
+            // NOTE: append "xml" since its assumed mesh filse are binary in dotScene
+            meshFile += "xml";
+            
             entityNode = new Node(name);
-            Spatial ogreMesh = assetManager.loadModel(meshFile);
+            Spatial ogreMesh = 
+                    (Spatial) assetManager.loadContent(new OgreMeshKey(meshFile, materialList));
             entityNode.attachChild(ogreMesh);
             node.attachChild(entityNode);
             node = null;
         }else if (qName.equals("position")){
             node.setLocalTranslation(parseVector3(attribs));
-        }else if (qName.equals("rotation")){
+        }else if (qName.equals("quaternion")){
             node.setLocalRotation(parseQuat(attribs));
         }else if (qName.equals("scale")){
             node.setLocalScale(parseVector3(attribs));
@@ -174,6 +179,9 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             String ext = info.getKey().getExtension();
             sceneName = sceneName.substring(0, sceneName.length() - ext.length() - 1);
 
+            materialList = (OgreMaterialList) 
+                    assetManager.loadContent(new AssetKey("Scene.material"));
+
             XMLReader xr = XMLReaderFactory.createXMLReader();
             xr.setContentHandler(this);
             xr.setErrorHandler(this);
@@ -182,7 +190,9 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             r.close();
             return root;
         }catch (SAXException ex){
-            throw new IOException("Error while parsing Ogre3D mesh.xml", ex);
+            IOException ioEx = new IOException("Error while parsing Ogre3D dotScene");
+            ioEx.initCause(ex);
+            throw ioEx;
         }
 
     }

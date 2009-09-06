@@ -160,7 +160,9 @@ public class Compressor {
         // BINARY => DEFAULT DEFLATE
         // IMAGE  => LZMA
 
-        if (name.equals("xml") || name.equals("txt") || name.equals("material")
+        if (name.equals("jpg") || name.equals("jpeg")){
+            copy(src, chan);
+        } else if (name.equals("xml") || name.equals("txt") || name.equals("material")
          || name.equals("sh")){
             lzma(src, chan, entry, length);
         }else if (name.equals("jar")){
@@ -170,7 +172,7 @@ public class Compressor {
         }else{
             lzma(src, chan, entry, length);
         }
-//        copy(src, chan);
+        //copy(src, chan);
     }
 
 }

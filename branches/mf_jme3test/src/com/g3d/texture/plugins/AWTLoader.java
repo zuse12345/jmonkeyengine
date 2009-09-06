@@ -6,12 +6,24 @@ import com.g3d.texture.Image.Format;
 import com.g3d.util.BufferUtils;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import javax.imageio.ImageIO;
 
 public class AWTLoader implements AssetLoader {
+
+    private byte[] extractImageData(BufferedImage img){
+        DataBuffer buf = img.getRaster().getDataBuffer();
+        switch (buf.getDataType()){
+            case DataBuffer.TYPE_BYTE:
+                DataBufferByte byteBuf = (DataBufferByte) buf;
+                return byteBuf.getData();
+        }
+        return null;
+    }
 
     private Image loadAWT(AssetInfo info) throws IOException{
         InputStream in = info.openStream();
@@ -23,6 +35,16 @@ public class AWTLoader implements AssetLoader {
         int width = img.getWidth();
         int height = img.getHeight();
         boolean flip = ((TextureKey) info.getKey()).isFlipY();
+
+        switch (img.getType()){
+            case BufferedImage.TYPE_3BYTE_BGR: // most common in JPEG images
+               byte[] dataBuf = extractImageData(img);
+               ByteBuffer data = BufferUtils.createByteBuffer(img.getWidth()*img.getHeight()*3);
+               data.put(dataBuf);
+               return new Image(Format.BGR8, width, height, data);
+            default:
+                break;
+        }
 
         if (img.getTransparency() == Transparency.OPAQUE){
             ByteBuffer data = BufferUtils.createByteBuffer(img.getWidth()*img.getHeight()*3);

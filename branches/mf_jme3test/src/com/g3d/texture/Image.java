@@ -71,6 +71,7 @@ public class Image implements Savable {
         Intensity8(8),
         Intensity16(16),
 
+        BGR8(24), // added for images loaded from jpeg
         RGB8(24),
         RGB10(30),
         RGB16(48),

@@ -1281,10 +1281,10 @@ public class LwjglRenderer implements Renderer {
         // repeat modes
         switch (tex.getType()){
             case ThreeDimensional:
+            case CubeMap: // cubemaps use 3D coords
                 glTexParameteri(target, GL_TEXTURE_WRAP_R, convertWrapMode(tex.getWrap(WrapAxis.R)));
             case TwoDimensional:
             case TwoDimensionalArray:
-            case CubeMap:
                 glTexParameteri(target, GL_TEXTURE_WRAP_T, convertWrapMode(tex.getWrap(WrapAxis.T)));
                 // fall down here is intentional..
             case OneDimensional:
@@ -1687,26 +1687,21 @@ public class LwjglRenderer implements Renderer {
     }
 
     public void renderMesh(Mesh mesh, int count) {
+        if (mesh.getVertexCount() <= 0){
+            logger.warning("Mesh does not contain vertex data: "+mesh);
+            return;
+        }
+        if (mesh.getTriangleCount() <= 0){
+            logger.warning("Mesh does not contain index data: "+mesh);
+            return;
+        }
+
         VertexBuffer indices = null;
         for (VertexBuffer vb : mesh.getBuffers()){
             if (vb.getBufferType() == Type.Index){
                 indices = vb;
             }else{
                 setVertexAttrib(vb);
-            }
-        }
-        if (mesh.getVertexCount() <= 0){
-            mesh.updateCounts();
-            if (mesh.getVertexCount() <= 0){
-                logger.warning("Mesh does not contain vertex data: "+mesh);
-                return;
-            }
-        }
-        if (mesh.getTriangleCount() <= 0){
-            mesh.updateCounts();
-            if (mesh.getTriangleCount() <= 0){
-                logger.warning("Mesh does not contain index data: "+mesh);
-                return;
             }
         }
         if (indices != null){

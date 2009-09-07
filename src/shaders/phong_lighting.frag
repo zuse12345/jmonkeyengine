@@ -129,7 +129,7 @@ void main(){
    #ifdef HAS_DIFFUSEMAP
     vec4 diffuseColor = texture2D(m_DiffuseMap, texCoord);
    #else
-    vec4 diffuseColor = vec4(0.7, 0.7, 0.5, 1.0);
+    vec4 diffuseColor = vec4(0.8, 0.8, 0.8, 1.0);
    #endif
 
    #ifdef HAS_SPECULARMAP

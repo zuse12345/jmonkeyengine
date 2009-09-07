@@ -110,18 +110,25 @@
       for your <i>mountable</i> items.
       These Blender items must all be created with the same 3D world scale, and
       positioned the same way with respect to how they would be <i>held</i>.
-      For example, my convention for hand-held
-      -held mountables is to create them positioned
-      pointed towards -Y as if held by a gripped hand with the thumb pointing
-      -Y with the top (knucke side) of the thumb towards +Z;
-      and my scale convention is 1 Blender unit = 1 m.
+      For example, my conventions for hand-held mountable items are
+      <ol>
+        <li>item origin placed at the item's real pivot point (middle of the
+        handle for a typical weapon).
+        To do this, locate the 3D cursor where on the pivot point (checking
+        from at least two orthogonal perspectives), then use the
+        Center Cursor button in the Mesh button panel.
+        <li>item positioned so point is towards -Y as if held by a gripped hand
+        with the thumb pointing -Y with the top (knuckle side) of the thumb
+        towards +Z.
+        <li>scale convention 1 Blender unit = 1 m.
+      </ol>
       </p> <p>
       You create a Blender Object for the dedicated purpose of positioning (I
       recommend using Empties for this).
       In Blender, make sure to parent your mount point Empty to a specific
       Armature bone.
-      Parent a copy of any qualifying mountable object to this Mountpoint
-      Object.
+      Parent a copy of any qualifying mountable object (as described in the
+      previous paragraph) to this Mountpoint Object.
       You then adjust the position of the Empty Mountpoint in Blender... not of
       the manikin weapon.
       When you export the model, export the Mountpoint object but not the

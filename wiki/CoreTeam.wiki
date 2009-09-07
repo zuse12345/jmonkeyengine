@@ -41,4 +41,4 @@ Please note that regardless of key descriptions, most members take part in field
 ==== Skye Books - "sbook" ====
  * *Post:* Webmaster
  * *Fields:* Back-end website management, public relations
- * *Status:* Student at ?, working on Betaville
+ * *Status:* Student at NYU Poly's Brooklyn eXperimental Media Center, working on Betaville

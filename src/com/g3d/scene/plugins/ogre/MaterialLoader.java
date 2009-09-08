@@ -172,6 +172,7 @@ public class MaterialLoader implements AssetLoader {
         while (scan.hasNext("pass")){
             readPass();
         }
+        scan.next(); // skip "}"
     }
 
     private String readMaterial(){
@@ -182,12 +183,24 @@ public class MaterialLoader implements AssetLoader {
         while (scan.hasNext("technique")){
             readTechnique();
         }
+         scan.next(); // skip "}"
         return name;
     }
 
-    private Material compileMaterial(){
-        Material mat = new Material(assetManager, "plain_texture.j3md");
-        mat.setTexture("m_ColorMap", texture);
+    private Material compileMaterial(int i){
+//        Material mat = new Material(assetManager, "plain_texture.j3md");
+//        Material mat = new Material(assetManager, "phong_lighting.j3md");
+        //TODO hack, how to define materials ? within ogre file ? meta-file ? implicitly with naming conventions (-> not as powerful) ?
+        //  assuming for now, that the only bump-mapped tex is the first tex
+        Material mat;
+        if (i == 0)
+            mat = assetManager.loadMaterial("elephant.j3m");//new Material(assetManager, "phong_lighting.j3md");
+        else
+        {
+            mat = new Material(assetManager, "plain_texture.j3md");
+            mat.setTexture("m_ColorMap", texture);
+        }
+//        mat.setTexture("m_DiffuseMap", texture);
         diffuse = null;
         specular = null;
         texture = null;
@@ -199,9 +212,10 @@ public class MaterialLoader implements AssetLoader {
         assetManager = info.getManager();
         OgreMaterialList list = new OgreMaterialList();
         scan = new Scanner(info.openStream());
+        int ind = 0;
         while (scan.hasNext("material")){
             String matName = readMaterial();
-            Material mat = compileMaterial();
+            Material mat = compileMaterial(ind++);
             list.put(matName, mat);
         }
         return list;

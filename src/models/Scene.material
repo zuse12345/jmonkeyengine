@@ -1,6 +1,5 @@
 material Material
 {
-	receive_shadows on
 	technique
 	{
 		pass
@@ -9,6 +8,13 @@ material Material
 			diffuse 0.800000 0.800000 0.800000 1.000000
 			specular 0.000000 0.000000 0.000000 1.000000 12.500000
 			emissive 0.000000 0.000000 0.000000 1.000000
+			
+			texture_unit
+			{
+				texture pond1.PNG
+				tex_coord_set 0
+
+			}
 		}
 	}
 }

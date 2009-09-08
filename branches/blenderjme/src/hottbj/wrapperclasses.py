@@ -353,7 +353,7 @@ class JmeNode(object):
         # Since Blender has mashed together the Object and Mesh by having
         # object.colbits specify how the Mesh's materials are to be
         # interpreted, we must add the Mesh's materials and textures here.
-        jmeTexs = []
+        meshTexStates = []
         meshMats = []
         matIndex = -1
         while True:
@@ -391,11 +391,10 @@ class JmeNode(object):
                     print "++++ Adding mat " + newMatl.blenderName + " for Obj " + self.getName()
                 meshMats.append(newMatl)  # 1 for each matl index.  May be null.
                  # Will be null if mat unsupported.  Need this for mat inds.
-                jmeTexs += newTexs
+                meshTexStates.append(nodeTree.includeJmeTextureList(newTexs))
                 # TODO:  Need mat-index-specific texture lists
         if len(meshMats) > 0: self.jmeMesh.jmeMats = meshMats
-        if len(jmeTexs) > 0:
-            self.jmeMesh.jmeTextureState = nodeTree.includeJmeTextureList(jmeTexs)
+        if len(meshTexStates) > 0: self.jmeMesh.jmeTextureStates = meshTexStates
 
     def addChild(self, child):
         if self.children == None: self.children = []
@@ -703,7 +702,7 @@ class JmeNode(object):
 
 
 class JmeMesh(object):
-    __slots__ = ('wrappedMesh', 'jmeMats', 'jmeTextureState',
+    __slots__ = ('blenderMesh', 'jmeMats', 'jmeTextureStates',
             '__vpf', 'defaultColor', 'name', 'blenderVertIndexes')
     # defaultColor corresponds to jME's Meshs' defaultColor.
     # In Blender this is a per-Object, not per-Mesh setting.
@@ -719,24 +718,51 @@ class JmeMesh(object):
         The color setting should come from the parent Blender Object's
         .color setting."""
         object.__init__(self)
-        self.wrappedMesh = bMesh
+        self.blenderMesh = bMesh  # This is NOT wrapped (contrary to my intent)
         self.name = bMesh.name
         self.defaultColor = color
         self.jmeMats = None
-        self.jmeTextureState = None
+        self.jmeTextureStates = None
         #print "Instantiated JmeMesh '" + self.getName() + "'"
-        self.__vpf = JmeMesh.vertsPerFace(self.wrappedMesh.faces)
+        self.__vpf = JmeMesh.vertsPerFace(self.blenderMesh.faces)
         self.blenderVertIndexes = None
 
     def getName(self): return self.name
 
     def populateXml(self, tag, autoRotate):
-        if self.wrappedMesh.verts == None:
+        if self.blenderMesh.verts == None:
             raise Exception("Mesh '" + self.getName() + "' has None vertexes")
-        mesh = self.wrappedMesh.copy()
+
+        # To shortcut processing when we can, set jmeMats and jmeTextureStates
+        # to None if the corresponding list contains no non-None elements.
+        if self.jmeMats != None:
+            noMats = True
+            for m in self.jmeMats:
+                if m != None:
+                    noMats = False
+                    break
+            if noMats: self.jmeMats = None
+        if self.jmeTextureStates != None:
+            noTexs = True
+            for ts in self.jmeTextureStates:
+                if ts != None:
+                    noTexs = False
+                    break
+            if noTexs: self.jmeTextureStates = None
+
+        matIndex = 0 # TODO:  This setting is TEMPORARY.
+        if ((self.jmeMats != None and len(self.jmeMats) > 1)
+        or (self.jmeTextureStates != None and len(self.jmeTextureStates) > 1)):
+            raise Exception("Sorry.  Multiple material indexing implementation is not yet completed")
+        # Within a few revisions, this class should handle matIndexes > 0.
+
+
+        mesh = self.blenderMesh.copy()
         # This does do a deep copy! (like we need)
         # Note that the last param here doesn't calculate norms anew, it just
         # transforms them along with vertexes, which is just what we want.
+        print ("TODO WARNING:  JmeMesh should constrain 'unify' to '3' "
+            + "if the corresponding JmeNode is morphNode or MORPHGEO or SKIN")
         unify = 3 in self.__vpf and 4 in self.__vpf
         if 4 in self.__vpf and not unify:
             meshType = 'Quad'
@@ -745,7 +771,7 @@ class JmeMesh(object):
         # TODO:  When iterate through verts to get vert vectors + normals,
         #        do check for None normal and throw if so:
         #   raise Exception("Mesh '"
-        #       + self.wrappedMesh.name + "' has a vector with no normal")
+        #       + self.blenderMesh.name + "' has a vector with no normal")
         #   This is a Blender convention, not a 3D or JME convention
         #   (requirement for normals).
         tag.name = 'com.jme.scene.' + meshType + 'Mesh'
@@ -761,7 +787,11 @@ class JmeMesh(object):
             colorTag.addAttr("b", self.defaultColor[2])
             colorTag.addAttr("a", self.defaultColor[3])
 
-        if self.jmeMats == None and self.jmeTextureState == None:
+        if mesh.faceUV:
+            texLayerNames = []  # A list of lists.  One list for each mat index
+        else:
+            texLayerNames = None
+        if self.jmeMats == None and self.jmeTextureStates == None:
             # Tough call here.
             # Since default object coloring and vertex coloring are useless
             # with jME lighting enabled, we are disabling lighting if either
@@ -777,12 +807,17 @@ class JmeMesh(object):
                 tag.addAttr("lightCombineMode", "Off")
         else:
             rsTag = _XmlTag('renderStateList')
-            if self.jmeMats != None:
-                for mat in self.jmeMats:
-                    if mat != None: rsTag.addChild(mat.getXmlEl())
             tag.addChild(rsTag)
-            if self.jmeTextureState != None:
-                rsTag.addChild(self.jmeTextureState.getXmlEl())
+            if self.jmeMats != None:
+                if len(self.jmeMats) > matIndex and self.jmeMats[matIndex] != None:
+                    rsTag.addChild(self.jmeMats[matIndex].getXmlEl())
+            if self.jmeTextureStates != None:
+                if len(self.jmeTextureStates) > matIndex and self.jmeTextureStates[matIndex] != None:
+                    rsTag.addChild(self.jmeTextureStates[matIndex].getXmlEl())
+                    names = []
+                    texLayerNames.append(names)
+                    for jmeTex in self.jmeTextureStates[matIndex].jmeTextures:
+                        names.append(jmeTex.uvLayerName)
 
         # Make a copy so we can easily add verts like a normal Python list
         vertList = []
@@ -925,13 +960,22 @@ class JmeMesh(object):
             colArray = None
         else:
             colArray = []
-        if mesh.faceUV or mesh.vertexUV:
-            texArray=[]
+        # texArrayLists is a hash from LayerName (or None) to a coords list
+        if mesh.faceUV:
+            texArrayLists = {}
+            for nameList in texLayerNames:
+                for layerName in nameList:
+                    texArrayLists[layerName] = []
+                    # Just let duplicate keys overwrite
+        elif mesh.vertexUV:
+            texArrayLists = {}
+            texArrayLists[None] = []
         else:
-            texArray = None
+            texArrayLists = None
         nonFacedVertexes = 0
         nonUvVertexes = 0
         self.blenderVertIndexes = []
+        origActiveUVLayer = mesh.activeUVLayer
         for v in vertList:
             if len(self.blenderVertIndexes) < len(mesh.verts):
                 # Remove this assertion after confirmed:
@@ -971,17 +1015,20 @@ class JmeMesh(object):
             if mesh.vertexUV: 
                 # For unknown reason, Blender's Sticky uv vert creation sets
                 # values to (-1 to 1) range instead of proper (0 to 1) range.
-                texArray.append(v.uvco.x * .5 + .5)
-                texArray.append(1. - (v.uvco.y * .5 + .5))
+                texArrayLists[None].append(v.uvco.x * .5 + .5)
+                texArrayLists[None].append(1. - (v.uvco.y * .5 + .5))
             elif mesh.faceUV: 
-                if v.index in vertToUv:
-                    uvVert = vertToUv[v.index]
-                    texArray.append(uvVert.x)
-                    texArray.append(1 - uvVert.y)
-                else:
-                    nonUvVertexes += 1
-                    texArray.append(-1)
-                    texArray.append(-1)
+                for layerName, texArray in texArrayLists.iteritems():
+                    if layerName != None: mesh.activeUVLayer = layerName
+                    if v.index in vertToUv:
+                        uvVert = vertToUv[v.index]
+                        texArray.append(uvVert.x)
+                        texArray.append(1 - uvVert.y)
+                    else:
+                        nonUvVertexes += 1
+                        texArray.append(-1)
+                        texArray.append(-1)
+        mesh.activeUVLayer = origActiveUVLayer
         if nonFacedVertexes > 0:
             print ("WARNING: " + str(nonFacedVertexes)
                 + " vertexes set to WHITE because no face to derive color from")
@@ -995,13 +1042,14 @@ class JmeMesh(object):
         normTag = _XmlTag("normBuf")
         normTag.addAttr("data", noArray, 6, 3)
         tag.addChild(normTag)
-        if texArray != None:
-            coordsTag = _XmlTag("coords")
-            coordsTag.addAttr("data", texArray, 6, 3)
-            texCoordsTag = _XmlTag("com.jme.scene.TexCoords", {"perVert":2})
-            texCoordsTag.addChild(coordsTag)
+        if texArrayLists != None:
             texTag = _XmlTag("texBuf")
-            texTag.addChild(texCoordsTag)
+            for layerName in texLayerNames[matIndex]:
+                coordsTag = _XmlTag("coords")
+                coordsTag.addAttr("data", texArrayLists[layerName], 6, 3)
+                texCoordsTag = _XmlTag("com.jme.scene.TexCoords", {"perVert":2})
+                texCoordsTag.addChild(coordsTag)
+                texTag.addChild(texCoordsTag)
             tag.addChild(texTag)
         if colArray != None:
             rgbaArray = []
@@ -1756,7 +1804,7 @@ class JmeSkinAndBone(object):
                     "No child of Skin object is a mesh: " + skin.getName())
         skinChildTag = skin.getXmlEl(False)
         skinsChildrenTag.addChild(skinChildTag)
-        mesh = meshChild.wrappedMesh
+        mesh = meshChild.blenderMesh
         vGroups = mesh.getVertGroupNames()
         if vGroups == None or len(vGroups) < 1: return
         vertexWeights = {}
@@ -2430,7 +2478,7 @@ class JmeTexture(object):
 
     __slots__ = (
             'written', 'refCount', 'applyMode', 'filepath', 'wrapMode',
-            'refid', 'scale', 'translation')
+            'refid', 'scale', 'translation', 'uvLayerName')
     idFor = staticmethod(idFor)
     supported = staticmethod(supported)
 
@@ -2444,6 +2492,12 @@ class JmeTexture(object):
         object.__init__(self)
         self.written = False   # May write refs after written is True
         self.refCount = 0
+        if mtex.uvlayer == None:
+            raise Exception("MTex has <None> uvlayer name")
+        if mtex.uvlayer == '':
+            self.uvLayerName = None
+        else:
+            self.uvLayerName = mtex.uvlayer
         if mtex.blendmode == _bBlendModes['MIX']:
             self.applyMode = "Decal"
         elif mtex.blendmode == _bBlendModes['MULTIPLY']:
@@ -2512,17 +2566,17 @@ class JmeTexture(object):
 class JmeTextureState(object):
     "A unique list of JmeTextures"
 
-    __slots__ = ('__jmeTextures', 'written', 'refCount')
+    __slots__ = ('jmeTextures', 'written', 'refCount')
 
     def __init__(self, jmeTextures):
         object.__init__(self)
         self.written = False   # May write refs after written is True
-        self.__jmeTextures = jmeTextures
+        self.jmeTextures = jmeTextures
         self.refCount = 0
 
     def cf(self, jmeTextureList):
-        if len(self.__jmeTextures) != len(jmeTextureList): return False
-        return set(self.__jmeTextures) == set(jmeTextureList)
+        if len(self.jmeTextures) != len(jmeTextureList): return False
+        return set(self.jmeTextures) == set(jmeTextureList)
 
     def getXmlEl(self):
         tag = _XmlTag('com.jme.scene.state.TextureState')
@@ -2534,7 +2588,7 @@ class JmeTextureState(object):
 
         textureGroupingTag = _XmlTag("texture")
         tag.addChild(textureGroupingTag)
-        for texture in self.__jmeTextures:
+        for texture in self.jmeTextures:
             textureGroupingTag.addChild(texture.getXmlEl())
         return tag
 

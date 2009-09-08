@@ -12,19 +12,13 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.PixelFormat;
-import org.lwjgl.opengl.Util;
 import com.g3d.system.AppSettings;
-
-import com.g3d.system.AppSettings.Template;
-import com.g3d.system.G3DSystem;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 //import org.lwjgl.opengl.ContextAttribs;
-import org.lwjgl.opengl.GLContext;
-import org.lwjgl.opengl.OpenGLException;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
 
@@ -32,6 +26,7 @@ public class LwjglDisplay extends LwjglContext implements Runnable {
 
     private static final Logger logger = Logger.getLogger(LwjglDisplay.class.getName());
     protected AtomicBoolean needClose = new AtomicBoolean(false);
+    protected boolean wasActive = false;
     protected int frameRate = 0;
 
     protected DisplayMode getFullscreenDisplayMode(int width, int height, int bpp, int freq){
@@ -51,7 +46,7 @@ public class LwjglDisplay extends LwjglContext implements Runnable {
 
     protected void applySettings(AppSettings settings){
         DisplayMode displayMode = null;
-        if (settings.getTemplate() == Template.DesktopFullscreen){
+        if (settings.getWidth() <= 0 || settings.getHeight() <= 0){
 //            displayMode = org.lwjgl.opengl.Display.getDesktopDisplayMode();
 //            settings.setResolution(displayMode.getWidth(), displayMode.getHeight());
         }else if (settings.isFullscreen()){
@@ -113,6 +108,12 @@ public class LwjglDisplay extends LwjglContext implements Runnable {
             logger.info("Display created.");
             logger.fine("Running on thread: "+Thread.currentThread().getName());
 
+            Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                public void uncaughtException(Thread thread, Throwable thrown) {
+                    listener.handleError("Uncaught exception thrown in "+thread.toString(), thrown);
+                }
+            });
+
 //            try{
 //                 Util.checkGLError();
 //            } catch (OpenGLException ex){
@@ -138,7 +139,7 @@ public class LwjglDisplay extends LwjglContext implements Runnable {
 
             created.set(true);
         } catch (LWJGLException ex){
-            G3DSystem.reportError("Failed to create display.", ex);
+            listener.handleError("Failed to create display", ex);
         } finally {
             // TODO: It is possible to avoid "Failed to find pixel format"
             // error here by creating a default display.
@@ -162,7 +163,7 @@ public class LwjglDisplay extends LwjglContext implements Runnable {
         try {
             Display.update();
         } catch (Throwable ex){
-            logger.log(Level.WARNING, "Error while swapping buffers", ex);
+            listener.handleError("Error while swapping buffers", ex);
         }
 
         if (frameRate > 0)
@@ -173,7 +174,6 @@ public class LwjglDisplay extends LwjglContext implements Runnable {
 
     protected void deinitInThread(){
         listener.destroy();
-
         renderer.cleanup();
         Display.destroy();
         logger.info("Display destroyed.");
@@ -183,11 +183,6 @@ public class LwjglDisplay extends LwjglContext implements Runnable {
     @Override
     public void destroy(){
         needClose.set(true);
-    }
-
-    @Override
-    public boolean isActive() {
-        return Display.isActive();
     }
 
     @Override
@@ -207,10 +202,6 @@ public class LwjglDisplay extends LwjglContext implements Runnable {
         return Type.Display;
     }
 
-    public boolean isCloseRequested() {
-        return Display.isCloseRequested();
-    }
-
     public void setTitle(String title){
         if (created.get())
             Display.setTitle(title);
@@ -222,6 +213,19 @@ public class LwjglDisplay extends LwjglContext implements Runnable {
         while (true){
             if (needClose.get())
                 break;
+
+            if (Display.isCloseRequested())
+                listener.requestClose(false);
+
+            if (wasActive != Display.isActive()){
+                if (!wasActive){
+                    listener.gainFocus();
+                    wasActive = true;
+                }else{
+                    listener.loseFocus();
+                    wasActive = false;
+                }
+            }
 
             runLoop();
         }

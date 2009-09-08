@@ -4,6 +4,7 @@ import com.g3d.audio.AudioRenderer;
 import com.g3d.audio.joal.JoalAudioRenderer;
 import com.g3d.renderer.Camera;
 import com.g3d.asset.AssetManager;
+import com.g3d.system.AppSettings;
 import com.g3d.system.G3DSystem;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,7 +18,9 @@ public class AudioApp {
     protected AudioRenderer ar;
 
     public AudioApp(){
-        G3DSystem.initialize();
+        AppSettings settings = new AppSettings(true);
+        settings.setRenderer(null); // force dummy renderer (?)
+        G3DSystem.initialize(settings);
         manager = new AssetManager(true);
 
         ar = new JoalAudioRenderer();

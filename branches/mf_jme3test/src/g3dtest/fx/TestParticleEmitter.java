@@ -10,7 +10,6 @@ public class TestParticleEmitter extends SimpleApplication {
 
     public static void main(String[] args){
         TestParticleEmitter app = new TestParticleEmitter();
-        app.setSettings(new AppSettings(AppSettings.Template.Default800x600));
         app.start();
     }
 

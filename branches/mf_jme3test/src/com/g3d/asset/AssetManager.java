@@ -48,8 +48,6 @@ public class AssetManager {
     }
 
     public AssetManager(boolean loadDefaults){
-        G3DSystem.initialize();
-
         if (loadDefaults){
             //setup loading of resources from the classpath.
             registerLocator("/textures/",

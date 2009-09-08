@@ -13,7 +13,6 @@ import com.g3d.input.InputManager;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Node;
 import com.g3d.scene.Spatial;
-import com.g3d.system.AppSettings.Template;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -21,7 +20,7 @@ import java.util.logging.Logger;
  * The <code>Application</code> class represents an instance of a
  * real-time 3D rendering application.
  */
-public class Application implements ContextListener {
+public class Application implements SystemListener {
 
     private static final Logger logger = Logger.getLogger(Application.class.getName());
 
@@ -38,6 +37,7 @@ public class Application implements ContextListener {
     protected Camera cam;
 
     protected boolean inputEnabled = true;
+    protected float speed = 1f;
     protected MouseInput mouseInput;
     protected KeyInput keyInput;
     protected JoyInput joyInput;
@@ -213,12 +213,12 @@ public class Application implements ContextListener {
         }
 
         if (settings == null){
-            settings = new AppSettings(Template.Default640x480);
+            settings = new AppSettings(true);
         }
         
         logger.fine("Starting application: "+getClass().getName());
         context = G3DSystem.newDisplay(settings);
-        context.setContextListener(this);
+        context.setSystemListener(this);
         context.create();
     }
 
@@ -258,14 +258,31 @@ public class Application implements ContextListener {
         // user code here..
     }
 
+    public void handleError(String errMsg, Throwable t){
+
+    }
+
+    public void gainFocus(){
+        speed = 1;
+        System.out.println("gainFocus");
+    }
+
+    public void loseFocus(){
+        speed = 0;
+        System.out.println("loseFocus");
+    }
+
+    public void requestClose(boolean esc){
+        context.destroy();
+    }
+
     /**
      * Do not call manually.
      * Callback from ContextListener.
      */
     public void update(){
-        if (context.isCloseRequested()){
-            context.destroy();
-        }
+        if (speed == 0)
+            return;
 
         timer.update();
 

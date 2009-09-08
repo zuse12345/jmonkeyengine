@@ -2,6 +2,9 @@ package com.g3d.system;
 
 import com.g3d.util.G3DFormatter;
 import com.g3d.*;
+import com.g3d.audio.AudioRenderer;
+import com.g3d.audio.joal.JoalAudioRenderer;
+import com.g3d.audio.lwjgl.LwjglAudioRenderer;
 import com.g3d.system.jogl.JoglDisplay;
 import com.g3d.system.lwjgl.LwjglDisplay;
 import com.g3d.util.Natives;
@@ -37,7 +40,7 @@ public class G3DSystem {
     }
 
     public static G3DContext newDisplay(AppSettings settings) {
-        initialize();
+        initialize(settings);
         G3DContext ctx;
         if (settings.getRenderer().startsWith("LWJGL")){
             ctx = new LwjglDisplay();
@@ -52,8 +55,23 @@ public class G3DSystem {
         }
         return ctx;
     }
-    
-    public static void initialize(){
+
+    public static AudioRenderer newAudioRenderer(AppSettings settings){
+        initialize(settings);
+        AudioRenderer ar;
+        if (settings.getAudioRenderer().startsWith("LWJGL")){
+            ar = new LwjglAudioRenderer();
+        }else if (settings.getAudioRenderer().startsWith("JOAL")){
+            ar = new JoalAudioRenderer();
+        }else{
+            throw new UnsupportedOperationException(
+                            "Unrecognizable audio renderer specified: "+
+                            settings.getAudioRenderer());
+        }
+        return ar;
+    }
+
+    public static void initialize(AppSettings settings){
         if (initialized)
             return;
         
@@ -75,19 +93,13 @@ public class G3DSystem {
         }
         logger.info("Running on "+getFullName());
 
-        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            public void uncaughtException(Thread thread, Throwable thrown) {
-                reportError("Uncaught exception thrown in "+thread.toString(), thrown);
-            }
-        });
-        logger.fine("Running on thread: "+Thread.currentThread().getName());
-
         String val = System.getProperty("jnlp.g3d.nonativecopy");
         if (val == null || !val.equals("true")){
             try {
-                Natives.extractNativeLibs(getPlatformID());
+                Natives.extractNativeLibs(getPlatformID(), settings);
             } catch (IOException ex) {
-                reportError("Error while copying native libraries", ex);
+                ex.printStackTrace();
+                //reportError("Error while copying native libraries", ex);
             }
         }
     }
@@ -101,17 +113,9 @@ public class G3DSystem {
 //    }
 
     public static String getFullName(){
-        return "jMonkeyEngine 0.16";
+        return "jMonkey Engine 3 ALPHA 0.25";
     }
 
-    public static void reportError(String errorMsg){
-        reportError(errorMsg, null);
-    }
-
-    public static void reportError(String errorMsg, Throwable thrown){
-        logger.log(Level.SEVERE, errorMsg, thrown);
-        JOptionPane.showMessageDialog(null, errorMsg + "\n" + thrown.toString(), getFullName(), JOptionPane.ERROR_MESSAGE);
-        System.exit(1);
-    }
+   
 
 }

@@ -11,7 +11,7 @@ import com.g3d.renderer.Renderer;
 import com.g3d.renderer.jogl.JoglRenderer;
 import com.g3d.renderer.lwjgl.LwjglRenderer;
 import com.g3d.system.AppSettings;
-import com.g3d.system.ContextListener;
+import com.g3d.system.SystemListener;
 import com.g3d.system.G3DContext;
 import com.g3d.system.NanoTimer;
 import com.g3d.system.Timer;
@@ -20,15 +20,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class JoglContext implements G3DContext {
 
     protected AtomicBoolean created = new AtomicBoolean(false);
-    protected AppSettings settings = new AppSettings();
+    protected AppSettings settings = new AppSettings(true);
     protected JoglRenderer renderer;
     protected Timer timer;
-    protected ContextListener listener;
+    protected SystemListener listener;
 
     protected AwtKeyInput keyInput;
     protected AwtMouseInput mouseInput;
 
-    public void setContextListener(ContextListener listener){
+    public void setSystemListener(SystemListener listener){
         this.listener = listener;
     }
 

@@ -43,11 +43,6 @@ public interface G3DContext {
      * @return The type of the context.
      */
     public Type getType();
-
-    /**
-     * @return True if the user requested to close the context.
-     */
-    public boolean isCloseRequested();
     
     /**
      * @param settings the display settings to use for the created context. If
@@ -60,7 +55,7 @@ public interface G3DContext {
      * Sets the listener that will recieve events relating to context
      * creation, update, and destroy.
      */
-    public void setContextListener(ContextListener listener);
+    public void setSystemListener(SystemListener listener);
 
     /**
      * @return The current display settings. Note that they might be 
@@ -105,13 +100,6 @@ public interface G3DContext {
      * @return True if the context has been created but not yet destroyed.
      */
     public boolean isCreated();
-
-    /**
-     * @return True if the context is in focus/visible on the screen.
-     * Can be used to reduce resource consumption when the application
-     * is not visible on the screen.
-     */
-    public boolean isActive();
 
     /**
      * Creates the context and makes it active.

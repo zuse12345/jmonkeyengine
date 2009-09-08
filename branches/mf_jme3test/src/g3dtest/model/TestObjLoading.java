@@ -12,7 +12,6 @@ public class TestObjLoading extends SimpleApplication {
 
     public static void main(String[] args){
         TestObjLoading app = new TestObjLoading();
-        app.setSettings(new AppSettings(AppSettings.Template.Default640x480));
         app.start();
     }
 

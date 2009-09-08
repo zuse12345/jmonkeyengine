@@ -11,7 +11,6 @@ public class TestSphere extends SimpleApplication  {
 
     public static void main(String[] args){
         TestSphere app = new TestSphere();
-        app.setSettings(new AppSettings(AppSettings.Template.Default640x480));
         app.start();
     }
 

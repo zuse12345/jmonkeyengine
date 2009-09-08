@@ -14,7 +14,6 @@ import com.g3d.renderer.queue.RenderQueue.Bucket;
 import com.g3d.scene.Node;
 import com.g3d.scene.Spatial.CullHint;
 import com.g3d.system.AppSettings;
-import com.g3d.system.AppSettings.Template;
 import java.net.URL;
 
 /**
@@ -37,7 +36,7 @@ public abstract class SimpleApplication extends Application {
         
         // set some default settings in-case
         // settings dialog is not shown
-        setSettings(new AppSettings(Template.Default640x480));
+        setSettings(new AppSettings(true));
     }
 
     
@@ -107,6 +106,9 @@ public abstract class SimpleApplication extends Application {
 
     @Override
     public void update() {
+        if (speed == 0)
+            return;
+        
         super.update();
         float tpf = timer.getTimePerFrame();
 

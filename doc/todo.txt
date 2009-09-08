@@ -2,6 +2,15 @@ $Id$
 
 TODO LIST
 
+Env. var FAVORJOINS has a bug in some cases.  I am thinking that the problem is
+that the the X-Rot axis-flip transform is being moved to the same level as an
+explicit transformation, and either one is clobbering the other, or the needed
+parenting effect is destroyed.
+
+I don't know whether Blender's Python supports os.environ, which we use for
+env. var. FAVORJOINS.  Before 0.4a public is rolled, we need to either change
+this to a GUI setting, or ensure the portability.
+
 04a refactor.  Purpose is to improve consistency and generalization so that
 material indexing can thereafter be implemented in an intuitive and consistent
 way.

@@ -48,6 +48,7 @@ from Blender.Object import ParentTypes as _bParentTypes
 from Blender.IpoCurve import InterpTypes as _bInterpTypes
 from Blender.Modifier import Type as _bModifierType
 from Blender.Modifier import Settings as _bModifierSettings
+from os import environ as _osEnviron
 
 # GENERAL DEVELOPMENT NOTES:
 #
@@ -57,9 +58,10 @@ from Blender.Modifier import Settings as _bModifierSettings
 # export that single features.  For the latter case, it's good practice to
 # write a warning to stdout.
 #
-# When getting the mesh to work with from Blender, make sure to use
-# ...getMesh(False, True), or the equivalent ...getMesh(mesh=True).
-# This will get a Blender "wrapped" Mesh instance instead of a non-wrapped
+# Due to me misreading the Blender Python API, the code here usually works
+# with legacy Blender Mesh Objects, since I use "bo.getData(False, True), when
+# I should have used plain old "bo.getData()".
+# getData() ould get a Blender "wrapped" Mesh instance instead of a non-wrapped
 # NMesh instance (contrary to the wrapping we are doing here, Blender's
 # "wrapping" actually puts you closer to the physical data).
 # The parent/child relationships between these wrapper classes reflects
@@ -149,18 +151,22 @@ def addVector3fEl(parentEl, tagName, inVecList):
 
 from Blender.Object import PITypes as _bPITypes
 class JmeNode(object):
-    __slots__ = ('wrappedObj', 'children', 'jmeMats', 'jmeTextureState',
+    __slots__ = ('wrappedObj', 'children', 'jmeMat', 'jmeTextureState',
             'name', 'backoutTransform', 'implClass', 'postFlip', 'join',
-            'morphKey', 'morphInfluences',
+            'morphKey', 'morphInfluences', 'nodeType', 'jmeMesh',
             'skinRegion', 'atIndex', 'colonIndex', 'morphBase', 'morphNode')
+    # morphBase is a ref to a TYPE_MORPHBASE and indicates a TYPE_MORPHGEO
+    TYPE_DEFAULT = 0  # Mesh obj or "Other" (empty, etc.)
+    #TYPE_MORPHBASE = 1  This is just an attribute of a TYPE_DEFAULT,
+    #                    since a morph base node may be either 'join' or not.
+    TYPE_MORPHGEO = 2
+    TYPE_SKIN = 3
 
-    def __init__(self, bObjOrName, nodeTree=None):
+    def __init__(self, bObjOrName):
         """
         Assumes input Blender Object already validated, like by using the
         supported static method below.
         I.e., is of supported type, and facing method is supported.
-        Materials from given bObj and direct data mesh (if any) will be added
-        to one of the specified nodeTree's materials maps.
         The instantiator does not take a backoutTransform parameter.
         backoutTransform must be set later, after we know which ancestor
         nodes are being exported.
@@ -169,7 +175,7 @@ class JmeNode(object):
         self.children = None
         self.wrappedObj = None
         self.backoutTransform = None
-        self.jmeMats = None
+        self.jmeMat = None
         self.jmeTextureState = None
         self.skinRegion = None
         self.atIndex = None
@@ -178,17 +184,15 @@ class JmeNode(object):
         self.colonIndex = None
         self.morphKey = None
         self.morphNode = False
-        self.implClass = "com.jme.scene.Node"
+        self.implClass = None
         self.postFlip = False
         self.join = False  # Means to write one Mesh XML node a.o.t. Node+Mesh
+        self.nodeType = JmeNode.TYPE_DEFAULT  # Default nodeType
 
         if isinstance(bObjOrName, basestring):
             self.name = bObjOrName
             return
 
-        if nodeTree == None:
-            raise Exception("If instantiating a Blender-Object-wrapping Node, "
-                    + "param nodeTree must be set")
         self.wrappedObj = bObjOrName
         self.name = self.wrappedObj.name
         self.atIndex = self.name.rfind("@")
@@ -204,19 +208,15 @@ class JmeNode(object):
 
         # The setting of self.morphBase in this constructor is tentative.
         # NodeTree will unset this if the target morph object is not in the
-        # exporte set.
+        # export set.
 
-        # The join tactic here is the most simple and consistent way.
-        # Skins are ALWAYS joined, regardless of whether orphaned.
-        # Difficult to non-join orphans, since we don't have the exporting
-        # parenting information at instantiation time.
         if self.wrappedObj.parentType == _bParentTypes["ARMATURE"]:
-            self.join = True
+            self.nodeType = JmeNode.TYPE_SKIN
         else:
             for mod in self.wrappedObj.modifiers:
                 if (mod.type == _bModifierType.ARMATURE
                         and mod[_bModifierSettings.OBJECT] != None):
-                    self.join = True
+                    self.nodeType = JmeNode.TYPE_SKIN
                     break
 
         for prop in self.wrappedObj.game_properties:
@@ -226,46 +226,13 @@ class JmeNode(object):
                     if self.morphInfluences == None: self.morphInfluences = {}
                     self.morphInfluences[prop.name[19:]] = prop.data
             elif prop.type == "STRING":
-                if prop.name == "jme.implClass":
-                    self.implClass = prop.data
-                    if self.join:
-                        raise Exception("An impl class may not be specified "
-                                + "for a skin or morph.  This is because it "
-                                + "must be written as an appropriate Geometry "
-                                + "type")
-                elif prop.name == "jme.skinRegion":
-                    self.skinRegion = prop.data
-                elif prop.name == "jme.morphBase":
-                    self.morphBase = prop.data
-                elif prop.name == "jme.morphKey":
-                    self.morphKey = prop.data
+                if prop.name == "jme.implClass": self.implClass = prop.data
+                elif prop.name == "jme.skinRegion": self.skinRegion = prop.data
+                elif prop.name == "jme.morphBase": self.morphBase = prop.data
+                elif prop.name == "jme.morphKey": self.morphKey = prop.data
 
         bMesh = self.wrappedObj.getData(False, True)
-        twoSided = bMesh != None and (bMesh.mode & _meshModes['TWOSIDED'])
-        jmeTexs = []
-        self.jmeMats = []
-        # The local above must be at this scope because for the 'join' case, we
-        # will append to and use it again later.  self.jmeMats is not required
-        # by scope, but its easier to use it again later knowing it's defined.
-        if len(self.wrappedObj.getMaterials()) > 0:
-            for bMat in self.wrappedObj.getMaterials():
-                if not bMat.mode & _matModes['TEXFACE']:
-                    try:
-                        self.jmeMats.append(nodeTree.includeMat(bMat, twoSided))
-                    except UnsupportedException, ue:
-                        print ("Skipping a texture of object " + self.name
-                                + " due to: " + str(ue))
-                for j in bMat.enabledTextures:
-                    try:
-                        JmeTexture.supported(bMat.textures[j])
-                        jmeTexs.append(nodeTree.includeTex(bMat.textures[j]))
-                    except UnsupportedException, ue:
-                        print ("Skipping a texture of object " + self.name
-                                + " due to: " + str(ue))
-            if len(jmeTexs) > 0 and not self.join:
-                self.jmeTextureState =  \
-                        nodeTree.includeJmeTextureList(jmeTexs[:])
-                del(jmeTexs[:])  # clear list
+
         if bMesh == None or len(bMesh.verts) == 0: return
          # An unused Blender "EmptyMesh" will have 0 verts.
          # This is useful for our Material inheritance feature
@@ -277,42 +244,158 @@ class JmeNode(object):
         except Exception, e:
             print str(e)  # For some reason, sometimes the .color attribute is
                           # available, and sometimes it is not.
-        jmeMesh =  JmeMesh(bMesh, objColor)
-        self.addChild(jmeMesh)
+
+        self.jmeMesh =  JmeMesh(bMesh, objColor)
+        self.addChild(self.jmeMesh)
         #print "Instantiated JmeNode '" + self.getName() + "'"
+
+    def materialize(self, preferJoin=False, nodeTree=None):
+        """Do not call until after 'nodeType' is definitively set.
+        Materials from given bObj and direct data mesh (if any) will be added
+        to one of the specified nodeTree's materials maps."""
+        # Here, we attempt to set either JmeNode.jmeMat and/or
+        # JmeNode.jmeTextureState.  If for any reason we can not, then all mat
+        # and tex data will be written to the JmeMesh(es).
+        # We deduce the user's intention to use an Obj Mat in jME by virtue of
+        # having a single Obj Mat, regardless of supportability.
+        # If we detect any other Mat than that, all Mats and Texs will be saved
+        # under the Mesh(es).
+
+        if self.wrappedObj == None: return
+        if nodeTree == None:
+            raise Exception("If instantiating a Blender-Object-wrapping Node, "
+                    + "param nodeTree must be set")
+        multiMats = False
+        nMesh = self.wrappedObj.getData()  # Legacy, not Wrapped Mesh
+        singleObjMat = None
+        if len(self.wrappedObj.getMaterials(1)) > 0:
+            matIndex = -1
+            for bMat in self.wrappedObj.getMaterials(1):
+                matIndex = matIndex + 1
+                if self.wrappedObj.colbits & (1<<matIndex) == 0: continue
+                 # Not an Obj Mat
+                if bMat == None:
+                    raise Exception(
+                            "Assertion failed.  Null obj mat #"
+                            + str(matIndex) + " even though colbit is on")
+                if singleObjMat != None:  # This makes 2 Obj mats!
+                    multiMats = True
+                    break
+                singleObjMat = bMat
+        if not multiMats and nMesh != None and len(nMesh.getMaterials(1)) > 0:
+            anyMeshMats = False
+            matIndex = -1
+            for bMat in nMesh.getMaterials(1):
+                matIndex = matIndex + 1
+                if self.wrappedObj.colbits & (1<<matIndex) != 0: continue
+                 # Not a Mesh Mat
+                if bMat == None:
+                    raise Exception(
+                            "Assertion failed.  Null mesh mat #"
+                            + str(matIndex) + " even though colbit is off")
+                if anyMeshMats or singleObjMat != None:
+                    multiMats = True
+                    break
+                if singleObjMat != None:
+                    singleObjMat = None
+                break
+
+        # nodeType validation and setting of 'join':
+        if self.morphNode and multiMats:
+            # It may be joined or not, but may not be multi-indexed
+            raise Exception("Blender Object '" + self.getName()
+                    + "' uses Material Indexing, but corresponds to a "
+                    + "morph Base which may not be multi-indexed")
+        if self.nodeType == JmeNode.TYPE_DEFAULT:
+            if multiMats:
+                self.join = False
+            else:
+                self.join = preferJoin
+                if self.children != None:
+                    for child in self.children:
+                        if (isinstance(child, JmeNode)
+                                and child.nodeType != JmeNode.TYPE_MORPHGEO):
+                            self.join = False
+                            break
+        else:  # TYPE_SKIN and TYPE_MORPHGEO must be simple 'join' Geometries
+            if multiMats:
+                raise Exception("Blender Object '" + self.getName()
+                        + "' uses Material Indexing, but corresponds to a "
+                        + "jME type which must be a single Geometry")
+            self.join = True
+
+        if self.join or multiMats: singleObjMat = None
+        twoSided = nMesh != None and (nMesh.mode & _meshModes['TWOSIDED'])
+        if singleObjMat != None:
+            if not singleObjMat.mode & _matModes['TEXFACE']:
+                try:
+                    self.jmeMat = nodeTree.includeMat(singleObjMat, twoSided)
+                except UnsupportedException, ue:
+                    print ("Skipping a texture of object " + self.name
+                            + " due to: " + str(ue))
+            objTexs = []
+            for j in singleObjMat.enabledTextures:
+                try:
+                    JmeTexture.supported(singleObjMat.textures[j])
+                    objTexs.append(nodeTree.includeTex(singleObjMat.textures[j]))
+                except UnsupportedException, ue:
+                    print ("Skipping a texture of object " + self.name
+                            + " due to: " + str(ue))
+            if len(objTexs) > 0:
+                self.jmeTextureState = nodeTree.includeJmeTextureList(objTexs)
+
+        if nMesh == None or len(nMesh.verts) == 0: return
+         # An unused Blender "EmptyMesh" will have 0 verts.
+         # This is useful for our Material inheritance feature
+        if singleObjMat != None: return  # Mats & Textures already handled
+        # For all other cases, we write all mat and tex data under Mesh(es)
+
         # Since Blender has mashed together the Object and Mesh by having
         # object.colbits specify how the Mesh's materials are to be
-        # interpreted, we add the Mesh's materials and textures here.
+        # interpreted, we must add the Mesh's materials and textures here.
+        jmeTexs = []
         meshMats = []
-        if self.join:
-            meshMats += self.jmeMats
-            del(self.jmeMats[:])
-        for i in range(len(bMesh.materials)):
-            #print "Bit " + str(i) + " for " + self.getName() + " = " + str(self.wrappedObj.colbits & (1<<i))
-            if 0 != (self.wrappedObj.colbits & (1<<i)): continue
-            if bMesh.materials[i] == None: continue
-              # This will happen if the mat has been removed
-            #print "Adding Mesh Mat " + bMesh.materials[i].name
-            if not bMesh.materials[i].mode & _matModes['TEXFACE']:
-                try:
-                    meshMats.append(
-                            nodeTree.includeMat(bMesh.materials[i], twoSided))
-                except UnsupportedException, ue:
-                    print ("Skipping a mat of mesh " + jmeMesh.getName()
-                            + " due to: " + str(ue))
-                    continue
-            for j in bMesh.materials[i].enabledTextures:
-                try:
-                    #print "**** Adding Texture for Mat: " + bMesh.materials[i].name
-                    JmeTexture.supported(bMesh.materials[i].textures[j])
-                    jmeTexs.append(nodeTree.includeTex(
-                            bMesh.materials[i].textures[j]))
-                except UnsupportedException, ue:
-                    print ("Skipping a texture of mesh " + jmeMesh.getName()
-                            + " due to: " + str(ue))
-        if len(meshMats) > 0: jmeMesh.jmeMats = meshMats
+        matIndex = -1
+        while True:
+            matIndex = matIndex + 1
+            if self.wrappedObj.colbits & (1<<matIndex) == 0:
+                if matIndex >= len(nMesh.getMaterials(1)): break
+                matl = nMesh.getMaterials(1)[matIndex]
+            else:
+                if matIndex >= len(self.wrappedObj.getMaterials(1)): break
+                matl = self.wrappedObj.getMaterials(1)[matIndex]
+            if matl == None: break  # Indicates past end of colbits list
+            newMatl = None
+            newTexs = []
+            try:
+                #print "Adding Mesh Mat " + matl.name
+                if not matl.mode & _matModes['TEXFACE']:
+                    try:
+                        newMatl = nodeTree.includeMat(matl, twoSided)
+                    except UnsupportedException, ue:
+                        print ("Skipping matl " + matl.getName()
+                                + " due to: " + str(ue))
+                        # Purposefully allow texture without supported matl
+                for j in matl.enabledTextures:
+                    try:
+                        #print "**** Adding Texture for Mat: " + nMesh.materials[i].name
+                        JmeTexture.supported(matl.textures[j])
+                        newTexs.append(nodeTree.includeTex(matl.textures[j]))
+                    except UnsupportedException, ue:
+                        print ("Skipping texture " + matl.textures[j].getName()
+                                + " due to: " + str(ue))
+            finally:
+                if newMatl == None:
+                    print "++++ Adding mat <None> for Obj " + self.getName()
+                else:
+                    print "++++ Adding mat " + newMatl.blenderName + " for Obj " + self.getName()
+                meshMats.append(newMatl)  # 1 for each matl index.  May be null.
+                 # Will be null if mat unsupported.  Need this for mat inds.
+                jmeTexs += newTexs
+                # TODO:  Need mat-index-specific texture lists
+        if len(meshMats) > 0: self.jmeMesh.jmeMats = meshMats
         if len(jmeTexs) > 0:
-            jmeMesh.jmeTextureState = nodeTree.includeJmeTextureList(jmeTexs)
+            self.jmeMesh.jmeTextureState = nodeTree.includeJmeTextureList(jmeTexs)
 
     def addChild(self, child):
         if self.children == None: self.children = []
@@ -320,11 +403,12 @@ class JmeNode(object):
 
     def getName(self): return self.name
 
-    def getImplClass(self): return self.implClass
+    def getImplClass(self):
+        if self.implClass == None: return "com.jme.scene.Node"
+        return self.implClass
 
     def getXmlEl(self, autoRotate):
-        if self.jmeMats != None and len(self.jmeMats) < 1: self.jmeMats = None
-        if (not self.morphBase
+        if (self.nodeType != JmeNode.TYPE_MORPHGEO
                 and self.wrappedObj != None and self.wrappedObj.parent != None
                 and self.wrappedObj.parent.getPose() != None):
             #print "Verifying non-null poses for " + self.getName() + "..."
@@ -343,11 +427,7 @@ class JmeNode(object):
                     #raise Exception("Node " + self.getName()
                     ActionData.zeroPose(self.wrappedObj.parent.getPose())
                     break
-        if self.join:
-            tagName = "Dummy"
-        else:
-            tagName = self.getImplClass()
-        tag = _XmlTag(tagName)
+        tag = _XmlTag(self.getImplClass())  # May well get overwritten
         if self.atIndex != None:
             tag.addAttr("name", self.name[:self.atIndex])
         elif self.colonIndex != None:
@@ -355,11 +435,10 @@ class JmeNode(object):
         else:
             tag.addAttr("name", self.getName())
 
-        if not self.morphBase and (
-                self.jmeMats != None or self.jmeTextureState != None):
+        if self.nodeType != JmeNode.TYPE_MORPHGEO and (
+                self.jmeMat != None or self.jmeTextureState != None):
             rsTag = _XmlTag('renderStateList')
-            if self.jmeMats != None:
-                for mat in self.jmeMats: rsTag.addChild(mat.getXmlEl())
+            if self.jmeMat != None: rsTag.addChild(self.jmeMat.getXmlEl())
             if self.jmeTextureState != None:
                 rsTag.addChild(self.jmeTextureState.getXmlEl())
             tag.addChild(rsTag)
@@ -416,13 +495,16 @@ class JmeNode(object):
                             "Assertion failed.  > 1 Blender Mesh child?")
                     beenHere = True
                     if mtmTag == None:
+                        # Case 1: Obj Child is NORMAL MESH
                         if self.join:
                             child.populateXml(tag, autoRotate)
+                            if self.implClass != None: tag.name = self.implClass
                         else:
                             meshTag = _XmlTag('dummy')
                             childrenTag.addChild(meshTag)
                             child.populateXml(meshTag, autoRotate)
                     else:
+                        # Case 2: Obj Child is MORPH BASE
                         meshTag = _XmlTag("dummy")
                         mtmTag.addChild(meshTag)
                         child.populateXml(meshTag, autoRotate)
@@ -431,7 +513,9 @@ class JmeNode(object):
                 else:
                     if (isinstance(child, JmeNode) and child.morphBase != None
                             and morphsTag != None):
-                        morphsTag.addChild(child.getXmlEl(autoRotate))
+                        # Case 3: Obj Child is a MORPH GEO Obj
+                        newChild = child.getXmlEl(autoRotate)
+                        morphsTag.addChild(newChild)
                         if child.morphKey == None:
                             if (child.colonIndex > 0
                                     and child.colonIndex < len(child.name) - 1):
@@ -442,16 +526,13 @@ class JmeNode(object):
                         else:
                             morphKeys.append(child.morphKey)
                         continue
-                    if self.join:
-                        raise Exception(
-                                "Sorry, since skins and morph geos are jME "
-                                + "Geometries, you may not export '"
-                                + self.getName() + "' with any children")
+                    # Case 4: Obj Child is a SKIN Obj or Mesh/Empty Obj
                     if self.wrappedObj != None:
                         child.backoutTransform = self.wrappedObj.mat
                     # N.b. DO NOT USE .matrixParentInverse.  That is a static
                     #  value for funky Blender behavior we don't want to retain.
-                    childrenTag.addChild(child.getXmlEl(autoRotate))
+                    newChild = child.getXmlEl(autoRotate)
+                    childrenTag.addChild(newChild)
             if len(childrenTag.children) > 0: tag.addChild(childrenTag)
 
         if morphKeys != None:
@@ -697,7 +778,8 @@ class JmeMesh(object):
         else:
             rsTag = _XmlTag('renderStateList')
             if self.jmeMats != None:
-                for mat in self.jmeMats: rsTag.addChild(mat.getXmlEl())
+                for mat in self.jmeMats:
+                    if mat != None: rsTag.addChild(mat.getXmlEl())
             tag.addChild(rsTag)
             if self.jmeTextureState != None:
                 rsTag.addChild(self.jmeTextureState.getXmlEl())
@@ -1484,8 +1566,6 @@ class JmeSkinAndBone(object):
             self.plainChildren.append(newChild)
         elif (newChild.wrappedObj.parentType == _bParentTypes["ARMATURE"]):
             self.skins.append(newChild)
-            if not newChild.join:
-                raise Exception("Internal error.  Skin node not joined.")
         elif (newChild.wrappedObj.parentType == _bParentTypes["BONE"]):
             if self.skinTransferNode:
                 raise Exception("Can't add non-deforming bone-child '"
@@ -1756,7 +1836,7 @@ class NodeTree(object):
     See method descriptions for details."""
 
     __slots__ = ('__memberMap', '__memberKeys', '__maxWeightings',
-            '__matMap1side', '__matMap2side', 'root',
+            '__matMap1side', '__matMap2side', 'root', 'favorJoin',
             '__textureHash', '__textureStates', '__exportActions')
     # N.b. __memberMap does not have a member for each node, but a member
     #      for each saved Blender object.
@@ -1774,6 +1854,7 @@ class NodeTree(object):
         self.__textureHash = {}
         self.__textureStates = set()
         self.__maxWeightings = None
+        self.favorJoin = "FAVORJOINS" in _osEnviron
         self.root = None
         ActionData.updateFrameRate()
         if not isinstance(maxWeightings, int):
@@ -1842,7 +1923,7 @@ class NodeTree(object):
                 raise Exception(
                     "Assertion failed.  skipTransferNode set for non-Armature "
                     + blenderObj.name + ":  " + blenderObj.type)
-            self.__memberMap[blenderObj] = JmeNode(blenderObj, self)
+            self.__memberMap[blenderObj] = JmeNode(blenderObj)
         self.__memberKeys.append(blenderObj)
         return self.__memberMap[blenderObj]
 
@@ -1922,7 +2003,7 @@ class NodeTree(object):
                     morphBase = potentialMorphBases[jmeObj.morphBase]
                     morphBase.addChild(jmeObj)
                     morphBase.morphNode = True
-                    jmeObj.join = True
+                    jmeObj.nodeType = JmeNode.TYPE_MORPHGEO
                     parentedBos.append(bo)
                     continue
                 self.__memberMap[bo].morphBase = None
@@ -1932,6 +2013,8 @@ class NodeTree(object):
                         #+ bo.parent.getName())
                 self.__memberMap[bo.parent].addChild(jmeObj)
                 parentedBos.append(bo)
+        for jo in self.__memberMap.itervalues():
+            if isinstance(jo, JmeNode): jo.materialize(self.favorJoin, self)
         for bo in parentedBos:
             del self.__memberMap[bo]
             self.__memberKeys.remove(bo)

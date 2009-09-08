@@ -113,7 +113,7 @@ def gen(saveAll, autoRotate, skipObjs=True,
             candidates = _bdata.objects
         else:
             candidates = activeScene.objects.selected
-        print "Cands # " + str(len(candidates))
+        #print "Cands # " + str(len(candidates))
         nodeTree = _NodeTree(maxWeightings, exportActions)
         for bo in candidates:
             layerIsActive = False

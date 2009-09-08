@@ -30,7 +30,7 @@ public class TestTangentGen extends SimpleApplication {
     public void simpleInitApp() {
         Sphere sphereMesh = new Sphere(32, 32, 1);
         sphereMesh.setTextureMode(Sphere.TextureMode.Projected);
-        sphereMesh.updateGeometry(32, 32, 1, false);
+        sphereMesh.updateGeometry(32, 32, 1, false, false);
         addMesh("Sphere", sphereMesh, new Vector3f(-1, 0, 0));
 
         Quad quadMesh = new Quad(1, 1);

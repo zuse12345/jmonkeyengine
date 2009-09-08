@@ -30,7 +30,7 @@ public class AppSettings extends HashMap<String, Object> {
 
         // disable these settings to benchmark speed
 //        defaults.put("VSync", true);
-        defaults.put("FrameRate", 60);
+//        defaults.put("FrameRate", 60);
     }
 
     private Template template;

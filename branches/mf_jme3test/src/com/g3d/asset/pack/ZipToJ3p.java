@@ -46,8 +46,19 @@ public class ZipToJ3p {
             System.err.println(entry.getName()+" name is too large! Ignored.");
             return null;
         }
+        if (entry.getName().contains(".svn")){
+            System.err.println(entry.getName()+" is SVN metadata! Ignored.");
+            return null;
+        }
 
-        J3PEntry out = new J3PEntry(entry.getName());
+        // fixes issues when trying to load mesh.xml file, since
+        // extension is technically XML
+        String name = entry.getName();
+        int idx = name.indexOf("mesh.xml");
+        if (idx > 0)
+            name = name.substring(0, idx) + "meshxml";
+
+        J3PEntry out = new J3PEntry(name);
         out.length = (int) entry.getSize();
         entryTableSize += 4 + 1 + 4 + 4;
         if (usedHashes.contains(out.hash)){
@@ -146,10 +157,12 @@ public class ZipToJ3p {
 
         // Create entries
         entries = new J3PEntry[zf.size()];
+        String[] originalNames = new String[zf.size()];
         int idx = 0;
         Enumeration<ZipEntry> zipEntries = (Enumeration<ZipEntry>) zf.entries();
         while (zipEntries.hasMoreElements()){
             ZipEntry zipEntry = zipEntries.nextElement();
+            originalNames[idx] = zipEntry.getName();
             entries[idx++] = createEntry(zipEntry);
         }
 
@@ -171,7 +184,7 @@ public class ZipToJ3p {
                 continue;
 
             J3PEntry entry = entries[i];
-            InputStream in = zf.getInputStream(zf.getEntry(entry.name));
+            InputStream in = zf.getInputStream(zf.getEntry(originalNames[i]));
             writeEntryData(entry, in, chan);
             in.close();
         }

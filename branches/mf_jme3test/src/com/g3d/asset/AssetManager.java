@@ -16,8 +16,6 @@ import com.g3d.scene.plugins.OBJLoader;
 import com.g3d.texture.plugins.PFMLoader;
 import com.g3d.texture.plugins.TGALoader;
 import com.g3d.audio.plugins.WAVLoader;
-import com.g3d.scene.Geometry;
-import com.g3d.scene.Mesh;
 import com.g3d.scene.Spatial;
 import com.g3d.scene.plugins.ogre.*;
 import com.g3d.shader.Shader;
@@ -26,12 +24,11 @@ import com.g3d.system.G3DSystem;
 import com.g3d.texture.Image;
 import com.g3d.texture.Texture;
 import com.g3d.texture.Texture2D;
+import com.g3d.texture.TextureCubeMap;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -208,12 +205,23 @@ public class AssetManager {
      * select highest supported by video card.
      * @return
      */
-    public Texture loadTexture(String name, boolean generateMipmaps, boolean flipY, int anisotropy){
+    public Texture loadTexture(String name, boolean generateMipmaps, boolean flipY, boolean asCube, int anisotropy){
         Image img = (Image) loadContent(new TextureKey(name, flipY));
         if (img == null)
             return null;
 
-        Texture tex = new Texture2D(); // TODO: add support for 1D/3D/Cube images
+        Texture tex;
+        if (asCube){
+            if (flipY){
+                // also flip -y and +y image in cubemap
+                ByteBuffer pos_y = img.getData(2);
+                img.setData(2, img.getData(3));
+                img.setData(3, pos_y);
+            }
+            tex = new TextureCubeMap();
+        }else{
+            tex = new Texture2D();
+        }
 
         // enable mipmaps if image has them
         // or generate them if requested by user
@@ -235,7 +243,7 @@ public class AssetManager {
      * @return
      */
     public Texture loadTexture(String name, boolean generateMipmaps){
-        return loadTexture(name, generateMipmaps, true, Integer.MAX_VALUE);
+        return loadTexture(name, generateMipmaps, true, false, Integer.MAX_VALUE);
     }
 
     public Texture loadTexture(String name){

@@ -71,13 +71,14 @@ public class Image implements Savable {
         Intensity8(8),
         Intensity16(16),
 
-        BGR8(24), // added for images loaded from jpeg
+        BGR8(24), // BGR and ABGR formats are often used on windows systems
         RGB8(24),
         RGB10(30),
         RGB16(48),
 
         RGB5A1(16),
         RGBA8(32),
+        ABGR8(32),
         RGBA16(64),
 
         DXT1(4,false,true),

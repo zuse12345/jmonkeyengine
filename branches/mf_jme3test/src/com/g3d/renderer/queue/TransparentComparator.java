@@ -54,15 +54,16 @@ public class TransparentComparator implements Comparator<Spatial> {
         return spat.queueDistance;
     }
 
-        public int compare(Spatial o1, Spatial o2) {
-            Vector3f tempVec = TempVars.get().vect1;
-            float d1 = distanceToCam(o1, tempVec);
-            float d2 = distanceToCam(o2, tempVec);
-            if (d1 == d2)
-                return 0;
-            else if (d1 < d2)
-                return -1;
-            else
-                return 1;
-        }
+    public int compare(Spatial o1, Spatial o2) {
+        Vector3f tempVec = TempVars.get().vect1;
+        float d1 = distanceToCam(o1, tempVec);
+        float d2 = distanceToCam(o2, tempVec);
+
+        if (d1 == d2)
+            return 0;
+        else if (d1 < d2)
+            return 1;
+        else
+            return -1;
+    }
 }

@@ -60,6 +60,7 @@ import java.util.logging.Logger;
 public class DDSLoader implements AssetLoader {
 
     private static final Logger logger = Logger.getLogger(DDSLoader.class.getName());
+    private static final boolean forceRGBA = false;
 
     private static final int DDSD_MANDATORY = 0x1007;
     private static final int DDSD_MIPMAPCOUNT = 0x20000;
@@ -371,9 +372,9 @@ public class DDSLoader implements AssetLoader {
      */
     public ByteBuffer readRGB2D(boolean flip, int totalSize) throws IOException {
         int redCount = count(redMask),
-                blueCount = count(blueMask),
-                greenCount = count(greenMask),
-                alphaCount = count(alphaMask);
+            blueCount = count(blueMask),
+            greenCount = count(greenMask),
+            alphaCount = count(alphaMask);
 
         if (redMask == 0x00FF0000 && greenMask == 0x0000FF00 && blueMask == 0x000000FF) {
             if (alphaMask == 0xFF000000 && bpp == 32) {

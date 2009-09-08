@@ -1,6 +1,8 @@
 package com.g3d.asset.pack;
 
 import SevenZip.Compression.LZMA.Encoder;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -144,6 +146,24 @@ public class Compressor {
         System.out.println("Comprssion: Pack200 Deflate");
     }
 
+    public void packLzma(InputStream src, WritableByteChannel chan, J3PEntry entry, long length) throws IOException{
+        JarInputStream jis = new JarInputStream(src);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        pack.pack(jis, baos);
+
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+
+        OutputStream out = Channels.newOutputStream(chan);
+        jarLzma.WriteCoderProperties(out);
+        for (int i = 0; i < 8; i++)
+                out.write((byte)(length >> (8 * i)));
+
+        jarLzma.Code(bais, out, -1, -1, null);
+
+        entry.flags |= J3PEntry.PACK200_LZMA_COMPRESSED;
+        System.out.println("Comprssion: Pack200 LZMA");
+    }
+
     public void compress(InputStream src, WritableByteChannel chan, J3PEntry entry, long length) throws IOException{
         String name = entry.name;
         int idx = name.lastIndexOf(".");
@@ -158,15 +178,20 @@ public class Compressor {
         // TEXT   => MAX COMPRESSION DEFLATE
         // JAR    => PACK200 + DEFAULT DEFLATE
         // BINARY => DEFAULT DEFLATE
-        // IMAGE  => LZMA
+        // IMAGE  => RAW
+        if (length < 200){
+            // don't bother compressing for files less than 200 bytes
+            copy(src, chan);
+            return;
+        }
 
-        if (name.equals("jpg") || name.equals("jpeg")){
+        if (name.equals("jpg") || name.equals("jpeg") || name.equals("png")){
             copy(src, chan);
         } else if (name.equals("xml") || name.equals("txt") || name.equals("material")
          || name.equals("sh")){
             lzma(src, chan, entry, length);
         }else if (name.equals("jar")){
-            packDeflate(src, chan, entry);
+            packLzma(src, chan, entry, length);
         }else if (name.equals("tga") || name.equals("dds") || name.equals("exe")){
             lzma(src, chan, entry, length);
         }else{

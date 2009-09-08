@@ -6,7 +6,6 @@ import com.g3d.input.awt.AwtKeyInput;
 import com.g3d.input.awt.AwtMouseInput;
 import com.g3d.renderer.jogl.JoglRenderer;
 import com.g3d.system.AppSettings;
-import com.g3d.system.AppSettings.Template;
 import com.g3d.system.G3DContext.Type;
 import com.sun.opengl.util.Animator;
 import com.sun.opengl.util.FPSAnimator;
@@ -43,6 +42,7 @@ public class JoglDisplay extends JoglContext implements GLEventListener {
     protected AtomicBoolean active = new AtomicBoolean(false);
     protected AtomicBoolean windowCloseRequest = new AtomicBoolean(false);
     protected AtomicBoolean needClose = new AtomicBoolean(false);
+    protected boolean wasActive = false;
     protected int frameRate;
     protected boolean useAwt = true;
 
@@ -64,7 +64,7 @@ public class JoglDisplay extends JoglContext implements GLEventListener {
     
     protected void applySettings(AppSettings settings){
         DisplayMode displayMode;
-        if (settings.getTemplate() == Template.DesktopFullscreen){
+        if (settings.getWidth() <= 0 || settings.getHeight() <= 0){
             displayMode = device.getDisplayMode();
             settings.setResolution(displayMode.getWidth(), displayMode.getHeight());
         }else if (settings.isFullscreen()){
@@ -228,14 +228,6 @@ public class JoglDisplay extends JoglContext implements GLEventListener {
         needClose.set(true);
     }
 
-    public boolean isCloseRequested() {
-        return windowCloseRequest.get();
-    }
-
-    public boolean isActive() {
-        return active.get();
-    }
-
     public void restart(boolean updateCamera) {
     }
 
@@ -258,6 +250,7 @@ public class JoglDisplay extends JoglContext implements GLEventListener {
      */
     public void display(GLAutoDrawable drawable) {
         if (needClose.get()) {
+            listener.destroy();
             animator.stop();
             if (settings.isFullscreen()) {
                 device.setFullScreenWindow(null);
@@ -268,9 +261,23 @@ public class JoglDisplay extends JoglContext implements GLEventListener {
             return;
         }
 
+        if (windowCloseRequest.get()){
+            listener.requestClose(false);
+            windowCloseRequest.set(false);
+        }
+
+        if (wasActive != active.get()){
+            if (!wasActive){
+                listener.gainFocus();
+                wasActive = true;
+            }else{
+                listener.loseFocus();
+                wasActive = false;
+            }
+        }
+
         listener.update();
         renderer.onFrame();
-        windowCloseRequest.set(false);
     }
 
     /**

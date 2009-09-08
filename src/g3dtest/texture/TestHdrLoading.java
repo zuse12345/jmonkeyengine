@@ -16,7 +16,6 @@ public class TestHdrLoading extends SimpleApplication {
 
     public static void main(String[] args){
         TestHdrLoading app = new TestHdrLoading();
-        app.setSettings(new AppSettings(AppSettings.Template.Default640x480));
         app.start();
     }
 

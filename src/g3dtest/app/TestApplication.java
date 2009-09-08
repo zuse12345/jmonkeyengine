@@ -22,13 +22,15 @@ public class TestApplication {
         Thread.sleep(2000);
         System.out.println("Starting in fullscreen mode");
         app = new Application();
-        app.setSettings(new AppSettings(AppSettings.Template.DesktopFullscreen));
+        AppSettings settings = new AppSettings(true);
+        settings.setFullscreen(true);
+        settings.setResolution(-1,-1); // current width/height
         app.start();
         Thread.sleep(5000);
         app.stop();
 
         System.out.println("Creating JOGL application..");
-        AppSettings settings = new AppSettings(AppSettings.Template.Default640x480);
+        settings = new AppSettings(true);
         settings.setRenderer(AppSettings.JOGL);
         app = new Application();
         app.setSettings(settings);

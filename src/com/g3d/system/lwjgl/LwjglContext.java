@@ -3,7 +3,7 @@ package com.g3d.system.lwjgl;
 import com.g3d.renderer.Renderer;
 import com.g3d.renderer.lwjgl.LwjglRenderer;
 import com.g3d.system.AppSettings;
-import com.g3d.system.ContextListener;
+import com.g3d.system.SystemListener;
 import com.g3d.system.G3DContext;
 import com.g3d.system.Timer;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -14,15 +14,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class LwjglContext implements G3DContext {
 
     protected AtomicBoolean created = new AtomicBoolean(false);
-    protected AppSettings settings = new AppSettings();
+    protected AppSettings settings = new AppSettings(true);
     protected LwjglRenderer renderer;
     protected Timer timer;
-    protected ContextListener listener;
+    protected SystemListener listener;
 
-    public abstract boolean isActive();
     public abstract void restart(boolean updateCamera);
 
-    public void setContextListener(ContextListener listener){
+    public void setSystemListener(SystemListener listener){
         this.listener = listener;
     }
 

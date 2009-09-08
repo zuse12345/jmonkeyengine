@@ -1,5 +1,6 @@
 package com.g3d.util;
 
+import com.g3d.system.AppSettings;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -45,10 +46,7 @@ public class Natives {
         logger.fine("Copied "+fullname+" to "+targetFile);
     }
 
-    public static void extractNativeLibs(String sysName) throws IOException{
-        extractNativeLib(sysName, "lwjgl");
-        extractNativeLib(sysName, "lwjgl64");
-
+    public static void extractNativeLibs(String sysName, AppSettings settings) throws IOException{
         // TODO: it seems JOGL has a different method of loading
         // natives that is incompatible with LWJGLs..
         // In order to properly support JOGL, the architecture (32 or 64 bit)
@@ -56,20 +54,29 @@ public class Natives {
 //        extractNativeLib(sysName, "jogl");
 //        extractNativeLib(sysName, "jogl64");
 //        extractNativeLib(sysName, "jogl_awt");
-        if (sysName.equals("windows")){
-            extractNativeLib(sysName, "jinput-dx8");
-            extractNativeLib(sysName, "jinput-dx8_64");
-            extractNativeLib(sysName, "jinput-raw");
-            extractNativeLib(sysName, "jinput-raw_64");
-        }else if (sysName.equals("linux")){
-            extractNativeLib(sysName, "jinput-linux");
-            extractNativeLib(sysName, "jinput-linux64");
-        }else{
-            extractNativeLib(sysName, "jinput");
-            extractNativeLib(sysName, "jinput64");
+        if (settings.useJoysticks()){
+            if (sysName.equals("windows")){
+                extractNativeLib(sysName, "jinput-dx8");
+                extractNativeLib(sysName, "jinput-dx8_64");
+                extractNativeLib(sysName, "jinput-raw");
+                extractNativeLib(sysName, "jinput-raw_64");
+            }else if (sysName.equals("linux")){
+                extractNativeLib(sysName, "jinput-linux");
+                extractNativeLib(sysName, "jinput-linux64");
+            }else{
+                extractNativeLib(sysName, "jinput");
+                extractNativeLib(sysName, "jinput64");
+            }
         }
-//        System.setProperty("java.library.path", workingDir.toString());
-        System.setProperty("org.lwjgl.librarypath", workingDir.toString());
+
+        if (settings.getRenderer().startsWith("LWJGL")){
+            extractNativeLib(sysName, "lwjgl");
+            extractNativeLib(sysName, "lwjgl64");
+            System.setProperty("org.lwjgl.librarypath", workingDir.toString());
+        }else{
+            // user must set property java.library.path  ..
+            // System.setProperty("java.library.path", workingDir.toString());
+        }
     }
 
 }

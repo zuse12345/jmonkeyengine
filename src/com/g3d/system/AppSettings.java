@@ -5,11 +5,13 @@ import java.util.HashMap;
 
 public class AppSettings extends HashMap<String, Object> {
 
-    private static final AppSettings defaults = new AppSettings();
+    private static final AppSettings defaults = new AppSettings(false);
 
     public static final String LWJGL_OPENGL2 = "LWJGL-OpenGL2",
                                LWJGL_OPENGL3 = "LWJGL-OpenGL3",
                                JOGL          = "JOGL";
+    public static final String LWJGL_OPENAL  = "LWJGL-OPENAL",
+                               JOAL          = "JOAL";
 
     static {
         defaults.put("Width", 640);
@@ -22,6 +24,7 @@ public class AppSettings extends HashMap<String, Object> {
         defaults.put("Fullscreen", false);
         defaults.put("Title", G3DSystem.getFullName());
         defaults.put("Renderer", LWJGL_OPENGL2);
+        defaults.put("AudioRenderer", LWJGL_OPENAL);
         defaults.put("DisableJoysticks", true);
         defaults.put("UseInput", true);
 
@@ -33,58 +36,14 @@ public class AppSettings extends HashMap<String, Object> {
 //        defaults.put("FrameRate", 60);
     }
 
-    private Template template;
-
-    public AppSettings(){
-        template = Template.None;
-    }
-
-    public static enum Template {
-        None,
-        DesktopFullscreen,
-        Default320x240,
-        Default640x480,
-        Default800x600,
-        Default1024x768,
-        Default1280x720
-    }
-
-    public AppSettings(Template template){
-        this.template = template;
-        if (template == Template.None){
-            // ?
-            return;
-        }else if (template == Template.DesktopFullscreen){
-            // .. handled by context
+    public AppSettings(boolean loadDefaults){
+        if (loadDefaults){
             putAll(defaults);
-            setFullscreen(true);
-            setVSync(true);
-            return;
         }
-
-        putAll(defaults);
-        if (template == Template.Default640x480){
-            // nothing
-        }else if (template == Template.Default320x240){
-            setResolution(320, 240);
-        }else if (template == Template.Default800x600){
-            setResolution(800, 600);
-        }else if (template == Template.Default1024x768){
-            setResolution(1024, 768);
-        }else if (template == Template.Default1280x720){
-            setResolution(1280, 720);
-        }else{
-            throw new RuntimeException("Unsupported settings template");
-        }
-    }
-
-    public Template getTemplate() {
-        return template;
     }
 
     public void copyFrom(AppSettings other){
         this.putAll(other);
-        this.template = other.template;
     }
 
     public void save() throws IOException{
@@ -133,9 +92,17 @@ public class AppSettings extends HashMap<String, Object> {
     public void setUseInput(boolean use){
         putBoolean("UseInput", use);
     }
+    
+    public void setUseJoysticks(boolean use){
+        putBoolean("DisableJoysticks", !use);
+    }
 
     public void setRenderer(String renderer){
         putString("Renderer", renderer);
+    }
+
+    public void setAudioRenderer(String audioRenderer){
+        putString("AudioRenderer", audioRenderer);
     }
 
     public void setWidth(int value){
@@ -225,5 +192,13 @@ public class AppSettings extends HashMap<String, Object> {
 
     public boolean isFullscreen(){
         return getBoolean("Fullscreen");
+    }
+
+    public boolean useJoysticks() {
+        return !getBoolean("DisableJoysticks");
+    }
+
+    public String getAudioRenderer() {
+        return getString("AudioRenderer");
     }
 }

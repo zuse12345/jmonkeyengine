@@ -21,7 +21,6 @@ public class TestBumpModel extends SimpleApplication {
 
     public static void main(String[] args){
         TestBumpModel app = new TestBumpModel();
-        app.setSettings(new AppSettings(AppSettings.Template.Default800x600));
         app.start();
     }
 

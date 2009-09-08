@@ -19,9 +19,7 @@ import com.g3d.audio.plugins.WAVLoader;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.Spatial;
-import com.g3d.scene.plugins.ogre.MaterialLoader;
-import com.g3d.scene.plugins.ogre.MeshLoader;
-import com.g3d.scene.plugins.ogre.SceneLoader;
+import com.g3d.scene.plugins.ogre.*;
 import com.g3d.shader.Shader;
 import com.g3d.shader.ShaderKey;
 import com.g3d.system.G3DSystem;
@@ -150,7 +148,7 @@ public class AssetManager {
                 logger.warning("Cannot locate resource: "+key);
                 return null;
             }
-            
+
             try {
                 o = loader.load(info);
             } catch (IOException ex) {
@@ -162,7 +160,7 @@ public class AssetManager {
             }else{
                 logger.finer("Loaded resource "+key+" successfuly using "+
                              loader.getClass().getSimpleName());
-                
+
                 if (useCache)
                     cache.addToCache(key, o);
             }
@@ -256,7 +254,7 @@ public class AssetManager {
 
     /**
      * Load a vertex/fragment shader combo.
-     * 
+     *
      * @param key
      * @return
      */
@@ -267,10 +265,10 @@ public class AssetManager {
         if (s == null){
             String vertName = key.getVertName();
             String fragName = key.getFragName();
-            
+
             String vertSource = (String) loadContent(new AssetKey(vertName));
             String fragSource = (String) loadContent(new AssetKey(fragName));
-            
+
             s = new Shader(key.getLanguage());
             s.addSource(Shader.ShaderType.Vertex,   vertName, vertSource, key.getDefines().getCompiled());
             s.addSource(Shader.ShaderType.Fragment, fragName, fragSource, key.getDefines().getCompiled());
@@ -278,6 +276,20 @@ public class AssetManager {
             cache.addToCache(key, s);
         }
         return s;
+    }
+
+
+
+      /**
+     * Load a Ogre model giben a matFileName.
+     *
+     * @param name
+     * @return
+     */
+    public Spatial loadOgreModel(String name, String matFileName)
+    {
+        OgreMaterialList materialList = (OgreMaterialList) loadContent(new AssetKey(matFileName));
+        return (Spatial) loadContent(new OgreMeshKey(name, materialList));
     }
 
     /**
@@ -313,7 +325,7 @@ public class AssetManager {
 
     /**
      * Load a material file (J3M).
-     * 
+     *
      * @param name
      * @return
      */

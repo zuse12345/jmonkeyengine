@@ -177,13 +177,13 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             vb.setupData(Usage.Static, 4, Format.UnsignedByte, bb);
             mesh.setBuffer(vb);
         }
-        if (parseBool(attribs.getValue("tangent"), false)){
+        if (parseBool(attribs.getValue("tangents"), false)){
             vb = new VertexBuffer(Type.Tangent);
             fb = BufferUtils.createFloatBuffer(mesh.getVertexCount() * 3);
             vb.setupData(Usage.Static, 3, Format.Float, fb);
             mesh.setBuffer(vb);
         }
-        if (parseBool(attribs.getValue("binormal"), false)){
+        if (parseBool(attribs.getValue("binormals"), false)){
             vb = new VertexBuffer(Type.Binormal);
             fb = BufferUtils.createFloatBuffer(mesh.getVertexCount() * 3);
             vb.setupData(Usage.Static, 3, Format.Float, fb);
@@ -209,10 +209,17 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     }
 
     private void pushAttrib(Type type, Attributes attribs) throws SAXException{
-        FloatBuffer buf = (FloatBuffer) mesh.getBuffer(type).getData();
-        buf.put(parseFloat(attribs.getValue("x")))
+        try
+        {
+            FloatBuffer buf = (FloatBuffer) mesh.getBuffer(type).getData();
+            buf.put(parseFloat(attribs.getValue("x")))
            .put(parseFloat(attribs.getValue("y")))
            .put(parseFloat(attribs.getValue("z")));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
     }
 
     private void pushTexCoord(Attributes attribs) throws SAXException{

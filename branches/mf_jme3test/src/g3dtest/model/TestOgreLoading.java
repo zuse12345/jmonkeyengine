@@ -18,7 +18,7 @@ public class TestOgreLoading extends SimpleApplication {
         rootNode.addLight(pl);
 
         // create the geometry and attach it
-        Spatial cube = manager.loadModel("Cube.meshxml");
+        Spatial cube = manager.loadOgreModel("Cube.meshxml","Scene.material");
         rootNode.attachChild(cube);
     }
 }

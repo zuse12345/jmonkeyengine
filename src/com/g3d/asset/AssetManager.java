@@ -281,9 +281,10 @@ public class AssetManager {
 
 
       /**
-     * Load a Ogre model giben a matFileName.
+     * Load a Ogre model given a matFileName.
      *
      * @param name
+     * @param matFileName
      * @return
      */
     public Spatial loadOgreModel(String name, String matFileName)

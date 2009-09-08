@@ -5,6 +5,7 @@ import com.g3d.asset.AssetLoader;
 import com.g3d.asset.AssetManager;
 import com.g3d.material.Material;
 import com.g3d.math.ColorRGBA;
+import com.g3d.renderer.queue.RenderQueue.Bucket;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.Node;
@@ -121,6 +122,9 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             logger.warning("Material "+matName+" not found. Applying default material");
             mat = assetManager.loadMaterial("red_color.j3m");
         }
+        
+        if (mat.isTransparent())
+            geom.setQueueBucket(Bucket.Transparent);
             
         geom.setMaterial(mat);
     }
@@ -172,9 +176,13 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             mesh.setBuffer(vb);
         }
         if (parseBool(attribs.getValue("colours_diffuse"), false)){
+//            vb = new VertexBuffer(Type.Color);
+//            ByteBuffer bb = BufferUtils.createByteBuffer(mesh.getVertexCount() * 4);
+//            vb.setupData(Usage.Static, 4, Format.UnsignedByte, bb);
+//            mesh.setBuffer(vb);
             vb = new VertexBuffer(Type.Color);
-            ByteBuffer bb = BufferUtils.createByteBuffer(mesh.getVertexCount() * 4);
-            vb.setupData(Usage.Static, 4, Format.UnsignedByte, bb);
+            fb = BufferUtils.createFloatBuffer(mesh.getVertexCount() * 4);
+            vb.setupData(Usage.Static, 4, Format.Float, fb);
             mesh.setBuffer(vb);
         }
         if (parseBool(attribs.getValue("tangents"), false)){
@@ -244,6 +252,25 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     }
 
     private void pushColor(Attributes attribs) throws SAXException{
+        FloatBuffer buf = (FloatBuffer) mesh.getBuffer(Type.Color).getData();
+        String value = parseString(attribs.getValue("value"));
+        String[] vals = value.split(" ");
+        if (vals.length != 3 && vals.length != 4)
+            throw new SAXException("Color value must contain 3 or 4 components");
+
+        ColorRGBA color = new ColorRGBA();
+        color.r = parseFloat(vals[0]);
+        color.g = parseFloat(vals[1]);
+        color.b = parseFloat(vals[2]);
+        if (vals.length == 3)
+            color.a = 1f;
+        else
+            color.a = parseFloat(vals[3]);
+        
+        buf.put(color.r).put(color.g).put(color.b).put(color.a);
+    }
+
+    private void pushColor2(Attributes attribs) throws SAXException{
         String value = parseString(attribs.getValue("value"));
         String[] vals = value.split(" ");
         if (vals.length != 3 && vals.length != 4)

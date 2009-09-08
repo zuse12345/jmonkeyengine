@@ -25,6 +25,8 @@ public class J3PEntry extends NamedEntry {
 
     static final int LZMA_COMPRESSED = 0x40;
 
+    static final int PACK200_LZMA_COMPRESSED = 0x80;
+
     /**
      * Flags. See int constants in this class for more info.
      */

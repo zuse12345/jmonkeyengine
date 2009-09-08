@@ -1636,12 +1636,23 @@ public class LwjglRenderer implements Renderer {
     |* Render Calls                                                      *|
     \*********************************************************************/
     public void renderQueue(){
+        // render opaque objects with default depth range
+        // opaque objects are sorted front-to-back, reducing overdraw
+        glDepthRange(0,1);
         queue.renderQueue(Bucket.Opaque);
+
+        // render the sky, with depth range set to the farthest
+        glDepthRange(1,1);
         queue.renderQueue(Bucket.Sky);
         
-        // transparent is last because it require blending with the 
-        // rest of the scene's objects
+        
+        // transparent objects are last because they require blending with the
+        // rest of the scene's objects. Consequently, they are sorted
+        // back-to-front.
+        glDepthRange(0,1);
         queue.renderQueue(Bucket.Transparent);
+        
+        glDepthRange(0,0);
         queue.renderQueue(Bucket.Gui);
     }
 
@@ -1687,15 +1698,6 @@ public class LwjglRenderer implements Renderer {
     }
 
     public void renderMesh(Mesh mesh, int count) {
-        if (mesh.getVertexCount() <= 0){
-            logger.warning("Mesh does not contain vertex data: "+mesh);
-            return;
-        }
-        if (mesh.getTriangleCount() <= 0){
-            logger.warning("Mesh does not contain index data: "+mesh);
-            return;
-        }
-
         VertexBuffer indices = null;
         for (VertexBuffer vb : mesh.getBuffers()){
             if (vb.getBufferType() == Type.Index){
@@ -1738,6 +1740,16 @@ public class LwjglRenderer implements Renderer {
 //    }
 
     public void renderGeometry(Geometry geom){
+        Mesh mesh = geom.getMesh();
+        if (mesh.getVertexCount() <= 0){
+            logger.warning("Mesh does not contain vertex data: "+geom);
+            return;
+        }
+        if (mesh.getTriangleCount() <= 0){
+            logger.warning("Mesh does not contain index data: "+geom);
+            return;
+        }
+
         setWorldMatrix(geom.getWorldMatrix());
         if (geom.getMaterial() == null){
             logger.warning("Unable to render geometry "+geom+". No material defined!");
@@ -1751,7 +1763,6 @@ public class LwjglRenderer implements Renderer {
             geom.getMaterial().apply(geom, this);
         }
 
-        Mesh mesh = geom.getMesh();
 //        if (GLContext.getCapabilities().GL_ARB_vertex_array_object){
 //            if (mesh.getId() == -1){
 //                updateVertexArray(mesh);

@@ -27,7 +27,7 @@ public class TestNormalMapping extends SimpleApplication {
     public void simpleInitApp() {
         Sphere sphMesh = new Sphere(32, 32, 1);
         sphMesh.setTextureMode(Sphere.TextureMode.Projected);
-        sphMesh.updateGeometry(32, 32, 1, false);
+        sphMesh.updateGeometry(32, 32, 1, false, false);
         TangentBinormalGenerator.generate(sphMesh);
 
         Geometry sphere = new Geometry("Rock Ball", sphMesh);

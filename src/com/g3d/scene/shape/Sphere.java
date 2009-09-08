@@ -77,6 +77,8 @@ public class Sphere extends Mesh {
 
     protected boolean useEvenSlices;
 
+    protected boolean interior;
+
     /** the distance from the center point each point falls on */
     public float radius;
 
@@ -98,7 +100,7 @@ public class Sphere extends Mesh {
      *            The radius of the sphere.
      */
     public Sphere(int zSamples, int radialSamples, float radius) {
-        this(zSamples, radialSamples, radius, false);
+        this(zSamples, radialSamples, radius, false, false);
     }
 
     /**
@@ -117,8 +119,8 @@ public class Sphere extends Mesh {
      * @param useEvenSlices
      *            Slice sphere evenly along the Z axis
      */
-    public Sphere(int zSamples, int radialSamples, float radius, boolean useEvenSlices) {
-        updateGeometry(zSamples, radialSamples, radius, useEvenSlices);
+    public Sphere(int zSamples, int radialSamples, float radius, boolean useEvenSlices, boolean interior) {
+        updateGeometry(zSamples, radialSamples, radius, useEvenSlices, interior);
     }
 
     public int getRadialSamples() {
@@ -213,7 +215,7 @@ public class Sphere extends Mesh {
                 BufferUtils.populateFromBuffer(tempVa, posBuf, i);
                 kNormal = tempVa;
                 kNormal.normalizeLocal();
-                if (true) // later we may allow interior texture vs. exterior
+                if (!interior) // allow interior texture vs. exterior
                     normBuf.put(kNormal.x).put(kNormal.y).put(
                             kNormal.z);
                 else
@@ -263,7 +265,7 @@ public class Sphere extends Mesh {
         posBuf.put(0f).put(0f).put(-radius);
 
         normBuf.position(i * 3);
-        if (true)
+        if (!interior)
             normBuf.put(0).put(0).put(-1); // allow for inner
                                                         // texture orientation
                                                         // later.
@@ -284,7 +286,7 @@ public class Sphere extends Mesh {
         // north pole
         posBuf.put(0).put(0).put(radius);
 
-        if (true)
+        if (!interior)
             normBuf.put(0).put(0).put(1);
         else
             normBuf.put(0).put(0).put(-1);
@@ -317,15 +319,14 @@ public class Sphere extends Mesh {
             int i2 = iZStart;
             int i3 = i2 + 1;
             for (int i = 0; i < radialSamples; i++, index += 6) {
-                if (true) {
+                if (!interior) {
                     idxBuf.put((short)i0++);
                     idxBuf.put((short)i1);
                     idxBuf.put((short)i2);
                     idxBuf.put((short)i1++);
                     idxBuf.put((short)i3++);
                     idxBuf.put((short)i2++);
-                } else // inside view
-                {
+                } else { // inside view
                     idxBuf.put((short)i0++);
                     idxBuf.put((short)i2);
                     idxBuf.put((short)i1);
@@ -338,7 +339,7 @@ public class Sphere extends Mesh {
 
         // south pole triangles
         for (int i = 0; i < radialSamples; i++, index += 3) {
-            if (true) {
+            if (!interior) {
                 idxBuf.put((short)i);
                 idxBuf.put((short)(vertCount - 2));
                 idxBuf.put((short)(i + 1));
@@ -352,7 +353,7 @@ public class Sphere extends Mesh {
         // north pole triangles
         int iOffset = (zSamples - 3) * (radialSamples + 1);
         for (int i = 0; i < radialSamples; i++, index += 3) {
-            if (true) {
+            if (!interior) {
                 idxBuf.put((short)(i + iOffset));
                 idxBuf.put((short)(i + 1 + iOffset));
                 idxBuf.put((short)(vertCount - 1));
@@ -382,14 +383,15 @@ public class Sphere extends Mesh {
      * @param radius the radius of the sphere.
      */
     public void updateGeometry(int zSamples, int radialSamples, float radius) {
-        updateGeometry(zSamples, radialSamples, radius, false);
+        updateGeometry(zSamples, radialSamples, radius, false, false);
     }
 
-    public void updateGeometry(int zSamples, int radialSamples, float radius, boolean useEvenSlices) {
+    public void updateGeometry(int zSamples, int radialSamples, float radius, boolean useEvenSlices, boolean interior) {
         this.zSamples = zSamples;
         this.radialSamples = radialSamples;
         this.radius = radius;
         this.useEvenSlices = useEvenSlices;
+        this.interior = interior;
         setGeometryData();
         setIndexData();
     }
@@ -402,6 +404,7 @@ public class Sphere extends Mesh {
         radius = capsule.readFloat("radius", 0);
         useEvenSlices = capsule.readBoolean("useEvenSlices", false);
         textureMode = capsule.readEnum("textureMode", TextureMode.class, TextureMode.Original);
+        interior = capsule.readBoolean("interior", false);
     }
 
     public void write(G3DExporter e) throws IOException {
@@ -412,6 +415,7 @@ public class Sphere extends Mesh {
         capsule.write(radius, "radius", 0);
         capsule.write(useEvenSlices, "useEvenSlices", false);
         capsule.write(textureMode, "textureMode", TextureMode.Original);
+        capsule.write(interior, "interior", false);
     }
 
 }

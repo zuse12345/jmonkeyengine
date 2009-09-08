@@ -107,9 +107,11 @@ public class RenderQueue {
             if (obj instanceof Geometry){
                 Geometry g = (Geometry) obj;
                 renderer.renderGeometry(g);
+                // make sure to reset queue distance
             }
-            // make sure to reset queue distance
-            obj.queueDistance = Float.NEGATIVE_INFINITY;
+
+            if (obj != null)
+                obj.queueDistance = Float.NEGATIVE_INFINITY;
         }
         list.clear();
     }

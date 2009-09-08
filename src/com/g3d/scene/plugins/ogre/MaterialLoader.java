@@ -4,11 +4,17 @@ import com.g3d.asset.AssetInfo;
 import com.g3d.asset.AssetLoader;
 import com.g3d.asset.AssetManager;
 import com.g3d.material.Material;
+import com.g3d.material.RenderState;
 import com.g3d.math.ColorRGBA;
+import com.g3d.texture.Image;
+import com.g3d.texture.Image.Format;
 import com.g3d.texture.Texture;
 import com.g3d.texture.Texture.WrapMode;
+import com.g3d.texture.Texture2D;
 import com.g3d.texture.TextureCubeMap;
+import com.g3d.util.BufferUtils;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Scanner;
 
 public class MaterialLoader implements AssetLoader {
@@ -19,6 +25,8 @@ public class MaterialLoader implements AssetLoader {
     private Texture texture;
     private String texName;
     private float shinines;
+    private boolean vcolor = false;
+    private boolean blend = false;
 
     private String readString(String end){
         scan.useDelimiter(end);
@@ -57,15 +65,22 @@ public class MaterialLoader implements AssetLoader {
         }
 
         boolean genMips = true;
+        boolean cubic = false;
         if (type != null && type.equals("0"))
             genMips = false;
 
-        texture = assetManager.loadTexture(path, genMips, false, 0);
-        if (type != null){
-            if (type.equals("cubic")){
-                texture = new TextureCubeMap(texture.getImage());
-            }
+        if (type != null && type.equals("cubic")){
+            cubic = true;
         }
+
+        texture = assetManager.loadTexture(path, genMips, false, cubic, 0);
+        if (texture == null){
+            ByteBuffer tempData = BufferUtils.createByteBuffer(3);
+            tempData.put((byte)0xFF).put((byte)0x00).put((byte)0x00);
+            texture = new Texture2D(new Image(Format.RGB8, 1,1,tempData));
+            System.out.println("WARNING! Using white mat instead of "+path);
+        }
+        
         texture.setWrap(WrapMode.Repeat);
         if (texName != null){
             texture.setName(texName);
@@ -120,7 +135,13 @@ public class MaterialLoader implements AssetLoader {
             return;
 
         if (keyword.equals("diffuse")){
-            diffuse = readColor();
+            if (scan.hasNext("vertexcolour")){
+                // use vertex colors
+                diffuse = ColorRGBA.White;
+                vcolor = true;
+            }else{
+                diffuse = readColor();
+            }
         }else if (keyword.equals("specular")){
             specular = new ColorRGBA();
             specular.r = scan.nextFloat();
@@ -138,6 +159,11 @@ public class MaterialLoader implements AssetLoader {
             }
         }else if (keyword.equals("texture_unit")){
             readTextureUnit();
+        }else if (keyword.equals("scene_blend")){
+            String mode = scan.next();
+            if (mode.equals("alpha_blend")){
+                blend = true;
+            }
         }
     }
 
@@ -172,7 +198,6 @@ public class MaterialLoader implements AssetLoader {
         while (scan.hasNext("pass")){
             readPass();
         }
-        scan.next(); // skip "}"
     }
 
     private String readMaterial(){
@@ -183,28 +208,34 @@ public class MaterialLoader implements AssetLoader {
         while (scan.hasNext("technique")){
             readTechnique();
         }
-         scan.next(); // skip "}"
         return name;
     }
 
-    private Material compileMaterial(int i){
-//        Material mat = new Material(assetManager, "plain_texture.j3md");
-//        Material mat = new Material(assetManager, "phong_lighting.j3md");
-        //TODO hack, how to define materials ? within ogre file ? meta-file ? implicitly with naming conventions (-> not as powerful) ?
-        //  assuming for now, that the only bump-mapped tex is the first tex
-        Material mat;
-        if (i == 0)
-            mat = assetManager.loadMaterial("elephant.j3m");//new Material(assetManager, "phong_lighting.j3md");
-        else
-        {
-            mat = new Material(assetManager, "plain_texture.j3md");
-            mat.setTexture("m_ColorMap", texture);
+    private Material compileMaterial(){
+        Material mat = new Material(assetManager, "unshaded.j3md");
+        if (blend){
+            RenderState rs = mat.getAdditionalRenderState();
+            rs.setAlphaTest(true);
+            rs.setAlphaFallOff(0.01f);
+            rs.setBlendMode(RenderState.BlendMode.PremultAlpha);
+            rs.setFaceCullMode(RenderState.FaceCullMode.Off);
+            rs.setDepthWrite(false);
+            mat.setTransparent(true);
         }
-//        mat.setTexture("m_DiffuseMap", texture);
+
+        if (vcolor)
+            mat.setBoolean("m_UseVertexColor", true);
+
+        if (texture != null)
+            mat.setTexture("m_ColorMap", texture);
+
+        texture = null;
         diffuse = null;
         specular = null;
         texture = null;
         shinines = 0f;
+        vcolor = false;
+        blend = false;
         return mat;
     }
 
@@ -212,10 +243,9 @@ public class MaterialLoader implements AssetLoader {
         assetManager = info.getManager();
         OgreMaterialList list = new OgreMaterialList();
         scan = new Scanner(info.openStream());
-        int ind = 0;
         while (scan.hasNext("material")){
             String matName = readMaterial();
-            Material mat = compileMaterial(ind++);
+            Material mat = compileMaterial();
             list.put(matName, mat);
         }
         return list;

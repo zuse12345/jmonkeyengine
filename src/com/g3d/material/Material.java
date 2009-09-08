@@ -24,6 +24,8 @@ public class Material {
     private Technique technique;
     private Map<String, Technique> techniques = new HashMap<String, Technique>();
     private int nextTexUnit = 0;
+    private RenderState additionalState = null;
+    private boolean transparent = false;
 
     public static class MatParamValue extends MatParam {
 
@@ -88,6 +90,20 @@ public class Material {
      */
     public void setActiveTechnique(Technique tech){
         technique = tech;
+    }
+
+    public boolean isTransparent() {
+        return transparent;
+    }
+
+    public void setTransparent(boolean transparent) {
+        this.transparent = transparent;
+    }
+
+    public RenderState getAdditionalRenderState(){
+        if (additionalState == null)
+            additionalState = new RenderState();
+        return additionalState;
     }
 
     public MaterialDef getMaterialDef(){
@@ -193,10 +209,16 @@ public class Material {
             selectTechnique("Default");
 
         TechniqueDef techDef = technique.getDef();
-        if (techDef.getRenderState() != null)
+        if (techDef.getRenderState() != null){
             r.applyRenderState(techDef.getRenderState());
-        else
-            r.applyRenderState(RenderState.DEFAULT);
+            if (additionalState != null)
+                r.applyRenderState(additionalState);
+        }else{
+            if (additionalState != null)
+                r.applyRenderState(additionalState);
+            else
+                r.applyRenderState(RenderState.DEFAULT);
+        }
 
         Shader shader = technique.getShader();
 

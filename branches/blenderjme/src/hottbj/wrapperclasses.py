@@ -385,6 +385,8 @@ class JmeNode(object):
                         print ("Skipping texture " + matl.textures[j].getName()
                                 + " due to: " + str(ue))
             finally:
+                # TODO:  Remove these debug statements once have mat indexes
+                # working.
                 if newMatl == None:
                     print "++++ Adding mat <None> for Obj " + self.getName()
                 else:
@@ -823,7 +825,7 @@ class JmeMesh(object):
         vertList = []
         vertList += mesh.verts
         vertToColor = None
-        vertToUv = None
+        vertToLayerUv = None
         faceVertToNewVert = [] # Direct replacement for face[].verts[].index
          # 2-dim array. Only necessary (and only changed) if using vertexColors.
          # Note that though faceVertToNewVert face count and vert count always
@@ -888,18 +890,33 @@ class JmeMesh(object):
                 faceVertToNewVert.append([])
                 for i in range(len(face.verts)):
                     faceVertToNewVert[-1].append(face.verts[i].index)
+        # texArrayLists is a hash from LayerName (or None) to a coords list
+        if mesh.faceUV:
+            texArrayLists = {}
+            for nameList in texLayerNames:
+                for layerName in nameList:
+                    texArrayLists[layerName] = []
+                    # Just let duplicate keys overwrite
+        elif mesh.vertexUV:
+            texArrayLists = {}
+            texArrayLists[None] = []
+        else:
+            texArrayLists = None
         # At this point, faceVertToNewVert[][]  contains references to every
         # vertex, both original and new copies.  For shared vertexes, there
         # will be multiple faceVertToNewVert[][] elements pointing to the
         # same vertex, but there will be no vertexes orphaned by faceVert...
         if mesh.faceUV:
-            vertToUv = {} # Simple modifiedVertIndex -> [u,v] Vector
+            vertToLayerUv = {}
+            # vertToLayerUv[layerName][modifiedVertIndex] -> [u,v] Vector
+            for layerName in texArrayLists.iterkeys(): vertToLayerUv[layerName] = {}
             #  Temp vars only used in this block:
             origIndUvs = {}
             # Nested dict. from OrigIndex -> "u|v" -> NewIndex
 
             # TODO:  Test for objects with no faces, like curves, points.
             firstUvVertexCopy = len(vertList)
+            origActiveUVLayer = mesh.activeUVLayer
             for face in mesh.faces:
                 if face.verts == None: continue
                 # The face.uv reference in the next line WILL THROW
@@ -949,7 +966,10 @@ class JmeMesh(object):
                         # Writing the existing vert index to the map-map so
                         # that other faces using the same uv val of the same
                         # original index may re-use it.
-                    vertToUv[finalFaceVIndex] = face.uv[i]
+                    for layerName in texArrayLists.iterkeys():
+                        if layerName != None: mesh.activeUVLayer = layerName
+                        vertToLayerUv[layerName][finalFaceVIndex] = face.uv[i]
+            mesh.activeUVLayer = origActiveUVLayer
 
         if len(mesh.verts) != len(vertList):
             print (str(len(vertList) - len(mesh.verts)) + " verts added:  "
@@ -960,22 +980,9 @@ class JmeMesh(object):
             colArray = None
         else:
             colArray = []
-        # texArrayLists is a hash from LayerName (or None) to a coords list
-        if mesh.faceUV:
-            texArrayLists = {}
-            for nameList in texLayerNames:
-                for layerName in nameList:
-                    texArrayLists[layerName] = []
-                    # Just let duplicate keys overwrite
-        elif mesh.vertexUV:
-            texArrayLists = {}
-            texArrayLists[None] = []
-        else:
-            texArrayLists = None
         nonFacedVertexes = 0
         nonUvVertexes = 0
         self.blenderVertIndexes = []
-        origActiveUVLayer = mesh.activeUVLayer
         for v in vertList:
             if len(self.blenderVertIndexes) < len(mesh.verts):
                 # Remove this assertion after confirmed:
@@ -1019,16 +1026,14 @@ class JmeMesh(object):
                 texArrayLists[None].append(1. - (v.uvco.y * .5 + .5))
             elif mesh.faceUV: 
                 for layerName, texArray in texArrayLists.iteritems():
-                    if layerName != None: mesh.activeUVLayer = layerName
-                    if v.index in vertToUv:
-                        uvVert = vertToUv[v.index]
+                    if v.index in vertToLayerUv[layerName]:
+                        uvVert = vertToLayerUv[layerName][v.index]
                         texArray.append(uvVert.x)
                         texArray.append(1 - uvVert.y)
                     else:
                         nonUvVertexes += 1
                         texArray.append(-1)
                         texArray.append(-1)
-        mesh.activeUVLayer = origActiveUVLayer
         if nonFacedVertexes > 0:
             print ("WARNING: " + str(nonFacedVertexes)
                 + " vertexes set to WHITE because no face to derive color from")
@@ -1049,6 +1054,7 @@ class JmeMesh(object):
                 coordsTag.addAttr("data", texArrayLists[layerName], 6, 3)
                 texCoordsTag = _XmlTag("com.jme.scene.TexCoords", {"perVert":2})
                 texCoordsTag.addChild(coordsTag)
+                texCoordsTag.addComment("Blender UV Layer '" + layerName + "'")
                 texTag.addChild(texCoordsTag)
             tag.addChild(texTag)
         if colArray != None:
@@ -2468,9 +2474,14 @@ class JmeTexture(object):
         """Static method that returns a unique JmeTexture id.
         Input MTex must already have been validated."""
 
-        return (hash(mtex.tex.name) +  97 * mtex.size[0] + 89 * mtex.size[1]
-                + 83 * mtex.size[2] + 79 * mtex.ofs[0] + 73 * mtex.ofs[1]
-                + 71 * mtex.ofs[2] + 67 * mtex.texco + mtex.blendmode * 61)
+        uniqueStr = (str(mtex.tex.name) + "|" + str(mtex.size[0]) + "|"
+                + str(mtex.size[1]) + "|" + str(mtex.size[2]) + "|"
+                + str(mtex.ofs[0]) + "|" + str(mtex.ofs[1]) + "|"
+                + str(mtex.ofs[2]) + "|" + str(mtex.texco) + "|"
+                + str(mtex.blendmode) + "|" + str(mtex.uvlayer))
+
+        #print "idFor " + uniqueStr + " ==> " + str(hash(uniqueStr))
+        return hash(uniqueStr)
         # Remember that the mtex.tex.name takes care of all uniqueness for the
         # .tex.  We must be vigilant to add something unique for each direct
         # mtex attribute THAT MAY VARY.  We constrain most mtex values so that

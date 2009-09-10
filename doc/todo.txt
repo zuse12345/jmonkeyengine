@@ -2,6 +2,8 @@ $Id$
 
 TODO LIST
 
+Document how to "parent to a bone".
+
 Env. var FAVORJOINS has a bug in some cases.  I am thinking that the problem is
 that the the X-Rot axis-flip transform is being moved to the same level as an
 explicit transformation, and either one is clobbering the other, or the needed

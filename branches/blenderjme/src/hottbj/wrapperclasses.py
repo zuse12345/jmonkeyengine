@@ -186,6 +186,7 @@ class JmeNode(object):
         self.morphNode = False
         self.implClass = None
         self.postFlip = False
+        self.jmeMesh = None
         self.join = False  # Means to write one Mesh XML node a.o.t. Node+Mesh
         self.nodeType = JmeNode.TYPE_DEFAULT  # Default nodeType
 
@@ -249,10 +250,31 @@ class JmeNode(object):
         self.addChild(self.jmeMesh)
         #print "Instantiated JmeNode '" + self.getName() + "'"
 
-    def materialize(self, preferJoin=False, nodeTree=None):
+    def materialize(self, preferJoin, nodeTree):
         """Do not call until after 'nodeType' is definitively set.
         Materials from given bObj and direct data mesh (if any) will be added
         to one of the specified nodeTree's materials maps."""
+
+        # CRITICAL CONSTRAINTS WHICH MODIFICATIONS MUST SATISFY!!!
+        # * JmeMesh.jmeMats and JmeMesh.TextureStates are ALWAYS lists and
+        #   always get populated regardless of whether the data will be written
+        #   at the JmeNode level (because the data are needed for vertex
+        #   multiplexing).  The lists will have 0 elements if the Blender Obj
+        #   has no Materials.
+        # * An exception to the previous is if the mesh has 0 verts, in which
+        #   case jmeMesh will be None, in which case the JmeMode can only
+        #   write, directly, zero Materials or one OB Material.
+        # * jmeMesh.jmeMats ALWAYS contains an element for each Blender Mat
+        #   incl. Nones.
+        # * jmeMesh.jmeTextureStates contains an element for each Blender Mat
+        #   incl. Nones.  Non-None jmeTextureStates elements are > 0 element
+        #   lists of non-None textures.
+
+        # Since Blender has mashed together the Object and Mesh by having
+        # object.colbits specify how the Mesh's materials are to be
+        # interpreted, we must add the Mesh's materials and textures in the
+        # JmeNode class instead of in the JmeMesh class.
+
         # Here, we attempt to set either JmeNode.jmeMat and/or
         # JmeNode.jmeTextureState.  If for any reason we can not, then all mat
         # and tex data will be written to the JmeMesh(es).
@@ -261,53 +283,90 @@ class JmeNode(object):
         # If we detect any other Mat than that, all Mats and Texs will be saved
         # under the Mesh(es).
 
-        if self.wrappedObj == None: return
-        if nodeTree == None:
-            raise Exception("If instantiating a Blender-Object-wrapping Node, "
-                    + "param nodeTree must be set")
-        multiMats = False
-        nMesh = self.wrappedObj.getData()  # Legacy, not Wrapped Mesh
-        singleObjMat = None
-        if len(self.wrappedObj.getMaterials(1)) > 0:
-            matIndex = -1
-            for bMat in self.wrappedObj.getMaterials(1):
-                matIndex = matIndex + 1
-                if self.wrappedObj.colbits & (1<<matIndex) == 0: continue
-                 # Not an Obj Mat
-                if bMat == None:
-                    raise Exception(
-                            "Assertion failed.  Null obj mat #"
-                            + str(matIndex) + " even though colbit is on")
-                if singleObjMat != None:  # This makes 2 Obj mats!
-                    multiMats = True
-                    break
-                singleObjMat = bMat
-        if not multiMats and nMesh != None and len(nMesh.getMaterials(1)) > 0:
-            anyMeshMats = False
-            matIndex = -1
-            for bMat in nMesh.getMaterials(1):
-                matIndex = matIndex + 1
-                if self.wrappedObj.colbits & (1<<matIndex) != 0: continue
-                 # Not a Mesh Mat
-                if bMat == None:
-                    raise Exception(
-                            "Assertion failed.  Null mesh mat #"
-                            + str(matIndex) + " even though colbit is off")
-                if anyMeshMats or singleObjMat != None:
-                    multiMats = True
-                    break
-                if singleObjMat != None:
-                    singleObjMat = None
-                break
+        nMesh = self.wrappedObj.getData()  # NMesh object, not a Mesh!
+        legacyMesh = self.wrappedObj.getData(False, True)  # Mesh object
+        if nMesh == None: return   # Only Blender Mesh Objects have materials
+
+        # self.jmeMesh will be None here ONLY for zero-vert nMesh
+        twoSided = nMesh.mode & _meshModes['TWOSIDED']
+
+        ######################################################################
+        objMatList = self.wrappedObj.getMaterials(1)
+        meshMatList = nMesh.getMaterials(1)
+        matCount = len(objMatList)
+        if len(meshMatList) > matCount: matCount = len(meshMatList)
+        texStates = []
+        jmeMats = []
+        for matIndex in range(matCount):
+            # matIndex here is 0-based.  matIndexes displayed in the Blender
+            # inteface are 1-based.
+            matl = None
+            if self.wrappedObj.colbits & (1<<matIndex) == 0:
+                if matIndex < len(meshMatList): matl = meshMatList[matIndex]
+            else:
+                if matIndex < len(objMatList): matl = objMatList[matIndex]
+            jmeMatl = None
+            jmeTexs = []
+            if matl != None:
+                print "Attempting to add Mat " + matl.name
+                if not matl.mode & _matModes['TEXFACE']:
+                    try:
+                        jmeMatl = nodeTree.includeMat(matl, twoSided)
+                    except UnsupportedException, ue:
+                        print ("Skipping matl " + matl.getName()
+                                + " due to: " + str(ue))
+                        # Purposefully allow texture without supported matl
+                for j in matl.enabledTextures:
+                    # N.b. we export NO TRACE about disabled textures
+                    # matl.textures[] are MTex's, not Textures
+                    if matl.textures[j] == None: continue
+                     # Don't know if this is possible, but if so we ignore
+                    try:
+                        JmeTexture.supported(matl.textures[j])
+                        print "**** Adding Texture for Mat: " + matl.name
+                        # MTex's have no name to report
+                        jmeTexs.append(nodeTree.includeTex(
+                                matl.textures[j], legacyMesh.activeUVLayer))
+                    except UnsupportedException, ue:
+                        print ("Skipping texture " + matl.textures[j].getName()
+                                + " due to: " + str(ue))
+            # TODO:  Remove these debug statements once have mat indexes
+            # working.
+            if jmeMatl == None:
+                print "++++ Adding mat <None> for Obj " + self.getName()
+            else:
+                print("++++ Adding mat "
+                        + jmeMatl.blenderName + " for Obj " + self.getName())
+            # Both mats and texStates have 1 element per Blender mat, but each
+            # element may be None.
+            jmeMats.append(jmeMatl)
+            if len(jmeTexs) > 0:
+                texStates.append(nodeTree.includeJmeTextureList(jmeTexs))
+            else:
+                texStates.append(None)
+        if len(jmeMats) != len(texStates):
+            raise Exception("Assertion failed.  mats/texStates count mismatch: "
+                    + str(len(jmeMats)) + " vs. " + str(len(texStates)))
+        ######################################################################
 
         # nodeType validation and setting of 'join':
-        if self.morphNode and multiMats:
-            # It may be joined or not, but may not be multi-indexed
-            raise Exception("Blender Object '" + self.getName()
-                    + "' uses Material Indexing, but corresponds to a "
-                    + "morph Base which may not be multi-indexed")
+        if self.morphNode:
+            if len(jmeMats) > 1:
+                # It may be joined or not, but may not be multi-indexed
+                raise Exception("Blender Object '" + self.getName()
+                        + "' uses Material Indexing, but corresponds to a "
+                        + "morph Base which may not be multi-indexed")
+            if self.jmeMesh == None:
+                raise Exception("Blender Object '" + self.getName()
+                        + "' has 0 verts, but corresponds to a "
+                        + "morph Base which must have a non-trivial Mesh")
         if self.nodeType == JmeNode.TYPE_DEFAULT:
-            if multiMats:
+            if len(jmeMats) > 1:
+                if self.jmeMesh == None:
+                    raise Exception("Blender Object '" + self.getName()
+                            + "' uses Material Indexing, but has a 0-vert Mesh")
+                self.join = False
+            elif self.jmeMesh == None:
                 self.join = False
             else:
                 self.join = preferJoin
@@ -318,85 +377,29 @@ class JmeNode(object):
                             self.join = False
                             break
         else:  # TYPE_SKIN and TYPE_MORPHGEO must be simple 'join' Geometries
-            if multiMats:
+            if len(jmeMats) > 1:
                 raise Exception("Blender Object '" + self.getName()
                         + "' uses Material Indexing, but corresponds to a "
                         + "jME type which must be a single Geometry")
+            if self.jmeMesh == None:
+                raise Exception("Blender Object '" + self.getName()
+                        + "' has 0 verts, but corresponds to a Skin "
+                        + "or Morph Geo which must have a non-trivial Mesh")
             self.join = True
 
-        if self.join or multiMats: singleObjMat = None
-        twoSided = nMesh != None and (nMesh.mode & _meshModes['TWOSIDED'])
-        if singleObjMat != None:
-            if not singleObjMat.mode & _matModes['TEXFACE']:
-                try:
-                    self.jmeMat = nodeTree.includeMat(singleObjMat, twoSided)
-                except UnsupportedException, ue:
-                    print ("Skipping a texture of object " + self.name
-                            + " due to: " + str(ue))
-            objTexs = []
-            for j in singleObjMat.enabledTextures:
-                try:
-                    JmeTexture.supported(singleObjMat.textures[j])
-                    objTexs.append(nodeTree.includeTex(singleObjMat.textures[j]))
-                except UnsupportedException, ue:
-                    print ("Skipping a texture of object " + self.name
-                            + " due to: " + str(ue))
-            if len(objTexs) > 0:
-                self.jmeTextureState = nodeTree.includeJmeTextureList(objTexs)
-
-        if nMesh == None or len(nMesh.verts) == 0: return
-         # An unused Blender "EmptyMesh" will have 0 verts.
-         # This is useful for our Material inheritance feature
-        if singleObjMat != None: return  # Mats & Textures already handled
-        # For all other cases, we write all mat and tex data under Mesh(es)
-
-        # Since Blender has mashed together the Object and Mesh by having
-        # object.colbits specify how the Mesh's materials are to be
-        # interpreted, we must add the Mesh's materials and textures here.
-        meshTexStates = []
-        meshMats = []
-        matIndex = -1
-        while True:
-            matIndex = matIndex + 1
-            if self.wrappedObj.colbits & (1<<matIndex) == 0:
-                if matIndex >= len(nMesh.getMaterials(1)): break
-                matl = nMesh.getMaterials(1)[matIndex]
-            else:
-                if matIndex >= len(self.wrappedObj.getMaterials(1)): break
-                matl = self.wrappedObj.getMaterials(1)[matIndex]
-            if matl == None: break  # Indicates past end of colbits list
-            newMatl = None
-            newTexs = []
-            try:
-                #print "Adding Mesh Mat " + matl.name
-                if not matl.mode & _matModes['TEXFACE']:
-                    try:
-                        newMatl = nodeTree.includeMat(matl, twoSided)
-                    except UnsupportedException, ue:
-                        print ("Skipping matl " + matl.getName()
-                                + " due to: " + str(ue))
-                        # Purposefully allow texture without supported matl
-                for j in matl.enabledTextures:
-                    try:
-                        #print "**** Adding Texture for Mat: " + nMesh.materials[i].name
-                        JmeTexture.supported(matl.textures[j])
-                        newTexs.append(nodeTree.includeTex(matl.textures[j]))
-                    except UnsupportedException, ue:
-                        print ("Skipping texture " + matl.textures[j].getName()
-                                + " due to: " + str(ue))
-            finally:
-                # TODO:  Remove these debug statements once have mat indexes
-                # working.
-                if newMatl == None:
-                    print "++++ Adding mat <None> for Obj " + self.getName()
-                else:
-                    print "++++ Adding mat " + newMatl.blenderName + " for Obj " + self.getName()
-                meshMats.append(newMatl)  # 1 for each matl index.  May be null.
-                 # Will be null if mat unsupported.  Need this for mat inds.
-                meshTexStates.append(nodeTree.includeJmeTextureList(newTexs))
-                # TODO:  Need mat-index-specific texture lists
-        if len(meshMats) > 0: self.jmeMesh.jmeMats = meshMats
-        if len(meshTexStates) > 0: self.jmeMesh.jmeTextureStates = meshTexStates
+        if self.jmeMesh != None and len(jmeMats) == 0:
+            self.jmeMesh.skipMats = True
+        elif len(jmeMats) == 1 and jmeMats[0] == None and texStates[0] == None:
+            if self.jmeMesh != None: self.jmeMesh.skipMats = True
+        elif (not self.join and len(jmeMats) == 1
+                and self.wrappedObj.colbits & (1<<matIndex) != 0):
+            # Write the single Mat and/or Tex to the JmeNode directly
+            if self.jmeMesh != None: self.jmeMesh.skipMats = True
+            self.jmeMat = jmeMats[0]
+            self.jmeTextureState = texStates[0]
+        if self.jmeMesh != None:
+            self.jmeMesh.jmeMats = jmeMats
+            self.jmeMesh.jmeTextureStates = texStates
 
     def addChild(self, child):
         if self.children == None: self.children = []
@@ -498,16 +501,28 @@ class JmeNode(object):
                     if mtmTag == None:
                         # Case 1: Obj Child is NORMAL MESH
                         if self.join:
+                            if len(self.jmeMesh.jmeMats) > 1:
+                                raise Exception("Assertion failed:  "
+                                        + "'join' mode when multiMats True")
+                            child.writePrep()
                             child.populateXml(tag, autoRotate)
                             if self.implClass != None: tag.name = self.implClass
                         else:
-                            meshTag = _XmlTag('dummy')
-                            childrenTag.addChild(meshTag)
-                            child.populateXml(meshTag, autoRotate)
+                            child.writePrep()
+                            matIndexes = len(child.jmeMats)
+                            if matIndexes == 0: matIndexes = 1
+                            for matIndex in range(matIndexes):
+                                meshTag = _XmlTag('dummy')
+                                childrenTag.addChild(meshTag)
+                                child.populateXml(meshTag, autoRotate, matIndex)
                     else:
                         # Case 2: Obj Child is MORPH BASE
+                        if len(self.jmeMesh.jmeMats) > 1:
+                            raise Exception("Assertion failed:  "
+                                    + "Morphing does not support multiMats")
                         meshTag = _XmlTag("dummy")
                         mtmTag.addChild(meshTag)
+                        child.writePrep()
                         child.populateXml(meshTag, autoRotate)
                         meshTag.addAttr("class", meshTag.name)
                         meshTag.name = "baseMorph"  # overwrite
@@ -671,9 +686,6 @@ class JmeNode(object):
         if bMesh.texMesh != None:
             print "Texture coords by Mesh-ref"
             return 0
-        if bMesh.faceUV and bMesh.vertexUV:
-            print "Mesh contains both sticky and per-face texture coords"
-            return 0
         vpf = JmeMesh.vertsPerFace(bMesh.faces)
         if vpf == None:
             raise Exception(
@@ -704,7 +716,10 @@ class JmeNode(object):
 
 
 class JmeMesh(object):
-    __slots__ = ('blenderMesh', 'jmeMats', 'jmeTextureStates',
+    __slots__ = ('blenderMesh', 'jmeMats', 'jmeTextureStates', '__writePrepped',
+            '__vertToColor', '__vertList', '__meshcp',
+            '__faceVertToNewVert', '__unify', '__meshType', 'skipMats',
+            '__vertMatIndexList', '__texArrayLists',
             '__vpf', 'defaultColor', 'name', 'blenderVertIndexes')
     # defaultColor corresponds to jME's Meshs' defaultColor.
     # In Blender this is a per-Object, not per-Mesh setting.
@@ -728,118 +743,74 @@ class JmeMesh(object):
         #print "Instantiated JmeMesh '" + self.getName() + "'"
         self.__vpf = JmeMesh.vertsPerFace(self.blenderMesh.faces)
         self.blenderVertIndexes = None
+        self.__vertToColor = None
+        self.__vertList = None
+        self.__meshcp = None
+        self.__faceVertToNewVert = None
+        self.__unify = None
+        self.__meshType = None
+        self.__vertMatIndexList = None
+        self.__texArrayLists = None
+        self.skipMats = False
 
     def getName(self): return self.name
 
-    def populateXml(self, tag, autoRotate):
-        if self.blenderMesh.verts == None:
-            raise Exception("Mesh '" + self.getName() + "' has None vertexes")
+    def writePrep(self):
+        self.__writePrepped = True
+        if self.blenderMesh.verts == None or len(self.blenderMesh.verts) < 1:
+            raise Exception("Mesh '" + self.getName()
+            + "' has no vertexes.  No JmeMesh should have been instantiated")
 
-        # To shortcut processing when we can, set jmeMats and jmeTextureStates
-        # to None if the corresponding list contains no non-None elements.
-        if self.jmeMats != None:
-            noMats = True
-            for m in self.jmeMats:
-                if m != None:
-                    noMats = False
-                    break
-            if noMats: self.jmeMats = None
-        if self.jmeTextureStates != None:
-            noTexs = True
-            for ts in self.jmeTextureStates:
-                if ts != None:
-                    noTexs = False
-                    break
-            if noTexs: self.jmeTextureStates = None
-
-        matIndex = 0 # TODO:  This setting is TEMPORARY.
-        if ((self.jmeMats != None and len(self.jmeMats) > 1)
-        or (self.jmeTextureStates != None and len(self.jmeTextureStates) > 1)):
-            raise Exception("Sorry.  Multiple material indexing implementation is not yet completed")
-        # Within a few revisions, this class should handle matIndexes > 0.
-
-
-        mesh = self.blenderMesh.copy()
+        self.__meshcp = self.blenderMesh.copy()
         # This does do a deep copy! (like we need)
         # Note that the last param here doesn't calculate norms anew, it just
         # transforms them along with vertexes, which is just what we want.
-        print ("TODO WARNING:  JmeMesh should constrain 'unify' to '3' "
+        print ("TODO WARNING:  JmeMesh should constrain '__unify' to '3' "
             + "if the corresponding JmeNode is morphNode or MORPHGEO or SKIN")
-        unify = 3 in self.__vpf and 4 in self.__vpf
-        if 4 in self.__vpf and not unify:
-            meshType = 'Quad'
+        self.__unify = 3 in self.__vpf and 4 in self.__vpf
+        if 4 in self.__vpf and not self.__unify:
+            self.__meshType = 'Quad'
         else:
-            meshType = 'Tri'
+            self.__meshType = 'Tri'
         # TODO:  When iterate through verts to get vert vectors + normals,
         #        do check for None normal and throw if so:
         #   raise Exception("Mesh '"
         #       + self.blenderMesh.name + "' has a vector with no normal")
         #   This is a Blender convention, not a 3D or JME convention
         #   (requirement for normals).
-        tag.name = 'com.jme.scene.' + meshType + 'Mesh'
-        if tag.getAttr("name") == None: tag.addAttr("name", self.getName())
-        colorTag = None  # so we can tell later on whether we wrote it
-        if (self.defaultColor != None and
-            (self.defaultColor[0] != 1 or self.defaultColor[1] != 1
-                or self.defaultColor[2] != 1 or self.defaultColor[3] != 1)):
-            colorTag = _XmlTag("defaultColor")
-            tag.addChild(colorTag)
-            colorTag.addAttr("r", self.defaultColor[0])
-            colorTag.addAttr("g", self.defaultColor[1])
-            colorTag.addAttr("b", self.defaultColor[2])
-            colorTag.addAttr("a", self.defaultColor[3])
-
-        if mesh.faceUV:
-            texLayerNames = []  # A list of lists.  One list for each mat index
-        else:
-            texLayerNames = None
-        if self.jmeMats == None and self.jmeTextureStates == None:
-            # Tough call here.
-            # Since default object coloring and vertex coloring are useless
-            # with jME lighting enabled, we are disabling lighting if either
-            # of these are in use with NO MATERIAL for the Mesh itself.
-            # N.b. this may clobber cases where the user depends on material
-            # enheritance.  Doing it this way by default because the Blender
-            # Gui and renderer do not support material inheritance (though the
-            # brand new rendering nodes in v. 2.49 may), so we set the default
-            # behavior to what will work for most Blender users.  We should
-            # provide an exporter switch for users who want to take advantage
-            # of inheritance.
-            if colorTag != None or mesh.vertexColors:
-                tag.addAttr("lightCombineMode", "Off")
-        else:
-            rsTag = _XmlTag('renderStateList')
-            tag.addChild(rsTag)
-            if self.jmeMats != None:
-                if len(self.jmeMats) > matIndex and self.jmeMats[matIndex] != None:
-                    rsTag.addChild(self.jmeMats[matIndex].getXmlEl())
-            if self.jmeTextureStates != None:
-                if len(self.jmeTextureStates) > matIndex and self.jmeTextureStates[matIndex] != None:
-                    rsTag.addChild(self.jmeTextureStates[matIndex].getXmlEl())
-                    names = []
-                    texLayerNames.append(names)
-                    for jmeTex in self.jmeTextureStates[matIndex].jmeTextures:
-                        names.append(jmeTex.uvLayerName)
 
         # Make a copy so we can easily add verts like a normal Python list
-        vertList = []
-        vertList += mesh.verts
-        vertToColor = None
-        vertToLayerUv = None
-        faceVertToNewVert = [] # Direct replacement for face[].verts[].index
-         # 2-dim array. Only necessary (and only changed) if using vertexColors.
-         # Note that though faceVertToNewVert face count and vert count always
-         # exactly matches the source mesh.faces.  We just change the
+        self.__vertList = []
+        self.__vertList += self.__meshcp.verts
+        if self.__meshcp.vertexColors or self.__meshcp.faceUV:
+            self.__vertMatIndexList = [None]*len(self.__vertList)
+        else:
+            self.__vertMatIndexList = [0]*len(self.__vertList)
+         # Exactly parallels vertList
+        self.__faceVertToNewVert = [] # Direct replacement for face[].verts[].index
+         # 2-dim array.
+         # Note that self.__faceVertToNewVert face count and vert count always exactly
+         # matches the source mesh.faces in the keys.  We just change the
          # destination indexes.
-        if mesh.vertexColors:
-            vertToColor = {} # Simple modifiedVertIndex -> Color Hash
+         # The vals are absolute indexes into our enlarged vertList and are
+         # totally ignorant about material indexing.
+         # The populateXml() method needs to add a layer to map from this
+         # absolute indexing to matIndex-specific indexing.
+        if self.__meshcp.vertexColors:
+            self.__vertToColor = {} # Simple modifiedVertIndex -> Color Hash
             #  Temp vars only used in this block:
-            origIndColors = {}
+            if len(self.jmeMats) < 1:  # Can have vert colors with 0 mats
+                origIndColors = [{}]
+            else:
+                origIndColors = []
+                for jts in self.jmeMats: origIndColors.append({})
+            # origIndColors will be indexed by matIndex
             # Nested dict. from OrigIndex -> Color -> NewIndex
 
             # TODO:  Test for objects with no faces, like curves, points.
-            for face in mesh.faces:
+            for face in self.__meshcp.faces:
                 if face.verts == None: continue
+                matIndex = face.mat
                 # The face.col reference in the next line WILL THROW
                 # if the mesh does not support vert colors
                 # (i.e. mesh.vertexColors).
@@ -848,28 +819,33 @@ class JmeMesh(object):
                     "Counts of Face vertexes and vertex-colors do not match: "
                         + str(len(face.verts)) + " vs. " + str(len(face.col)))
                 if len(face.verts) < 1: continue
-                faceVertToNewVert.append([])
+                self.__faceVertToNewVert.append([])
                 for i in range(len(face.verts)):
+                    finalFaceVIndex = None
+                     # Setting to None to verify that we always set this below.
+                     # Otherwise we could obliviously re-use the previous value.
                     colKey = (str(face.col[i].r)
                             + "|" + str(face.col[i].g)
                             + "|" + str(face.col[i].b)
                             + "|" + str(face.col[i].a))
                     # Generate key from Color since equality is not implemented
                     # properly for MCols.  I.e. "in" tests fail, etc.
-                    if face.verts[i].index in origIndColors:
+                    if face.verts[i].index in origIndColors[matIndex]:
                         #print ("Checking for " + colKey + " in "
                                 #+ str(origIndColors[face.verts[i].index]))
-                        if colKey in origIndColors[face.verts[i].index]:
+                        if colKey in origIndColors[matIndex][face.verts[i].index]:
                             #print ("Agreement upon color " + colKey
                                     #+ " for 2 face verts")
                             finalFaceVIndex = \
-                              origIndColors[face.verts[i].index][colKey]
+                              origIndColors[matIndex][face.verts[i].index][colKey]
                         else:
                             # CREATE NEW VERT COPY!!
-                            finalFaceVIndex = len(vertList)
-                            vertList.append(UpdatableMVert(face.verts[i],
-                                    finalFaceVIndex, mesh))
-                            origIndColors[face.verts[i].index][colKey] =\
+                            finalFaceVIndex = len(self.__vertList)
+                            self.__vertList.append(UpdatableMVert(face.verts[i],
+                                    finalFaceVIndex, self.__meshcp))
+                            self.__vertMatIndexList.append(None)
+                             # self.__vertMatIndexList size must equals vertList size
+                            origIndColors[matIndex][face.verts[i].index][colKey] =\
                                     finalFaceVIndex
                             # Writing the new vert index to the map-map so that
                             # other faces using the same color of the same
@@ -877,48 +853,75 @@ class JmeMesh(object):
                     else:
                         # Only use of vertex (so far), so just save orig index
                         finalFaceVIndex = face.verts[i].index
-                        origIndColors[face.verts[i].index] = \
+                        origIndColors[matIndex][face.verts[i].index] = \
                                 { colKey:finalFaceVIndex }
                         # Writing the existing vert index to the map-map so
                         # that other faces using the same color of the same
                         # original index may re-use it.
-                    vertToColor[finalFaceVIndex] = face.col[i]
-                    faceVertToNewVert[-1].append(finalFaceVIndex)
+                    if finalFaceVIndex == None:
+                        raise Exception(
+                            "Internal problem.  Failed to set finalFaceVIndex")
+                    self.__vertToColor[finalFaceVIndex] = face.col[i]
+                    self.__faceVertToNewVert[-1].append(finalFaceVIndex)
+                    # TODO:  Remove the following assertion once verified:
+                    oldVal = self.__vertMatIndexList[finalFaceVIndex]
+                    if oldVal != None and oldVal != matIndex:
+                        raise Exception("matIndex mismatch.  Expect "
+                                + str(matIndex) + " but it was " + str(oldVal))
+                    self.__vertMatIndexList[finalFaceVIndex] = matIndex
+            # TODO:  Remove the following assertion once verified:
+            if len(self.__vertList) != len(self.__vertMatIndexList):
+                raise Exception("vert list maintenance problem.  vertList size "
+                        + str(len(self.__vertList)) + " yet vertMatIndexList size is "
+                        + str(len(self.__vertMatIndexList)))
+            for v in self.__vertMatIndexList:
+                if v == None: raise Exception("vertMatIndex has a None element")
+
         else:
-            for face in mesh.faces:
+            for face in self.__meshcp.faces:
                 if face.verts == None or len(face.verts) < 1: continue
-                faceVertToNewVert.append([])
+                self.__faceVertToNewVert.append([])
                 for i in range(len(face.verts)):
-                    faceVertToNewVert[-1].append(face.verts[i].index)
-        # texArrayLists is a hash from LayerName (or None) to a coords list
-        if mesh.faceUV:
-            texArrayLists = {}
-            for nameList in texLayerNames:
-                for layerName in nameList:
-                    texArrayLists[layerName] = []
-                    # Just let duplicate keys overwrite
-        elif mesh.vertexUV:
-            texArrayLists = {}
-            texArrayLists[None] = []
-        else:
-            texArrayLists = None
-        # At this point, faceVertToNewVert[][]  contains references to every
-        # vertex, both original and new copies.  For shared vertexes, there
-        # will be multiple faceVertToNewVert[][] elements pointing to the
+                    self.__faceVertToNewVert[-1].append(face.verts[i].index)
+        # texArrayLists is a hash from layer name to a coords list.
+        # This includes ALL layers, referenced or unreferenced, UV (incl. None)
+        # + Sticky (if present).
+        self.__texArrayLists = {}
+        if self.__meshcp.vertexUV: self.__texArrayLists["_BLENDERSTICKY_"] = []
+        for layerName in self.__meshcp.getUVLayerNames():
+            self.__texArrayLists[layerName] = []
+        # At this point, self.__faceVertToNewVert[][]  contains references to
+        # every vertex, both original and new copies.  For shared vertexes, there
+        # will be multiple self.__faceVertToNewVert[][] elements pointing to the
         # same vertex, but there will be no vertexes orphaned by faceVert...
-        if mesh.faceUV:
+        # Below, we will change the values according to uv maps, but the length
+        # and keys of the list are final now.
+        vertToLayerUv = None
+        if self.__meshcp.faceUV:
             vertToLayerUv = {}
             # vertToLayerUv[layerName][modifiedVertIndex] -> [u,v] Vector
-            for layerName in texArrayLists.iterkeys(): vertToLayerUv[layerName] = {}
+            for layerName in self.__texArrayLists.iterkeys():
+                if layerName != "_BLENDERSTICKY_":
+                    # _BLENDERSTICKY_ is NOT a UV layer
+                    vertToLayerUv[layerName] = {}
             #  Temp vars only used in this block:
-            origIndUvs = {}
+            origIndUvs = []
+            if len(self.jmeMats) < 1:  # Can export unused uv "coords" map
+                origIndUvs = [{}]
+            else:
+                for jts in self.jmeMats: origIndUvs.append({})
+            # May have unused element for the Sticky Layer, but who gives a
+            # damned.  Better to keep all these array precisely parallel.
+            # In this case we must, since we will index this with matIndex.
             # Nested dict. from OrigIndex -> "u|v" -> NewIndex
 
             # TODO:  Test for objects with no faces, like curves, points.
-            firstUvVertexCopy = len(vertList)
-            origActiveUVLayer = mesh.activeUVLayer
-            for face in mesh.faces:
-                if face.verts == None: continue
+            firstUvVertexCopy = len(self.__vertList)
+            origActiveUVLayer = self.__meshcp.activeUVLayer
+            for face in self.__meshcp.faces:
+                if face.verts == None: continue  # Probably never happen
+                matIndex = face.mat
+                print "matIndex = " + str(matIndex)
                 # The face.uv reference in the next line WILL THROW
                 # if the mesh does not support uv values
                 # (i.e. mesh.faceUV).
@@ -927,64 +930,148 @@ class JmeMesh(object):
                     "Counts of Face vertexes and uv-values do not match: "
                         + str(len(face.verts)) + " vs. " + str(len(face.uv)))
                 for i in range(len(face.verts)):
-                    uvKey = str(face.uv[i].x) + "|" + str(face.uv[i].y)
+                    uvKey = ""
+                    for layerName in vertToLayerUv.iterkeys():
+                        # Would be better to iterate over a list, since sets
+                        # in Python are not guaranteed to preserve sequence,
+                        # but since the iteration here will always be over an
+                        # unmodified set, the sequence will remain the same.
+                        # Note that this list already excludes _BLENDERSTICKY_.
+                        self.__meshcp.activeUVLayer = layerName
+                        uvKey += (str(layerName) + "|" + str(face.uv[i].x)
+                                + "|" + str(face.uv[i].y) + ";")
                     # Compound key to prevent need for nested or 2-dim hash
                     # N.b. we generate the uvKey from the original face data,
                     # since nothing above this level gets changed.
-                    vertIndex = faceVertToNewVert[face.index][i]
-                    if vertIndex in origIndUvs:
-                        if uvKey in origIndUvs[vertIndex]:
+                    vertIndex = self.__faceVertToNewVert[face.index][i]
+                    if vertIndex in origIndUvs[matIndex]:
+                        if uvKey in origIndUvs[matIndex][vertIndex]:
                             #print ("Agreement upon uv " + uvKey
                                     #+ " for 2 face verts")
-                            finalFaceVIndex = origIndUvs[vertIndex][uvKey]
+                            finalFaceVIndex = origIndUvs[matIndex][vertIndex][uvKey]
                         else:
                             # CREATE NEW VERT COPY!!
-                            finalFaceVIndex = len(vertList)
-                            vertList.append(UpdatableMVert(
-                                vertList[vertIndex], finalFaceVIndex, mesh))
-                            origIndUvs[vertIndex][uvKey] = finalFaceVIndex
+                            finalFaceVIndex = len(self.__vertList)
+                            self.__vertList.append(UpdatableMVert(
+                                self.__vertList[vertIndex], finalFaceVIndex, self.__meshcp))
+                            self.__vertMatIndexList.append(None)
+                             # self.__vertMatIndexList size must equals vertList size
+                            origIndUvs[matIndex][vertIndex][uvKey] = finalFaceVIndex
                             # Writing the new vert index to the map-map so that
                             # other faces using the same uv val of the same
                             # original index may re-use it (preceding if block)
-                            if vertToColor != None:
-                                # Must make a vertToColor mapping for any
+                            if self.__vertToColor != None:
+                                # Must make a self.__vertToColor mapping for any
                                 # new vert.
-                                if vertList[-1].origIndex in vertToColor:
-                                    vertToColor[finalFaceVIndex] =  \
-                                            vertToColor[vertList[-1].origIndex]
+                                if self.__vertList[-1].origIndex in self.__vertToColor:
+                                    self.__vertToColor[finalFaceVIndex] =  \
+                                            self.__vertToColor[self.__vertList[-1].origIndex]
                                 else:
                                     print ("WARNING:  Original vert "
-                                        + str(vertList[-1].origIndex)
+                                        + str(self.__vertList[-1].origIndex)
                                         + " which was dupped for faceUV, was "
                                         + "assigned no vertex color")
-                        faceVertToNewVert[face.index][i] = finalFaceVIndex
-                        # Overwriting faceVertToNewVert from vertIndex
+                        self.__faceVertToNewVert[face.index][i] = finalFaceVIndex
+                        # Overwriting self.__faceVertToNewVert from vertIndex
                     else:
                         # Only use of vertex (so far), so just save orig index
                         finalFaceVIndex = vertIndex
-                        origIndUvs[vertIndex]= { uvKey:finalFaceVIndex }
+                        origIndUvs[matIndex][vertIndex]= { uvKey:finalFaceVIndex }
                         # Writing the existing vert index to the map-map so
                         # that other faces using the same uv val of the same
                         # original index may re-use it.
-                    for layerName in texArrayLists.iterkeys():
-                        if layerName != None: mesh.activeUVLayer = layerName
+                    for layerName in vertToLayerUv.iterkeys():
+                        self.__meshcp.activeUVLayer = layerName
                         vertToLayerUv[layerName][finalFaceVIndex] = face.uv[i]
-            mesh.activeUVLayer = origActiveUVLayer
+                    # TODO:  Remove the following assertion once verified:
+                    oldVal = self.__vertMatIndexList[finalFaceVIndex]
+                    if oldVal != None and oldVal != matIndex:
+                        raise Exception("matIndex mismatch.  Expect "
+                                + str(matIndex) + " but it was " + str(oldVal))
+                    self.__vertMatIndexList[finalFaceVIndex] = matIndex
+            # TODO:  Remove the following assertion once verified:
+            if len(self.__vertList) != len(self.__vertMatIndexList):
+                raise Exception("vert list maintenance problem.  vertList size "
+                        + str(len(self.__vertList))
+                        + " yet vertMatIndexList size is "
+                        + str(len(self.__vertMatIndexList)))
+            for v in self.__vertMatIndexList:
+                if v == None: raise Exception("vertMatIndex has a None element")
+            self.__meshcp.activeUVLayer = origActiveUVLayer
 
-        if len(mesh.verts) != len(vertList):
-            print (str(len(vertList) - len(mesh.verts)) + " verts added:  "
-                    + str(len(mesh.verts)) + " -> " + str(len(vertList)))
+        # TODO:  Remove this validation once confident it is always true.
+        for i in range(len(self.__faceVertToNewVert)):
+            zerothMatIndex = self.__vertMatIndexList[self.__faceVertToNewVert[i][0]]
+            for j in range(len(self.__faceVertToNewVert[i]) - 1):
+                if (zerothMatIndex !=
+                    self.__vertMatIndexList[self.__faceVertToNewVert[i][j+1]]):
+                    raise Exception("Mat Indexing corruption occurred.  "
+                     + "Face #" + i + " has verts with differing mat indexes: "
+                     + str(zerothMatIndex) + " vs. "
+                     + str(self.__vertMatIndexList[self.__faceVertToNewVert[i][j+1]]))
+
+        if len(self.__meshcp.verts) != len(self.__vertList):
+            print (str(len(self.__vertList) - len(self.__meshcp.verts))
+                    + " verts added:  " + str(len(self.__meshcp.verts))
+                    + " -> " + str(len(self.__vertList)))
+
+        nonUvVertexes = 0
+        for v in self.__vertList:
+            # POPULATE LAYERS, which will be exported as "coords" lists.
+            # Blender treats +v as up.  That makes sense with gui programming,
+            # but the "v" of "uv" goes + down, so we have to correct this.
+            # (u,v) = (0,0) = TOP LEFT.
+            # This is why both v values are saved as 1 - y.
+            for layerName, texArray in self.__texArrayLists.iteritems():
+                if layerName == "_BLENDERSTICKY_":
+                    if not self.__meshcp.vertexUV:
+                        raise Exception("Conflicting indications of Stickiness")
+                    # Populate texArrayList["_BLENDERSTICKY_"]
+                    # For unknown reason, Blender's Sticky uv vert creation sets
+                    # values to (-1 to 1) range instead of proper (0-1) range.
+                    texArray.append(v.uvco.x * .5 + .5)
+                    texArray.append(1. - (v.uvco.y * .5 + .5))
+                else:
+                    if not self.__meshcp.faceUV: 
+                        raise Exception("Conflicting indications of UVness")
+                    if vertToLayerUv == None or layerName not in vertToLayerUv:
+                        raise Exception("Failed to collect some UV data")
+                    if v.index in vertToLayerUv[layerName]:
+                        uvVert = vertToLayerUv[layerName][v.index]
+                        texArray.append(uvVert.x)
+                        texArray.append(1 - uvVert.y)
+                    else:
+                        nonUvVertexes += 1
+                        texArray.append(-1)
+                        texArray.append(-1)
+        if nonUvVertexes > 0:
+            print ("WARNING: " + str(nonUvVertexes)
+                + " uv vals set to (-1,-1) because no face to derive uv from")
+
+    def populateXml(self, tag, autoRotate, mi=0):
+        if not self.__writePrepped:
+            raise Exception(
+                    "Bad State.  populateXml called before writePrep")
+
         coArray = []
         noArray = []
-        if vertToColor == None:
+        if self.__vertToColor == None:
             colArray = None
         else:
             colArray = []
         nonFacedVertexes = 0
-        nonUvVertexes = 0
         self.blenderVertIndexes = []
-        for v in vertList:
-            if len(self.blenderVertIndexes) < len(mesh.verts):
+        # blenderVertIndexes is used by Skins even though we update it in this
+        # mi-specific method.  That's ok, since multi-index is prohibited for
+        # skins.
+        absToMiSpecificIndex = {}
+         # Maps from indexes in vertList to seq. of blenderVertIndexes (which
+         #  is in step with coArray/noArray/etc. % 3).
+        for vIndex in range(len(self.__vertList)):
+            v = self.__vertList[vIndex]
+            if self.__vertMatIndexList[vIndex] != mi: continue
+            absToMiSpecificIndex[vIndex] = len(self.blenderVertIndexes)
+            if vIndex < len(self.__meshcp.verts):
                 # Remove this assertion after confirmed:
                 # ARRRG.  Can't determine absolute class name for NMVert!!
                 self.blenderVertIndexes.append(v.index)
@@ -1009,37 +1096,53 @@ class JmeMesh(object):
             else:
                 noArray.append(v.no.y)
                 noArray.append(v.no.z)
-            # Blender treats +v as up.  That makes sense with gui programming,
-            # but the "v" of "uv" goes + down, so we have to correct this.
-            # (u,v) = (0,0) = TOP LEFT.
-            # This is why both v values are saved as 1 - y.
             if colArray != None:
-                if v.index in vertToColor:
-                    colArray.append(vertToColor[v.index])
+                if v.index in self.__vertToColor:
+                    colArray.append(self.__vertToColor[v.index])
                 else:
                     nonFacedVertexes += 1
                     colArray.append(None)  # We signify WHITE by None
-            if mesh.vertexUV: 
-                # For unknown reason, Blender's Sticky uv vert creation sets
-                # values to (-1 to 1) range instead of proper (0 to 1) range.
-                texArrayLists[None].append(v.uvco.x * .5 + .5)
-                texArrayLists[None].append(1. - (v.uvco.y * .5 + .5))
-            elif mesh.faceUV: 
-                for layerName, texArray in texArrayLists.iteritems():
-                    if v.index in vertToLayerUv[layerName]:
-                        uvVert = vertToLayerUv[layerName][v.index]
-                        texArray.append(uvVert.x)
-                        texArray.append(1 - uvVert.y)
-                    else:
-                        nonUvVertexes += 1
-                        texArray.append(-1)
-                        texArray.append(-1)
         if nonFacedVertexes > 0:
             print ("WARNING: " + str(nonFacedVertexes)
                 + " vertexes set to WHITE because no face to derive color from")
-        if nonUvVertexes > 0:
-            print ("WARNING: " + str(nonUvVertexes)
-                + " uv vals set to (-1,-1) because no face to derive uv from")
+
+        tag.name = 'com.jme.scene.' + self.__meshType + 'Mesh'
+        if tag.getAttr("name") == None: tag.addAttr("name", self.getName())
+        # TODO:  Distinguish name attr with 'mi' somehow
+        colorTag = None  # so we can tell later on whether we wrote it
+        if (self.defaultColor != None and
+            (self.defaultColor[0] != 1 or self.defaultColor[1] != 1
+                or self.defaultColor[2] != 1 or self.defaultColor[3] != 1)):
+            colorTag = _XmlTag("defaultColor")
+            tag.addChild(colorTag)
+            colorTag.addAttr("r", self.defaultColor[0])
+            colorTag.addAttr("g", self.defaultColor[1])
+            colorTag.addAttr("b", self.defaultColor[2])
+            colorTag.addAttr("a", self.defaultColor[3])
+
+        if ((len(self.jmeMats) < 1 or
+                (self.jmeTextureStates[mi] == None and self.jmeMats[mi] == None)
+                 ) and (colorTag != None or self.__meshcp.vertexColors)):
+            # Tough call here.
+            # Since default object coloring and vertex coloring are useless
+            # with jME lighting enabled, we are disabling lighting if either
+            # of these are in use with NO MATERIAL for the Mesh itself.
+            # N.b. this may clobber cases where the user depends on material
+            # enheritance.  Doing it this way by default because the Blender
+            # Gui and renderer do not support material inheritance (though the
+            # brand new rendering nodes in v. 2.49 may), so we set the default
+            # behavior to what will work for most Blender users.  We should
+            # provide an exporter switch for users who want to take advantage
+            # of inheritance.
+            tag.addAttr("lightCombineMode", "Off")
+        if not self.skipMats and (
+            self.jmeTextureStates[mi] != None or self.jmeMats[mi] != None):
+                rsTag = _XmlTag('renderStateList')
+                tag.addChild(rsTag)
+                if self.jmeMats[mi] != None:
+                    rsTag.addChild(self.jmeMats[mi].getXmlEl())
+                if self.jmeTextureStates[mi] != None:
+                    rsTag.addChild(self.jmeTextureStates[mi].getXmlEl())
 
         vertTag = _XmlTag("vertBuf")
         vertTag.addAttr("data", coArray, 6, 3)
@@ -1047,11 +1150,30 @@ class JmeMesh(object):
         normTag = _XmlTag("normBuf")
         normTag.addAttr("data", noArray, 6, 3)
         tag.addChild(normTag)
-        if texArrayLists != None:
+        if len(self.__texArrayLists) > 0:
+            writtenLayers = set()
             texTag = _XmlTag("texBuf")
-            for layerName in texLayerNames[matIndex]:
+            print "ln = " + str(len(self.jmeTextureStates))
+            print "mi = " + str(mi)
+            if (mi < len(self.jmeTextureStates)
+                    and self.jmeTextureStates[mi] != None):
+                for tex in self.jmeTextureStates[mi].jmeTextures:
+                    writtenLayers.add(tex.layerName)
+                    coordsTag = _XmlTag("coords")
+                    coordsTag.addAttr("data",
+                            self.__texArrayLists[tex.layerName], 6, 3)
+                    texCoordsTag = _XmlTag("com.jme.scene.TexCoords",
+                            {"perVert":2})
+                    texCoordsTag.addChild(coordsTag)
+                    texCoordsTag.addComment(
+                            "Blender UV Layer '" + tex.layerName + "'")
+                    texTag.addChild(texCoordsTag)
+            # If we have SPLIT a Blender Mesh into multiple jME Geos, I don't
+            # think we want to duplicate every uv layer to every jME Geo. ?
+            for layerName, arrayList in self.__texArrayLists.iteritems():
+                if layerName in writtenLayers: continue
                 coordsTag = _XmlTag("coords")
-                coordsTag.addAttr("data", texArrayLists[layerName], 6, 3)
+                coordsTag.addAttr("data", arrayList, 6, 3)
                 texCoordsTag = _XmlTag("com.jme.scene.TexCoords", {"perVert":2})
                 texCoordsTag.addChild(coordsTag)
                 texCoordsTag.addComment("Blender UV Layer '" + layerName + "'")
@@ -1075,20 +1197,29 @@ class JmeMesh(object):
             tag.addChild(vertColTag)
         if 3 not in self.__vpf and 4 not in self.__vpf: return tag
         faceVertIndexes = []
-        for i in range(len(faceVertToNewVert)):
-            if unify and len(faceVertToNewVert[i]) == 4:
-                faceVertIndexes.append(faceVertToNewVert[i][0])
-                faceVertIndexes.append(faceVertToNewVert[i][1])
-                faceVertIndexes.append(faceVertToNewVert[i][2])
-                faceVertIndexes.append(faceVertToNewVert[i][0])
-                faceVertIndexes.append(faceVertToNewVert[i][2])
-                faceVertIndexes.append(faceVertToNewVert[i][3])
+        outputVpf = None
+        for i in range(len(self.__faceVertToNewVert)):
+            # TODO:  Consider putting a test to verify that all faces exported
+            # have the same vertex count.
+            if self.__faceVertToNewVert[i][0] not in absToMiSpecificIndex:
+                continue
+            faceVerts = self.__faceVertToNewVert[i]
+            if outputVpf == None:
+                # Just use the first face for this test.  Any face would do.
+                if len(faceVerts) == 4 and not self.__unify: outputVpf = 4
+                else: outputVpf = 3
+
+            if self.__unify and len(faceVerts) == 4:
+                faceVertIndexes.append(absToMiSpecificIndex[faceVerts[0]])
+                faceVertIndexes.append(absToMiSpecificIndex[faceVerts[1]])
+                faceVertIndexes.append(absToMiSpecificIndex[faceVerts[2]])
+                faceVertIndexes.append(absToMiSpecificIndex[faceVerts[0]])
+                faceVertIndexes.append(absToMiSpecificIndex[faceVerts[2]])
+                faceVertIndexes.append(absToMiSpecificIndex[faceVerts[3]])
             else:
-                for j in range(len(faceVertToNewVert[i])):
-                    faceVertIndexes.append(faceVertToNewVert[i][j])
+                for j in range(len(faceVerts)):
+                    faceVertIndexes.append(absToMiSpecificIndex[faceVerts[j]])
         indTag = _XmlTag("indexBuffer")
-        if len(face.verts) == 4 and not unify: outputVpf = 4
-        else: outputVpf = 3
         indTag.addAttr("data", faceVertIndexes, None, outputVpf)
         tag.addChild(indTag)
         return tag
@@ -1919,7 +2050,7 @@ class NodeTree(object):
         self.__maxWeightings = maxWeightings
         self.__exportActions = exportActions
 
-    def includeTex(self, mtex):
+    def includeTex(self, mtex, activeLayerName):
         """include* instead of add*, because we don't necessarily 'add'.  We
         will just increment the refCount if it's already in our list.
         Returns new or used JmeTexture."""
@@ -1928,7 +2059,7 @@ class NodeTree(object):
             jmeTex = self.__textureHash[newJmeTexId]
             jmeTex.refCount += 1
             return jmeTex
-        jmeTex = JmeTexture(mtex, newJmeTexId)
+        jmeTex = JmeTexture(mtex, newJmeTexId, activeLayerName)
         self.__textureHash[newJmeTexId] = jmeTex
         return jmeTex
 
@@ -2435,11 +2566,15 @@ class JmeTexture(object):
         if tex.repeat[1] != 1:
             raise UnsupportedException("Tex Y-Repeat", tex.repeat[1])
         # Map Input
-        if mtex.texco != _bTexCo["STICK"] and mtex.texco != _bTexCo["UV"]:
-            raise UnsupportedException("Coordinate Mapping type",
-                    mtex.texco)
-        # Just ignore uvlayer.  We don't care what layer names the user has
-        # defined, nor which they set to active.
+        if mtex.texco == _bTexCo["STICK"]:
+            if mtex.uvlayer != None and mtex.uvlayer != "":
+                raise Exception(
+                        "Sticky MTex has a uvlayer name set: " + mtex.uvlayer)
+        elif mtex.texco == _bTexCo["UV"]:
+            if mtex.uvlayer == None:
+                raise Exception("MTex has <None> uvlayer name")
+        else:
+            raise UnsupportedException("Coordinate Mapping type", mtex.texco)
         if (mtex.blendmode != _bBlendModes['MIX'] # == jME ApplyMode.Decal
                 and mtex.blendmode != _bBlendModes['MULTIPLY'] # Modulate
                 and mtex.blendmode != _bBlendModes['ADD']): # Add
@@ -2489,11 +2624,11 @@ class JmeTexture(object):
 
     __slots__ = (
             'written', 'refCount', 'applyMode', 'filepath', 'wrapMode',
-            'refid', 'scale', 'translation', 'uvLayerName')
+            'refid', 'scale', 'translation', 'layerName')
     idFor = staticmethod(idFor)
     supported = staticmethod(supported)
 
-    def __init__(self, mtex, newId):
+    def __init__(self, mtex, newId, activeLayerName):
         "Throws a descriptive UnsupportedException for the obvious reason"
         # TODO:  Look into whether Blender persistence supports saving
         #        image references, so we can share (possibly large) Image
@@ -2503,12 +2638,17 @@ class JmeTexture(object):
         object.__init__(self)
         self.written = False   # May write refs after written is True
         self.refCount = 0
-        if mtex.uvlayer == None:
-            raise Exception("MTex has <None> uvlayer name")
-        if mtex.uvlayer == '':
-            self.uvLayerName = None
+
+        if mtex.texco == _bTexCo["STICK"]:
+            self.layerName = "_BLENDERSTICKY_"
+        elif mtex.texco == _bTexCo["UV"]:
+            if mtex.uvlayer == '':
+                self.layerName = activeLayerName
+            else:
+                self.layerName = mtex.uvlayer
         else:
-            self.uvLayerName = mtex.uvlayer
+            raise Exception("Unexpected texco should have failed validation")
+
         if mtex.blendmode == _bBlendModes['MIX']:
             self.applyMode = "Decal"
         elif mtex.blendmode == _bBlendModes['MULTIPLY']:

@@ -19,9 +19,11 @@
     </p><p>
     The 0.2 series of the exporter introduced detailed support for Skin &amp;
     Bones.
-    The 0.3 series introduces <i>Mountpoints</i>, general support for
-    Blender-managed game-specific features (like custom classes and game
-    properties), multiple skins per Armature, hot skins, skin regions, morphing.
+    The 0.3 series greatly extended and improved animation support, and
+    introduced many game integration features.
+    </p><p>
+    The 0.4 series has improved and rounded out material and texture support,
+    including support for multiple Materials per Blender Object.
     </p>
     <HR/>
     <h4 id="contents">Contents</h4>
@@ -33,6 +35,9 @@
     <HR/>
     <h4 id="acknowledgements">Acknowledgements</h4>
     <p>
+    Thanks to Tom Trocha for providing excellent user support.  This has freed
+    me up to improve the exporter.
+    </p><p>
     Ashton V. was extremely helpful to the 0.2 effort, both for his keen
     insight, and for his continual enthusiasm.
     Without his encouragement, I would not have stuck it out to the end.
@@ -43,6 +48,23 @@
     <HR/>
     <h4 id="changelist">Change List</h4>
     <ul>
+      <li>Changes since 0.3f<ol>
+        <li>Implemented proper support and validation of Material Indexes.
+        I.e. support multiple materials per Blender Object.
+        <li>Support for multiple texture channels.
+            Each such channel may do per-face or sticky vert UV mapping.
+        <li>Support for multiple uv layers.
+        <li>OB and ME type Material links are now translated according to
+            robust rules which can be generalized to:  Mats are translated
+            to RenderStates on a TriMesh or QuadMesh, except for normal
+            Blender Mesh Objects with a single (Material Index) OB Material
+            Link.  Node Render States can not be applied properly to other
+            situations.
+        <li>Partial implementation of FAVORJOIN mode, where jME Nodes are
+            created only where necessary, instead of the default behavior to
+            mirror Blender as close as possible.
+        <li>[Significantly missing from release 0.4a are documentation updates.]
+        </ol>
       <li>Changes since 0.3e<ol>
         <li>Eliminated requirement for Bone Heat.
         Apply bone weights using your favorite method for now on.
@@ -99,46 +121,7 @@
         <li>Objects in non-selected Blender layers are automatically excluded
         from exports, regardless of all-in-scene or selected-item mode.
       </ol>
-      <li>Changes since 0.2d<ol>
-        <li>This product rebranded from "Blender ==> jME Exporter"
-          to "HottBJ Exporter".
-        <li>Fix bug where mat rejections cause export to abort, regardless of
-          settings.
-        <li>Improved animation/posing diagnostics
-        <li>Animation optimization/culling algorithm reinstated
-        <li>Fix to incorrect shader test (confused diffuse and specular shaders)
-        <li>Added detection and graceful omission of bad frame numbers and
-          empty animations
-        <li>Fixed imperfect tests for non-effective matrix transformations
-        <li>Added new function to once-and-for-all format floats exactly as I
-          want them written.
-        <li>Inverse value of stored "shiness" value, to accommodate jME's crazy
-          implementation where the value actually indicates "unshininess".
-        <li>Now allow user to specify either Phong or Cook Torr specular
-          shader.  jME does nothing special with these, but these two are an
-          indication that the user basically wants a "typical" specular look.
-        <li>Fixed bug with ambient color calculation.
-        <li>Fixed mistake in ambient color calculation description in online
-          docs.
-        <li>Use the Blender TexFace option as a hook to tell the exporter to
-          not export the base material, but only the texture.
-          This is important, since otherwise texture transparency would be
-          filled with the material color.
-        <li>Support automatic jME instantiation of Spatial subclasses by use
-          of a Blender String game property of name "jme.implClass".
-        <li>Support automatic loading of all Blender game properties into jME
-          UserData maps.  See sample file
-          <code>src/hottbj/AppAttrNode.java</code>.
-        <li>Refactored transform translations so that jME side will always get
-          +Z-forward or -Y-forward Objects, depending on whether
-          <code>Rotate X</code> is set.
-        <li>Fixed nasty bug with non-deforming-bone-children.
-          Not this, as well as normal object nesting under the Armature Object
-          work very consistently and precisely.
-        <li>The <i>Mountpoint</i> strategy was borne out of the fruits of the
-          previous two items.  As I write this, Ashton is uploading his new
-          video featuring Mountpoints.
-      </ol>
+      See Subversion log for history before the 0.3 series.
     </ul>
     <HR/>
     <DIV class="footer">

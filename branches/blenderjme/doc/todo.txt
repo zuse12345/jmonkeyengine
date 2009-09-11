@@ -13,15 +13,6 @@ I don't know whether Blender's Python supports os.environ, which we use for
 env. var. FAVORJOINS.  Before 0.4a public is rolled, we need to either change
 this to a GUI setting, or ensure the portability.
 
-04a refactor.  Purpose is to improve consistency and generalization so that
-material indexing can thereafter be implemented in an intuitive and consistent
-way.
-
-    Allow for general, end-user selection of 'join' mode.
-    Run through the Object colbit list and add only each Mat to the jME Node or
-     Geometry according to well-defined rules.
-    Support uv texture Layers.
-
 Add either enforcement or validation for the cases where TriMeshes vs.
 QuadMeshes are mandated, like for Morphing and Skins.  Right now, the code
 assumes these geometries are TriMeshes.

@@ -323,7 +323,7 @@ class JmeNode(object):
                      # Don't know if this is possible, but if so we ignore
                     try:
                         JmeTexture.supported(matl.textures[j])
-                        print "**** Adding Texture for Mat: " + matl.name
+                        #print "**** Adding Texture for Mat: " + matl.name
                         # MTex's have no name to report
                         jmeTexs.append(nodeTree.includeTex(
                                 matl.textures[j], legacyMesh.activeUVLayer))
@@ -947,7 +947,6 @@ class JmeMesh(object):
             for face in self.__meshcp.faces:
                 if face.verts == None: continue  # Probably never happen
                 matIndex = face.mat
-                print "matIndex = " + str(matIndex)
                 # The face.uv reference in the next line WILL THROW
                 # if the mesh does not support uv values
                 # (i.e. mesh.faceUV).
@@ -972,11 +971,10 @@ class JmeMesh(object):
                     vertIndex = self.__faceVertToNewVert[face.index][i]
                     if vertIndex in origIndUvs[matIndex]:
                         if uvKey in origIndUvs[matIndex][vertIndex]:
-                            print ("Agreement upon uv " + uvKey
-                                    + " for 2 face verts")
+                            #print ("Agreement upon uv " + uvKey
+                                    #+ " for 2 face verts")
                             finalFaceVIndex = origIndUvs[matIndex][vertIndex][uvKey]
                         else:
-                            print "New"
                             # CREATE NEW VERT COPY!!
                             finalFaceVIndex = len(self.__vertList)
                             self.__vertList.append(UpdatableMVert(
@@ -1001,7 +999,6 @@ class JmeMesh(object):
                         self.__faceVertToNewVert[face.index][i] = finalFaceVIndex
                         # Overwriting self.__faceVertToNewVert from vertIndex
                     else:
-                        print "Orig"
                         # Only use of vertex (so far), so just save orig index
                         finalFaceVIndex = vertIndex
                         origIndUvs[matIndex][vertIndex]= { uvKey:finalFaceVIndex }
@@ -1038,13 +1035,32 @@ class JmeMesh(object):
                     + " -> " + str(len(self.__vertList)))
 
         nonUvVertexes = 0
-        for v in self.__vertList:
+        # Though layers/tex coords are shared among textures and matIndexes,
+        # the users must have the same coord count, since jME
+        # requires a 1:1 correspondence between vert bfr and coord bfr.
+        layerVertFilterMatIndex = {}
+        for layerName in self.__texArrayLists.iterkeys():
+            for i in range(len(self.jmeTextureStates)):
+                if self.jmeTextureStates[i] != None:
+                    for tex in self.jmeTextureStates[i].jmeTextures:
+                        if tex.layerName == layerName:
+                            layerVertFilterMatIndex[layerName] = i
+                            break
+                if layerName in layerVertFilterMatIndex: break
+        for vIndex in range(len(self.__vertList)):
+            v = self.__vertList[vIndex]
             # POPULATE LAYERS, which will be exported as "coords" lists.
             # Blender treats +v as up.  That makes sense with gui programming,
             # but the "v" of "uv" goes + down, so we have to correct this.
             # (u,v) = (0,0) = TOP LEFT.
             # This is why both v values are saved as 1 - y.
             for layerName, texArray in self.__texArrayLists.iteritems():
+                if (layerName in layerVertFilterMatIndex
+                        and self.__vertMatIndexList[vIndex] != 
+                        layerVertFilterMatIndex[layerName]): continue
+                        # If there is no link from layer to a matIndex, we
+                        # can do nothing else but include all verts of the
+                        # Blender Mesh.  I.e. do not filter.
                 if layerName == "_BLENDERSTICKY_":
                     if not self.__meshcp.vertexUV:
                         raise Exception("Conflicting indications of Stickiness")
@@ -1092,7 +1108,6 @@ class JmeMesh(object):
         if not self.__writePrepped:
             raise Exception(
                     "Bad State.  populateXml called before writePrep")
-        print "POPULATING mi " + str(mi)
 
         coArray = []
         noArray = []
@@ -1109,8 +1124,8 @@ class JmeMesh(object):
          # Maps from indexes in vertList to seq. of blenderVertIndexes (which
          #  is in step with coArray/noArray/etc. % 3).
         for vIndex in range(len(self.__vertList)):
-            v = self.__vertList[vIndex]
             if self.__vertMatIndexList[vIndex] != mi: continue
+            v = self.__vertList[vIndex]
             absToMiSpecificIndex[vIndex] = len(self.blenderVertIndexes)
             if vIndex < len(self.__meshcp.verts):
                 # Remove this assertion after confirmed:
@@ -1143,7 +1158,7 @@ class JmeMesh(object):
                 else:
                     nonFacedVertexes += 1
                     colArray.append(None)  # We signify WHITE by None
-        print "absToMiSpecificIndex = " + str(absToMiSpecificIndex)
+        #print "absToMiSpecificIndex = " + str(absToMiSpecificIndex)
         if nonFacedVertexes > 0:
             print ("WARNING: " + str(nonFacedVertexes)
                 + " vertexes set to WHITE because no face to derive color from")
@@ -1206,19 +1221,27 @@ class JmeMesh(object):
                     writtenLayers.add(tex.layerName)
                     coordsTag = _XmlTag("coords")
                     coordsTag.addAttr("data",
-                            self.__texArrayLists[tex.layerName], 6, 3)
+                            self.__texArrayLists[tex.layerName], 6, 2)
                     texCoordsTag = _XmlTag("com.jme.scene.TexCoords",
                             {"perVert":2})
                     texCoordsTag.addChild(coordsTag)
                     texCoordsTag.addComment(
                             "Blender UV Layer '" + tex.layerName + "'")
                     texTag.addChild(texCoordsTag)
+                    if (len(coArray)/3 !=
+                            len(self.__texArrayLists[tex.layerName])/2):
+                        print "BAD tex coords length:\n" + str(texTag)
+                        raise Exception("coArray/tex coords vert count "
+                            + "mismatch:  " + str(len(coArray)/3) + " vs. "
+                            + str(len(self.__texArrayLists[tex.layerName])/2))
             # If we have SPLIT a Blender Mesh into multiple jME Geos, I don't
             # think we want to duplicate every uv layer to every jME Geo. ?
             for layerName, arrayList in self.__texArrayLists.iteritems():
                 if layerName in writtenLayers: continue
+                if len(arrayList)/2 != len(coArray)/3: continue
+                 # This coords array can not be applied to this coArray
                 coordsTag = _XmlTag("coords")
-                coordsTag.addAttr("data", arrayList, 6, 3)
+                coordsTag.addAttr("data", arrayList, 6, 2)
                 texCoordsTag = _XmlTag("com.jme.scene.TexCoords", {"perVert":2})
                 texCoordsTag.addChild(coordsTag)
                 texCoordsTag.addComment("Blender UV Layer '" + layerName + "'")

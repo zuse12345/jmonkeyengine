@@ -308,7 +308,7 @@ class JmeNode(object):
             jmeMatl = None
             jmeTexs = []
             if matl != None:
-                print "Attempting to add Mat " + matl.name
+                #print "Attempting to add Mat " + matl.name
                 if not matl.mode & _matModes['TEXFACE']:
                     try:
                         jmeMatl = nodeTree.includeMat(matl, twoSided)
@@ -332,11 +332,11 @@ class JmeNode(object):
                                 + " due to: " + str(ue))
             # TODO:  Remove these debug statements once have mat indexes
             # working.
-            if jmeMatl == None:
-                print "++++ Adding mat <None> for Obj " + self.getName()
-            else:
-                print("++++ Adding mat "
-                        + jmeMatl.blenderName + " for Obj " + self.getName())
+            #if jmeMatl == None:
+                #print "++++ Adding mat <None> for Obj " + self.getName()
+            #else:
+                #print("++++ Adding mat "
+                        #+ jmeMatl.blenderName + " for Obj " + self.getName())
             # Both mats and texStates have 1 element per Blender mat, but each
             # element may be None.
             jmeMats.append(jmeMatl)
@@ -717,7 +717,7 @@ class JmeNode(object):
 
 class JmeMesh(object):
     __slots__ = ('blenderMesh', 'jmeMats', 'jmeTextureStates', '__writePrepped',
-            '__vertToColor', '__vertList', '__meshcp',
+            '__vertToColor', '__vertList', '__meshcp', '__miSuffixes',
             '__faceVertToNewVert', '__unify', '__meshType', 'skipMats',
             '__vertMatIndexList', '__texArrayLists',
             '__vpf', 'defaultColor', 'name', 'blenderVertIndexes')
@@ -752,6 +752,7 @@ class JmeMesh(object):
         self.__vertMatIndexList = None
         self.__texArrayLists = None
         self.skipMats = False
+        self.__miSuffixes = None
 
     def getName(self): return self.name
 
@@ -782,16 +783,13 @@ class JmeMesh(object):
         # Make a copy so we can easily add verts like a normal Python list
         self.__vertList = []
         self.__vertList += self.__meshcp.verts
-        if self.__meshcp.vertexColors or self.__meshcp.faceUV:
-            self.__vertMatIndexList = [None]*len(self.__vertList)
-        else:
-            self.__vertMatIndexList = [0]*len(self.__vertList)
+        self.__vertMatIndexList = [None]*len(self.__vertList)
          # Exactly parallels vertList
-        self.__faceVertToNewVert = [] # Direct replacement for face[].verts[].index
-         # 2-dim array.
-         # Note that self.__faceVertToNewVert face count and vert count always exactly
-         # matches the source mesh.faces in the keys.  We just change the
-         # destination indexes.
+        self.__faceVertToNewVert = [] # Direct replacement for
+         # face[].verts[].index 2-dim array.
+         # Note that self.__faceVertToNewVert face count and vert count always
+         # exactly # matches the source mesh.faces in the keys.  We just change
+         # the destination indexes.
          # The vals are absolute indexes into our enlarged vertList and are
          # totally ignorant about material indexing.
          # The populateXml() method needs to add a layer to map from this
@@ -878,11 +876,39 @@ class JmeMesh(object):
                 if v == None: raise Exception("vertMatIndex has a None element")
 
         else:
+            miDups = []
+            for mat in self.jmeMats: miDups.append({})
+            # miDups is a list of maps from orig index to duplicate,
+            # indexed by matIndex.  miDups is only used in this block.
             for face in self.__meshcp.faces:
                 if face.verts == None or len(face.verts) < 1: continue
                 self.__faceVertToNewVert.append([])
                 for i in range(len(face.verts)):
-                    self.__faceVertToNewVert[-1].append(face.verts[i].index)
+                    origVIndex = face.verts[i].index
+                    if self.__vertMatIndexList[origVIndex] == None:
+                        writeIndex = origVIndex  # Write first original index
+                        self.__vertMatIndexList[origVIndex] = face.mat
+                    elif self.__vertMatIndexList[origVIndex] == face.mat:
+                        writeIndex = origVIndex  # Reuse original index
+                    elif origVIndex in miDups[face.mat]:
+                        writeIndex = miDups[face.mat][origVIndex]  # Reuse dup
+                    else:
+                        writeIndex = len(self.__vertList)
+                        self.__vertList.append(UpdatableMVert(
+                                self.__vertList[origVIndex],
+                                writeIndex, self.__meshcp))
+                        self.__vertMatIndexList.append(face.mat)
+                        # self.__vertMatIndexList size must equals vertList size
+                    self.__faceVertToNewVert[-1].append(writeIndex)
+            if not self.__meshcp.faceUV:  # Validate non-VertexColors/faceUV
+                if len(self.__vertList) != len(self.__vertMatIndexList):
+                    raise Exception("vert list maintenance problem.  "
+                            + "vertList size " + str(len(self.__vertList))
+                            + " yet vertMatIndexList size is "
+                            + str(len(self.__vertMatIndexList)))
+                for v in self.__vertMatIndexList:
+                    if v == None:
+                        raise Exception("vertMatIndex has a None element")
         # texArrayLists is a hash from layer name to a coords list.
         # This includes ALL layers, referenced or unreferenced, UV (incl. None)
         # + Sticky (if present).
@@ -890,7 +916,7 @@ class JmeMesh(object):
         if self.__meshcp.vertexUV: self.__texArrayLists["_BLENDERSTICKY_"] = []
         for layerName in self.__meshcp.getUVLayerNames():
             self.__texArrayLists[layerName] = []
-        # At this point, self.__faceVertToNewVert[][]  contains references to
+        # At this point, self.__faceVertToNewVert[][] contains references to
         # every vertex, both original and new copies.  For shared vertexes, there
         # will be multiple self.__faceVertToNewVert[][] elements pointing to the
         # same vertex, but there will be no vertexes orphaned by faceVert...
@@ -946,15 +972,16 @@ class JmeMesh(object):
                     vertIndex = self.__faceVertToNewVert[face.index][i]
                     if vertIndex in origIndUvs[matIndex]:
                         if uvKey in origIndUvs[matIndex][vertIndex]:
-                            #print ("Agreement upon uv " + uvKey
-                                    #+ " for 2 face verts")
+                            print ("Agreement upon uv " + uvKey
+                                    + " for 2 face verts")
                             finalFaceVIndex = origIndUvs[matIndex][vertIndex][uvKey]
                         else:
+                            print "New"
                             # CREATE NEW VERT COPY!!
                             finalFaceVIndex = len(self.__vertList)
                             self.__vertList.append(UpdatableMVert(
                                 self.__vertList[vertIndex], finalFaceVIndex, self.__meshcp))
-                            self.__vertMatIndexList.append(None)
+                            self.__vertMatIndexList.append(matIndex)
                              # self.__vertMatIndexList size must equals vertList size
                             origIndUvs[matIndex][vertIndex][uvKey] = finalFaceVIndex
                             # Writing the new vert index to the map-map so that
@@ -974,6 +1001,7 @@ class JmeMesh(object):
                         self.__faceVertToNewVert[face.index][i] = finalFaceVIndex
                         # Overwriting self.__faceVertToNewVert from vertIndex
                     else:
+                        print "Orig"
                         # Only use of vertex (so far), so just save orig index
                         finalFaceVIndex = vertIndex
                         origIndUvs[matIndex][vertIndex]= { uvKey:finalFaceVIndex }
@@ -983,12 +1011,6 @@ class JmeMesh(object):
                     for layerName in vertToLayerUv.iterkeys():
                         self.__meshcp.activeUVLayer = layerName
                         vertToLayerUv[layerName][finalFaceVIndex] = face.uv[i]
-                    # TODO:  Remove the following assertion once verified:
-                    oldVal = self.__vertMatIndexList[finalFaceVIndex]
-                    if oldVal != None and oldVal != matIndex:
-                        raise Exception("matIndex mismatch.  Expect "
-                                + str(matIndex) + " but it was " + str(oldVal))
-                    self.__vertMatIndexList[finalFaceVIndex] = matIndex
             # TODO:  Remove the following assertion once verified:
             if len(self.__vertList) != len(self.__vertMatIndexList):
                 raise Exception("vert list maintenance problem.  vertList size "
@@ -1048,10 +1070,29 @@ class JmeMesh(object):
             print ("WARNING: " + str(nonUvVertexes)
                 + " uv vals set to (-1,-1) because no face to derive uv from")
 
+        if len(self.jmeMats) > 1:
+            uniqueNames = set()
+            dupNames = set()
+            for mat in self.jmeMats:
+                if mat == None: continue
+                if mat.blenderName in uniqueNames:
+                    dupNames.add(mat.blenderName)
+                else:
+                    uniqueNames.add(mat.blenderName)
+            self.__miSuffixes = []
+            counter = -1
+            for mat in self.jmeMats:
+                counter = counter + 1
+                if mat == None or mat.blenderName in dupNames:
+                    self.__miSuffixes.append(str(counter))
+                else:
+                    self.__miSuffixes.append(mat.blenderName)
+
     def populateXml(self, tag, autoRotate, mi=0):
         if not self.__writePrepped:
             raise Exception(
                     "Bad State.  populateXml called before writePrep")
+        print "POPULATING mi " + str(mi)
 
         coArray = []
         noArray = []
@@ -1102,12 +1143,18 @@ class JmeMesh(object):
                 else:
                     nonFacedVertexes += 1
                     colArray.append(None)  # We signify WHITE by None
+        print "absToMiSpecificIndex = " + str(absToMiSpecificIndex)
         if nonFacedVertexes > 0:
             print ("WARNING: " + str(nonFacedVertexes)
                 + " vertexes set to WHITE because no face to derive color from")
 
         tag.name = 'com.jme.scene.' + self.__meshType + 'Mesh'
-        if tag.getAttr("name") == None: tag.addAttr("name", self.getName())
+        if tag.getAttr("name") == None:
+            if self.__miSuffixes == None:
+                tag.addAttr("name", self.getName())
+            else:
+                tag.addAttr(
+                        "name", self.getName() + "/" + self.__miSuffixes[mi])
         # TODO:  Distinguish name attr with 'mi' somehow
         colorTag = None  # so we can tell later on whether we wrote it
         if (self.defaultColor != None and

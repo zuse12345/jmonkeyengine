@@ -1153,8 +1153,6 @@ class JmeMesh(object):
         if len(self.__texArrayLists) > 0:
             writtenLayers = set()
             texTag = _XmlTag("texBuf")
-            print "ln = " + str(len(self.jmeTextureStates))
-            print "mi = " + str(mi)
             if (mi < len(self.jmeTextureStates)
                     and self.jmeTextureStates[mi] != None):
                 for tex in self.jmeTextureStates[mi].jmeTextures:

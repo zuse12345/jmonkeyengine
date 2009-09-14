@@ -1690,7 +1690,7 @@ class JmeSkinAndBone(object):
     skin Object's matrix.
     """
     __slots__ = ('wrappedObj', 'backoutTransform', 'matrix', 'boneMap', 'skins',
-            'plainChildren', 'implClass', 'skinTransferNode',
+            'plainChildren', 'implClass', 'skinTransferNode', 'morphInfluences',
             'boneTree', 'name', 'children', 'actionDataList', 'maxWeightings')
     WEIGHT_THRESHOLD = .001
     BLENDERTOJME_FLIP_MAT4 = _bmath.RotationMatrix(-90, 4, 'x')
@@ -1717,6 +1717,13 @@ class JmeSkinAndBone(object):
             if icProp.type == 'STRING': self.implClass = icProp.data
         except Exception, e:
             pass # gets an exceptions.RuntimeError
+        self.morphInfluences = None
+        for prop in self.wrappedObj.game_properties:
+            if prop.name[:4] != "jme.": continue
+            if prop.type == "FLOAT":
+                if prop.name[:19] == "jme.morphInfluence.":
+                    if self.morphInfluences == None: self.morphInfluences = {}
+                    self.morphInfluences[prop.name[19:]] = prop.data
         self.skins = []
         self.plainChildren = None
         self.actionDataList = None
@@ -1886,6 +1893,20 @@ class JmeSkinAndBone(object):
             # Makes for economical, simple XML if only exporting the bones
 
         tag = _XmlTag(self.getImplClass(), {'name':self.getName()})
+        if self.morphInfluences != None:
+            # Writing this to the Mesh object, because in practice it's too
+            # difficult to attach a map right to the MTM otherwise.
+            miTag = _XmlTag("morphInfluences", {
+                    'class': "com.jme.util.export.ListenableStringFloatMap" })
+            tag.addChild(miTag)
+            keysTag = _XmlTag("keys")
+            miTag.addChild(keysTag)
+            i = -1
+            for key in self.morphInfluences.iterkeys():
+                i += 1
+                keysTag.addChild(_XmlTag("String_" + str(i), {'value': key}))
+            miTag.addChild(
+                    _XmlTag("vals", {'data': self.morphInfluences.values()}))
 
         if self.wrappedObj != None:
             udTag = _XmlTag('userData')

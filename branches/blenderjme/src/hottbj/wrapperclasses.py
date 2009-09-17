@@ -2478,7 +2478,12 @@ class JmeMaterial(object):
         self.diffuse = bMat.rgbCol
         self.diffuse.append(bMat.alpha)
         self.specular = bMat.specCol
+        #self.specular.append(bMat.alpha * .5 * bMat.spec)
+        # Ineffective (due to reason stated below) work-around for jME lack of
+        # control of low shininess.
         self.specular.append(bMat.alpha)
+        # This has no effect.  With jME specular alpha of 0, the Specular color
+        # still shows with full force.
         if bMat.emit == 0.:
             self.emissive = None
         else:

@@ -92,9 +92,14 @@
             (duplicated if necessary if material is shared).
         <LI>These Material colorings are converted<UL>
           <LI>Diffuse colors ("Col")
-          <LI>Specular colors
+          <LI>Specular colors (however, my testing shows that jME ignores the
+              alpha value in this color, regardless of whether HottBJ is
+              involved).
           <LI>Alpha
-          <LI>Specularity
+          <LI>Specularity (HottBJ sets the jME Specular color and Shininess
+              values as well as it can to compensate for jME's failure to
+              render spec/shininess as requested, but the end results are still
+              pretty poor and you will need to check the results in jME).
           <LI>Emit
           <LI>Ambient (with world ambient color compensated for)
         </UL>

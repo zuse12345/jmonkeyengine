@@ -49,8 +49,15 @@
     <h4 id="changelist">Change List</h4>
     <ul>
       <li>Changes since 0.3f<ol>
+        <li>Write morphInfluences for Armature Objects.
+            This is a great way to centrally manage multiple morphs for an
+            Armature assembly.
+        <li>Proper support for Blender texture image flag settings
+            <code>MipMap</code> and <code>Interpol</code>.
+            Until now we required both toggles to be set, but, sadly, still
+            left both features unset in the exports.
         <li>Implemented proper support and validation of Material Indexes.
-        I.e. support multiple materials per Blender Object.
+            I.e. support multiple materials per Blender Object.
         <li>Support for multiple texture channels.
             Each such channel may do per-face or sticky vert UV mapping.
         <li>Support for multiple uv layers.

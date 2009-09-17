@@ -1873,7 +1873,7 @@ class JmeSkinAndBone(object):
         print "addlTransform NOW " + str(addlTransform)
 
         # It is quite a hack, but the best I can do:
-        # The armature skin  and bones are not properly axis-flipped.  They
+        # The armature skin and bones are not properly axis-flipped.  They
         # just depend on this object to rotate and make them look right.
         # This necessitates other hacks to back out this flip from
         # non-bone/non-skin children (both Armature Object Object children,
@@ -2583,8 +2583,11 @@ class JmeTexture(object):
     # add a hash value for it to the idFor() method.
     # (By "direct", I mean excluding .tex, which is uniquized by its name).
 
-    REQUIRED_IMGFLAGS = \
-        _bImgFlags['MIPMAP'] | _bImgFlags['USEALPHA'] | _bImgFlags['INTERPOL']
+    REQUIRED_IMGFLAGS = _bImgFlags['USEALPHA']
+    PROHIBITED_IMGFLAGS =  \
+        _bImgFlags['CALCALPHA'] | _bImgFlags['NORMALMAP'] | _bImgFlags['ROT90']
+    # The other Image Flags listed in the Blender API are not actually present
+    # and would cause a runtime error if we attempted to test for them.
 
     def supported(mtex):
         """Static method that validates the specified Blender MTex.
@@ -2606,9 +2609,12 @@ class JmeTexture(object):
         # This is a much more general solution than setting "flip".
         if mtex.ofs[0] == None or mtex.ofs[1] == None or mtex.ofs[2] == None:
             raise UnsupportedException("A null mtex offset dimension")
-        if JmeTexture.REQUIRED_IMGFLAGS != tex.imageFlags:
-            raise UnsupportedException("Tex Image flags", tex.imageFlags,
-            "not USEALPHA + MIPMAP + INTERPOL")
+        if (JmeTexture.REQUIRED_IMGFLAGS & tex.imageFlags) == 0:
+            raise UnsupportedException("Tex Image flag",
+                    tex.imageFlags, "Tex Image flag USEALPHA is required")
+        if (JmeTexture.PROHIBITED_IMGFLAGS & tex.imageFlags) != 0:
+            raise UnsupportedException("Tex Image flag", tex.imageFlags,
+                "Tex Image flags CALCALPHA, NORMALMAP, ROT90 are prohibited")
 
         if tex.image == None:
             raise UnsupportedException(
@@ -2718,7 +2724,8 @@ class JmeTexture(object):
 
     __slots__ = (
             'written', 'refCount', 'applyMode', 'filepath', 'wrapMode',
-            'refid', 'scale', 'translation', 'layerName')
+            'refid', 'scale', 'translation', 'layerName', 'minMipFilter',
+            'magMipFilter')
     idFor = staticmethod(idFor)
     supported = staticmethod(supported)
 
@@ -2732,6 +2739,8 @@ class JmeTexture(object):
         object.__init__(self)
         self.written = False   # May write refs after written is True
         self.refCount = 0
+        self.minMipFilter = None
+        self.magMipFilter = None
 
         if mtex.texco == _bTexCo["STICK"]:
             self.layerName = "_BLENDERSTICKY_"
@@ -2742,6 +2751,21 @@ class JmeTexture(object):
                 self.layerName = mtex.uvlayer
         else:
             raise Exception("Unexpected texco should have failed validation")
+
+        if (mtex.tex.imageFlags & _bImgFlags['INTERPOL']) != 0:
+            self.magMipFilter = "Bilinear"
+            if (mtex.tex.imageFlags & _bImgFlags['MIPMAP']) != 0:
+                self.minMipFilter = "Trilinear"
+                # BilinearNearestMipMap would work her also, but we will also
+                #  interpolate between mipmap levels since that seems settings
+                #  indicate the user wants more mip-mapping and interpolation.
+            else:
+                self.minMipFilter = "BilinearNoMipMaps"
+        elif (mtex.tex.imageFlags & _bImgFlags['MIPMAP']) != 0:
+            self.minMipFilter = "NearestNeighborNearestMipMap"
+            # NearestNeighborLinearMipMap would qualify here also, but the
+            #  setting simply less interp is desired so we will not interpolate
+            #  mipmap levels.
 
         if mtex.blendmode == _bBlendModes['MIX']:
             self.applyMode = "Decal"
@@ -2798,6 +2822,10 @@ class JmeTexture(object):
         tag.addAttr("apply", self.applyMode)
         tag.addAttr("wrapS", self.wrapMode)
         tag.addAttr("wrapT", self.wrapMode)
+        if self.minMipFilter != None:
+            tag.addAttr("minificationFilter", self.minMipFilter)
+        if self.magMipFilter != None:
+            tag.addAttr("magnificationFilter", self.magMipFilter)
         addVector3fEl(tag, "translation", self.translation)
         addVector3fEl(tag, "scale", self.scale)
         textureKeyTag = _XmlTag(

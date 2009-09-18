@@ -400,6 +400,7 @@ class JmeNode(object):
         if self.jmeMesh != None:
             self.jmeMesh.jmeMats = jmeMats
             self.jmeMesh.jmeTextureStates = texStates
+            if self.morphBase != None: self.jmeMesh.skipMats = True
 
     def addChild(self, child):
         if self.children == None: self.children = []

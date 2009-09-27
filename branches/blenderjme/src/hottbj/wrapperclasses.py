@@ -328,7 +328,7 @@ class JmeNode(object):
                         jmeTexs.append(nodeTree.includeTex(
                                 matl.textures[j], legacyMesh.activeUVLayer))
                     except UnsupportedException, ue:
-                        print ("Skipping texture " + matl.textures[j].getName()
+                        print ("Skipping texture for " + matl.getName()
                                 + " due to: " + str(ue))
             # TODO:  Remove these debug statements once have mat indexes
             # working.
@@ -2584,7 +2584,6 @@ class JmeTexture(object):
     # add a hash value for it to the idFor() method.
     # (By "direct", I mean excluding .tex, which is uniquized by its name).
 
-    REQUIRED_IMGFLAGS = _bImgFlags['USEALPHA']
     PROHIBITED_IMGFLAGS =  \
         _bImgFlags['CALCALPHA'] | _bImgFlags['NORMALMAP'] | _bImgFlags['ROT90']
     # The other Image Flags listed in the Blender API are not actually present
@@ -2610,9 +2609,6 @@ class JmeTexture(object):
         # This is a much more general solution than setting "flip".
         if mtex.ofs[0] == None or mtex.ofs[1] == None or mtex.ofs[2] == None:
             raise UnsupportedException("A null mtex offset dimension")
-        if (JmeTexture.REQUIRED_IMGFLAGS & tex.imageFlags) == 0:
-            raise UnsupportedException("Tex Image flag",
-                    tex.imageFlags, "Tex Image flag USEALPHA is required")
         if (JmeTexture.PROHIBITED_IMGFLAGS & tex.imageFlags) != 0:
             raise UnsupportedException("Tex Image flag", tex.imageFlags,
                 "Tex Image flags CALCALPHA, NORMALMAP, ROT90 are prohibited")
@@ -2682,8 +2678,15 @@ class JmeTexture(object):
             raise UnsupportedException("MTex blendmode", mtex.blendmode)
         if mtex.mapping != _bTexMappings['FLAT']:
             raise UnsupportedException("MTex mapping shape", mtex.mapping)
-        if mtex.mapto != _bTexMapTo['COL']:
+        if (mtex.mapto != _bTexMapTo['COL']
+                and mtex.mapto != (_bTexMapTo['COL'] | _bTexMapTo['ALPHA'])):
             raise UnsupportedException("MTex mapTo", mtex.mapto)
+        if (((_bImgFlags['USEALPHA'] & tex.imageFlags) != 0 and
+            (mtex.mapto & _bTexMapTo['ALPHA']) == 0)
+            or ((_bImgFlags['USEALPHA'] & tex.imageFlags) == 0 and
+            (mtex.mapto & _bTexMapTo['ALPHA']) != 0)):
+                raise UnsupportedException("Tex Channel ALPHA setting "
+                        + "conflicts with Tex Img USEALPHA setting")
         if mtex.correctNor:
             raise UnsupportedException("MTex correctNor", mtex.correctNor)
         if round(mtex.dispfac, 3) != .2:

@@ -20,14 +20,61 @@ import java.util.Collection;
 
 public class JOGGLoader implements AssetLoader {
 
-    private static int BLOCK_SIZE = 4096*64;
+//    private static int BLOCK_SIZE = 4096*64;
 
     private PhysicalOggStream oggStream;
     private LogicalOggStream loStream;
     private VorbisStream vorbisStream;
 
-    private CommentHeader commentHdr;
+//    private CommentHeader commentHdr;
     private IdentificationHeader streamHdr;
+
+    private static class JOggInputStream extends InputStream {
+
+        private boolean endOfStream = false;
+        private final VorbisStream vs;
+
+        public JOggInputStream(VorbisStream vs){
+            this.vs = vs;
+        }
+
+        @Override
+        public int read() throws IOException {
+            return 0;
+        }
+
+        @Override
+        public int read(byte[] buf) throws IOException{
+            return read(buf,0,buf.length);
+        }
+
+        @Override
+        public int read(byte[] buf, int offset, int length) throws IOException{
+            if (endOfStream)
+                return -1;
+
+            int bytesRead = 0, cnt = 0;
+            assert length % 2 == 0; // read buffer should be even
+            
+            while (bytesRead < buf.length) {
+                if ((cnt = vs.readPcm(buf, offset + bytesRead, buf.length - bytesRead)) <= 0) {
+                    endOfStream = true;
+                    break;
+                }
+                bytesRead += cnt;
+            }
+
+            swapBytes(buf, offset, bytesRead);
+            return bytesRead;
+
+        }
+
+        @Override
+        public void close() throws IOException{
+            vs.close();
+        }
+
+    }
 
     private ByteBuffer readToBuffer() throws IOException{
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -54,7 +101,7 @@ public class JOGGLoader implements AssetLoader {
         return data;
     }
 
-    private final void swapBytes(byte[] b, int off, int len) {
+    private static final void swapBytes(byte[] b, int off, int len) {
         byte tempByte;
         for (int i = off; i < (off+len); i+=2) {
             tempByte = b[i];
@@ -64,46 +111,7 @@ public class JOGGLoader implements AssetLoader {
     }
 
     private InputStream readToStream(){
-        return new InputStream(){
-
-            private boolean endOfStream = false;
-
-            @Override
-            public int read() throws IOException {
-                return 0;
-            }
-
-            @Override
-            public int read(byte[] buf) throws IOException{
-                return read(buf,0,buf.length);
-            }
-
-            @Override
-            public int read(byte[] buf, int offset, int length) throws IOException{
-                if (endOfStream)
-                    return -1;
-
-                int bytesRead = 0, cnt = 0;
-
-                while (bytesRead < buf.length) {
-                    if ((cnt = vorbisStream.readPcm(buf, offset + bytesRead, buf.length - bytesRead)) <= 0) {
-                        endOfStream = true;
-                        break;
-                    }
-                    bytesRead += cnt;
-                }
-
-                swapBytes(buf, offset, bytesRead);
-                return bytesRead;
-
-            }
-
-            @Override
-            public void close() throws IOException{
-                vorbisStream.close();
-            }
-
-        };
+        return new JOggInputStream(vorbisStream);
     }
 
     public Object load(AssetInfo info) throws IOException {
@@ -118,11 +126,8 @@ public class JOGGLoader implements AssetLoader {
 //        }
 
         vorbisStream = new VorbisStream(loStream);
-
         streamHdr = vorbisStream.getIdentificationHeader();
-        commentHdr = vorbisStream.getCommentHeader();
-
-        System.out.println(commentHdr.getTitle());
+//        commentHdr = vorbisStream.getCommentHeader();
 
         boolean readStream = ((AudioKey)info.getKey()).isStream();
         
@@ -134,7 +139,7 @@ public class JOGGLoader implements AssetLoader {
         }else{
             AudioStream audioStream = new AudioStream();
             audioStream.setupFormat(streamHdr.getChannels(), 16, streamHdr.getSampleRate());
-            audioStream.updateData(readToStream());
+            audioStream.updateData(readToStream(), -1);
             return audioStream;
         }
     }

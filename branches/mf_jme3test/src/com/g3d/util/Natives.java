@@ -69,7 +69,20 @@ public class Natives {
             }
         }
 
-        if (settings.getRenderer().startsWith("LWJGL")){
+        String renderer = settings.getRenderer();
+        String audioRenderer = settings.getAudioRenderer();
+        boolean needLWJGL = false;
+        if (renderer != null){
+            if (renderer.startsWith("LWJGL")){
+                needLWJGL = true;
+            }
+        }
+        if (audioRenderer != null){
+            if (audioRenderer.equals("LWJGL")){
+                needLWJGL = true;
+            }
+        }
+        if (needLWJGL){
             extractNativeLib(sysName, "lwjgl");
             extractNativeLib(sysName, "lwjgl64");
             System.setProperty("org.lwjgl.librarypath", workingDir.toString());

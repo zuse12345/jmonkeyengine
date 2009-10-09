@@ -212,6 +212,7 @@ public class BoundingSphere extends BoundingVolume {
      */
     private void recurseMini(FloatBuffer points, int p, int b, int ap) {
         TempVars vars = TempVars.get();
+        assert vars.lock();
         Vector3f tempA = vars.vect1;
         Vector3f tempB = vars.vect2;
         Vector3f tempC = vars.vect3;
@@ -243,6 +244,7 @@ public class BoundingSphere extends BoundingVolume {
             BufferUtils.populateFromBuffer(tempC, points, ap-3);
             BufferUtils.populateFromBuffer(tempD, points, ap-4);
             setSphere(tempA, tempB, tempC, tempD);
+            assert vars.unlock();
             return;
         }
         for (int i = 0; i < p; i++) {
@@ -257,6 +259,7 @@ public class BoundingSphere extends BoundingVolume {
                 recurseMini(points, i, b + 1, ap + 1);
             }
         }
+        assert vars.unlock();
     }
 
     /**
@@ -525,11 +528,14 @@ public class BoundingSphere extends BoundingVolume {
         }
 
         case AABB: {
-        	BoundingBox box = (BoundingBox) volume;
+            BoundingBox box = (BoundingBox) volume;
+            assert TempVars.get().lock();
             Vector3f radVect = TempVars.get().vect1;
             radVect.set(box.xExtent, box.yExtent, box.zExtent);
             Vector3f temp_center = box.center;
-            return merge(radVect.length(), temp_center, this);
+            float len = radVect.length();
+            assert TempVars.get().unlock();
+            return merge(len, temp_center, this);
         }
 
 //        case OBB: {
@@ -581,6 +587,7 @@ public class BoundingSphere extends BoundingVolume {
     private BoundingVolume merge(float temp_radius, Vector3f temp_center,
             BoundingSphere rVal) {
         TempVars vars = TempVars.get();
+        assert vars.lock();
         Vector3f diff = temp_center.subtract(center, vars.vect1);
         float lengthSquared = diff.lengthSquared();
         float radiusDiff = temp_radius - radius;
@@ -589,6 +596,7 @@ public class BoundingSphere extends BoundingVolume {
 
         if (fRDiffSqr >= lengthSquared) {
             if (radiusDiff <= 0.0f) {
+                assert vars.unlock();
                 return this;
             } 
                 
@@ -598,6 +606,7 @@ public class BoundingSphere extends BoundingVolume {
             }
             rCenter.set(temp_center);
             rVal.setRadius(temp_radius);
+            assert vars.unlock();
             return rVal;
         }
 
@@ -615,6 +624,7 @@ public class BoundingSphere extends BoundingVolume {
         }
 
         rVal.setRadius(0.5f * (length + radius + temp_radius));
+        assert vars.unlock();
         return rVal;
     }
 
@@ -676,9 +686,12 @@ public class BoundingSphere extends BoundingVolume {
         if (!Vector3f.isValidVector(center) || !Vector3f.isValidVector(bs.center)) return false;
 
         TempVars vars = TempVars.get();
+        assert vars.lock();
         Vector3f diff = center.subtract(bs.center, vars.vect1);
         float rsum = getRadius() + bs.getRadius();
-        return (diff.dot(diff) <= rsum * rsum);
+        boolean eq = (diff.dot(diff) <= rsum * rsum);
+        assert vars.unlock();
+        return eq;
     }
 
     /*
@@ -718,6 +731,7 @@ public class BoundingSphere extends BoundingVolume {
         if (!Vector3f.isValidVector(center)) return false;
 
         TempVars vars = TempVars.get();
+        assert vars.lock();
         Vector3f diff = vars.vect1.set(ray.getOrigin())
                 .subtractLocal(center);
         float radiusSquared = getRadius() * getRadius();
@@ -729,6 +743,7 @@ public class BoundingSphere extends BoundingVolume {
 
         // outside sphere
         float b = ray.getDirection().dot(diff);
+        assert vars.unlock();
         if (b >= 0.0) {
             return false;
         }
@@ -742,6 +757,7 @@ public class BoundingSphere extends BoundingVolume {
      */
     public IntersectionRecord intersectsWhere(Ray ray) {
         TempVars vars = TempVars.get();
+        assert vars.lock();
         Vector3f diff = vars.vect1.set(ray.getOrigin()).subtractLocal(
                 center);
         float a = diff.dot(diff) - (getRadius()*getRadius());
@@ -759,6 +775,7 @@ public class BoundingSphere extends BoundingVolume {
         }
         
         a1 = ray.direction.dot(diff);
+        assert vars.unlock();
         if (a1 >= 0.0) {
             return new IntersectionRecord();
         }

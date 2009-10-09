@@ -36,6 +36,7 @@ import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
 import com.g3d.export.InputCapsule;
 import com.g3d.export.OutputCapsule;
+import com.g3d.renderer.GLObject;
 import java.io.IOException;
 
 /**
@@ -74,6 +75,10 @@ public class Texture2D extends Texture {
      */
     public Texture2D(int width, int height, Image.Format format){
         this(new Image(format, width, height, null));
+    }
+
+    protected Texture2D(int id){
+        super(id);
     }
 
     public Texture createSimpleClone() {
@@ -153,6 +158,10 @@ public class Texture2D extends Texture {
     @Override
     public Type getType() {
         return Type.TwoDimensional;
+    }
+
+    public GLObject createDestructableClone(){
+        return new Texture2D(id);
     }
 
     @Override

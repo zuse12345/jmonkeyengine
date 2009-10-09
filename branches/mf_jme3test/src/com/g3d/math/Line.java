@@ -116,6 +116,7 @@ public class Line implements Savable, Cloneable {
     
     public float distanceSquared(Vector3f point) {
         TempVars vars = TempVars.get();
+        assert vars.lock();
         Vector3f compVec1 = vars.vect1;
         Vector3f compVec2 = vars.vect2;
 
@@ -123,7 +124,9 @@ public class Line implements Savable, Cloneable {
         float lineParameter = direction.dot(compVec1);
         origin.add(direction.mult(lineParameter, compVec2), compVec2);
         compVec2.subtract(point, compVec1);
-        return compVec1.lengthSquared();
+        float len = compVec1.lengthSquared();
+        assert vars.unlock();
+        return len;
     }
     
     public float distance(Vector3f point) {
@@ -136,6 +139,7 @@ public class Line implements Savable, Cloneable {
 		}
 
         TempVars vars = TempVars.get();
+        assert vars.lock();
         Vector3f compVec1 = vars.vect1;
         Vector3f compVec2 = vars.vect2;
         Matrix3f compMat1 = vars.tempMat3;
@@ -183,6 +187,8 @@ public class Line implements Savable, Cloneable {
 		
 		compEigen1.calculateEigen(compMat1);
 		direction = compEigen1.getEigenVector(0);
+
+                assert vars.unlock();
 	}
 
     /**

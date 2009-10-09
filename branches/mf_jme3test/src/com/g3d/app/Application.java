@@ -203,10 +203,14 @@ public class Application implements SystemListener {
         }
     }
 
+    public void start(){
+        start(G3DContext.Type.Display);
+    }
+
     /**
      * Starts the application. Creating a display and running the main loop.
      */
-    public void start(){
+    public void start(G3DContext.Type contextType){
         if (context != null && context.isCreated()){
             logger.warning("start() called when application already created!");
             return;
@@ -217,7 +221,7 @@ public class Application implements SystemListener {
         }
         
         logger.fine("Starting application: "+getClass().getName());
-        context = G3DSystem.newDisplay(settings);
+        context = G3DSystem.newContext(settings, contextType);
         context.setSystemListener(this);
         context.create();
     }
@@ -259,7 +263,8 @@ public class Application implements SystemListener {
     }
 
     public void handleError(String errMsg, Throwable t){
-
+        if (t != null)
+            t.printStackTrace();
     }
 
     public void gainFocus(){

@@ -64,6 +64,16 @@ public abstract class GLObject {
 
     public GLObject(Type type){
         this.type = type;
+        this.handleRef = new Object();
+    }
+
+    /**
+     * Protected constructor that doesn't allocate handle ref.
+     * This is used in subclasses for the createDestructableClone().
+     */
+    protected GLObject(Type type, int id){
+        this.type = type;
+        this.id = id;
     }
 
     /**
@@ -129,4 +139,10 @@ public abstract class GLObject {
      * @param r
      */
     public abstract void deleteObject(Renderer r);
+
+    /**
+     * Creates a shallow clone of this GL Object. The deleteObject method
+     * should be functional for this object.
+     */
+    public abstract GLObject createDestructableClone();
 }

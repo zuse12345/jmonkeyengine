@@ -7,17 +7,24 @@ import com.g3d.math.Matrix4f;
 import com.g3d.math.Vector2f;
 import com.g3d.renderer.Renderer;
 import com.g3d.asset.AssetManager;
+import com.g3d.light.DirectionalLight;
+import com.g3d.light.Light;
+import com.g3d.light.LightList;
+import com.g3d.light.PointLight;
+import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
 import com.g3d.shader.Shader;
+import com.g3d.shader.Uniform;
 import com.g3d.texture.Texture;
+import java.awt.Point;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Material {
+public class Material implements Cloneable {
 
     private final MaterialDef def;
-    private final Map<String, MatParam> paramValues = new HashMap<String, MatParam>();
+    private Map<String, MatParam> paramValues = new HashMap<String, MatParam>();
 //    private final Map<String, MatParamValue> paramValues = new HashMap<String, MatParamValue>();
 //    private final Map<String, MatParamTextureValue> texValues = new HashMap<String, MatParamTextureValue>();
 
@@ -80,6 +87,22 @@ public class Material {
         this(contentMan.loadMaterialDef(defName));
     }
 
+    @Override
+    public Material clone(){
+        try{
+            Material mat = (Material) super.clone();
+            if (additionalState != null){
+                mat.additionalState = additionalState.clone();
+            }
+            mat.technique = null;
+            mat.techniques = new HashMap<String, Technique>();
+            mat.paramValues = new HashMap<String, MatParam>(paramValues);
+            return mat;
+        }catch (CloneNotSupportedException ex){
+            throw new AssertionError();
+        }
+    }
+
     public Technique getActiveTechnique() {
         return technique;
     }
@@ -123,7 +146,7 @@ public class Material {
             // active technique.
             return;
         }
-        tech.makeCurrent(def.getContentManager());
+        tech.makeCurrent(def.getAssetManager());
         technique = tech;
     }
 
@@ -200,6 +223,67 @@ public class Material {
     }
 
     /**
+     * Uploads the lights in the light list as two uniform arrays.<br/><br/>
+     *      * <p>
+     * <code>uniform vec4 g_LightColor[numLights];</code><br/>
+     * // g_LightColor.rgb is the diffuse/specular color of the light.<br/>
+     * // g_Lightcolor.a is the type of light, 0 = Directional, 1 = Point, <br/>
+     * // 2 = Spot. <br/>
+     * <br/>
+     * <code>uniform vec4 g_LightPosition[numLights];</code><br/>
+     * // g_LightPosition.xyz is the position of the light (for point lights)<br/>
+     * // or the direction of the light (for directional lights).<br/>
+     * // g_LightPosition.w is the inverse radius (1/r) of the light (for attenuation) <br/>
+     * </p>
+     *
+     * @param shader
+     * @param lightList
+     */
+    public void updateLightListUniforms(Shader shader, Geometry g, int numLights){
+        if (numLights == 0) // this shader does not do lighting, ignore.
+            return;
+
+        LightList lightList = g.getWorldLightList();
+        Uniform lightColor = shader.getUniform("g_LightColor");
+        Uniform lightPos = shader.getUniform("g_LightPosition");
+        lightColor.setVector4Length(numLights);
+        lightPos.setVector4Length(numLights);
+        for (int i = 0; i < numLights; i++){
+            if (lightList.size() <= i){
+                lightColor.setVector4InArray(0f, 0f, 0f, 0f, i);
+                lightPos.setVector4InArray(0f, 0f, 0f, 0f, i);
+            }else{
+                Light l = lightList.get(i);
+                ColorRGBA color = l.getColor();
+                lightColor.setVector4InArray(color.getRed(),
+                                             color.getGreen(),
+                                             color.getBlue(),
+                                             l.getType().getId(),
+                                             i);
+
+                switch (l.getType()){
+                    case Directional:
+                        DirectionalLight dl = (DirectionalLight) l;
+                        Vector3f dir = dl.getDirection();
+                        lightPos.setVector4InArray(dir.getX(), dir.getY(), dir.getZ(), -1, i);
+                        break;
+                    case Point:
+                        PointLight pl = (PointLight) l;
+                        Vector3f pos = pl.getPosition();
+                        float invRadius = pl.getRadius();
+                        if (invRadius != 0){
+                            invRadius = 1f / invRadius;
+                        }
+                        lightPos.setVector4InArray(pos.getX(), pos.getY(), pos.getZ(), invRadius, i);
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("Unknown type of light: "+l.getType());
+                }
+            }
+        }
+    }
+
+    /**
      * Should be called after selectTechnique()
      * @param geom
      * @param r
@@ -223,11 +307,12 @@ public class Material {
         Shader shader = technique.getShader();
 
         // send lighting information, if needed
-        if (techDef.isUsingLighting()){
-            r.updateLightListUniforms(shader, geom, 4);
-        }else{
-            // tell renderer not to use lighting for this material
-            r.updateLightListUniforms(shader, geom, 0);
+        if (techDef.isUsingLighting() && shader != null){
+            // shader method to set lighting
+            updateLightListUniforms(shader, geom, 4);
+        }else if (techDef.isUsingLighting()){
+            // fixed-function method to set lighting
+            r.setLighting(geom.getWorldLightList());
         }
 
         // update camera and world matrices

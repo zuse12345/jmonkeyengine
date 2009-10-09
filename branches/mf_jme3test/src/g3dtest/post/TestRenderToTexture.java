@@ -78,7 +78,7 @@ public class TestRenderToTexture extends SimpleApplication {
         quad.setMaterial(mat);
         rootNode.attachChild(quad);
 
-        rootNode.updateGeometricState(0, true);
+        rootNode.updateGeometricState();
     }
 
     @Override
@@ -89,7 +89,8 @@ public class TestRenderToTexture extends SimpleApplication {
         q.fromAngles(angle, 0, angle);
         fbBox.setLocalRotation(q);
 
-        fbNode.updateGeometricState(0, true);
+        fbNode.updateLogicalState(tpf);
+        fbNode.updateGeometricState();
     }
 
     @Override

@@ -10,6 +10,8 @@ MaterialDef Wire Color {
 
         RenderState {
             FaceCull Off
+            Blend Alpha
+            AlphaTestFalloff 0.01
         }
 
         WorldParameters {

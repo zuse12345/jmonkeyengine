@@ -14,10 +14,9 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Reads OBJ format models.
@@ -253,6 +252,7 @@ public class OBJLoader implements AssetLoader {
     public Object load(AssetInfo info){
         InputStream in = info.openStream();
         scan = new Scanner(in);
+        scan.useLocale(Locale.US);
         while (readLine());
         Mesh m = constructMesh();
         try{

@@ -29,13 +29,13 @@ public class ParticleTriMesh extends ParticleMesh {
         // set positions
         FloatBuffer pb = BufferUtils.createVector3Buffer(numParticles * 4);
         VertexBuffer pvb = new VertexBuffer(VertexBuffer.Type.Position);
-        pvb.setupData(Usage.StreamWriteOnly, 3, Format.Float, pb);
+        pvb.setupData(Usage.Stream, 3, Format.Float, pb);
         setBuffer(pvb);
 
         // set colors
         ByteBuffer cb = BufferUtils.createByteBuffer(numParticles * 4 * 4);
         VertexBuffer cvb = new VertexBuffer(VertexBuffer.Type.Color);
-        cvb.setupData(Usage.StreamWriteOnly, 4, Format.UnsignedByte, cb);
+        cvb.setupData(Usage.Stream, 4, Format.UnsignedByte, cb);
         cvb.setNormalized(true);
         setBuffer(cvb);
 
@@ -54,7 +54,7 @@ public class ParticleTriMesh extends ParticleMesh {
             tvb.setupData(Usage.Static, 2, Format.Float, tb);
         }else{
             uniqueTexCoords = true;
-            tvb.setupData(Usage.StreamWriteOnly, 2, Format.Float, tb);
+            tvb.setupData(Usage.Stream, 2, Format.Float, tb);
         }
         setBuffer(tvb);
 

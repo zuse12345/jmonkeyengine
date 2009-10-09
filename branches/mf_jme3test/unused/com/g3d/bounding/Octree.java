@@ -157,6 +157,7 @@ public class Octree {
      * Check every triangle for intersection with the Bounding Box.
      */
     private List<Integer> collectTriangles(BoundingBox bb) {
+        assert TempVars.get().lock();
         Triangle tempTri = TempVars.get().triangle;
 
         List<Integer> triList = new ArrayList<Integer>();
@@ -175,6 +176,8 @@ public class Octree {
                 triList.add(i);
             }
         }
+        assert TempVars.get().unlock();
+
         return triList;
     }
 

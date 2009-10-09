@@ -61,6 +61,7 @@ public class AssetManager {
             registerLocator("/shaderlib/", ClasspathLocator.class, "glsllib");
             registerLocator("/models/", ClasspathLocator.class, "obj", "meshxml", "material");
             registerLocator("/fonts/", ClasspathLocator.class, "fnt");
+            registerLocator("/", ClasspathLocator.class, "*");
             registerLoader(AWTLoader.class, "jpg", "bmp", "gif", "png", "jpeg");
             registerLoader(WAVLoader.class, "wav");
             registerLoader(JOGGLoader.class, "ogg");
@@ -293,9 +294,11 @@ public class AssetManager {
      * @param matFileName
      * @return
      */
-    public Spatial loadOgreModel(String name, String matFileName)
-    {
-        OgreMaterialList materialList = (OgreMaterialList) loadContent(new AssetKey(matFileName));
+    public Spatial loadOgreModel(String name, String matFileName){
+        OgreMaterialList materialList = null;
+        if (matFileName != null){
+            materialList = (OgreMaterialList) loadContent(new AssetKey(matFileName));
+        }
         return (Spatial) loadContent(new OgreMeshKey(name, materialList));
     }
 

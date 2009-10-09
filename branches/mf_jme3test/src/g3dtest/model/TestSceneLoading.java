@@ -8,7 +8,6 @@ import com.g3d.scene.Geometry;
 import com.g3d.scene.Spatial;
 import com.g3d.scene.shape.Sphere;
 import com.g3d.texture.Texture;
-import com.g3d.texture.TextureCubeMap;
 
 public class TestSceneLoading extends SimpleApplication {
 

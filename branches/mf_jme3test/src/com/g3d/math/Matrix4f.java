@@ -191,13 +191,14 @@ public class Matrix4f implements Savable, Cloneable {
 //        m12 = -direction.y;
 //        m22 = -direction.z;
 //
+        assert TempVars.get().lock();
         Matrix4f transMatrix = TempVars.get().tempMat4;
         transMatrix.loadIdentity();
         transMatrix.m03 = -location.x;
         transMatrix.m13 = -location.y;
         transMatrix.m23 = -location.z;
-
         this.multLocal(transMatrix);
+        assert TempVars.get().unlock();
 //        transMatrix.multLocal(this);
 
 //        set(transMatrix);

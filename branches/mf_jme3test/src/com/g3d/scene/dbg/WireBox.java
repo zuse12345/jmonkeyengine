@@ -44,7 +44,8 @@ public class WireBox extends Mesh {
         if (pvb == null){
             pvb = new VertexBuffer(Type.Position);
             pb = BufferUtils.createVector3Buffer(8);
-            pvb.setupData(Usage.DynamicWriteOnly, 3, Format.Float, pb);
+            pvb.setupData(Usage.Dynamic, 3, Format.Float, pb);
+            setBuffer(pvb);
         }else{
             pb = (FloatBuffer) pvb.getData();
         }

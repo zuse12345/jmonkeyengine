@@ -164,7 +164,7 @@ public class HDRRenderer {
             fsQuad.setHeight(dst.getHeight());
         }
         fsQuad.setMaterial(mat);
-        fsQuad.updateGeometricState(0, true);
+        fsQuad.updateGeometricState();
 
         r.setFrameBuffer(dst);
         r.clearBuffers(true, true, true);

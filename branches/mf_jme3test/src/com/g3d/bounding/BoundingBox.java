@@ -126,6 +126,7 @@ public class BoundingBox extends BoundingVolume {
         }
 
         TempVars vars = TempVars.get();
+        assert vars.lock();
         Vector3f min = vars.vect1.set(new Vector3f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY));
         Vector3f max = vars.vect2.set(new Vector3f(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY));
         
@@ -145,6 +146,8 @@ public class BoundingBox extends BoundingVolume {
         xExtent = max.x - center.x;
         yExtent = max.y - center.y;
         zExtent = max.z - center.z;
+
+        assert vars.unlock();
     }
     
     public void computeFromTris(int[] indices, Mesh mesh, int start, int end) {
@@ -153,6 +156,7 @@ public class BoundingBox extends BoundingVolume {
         }
 
         TempVars vars = TempVars.get();
+        assert vars.lock();
         Vector3f vect1 = vars.vect1;
         Vector3f vect2 = vars.vect2;
         Triangle triangle = vars.triangle;
@@ -177,20 +181,22 @@ public class BoundingBox extends BoundingVolume {
         xExtent = max.x - center.x;
         yExtent = max.y - center.y;
         zExtent = max.z - center.z;
+
+        assert vars.unlock();
     }
 
     public static final void checkMinMax(Vector3f min, Vector3f max, Vector3f point) {
         if (point.x < min.x)
             min.x = point.x;
-        else if (point.x > max.x)
+        if (point.x > max.x)
             max.x = point.x;
         if (point.y < min.y)
             min.y = point.y;
-        else if (point.y > max.y)
+        if (point.y > max.y)
             max.y = point.y;
         if (point.z < min.z)
             min.z = point.z;
-        else if (point.z > max.z)
+        if (point.z > max.z)
             max.z = point.z;
     }
 
@@ -211,6 +217,7 @@ public class BoundingBox extends BoundingVolume {
             return;
 
         TempVars vars = TempVars.get();
+        assert vars.lock();
         BufferUtils.populateFromBuffer(vars.vect1, points, 0);
         float minX = vars.vect1.x, minY = vars.vect1.y, minZ = vars.vect1.z;
         float maxX = vars.vect1.x, maxY = vars.vect1.y, maxZ = vars.vect1.z;
@@ -233,6 +240,8 @@ public class BoundingBox extends BoundingVolume {
             else if (vars.vect1.z > maxZ)
                 maxZ = vars.vect1.z;
         }
+
+        assert vars.unlock();
 
         center.set(minX + maxX, minY + maxY, minZ + maxZ);
         center.multLocal(0.5f);
@@ -268,12 +277,13 @@ public class BoundingBox extends BoundingVolume {
         trans.getRotation().mult(box.center, box.center);
         box.center.addLocal(trans.getTranslation());
 
-        Matrix3f transMatrix = TempVars.get().tempMat3;
+        TempVars vars = TempVars.get();
+        assert vars.lock();
+        Matrix3f transMatrix = vars.tempMat3;
         transMatrix.set(trans.getRotation());
         // Make the rotation matrix all positive to get the maximum x/y/z extent
         transMatrix.absoluteLocal();
 
-        TempVars vars = TempVars.get();
         Vector3f scale = trans.getScale();
         vars.vect1.set(xExtent * scale.x, yExtent * scale.y, zExtent * scale.z);
         transMatrix.mult(vars.vect1, vars.vect2);
@@ -281,6 +291,8 @@ public class BoundingBox extends BoundingVolume {
         box.xExtent = FastMath.abs(vars.vect2.getX());
         box.yExtent = FastMath.abs(vars.vect2.getY());
         box.zExtent = FastMath.abs(vars.vect2.getZ());
+
+        assert vars.unlock();
 
         return box;
     }
@@ -293,6 +305,7 @@ public class BoundingBox extends BoundingVolume {
             box = (BoundingBox) store;
         }
         TempVars vars = TempVars.get();
+        assert vars.lock();
 
         float w = trans.multProj(center, box.center);
         box.center.divideLocal(w);
@@ -310,6 +323,8 @@ public class BoundingBox extends BoundingVolume {
         box.xExtent = FastMath.abs(vars.vect1.getX());
         box.yExtent = FastMath.abs(vars.vect1.getY());
         box.zExtent = FastMath.abs(vars.vect1.getZ());
+
+        assert vars.unlock();
 
         return box;
     }
@@ -477,6 +492,7 @@ public class BoundingBox extends BoundingVolume {
             float boxZ, BoundingBox rVal) {
 
         TempVars vars = TempVars.get();
+        assert vars.lock();
         vars.vect1.x = center.x - xExtent;
         if (vars.vect1.x > boxCenter.x - boxX)
             vars.vect1.x = boxCenter.x - boxX;
@@ -502,6 +518,8 @@ public class BoundingBox extends BoundingVolume {
         xExtent = vars.vect2.x - center.x;
         yExtent = vars.vect2.y - center.y;
         zExtent = vars.vect2.z - center.z;
+
+        assert vars.unlock();
 
         return rVal;
     }
@@ -621,6 +639,7 @@ public class BoundingBox extends BoundingVolume {
         float rhs;
 
         TempVars vars = TempVars.get();
+        assert vars.lock();
         Vector3f diff = ray.origin.subtract(getCenter(vars.vect2), vars.vect1);
 
         final float[] fWdU      = vars.fWdU;
@@ -634,6 +653,7 @@ public class BoundingBox extends BoundingVolume {
         fDdU[0] = diff.dot(Vector3f.UNIT_X);
         fADdU[0] = FastMath.abs(fDdU[0]);
         if (fADdU[0] > xExtent && fDdU[0] * fWdU[0] >= 0.0) {
+            assert vars.unlock();
             return false;
         }
 
@@ -642,6 +662,7 @@ public class BoundingBox extends BoundingVolume {
         fDdU[1] = diff.dot(Vector3f.UNIT_Y);
         fADdU[1] = FastMath.abs(fDdU[1]);
         if (fADdU[1] > yExtent && fDdU[1] * fWdU[1] >= 0.0) {
+            assert vars.unlock();
             return false;
         }
 
@@ -650,6 +671,7 @@ public class BoundingBox extends BoundingVolume {
         fDdU[2] = diff.dot(Vector3f.UNIT_Z);
         fADdU[2] = FastMath.abs(fDdU[2]);
         if (fADdU[2] > zExtent && fDdU[2] * fWdU[2] >= 0.0) {
+            assert vars.unlock();
             return false;
         }
 
@@ -658,22 +680,25 @@ public class BoundingBox extends BoundingVolume {
         fAWxDdU[0] = FastMath.abs(wCrossD.dot(Vector3f.UNIT_X));
         rhs = yExtent * fAWdU[2] + zExtent * fAWdU[1];
         if (fAWxDdU[0] > rhs) {
+            assert vars.unlock();
             return false;
         }
 
         fAWxDdU[1] = FastMath.abs(wCrossD.dot(Vector3f.UNIT_Y));
         rhs = xExtent * fAWdU[2] + zExtent * fAWdU[0];
         if (fAWxDdU[1] > rhs) {
+            assert vars.unlock();
             return false;
         }
 
         fAWxDdU[2] = FastMath.abs(wCrossD.dot(Vector3f.UNIT_Z));
         rhs = xExtent * fAWdU[1] + yExtent * fAWdU[0];
         if (fAWxDdU[2] > rhs) {
+            assert vars.unlock();
             return false;
-
         }
 
+        assert vars.unlock();
         return true;
     }
 
@@ -682,6 +707,7 @@ public class BoundingBox extends BoundingVolume {
      */
     public IntersectionRecord intersectsWhere(Ray ray) {
         TempVars vars = TempVars.get();
+        assert vars.lock();
         Vector3f diff = vars.vect1.set(ray.origin).subtractLocal(center);
         Vector3f direction = vars.vect2.set(ray.direction);
 
@@ -694,6 +720,7 @@ public class BoundingBox extends BoundingVolume {
                 && clip(-direction.y, +diff.y - yExtent, t)
                 && clip(+direction.z, -diff.z - zExtent, t)
                 && clip(-direction.z, +diff.z - zExtent, t);
+        assert vars.unlock();
         
         if (notEntirelyClipped && (t[0] != saveT0 || t[1] != saveT1)) {
             if (t[1] > t[0]) {
@@ -922,6 +949,7 @@ public class BoundingBox extends BoundingVolume {
         xExtent = max.x - center.x;
         yExtent = max.y - center.y;
         zExtent = max.z - center.z;
+        assert xExtent > 0 && yExtent > 0 && zExtent > 0;
     }
 
     @Override

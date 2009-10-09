@@ -57,20 +57,35 @@ public class MaterialDef {
         public String getName(){
             return name;
         }
+
+        @Override
+        public boolean equals(Object other){
+            if (!(other instanceof MatParam))
+                return false;
+
+            MatParam otherParam = (MatParam) other;
+            return otherParam.type == type &&
+                   otherParam.name.equals(name);
+        }
+
+        @Override
+        public String toString(){
+            return type.name()+" "+name;
+        }
     }
 
     private String name;
-    private final AssetManager contentManager;
+    private final AssetManager assetManager;
     private final Map<String, TechniqueDef> techniques = new HashMap<String, TechniqueDef>();
     private final Map<String, MatParam> matParams = new HashMap<String, MatParam>();
     
     public MaterialDef(AssetManager contentManager, String name){
-        this.contentManager = contentManager;
+        this.assetManager = contentManager;
         this.name = name;
     }
 
-    public AssetManager getContentManager(){
-        return contentManager;
+    public AssetManager getAssetManager(){
+        return assetManager;
     }
 
     public String getName(){

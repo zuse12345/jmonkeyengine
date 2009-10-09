@@ -3,6 +3,7 @@ package com.g3d.util;
 import com.g3d.math.Eigen3f;
 import com.g3d.math.Matrix4f;
 import com.g3d.math.Matrix3f;
+import com.g3d.math.Plane;
 import com.g3d.math.Quaternion;
 import com.g3d.math.Triangle;
 import com.g3d.math.Vector2f;
@@ -123,6 +124,11 @@ public class TempVars {
      * Eigen
      */
     public final Eigen3f eigen = new Eigen3f();
+
+    /**
+     * Plane
+     */
+     public final Plane plane = new Plane();
 
     /**
      * BoundingBox ray collision

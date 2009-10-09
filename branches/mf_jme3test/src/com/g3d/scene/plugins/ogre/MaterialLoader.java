@@ -15,6 +15,7 @@ import com.g3d.texture.TextureCubeMap;
 import com.g3d.util.BufferUtils;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class MaterialLoader implements AssetLoader {
@@ -24,9 +25,11 @@ public class MaterialLoader implements AssetLoader {
     private ColorRGBA diffuse, specular;
     private Texture texture;
     private String texName;
+    private String matName;
     private float shinines;
     private boolean vcolor = false;
     private boolean blend = false;
+    private boolean twoSide = false;
 
     private String readString(String end){
         scan.useDelimiter(end);
@@ -139,6 +142,7 @@ public class MaterialLoader implements AssetLoader {
                 // use vertex colors
                 diffuse = ColorRGBA.White;
                 vcolor = true;
+                scan.next(); // skip it
             }else{
                 diffuse = readColor();
             }
@@ -164,6 +168,17 @@ public class MaterialLoader implements AssetLoader {
             if (mode.equals("alpha_blend")){
                 blend = true;
             }
+        }else if (keyword.equals("cull_hardware")){
+            String mode = scan.next();
+            if (mode.equals("none")){
+                twoSide = true;
+            }
+        }else if (keyword.equals("cull_software")){
+            // ignore
+            scan.next();
+        }else{
+            System.out.println(matName + ": " + keyword);
+            readString("\n");
         }
     }
 
@@ -200,15 +215,14 @@ public class MaterialLoader implements AssetLoader {
         }
     }
 
-    private String readMaterial(){
+    private void readMaterial(){
         scan.next(); // skip "material"
         // read name
-        String name = readString("\\{");
+        matName = readString("\\{");
         scan.next(); // skip "{"
         while (scan.hasNext("technique")){
             readTechnique();
         }
-        return name;
     }
 
     private Material compileMaterial(){
@@ -218,9 +232,14 @@ public class MaterialLoader implements AssetLoader {
             rs.setAlphaTest(true);
             rs.setAlphaFallOff(0.01f);
             rs.setBlendMode(RenderState.BlendMode.PremultAlpha);
-            rs.setFaceCullMode(RenderState.FaceCullMode.Off);
-            rs.setDepthWrite(false);
+            if (twoSide)
+                rs.setFaceCullMode(RenderState.FaceCullMode.Off);
+//            rs.setDepthWrite(false);
             mat.setTransparent(true);
+        }else{
+            RenderState rs = mat.getAdditionalRenderState();
+            if (twoSide)
+                rs.setFaceCullMode(RenderState.FaceCullMode.Off);
         }
 
         if (vcolor)
@@ -243,8 +262,9 @@ public class MaterialLoader implements AssetLoader {
         assetManager = info.getManager();
         OgreMaterialList list = new OgreMaterialList();
         scan = new Scanner(info.openStream());
+        scan.useLocale(Locale.US);
         while (scan.hasNext("material")){
-            String matName = readMaterial();
+            readMaterial();
             Material mat = compileMaterial();
             list.put(matName, mat);
         }

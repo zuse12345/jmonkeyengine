@@ -7,6 +7,7 @@ import com.g3d.audio.joal.JoalAudioRenderer;
 import com.g3d.audio.lwjgl.LwjglAudioRenderer;
 import com.g3d.system.jogl.JoglDisplay;
 import com.g3d.system.lwjgl.LwjglDisplay;
+import com.g3d.system.lwjgl.LwjglOffscreenBuffer;
 import com.g3d.util.Natives;
 import java.io.IOException;
 import java.util.logging.ConsoleHandler;
@@ -39,11 +40,15 @@ public class G3DSystem {
         }
     }
 
-    public static G3DContext newDisplay(AppSettings settings) {
+    public static G3DContext newContext(AppSettings settings, G3DContext.Type contextType) {
         initialize(settings);
         G3DContext ctx;
         if (settings.getRenderer().startsWith("LWJGL")){
-            ctx = new LwjglDisplay();
+            if (contextType == G3DContext.Type.OffscreenSurface){
+                ctx = new LwjglOffscreenBuffer();
+            }else{
+                ctx = new LwjglDisplay();
+            }
             ctx.setSettings(settings);
         }else if (settings.getRenderer().startsWith("JOGL")){
             ctx = new JoglDisplay();

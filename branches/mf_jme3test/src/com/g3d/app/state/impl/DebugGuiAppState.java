@@ -37,7 +37,8 @@ public class DebugGuiAppState implements GuiAppState {
     }
 
     public void update(AppStateManager manager, float tpf) {
-        guiNode.updateGeometricState(tpf, true);
+        guiNode.updateLogicalState(tpf);
+        guiNode.updateGeometricState();
 
         RenderAppState renderService = manager.getService(RenderAppState.class);
         renderService.getRenderer().addToQueue(fpsText, Bucket.Gui);

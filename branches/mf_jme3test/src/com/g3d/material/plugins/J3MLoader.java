@@ -146,7 +146,7 @@ public class J3MLoader implements AssetLoader {
                     throw new IOException("Expected 3 or 4 floats, got '"+texturePath+"'");
                 }
             }else{
-                img = (Image) owner.loadContent(new TextureKey(texturePath, true));
+                img = (Image) owner.loadContent(new TextureKey(texturePath, false));
             }
 
             // parse texture

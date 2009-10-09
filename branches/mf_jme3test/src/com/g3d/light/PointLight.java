@@ -1,8 +1,14 @@
 package com.g3d.light;
 
 import com.g3d.bounding.BoundingVolume;
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
+import com.g3d.math.ColorRGBA;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Spatial;
+import java.io.IOException;
 
 /**
  * Represents a point light.
@@ -43,6 +49,22 @@ public class PointLight extends Light {
     @Override
     public Light.Type getType() {
         return Light.Type.Point;
+    }
+
+    @Override
+    public void write(G3DExporter ex) throws IOException {
+        super.write(ex);
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(position, "position", null);
+        oc.write(radius, "radius", 0f);
+    }
+
+    @Override
+    public void read(G3DImporter im) throws IOException {
+        super.read(im);
+        InputCapsule ic = im.getCapsule(this);
+        position = (Vector3f) ic.readSavable("position", null);
+        radius = ic.readFloat("radius", 0f);
     }
 
 }

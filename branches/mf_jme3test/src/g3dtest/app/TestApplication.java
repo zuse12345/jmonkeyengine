@@ -2,6 +2,7 @@ package g3dtest.app;
 
 import com.g3d.app.Application;
 import com.g3d.system.AppSettings;
+import com.g3d.system.G3DContext.Type;
 
 /**
  * Test Application functionality, such as create, restart, destroy, etc.
@@ -27,6 +28,14 @@ public class TestApplication {
         settings.setResolution(-1,-1); // current width/height
         app.start();
         Thread.sleep(5000);
+        app.stop();
+
+        Thread.sleep(2000);
+        System.out.println("Creating offscreen buffer application");
+        app = new Application();
+        app.start(Type.OffscreenSurface);
+        Thread.sleep(3000);
+        System.out.println("Destroying offscreen buffer");
         app.stop();
 
         System.out.println("Creating JOGL application..");

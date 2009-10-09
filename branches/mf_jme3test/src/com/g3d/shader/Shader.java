@@ -72,6 +72,14 @@ public class Shader extends GLObject {
             if (type == null)
                 throw new NullPointerException("The shader type must be specified");
         }
+        
+        protected ShaderSource(ShaderSource ss){
+            super(Type.ShaderSource, ss.id);
+            this.shaderType = ss.shaderType;
+            usable = false;
+            name = ss.name;
+            // forget source & defines
+        }
 
         public void setName(String name){
             this.name = name;
@@ -139,6 +147,10 @@ public class Shader extends GLObject {
         public void deleteObject(Renderer r){
             r.deleteShaderSource(this);
         }
+
+        public GLObject createDestructableClone(){
+            return new ShaderSource(this);
+        }
     }
 
     /**
@@ -147,6 +159,13 @@ public class Shader extends GLObject {
     public Shader(String language){
         super(Type.Shader);
         this.language = language;
+    }
+
+    protected Shader(Shader s){
+        super(Type.Shader, s.id);
+        for (ShaderSource source : shaderList){
+            this.addSource((ShaderSource) source.createDestructableClone());
+        }
     }
 
     /**
@@ -308,6 +327,10 @@ public class Shader extends GLObject {
     @Override
     public void deleteObject(Renderer r) {
         r.deleteShader(this);
+    }
+
+    public GLObject createDestructableClone(){
+        return new Shader(this);
     }
 
 }

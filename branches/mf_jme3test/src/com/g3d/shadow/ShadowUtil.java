@@ -250,16 +250,21 @@ public class ShadowUtil {
         cropMin.set(splitMin);
         cropMax.set(splitMax);
 
+//        cropMin.z = Math.min(cropMin.z, cropMax.z - cropMin.z - 1000);
+//        cropMin.z = Math.max(10f, cropMin.z);
+
         // Create the crop matrix.
         float scaleX, scaleY, scaleZ;
         float offsetX, offsetY, offsetZ;
 
-        scaleX = 2.0f / (cropMax.x - cropMin.x);
-        scaleY = 2.0f / (cropMax.y - cropMin.y);
+        scaleX = (2.0f) / (cropMax.x - cropMin.x);
+        scaleY = (2.0f) / (cropMax.y - cropMin.y);
 //        scaleZ = 2.0f / (cropMax.z - cropMin.z);
         offsetX = -0.5f * (cropMax.x + cropMin.x) * scaleX;
         offsetY = -0.5f * (cropMax.y + cropMin.y) * scaleY;
 //        offsetZ = -0.5f * (cropMax.z + cropMin.z) * scaleZ;
+
+
 //        offsetZ = -cropMin.z * scaleZ;
 
         Matrix4f cropMatrix = new Matrix4f(scaleX,  0f,      0f,      offsetX,

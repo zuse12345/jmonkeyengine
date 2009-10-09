@@ -1,0 +1,27 @@
+<skeleton>
+     <bones>
+          <bone id="#" name="string">
+               <position x,y,z/>
+	       <rotation angle="radian">
+	       <axis x,y,z>
+	  </bone>
+     </bones>
+     <bonehierarchy>
+         <boneparent bone, parent/>
+     </bonehierarchy>
+     <animations>
+          <animation name, length="seconds">
+               <tracks>
+                    <track bone="string">
+                         <keyframe time>
+                             <translate x,y,z/>
+			     <rotate angle=radian>
+				<axis x,y,z>
+			     </rotate>
+			     <scale x,y,z/>
+			 </keyframe>
+		    </track>
+	       </tracks>
+          </animation>
+     </animations>
+</skeleton>

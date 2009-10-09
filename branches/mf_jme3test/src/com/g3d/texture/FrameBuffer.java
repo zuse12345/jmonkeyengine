@@ -54,6 +54,12 @@ public class FrameBuffer extends GLObject {
         this.samples = samples;
     }
 
+    protected FrameBuffer(FrameBuffer src){
+        super(Type.FrameBuffer, src.id);
+        this.colorBuf = src.colorBuf;
+        this.depthBuf = src.depthBuf;
+    }
+
     public void setDepthBuffer(Image.Format format){
         if (id != -1)
             throw new UnsupportedOperationException("FrameBuffer already initialized.");
@@ -152,5 +158,9 @@ public class FrameBuffer extends GLObject {
     @Override
     public void deleteObject(Renderer r) {
         r.deleteFrameBuffer(this);
+    }
+
+    public GLObject createDestructableClone(){
+        return new FrameBuffer(this);
     }
 }

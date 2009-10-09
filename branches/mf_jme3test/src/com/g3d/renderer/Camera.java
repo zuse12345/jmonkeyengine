@@ -655,6 +655,8 @@ public class Camera implements Savable {
      *                      (typically {0, 1, 0} in jME.)
      */
     public void lookAt(Vector3f pos, Vector3f worldUpVector) {
+        TempVars vars = TempVars.get();
+        assert vars.lock();
         Vector3f newDirection = TempVars.get().vect1;
         Vector3f newUp = TempVars.get().vect2;
         Vector3f newLeft = TempVars.get().vect3;
@@ -678,6 +680,7 @@ public class Camera implements Savable {
 
         this.rotation.fromAxes(newLeft, newUp, newDirection);
         this.rotation.normalize();
+        assert vars.unlock();
 
         onFrameChange();
     }
@@ -1154,6 +1157,7 @@ public class Camera implements Savable {
             store = new Vector3f();
         }
 
+        assert TempVars.get().lock();
         Quaternion tmp_quat = TempVars.get().quat1;
         tmp_quat.set( worldPosition.x, worldPosition.y, worldPosition.z, 1 );
         viewProjectionMatrix.mult(tmp_quat, tmp_quat);
@@ -1161,6 +1165,7 @@ public class Camera implements Savable {
         store.x = ( ( tmp_quat.getX() + 1 ) * ( viewPortRight - viewPortLeft ) / 2 + viewPortLeft ) * getWidth();
         store.y = ( ( tmp_quat.getY() + 1 ) * ( viewPortTop - viewPortBottom ) / 2 + viewPortBottom ) * getHeight();
         store.z = ( tmp_quat.getZ() + 1 ) / 2;
+        assert TempVars.get().unlock();
 
         return store;
     }

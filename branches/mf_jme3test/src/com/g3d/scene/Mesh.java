@@ -11,11 +11,12 @@ import com.g3d.math.Triangle;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.VertexBuffer.*;
 import com.g3d.util.BufferUtils;
-import com.g3d.util.TempVars;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
 
@@ -69,7 +70,47 @@ public class Mesh implements Savable {
 
     public void setStreamed(){
         for (VertexBuffer vb : buffers.values()){
-            vb.setUsage(Usage.DynamicWriteOnly);
+            vb.setUsage(Usage.Stream);
+        }
+    }
+
+    public void setInterleaved(){
+        ArrayList<VertexBuffer> vbs = new ArrayList<VertexBuffer>(buffers.values());
+        // index buffer not included when interleaving
+        vbs.remove(getBuffer(Type.Index));
+
+        int stride = 0; // aka bytes per vertex
+        for (VertexBuffer vb : vbs){
+            if (vb.getFormat() != Format.Float){
+                throw new UnsupportedOperationException("Cannot interleave vertex buffer.\n" +
+                                                        "Contains not-float data.");
+            }
+            stride += vb.componentsLength;
+            vb.getData().clear(); // reset position & limit (used later)
+        }
+
+        VertexBuffer allData = new VertexBuffer(Type.InterleavedData);
+        ByteBuffer dataBuf = BufferUtils.createByteBuffer(stride * getVertexCount());
+        allData.setupData(Usage.Static, -1, Format.Byte, dataBuf);
+        setBuffer(allData);
+
+        for (int vert = 0; vert < getVertexCount(); vert++){
+            for (VertexBuffer vb : vbs){
+                FloatBuffer fb = (FloatBuffer) vb.getData();
+                for (int comp = 0; comp < vb.components; comp++){
+                    dataBuf.putFloat(fb.get());
+                }
+            }
+        }
+
+        int offset = 0;
+        for (VertexBuffer vb : vbs){
+            vb.setOffset(offset);
+            vb.setStride(stride);
+            
+            // discard old buffer
+            vb.setupData(vb.usage, vb.components, vb.format, null);
+            offset += vb.componentsLength;
         }
     }
 
@@ -159,11 +200,12 @@ public class Mesh implements Savable {
     
     public void getTriangle(int index, Triangle tri){
         getTriangle(index, tri.get1(), tri.get2(), tri.get3());
+        tri.setIndex(index);
     }
 
     public void getTriangle(int index, int[] indices){
         VertexBuffer ib = getBuffer(Type.Index);
-        if (ib.getFormat() == Format.Short){
+        if (ib.getFormat() == Format.UnsignedShort){
             // accepted format for buffers
             ShortBuffer sib = (ShortBuffer) ib.getData();
 

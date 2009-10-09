@@ -42,10 +42,10 @@ public class TangentBinormalGenerator {
         if (buff instanceof ShortBuffer) {
             return new IndexWrapper() {
                 private ShortBuffer buf = (ShortBuffer) buff;
-                @Override public int get(int i) {
+                public int get(int i) {
                     return ((int) buf.get(i))&(0x0000FFFF);
                 }
-                @Override public int size() {
+                public int size() {
                     return buf.capacity();
                 }
             };
@@ -53,10 +53,10 @@ public class TangentBinormalGenerator {
         else if (buff instanceof IntBuffer) {
             return new IndexWrapper() {
                 private IntBuffer buf = (IntBuffer) buff;
-                @Override public int get(int i) {
+                public int get(int i) {
                     return buf.get(i);
                 }
-                @Override public int size() {
+                public int size() {
                     return buf.capacity();
                 }
             };

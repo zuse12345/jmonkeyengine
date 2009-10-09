@@ -121,8 +121,10 @@ public abstract class SimpleApplication extends Application {
         }
         
         simpleUpdate(tpf);
-        rootNode.updateGeometricState(tpf, true);
-        guiNode.updateGeometricState(tpf, true);
+        rootNode.updateLogicalState(tpf);
+        guiNode.updateLogicalState(tpf);
+        rootNode.updateGeometricState();
+        guiNode.updateGeometricState();
 
         renderer.clearBuffers(true, true, true);
         render(rootNode, renderer);

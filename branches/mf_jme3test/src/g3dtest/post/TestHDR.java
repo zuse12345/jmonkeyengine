@@ -63,7 +63,8 @@ public class TestHDR extends SimpleApplication {
 
     @Override
     public void simpleUpdate(float tpf){
-        fbNode.updateGeometricState(tpf, true);
+        fbNode.updateLogicalState(tpf);
+        fbNode.updateGeometricState();
         lastTpf = tpf;
     }
 

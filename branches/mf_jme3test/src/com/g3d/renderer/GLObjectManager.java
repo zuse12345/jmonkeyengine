@@ -31,10 +31,12 @@ public class GLObjectManager {
     private List<GLObject> objectList = new ArrayList<GLObject>();
 
     private class GLObjectRef extends PhantomReference<Object>{
+        
         private GLObject obj;
 
-        public GLObjectRef(GLObject obj){
-            super(obj.handleRef, refQueue);
+        public GLObjectRef(GLObject obj, Object handleRef){
+            super(handleRef, refQueue);
+            assert handleRef != null;
             this.obj = obj;
         }
     }
@@ -43,8 +45,9 @@ public class GLObjectManager {
      * Register a GLObject with the manager.
      */
     public void registerForCleanup(GLObject obj){
-        new GLObjectRef(obj);
-        objectList.add(obj);
+        GLObject objClone = obj.createDestructableClone();
+        GLObjectRef ref = new GLObjectRef(objClone, obj.handleRef);
+        objectList.add(objClone);
         if (logger.isLoggable(Level.FINEST))
             logger.log(Level.FINEST, "Registered: {0}", new String[]{obj.toString()});
     }

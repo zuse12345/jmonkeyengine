@@ -43,6 +43,8 @@ import com.g3d.math.Plane;
 import com.g3d.math.Ray;
 import com.g3d.math.Transform;
 import com.g3d.math.Vector3f;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 //import com.jme.scene.TriMesh;
 
 /**
@@ -52,7 +54,7 @@ import com.g3d.math.Vector3f;
  * @author Mark Powell
  * @version $Id: BoundingVolume.java,v 1.24 2007/09/21 15:45:32 nca Exp $
  */
-public abstract class BoundingVolume implements Savable {
+public abstract class BoundingVolume implements Savable, Cloneable {
 
     public enum Type {
         Sphere, AABB, OBB, Capsule;
@@ -290,8 +292,16 @@ public abstract class BoundingVolume implements Savable {
      * @return true if the point lies within this bounding volume.
      */
     public abstract boolean contains(Vector3f point);
-    
-    
+
+    @Override
+    public BoundingVolume clone(){
+        try{
+            return (BoundingVolume) super.clone();
+        }catch (CloneNotSupportedException ex){
+            throw new AssertionError();
+        }
+    }
+
     public void write(G3DExporter e) throws IOException {
         e.getCapsule(this).write(center, "center", Vector3f.ZERO);
     }

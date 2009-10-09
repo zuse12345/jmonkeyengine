@@ -1,6 +1,9 @@
 package com.g3d.material;
 
-public class RenderState {
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class RenderState implements Cloneable {
 
     public static final RenderState DEFAULT = new RenderState();
     public static final RenderState NULL = new RenderState();
@@ -42,6 +45,15 @@ public class RenderState {
     boolean offsetEnabled = false;
     float offsetFactor = 0;
     float offsetUnits = 0;
+
+    @Override
+    public RenderState clone(){
+        try{
+            return (RenderState) super.clone();
+        }catch (CloneNotSupportedException ex){
+            throw new AssertionError();
+        }
+    }
 
     public boolean isColorWrite() {
         return colorWrite;

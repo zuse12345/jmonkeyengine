@@ -31,11 +31,7 @@ public class TestDebugShapes extends SimpleApplication {
 //        GL11.glLineWidth(5);
 //        GL11.glEnable(GL11.GL_LINE_SMOOTH);
 //        GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
-//        GL11.glEnable(GL11.GL_BLEND);
-//        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-//        GL11.glEnable(GL11.GL_ALPHA_TEST);
-//        GL11.glAlphaFunc(GL11.GL_GREATER, 0.1f);
-
+        
         cam.setLocation(new Vector3f(2,1.5f,2));
         cam.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
 

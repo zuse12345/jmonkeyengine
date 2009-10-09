@@ -177,15 +177,17 @@ public class FlyByCamera implements BindingListener {
     }
 
     public void riseCamera(float value){
+        assert TempVars.get().lock();
         Vector3f pos = TempVars.get().vect1.set(cam.getLocation());
         pos.addLocal(0, value * moveSpeed, 0);
-        cam.setLocation(pos);
+        Vector3f c = pos.clone();
+        assert TempVars.get().unlock();
+        cam.setLocation(c);
     }
 
     public void moveCamera(float value, boolean sideways){
         TempVars vars = TempVars.get();
-
-        Vector3f vel = vars.vect1;
+        Vector3f vel = new Vector3f();
         if (sideways){
             cam.getLeft(vel);
         }else{

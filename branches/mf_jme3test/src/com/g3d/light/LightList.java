@@ -1,12 +1,20 @@
 package com.g3d.light;
 
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
+import com.g3d.export.Savable;
 import com.g3d.scene.Spatial;
 import com.g3d.util.SortUtil;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class LightList implements Iterable<Light> {
+public class LightList implements Iterable<Light>, Savable, Cloneable {
 
     Light[] list, tlist;
     float[] distToOwner;
@@ -28,6 +36,12 @@ public class LightList implements Iterable<Light> {
                 return 0;
         }
     };
+
+    /**
+     * Default constructor for serialization. Do not use
+     */
+    public LightList(){
+    }
 
     public LightList(Spatial owner) {
         listSize = 0;
@@ -169,6 +183,32 @@ public class LightList implements Iterable<Light> {
                 throw new UnsupportedOperationException();
             }
         };
+    }
+
+    @Override
+    public LightList clone(){
+        try{
+            return (LightList) super.clone();
+        }catch (CloneNotSupportedException ex){
+            throw new AssertionError();
+        }
+    }
+
+    public void write(G3DExporter ex) throws IOException {
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(owner, "owner", null);
+        oc.write(listSize, "list_size", 0);
+        oc.write(list, "list", null);
+    }
+
+    public void read(G3DImporter im) throws IOException {
+        InputCapsule ic = im.getCapsule(this);
+        owner = (Spatial) ic.readSavable("owner", null);
+        listSize = ic.readInt("list_size", 0);
+        list =  (Light[]) ic.readSavableArray("list", null);
+        assert list.length == DEFAULT_SIZE;
+        distToOwner = new float[DEFAULT_SIZE];
+        Arrays.fill(distToOwner, Float.NEGATIVE_INFINITY);
     }
 
 }

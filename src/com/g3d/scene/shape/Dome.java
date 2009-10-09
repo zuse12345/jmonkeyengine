@@ -216,6 +216,7 @@ public class Dome extends Mesh {
         }
 
         TempVars vars = TempVars.get();
+        assert vars.lock();
         Vector3f tempVc = vars.vect3;
         Vector3f tempVb = vars.vect2;
         Vector3f tempVa = vars.vect1;
@@ -257,6 +258,8 @@ public class Dome extends Mesh {
             BufferUtils.copyInternalVector3(nb, iSave, i);
             tb.put(1.0f).put(fYFraction);
         }
+
+        assert vars.unlock();
 
         // pole
         vb.put(center.x).put(center.y + radius).put(center.z);

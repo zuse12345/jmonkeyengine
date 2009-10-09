@@ -1,23 +1,26 @@
 package com.g3d.audio;
 
-import com.g3d.math.Vector3f;
 import com.g3d.asset.AssetManager;
+import com.g3d.asset.AudioKey;
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
+import com.g3d.export.Savable;
+import java.io.IOException;
 
-public class AudioSource extends ALObject {
+public class AudioSource implements Cloneable, Savable {
 
-    private Vector3f position = new Vector3f();
-    private Vector3f velocity = new Vector3f();
-
-    private boolean positional = true;
-    private boolean loop = false;
-    private boolean reverbEnabled = true;
-    private float volume = 1;
-    private float pitch = 1;
-    private float timeOffset = 0;
-    private float maxDistance = 20; // 20 meters
-
-    private AudioData data = null;
-    private Status status = Status.Stopped;
+    protected boolean loop = false;
+    protected float volume = 1;
+    protected float pitch = 1;
+    protected float timeOffset = 0;
+    protected Filter dryFilter;
+    protected AudioKey key;
+    
+    protected transient AudioData data = null;
+    protected transient Status status = Status.Stopped;
+    protected transient int channel = -1;
 
     public enum Status {
         Playing,
@@ -28,25 +31,49 @@ public class AudioSource extends ALObject {
     public AudioSource(){
     }
 
-    public AudioSource(AudioData ad){
+    public AudioSource(AudioData ad, AudioKey key){
         this();
-        setAudioData(ad);
+        setAudioData(ad, key);
     }
 
     public AudioSource(AssetManager manager, String name, boolean stream){
-        this(manager.loadAudio(name, stream));
+        this();
+        this.key = new AudioKey(name, stream);
+        this.data = (AudioData) manager.loadContent(key, !stream);
     }
     
     public AudioSource(AssetManager manager, String name){
         this(manager, name, false);
     }
-    
-    public void setAudioData(AudioData ad){
-        if (data != null)
-            throw new IllegalStateException("AudioData already set");
 
+    public void setChannel(int channel){
+        if (status != Status.Stopped)
+            throw new IllegalStateException("Can only set source id when stopped");
+
+        this.channel = channel;
+    }
+
+    public int getChannel(){
+        return channel;
+    }
+
+    public Filter getDryFilter() {
+        return dryFilter;
+    }
+
+    public void setDryFilter(Filter dryFilter) {
+        if (this.dryFilter != null)
+            throw new IllegalStateException("Filter already set");
+
+        this.dryFilter = dryFilter;
+    }
+    
+    public void setAudioData(AudioData ad, AudioKey key){
+        if (data != null)
+            throw new IllegalStateException("Cannot change data once its set");
+        
         data = ad;
-        setUpdateNeeded();
+        this.key = key;
     }
 
     public AudioData getAudioData() {
@@ -61,55 +88,12 @@ public class AudioSource extends ALObject {
         this.status = status;
     }
 
-    public boolean isPositional() {
-        return positional;
-    }
-
-    public void setPositional(boolean positional) {
-        this.positional = positional;
-    }
-
-    public boolean isReverbEnabled() {
-        return reverbEnabled;
-    }
-
-    public void setReverbEnabled(boolean reverbEnabled) {
-        this.reverbEnabled = reverbEnabled;
-    }
-
-    public float getMaxDistance() {
-        return maxDistance;
-    }
-
-    public void setMaxDistance(float maxDistance) {
-        this.maxDistance = maxDistance;
-    }
-
-    public Vector3f getPosition() {
-        return position;
-    }
-
-    public Vector3f getVelocity() {
-        return velocity;
-    }
-
-    public void setPosition(Vector3f position) {
-        this.position.set(position);
-        setUpdateNeeded();
-    }
-
-    public void setVelocity(Vector3f velocity) {
-        this.velocity.set(velocity);
-        setUpdateNeeded();
-    }
-
     public boolean isLooping() {
         return loop;
     }
 
     public void setLooping(boolean loop) {
         this.loop = loop;
-        setUpdateNeeded();
     }
 
     public float getPitch() {
@@ -120,7 +104,6 @@ public class AudioSource extends ALObject {
         if (pitch < 0.5f || pitch > 2.0f)
             throw new IllegalArgumentException("Pitch must be between 0.5 and 2.0");
 
-        setUpdateNeeded();
         this.pitch = pitch;
     }
 
@@ -132,7 +115,6 @@ public class AudioSource extends ALObject {
         if (volume < 0f)
             throw new IllegalArgumentException("Volume cannot be negative");
 
-        setUpdateNeeded();
         this.volume = volume;
     }
 
@@ -142,37 +124,54 @@ public class AudioSource extends ALObject {
 
     public void setTimeOffset(float timeOffset) {
         this.timeOffset = timeOffset;
-        setUpdateNeeded();
     }
 
-    private String toString(Vector3f v){
-        return String.format("%1.0f,%1.0f,%1.0f", v.x, v.y, v.z);
+    @Override
+    public AudioSource clone(){
+        try{
+            return (AudioSource) super.clone();
+        }catch (CloneNotSupportedException ex){
+            return null;
+        }
+    }
+
+    /*
+     * protected boolean loop = false;
+    protected float volume = 1;
+    protected float pitch = 1;
+    protected float timeOffset = 0;
+    protected Filter dryFilter;
+    protected AudioKey key;*/
+
+    public void write(G3DExporter ex) throws IOException {
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(key, "key", null);
+        oc.write(loop, "looping", false);
+        oc.write(volume, "volume", 1);
+        oc.write(pitch, "pitch", 1);
+        oc.write(timeOffset, "time_offset", 0);
+        oc.write(dryFilter, "dry_filter", null);
+    }
+
+    public void read(G3DImporter im) throws IOException {
+        InputCapsule ic = im.getCapsule(this);
+        key =   (AudioKey) ic.readSavable("key", null);
+        loop = ic.readBoolean("looping", false);
+        volume = ic.readFloat("volume", 1);
+        pitch = ic.readFloat("pitch", 1);
+        timeOffset = ic.readFloat("time_offset", 0);
+        dryFilter = (Filter) ic.readSavable("dry_filter", null);
+
     }
 
     public String toString(){
         String ret = getClass().getSimpleName() +
-                     "[id="+id+", status="+status;
-        if (positional){
-            ret += ", pos="+toString(position)+", vel="+toString(velocity);
-        }
+                     "[status="+status;
         if (volume != 1f)
             ret += ", vol="+volume;
         if (pitch != 1f)
             ret += ", pitch="+pitch;
         return ret + "]";
-    }
-
-    @Override
-    public void resetObject() {
-        id = -1;
-        status = Status.Stopped;
-        setUpdateNeeded();
-        // parent data is reset automatically
-    }
-
-    @Override
-    public void deleteObject(AudioRenderer r) {
-        r.deleteSource(this);
     }
 
 }

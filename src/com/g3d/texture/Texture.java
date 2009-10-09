@@ -308,6 +308,10 @@ public abstract class Texture extends GLObject implements Savable {
         super(GLObject.Type.Texture);
     }
 
+    protected Texture(int id){
+        super(GLObject.Type.Texture, id);
+    }
+
     /**
      * @return the MinificationFilterMode of this texture.
      */

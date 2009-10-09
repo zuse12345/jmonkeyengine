@@ -55,7 +55,7 @@ public class TestShadow extends SimpleApplication {
 //        lightMdl.setShadowMode(ShadowMode.Off);
 //        rootNode.attachChild(lightMdl);
 
-        rootNode.updateGeometricState(0,true);
+        rootNode.updateGeometricState();
         bsr = new BasicShadowRenderer(manager, 1024);
 
         frustum = new WireFrustum(bsr.getPoints());

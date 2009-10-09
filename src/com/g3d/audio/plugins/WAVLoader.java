@@ -50,6 +50,7 @@ public class WAVLoader implements AssetLoader {
     private AudioData audioData;
     private int bytesPerSec;
     private int dataLength;
+    private float duration;
 
     private DataInput in;
     private InputStream stream;
@@ -81,6 +82,12 @@ public class WAVLoader implements AssetLoader {
         int bytesPerSample = in.readShort();
         int bitsPerSample = in.readShort();
 
+        int expectedBytesPerSec = (bitsPerSample * channels * sampleRate) / 8;
+        if (expectedBytesPerSec != bytesPerSec){
+            logger.warning("Expected "+expectedBytesPerSec+" bytes per second, got "+bytesPerSec);
+        }
+        duration = dataLength / bytesPerSec;
+        
         if (!adpcm){
             if (bitsPerSample != 8 && bitsPerSample != 16)
                 throw new IOException("Only 8 and 16 bits per sample are supported!");
@@ -180,7 +187,7 @@ public class WAVLoader implements AssetLoader {
                     break;
                 case i_data:
                     if (readStream){
-                        audioStream.updateData(stream);
+                        audioStream.updateData(stream, duration);
                     }else{
                         readDataChunkForBuffer(len);
                     }

@@ -10,8 +10,6 @@ import com.g3d.scene.Spatial.CullHint;
 
 public class TestBitmapFont extends SimpleApplication {
 
-    private Node orthoNode = new Node("Ortho Node");
-
     private String txtB =
     "ABCDEFGHIKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-=_+[]\\;',./{}|:<>?";
 
@@ -33,25 +31,9 @@ public class TestBitmapFont extends SimpleApplication {
         txt4.setSize(32);
         txt4.setText("Text without restriction. Text without restriction. Text without restriction. Text without restriction");
         txt4.assemble();
-        txt4.setLocalTranslation(40, -settings.getHeight() + txt4.getLineHeight() * 2, 0);
+        txt4.setLocalTranslation(40, txt4.getLineHeight() * 2, 0);
 
-        txt4.setText("Shortened it! :)");
-        txt4.assemble();
-
-        orthoNode.setLocalTranslation(0, settings.getHeight(), 0);
-        orthoNode.setCullHint(CullHint.Never);
-        orthoNode.attachChild(txt4);
-    }
-
-    @Override
-    public void simpleUpdate(float tpf){
-        orthoNode.updateGeometricState(tpf, true);
-    }
-
-    @Override
-    public void simpleRender(Renderer r){
-        render(orthoNode, r);
-        r.renderQueue();
+        guiNode.attachChild(txt4);
     }
 
 }

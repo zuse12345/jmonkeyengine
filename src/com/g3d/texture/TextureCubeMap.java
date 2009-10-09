@@ -36,6 +36,7 @@ import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
 import com.g3d.export.InputCapsule;
 import com.g3d.export.OutputCapsule;
+import com.g3d.renderer.GLObject;
 import java.io.IOException;
 
 /**
@@ -74,6 +75,10 @@ public class TextureCubeMap extends Texture {
     public TextureCubeMap(Image img){
         super();
         setImage(img);
+    }
+
+    protected TextureCubeMap(int id){
+        super(id);
     }
 
     public Texture createSimpleClone() {
@@ -161,7 +166,11 @@ public class TextureCubeMap extends Texture {
     public Type getType() {
         return Type.CubeMap;
     }
-    
+
+    public GLObject createDestructableClone(){
+        return new TextureCubeMap(id);
+    }
+
     @Override
     public boolean equals(Object other) {
         if (!(other instanceof TextureCubeMap)) {

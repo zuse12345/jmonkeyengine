@@ -2,9 +2,15 @@ package com.g3d.collision.bih;
 
 import com.g3d.bounding.BoundingBox;
 import com.g3d.collision.TrianglePickResults;
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
+import com.g3d.export.Savable;
 import com.g3d.math.Ray;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import static java.lang.Math.min;
@@ -17,7 +23,7 @@ import static java.lang.Math.max;
  * Instant Ray Tracing: The Bounding Interval Hierarchy
  * By Carsten Wächter and Alexander Keller
  */
-public class BIHNode {
+public class BIHNode implements Savable {
 
     int leftIndex, rightIndex;
 
@@ -35,6 +41,40 @@ public class BIHNode {
 
     public BIHNode(int axis){
         this.axis = axis;
+    }
+
+    public BIHNode(){
+    }
+
+    /*
+     * int leftIndex, rightIndex;
+
+    BIHNode left;
+    BIHNode right;
+    float leftPlane;
+    float rightPlane;
+    int axis;*/
+
+    public void write(G3DExporter ex) throws IOException {
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(leftIndex,  "left_index", 0);
+        oc.write(rightIndex, "right_index", 0);
+        oc.write(leftPlane, "left_plane", 0);
+        oc.write(rightPlane, "right_plane", 0);
+        oc.write(axis, "axis", 0);
+        oc.write(left, "left_node", null);
+        oc.write(right, "right_node", null);
+    }
+
+    public void read(G3DImporter im) throws IOException {
+        InputCapsule ic = im.getCapsule(this);
+        leftIndex = ic.readInt("left_index", 0);
+        rightIndex = ic.readInt("right_index", 0);
+        leftPlane = ic.readFloat("left_plane", 0);
+        rightPlane = ic.readFloat("right_plane", 0);
+        axis = ic.readInt("axis", 0);
+        left = (BIHNode) ic.readSavable("left_node", null);
+        right = (BIHNode) ic.readSavable("right_node", null);
     }
 
     private static class BIHStackData {

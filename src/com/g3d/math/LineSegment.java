@@ -114,35 +114,39 @@ public class LineSegment implements Cloneable, Savable {
 	}
 
 	public float distanceSquared(Vector3f point) {
-        Vector3f compVec1 = TempVars.get().vect1;
+            assert TempVars.get().lock();
+            Vector3f compVec1 = TempVars.get().vect1;
 
-		point.subtract(origin, compVec1);
-		float segmentParameter = direction.dot(compVec1);
+            point.subtract(origin, compVec1);
+            float segmentParameter = direction.dot(compVec1);
 
-		if (-extent < segmentParameter) {
-			if (segmentParameter < extent) {
-				origin
-						.add(direction.mult(segmentParameter, compVec1),
-								compVec1);
-			} else {
-				origin.add(direction.mult(extent, compVec1), compVec1);
-			}
-		} else {
-			origin.subtract(direction.mult(extent, compVec1), compVec1);
-		}
+            if (-extent < segmentParameter){
+                if (segmentParameter < extent){
+                    origin.add(direction.mult(segmentParameter, compVec1),
+                            compVec1);
+                }else{
+                    origin.add(direction.mult(extent, compVec1), compVec1);
+                }
+            }else{
+                origin.subtract(direction.mult(extent, compVec1), compVec1);
+            }
 
-		compVec1.subtractLocal(point);
-		return compVec1.lengthSquared();
+            compVec1.subtractLocal(point);
+            float len = compVec1.lengthSquared();
+            assert TempVars.get().unlock();
+            return len;
 	}
 
 	public float distanceSquared(LineSegment test) {
-        Vector3f compVec1 = TempVars.get().vect1;
+            assert TempVars.get().lock();
+            Vector3f compVec1 = TempVars.get().vect1;
 
 		origin.subtract(test.getOrigin(), compVec1);
 		float negativeDirectionDot = -(direction.dot(test.getDirection()));
 		float diffThisDot = compVec1.dot(direction);
 		float diffTestDot = -(compVec1.dot(test.getDirection()));
 		float lengthOfDiff = compVec1.lengthSquared();
+           assert TempVars.get().unlock();
 		float determinant = FastMath.abs(1.0f - negativeDirectionDot
 				* negativeDirectionDot);
 		float s0, s1, squareDistance, extentDeterminant0, extentDeterminant1, tempS0, tempS1;

@@ -10,6 +10,7 @@ import com.g3d.math.ColorRGBA;
 import com.g3d.math.Matrix4f;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
+import com.g3d.renderer.Caps;
 import com.g3d.renderer.GLObjectManager;
 import com.g3d.renderer.RenderContext;
 import com.g3d.renderer.Renderer;
@@ -30,6 +31,7 @@ import com.g3d.texture.Texture;
 import com.g3d.util.TempVars;
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.media.opengl.GL;
@@ -260,6 +262,7 @@ public class JoglRenderer implements Renderer {
     }
 
     private void updateModelView(){
+        assert TempVars.get().lock();
         FloatBuffer store = TempVars.get().floatBuffer16;
 
         //update modelview
@@ -270,9 +273,11 @@ public class JoglRenderer implements Renderer {
 
         gl.glLoadMatrixf(storeMatrix(camera.getViewMatrix(),store));
         gl.glMultMatrixf(storeMatrix(worldMatrix,store));
+        assert TempVars.get().unlock();
     }
 
     private void updateProjection(){
+        assert TempVars.get().lock();
         FloatBuffer store = TempVars.get().floatBuffer16;
 
         //update modelview
@@ -282,6 +287,7 @@ public class JoglRenderer implements Renderer {
         }
 
         gl.glLoadMatrixf(storeMatrix(camera.getProjectionMatrix(),store));
+        assert TempVars.get().unlock();
     }
 
     public void setWorldMatrix(Matrix4f worldMatrix) {
@@ -293,8 +299,8 @@ public class JoglRenderer implements Renderer {
     public void updateWorldParameters(List<Uniform> params) {
     }
 
-    public void updateLightListUniforms(Shader shader, Geometry geom, int numLights) {
-        if (numLights == 0) {
+    public void setLighting(LightList list) {
+        if (list.size() == 0) {
             // turn off lighting
             gl.glDisable(gl.GL_LIGHTING);
             return;
@@ -311,8 +317,7 @@ public class JoglRenderer implements Renderer {
         gl.glPushMatrix();
         gl.glLoadIdentity();
 
-        LightList list = geom.getWorldLightList();
-        for (int i = 0; i < numLights; i++){
+        for (int i = 0; i < list.size()+1; i++){
             if (list.size() <= i){
                 // goes beyond the num lights we need
                 // disable it
@@ -582,7 +587,7 @@ public class JoglRenderer implements Renderer {
         applyRenderState(RenderState.NULL);
 
         // disable lighting
-        updateLightListUniforms(null, null, 0);
+        setLighting(null);
 
         int id = gl.glGenLists(1);
         mesh.setId(id);
@@ -685,6 +690,10 @@ public class JoglRenderer implements Renderer {
 
     public void setDepthParams(float clearVal, float start, float end) {
         
+    }
+
+    public Collection<Caps> getCaps() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

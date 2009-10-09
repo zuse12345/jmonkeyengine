@@ -177,9 +177,11 @@ public class Sphere extends Mesh {
         afSin[radialSamples] = afSin[0];
         afCos[radialSamples] = afCos[0];
 
-        Vector3f tempVa = TempVars.get().vect1;
-        Vector3f tempVb = TempVars.get().vect2;
-        Vector3f tempVc = TempVars.get().vect3;
+        TempVars vars = TempVars.get();
+        assert vars.lock();
+        Vector3f tempVa = vars.vect1;
+        Vector3f tempVb = vars.vect2;
+        Vector3f tempVc = vars.vect3;
 
         // generate the sphere itself
         int i = 0;
@@ -259,6 +261,8 @@ public class Sphere extends Mesh {
 
             i++;
         }
+
+        assert vars.unlock();
 
         // south pole
         posBuf.position(i * 3);

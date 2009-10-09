@@ -20,7 +20,9 @@ public class Arrow extends Mesh {
     public Arrow(Vector3f extent){
         float len = extent.length();
         Vector3f dir = extent.normalize();
-        
+
+        TempVars vars = TempVars.get();
+        assert vars.lock();
         Quaternion tempQuat = TempVars.get().quat1;
         tempQuat.lookAt(dir, Vector3f.UNIT_Y);
         tempQuat.normalize();
@@ -38,6 +40,9 @@ public class Arrow extends Mesh {
             newPositions[i+1] = vec.getY();
             newPositions[i+2] = vec.getZ();
         }
+
+        assert vars.unlock();
+
         setBuffer(Type.Position, 3, newPositions);
         setBuffer(Type.Index, 2,
                 new int[]{

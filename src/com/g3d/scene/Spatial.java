@@ -24,6 +24,8 @@ import com.g3d.renderer.queue.RenderQueue;
 import com.g3d.renderer.queue.RenderQueue.ShadowMode;
 import com.g3d.util.TempVars;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -36,7 +38,7 @@ import java.io.IOException;
  * @author Joshua Slack
  * @version $Revision: 4075 $, $Data$
  */
-public abstract class Spatial implements Savable {
+public abstract class Spatial implements Savable, Cloneable {
 
     public enum CullHint {
         /** 
@@ -120,6 +122,7 @@ public abstract class Spatial implements Savable {
     public Spatial() {
         localTransform = new Transform();
         worldTransform = new Transform();
+        refreshFlags |= RF_BOUND;
     }
 
     /**
@@ -195,7 +198,7 @@ public abstract class Spatial implements Savable {
 
         if (cm == Spatial.CullHint.Dynamic
                 && frustrumIntersects == Camera.FrustumIntersect.Intersects) {
-            frustrumIntersects = cam.contains(worldBound);
+            frustrumIntersects = cam.contains(getWorldBound());
         }
 
         cam.setPlaneState(state);
@@ -267,8 +270,11 @@ public abstract class Spatial implements Savable {
      *            the up vector to use - assumed to be a unit vector.
      */
     public void rotateUpTo(Vector3f newUp) {
-        Vector3f compVecA = TempVars.get().vect1;
-        Quaternion q = TempVars.get().quat1;
+        TempVars vars = TempVars.get();
+        assert vars.lock();
+
+        Vector3f compVecA = vars.vect1;
+        Quaternion q = vars.quat1;
 
         // First figure out the current up vector.
         Vector3f upY = compVecA.set(Vector3f.UNIT_Y);
@@ -284,6 +290,8 @@ public abstract class Spatial implements Savable {
         // Build a rotation quat and apply current local rotation.
         q.fromAngleNormalAxis(angle, rotAxis);
         q.mult(rot, rot);
+
+        assert vars.unlock();
 
         setTransformRefresh();
     }
@@ -302,9 +310,11 @@ public abstract class Spatial implements Savable {
      *            1, 0} in jME.)
      */
     public void lookAt(Vector3f position, Vector3f upVector) {
+        assert TempVars.get().lock();
         Vector3f compVecA = TempVars.get().vect1;
         compVecA.set(position).subtractLocal(getWorldTranslation());
         getLocalRotation().lookAt(compVecA, upVector);
+        assert TempVars.get().unlock();
 
         setTransformRefresh();
     }
@@ -357,6 +367,15 @@ public abstract class Spatial implements Savable {
     }
 
     /**
+     * <code>updateLogicalState</code> updates various logic state for
+     * the node. This method should be overriden to provide specific 
+     * functionality.
+     * @param tpf Time per frame.
+     */
+    public void updateLogicalState(float tpf){
+    }
+
+    /**
      * <code>updateGeometricState</code> updates all the geometry information
      * for the node.
      *
@@ -365,7 +384,7 @@ public abstract class Spatial implements Savable {
      * @param initiator
      *            true if this node started the update process.
      */
-    public void updateGeometricState(float time, boolean initiator){
+    public void updateGeometricState(){
         // assume that this Spatial is a leaf, a proper implementation
         // for this method should be provided by Node.
 
@@ -565,6 +584,10 @@ public abstract class Spatial implements Savable {
         setTransformRefresh();
     }
 
+    public Transform getTransform(){
+        return localTransform;
+    }
+
     public void setMaterial(Material material){
         this.material = material;
     }
@@ -597,9 +620,11 @@ public abstract class Spatial implements Savable {
     }
 
     public void rotate(float yaw, float roll, float pitch){
+        assert TempVars.get().lock();
         Quaternion q = TempVars.get().quat1;
         q.fromAngles(yaw, roll, pitch);
         rotate(q);
+        assert TempVars.get().unlock();
     }
 
     public void center(){
@@ -615,32 +640,6 @@ public abstract class Spatial implements Savable {
         setLocalTranslation(absTrans);
     }
 
-    //
-//    /**
-//     * Sets the zOrder of this Spatial and, if setOnChildren is true, all
-//     * children as well. This value is used in conjunction with the RenderQueue
-//     * and QUEUE_ORTHO for determining draw order.
-//     *
-//     * @param zOrder
-//     *            the new zOrder.
-//     * @param setOnChildren
-//     *            if true, children will also have their zOrder set to the given
-//     *            value.
-//     */
-//    public void setZOrder(int zOrder, boolean setOnChildren) {
-//        setZOrder(zOrder);
-//        if (setOnChildren) {
-//            if (this instanceof Node) {
-//                Node n = (Node) this;
-//                if (n.getChildren() != null) {
-//                    for (Spatial child : n.getChildren()) {
-//                        child.setZOrder(zOrder, true);
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
     /**
      * @see #setCullHint(CullHint)
      * @return the cull mode of this spatial, or if set to INHERIT, the cullmode
@@ -680,36 +679,6 @@ public abstract class Spatial implements Savable {
             return ShadowMode.Off;
     }
 
-//
-//    /**
-//     * Returns this spatial's normals mode. If the mode is set to inherit, then
-//     * the spatial gets its normals mode from its parent.
-//     *
-//     * @return The spatial's current normals mode.
-//     */
-//    public NormalsMode getNormalsMode() {
-//        if (normalsMode != NormalsMode.Inherit)
-//            return normalsMode;
-//        else if (parent != null)
-//            return parent.getNormalsMode();
-//        else
-//            return NormalsMode.NormalizeIfScaled;
-//    }
-//
-//    /**
-//     * <code>calculateCollisions</code> calls findCollisions to populate the
-//     * CollisionResults object then processes the collision results.
-//     *
-//     * @param scene
-//     *            the scene to test against.
-//     * @param results
-//     *            the results object.
-//     */
-//    public void calculateCollisions(Spatial scene, CollisionResults results) {
-//        findCollisions(scene, results);
-//        results.processCollisions();
-//    }
-
     /**
      * <code>updateBound</code> recalculates the bounding object for this
      * Spatial.
@@ -735,21 +704,6 @@ public abstract class Spatial implements Savable {
 //     */
 //    public abstract void findCollisions(Spatial scene, CollisionResults results);
 //
-//    /**
-//     * Checks this spatial against a second spatial for collisions.
-//     *
-//     * @param scene
-//     *            the scene to test against.
-//     * @param checkTriangles
-//     *            check for collisions on triangle accuracy level
-//     * @return true if any collision were found
-//     */
-//    public abstract boolean hasCollision(Spatial scene, boolean checkTriangles);
-//
-//    public void calculatePick(Ray ray, PickResults results) {
-//        findPick(ray, results);
-//        results.processPick();
-//    }
 //
 //    /**
 //     * Tests a ray against this spatial, and stores the results in the result
@@ -762,99 +716,71 @@ public abstract class Spatial implements Savable {
 //     */
 //    public abstract void findPick(Ray toTest, PickResults results);
 
-//    public abstract int getVertexCount();
-//
-//    public abstract int getTriangleCount();
+    public abstract int getVertexCount();
+
+    public abstract int getTriangleCount();
+
+    @Override
+    public Spatial clone(){
+        try{
+            Spatial s = (Spatial) super.clone();
+            s.worldBound = worldBound.clone();
+            s.worldLights = worldLights.clone();
+            s.localLights = worldLights.clone();
+            s.material = material.clone();
+            s.worldTransform = worldTransform.clone();
+            s.localTransform = localTransform.clone();
+            s.parent = null;
+            return s;
+        }catch (CloneNotSupportedException ex){
+            throw new AssertionError();
+        }
+    }
 
     public void write(G3DExporter ex) throws IOException {
         OutputCapsule capsule = ex.getCapsule(this);
         capsule.write(name, "name", null);
-        capsule.write(worldBound, "worldBound", null);
-//        capsule.write(material, "material", null);
-//        capsule.write(localLights, "localLights", null);
+        capsule.write(worldBound, "world_bound", null);
 
-//        capsule.write(isCollidable, "isCollidable", true);
-        capsule.write(cullHint, "cullMode", CullHint.Inherit);
+        // XXX: How to handle materials here?
+        // Export it to J3M? or write as binary?
+        // write name only?
 
-
-
-//        capsule.write(renderQueueMode, "renderQueueMode",
-//                Renderer.QUEUE_INHERIT);
-//        capsule.write(zOrder, "zOrder", 0);
-
-        capsule.write(localTransform, "localTransform", new Transform());
+//        capsule.write(material.getMaterialDef()., name, null)
+        capsule.write(cullHint, "cull_mode", CullHint.Inherit);
+        capsule.write(queueBucket, "queue", RenderQueue.Bucket.Inherit);
+        capsule.write(shadowMode, "shadow_mode", ShadowMode.Inherit);
+        capsule.write(localTransform, "transform", new Transform());
+        capsule.write(localLights, "lights", null);
 
 //        capsule.writeStringSavableMap(UserDataManager.getInstance().getAllData(
 //                this), "userData", null);
-//
-//        capsule.writeSavableArrayList(geometricalControllers,
-//                "geometricalControllers", null);
     }
 
 //    @SuppressWarnings("unchecked")
     public void read(G3DImporter im) throws IOException {
-        InputCapsule capsule = im.getCapsule(this);
-        name = capsule.readString("name", null);
-//        isCollidable = capsule.readBoolean("isCollidable", true);
-        cullHint = capsule.readEnum("cullMode", CullHint.class,
-                CullHint.Inherit);
+        InputCapsule ic = im.getCapsule(this);
+        name = ic.readString("name", null);
+        worldBound = (BoundingVolume) ic.readSavable("world_bound", null);
 
-//        renderQueueMode = capsule.readInt("renderQueueMode",
-//                Renderer.QUEUE_INHERIT);
-//        zOrder = capsule.readInt("zOrder", 0);
-//        lightCombineMode = capsule.readEnum("lightCombineMode", LightCombineMode.class,
-//                LightCombineMode.Inherit);
-//        textureCombineMode = capsule.readEnum("textureCombineMode", TextureCombineMode.class,
-//                TextureCombineMode.Inherit);
-//        normalsMode = capsule.readEnum("normalsMode", NormalsMode.class,
-//                NormalsMode.Inherit);
+        cullHint = ic.readEnum("cull_mode", CullHint.class, CullHint.Inherit);
+        queueBucket = ic.readEnum("queue", RenderQueue.Bucket.class,
+                                    RenderQueue.Bucket.Inherit);
+        shadowMode = ic.readEnum("shadow_mode", ShadowMode.class,
+                                    ShadowMode.Inherit);
 
-//        Savable[] savs = capsule.readSavableArray("renderStateList", null);
-//        if (savs == null)
-//            renderStateList = null;
-//        else {
-//            renderStateList = new RenderState[savs.length];
-//            for (int x = 0; x < savs.length; x++) {
-//                renderStateList[x] = (RenderState) savs[x];
-//            }
-//        }
-
-        localTransform = (Transform) capsule.readSavable("localTransform", new Transform());
+        localTransform = (Transform) ic.readSavable("transform", Transform.Identity);
+        localLights = (LightList) ic.readSavable("lights", null);
+        // world lights and world transform already initialized
 
 //        HashMap<String, Savable> map = (HashMap<String, Savable>) capsule
 //                .readStringSavableMap("userData", null);
 //        if (map != null) {
 //            UserDataManager.getInstance().setAllData(this, map);
 //        }
-//
-//        geometricalControllers = capsule.readSavableArrayList(
-//                "geometricalControllers", null);
 
-        worldTransform = new Transform();
+        
     }
-//
-//    /**
-//     * Sets if this Spatial is to be used in intersection (collision and
-//     * picking) calculations. By default this is true.
-//     *
-//     * @param isCollidable
-//     *            true if this Spatial is to be used in intersection
-//     *            calculations, false otherwise.
-//     */
-//    public void setIsCollidable(boolean isCollidable) {
-//        this.isCollidable = isCollidable;
-//    }
-//
-//    /**
-//     * Defines if this Spatial is to be used in intersection (collision and
-//     * picking) calculations. By default this is true.
-//     *
-//     * @return true if this Spatial is to be used in intersection calculations,
-//     *         false otherwise.
-//     */
-//    public boolean isCollidable() {
-//        return this.isCollidable;
-//    }
 
     /**
      * <code>getWorldBound</code> retrieves the world bound at this node
@@ -929,34 +855,6 @@ public abstract class Spatial implements Savable {
     public RenderQueue.ShadowMode getLocalShadowMode() {
         return shadowMode;
     }
-//
-//    /**
-//     * @param zOrder
-//     */
-//    public void setZOrder(int zOrder) {
-//        this.zOrder = zOrder;
-//    }
-//
-//    /**
-//     * @return
-//     */
-//    public int getZOrder() {
-//        return zOrder;
-//    }
-//
-//    /**
-//     * @return
-//     */
-//    public NormalsMode getLocalNormalsMode() {
-//        return normalsMode;
-//    }
-//
-//    /**
-//     * @param mode
-//     */
-//    public void setNormalsMode(NormalsMode mode) {
-//        this.normalsMode = mode;
-//    }
 
     /**
      * Returns this spatial's last frustum intersection result. This int is set
@@ -1007,9 +905,6 @@ public abstract class Spatial implements Savable {
         store.setTranslation(getWorldTranslation());
         return store;
     }
-
-//    public Class<? extends Spatial> getClassTag() {
-//        return this.getClass();
-//    }
+    
 }
 

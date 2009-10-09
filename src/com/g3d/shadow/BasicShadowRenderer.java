@@ -94,7 +94,7 @@ public class BasicShadowRenderer {
         dispPic.setWidth(w / 5f);
         dispPic.setHeight(h / 5f);
         dispPic.setMaterial(dispMat);
-        dispPic.updateGeometricState(0, true);
+        dispPic.updateGeometricState();
         r.renderGeometry(dispPic);
     }
 

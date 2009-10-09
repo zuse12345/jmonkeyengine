@@ -1,5 +1,6 @@
 package com.g3d.renderer;
 
+import com.g3d.light.LightList;
 import com.g3d.material.Material;
 import com.g3d.material.RenderState;
 import com.g3d.math.ColorRGBA;
@@ -13,9 +14,15 @@ import com.g3d.shader.Shader.ShaderSource;
 import com.g3d.shader.Uniform;
 import com.g3d.texture.FrameBuffer;
 import com.g3d.texture.Texture;
+import java.util.Collection;
 import java.util.List;
 
 public interface Renderer {
+
+    /**
+     * @return The capabilities of the renderer.
+     */
+    public Collection<Caps> getCaps();
 
     /**
      * Clears certain channels of the current bound framebuffer.
@@ -61,29 +68,14 @@ public interface Renderer {
      */
     public void setWorldMatrix(Matrix4f worldMatrix);
 
+    public void setViewPort(int x, int y, int width, int height);
+
     /**
      * Updates uniforms that are bound to world parameters.
      */
     public void updateWorldParameters(List<Uniform> params);
 
-    /**
-     * Uploads the lights in the light list as two uniform arrays.<br/><br/>
-     *      * <p>
-     * <code>uniform vec4 g_LightColor[numLights];</code><br/>
-     * // g_LightColor.rgb is the diffuse/specular color of the light.<br/>
-     * // g_Lightcolor.a is the type of light, 0 = Directional, 1 = Point, <br/>
-     * // 2 = Spot. <br/>
-     * <br/>
-     * <code>uniform vec4 g_LightPosition[numLights];</code><br/>
-     * // g_LightPosition.xyz is the position of the light (for point lights)<br/>
-     * // or the direction of the light (for directional lights).<br/>
-     * // g_LightPosition.w is the inverse radius of the light, <br/>
-     * </p>
-     * 
-     * @param shader
-     * @param lightList
-     */
-    public void updateLightListUniforms(Shader shader, Geometry geom, int numLights);
+    public void setLighting(LightList lights);
 
     /**
      * Updates the shader source, creating an ID and registering
@@ -117,11 +109,6 @@ public interface Renderer {
     public void deleteShaderSource(ShaderSource source);
 
     /**
-     * Prepares the texture for use and uploads its image data if neceessary.
-     */
-    public void updateTextureData(Texture tex);
-
-    /**
      * Copies contents from src to dst, scaling if neccessary.
      */
     public void copyFrameBuffer(FrameBuffer src, FrameBuffer dst);
@@ -141,6 +128,11 @@ public interface Renderer {
      * Deletes a framebuffer and all attached renderbuffers
      */
     public void deleteFrameBuffer(FrameBuffer fb);
+
+    /**
+     * Prepares the texture for use and uploads its image data if neceessary.
+     */
+    public void updateTextureData(Texture tex);
 
     /**
      * Sets the texture to use for the given texture unit.

@@ -1,13 +1,10 @@
 package g3dtest.audio;
 
 import com.g3d.audio.AudioRenderer;
-import com.g3d.audio.joal.JoalAudioRenderer;
 import com.g3d.renderer.Camera;
 import com.g3d.asset.AssetManager;
 import com.g3d.system.AppSettings;
 import com.g3d.system.G3DSystem;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class AudioApp {
 
@@ -20,11 +17,10 @@ public class AudioApp {
     public AudioApp(){
         AppSettings settings = new AppSettings(true);
         settings.setRenderer(null); // force dummy renderer (?)
-        G3DSystem.initialize(settings);
-        manager = new AssetManager(true);
-
-        ar = new JoalAudioRenderer();
+        settings.setAudioRenderer("JOAL");
+        ar = G3DSystem.newAudioRenderer(settings);
         ar.initialize();
+        manager = new AssetManager(true);
 
         listener = new Camera(1,1);
         ar.setListener(listener);

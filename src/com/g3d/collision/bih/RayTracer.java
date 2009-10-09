@@ -10,7 +10,10 @@ import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
 import com.g3d.asset.AssetKey;
 import com.g3d.asset.AssetManager;
+import com.g3d.scene.Geometry;
 import com.g3d.scene.Mesh;
+import com.g3d.scene.Spatial;
+import g3dtools.optimize.Octree;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -20,7 +23,9 @@ import javax.swing.JPanel;
 public class RayTracer extends javax.swing.JFrame {
 
     private Camera cam;
-    private BIHTree tree;
+//    private BIHTree tree;
+    private Octree tree;
+    private Geometry g;
 
     public RayTracer(Camera cam, Mesh m) {
         this.cam = cam;
@@ -35,8 +40,9 @@ public class RayTracer extends javax.swing.JFrame {
 
         long mem = Runtime.getRuntime().freeMemory();
 
-        
-        tree = new BIHTree(m);
+        g = new Geometry("Raytraced", m);
+//        tree = new BIHTree(m);
+        tree = new Octree(g);
 
         long time = System.nanoTime();
         tree.construct();
@@ -110,11 +116,11 @@ public class RayTracer extends javax.swing.JFrame {
                             dir.normalizeLocal();
 
                             Ray r = new Ray(pix, dir);
-                            tree.intersect(r, 1000f, null, results);
+                            tree.intersect(r, 1000f, RayTracer.this.g, results);
                             TrianglePickResults.PickData pick = results.getClosestPick();
-                            Triangle t = pick.getTriangle(null);
-
-                            if (t != null){
+                            
+                            if (pick != null){
+                                Triangle t = pick.getTriangle(null);
                                 Color c;
                                 Vector3f tNorm = t.getNormal();
                                 Vector3f tPos  = t.getCenter().clone();
@@ -131,10 +137,10 @@ public class RayTracer extends javax.swing.JFrame {
 
                                 if (ndotl > 0){
                                     c = new Color(ndotl, ndotl, ndotl);
-                                    Ray r2 = new Ray(pixPos, pixDir);
-                                    tree.intersect(r2, 1000, null, results);
-                                    if (results.getClosestPick() != null)
-                                        c = Color.black;
+//                                    Ray r2 = new Ray(pixPos, pixDir);
+//                                    tree.intersect(r2, 1000, null, results);
+//                                    if (results.getClosestPick() != null)
+//                                        c = Color.black;
                                 }else{
                                     c = Color.black;
                                 }
@@ -176,17 +182,17 @@ public class RayTracer extends javax.swing.JFrame {
         getContentPane().setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
         tracer.setMinimumSize(new java.awt.Dimension(0, 0));
-        tracer.setPreferredSize(new java.awt.Dimension(1024, 768));
+        tracer.setPreferredSize(new java.awt.Dimension(512, 512));
 
         org.jdesktop.layout.GroupLayout tracerLayout = new org.jdesktop.layout.GroupLayout(tracer);
         tracer.setLayout(tracerLayout);
         tracerLayout.setHorizontalGroup(
             tracerLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 1024, Short.MAX_VALUE)
+            .add(0, 512, Short.MAX_VALUE)
         );
         tracerLayout.setVerticalGroup(
             tracerLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 768, Short.MAX_VALUE)
+            .add(0, 512, Short.MAX_VALUE)
         );
 
         getContentPane().add(tracer);
@@ -198,8 +204,15 @@ public class RayTracer extends javax.swing.JFrame {
         AssetManager man = new AssetManager(true);
 
         System.out.println("Loading teapot.obj..");
-        final Mesh m = (Mesh) man.loadContent(new AssetKey("teapot.obj"));
-        final Camera c = new Camera(1024, 768);
+        Spatial s = (Spatial) man.loadContent(new AssetKey("teapot.obj"));
+        Geometry g = null;
+        Mesh m2 = null;
+        if (s instanceof Geometry){
+            g = (Geometry) s;
+            m2 = g.getMesh();
+        }
+        final Mesh m = m2;
+        final Camera c = new Camera(512, 512);
         c.setLocation(new Vector3f(1f, 1f, -1f));
         c.lookAt(m.getBound().getCenter(), Vector3f.UNIT_Y);
         c.setFrustumPerspective(45, 1, 1, 500);

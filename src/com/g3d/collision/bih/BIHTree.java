@@ -1,27 +1,35 @@
 package com.g3d.collision.bih;
 
 import com.g3d.bounding.BoundingBox;
+import com.g3d.bounding.BoundingVolume;
 import com.g3d.bounding.IntersectionRecord;
+import com.g3d.collision.CollisionTree;
 import com.g3d.collision.TrianglePickResults;
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
 import com.g3d.math.FastMath;
 import com.g3d.math.Ray;
-import com.g3d.math.Triangle;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Mesh;
 
 import com.g3d.scene.VertexBuffer.Type;
 import com.g3d.util.TempVars;
+import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
 import static java.lang.Math.min;
 import static java.lang.Math.max;
 
-public class BIHTree {
+public class BIHTree implements CollisionTree {
 
-    private BIHNode root;
     private Mesh mesh;
+    private Geometry geom;
+    
+    private BIHNode root;
     private int maxTrisPerNode;
     private int numTris;
     private float[] pointData;
@@ -35,16 +43,21 @@ public class BIHTree {
         comparators[2] = new TriangleAxisComparator(2);
     }
 
-    public BIHTree(Mesh m, int maxTrisPerNode){
-        this.mesh = m;
+    public BIHTree(Geometry geom, int maxTrisPerNode){
+        this.geom = geom;
+        this.mesh = geom.getMesh();
         this.maxTrisPerNode = maxTrisPerNode;
-        m.updateCounts();
-        m.updateBound();
 
-        FloatBuffer vb = (FloatBuffer) m.getBuffer(Type.Position).getData();
-        ShortBuffer ib = (ShortBuffer) m.getBuffer(Type.Index).getData();
+        if (maxTrisPerNode < 1 || geom == null)
+            throw new IllegalArgumentException();
+
+        mesh.updateCounts();
+        mesh.updateBound();
+
+        FloatBuffer vb = (FloatBuffer) mesh.getBuffer(Type.Position).getData();
+        ShortBuffer ib = (ShortBuffer) mesh.getBuffer(Type.Index).getData();
        
-        numTris = m.getTriangleCount();
+        numTris = mesh.getTriangleCount();
         pointData = new float[numTris * 3 * 3];
         int p = 0;
         for (int i = 0; i < numTris*3; i+=3){
@@ -69,8 +82,11 @@ public class BIHTree {
             triIndices[i] = i;
     }
 
-    public BIHTree(Mesh m){
-        this(m,21);
+    public BIHTree(Geometry geom){
+        this(geom, 21);
+    }
+
+    public BIHTree(){
     }
 
     public void construct(){
@@ -80,6 +96,7 @@ public class BIHTree {
 
     private BoundingBox createBox(int l, int r) {
         TempVars vars = TempVars.get();
+        assert vars.lock();
         Vector3f min = vars.vect1.set(new Vector3f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY));
         Vector3f max = vars.vect2.set(new Vector3f(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY));
     
@@ -94,7 +111,9 @@ public class BIHTree {
             BoundingBox.checkMinMax(min, max, v3);
         }
 
-        return new BoundingBox(min,max);
+        BoundingBox bbox = new BoundingBox(min,max);
+        assert vars.unlock();
+        return bbox;
     }
 
     int getTriangleIndex(int triIndex){
@@ -323,7 +342,25 @@ public class BIHTree {
         triIndices[index2] = tmp2;
     }
 
-    public void intersect(Ray r, float farPlane, Geometry g, TrianglePickResults results){
+    public void write(G3DExporter ex) throws IOException {
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(geom, "geometry", null);
+        oc.write(root, "root", null);
+        oc.write(maxTrisPerNode, "tris_per_node", 21);
+        oc.write(pointData, "points", null);
+        oc.write(triIndices, "indices", null);
+    }
+    
+    public void read(G3DImporter im) throws IOException {
+        InputCapsule ic = im.getCapsule(this);
+        geom = (Geometry) ic.readSavable("geometry", null);
+        root = (BIHNode) ic.readSavable("root", null);
+        maxTrisPerNode = ic.readInt("tris_per_node", 21);
+        pointData = ic.readFloatArray("points", null);
+        triIndices = ic.readIntArray("indices", null);
+    }
+
+    public void intersectWhere(Ray r, float farPlane, TrianglePickResults results){
         results.clear();
         IntersectionRecord ir = mesh.getBound().intersectsWhere(r);
         if (ir.getQuantity() > 0){
@@ -333,9 +370,13 @@ public class BIHTree {
             tMin = max(tMin, 0);
             tMax = min(tMax, farPlane);
             
-            root.intersectWhere(r, this, g, tMin, tMax, results);
+            root.intersectWhere(r, this, geom, tMin, tMax, results);
             results.finish();
         }
+    }
+
+    public void intersectWhere(BoundingVolume bv, TrianglePickResults results){
+        throw new UnsupportedOperationException();
     }
 
 }

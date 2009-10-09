@@ -2,6 +2,8 @@ package com.g3d.scene;
 
 import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
 import com.g3d.export.Savable;
 import com.g3d.math.FastMath;
 import com.g3d.renderer.GLObject;
@@ -10,52 +12,108 @@ import com.g3d.util.BufferUtils;
 import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
 public class VertexBuffer extends GLObject implements Savable {
 
+    /**
+     * Type of buffer. Specifies the actual attribute it defines.
+     */
     public static enum Type {
+        /**
+         * Position of the vertex (3 floats)
+         */
         Position,
+
+        /**
+         * The size of the point when using point buffers.
+         */
         Size,
+
+        /**
+         * Normal vector, normalized.
+         */
         Normal,
+
+        /**
+         * Texture coordinate
+         */
         TexCoord,
+
+        /**
+         * Color and Alpha (4 floats)
+         */
         Color,
+
+        /**
+         * Tangent vector, normalized.
+         */
         Tangent,
+
+        /**
+         * Binormal vector, normalized.
+         */
         Binormal,
-        MiscAttrib, // <- NOTE: Special handling for user specified attributes
-        Index; // <- NOTE: Special handling by the renderer
+
+        /**
+         * Specifies the source data for various vertex buffers
+         * when interleaving is used.
+         */
+        InterleavedData,
+
+        /**
+         * Do not use.
+         */
+        @Deprecated
+        MiscAttrib,
+
+        /**
+         * Specifies the index buffer, must contain integer data.
+         */
+        Index;
     }
 
+    /**
+     * The usage of the VertexBuffer, specifies how often the buffer
+     * is used. This can determine if a vertex buffer is placed in VRAM
+     * or held in video memory, but no garantees are made- it's only a hint.
+     */
     public static enum Usage {
+        /**
+         * Mesh data is sent once and very rarely updated.
+         */
         Static,
-        DynamicWriteOnly,
-        StreamWriteOnly,
+
+        /**
+         * Mesh data is updated occasionally (once per frame or less).
+         */
         Dynamic,
+
+        /**
+         * Mesh data is updated every frame.
+         */
         Stream;
     }
 
     public static enum Format {
         // Floating point formats
-        Half(ByteBuffer.class, 2),
-        Float(FloatBuffer.class, 4),
-        Double(DoubleBuffer.class, 8),
+        Half(2),
+        Float(4),
+        Double(8),
 
         // Integer formats
-        Byte(ByteBuffer.class, 1),
-        UnsignedByte(ByteBuffer.class, 1),
-        Short(ShortBuffer.class, 2),
-        UnsignedShort(ShortBuffer.class, 2),
-        Int(IntBuffer.class, 4),
-        UnsignedInt(IntBuffer.class, 4);
+        Byte(1),
+        UnsignedByte(1),
+        Short(2),
+        UnsignedShort(2),
+        Int(4),
+        UnsignedInt(4);
 
-        private Class<? extends Buffer> formatDataType;
         private int componentSize = 0;
 
-        Format(Class<? extends Buffer> dataType, int componentSize){
-            this.formatDataType = dataType;
+        Format(int componentSize){
             this.componentSize = componentSize;
         }
 
@@ -64,10 +122,16 @@ public class VertexBuffer extends GLObject implements Savable {
         }
     }
 
+    protected int offset = 0;
+    protected int stride = 0;
     protected int components = 0;
-    protected int componentsLength = 0;
+
+    /**
+     * derived from components * format.getComponentSize()
+     */
+    protected transient int componentsLength = 0;
     protected Buffer data = null;
-    protected Usage usage = Usage.Stream;
+    protected Usage usage = Usage.Dynamic;
     protected Type bufType = Type.Position;
     protected Format format = Format.Float;
     protected boolean normalized = false;
@@ -79,6 +143,26 @@ public class VertexBuffer extends GLObject implements Savable {
     public VertexBuffer(Type type){
         super(GLObject.Type.VertexBuffer);
         this.bufType = type;
+    }
+
+    protected VertexBuffer(int id){
+        super(GLObject.Type.VertexBuffer, id);
+    }
+
+    public int getOffset() {
+        return offset;
+    }
+
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
+
+    public int getStride() {
+        return stride;
+    }
+
+    public void setStride(int stride) {
+        this.stride = stride;
     }
 
     public Buffer getData(){
@@ -163,6 +247,133 @@ public class VertexBuffer extends GLObject implements Savable {
         this.data = halfData;
     }
 
+    public void compact(int numElements){
+        int total = components * numElements;
+        data.clear();
+        switch (format){
+            case Byte:
+            case UnsignedByte:
+            case Half:
+                ByteBuffer bbuf = (ByteBuffer) data;
+                bbuf.limit(total);
+                ByteBuffer bnewBuf = BufferUtils.createByteBuffer(total);
+                bnewBuf.put(bbuf);
+                data = bnewBuf;
+                break;
+            case Short:
+            case UnsignedShort:
+                ShortBuffer sbuf = (ShortBuffer) data;
+                sbuf.limit(total);
+                ShortBuffer snewBuf = BufferUtils.createShortBuffer(total);
+                snewBuf.put(sbuf);
+                data = snewBuf;
+                break;
+            case Int:
+            case UnsignedInt:
+                IntBuffer ibuf = (IntBuffer) data;
+                ibuf.limit(total);
+                IntBuffer inewBuf = BufferUtils.createIntBuffer(total);
+                inewBuf.put(ibuf);
+                data = inewBuf;
+                break;
+            case Float:
+                FloatBuffer fbuf = (FloatBuffer) data;
+                fbuf.limit(total);
+                FloatBuffer fnewBuf = BufferUtils.createFloatBuffer(total);
+                fnewBuf.put(fbuf);
+                data = fnewBuf;
+                break;
+            default:
+                throw new UnsupportedOperationException("Unrecognized buffer format: "+format);
+        }
+        data.clear();
+    }
+
+    public void copyElement(int inIndex, VertexBuffer outVb, int outIndex){
+        if (outVb.format != format || outVb.components != components)
+            throw new IllegalArgumentException("Buffer format mismatch. Cannot copy");
+
+        int inPos  = inIndex  * components;
+        int outPos = outIndex * components;
+        int elementSz = components;
+        if (format == Format.Half){
+            // because half is stored as bytebuf but its 2 bytes long
+            inPos *= 2;
+            outPos *= 2;
+            elementSz *= 2;
+        }
+
+        data.clear();
+        outVb.data.clear();
+
+        switch (format){
+            case Byte:
+            case UnsignedByte:
+            case Half:
+                ByteBuffer bin = (ByteBuffer) data;
+                ByteBuffer bout = (ByteBuffer) outVb.data;
+                bin.position(inPos).limit(inPos + elementSz);
+                bout.position(outPos).limit(outPos + elementSz);
+                bout.put(bin);
+                break;
+            case Short:
+            case UnsignedShort:
+                ShortBuffer sin = (ShortBuffer) data;
+                ShortBuffer sout = (ShortBuffer) outVb.data;
+                sin.position(inPos).limit(inPos + elementSz);
+                sout.position(outPos).limit(outPos + elementSz);
+                sout.put(sin);
+                break;
+            case Int:
+            case UnsignedInt:
+                IntBuffer iin = (IntBuffer) data;
+                IntBuffer iout = (IntBuffer) outVb.data;
+                iin.position(inPos).limit(inPos + elementSz);
+                iout.position(outPos).limit(outPos + elementSz);
+                iout.put(iin);
+                break;
+            case Float:
+                FloatBuffer fin = (FloatBuffer) data;
+                FloatBuffer fout = (FloatBuffer) outVb.data;
+                fin.position(inPos).limit(inPos + elementSz);
+                fout.position(outPos).limit(outPos + elementSz);
+                fout.put(fin);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unrecognized buffer format: "+format);
+        }
+
+        data.clear();
+        outVb.data.clear();
+    }
+
+    public static final Buffer createBuffer(Format format, int components, int numElements){
+        if (components < 1 || components > 4)
+            throw new IllegalArgumentException("Num components must be between 1 and 4");
+
+        int total = numElements * components;
+
+        switch (format){
+            case Byte:
+            case UnsignedByte:
+                return BufferUtils.createByteBuffer(total);
+            case Half:
+                return BufferUtils.createByteBuffer(total * 2);
+            case Short:
+            case UnsignedShort:
+                return BufferUtils.createShortBuffer(total);
+            case Int:
+            case UnsignedInt:
+                return BufferUtils.createIntBuffer(total);
+            case Float:
+                return BufferUtils.createFloatBuffer(total);
+            case Double:
+                return BufferUtils.createDoubleBuffer(total);
+            default:
+                throw new UnsupportedOperationException("Unrecoginized buffer format: "+format);
+        }
+    }
+
     @Override
     public String toString(){
         String dataTxt = null;
@@ -187,12 +398,74 @@ public class VertexBuffer extends GLObject implements Savable {
         r.deleteBuffer(this);
     }
 
+    @Override
+    public GLObject createDestructableClone(){
+        return new VertexBuffer(id);
+    }
+
     public void write(G3DExporter ex) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(components, "components", 0);
+        oc.write(usage, "usage", Usage.Dynamic);
+        oc.write(bufType, "buffer_type", null);
+        oc.write(format, "format", Format.Float);
+        oc.write(normalized, "normalized", false);
+        oc.write(offset, "offset", 0);
+        oc.write(stride, "stride", 0);
+
+        switch (format){
+            case Float:
+                oc.write((FloatBuffer) data, "data", null);
+                break;
+            case Short:
+            case UnsignedShort:
+                oc.write((ShortBuffer) data, "data", null);
+                break;
+            case UnsignedByte:
+            case Byte:
+            case Half:
+                oc.write((ByteBuffer) data, "data", null);
+                break;
+            case Int:
+            case UnsignedInt:
+                oc.write((IntBuffer) data, "data", null);
+                break;
+            default:
+                throw new IOException("Unsupported export buffer format: "+format);
+        }
     }
 
     public void read(G3DImporter im) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        InputCapsule ic = im.getCapsule(this);
+        components = ic.readInt("components", 0);
+        usage = ic.readEnum("usage", Usage.class, Usage.Dynamic);
+        bufType = ic.readEnum("buffer_type", Type.class, null);
+        format = ic.readEnum("format", Format.class, Format.Float);
+        normalized = ic.readBoolean("normalized", false);
+        offset = ic.readInt("offset", 0);
+        stride = ic.readInt("stride", 0);
+        componentsLength = components * format.getComponentSize();
+
+        switch (format){
+            case Float:
+                data = ic.readFloatBuffer("data", null);
+                break;
+            case Short:
+            case UnsignedShort:
+                data = ic.readShortBuffer("data", null);
+                break;
+            case UnsignedByte:
+            case Byte:
+            case Half:
+                data = ic.readByteBuffer("data", null);
+                break;
+            case Int:
+            case UnsignedInt:
+                data = ic.readIntBuffer("data", null);
+                break;
+            default:
+                throw new IOException("Unsupported import buffer format: "+format);
+        }
     }
 
 }

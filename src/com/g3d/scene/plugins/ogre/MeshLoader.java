@@ -38,6 +38,8 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
 
     private static final Logger logger = Logger.getLogger(MeshLoader.class.getName());
 
+    public static boolean AUTO_INTERLEAVE = true;
+
     private String meshName;
     private AssetManager assetManager;
     private OgreMaterialList materialList;
@@ -52,14 +54,10 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     private int geomIdx = 0;
     private int texCoordIdx = 0;
     private static volatile int nodeIdx = 0;
+    private String ignoreUntilEnd = null;
 
     public MeshLoader(){
         super();
-    }
-
-    public static void main(String[] args) throws SAXException{
-        AssetManager manager = new AssetManager(true);
-        manager.loadModel("Cube.meshxml");
     }
 
     @Override
@@ -270,31 +268,16 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
         buf.put(color.r).put(color.g).put(color.b).put(color.a);
     }
 
-    private void pushColor2(Attributes attribs) throws SAXException{
-        String value = parseString(attribs.getValue("value"));
-        String[] vals = value.split(" ");
-        if (vals.length != 3 && vals.length != 4)
-            throw new SAXException("Color value must contain 3 or 4 components");
-
-        ColorRGBA color = new ColorRGBA();
-        color.r = parseFloat(vals[0]);
-        color.g = parseFloat(vals[1]);
-        color.b = parseFloat(vals[2]);
-        if (vals.length == 3)
-            color.a = 1f;
-        else
-            color.a = parseFloat(vals[3]);
-
-        color = ColorRGBA.randomColor();
-
-        ByteBuffer buf = (ByteBuffer) mesh.getBuffer(Type.Color).getData();
-        byte[] rgba = color.asBytesRGBA();
-        buf.put(rgba);
-    }
-
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attribs) throws SAXException{
-        if (qName.equals("submesh")){
+        if (ignoreUntilEnd != null)
+            return;
+
+        if (qName.equals("mesh")){
+            // ok
+        }else if (qName.equals("submeshes")){
+            // ok
+        }else if (qName.equals("submesh")){
             startMesh(attribs.getValue("material"),
                       attribs.getValue("usesharedvertices"),
                       attribs.getValue("use32bitindexes"),
@@ -323,11 +306,21 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             pushColor(attribs);
         }else if (qName.equals("texcoord")){
             pushTexCoord(attribs);
+        }else{
+            System.out.println("Unknown tag: "+qName+". Ignoring.");
+            ignoreUntilEnd = qName;
         }
     }
 
     @Override
     public void endElement(String uri, String name, String qName) {
+        if (ignoreUntilEnd != null){
+            if (ignoreUntilEnd.equals(qName))
+                ignoreUntilEnd = null;
+
+            return;
+        }
+
         if (qName.equals("submesh")){
             geom = null;
             mesh = null;
@@ -349,6 +342,11 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             }
             // update bounds
             mesh.updateBound();
+            
+            // XXX: Only needed for non-animated models!
+            mesh.setStatic();
+            if (AUTO_INTERLEAVE)
+                mesh.setInterleaved();
         }
 
     }
@@ -371,6 +369,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             InputStreamReader r = new InputStreamReader(info.openStream());
             xr.parse(new InputSource(r));
             r.close();
+            
             return node;
         }catch (SAXException ex){
             IOException ioEx = new IOException("Error while parsing Ogre3D mesh.xml");

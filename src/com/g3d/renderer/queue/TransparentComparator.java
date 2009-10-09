@@ -55,9 +55,11 @@ public class TransparentComparator implements Comparator<Spatial> {
     }
 
     public int compare(Spatial o1, Spatial o2) {
+        assert TempVars.get().lock();
         Vector3f tempVec = TempVars.get().vect1;
         float d1 = distanceToCam(o1, tempVec);
         float d2 = distanceToCam(o2, tempVec);
+        assert TempVars.get().unlock();
 
         if (d1 == d2)
             return 0;

@@ -32,6 +32,7 @@
 
 package com.g3d.export;
 
+import com.g3d.asset.AssetManager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,4 +45,5 @@ public interface G3DImporter {
     public Savable load(File f) throws IOException;
     
     public InputCapsule getCapsule(Savable id);
+    public AssetManager getAssetManager();
 }

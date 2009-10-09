@@ -49,6 +49,8 @@ import java.io.IOException;
  */
 public class Transform implements Savable, Cloneable {
 
+    public static final Transform Identity = new Transform();
+
     private Quaternion rot = new Quaternion();
     private Vector3f translation = new Vector3f();
     private Vector3f scale = new Vector3f(1,1,1);

@@ -8,6 +8,7 @@ import com.g3d.audio.AudioSource.Status;
 import com.g3d.audio.AudioStream;
 import com.g3d.audio.DirectionalAudioSource;
 import com.g3d.audio.Environment;
+import com.g3d.audio.PointAudioSource;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
 import com.g3d.util.BufferUtils;
@@ -23,9 +24,7 @@ import org.lwjgl.openal.AL;
 
 import org.lwjgl.openal.AL11;
 
-import org.lwjgl.openal.ALCdevice;
 import static org.lwjgl.openal.AL10.*;
-import static org.lwjgl.openal.ALC10.*;
 
 public class LwjglAudioRenderer implements AudioRenderer {
 
@@ -39,7 +38,6 @@ public class LwjglAudioRenderer implements AudioRenderer {
     private final ByteBuffer nativeBuf = ByteBuffer.allocateDirect(BUFFER_SIZE);
     private final byte[] arrayBuf = new byte[BUFFER_SIZE];
 
-    private ArrayList<AudioSource> playingList = new ArrayList<AudioSource>();
     private Camera listener;
 
     private int[] channels = new int[16];
@@ -47,14 +45,10 @@ public class LwjglAudioRenderer implements AudioRenderer {
     private int nextChan = 0;
     private ArrayList<Integer> freeChans = new ArrayList<Integer>();
 
-    private boolean supportsCapture = false;
-    private ALCdevice captureDev = null;
-
     public LwjglAudioRenderer(){
         nativeBuf.order(ByteOrder.nativeOrder());
     }
 
-    
     public void initialize(){
         try{
             AL.create();
@@ -65,8 +59,6 @@ public class LwjglAudioRenderer implements AudioRenderer {
         logger.finer("Audio Vendor: "+alGetString(AL_VENDOR));
         logger.finer("Audio Renderer: "+alGetString(AL_RENDERER));
         logger.finer("Audio Version: "+alGetString(AL_VERSION));
-
-        supportsCapture = alcIsExtensionPresent(null, "ALC_EXT_CAPTURE");
 
         // Create channel sources
         ib.rewind();
@@ -98,11 +90,14 @@ public class LwjglAudioRenderer implements AudioRenderer {
     }
 
     private void setSourceParams(int id, AudioSource src, boolean forceNonLoop){
-        if (src.isPositional()){
-            Vector3f pos = src.getPosition();
-            Vector3f vel = src.getVelocity();
+        if (src instanceof PointAudioSource){
+            PointAudioSource pointSrc = (PointAudioSource) src;
+            Vector3f pos = pointSrc.getPosition();
+            Vector3f vel = pointSrc.getVelocity();
             alSource3f(id, AL_POSITION, pos.x, pos.y, pos.z);
             alSource3f(id, AL_VELOCITY, vel.x, vel.y, vel.z);
+            alSourcef(id, AL_MAX_DISTANCE, pointSrc.getMaxDistance());
+            alSourcef(id, AL_REFERENCE_DISTANCE, pointSrc.getRefDistance());
         }else{
             // play in headspace
             alSourcei(id, AL_SOURCE_RELATIVE, AL_TRUE);
@@ -133,15 +128,30 @@ public class LwjglAudioRenderer implements AudioRenderer {
         }
     }
 
+    private int newChannel(){
+        if (freeChans.size() > 0)
+            return freeChans.remove(0);
+        else if (nextChan < channels.length){
+            return nextChan++;
+        }else{
+            return -1;
+        }
+    }
+
+    private void freeChannel(int index){
+        if (index == nextChan-1)
+            nextChan--;
+        else
+            freeChans.add(index);
+    }
+    
     public void setEnvironment(Environment env){
         logger.warning("Reverb not supported by LWJGL renderer");
     }
 
-    private boolean fillBuffer(AudioSource src, int id){
+    private boolean fillBuffer(AudioStream stream, int id){
         int size = 0;
         int result;
-
-        AudioStream stream = (AudioStream) src.getAudioData();
 
         while (size < arrayBuf.length){
             result = stream.readSamples(arrayBuf, size, arrayBuf.length - size);
@@ -151,7 +161,6 @@ public class LwjglAudioRenderer implements AudioRenderer {
             }else{
                 break;
             }
-
         }
 
         if(size == 0)
@@ -162,71 +171,138 @@ public class LwjglAudioRenderer implements AudioRenderer {
         nativeBuf.flip();
 
         System.out.println("Filled buffer "+id+" with "+size+" bytes");
-        alBufferData(id, convertFormat(src.getAudioData()), nativeBuf, src.getAudioData().getSampleRate());
+        alBufferData(id, convertFormat(stream), nativeBuf, stream.getSampleRate());
 
         return true;
     }
 
-    private boolean updateStreamingSource(AudioSource src){
+    private boolean fillStreamingSource(int sourceId, AudioStream stream){
+        if (!stream.isOpen())
+            return false;
+
         boolean active = true;
-
-        int id = src.getId();
-        assert id >= 0;
-
-        int processed = alGetSourcei(id, AL_BUFFERS_PROCESSED);
-
+        int processed = alGetSourcei(sourceId, AL_BUFFERS_PROCESSED);
         while((processed--) != 0){
             int buffer;
 
             ib.position(0).limit(1);
-            alSourceUnqueueBuffers(id, ib);
+            alSourceUnqueueBuffers(sourceId, ib);
             buffer = ib.get(0);
 
-            active = fillBuffer(src, buffer);
+            active = fillBuffer(stream, buffer);
 
             ib.position(0).limit(1);
             ib.put(0, buffer);
-            alSourceQueueBuffers(id, ib);
+            alSourceQueueBuffers(sourceId, ib);
         }
 
+        if (!active && stream.isOpen())
+            stream.close();
+        
         return active;
     }
 
-    
+    private boolean attachStreamToSource(int sourceId, AudioStream stream){
+        boolean active = true;
+        for (int id : stream.getIds()){
+            active = fillBuffer(stream, id);
+            ib.position(0).limit(1);
+            ib.put(id).flip();
+            alSourceQueueBuffers(sourceId, ib);
+        }
+        return active;
+    }
+
+    private boolean attachBufferToSource(int sourceId, AudioBuffer buffer){
+        alSourcei(sourceId, AL_BUFFER, buffer.getId());
+        return true;
+    }
+
+    private boolean attachAudioToSource(int sourceId, AudioData data){
+        if (data instanceof AudioBuffer){
+            return attachBufferToSource(sourceId, (AudioBuffer) data);
+        }else if (data instanceof AudioStream){
+            return attachStreamToSource(sourceId, (AudioStream) data);
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    private void clearChannel(int index){
+        // make room at this channel
+        if (chanSrcs[index] != null){
+            AudioSource src = chanSrcs[index];
+
+            int sourceId = channels[index];
+            alSourceStop(sourceId);
+
+            if (src.getAudioData() instanceof AudioStream){
+                AudioStream str = (AudioStream) src.getAudioData();
+                ib.position(0).limit(STREAMING_BUFFER_COUNT);
+                ib.put(str.getIds()).flip();
+                alSourceUnqueueBuffers(sourceId, ib);
+            }else if (src.getAudioData() instanceof AudioBuffer){
+                alSourcei(sourceId, AL_BUFFER, 0);
+            }
+
+            chanSrcs[index] = null;
+        }
+    }
+
     public void update(float tpf){
-        // delete channel-based sources that finished playing
         for (int i = 0; i < channels.length; i++){
             AudioSource src = chanSrcs[i];
+            if (src == null)
+                continue;
+
             int sourceId = channels[i];
-            if (src != null){
-                if (alGetSourcei(sourceId, AL_SOURCE_STATE) == AL_STOPPED){
-                    chanSrcs[i] = null;
+
+            // is the source bound to this channel
+            // if false, it's an instanced playback
+            boolean boundSource = i == src.getChannel();
+
+            // source's data is streaming
+            boolean streaming = src.getAudioData() instanceof AudioStream;
+
+            // only buffered sources can be bound
+            assert (boundSource && streaming) || (!streaming);
+
+            int state = alGetSourcei(sourceId, AL_SOURCE_STATE);
+            boolean wantPlaying = src.getStatus() == Status.Playing;
+            boolean stopped = state == AL_STOPPED;
+
+            if (streaming && wantPlaying){
+                AudioStream stream = (AudioStream) src.getAudioData();
+                if (stream.isOpen()){
+                    fillStreamingSource(sourceId, stream);
+                    if (stopped)
+                        alSourcePlay(sourceId);
+                }else{
+                    if (stopped){
+                        // became inactive
+                        src.setStatus(Status.Stopped);
+                        src.setChannel(-1);
+                        clearChannel(i);
+                        freeChannel(i);
+                    }
+                }
+            }else if (!streaming){
+                boolean paused = state == AL_PAUSED;
+
+                // make sure OAL pause state & source state coincide
+                assert (src.getStatus() == Status.Paused && paused) || (!paused);
+
+                if (stopped){
+                    if (boundSource){
+                        src.setStatus(Status.Stopped);
+                        src.setChannel(-1);
+                    }
+                    clearChannel(i);
                     freeChannel(i);
-                    System.out.println("Freed index "+i);
                 }
             }
         }
 
-        ArrayList<AudioSource> toRem = new ArrayList<AudioSource>();
-        for (AudioSource src : playingList){
-            int id = src.getId();
-            if (src.isUpdateNeeded()){
-                updateSource(src);
-            }
-            if (alGetSourcei(id, AL_SOURCE_STATE) == AL_STOPPED){
-                toRem.add(src);
-                src.setStatus(Status.Stopped);
-            }
-            // update streaming
-            if (src.getStatus() == Status.Playing
-             && src.getAudioData() instanceof AudioStream){
-                if (!updateStreamingSource(src))
-                    toRem.add(src);
-            }
-        }
-        playingList.removeAll(toRem);
-        toRem.clear();
-
+        // update listener
         if (listener != null){
             Vector3f pos = listener.getLocation();
             Vector3f dir = listener.getDirection();
@@ -235,53 +311,30 @@ public class LwjglAudioRenderer implements AudioRenderer {
         }
     }
 
-    private int newChannel(){
-        if (freeChans.size() > 0)
-            return freeChans.remove(0);
-        else
-            return nextChan++;
-    }
-
-    private void freeChannel(int index){
-        if (index == nextChan-1)
-            nextChan--;
-        else
-            freeChans.add(index);
-    }
-
-    
     public void setListener(Camera listener) {
         this.listener = listener;
     }
 
     public void playSourceInstance(AudioSource src){
+        if (src.getAudioData() instanceof AudioStream)
+            throw new UnsupportedOperationException(
+                    "Cannot play instances " +
+                    "of audio streams. Use playSource() instead.");
+        
         if (src.getAudioData().isUpdateNeeded()){
-            updateAudioData(src, src.getAudioData());
+            updateAudioData(src.getAudioData());
         }
 
         // create a new index for an audio-channel
         int index = newChannel();
-
         int sourceId = channels[index];
 
-        // assert that the channel is free since the index is available
-        assert chanSrcs[index] == null;
-
-        // set the source to play on the provided channel
-        chanSrcs[index] = src;
-
-        // attach the audio data onto the channel
-        alSourcei(sourceId, AL_BUFFER, src.getAudioData().getId());
-
+        clearChannel(index);
+        
         // set parameters, like position and max distance
-
-        // if original source has looping enabled- ignore it
-        // If these sources were looped, they will never become AL_STOPPED
-        // which means the channel will be hogged forever
         setSourceParams(sourceId, src, true);
-
-        alSourceStop(sourceId);
-        alSourceRewind(sourceId);
+        attachAudioToSource(sourceId, src.getAudioData());
+        chanSrcs[index] = src;
 
         // play the channel
         alSourcePlay(sourceId);
@@ -291,72 +344,50 @@ public class LwjglAudioRenderer implements AudioRenderer {
 
     
     public void playSource(AudioSource src) {
-        if (src.isUpdateNeeded())
-            updateSource(src);
+        assert src.getStatus() == Status.Stopped || src.getChannel() == -1;
 
-        if (src.getStatus() != Status.Playing){
-            alSourcePlay(src.getId());
-            src.setStatus(Status.Playing);
-            playingList.add(src);
+        if (src.getStatus() == Status.Playing){
+            return;
+        }else if (src.getStatus() == Status.Stopped){
+
+            // allocate channel to this source
+            int index = newChannel();
+            clearChannel(index);
+            src.setChannel(index);
+
+            AudioData data = src.getAudioData();
+            if (data.isUpdateNeeded())
+                updateAudioData(data);
+
+            chanSrcs[index] = src;
+            setSourceParams(channels[index], src, false);
+            attachAudioToSource(channels[index], data);
         }
+
+        alSourcePlay(channels[src.getChannel()]);
+        src.setStatus(Status.Playing);
     }
 
     
     public void pauseSource(AudioSource src) {
-        if (src.isUpdateNeeded())
-            updateSource(src);
+        if (src.getStatus() == Status.Playing){
+            assert src.getChannel() != -1;
 
-        if (src.getStatus() != Status.Paused){
-            alSourcePause(src.getId());
+            alSourcePause(channels[src.getChannel()]);
             src.setStatus(Status.Paused);
-            playingList.remove(src);
         }
     }
 
     
     public void stopSource(AudioSource src) {
-        if (src.isUpdateNeeded())
-            updateSource(src);
-
         if (src.getStatus() != Status.Stopped){
-            alSourceStop(src.getId());
+            int chan = src.getChannel();
+            assert chan != -1; // if it's not stopped, must have id
+            
             src.setStatus(Status.Stopped);
-            playingList.remove(src);
-        }
-    }
-
-    public void updateSource(AudioSource src) {
-        AudioData audioData = src.getAudioData();
-        if (audioData == null){
-            logger.warning("Attempted to load source with no audio data!");
-            return;
-        }
-
-        int id = src.getId();
-        if (id == -1){
-            ib.rewind();
-            alGenSources(ib);
-            id = ib.get(0);
-            src.setId(id);
-        }
-
-        setSourceParams(id, src, false);
-
-        // Makes sure to attach buffers to source, etc.
-        if (audioData.isUpdateNeeded())
-            updateAudioData(src, audioData);
-
-        src.clearUpdateNeeded();
-    }
-
-    
-    public void deleteSource(AudioSource src) {
-        int id = src.getId();
-        if (id != -1){
-            ib.put(0,id);
-            ib.position(0).limit(1);
-            alDeleteSources(ib);
-            src.resetObject();
+            src.setChannel(-1);
+            clearChannel(chan);
+            freeChannel(chan);
         }
     }
 
@@ -379,47 +410,42 @@ public class LwjglAudioRenderer implements AudioRenderer {
                                                 "bits="+ad.getBitsPerSample()+", channels="+ad.getChannels());
     }
 
-    public void updateAudioBuffer(AudioSource src, AudioBuffer ab){
+    public void updateAudioBuffer(AudioBuffer ab){
         int id = ab.getId();
-        boolean needAttach = false;
         if (ab.getId() == -1){
             ib.position(0).limit(1);
             alGenBuffers(ib);
             id = ib.get(0);
             ab.setId(id);
-            needAttach = true;
         }
 
         alBufferData(id, convertFormat(ab), ab.getData(), ab.getSampleRate());
-        if (needAttach)
-            alSourcei(src.getId(), AL_BUFFER, id);
-
         ab.clearUpdateNeeded();
     }
 
-    public void updateAudioStream(AudioSource src, AudioStream as){
-        ib.position(0).limit(STREAMING_BUFFER_COUNT);
-        alGenBuffers(ib);
-        for (int i = 0; i < STREAMING_BUFFER_COUNT; i++){
-            int id = ib.get(i);
-            fillBuffer(src, id);
-            ib.position(i).limit(i+1);
-            alSourceQueueBuffers(src.getId(), ib);
-            ib.position(0).limit(STREAMING_BUFFER_COUNT);
+    public void updateAudioStream(AudioStream as){
+        if (as.getIds() != null){
+            deleteAudioData(as);
         }
 
+        int[] ids = new int[STREAMING_BUFFER_COUNT];
+        ib.position(0).limit(STREAMING_BUFFER_COUNT);
+        alGenBuffers(ib);
+        ib.position(0).limit(STREAMING_BUFFER_COUNT);
+        ib.get(ids);
+        
+        as.setIds(ids);
         as.clearUpdateNeeded();
     }
 
-    public void updateAudioData(AudioSource src, AudioData ad){
+    public void updateAudioData(AudioData ad){
         if (ad instanceof AudioBuffer){
-            updateAudioBuffer(src, (AudioBuffer) ad);
+            updateAudioBuffer((AudioBuffer) ad);
         }else if (ad instanceof AudioStream){
-            updateAudioStream(src, (AudioStream) ad);
+            updateAudioStream((AudioStream) ad);
         }
     }
 
-    
     public void deleteAudioData(AudioData ad){
         if (ad instanceof AudioBuffer){
             AudioBuffer ab = (AudioBuffer) ad;
@@ -432,6 +458,13 @@ public class LwjglAudioRenderer implements AudioRenderer {
             }
         }else if (ad instanceof AudioStream){
             AudioStream as = (AudioStream) ad;
+            int[] ids = as.getIds();
+            if (ids != null){
+                ib.clear();
+                ib.put(ids).flip();
+                alDeleteBuffers(ib);
+                as.resetObject();
+            }
         }
     }
 

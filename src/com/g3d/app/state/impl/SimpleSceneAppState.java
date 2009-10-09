@@ -26,7 +26,8 @@ public class SimpleSceneAppState implements SceneAppState {
     }
 
     public void update(AppStateManager manager, float tpf) {
-        rootNode.updateGeometricState(tpf, true);
+        rootNode.updateLogicalState(tpf);
+        rootNode.updateGeometricState();
     }
 
 }

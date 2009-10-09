@@ -20,20 +20,20 @@ public class ParticlePointMesh extends ParticleMesh {
         // set positions
         FloatBuffer pb = BufferUtils.createVector3Buffer(numParticles);
         VertexBuffer pvb = new VertexBuffer(VertexBuffer.Type.Position);
-        pvb.setupData(Usage.StreamWriteOnly, 3, Format.Float, pb);
+        pvb.setupData(Usage.Stream, 3, Format.Float, pb);
         setBuffer(pvb);
 
         // set colors
         ByteBuffer cb = BufferUtils.createByteBuffer(numParticles * 4);
         VertexBuffer cvb = new VertexBuffer(VertexBuffer.Type.Color);
-        cvb.setupData(Usage.StreamWriteOnly, 4, Format.UnsignedByte, cb);
+        cvb.setupData(Usage.Stream, 4, Format.UnsignedByte, cb);
         cvb.setNormalized(true);
         setBuffer(cvb);
 
         // set sizes
         ByteBuffer sb = BufferUtils.createByteBuffer(numParticles);
         VertexBuffer svb = new VertexBuffer(VertexBuffer.Type.Size);
-        svb.setupData(Usage.StreamWriteOnly, 1, Format.UnsignedByte, sb);
+        svb.setupData(Usage.Stream, 1, Format.UnsignedByte, sb);
         svb.setNormalized(true);
         setBuffer(svb);
 

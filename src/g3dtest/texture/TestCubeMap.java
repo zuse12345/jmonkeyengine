@@ -76,7 +76,7 @@ public class TestCubeMap extends SimpleApplication {
 
         hdrNode.attachChild(createReflectiveTeapot());
         hdrNode.attachChild(skyGeom);
-        hdrNode.updateGeometricState(0, true);
+        hdrNode.updateGeometricState();
 
         cam.setLocation(new Vector3f(6, 6, -4));
         cam.lookAt(hdrNode.getWorldBound().getCenter(), Vector3f.UNIT_Y);
@@ -84,7 +84,8 @@ public class TestCubeMap extends SimpleApplication {
 
     @Override
     public void simpleUpdate(float tpf){
-        hdrNode.updateGeometricState(tpf, true);
+        hdrNode.updateLogicalState(tpf);
+        hdrNode.updateGeometricState();
         lastTpf = tpf;
     }
 

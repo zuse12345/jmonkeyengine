@@ -36,9 +36,9 @@ import com.g3d.bounding.BoundingVolume;
 import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
 import com.g3d.export.Savable;
+import com.g3d.material.Material;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -139,6 +139,19 @@ public class Node extends Spatial implements Savable {
     }
 
     /**
+     * <code>updateLogicalState</code> updates logic state. Should
+     * be overriden by subclasses desiring this functionality.
+     * @param tpf Time per frame
+     */
+    @Override
+    public void updateLogicalState(float tpf){
+        for (int i = 0, cSize = children.size(); i < cSize; i++) {
+            Spatial child = children.get(i);
+            child.updateLogicalState(tpf);
+        }
+    }
+
+    /**
      * <code>updateGeometricState</code> updates all the geometry information
      * for the node.
      *
@@ -148,7 +161,7 @@ public class Node extends Spatial implements Savable {
      *            true if this node started the update process.
      */
     @Override
-    public void updateGeometricState(float tpf, boolean initiator){
+    public void updateGeometricState(){
         if ((refreshFlags & RF_LIGHTLIST) != 0){
             updateWorldLightList();
         }
@@ -162,9 +175,11 @@ public class Node extends Spatial implements Savable {
         // the important part- make sure child geometric state is refreshed
         // first before updating own world bound. This saves
         // a round-trip later on.
+        // NOTE 9/19/09
+        // Although it does save a round trip,
         for (int i = 0, cSize = children.size(); i < cSize; i++) {
             Spatial child = children.get(i);
-            child.updateGeometricState(tpf, false);
+            child.updateGeometricState();
         }
 
         // XXX: Room for optimization, merge the above loop with this one.
@@ -178,34 +193,34 @@ public class Node extends Spatial implements Savable {
      * in all sub-branches of this node that contain geometry.
      * @return the triangle count of this branch.
      */
-//    @Override
-//    public int getTriangleCount() {
-//        int count = 0;
-//        if(children != null) {
-//            for(int i = 0; i < children.size(); i++) {
-//                count += children.get(i).getTriangleCount();
-//            }
-//        }
-//
-//        return count;
-//    }
+    @Override
+    public int getTriangleCount() {
+        int count = 0;
+        if(children != null) {
+            for(int i = 0; i < children.size(); i++) {
+                count += children.get(i).getTriangleCount();
+            }
+        }
+
+        return count;
+    }
     
     /**
      * <code>getVertexCount</code> returns the number of vertices contained
      * in all sub-branches of this node that contain geometry.
      * @return the vertex count of this branch.
      */
-//    @Override
-//    public int getVertexCount() {
-//        int count = 0;
-//        if(children != null) {
-//            for(int i = 0; i < children.size(); i++) {
-//               count += children.get(i).getVertexCount();
-//            }
-//        }
-//
-//        return count;
-//    }
+    @Override
+    public int getVertexCount() {
+        int count = 0;
+        if(children != null) {
+            for(int i = 0; i < children.size(); i++) {
+               count += children.get(i).getVertexCount();
+            }
+        }
+
+        return count;
+    }
 
     /**
      * 
@@ -499,30 +514,43 @@ public class Node extends Spatial implements Savable {
         }
     }
 
-    public void write(G3DExporter e) throws IOException {
-//        super.write(e);
-//        if (children == null)
-//            e.getCapsule(this).writeSavableArrayList(null, "children", null);
-//        else
-//            e.getCapsule(this).writeSavableArrayList(new ArrayList<Spatial>(children), "children", null);
+    public void setMaterial(Material mat){
+        super.setMaterial(mat);
+        for (Spatial child : children){
+            child.setMaterial(mat);
+        }
     }
-//
-    @SuppressWarnings("unchecked")
+
+    @Override
+    public Node clone(){
+        Node nodeClone = (Node) super.clone();
+        nodeClone.children = new ArrayList<Spatial>();
+        for (Spatial child : children){
+            Spatial childClone = child.clone();
+            childClone.parent = this;
+            nodeClone.children.add(childClone);
+        }
+        return nodeClone;
+    }
+
+    @Override
+    public void write(G3DExporter e) throws IOException {
+        super.write(e);
+        e.getCapsule(this).writeSavableList(children, "children", null);
+    }
+
+    @Override
     public void read(G3DImporter e) throws IOException {
-//        super.read(e);
-//        ArrayList<Spatial> cList = e.getCapsule(this).readSavableArrayList("children", null);
-//        if (cList == null)
-//            children = null;
-//        else
-//            children = Collections.synchronizedList(cList);
-//
-//        // go through children and set parent to this node
-//        if (children != null) {
-//            for (int x = 0, cSize = children.size(); x < cSize; x++) {
-//                Spatial child = children.get(x);
-//                child.parent = this;
-//            }
-//        }
+        super.read(e);
+        children = e.getCapsule(this).readSavableList("children", null);
+
+        // go through children and set parent to this node
+        if (children != null) {
+            for (int x = 0, cSize = children.size(); x < cSize; x++) {
+                Spatial child = children.get(x);
+                child.parent = this;
+            }
+        }
     }
 
     @Override

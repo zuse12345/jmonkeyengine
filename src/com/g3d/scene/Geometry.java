@@ -1,8 +1,13 @@
 package com.g3d.scene;
 
 import com.g3d.bounding.BoundingVolume;
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
 import com.g3d.math.Matrix4f;
 import com.g3d.util.TempVars;
+import java.io.IOException;
 
 public class Geometry extends Spatial {
 
@@ -11,7 +16,7 @@ public class Geometry extends Spatial {
      */
     protected Mesh mesh;
 
-    protected Matrix4f cachedWorldMat = new Matrix4f();
+    protected transient Matrix4f cachedWorldMat = new Matrix4f();
 
     /**
      * Create a geometry node without any mesh data.
@@ -33,6 +38,14 @@ public class Geometry extends Spatial {
             throw new NullPointerException();
 
         this.mesh = mesh;
+    }
+
+    public int getVertexCount(){
+        return mesh.getVertexCount();
+    }
+
+    public int getTriangleCount(){
+        return mesh.getTriangleCount();
     }
 
     public void setMesh(Mesh mesh){
@@ -87,10 +100,12 @@ public class Geometry extends Spatial {
         cachedWorldMat.setRotationQuaternion(worldTransform.getRotation());
         cachedWorldMat.setTranslation(worldTransform.getTranslation());
 
+        assert TempVars.get().lock();
         Matrix4f scaleMat = TempVars.get().tempMat4;
         scaleMat.loadIdentity();
         scaleMat.scale(worldTransform.getScale());
         cachedWorldMat.multLocal(scaleMat);
+        assert TempVars.get().unlock();
 
         // geometry requires lights to be sorted
         worldLights.sort(true);
@@ -105,6 +120,27 @@ public class Geometry extends Spatial {
         this.worldBound = null;
         mesh.setBound(modelBound);
         updateModelBound();
+    }
+
+    @Override
+    public Geometry clone(){
+        Geometry geomClone = (Geometry) super.clone();
+        geomClone.cachedWorldMat = cachedWorldMat.clone();
+        return geomClone;
+    }
+
+    @Override
+    public void write(G3DExporter ex) throws IOException {
+        super.write(ex);
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(mesh, "mesh", null);
+    }
+
+    @Override
+    public void read(G3DImporter im) throws IOException {
+        super.read(im);
+        InputCapsule ic = im.getCapsule(this);
+        mesh = (Mesh) ic.readSavable("mesh", null);
     }
 
 }

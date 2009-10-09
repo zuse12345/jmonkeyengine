@@ -244,10 +244,12 @@ public final class BufferUtils {
      *            to normalize
      */
     public static void normalizeVector3(FloatBuffer buf, int index) {
+        assert TempVars.get().lock();
         Vector3f tempVec3 = TempVars.get().vect1;
         populateFromBuffer(tempVec3, buf, index);
         tempVec3.normalizeLocal();
         setInBuffer(tempVec3, buf, index);
+        assert TempVars.get().unlock();
     }
 
     /**
@@ -262,10 +264,12 @@ public final class BufferUtils {
      *            to add to
      */
     public static void addInBuffer(Vector3f toAdd, FloatBuffer buf, int index) {
+        assert TempVars.get().lock();
         Vector3f tempVec3 = TempVars.get().vect1;
         populateFromBuffer(tempVec3, buf, index);
         tempVec3.addLocal(toAdd);
         setInBuffer(tempVec3, buf, index);
+        assert TempVars.get().unlock();
     }
 
     /**
@@ -280,10 +284,12 @@ public final class BufferUtils {
      *            to multiply
      */
     public static void multInBuffer(Vector3f toMult, FloatBuffer buf, int index) {
+        assert TempVars.get().lock();
         Vector3f tempVec3 = TempVars.get().vect1;
         populateFromBuffer(tempVec3, buf, index);
         tempVec3.multLocal(toMult);
         setInBuffer(tempVec3, buf, index);
+        assert TempVars.get().unlock();
     }
 
     /**
@@ -300,9 +306,12 @@ public final class BufferUtils {
      * @return
      */
     public static boolean equals(Vector3f check, FloatBuffer buf, int index) {
+        assert TempVars.get().lock();
         Vector3f tempVec3 = TempVars.get().vect1;
         populateFromBuffer(tempVec3, buf, index);
-        return tempVec3.equals(check);
+        boolean eq = tempVec3.equals(check);
+        assert TempVars.get().unlock();
+        return eq;
     }
 
     // // -- VECTOR2F METHODS -- ////
@@ -438,10 +447,12 @@ public final class BufferUtils {
      *            to normalize
      */
     public static void normalizeVector2(FloatBuffer buf, int index) {
+        assert TempVars.get().lock();
         Vector2f tempVec2 = TempVars.get().vect2d;
         populateFromBuffer(tempVec2, buf, index);
         tempVec2.normalizeLocal();
         setInBuffer(tempVec2, buf, index);
+        assert TempVars.get().unlock();
     }
 
     /**
@@ -456,10 +467,12 @@ public final class BufferUtils {
      *            to add to
      */
     public static void addInBuffer(Vector2f toAdd, FloatBuffer buf, int index) {
+        assert TempVars.get().lock();
         Vector2f tempVec2 = TempVars.get().vect2d;
         populateFromBuffer(tempVec2, buf, index);
         tempVec2.addLocal(toAdd);
         setInBuffer(tempVec2, buf, index);
+        assert TempVars.get().unlock();
     }
 
     /**
@@ -474,10 +487,12 @@ public final class BufferUtils {
      *            to multiply
      */
     public static void multInBuffer(Vector2f toMult, FloatBuffer buf, int index) {
+        assert TempVars.get().lock();
         Vector2f tempVec2 = TempVars.get().vect2d;
         populateFromBuffer(tempVec2, buf, index);
         tempVec2.multLocal(toMult);
         setInBuffer(tempVec2, buf, index);
+        assert TempVars.get().unlock();
     }
 
     /**
@@ -494,9 +509,12 @@ public final class BufferUtils {
      * @return
      */
     public static boolean equals(Vector2f check, FloatBuffer buf, int index) {
+        assert TempVars.get().lock();
         Vector2f tempVec2 = TempVars.get().vect2d;
         populateFromBuffer(tempVec2, buf, index);
-        return tempVec2.equals(check);
+        boolean eq = tempVec2.equals(check);
+        assert TempVars.get().unlock();
+        return eq;
     }
 
 

@@ -71,7 +71,6 @@ public class XmlWorld extends SimpleGame {
 
     static protected void parseAndRun(XmlWorld xmlWorld, String[] args)
             throws MalformedURLException {
-        int counter = -1;
         List<URL> urls = new ArrayList<URL>();
         for (String urlString : args) {
             if (urlString.equals("-r")) {

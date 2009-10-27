@@ -85,8 +85,7 @@ public class XmlAnimator extends XmlWorld {
      * 'ArmatureSuperBone'"
      */
     public AnimationController getAnimationController() {
-        @SuppressWarnings("unchecked")
-        List<Bone> armatures = (List<Bone>)
+        List<Bone> armatures =
                 rootNode.descendantMatches(Bone.class, ".+SuperBone");
         if (armatures.size() < 1)
             throw new IllegalStateException("Sorry.  Program assumes "

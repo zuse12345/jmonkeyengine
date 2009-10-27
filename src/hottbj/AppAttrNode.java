@@ -51,6 +51,7 @@ import com.jme.util.export.StringFloatMap;
  * requirement will be alleviated.
  * </P>
  */
+@SuppressWarnings("serial")
 public class AppAttrNode extends Node {
     /**
      * If 'this' instance is instantiated by a jME Importer, this constructor

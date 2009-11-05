@@ -199,7 +199,7 @@ public class ParticleEmitter extends Geometry {
         p.life = p.startlife;
         p.color.set(startColor);
         p.size = startSize;
-        p.position.set(0,0,0);
+        shape.getRandomPoint(p.position);
         p.velocity.set(startVel);
 
         assert TempVars.get().lock();

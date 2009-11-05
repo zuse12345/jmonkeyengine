@@ -4,16 +4,13 @@ import com.g3d.app.SimpleApplication;
 import com.g3d.material.Material;
 import com.g3d.math.Vector3f;
 import com.g3d.post.HDRRenderer;
-import com.g3d.renderer.Renderer;
+import com.g3d.renderer.RenderManager;
 import com.g3d.renderer.queue.RenderQueue.Bucket;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Node;
 import com.g3d.scene.shape.Sphere;
-import com.g3d.texture.Image;
 import com.g3d.texture.Image.Format;
 import com.g3d.texture.Texture;
-import com.g3d.texture.Texture2D;
-import org.lwjgl.opengl.GLContext;
 
 public class TestCubeMap extends SimpleApplication {
 
@@ -58,8 +55,8 @@ public class TestCubeMap extends SimpleApplication {
         hdrRender.setUseFastFilter(false);
         hdrRender.setBufferFormat(bufFormat);
 
-        hdrRender.loadInitial();
-        hdrRender.load(renderer, settings.getWidth(), settings.getHeight(), 0);
+//        hdrRender.loadInitial();
+//        hdrRender.load(renderer, settings.getWidth(), settings.getHeight(), 0);
     }
 
     @Override
@@ -90,10 +87,10 @@ public class TestCubeMap extends SimpleApplication {
     }
 
     @Override
-    public void simpleRender(Renderer r){
-        hdrRender.update(lastTpf, this, hdrNode);
-        render(guiNode, r);
-        r.renderQueue();
+    public void simpleRender(RenderManager rm){
+//        hdrRender.update(lastTpf, this, hdrNode);
+//        render(guiNode, r);
+//        viewPort.getQueue().renderQueue();
     }
 
 }

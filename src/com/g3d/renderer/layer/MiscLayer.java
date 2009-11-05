@@ -1,5 +1,6 @@
-package com.g3d.renderer;
+package com.g3d.renderer.layer;
 
+import com.g3d.renderer.*;
 import com.g3d.math.ColorRGBA;
 import java.util.Collection;
 

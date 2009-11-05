@@ -4,27 +4,22 @@ import com.g3d.material.Material;
 import com.g3d.material.Technique;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
-import com.g3d.renderer.Renderer;
-import com.g3d.scene.Spatial;
-import com.g3d.util.TempVars;
-import java.util.Comparator;
+import com.g3d.scene.Geometry;
 
-public class OpaqueComparator implements Comparator<Spatial> {
+public class OpaqueComparator implements GeometryComparator {
 
-    private Renderer renderer;
+    private Camera cam;
 
-    public OpaqueComparator(Renderer renderer){
-        this.renderer = renderer;
+    public void setCamera(Camera cam){
+        this.cam = cam;
     }
 
-    public float distanceToCam(Spatial spat, Vector3f tempVec){
+    public float distanceToCam(Geometry spat, Vector3f tempVec){
         if (spat == null)
             return Float.NEGATIVE_INFINITY;
 
         if (spat.queueDistance != Float.NEGATIVE_INFINITY)
                 return spat.queueDistance;
-
-        Camera cam = renderer.getCamera();
 
         Vector3f camPosition = cam.getLocation();
         Vector3f viewVector = cam.getDirection();
@@ -48,7 +43,7 @@ public class OpaqueComparator implements Comparator<Spatial> {
         return spat.queueDistance;
     }
 
-    public int compare(Spatial o1, Spatial o2) {
+    public int compare(Geometry o1, Geometry o2) {
         if (o1 == null || o2 == null)
             return -1;
 
@@ -90,4 +85,5 @@ public class OpaqueComparator implements Comparator<Spatial> {
         else
             return -1;
     }
+
 }

@@ -6,6 +6,7 @@ import com.g3d.math.ColorRGBA;
 import com.g3d.math.FastMath;
 import com.g3d.math.Quaternion;
 import com.g3d.math.Vector3f;
+import com.g3d.renderer.RenderManager;
 import com.g3d.renderer.Renderer;
 import com.g3d.renderer.queue.RenderQueue.ShadowMode;
 import com.g3d.scene.Geometry;
@@ -74,18 +75,17 @@ public class TestShadow extends SimpleApplication {
     }
 
     @Override
-    public void simpleRender(Renderer r){
-        bsr.postQueue(r);
-
-        Vector3f[] points = new Vector3f[8];
-        for (int i = 0; i < points.length; i++)
-            points[i] = new Vector3f();
-
-        ShadowUtil.updateFrustumPoints(bsr.getShadowCamera(), 1, 20, 1f, points);
-        frustum.update(points);
-        //renderer.clearBuffers(true,true,true);
-        bsr.postRender(r);
-        
+    public void simpleRender(RenderManager r){
+//        bsr.postQueue(r);
+//
+//        Vector3f[] points = new Vector3f[8];
+//        for (int i = 0; i < points.length; i++)
+//            points[i] = new Vector3f();
+//
+//        ShadowUtil.updateFrustumPoints(bsr.getShadowCamera(), 1, 20, 1f, points);
+//        frustum.update(points);
+//        //renderer.clearBuffers(true,true,true);
+//        bsr.postRender(r);
     }
 
 }

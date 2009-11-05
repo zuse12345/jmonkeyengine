@@ -1414,6 +1414,12 @@ public class Matrix4f implements Savable, Cloneable {
         
     }
 
+    public void setScale(float x, float y, float z){
+        m00 *= x;
+        m11 *= y;
+        m22 *= z;
+    }
+
     public void setScale(Vector3f scale){
         m00 *= scale.x;
         m11 *= scale.y;

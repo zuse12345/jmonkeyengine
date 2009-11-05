@@ -19,8 +19,6 @@ public abstract class LwjglContext implements G3DContext {
     protected Timer timer;
     protected SystemListener listener;
 
-    public abstract void restart(boolean updateCamera);
-
     public void setSystemListener(SystemListener listener){
         this.listener = listener;
     }
@@ -33,7 +31,7 @@ public abstract class LwjglContext implements G3DContext {
     
     public void create(){
         timer = new LwjglTimer();
-        renderer = new LwjglRenderer(this);
+        renderer = new LwjglRenderer();
         renderer.initialize();
         created.set(true);
     }

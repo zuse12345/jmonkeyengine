@@ -14,11 +14,12 @@ import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.PixelFormat;
 import com.g3d.system.AppSettings;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 //import org.lwjgl.opengl.ContextAttribs;
+import org.lwjgl.opengl.ARBMultisample;
+import org.lwjgl.opengl.GLContext;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
 
@@ -186,12 +187,10 @@ public class LwjglDisplay extends LwjglContext implements Runnable {
     }
 
     @Override
-    public void restart(boolean updateCamera) {
+    public void restart() {
         if (created.get()){
             applySettings(settings);
-            if (renderer.getCamera() != null && updateCamera){
-                renderer.getCamera().resize(settings.getWidth(), settings.getHeight(), true);
-            }
+            listener.reshape(settings.getWidth(), settings.getHeight());
             logger.info("Display restarted.");
         }else{
             logger.warning("Display is not created, cannot restart window.");

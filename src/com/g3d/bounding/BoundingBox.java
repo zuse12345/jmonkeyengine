@@ -32,6 +32,10 @@
 
 package com.g3d.bounding;
 
+import com.g3d.collision.Collidable;
+import com.g3d.collision.CollisionResult;
+import com.g3d.collision.CollisionResults;
+import com.g3d.collision.UnsupportedCollisionException;
 import com.g3d.export.InputCapsule;
 import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
@@ -569,9 +573,6 @@ public class BoundingBox extends BoundingVolume {
      * @see com.jme.bounding.BoundingVolume#intersects(com.jme.bounding.BoundingVolume)
      */
     public boolean intersects(BoundingVolume bv) {
-        if (bv == null)
-            return false;
-       
         return bv.intersectsBoundingBox(this);
     }
 
@@ -581,7 +582,7 @@ public class BoundingBox extends BoundingVolume {
      * @see com.jme.bounding.BoundingVolume#intersectsSphere(com.jme.bounding.BoundingSphere)
      */
     public boolean intersectsSphere(BoundingSphere bs) {
-        if (!Vector3f.isValidVector(center) || !Vector3f.isValidVector(bs.center)) return false;
+        assert Vector3f.isValidVector(center) && Vector3f.isValidVector(bs.center);
 
         if (FastMath.abs(center.x - bs.center.x) < bs.getRadius()
                 + xExtent
@@ -602,7 +603,7 @@ public class BoundingBox extends BoundingVolume {
      * @see com.jme.bounding.BoundingVolume#intersectsBoundingBox(com.jme.bounding.BoundingBox)
      */
     public boolean intersectsBoundingBox(BoundingBox bb) {
-        if (!Vector3f.isValidVector(center) || !Vector3f.isValidVector(bb.center)) return false;
+        assert Vector3f.isValidVector(center) && Vector3f.isValidVector(bb.center);
 
         if (center.x + xExtent < bb.center.x - bb.xExtent
                 || center.x - xExtent > bb.center.x + bb.xExtent)
@@ -634,7 +635,7 @@ public class BoundingBox extends BoundingVolume {
      * @see com.jme.bounding.BoundingVolume#intersects(com.jme.math.Ray)
      */
     public boolean intersects(Ray ray) {
-        if (!Vector3f.isValidVector(center)) return false;
+        assert Vector3f.isValidVector(center);
 
         float rhs;
 
@@ -705,7 +706,7 @@ public class BoundingBox extends BoundingVolume {
     /**
      * @see com.jme.bounding.BoundingVolume#intersectsWhere(com.jme.math.Ray)
      */
-    public IntersectionRecord intersectsWhere(Ray ray) {
+    private int collideWithRay(Ray ray, CollisionResults results) {
         TempVars vars = TempVars.get();
         assert vars.lock();
         Vector3f diff = vars.vect1.set(ray.origin).subtractLocal(center);
@@ -729,23 +730,30 @@ public class BoundingBox extends BoundingVolume {
                         new Vector3f(ray.direction).multLocal(distances[0]).addLocal(ray.origin),
                         new Vector3f(ray.direction).multLocal(distances[1]).addLocal(ray.origin)
                         };
-                IntersectionRecord record = new IntersectionRecord(distances, points);
-                return record;
-            } 
-                
-            float[] distances = new float[] { t[0] };
-            Vector3f[] points = new Vector3f[] { 
-                    new Vector3f(ray.direction).multLocal(distances[0]).addLocal(ray.origin),
-                    };
-            IntersectionRecord record = new IntersectionRecord(distances, points);
-            return record;            
-        } 
-        
-        return new IntersectionRecord();        
 
+                CollisionResult result = new CollisionResult(points[0], distances[0]);
+                results.addCollision(result);
+                result = new CollisionResult(points[1], distances[1]);
+                results.addCollision(result);
+                return 2;
+            }
+           
+            Vector3f point = new Vector3f(ray.direction).multLocal(t[0]).addLocal(ray.origin);   
+            CollisionResult result = new CollisionResult(point, t[0]);
+            results.addCollision(result);
+            return 1;
+        }
+        return 0;
     }
 
-    
+    public int collideWith(Collidable other, CollisionResults results){
+        if (other instanceof Ray){
+            Ray ray = (Ray) other;
+            return collideWithRay(ray, results);
+        }else{
+            throw new UnsupportedCollisionException("With: "+other.getClass().getSimpleName());
+        }
+    }
 
     /**
      * C code ported from http://www.cs.lth.se/home/Tomas_Akenine_Moller/code/tribox3.txt
@@ -758,55 +766,6 @@ public class BoundingBox extends BoundingVolume {
     public boolean intersects(Vector3f v1, Vector3f v2, Vector3f v3){
        return Intersection.intersect(this, v1, v2, v3);
     }
-
-//    public boolean intersects(Vector3f v1, Vector3f v2, Vector3f v3) {
-//        TempVars vars = TempVars.get();
-//        Vector3f min = vars.vect1.set(center).subtractLocal(xExtent, yExtent, zExtent);
-//        Vector3f max = vars.vect2.set(center).addLocal(xExtent, yExtent, zExtent);
-//
-//        Plane p = new Plane();
-//        p.setPlanePoints(v1,v2,v3);
-//        if (whichSide(p) == Plane.Side.Negative)
-//            return false;
-//
-//        // triangle to the left of box
-//        if (v1.x < min.x
-//         && v2.x < min.x
-//         && v3.x < min.x)
-//            return false;
-//
-//        // triangle to the right of box
-//        if (v1.x > max.x
-//         && v2.x > max.x
-//         && v3.x > max.x)
-//            return false;
-//
-//        // triangle above box
-//        if (v1.y > max.y
-//         && v2.y > max.y
-//         && v3.y > max.y)
-//            return false;
-//
-//        // triangle below box
-//        if (v1.y < min.y
-//         && v2.y < min.y
-//         && v3.y < min.y)
-//            return false;
-//
-//        // triangle behind box
-//        if (v1.z < min.z
-//         && v2.z < min.z
-//         && v3.z < min.z)
-//            return false;
-//
-//        // triangle in front of box
-//        if (v1.z > max.z
-//         && v2.z > max.z
-//         && v3.z > max.z)
-//            return false;
-//
-//        return true;
-//    }
 
     @Override
     public boolean contains(Vector3f point) {
@@ -946,12 +905,11 @@ public class BoundingBox extends BoundingVolume {
 
     public void setMinMax(Vector3f min, Vector3f max){
         this.center.set(max).addLocal(min).multLocal(0.5f);
-        xExtent = max.x - center.x;
-        yExtent = max.y - center.y;
-        zExtent = max.z - center.z;
-        assert xExtent > 0 && yExtent > 0 && zExtent > 0;
+        xExtent = FastMath.abs(max.x - center.x);
+        yExtent = FastMath.abs(max.y - center.y);
+        zExtent = FastMath.abs(max.z - center.z);
     }
-
+    
     @Override
     public void write(G3DExporter e) throws IOException {
         super.write(e);

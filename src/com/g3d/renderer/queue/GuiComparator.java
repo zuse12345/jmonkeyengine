@@ -1,12 +1,12 @@
 package com.g3d.renderer.queue;
 
-import com.g3d.scene.Spatial;
+import com.g3d.renderer.Camera;
+import com.g3d.scene.Geometry;
 import com.g3d.ui.UIElement;
-import java.util.Comparator;
 
-public class GuiComparator implements Comparator<Spatial> {
+public class GuiComparator implements GeometryComparator {
 
-    public int compare(Spatial o1, Spatial o2) {
+    public int compare(Geometry o1, Geometry o2) {
         if (o1 instanceof UIElement && o2 instanceof UIElement){
             UIElement e1 = (UIElement) o1;
             UIElement e2 = (UIElement) o2;
@@ -18,6 +18,9 @@ public class GuiComparator implements Comparator<Spatial> {
                 return 0;
         }
         return 0;
+    }
+
+    public void setCamera(Camera cam) {
     }
 
 }

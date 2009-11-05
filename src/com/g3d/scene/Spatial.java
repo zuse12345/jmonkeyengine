@@ -6,6 +6,7 @@
 package com.g3d.scene;
 
 import com.g3d.bounding.BoundingVolume;
+import com.g3d.collision.Collidable;
 import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
 import com.g3d.export.InputCapsule;
@@ -24,8 +25,6 @@ import com.g3d.renderer.queue.RenderQueue;
 import com.g3d.renderer.queue.RenderQueue.ShadowMode;
 import com.g3d.util.TempVars;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -38,7 +37,7 @@ import java.util.logging.Logger;
  * @author Joshua Slack
  * @version $Revision: 4075 $, $Data$
  */
-public abstract class Spatial implements Savable, Cloneable {
+public abstract class Spatial implements Savable, Cloneable, Collidable {
 
     public enum CullHint {
         /** 

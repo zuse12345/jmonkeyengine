@@ -4,15 +4,22 @@ import com.g3d.material.Material;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
 import com.g3d.renderer.Renderer;
+import com.g3d.renderer.queue.RenderQueue;
 import com.g3d.renderer.queue.RenderQueue.ShadowMode;
-import com.g3d.renderer.queue.SpatialList;
+import com.g3d.renderer.queue.GeometryList;
 import com.g3d.asset.AssetManager;
+import com.g3d.post.SceneProcessor;
+import com.g3d.renderer.RenderManager;
+import com.g3d.renderer.ViewPort;
 import com.g3d.texture.FrameBuffer;
 import com.g3d.texture.Image.Format;
 import com.g3d.texture.Texture2D;
 import com.g3d.ui.Picture;
 
-public class BasicShadowRenderer {
+public class BasicShadowRenderer implements SceneProcessor {
+
+    private RenderManager renderManager;
+    private ViewPort viewPort;
 
     private FrameBuffer shadowFB;
     private Texture2D shadowMap;
@@ -43,13 +50,18 @@ public class BasicShadowRenderer {
         }
     }
 
+    public void initialize(RenderManager rm, ViewPort vp){
+        renderManager = rm;
+        viewPort = vp;
+    }
+
     public Vector3f[] getPoints() {
         return points;
     }
 
-    public void postQueue(Renderer r){
+    public void postQueue(RenderQueue rq){
         // update frustum points based on current camera
-        Camera viewCam = r.getCamera();
+        Camera viewCam = viewPort.getCamera();
         ShadowUtil.updateFrustumPoints(viewCam,
                                        viewCam.getFrustumNear(),
                                        viewCam.getFrustumFar(), 
@@ -65,20 +77,21 @@ public class BasicShadowRenderer {
         shadowCam.updateViewProjection();
 
         // render shadow casters to shadow map
-        SpatialList occluders = r.getRenderQueue().getShadowQueueContent(ShadowMode.Cast);
-        SpatialList recievers = r.getRenderQueue().getShadowQueueContent(ShadowMode.Recieve);
+        GeometryList occluders = rq.getShadowQueueContent(ShadowMode.Cast);
+        GeometryList recievers = rq.getShadowQueueContent(ShadowMode.Recieve);
         ShadowUtil.updateShadowCamera(occluders, recievers, shadowCam, points);
 
+        Renderer r = renderManager.getRenderer();
+        renderManager.setCamera(shadowCam);
+        renderManager.setForcedMaterial(preshadowMat);
+
         r.setFrameBuffer(shadowFB);
-        r.setCamera(shadowCam);
         r.clearBuffers(false,true,false);
-        r.setForcedMaterial(preshadowMat);
-
-        r.renderShadowQueue(ShadowMode.Cast);
-
-        r.setForcedMaterial(null);
-        r.setCamera(viewCam);
+        viewPort.getQueue().renderShadowQueue(ShadowMode.Cast, renderManager, shadowCam);
         r.setFrameBuffer(null);
+
+        renderManager.setForcedMaterial(null);
+        renderManager.setCamera(viewCam);
     }
 
     public Camera getShadowCamera(){
@@ -86,7 +99,7 @@ public class BasicShadowRenderer {
     }
 
     public void displayShadowMap(Renderer r){
-        Camera cam = r.getCamera();
+        Camera cam = viewPort.getCamera();
         int w = cam.getWidth();
         int h = cam.getHeight();
         
@@ -95,18 +108,22 @@ public class BasicShadowRenderer {
         dispPic.setHeight(h / 5f);
         dispPic.setMaterial(dispMat);
         dispPic.updateGeometricState();
-        r.renderGeometry(dispPic);
+        renderManager.renderGeometry(dispPic);
     }
 
-    public void postRender(Renderer r){
-        r.renderQueue();
-
+    public void postFrame(FrameBuffer out){
         postshadowMat.setMatrix4("m_LightViewProjectionMatrix", shadowCam.getViewProjectionMatrix());
-        r.setForcedMaterial(postshadowMat);
-        r.renderShadowQueue(ShadowMode.Recieve);
-        r.setForcedMaterial(null);
+        renderManager.setForcedMaterial(postshadowMat);
+        viewPort.getQueue().renderShadowQueue(ShadowMode.Recieve, renderManager, viewPort.getCamera());
+        renderManager.setForcedMaterial(null);
 
-        displayShadowMap(r);
+        displayShadowMap(renderManager.getRenderer());
+    }
+
+    public void preFrame(float tpf) {
+    }
+
+    public void cleanup() {
     }
 
 }

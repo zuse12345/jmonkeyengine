@@ -2,9 +2,6 @@ package com.g3d.scene.shape;
 
 import com.g3d.scene.*;
 import com.g3d.scene.VertexBuffer.Type;
-import com.g3d.util.BufferUtils;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
 
 public class Quad extends Mesh {
 
@@ -57,6 +54,8 @@ public class Quad extends Mesh {
                                               0, 0, 1});
         setBuffer(Type.Index, 3, new short[]{0, 1, 2,
                                              0, 2, 3});
+
+        updateBound();
     }
 
 

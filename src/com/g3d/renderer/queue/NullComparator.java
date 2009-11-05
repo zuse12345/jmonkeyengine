@@ -5,11 +5,14 @@
 
 package com.g3d.renderer.queue;
 
-import com.g3d.scene.Spatial;
-import java.util.Comparator;
+import com.g3d.renderer.Camera;
+import com.g3d.scene.Geometry;
 
-public class NullComparator implements Comparator<Spatial> {
-    public int compare(Spatial o1, Spatial o2) {
+public class NullComparator implements GeometryComparator {
+    public int compare(Geometry o1, Geometry o2) {
         return 0;
+    }
+
+    public void setCamera(Camera cam) {
     }
 }

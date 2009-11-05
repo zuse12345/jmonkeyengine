@@ -1,4 +1,4 @@
-package com.g3d.renderer;
+package com.g3d.renderer.layer;
 
 import com.g3d.scene.Mesh;
 import com.g3d.scene.VertexBuffer;

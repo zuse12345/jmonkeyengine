@@ -1,13 +1,15 @@
 package g3dtools.optimize;
 
 import com.g3d.bounding.BoundingBox;
-import com.g3d.collision.TrianglePickResults;
+import com.g3d.collision.CollisionResult;
+import com.g3d.collision.CollisionResults;
 import com.g3d.material.Material;
+import com.g3d.math.Matrix4f;
 import com.g3d.math.Ray;
 import com.g3d.math.Triangle;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
-import com.g3d.renderer.Renderer;
+import com.g3d.renderer.queue.RenderQueue;
 import com.g3d.renderer.queue.RenderQueue.Bucket;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.dbg.WireBox;
@@ -151,6 +153,8 @@ public class Octnode {
     }
 
     public void generateRenderSet(Set<Geometry> renderSet, Camera cam){
+//        generateRenderSetNoCheck(renderSet, cam);
+
         bbox.setCheckPlane(0);
         cam.setPlaneState(0);
         Camera.FrustumIntersect result = cam.contains(bbox);
@@ -187,34 +191,48 @@ public class Octnode {
         }
     }
 
-    public void renderBounds(Renderer r, Material mat){
-        if (geoms != null){
-            WireBox box = new WireBox(bbox.getXExtent(), bbox.getYExtent(),
-                                      bbox.getZExtent());
-            
+    public void renderBounds(RenderQueue rq, Matrix4f transform, Material mat){
+        int numChilds = 0;
+        for (int i = 0; i < 8; i++){
+            if (children[i] != null){
+                numChilds ++;
+                break;
+            }
+        }
+        if (geoms != null && numChilds == 0){
+            BoundingBox bbox2 = new BoundingBox(bbox);
+            bbox.transform(transform, bbox2);
+            WireBox box = new WireBox(bbox2.getXExtent(), bbox2.getYExtent(),
+                                      bbox2.getZExtent());
+
             Geometry geom = new Geometry("bound", box);
-            geom.setLocalTranslation(bbox.getCenter());
+            geom.setLocalTranslation(bbox2.getCenter());
             geom.updateGeometricState();
             geom.setMaterial(mat);
-            r.addToQueue(geom, Bucket.Opaque);
+            rq.addToQueue(geom, Bucket.Opaque);
             box = null;
             geom = null;
         }
         for (int i = 0; i < 8; i++){
             if (children[i] != null){
-                children[i].renderBounds(r, mat);
+                children[i].renderBounds(rq, transform, mat);
             }
         }
     }
 
     public final void intersectWhere(Ray r, Geometry[] geoms, float sceneMin, float sceneMax,
-                                            TrianglePickResults results){
+                                            CollisionResults results){
         for (OCTTriangle t : tris){
             float d = r.intersects(t.get1(), t.get2(), t.get3());
             if (Float.isInfinite(d))
                 continue;
 
-            results.addPick(geoms[t.getGeometryIndex()], t.getTriangleIndex(), d);
+            Vector3f contactPoint = new Vector3f(r.getDirection()).multLocal(d).addLocal(r.getOrigin());
+            CollisionResult result = new CollisionResult(geoms[t.getGeometryIndex()],
+                                                         contactPoint,
+                                                         d,
+                                                         t.getTriangleIndex());
+            results.addCollision(result);
         }
         for (int i = 0; i < 8; i++){
             Octnode child = children[i];

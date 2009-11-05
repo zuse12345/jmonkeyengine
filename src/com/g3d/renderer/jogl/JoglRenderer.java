@@ -28,9 +28,11 @@ import com.g3d.shader.Uniform;
 import com.g3d.system.jogl.JoglContext;
 import com.g3d.texture.FrameBuffer;
 import com.g3d.texture.Texture;
+import com.g3d.util.BufferUtils;
 import com.g3d.util.TempVars;
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
@@ -40,21 +42,16 @@ public class JoglRenderer implements Renderer {
 
     private static final Logger logger = Logger.getLogger(JoglRenderer.class.getName());
 
-
-    protected Camera camera;
     protected Matrix4f worldMatrix = new Matrix4f();
+    protected Matrix4f viewMatrix = new Matrix4f();
+    protected Matrix4f projMatrix = new Matrix4f();
+    protected FloatBuffer fb16 = BufferUtils.createFloatBuffer(16);
     protected GL gl;
 
-    private JoglContext owner;
-    private RenderQueue queue;
     private RenderContext context = new RenderContext();
     private GLObjectManager objManager = new GLObjectManager();
 
-    private Material forcedMaterial = null;
-
-    public JoglRenderer(JoglContext owner, GL gl){
-        queue = new RenderQueue(this);
-        this.owner = owner;
+    public JoglRenderer(GL gl){
         this.gl = gl;
     }
 
@@ -75,7 +72,6 @@ public class JoglRenderer implements Renderer {
     }
 
     public void cleanup(){
-        queue.clear();
         objManager.deleteAllObjects(this);
     }
 
@@ -211,47 +207,14 @@ public class JoglRenderer implements Renderer {
 
     public void onFrame() {
         objManager.deleteUnused(this);
-
-        if (camera.isViewportChanged()){
-            updateViewPort(camera.getWidth(), camera.getHeight());
-            camera.clearViewportChanged();
-        }
     }
 
-    public void setCamera(Camera cam) {
-        if (this.camera == cam)
-            return;
-
-        this.camera = cam;
-        // the GL state needs an update in viewport
-        updateViewPort(cam.getWidth(), cam.getHeight());
-
-        //update view & proj matrices
+    public void setDepthRange(float start, float end) {
+        gl.glDepthRange(start, end);
     }
 
-    public Camera getCamera() {
-        return camera;
-    }
-
-    private void updateViewPort(float width, float height){
-        int x = (int) (camera.getViewPortLeft() * width);
-        int y = (int) (camera.getViewPortBottom() * height);
-        int w = (int) ((camera.getViewPortRight() - camera.getViewPortLeft()) * width);
-        int h = (int) ((camera.getViewPortTop() - camera.getViewPortBottom()) * height);
-        gl.glViewport(x, y, w, h);
-
-        //also update ortho matrix
-//        orthoMatrix.loadIdentity();
-//
-//        float tx = -(w+x)/(w-x);
-//        float ty = -(h+y)/(h-y);
-//        float tz = 0;
-//        orthoMatrix.setTranslation(tx, ty, tz);
-//
-//        float m00 = 2f / (w-x);
-//        float m11 = 2f / (h-y);
-//        float m22 = -1f;
-//        orthoMatrix.setScale(new Vector3f(m00,m11,m22));
+    public void setViewPort(int x, int y, int width, int height){
+        gl.glViewport(x, y, width, height);
     }
 
     private FloatBuffer storeMatrix(Matrix4f matrix, FloatBuffer store){
@@ -271,7 +234,7 @@ public class JoglRenderer implements Renderer {
             context.matrixMode = gl.GL_MODELVIEW;
         }
 
-        gl.glLoadMatrixf(storeMatrix(camera.getViewMatrix(),store));
+        gl.glLoadMatrixf(storeMatrix(viewMatrix,store));
         gl.glMultMatrixf(storeMatrix(worldMatrix,store));
         assert TempVars.get().unlock();
     }
@@ -280,23 +243,27 @@ public class JoglRenderer implements Renderer {
         assert TempVars.get().lock();
         FloatBuffer store = TempVars.get().floatBuffer16;
 
-        //update modelview
+        //update projection
         if (context.matrixMode != gl.GL_PROJECTION){
             gl.glMatrixMode(gl.GL_PROJECTION);
             context.matrixMode = gl.GL_PROJECTION;
         }
 
-        gl.glLoadMatrixf(storeMatrix(camera.getProjectionMatrix(),store));
+        gl.glLoadMatrixf(storeMatrix(projMatrix,store));
         assert TempVars.get().unlock();
+    }
+
+    public void setViewMatrix(Matrix4f viewMatrix) {
+        this.viewMatrix.set(viewMatrix);
+    }
+
+    public void setProjectionMatrix(Matrix4f projMatrix) {
+        this.projMatrix.set(projMatrix);
     }
 
     public void setWorldMatrix(Matrix4f worldMatrix) {
         this.worldMatrix.set(worldMatrix);
         updateModelView();
-    }
-
-
-    public void updateWorldParameters(List<Uniform> params) {
     }
 
     public void setLighting(LightList list) {
@@ -359,16 +326,19 @@ public class JoglRenderer implements Renderer {
         gl.glPopMatrix();
     }
 
+    public void updateShaderSourceData(ShaderSource source) {
+    }
+
+    public void deleteShaderSource(ShaderSource source) {
+    }
+
     public void updateShaderData(Shader shader) {
-        
     }
 
     public void setShader(Shader shader) {
-        
     }
 
     public void deleteShader(Shader shader) {
-        
     }
 
     public void copyFrameBuffer(FrameBuffer src, FrameBuffer dst) {
@@ -545,19 +515,7 @@ public class JoglRenderer implements Renderer {
         }
     }
 
-    public void renderQueue() {
-        queue.renderQueue(Bucket.Opaque);
-    }
-
-    public void addToQueue(Geometry geom, Bucket bucket) {
-        queue.addToQueue(geom, bucket);
-    }
-    
-    public RenderQueue getRenderQueue() {
-        return queue;
-    }
-
-    public void renderMesh(Mesh mesh, int count) {
+    public void renderMeshDefault(Mesh mesh, int count) {
         VertexBuffer indices = null;
         for (VertexBuffer vb : mesh.getBuffers()){
             if (vb.getBufferType() == Type.Index){
@@ -592,7 +550,7 @@ public class JoglRenderer implements Renderer {
         int id = gl.glGenLists(1);
         mesh.setId(id);
         gl.glNewList(id, gl.GL_COMPILE);
-        renderMesh(mesh, 1);
+        renderMeshDefault(mesh, 1);
         gl.glEndList();
     }
 
@@ -625,11 +583,22 @@ public class JoglRenderer implements Renderer {
                           indexBuf.getData());
     }
 
-    public void renderGeometry(Geometry geom) {
-        setWorldMatrix(geom.getWorldMatrix());
-        updateProjection();
+    private void renderMeshDisplayList(Mesh mesh){
+        if (mesh.getId() == -1){
+            updateDisplayList(mesh);
+        }
+        gl.glCallList(mesh.getId());
+    }
 
-        Mesh mesh = geom.getMesh();
+    public void renderMesh(Mesh mesh, int count){
+//        if (!geom.getLocalScale().equals(Vector3f.UNIT_XYZ)){
+//            // enable normalize option
+//            gl.glEnable(gl.GL_NORMALIZE);
+//        }else{
+//            gl.glDisable(gl.GL_NORMALIZE);
+//        }
+        updateProjection();
+        
         boolean dynamic = false;
         for (VertexBuffer vb : mesh.getBuffers()){
             if (vb.getUsage() != VertexBuffer.Usage.Static){
@@ -637,63 +606,18 @@ public class JoglRenderer implements Renderer {
             }
         }
 
-        if (geom.getMaterial() == null){
-            logger.warning("Unable to render geometry "+geom+". No material defined!");
-            return;
-        }
-        if (forcedMaterial != null){
-            // use forced material
-            forcedMaterial.apply(geom, this);
-        }else{
-            // use geometry's material
-            geom.getMaterial().apply(geom, this);
-        }
-
-        if (!geom.getLocalScale().equals(Vector3f.UNIT_XYZ)){
-            // enable normalize option
-            gl.glEnable(gl.GL_NORMALIZE);
-        }else{
-            gl.glDisable(gl.GL_NORMALIZE);
-        }
-
         if (!dynamic){
             // dealing with a static object, generate display list
-            if (mesh.getId() == -1){
-                updateDisplayList(mesh);
-            }
-
-            gl.glCallList(mesh.getId());
+            renderMeshDisplayList(mesh);
         }else{
-            renderMesh(mesh, 1);
+            renderMeshDefault(mesh, count);
         }
-    }
-
-    public void updateShaderSourceData(ShaderSource source) {
-        
-    }
-
-    public void deleteShaderSource(ShaderSource source) {
-        
-    }
-
-    public void renderShadowQueue(ShadowMode shadBucket) {
-        
-    }
-
-    public void addToShadowQueue(Geometry geom, ShadowMode shadBucket) {
-        
-    }
-
-    public void setForcedMaterial(Material mat) {
-        this.forcedMaterial = mat;
-    }
-
-    public void setDepthParams(float clearVal, float start, float end) {
-        
     }
 
     public Collection<Caps> getCaps() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new ArrayList<Caps>();
     }
+
+    
 
 }

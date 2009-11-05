@@ -2,6 +2,7 @@ package g3dtest.post;
 
 import com.g3d.app.SimpleApplication;
 import com.g3d.material.Material;
+import com.g3d.renderer.RenderManager;
 import com.g3d.renderer.Renderer;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Node;
@@ -65,14 +66,16 @@ public class TestFBOPassthrough extends SimpleApplication {
     }
 
     @Override
-    public void simpleRender(Renderer r){
+    public void simpleRender(RenderManager rm){
+        Renderer r = rm.getRenderer();
+
         //do FBO rendering
         r.setFrameBuffer(fb);
 
-        r.setCamera(cam); // FBO uses current camera
+        rm.setCamera(cam); // FBO uses current camera
         r.clearBuffers(true, true, true);
-        render(fbNode, r);
-        r.renderQueue();
+        rm.renderScene(fbNode, viewPort);
+        rm.flushQueue(viewPort);
 
         //go back to default rendering and let
         //SimpleApplication render the default scene

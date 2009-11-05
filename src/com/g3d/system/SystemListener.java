@@ -14,6 +14,13 @@ public interface SystemListener {
     public void initialize();
 
     /**
+     * Called to notify the application that the resolution has changed.
+     * @param width
+     * @param height
+     */
+    public void reshape(int width, int height);
+
+    /**
      * Callback to update the application state, and render the scene
      * to the back buffer.
      */

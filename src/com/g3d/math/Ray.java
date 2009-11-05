@@ -32,13 +32,18 @@
 
 package com.g3d.math;
 
+import com.g3d.bounding.BoundingVolume;
+import com.g3d.collision.Collidable;
+import com.g3d.collision.CollisionResult;
+import com.g3d.collision.CollisionResults;
+import com.g3d.collision.UnsupportedCollisionException;
 import com.g3d.export.InputCapsule;
 import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
 import com.g3d.export.OutputCapsule;
 import com.g3d.export.Savable;
+import com.g3d.util.TempVars;
 import java.io.IOException;
-import java.io.Serializable;
 
 
 /**
@@ -49,7 +54,7 @@ import java.io.Serializable;
  * @author Mark Powell
  * @author Joshua Slack
  */
-public class Ray  implements Serializable, Savable, Cloneable {
+public class Ray implements Savable, Cloneable, Collidable {
 
     //todo: merge with Line?
     private static final long serialVersionUID = 1L;
@@ -59,10 +64,10 @@ public class Ray  implements Serializable, Savable, Cloneable {
     /** The direction of the ray. */
     public Vector3f direction;
     
-    protected static final Vector3f tempVa=new Vector3f();
-    protected static final Vector3f tempVb=new Vector3f();
-    protected static final Vector3f tempVc=new Vector3f();
-    protected static final Vector3f tempVd=new Vector3f();
+//    protected static final Vector3f tempVa=new Vector3f();
+//    protected static final Vector3f tempVb=new Vector3f();
+//    protected static final Vector3f tempVc=new Vector3f();
+//    protected static final Vector3f tempVd=new Vector3f();
 
     /**
      * Constructor instantiates a new <code>Ray</code> object. As default, the
@@ -202,6 +207,14 @@ public class Ray  implements Serializable, Savable, Cloneable {
      */
     private boolean intersects( Vector3f v0, Vector3f v1, Vector3f v2,
                                 Vector3f store, boolean doPlanar, boolean quad ) {
+        TempVars vars = TempVars.get();
+        assert vars.lock();
+
+        Vector3f tempVa = vars.vect1,
+                 tempVb = vars.vect2,
+                 tempVc = vars.vect3,
+                 tempVd = vars.vect4;
+
         Vector3f diff = origin.subtract(v0, tempVa);
         Vector3f edge1 = v1.subtract(v0, tempVb);
         Vector3f edge2 = v2.subtract(v0, tempVc);
@@ -223,14 +236,19 @@ public class Ray  implements Serializable, Savable, Cloneable {
         if (dirDotDiffxEdge2 >= 0.0f) {
             float dirDotEdge1xDiff = sign
                     * direction.dot(edge1.crossLocal(diff));
+
             if (dirDotEdge1xDiff >= 0.0f) {
                 if ( !quad ? dirDotDiffxEdge2 + dirDotEdge1xDiff <= dirDotNorm : dirDotEdge1xDiff <= dirDotNorm ) {
                     float diffDotNorm = -sign * diff.dot(norm);
                     if (diffDotNorm >= 0.0f) {
+                        // this method always returns
+                        assert vars.unlock();
+                        
                         // ray intersects triangle
                         // if storage vector is null, just return true,
                         if (store == null)
                             return true;
+
                         // else fill in.
                         float inv = 1f / dirDotNorm;
                         float t = diffDotNorm * inv;
@@ -253,6 +271,7 @@ public class Ray  implements Serializable, Savable, Cloneable {
                 }
             }
         }
+        assert vars.unlock();
         return false;
     }
 
@@ -372,27 +391,53 @@ public class Ray  implements Serializable, Savable, Cloneable {
 
         return true;
     }
-    
-    public float distanceSquared(Vector3f point) {
-		point.subtract(origin, tempVa);
-		float rayParam = direction.dot(tempVa);
-		if (rayParam > 0) {
-			origin.add(direction.mult(rayParam, tempVb), tempVb);
-		} else {
-			tempVb.set(origin);
-			rayParam = 0.0f;
-		}
 
-		tempVb.subtract(point, tempVa);
-		return tempVa.lengthSquared();
-	}
+    public int collideWith(Collidable other, CollisionResults results){
+        if (other instanceof BoundingVolume){
+            BoundingVolume bv = (BoundingVolume) other;
+            return bv.collideWith(this, results);
+        }else if (other instanceof AbstractTriangle){
+            AbstractTriangle tri = (AbstractTriangle) other;
+            float d = intersects(tri.get1(), tri.get2(), tri.get3());
+            if (Float.isInfinite(d) || Float.isNaN(d))
+                return 0;
+
+            Vector3f point = new Vector3f(direction).multLocal(d).addLocal(origin);
+            results.addCollision(new CollisionResult(point, d));
+            return 1;
+        }else{
+            throw new UnsupportedCollisionException();
+        }
+    }
+
+    public float distanceSquared(Vector3f point) {
+        TempVars vars = TempVars.get();
+        assert vars.lock();
+
+        Vector3f tempVa = vars.vect1,
+                 tempVb = vars.vect2;
+
+        point.subtract(origin, tempVa);
+        float rayParam = direction.dot(tempVa);
+        if (rayParam > 0){
+            origin.add(direction.mult(rayParam, tempVb), tempVb);
+        }else{
+            tempVb.set(origin);
+            rayParam = 0.0f;
+        }
+
+        tempVb.subtract(point, tempVa);
+        float len = tempVa.lengthSquared();
+        assert vars.unlock();
+        return len;
+    }
 
     /**
-	 * 
-	 * <code>getOrigin</code> retrieves the origin point of the ray.
-	 * 
-	 * @return the origin of the ray.
-	 */
+     *
+     * <code>getOrigin</code> retrieves the origin point of the ray.
+     *
+     * @return the origin of the ray.
+     */
     public Vector3f getOrigin() {
         return origin;
     }

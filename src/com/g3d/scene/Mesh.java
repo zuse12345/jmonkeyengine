@@ -2,11 +2,16 @@ package com.g3d.scene;
 
 import com.g3d.bounding.BoundingBox;
 import com.g3d.bounding.BoundingVolume;
+import com.g3d.collision.Collidable;
+import com.g3d.collision.CollisionResults;
+import com.g3d.collision.SweepSphere;
+import com.g3d.collision.bih.BIHTree;
 import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
 import com.g3d.export.InputCapsule;
 import com.g3d.export.OutputCapsule;
 import com.g3d.export.Savable;
+import com.g3d.math.Matrix4f;
 import com.g3d.math.Triangle;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.VertexBuffer.*;
@@ -37,6 +42,8 @@ public class Mesh implements Savable {
      * By default a BoundingBox (AABB).
      */
     private BoundingVolume meshBound =  new BoundingBox();
+
+    private BIHTree collisionTree = null;
 
     private EnumMap<VertexBuffer.Type, VertexBuffer> buffers = new EnumMap<Type, VertexBuffer>(VertexBuffer.Type.class);
 
@@ -111,18 +118,6 @@ public class Mesh implements Savable {
             // discard old buffer
             vb.setupData(vb.usage, vb.components, vb.format, null);
             offset += vb.componentsLength;
-        }
-    }
-
-    /**
-     * Converts all single floating-point vertex buffers
-     * into half percision floating-point. Reduces memory and bandwidth
-     * when sending to GPU, but may cause percision issues with large values.
-     */
-    public void convertToHalf() {
-        for (VertexBuffer vb : buffers.values()){
-            if (vb.getFormat() == Format.Float)
-                vb.convertToHalf();
         }
     }
 
@@ -226,6 +221,19 @@ public class Mesh implements Savable {
             throw new IllegalStateException("ID has already been set.");
         
         vertexArrayID = id;
+    }
+
+    public int collideWith(Collidable other, 
+                           Matrix4f worldMatrix,
+                           BoundingVolume worldBound,
+                           CollisionResults results){
+
+        if (collisionTree == null){
+            collisionTree = new BIHTree(this);
+            collisionTree.construct();
+        }
+        
+        return collisionTree.collideWith(other, worldMatrix, worldBound, results);
     }
 
     public void setBuffer(Type type, int components, FloatBuffer buf) {

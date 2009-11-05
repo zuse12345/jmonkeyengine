@@ -109,11 +109,8 @@ public interface G3DContext {
     /**
      * Destroys and then re-creates the context. This should be called after
      * the display settings have been changed.
-     *
-     * @param updateCamera If true, the current renderer's camera will
-     * be resized to match the new resolution in the settings.
      */
-    public void restart(boolean updateCamera);
+    public void restart();
 
     /**
      * Destroys the context completely, making it inactive.

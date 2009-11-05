@@ -33,6 +33,8 @@
 package com.g3d.scene;
 
 import com.g3d.bounding.BoundingVolume;
+import com.g3d.collision.Collidable;
+import com.g3d.collision.CollisionResults;
 import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
 import com.g3d.export.Savable;
@@ -519,6 +521,14 @@ public class Node extends Spatial implements Savable {
         for (Spatial child : children){
             child.setMaterial(mat);
         }
+    }
+
+    public int collideWith(Collidable other, CollisionResults results){
+        int total = 0;
+        for (Spatial child : children){
+            total += child.collideWith(other, results);
+        }
+        return total;
     }
 
     @Override

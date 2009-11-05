@@ -5,17 +5,14 @@ import com.g3d.material.Material;
 import com.g3d.material.RenderState;
 import com.g3d.math.ColorRGBA;
 import com.g3d.math.Matrix4f;
-import com.g3d.renderer.queue.RenderQueue;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.VertexBuffer;
 import com.g3d.shader.Shader;
 import com.g3d.shader.Shader.ShaderSource;
-import com.g3d.shader.Uniform;
 import com.g3d.texture.FrameBuffer;
 import com.g3d.texture.Texture;
 import java.util.Collection;
-import java.util.List;
 
 public interface Renderer {
 
@@ -47,20 +44,16 @@ public interface Renderer {
     public void applyRenderState(RenderState state);
 
     /**
+     * Set the range of the depth values for objects. 
+     * @param start
+     * @param end
+     */
+    public void setDepthRange(float start, float end);
+
+    /**
      * Called when a new frame has been rendered.
      */
     public void onFrame();
-
-    /**
-     * @param cam The camera to use for rendering. This changes the
-     * view and projection matrices given in the shaders.
-     */
-    public void setCamera(Camera cam);
-
-    /**
-     * @return The camera set with <code>setCamera</code>.
-     */
-    public Camera getCamera();
 
     /**
      * @param transform The world transform to use. This changes
@@ -68,12 +61,11 @@ public interface Renderer {
      */
     public void setWorldMatrix(Matrix4f worldMatrix);
 
-    public void setViewPort(int x, int y, int width, int height);
+    public void setViewMatrix(Matrix4f viewMatrix);
 
-    /**
-     * Updates uniforms that are bound to world parameters.
-     */
-    public void updateWorldParameters(List<Uniform> params);
+    public void setProjectionMatrix(Matrix4f projMatrix);
+
+    public void setViewPort(int x, int y, int width, int height);
 
     public void setLighting(LightList lights);
 
@@ -191,49 +183,6 @@ public interface Renderer {
     public void clearVertexAttribs();
 
     /**
-     * Renders all geometry objects that are currently in the render queue.
-     * Use addToQueue() to add objects to the render queue.
-     */
-    public void renderQueue();
-
-    /**
-     * Renders all geometry objects in the specified shadow queue.
-     * Use addToShadowQueue() to add objects to shadow queues.
-     * @param shadBucket
-     */
-    public void renderShadowQueue(RenderQueue.ShadowMode shadBucket);
-
-    /**
-     * @return the render queue
-     */
-    public RenderQueue getRenderQueue();
-
-    /**
-     * Adds an element to the queue.
-     * 
-     * @param geom
-     * @param bucket The bucket into which to place the goemetry.
-     */
-    public void addToQueue(Geometry geom, RenderQueue.Bucket bucket);
-
-    /**
-     * Adds an element to the specified shadow queue.
-     * @param geom
-     * @param shadBucket 
-     */
-    public void addToShadowQueue(Geometry geom, RenderQueue.ShadowMode shadBucket);
-
-    /**
-     * Set the material to use to render all future objects.
-     * This overrides the material set on the geometry and renders
-     * with the provided material instead.
-     * Use null to clear the material and return renderer to normal
-     * functionality.
-     * @param mat
-     */
-    public void setForcedMaterial(Material mat);
-
-    /**
      * Renders <code>count</code> meshes, with the geometry data supplied.
      * The shader which is currently set with <code>setShader</code> is
      * responsible for transforming the input verticies into clip space
@@ -246,11 +195,6 @@ public interface Renderer {
      */
     public void renderMesh(Mesh mesh, int count);
 
-    /**
-     * Renders the given mesh contained in the geometry, after applying
-     * the world transform and the material contained in the geometry.
-     */
-    public void renderGeometry(Geometry geom);
 
     /**
      * Called when the display is restarted to delete

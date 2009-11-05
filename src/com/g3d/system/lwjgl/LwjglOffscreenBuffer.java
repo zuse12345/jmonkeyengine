@@ -156,7 +156,7 @@ public class LwjglOffscreenBuffer extends LwjglContext implements Runnable {
     }
 
     @Override
-    public void restart(boolean updateCamera) {
+    public void restart() {
     }
 
     public Type getType() {

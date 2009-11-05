@@ -1,32 +1,26 @@
 package com.g3d.renderer.queue;
 
 import com.g3d.renderer.Camera;
-import com.g3d.renderer.Renderer;
+import com.g3d.renderer.RenderManager;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Spatial;
 
-/**
- * Doesn't work at the moment.
- */
 public class RenderQueue {
 
-    private Renderer renderer;
-    private SpatialList opaqueList;
-    private SpatialList guiList;
-    private SpatialList transparentList;
-    private SpatialList skyList;
-    private SpatialList shadowRecv;
-    private SpatialList shadowCast;
+    private GeometryList opaqueList;
+    private GeometryList guiList;
+    private GeometryList transparentList;
+    private GeometryList skyList;
+    private GeometryList shadowRecv;
+    private GeometryList shadowCast;
 
-    public RenderQueue(Renderer renderer){
-        this.renderer = renderer;
-        this.opaqueList =  new SpatialList(new OpaqueComparator(renderer));
-        this.guiList = new SpatialList(new GuiComparator());
-        this.transparentList = new SpatialList(new TransparentComparator(renderer));
-        this.skyList = new SpatialList(new NullComparator());
-        
-        this.shadowRecv = new SpatialList(new OpaqueComparator(renderer));
-        this.shadowCast = new SpatialList(new OpaqueComparator(renderer));
+    public RenderQueue(){
+        this.opaqueList =  new GeometryList(new OpaqueComparator());
+        this.guiList = new GeometryList(new GuiComparator());
+        this.transparentList = new GeometryList(new TransparentComparator());
+        this.skyList = new GeometryList(new NullComparator());
+        this.shadowRecv = new GeometryList(new OpaqueComparator());
+        this.shadowCast = new GeometryList(new OpaqueComparator());
     }
 
     public enum Bucket {
@@ -43,10 +37,6 @@ public class RenderQueue {
         Recieve,
         CastAndRecieve,
         Inherit
-    }
-
-    public Camera getCamera(){
-        return renderer.getCamera();
     }
 
     public void addToShadowQueue(Geometry g, ShadowMode shadBucket){
@@ -87,7 +77,7 @@ public class RenderQueue {
         }
     }
 
-    public SpatialList getShadowQueueContent(ShadowMode shadBucket){
+    public GeometryList getShadowQueueContent(ShadowMode shadBucket){
         switch (shadBucket){
             case Cast:
                 return shadowCast;
@@ -98,7 +88,8 @@ public class RenderQueue {
         }
     }
 
-    private void renderSpatialList(SpatialList list){
+    private void renderGeometryList(GeometryList list, RenderManager rm, Camera cam){
+        list.setCamera(cam); // select camera for sorting
         list.sort();
         for (int i = 0; i < list.size(); i++){
             Spatial obj = list.get(i);
@@ -106,7 +97,7 @@ public class RenderQueue {
 
             if (obj instanceof Geometry){
                 Geometry g = (Geometry) obj;
-                renderer.renderGeometry(g);
+                rm.renderGeometry(g);
                 // make sure to reset queue distance
             }
 
@@ -116,30 +107,30 @@ public class RenderQueue {
         list.clear();
     }
 
-    public void renderShadowQueue(ShadowMode shadBucket){
+    public void renderShadowQueue(ShadowMode shadBucket, RenderManager rm, Camera cam){
         switch (shadBucket){
             case Cast:
-                renderSpatialList(shadowCast);
+                renderGeometryList(shadowCast, rm, cam);
                 break;
             case Recieve:
-                renderSpatialList(shadowRecv);
+                renderGeometryList(shadowRecv, rm, cam);
                 break;
         }
     }
 
-    public void renderQueue(Bucket bucket){
+    public void renderQueue(Bucket bucket, RenderManager rm, Camera cam){
         switch (bucket){
             case Gui:
-                renderSpatialList(guiList);
+                renderGeometryList(guiList, rm, cam);
                 break;
             case Opaque:
-                renderSpatialList(opaqueList);
+                renderGeometryList(opaqueList, rm, cam);
                 break;
             case Sky:
-                renderSpatialList(skyList);
+                renderGeometryList(skyList, rm, cam);
                 break;
             case Transparent:
-                renderSpatialList(transparentList);
+                renderGeometryList(transparentList, rm, cam);
                 break;
             default:
                 throw new UnsupportedOperationException("Unsupported bucket type: "+bucket);

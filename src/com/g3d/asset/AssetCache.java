@@ -26,8 +26,8 @@ public class AssetCache {
 
     /**
      * Adds a resource to the cache.
-     *
-     * For resource retrieval,
+     * <br/><br/>
+     * <font color="red">Thread-safe.</font>
      * @see #getFromCache(java.lang.String)
      */
     public void addToCache(AssetKey key, Object obj){
@@ -38,6 +38,13 @@ public class AssetCache {
         }
     }
 
+    /**
+     * Gets an object from the cache given an asset key.
+     * <br/><br/>
+     * <font color="red">Thread-safe.</font>
+     * @param key
+     * @return
+     */
     public Object getFromCache(AssetKey key){
         synchronized (loadedObjects){
             deleteUnused();
@@ -45,6 +52,9 @@ public class AssetCache {
         }
     }
 
+    /**
+     * Removes unused references from the cache.
+     */
     private void deleteUnused(){
         for (ContentRef ref = (ContentRef) refQueue.poll(); ref != null;){
             // remove from cache..
@@ -52,6 +62,9 @@ public class AssetCache {
         }
     }
 
+    /**
+     * Deletes all the assets.
+     */
     public void deleteAllAssets(){
         synchronized (loadedObjects){
             loadedObjects.clear();

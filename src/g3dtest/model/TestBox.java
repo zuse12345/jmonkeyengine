@@ -21,9 +21,8 @@ public class TestBox extends SimpleApplication {
         geom.updateModelBound();
 
         Material mat = new Material(manager, "plain_texture.j3md");
-        Texture tex = manager.loadTexture("Monkey.jpg");
+        Texture tex = manager.loadTexture("Monkey.jpg", true, true, false, 16);
         tex.setMinFilter(Texture.MinFilter.Trilinear);
-        tex.setAnisotropicFilter(16);
         mat.setTexture("m_ColorMap", tex);
 
         geom.setMaterial(mat);

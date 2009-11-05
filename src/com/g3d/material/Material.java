@@ -5,18 +5,18 @@ import com.g3d.material.MaterialDef.MatParamType;
 import com.g3d.math.ColorRGBA;
 import com.g3d.math.Matrix4f;
 import com.g3d.math.Vector2f;
-import com.g3d.renderer.Renderer;
 import com.g3d.asset.AssetManager;
 import com.g3d.light.DirectionalLight;
 import com.g3d.light.Light;
 import com.g3d.light.LightList;
 import com.g3d.light.PointLight;
 import com.g3d.math.Vector3f;
+import com.g3d.renderer.RenderManager;
+import com.g3d.renderer.Renderer;
 import com.g3d.scene.Geometry;
 import com.g3d.shader.Shader;
 import com.g3d.shader.Uniform;
 import com.g3d.texture.Texture;
-import java.awt.Point;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -288,10 +288,11 @@ public class Material implements Cloneable {
      * @param geom
      * @param r
      */
-    public void apply(Geometry geom, Renderer r){
+    public void apply(Geometry geom, RenderManager rm){
         if (technique == null)
             selectTechnique("Default");
 
+        Renderer r = rm.getRenderer();
         TechniqueDef techDef = technique.getDef();
         if (techDef.getRenderState() != null){
             r.applyRenderState(techDef.getRenderState());
@@ -317,7 +318,8 @@ public class Material implements Cloneable {
 
         // update camera and world matrices
         // NOTE: setWorldTransform should have been called already
-        r.updateWorldParameters(technique.getWorldBindUniforms());
+        // XXX:
+        rm.updateUniformBindings(technique.getWorldBindUniforms());
 
         // setup textures
         Collection<MatParam> params = paramValues.values();

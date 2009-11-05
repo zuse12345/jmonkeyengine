@@ -32,6 +32,10 @@
 
 package com.g3d.bounding;
 
+import com.g3d.collision.Collidable;
+import com.g3d.collision.CollisionResult;
+import com.g3d.collision.CollisionResults;
+import com.g3d.collision.UnsupportedCollisionException;
 import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
 import java.io.IOException;
@@ -63,12 +67,12 @@ import com.g3d.util.TempVars;
  */
 public class BoundingSphere extends BoundingVolume {
 
-    private static final Logger logger = Logger.getLogger(BoundingSphere.class
-            .getName());
-    
+    private static final Logger logger = 
+            Logger.getLogger(BoundingSphere.class.getName());
+
     float radius;
     
-	private static final float RADIUS_EPSILON = 1f + 0.00001f;
+    private static final float RADIUS_EPSILON = 1f + 0.00001f;
 
     /**
      * Default contstructor instantiates a new <code>BoundingSphere</code>
@@ -671,9 +675,6 @@ public class BoundingSphere extends BoundingVolume {
      * @see com.jme.bounding.BoundingVolume#intersects(com.jme.bounding.BoundingVolume)
      */
     public boolean intersects(BoundingVolume bv) {
-        if (bv == null)
-            return false;
-        
         return bv.intersectsSphere(this);
     }
 
@@ -683,7 +684,7 @@ public class BoundingSphere extends BoundingVolume {
      * @see com.jme.bounding.BoundingVolume#intersectsSphere(com.jme.bounding.BoundingSphere)
      */
     public boolean intersectsSphere(BoundingSphere bs) {
-        if (!Vector3f.isValidVector(center) || !Vector3f.isValidVector(bs.center)) return false;
+        assert Vector3f.isValidVector(center) && Vector3f.isValidVector(bs.center);
 
         TempVars vars = TempVars.get();
         assert vars.lock();
@@ -700,7 +701,7 @@ public class BoundingSphere extends BoundingVolume {
      * @see com.jme.bounding.BoundingVolume#intersectsBoundingBox(com.jme.bounding.BoundingBox)
      */
     public boolean intersectsBoundingBox(BoundingBox bb) {
-        if (!Vector3f.isValidVector(center) || !Vector3f.isValidVector(bb.center)) return false;
+        assert Vector3f.isValidVector(center) && Vector3f.isValidVector(bb.center);
 
         if (FastMath.abs(bb.center.x - center.x) < getRadius()
                 + bb.xExtent
@@ -728,7 +729,7 @@ public class BoundingSphere extends BoundingVolume {
      * @see com.jme.bounding.BoundingVolume#intersects(com.jme.math.Ray)
      */
     public boolean intersects(Ray ray) {
-        if (!Vector3f.isValidVector(center)) return false;
+        assert Vector3f.isValidVector(center);
 
         TempVars vars = TempVars.get();
         assert vars.lock();
@@ -755,7 +756,7 @@ public class BoundingSphere extends BoundingVolume {
      *
      * @see com.jme.bounding.BoundingVolume#intersectsWhere(com.jme.math.Ray)
      */
-    public IntersectionRecord intersectsWhere(Ray ray) {
+    public int collideWithRay(Ray ray, CollisionResults results) {
         TempVars vars = TempVars.get();
         assert vars.lock();
         Vector3f diff = vars.vect1.set(ray.getOrigin()).subtractLocal(
@@ -767,38 +768,49 @@ public class BoundingSphere extends BoundingVolume {
             a1 = ray.direction.dot(diff);
             discr = (a1 * a1) - a;
             root = FastMath.sqrt(discr);
-            float[] distances = new float[] { root - a1 };
-            Vector3f[] points = new Vector3f[] { new Vector3f(ray.direction)
-                    .multLocal(distances[0]).addLocal(ray.origin) };
-            IntersectionRecord record = new IntersectionRecord(distances, points);
-            return record;
+
+            float distance = root - a1;
+            Vector3f point = new Vector3f(ray.direction).multLocal(distance).addLocal(ray.origin);
+
+            CollisionResult result = new CollisionResult(point, distance);
+            results.addCollision(result);
+            return 1;
         }
         
         a1 = ray.direction.dot(diff);
         assert vars.unlock();
         if (a1 >= 0.0) {
-            return new IntersectionRecord();
+            return 0;
         }
         
         discr = a1*a1 - a;
         if (discr < 0.0)
-            return new IntersectionRecord();
+            return 0;
+
         else if (discr >= FastMath.ZERO_TOLERANCE) {
             root = FastMath.sqrt(discr);
-            float[] distances = new float[] { -a1 - root, -a1 + root };
-            Vector3f[] points = new Vector3f[] { 
-                    new Vector3f(ray.direction).multLocal(distances[0]).addLocal(ray.origin),
-                    new Vector3f(ray.direction).multLocal(distances[1]).addLocal(ray.origin)
-                    };
-            IntersectionRecord record = new IntersectionRecord(distances, points);
-            return record;
+            float dist = -a1 - root;
+            Vector3f point = new Vector3f(ray.direction).multLocal(dist).addLocal(ray.origin);
+            results.addCollision(new CollisionResult(point, dist));
+
+            dist = -a1 + root;
+            point = new Vector3f(ray.direction).multLocal(dist).addLocal(ray.origin);
+            results.addCollision(new CollisionResult(point, dist));
+            return 2;
         } else {
-            float[] distances = new float[] { -a1 };
-            Vector3f[] points = new Vector3f[] { 
-                    new Vector3f(ray.direction).multLocal(distances[0]).addLocal(ray.origin) 
-                    };
-            IntersectionRecord record = new IntersectionRecord(distances, points);
-            return record;
+            float dist = -a1;
+            Vector3f point = new Vector3f(ray.direction).multLocal(dist).addLocal(ray.origin);
+            results.addCollision(new CollisionResult(point, dist));
+            return 1;
+        }
+    }
+
+    public int collideWith(Collidable other, CollisionResults results){
+        if (other instanceof Ray){
+            Ray ray = (Ray) other;
+            return collideWithRay(ray, results);
+        }else{
+            throw new UnsupportedCollisionException();
         }
     }
 

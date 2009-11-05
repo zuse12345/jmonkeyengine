@@ -25,6 +25,18 @@ public class AWTLoader implements AssetLoader {
         return null;
     }
 
+    private void flipImage(byte[] img, int width, int height, int bpp){
+        int scSz = (width * bpp) / 8;
+        byte[] sln = new byte[scSz];
+        int y2 = 0;
+        for (int y1 = 0; y1 < height / 2; y1++){
+            y2 = height - y1 - 1;
+            System.arraycopy(img, y1 * scSz, sln, 0,         scSz);
+            System.arraycopy(img, y2 * scSz, img, y1 * scSz, scSz);
+            System.arraycopy(sln, 0,         img, y2 * scSz, scSz);
+        }
+    }
+
     private Image loadAWT(AssetInfo info) throws IOException{
         InputStream in = info.openStream();
         ImageIO.setUseCache(false);
@@ -39,6 +51,8 @@ public class AWTLoader implements AssetLoader {
         switch (img.getType()){
             case BufferedImage.TYPE_3BYTE_BGR: // most common in JPEG images
                byte[] dataBuf = extractImageData(img);
+               if (flip)
+                   flipImage(dataBuf, width, height, 24);
                ByteBuffer data = BufferUtils.createByteBuffer(img.getWidth()*img.getHeight()*3);
                data.put(dataBuf);
                return new Image(Format.BGR8, width, height, data);

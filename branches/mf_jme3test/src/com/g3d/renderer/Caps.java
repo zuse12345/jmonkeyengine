@@ -81,4 +81,9 @@ public enum Caps {
      */
     VertexBufferArray,
 
+    /**
+     * Supports multisampling on the screen
+     */
+    Multisample
+
 }

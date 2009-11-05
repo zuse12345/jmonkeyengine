@@ -1,15 +1,18 @@
 package com.g3d.collision.bih;
 
 import com.g3d.bounding.BoundingBox;
-import com.g3d.collision.TrianglePickResults;
+import com.g3d.collision.Collidable;
+import com.g3d.collision.CollisionResult;
+import com.g3d.collision.CollisionResults;
 import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
 import com.g3d.export.InputCapsule;
 import com.g3d.export.OutputCapsule;
 import com.g3d.export.Savable;
+import com.g3d.math.Matrix4f;
 import com.g3d.math.Ray;
+import com.g3d.math.Triangle;
 import com.g3d.math.Vector3f;
-import com.g3d.scene.Geometry;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -92,7 +95,11 @@ public class BIHNode implements Savable {
 
     private static final ArrayList<BIHStackData> stack = new ArrayList<BIHStackData>();
 
-    public final void intersectWhere(BoundingBox box, BIHTree tree, Geometry g, int minTrisPerNode, TrianglePickResults results){
+    public final int intersectWhere(Collidable col,
+                                    BoundingBox box,
+                                    Matrix4f worldMatrix,
+                                    BIHTree tree,
+                                    CollisionResults results){
         stack.clear();
 
         float[] minExts  = { box.getCenter().x - box.getXExtent(),
@@ -105,47 +112,71 @@ public class BIHNode implements Savable {
 
         stack.add(new BIHStackData(this, 0,0));
 
-        Vector3f v1 = new Vector3f(),
-                 v2 = new Vector3f(),
-                 v3 = new Vector3f();
+        Triangle t = new Triangle();
+        int cols = 0;
 
         stackloop: while (stack.size() > 0){
             BIHNode node = stack.remove(stack.size()-1).node;
 
-            while (node.axis != 2){
+            while (node.axis != 3){
                 int a = node.axis;
 
-                float maxExt = minExts[a];
-                float minExt = maxExts[a];
+                float maxExt = maxExts[a];
+                float minExt = minExts[a];
+//
+//                if (node.leftPlane < node.rightPlane){
+//                    // means there's a gap in the middle
+//                    // if the box is in that gap, we stop there
+//                    if (minExt > node.leftPlane
+//                    &&  maxExt < node.rightPlane)
+//                        continue stackloop;
+//                }
 
-                boolean intersectLeft = minExt < node.leftPlane &&
-                                        node.leftPlane < maxExt;
-                boolean intersectRight = minExt < node.rightPlane &&
-                                        node.rightPlane < maxExt;
-
-                if (intersectLeft && intersectRight){
+//                if (maxExt < node.leftPlane
+//                 && maxExt < node.rightPlane){
+//                    node = node.left;
+//                }else if (minExt > node.leftPlane
+//                       && minExt > node.rightPlane){
+//                    node = node.right;
+//                }else{
                     stack.add(new BIHStackData(node.right, 0, 0));
                     node = node.left;
-                }else if (intersectLeft){
-                    node = node.left;
-                }else if (intersectRight){
-                    node = node.right;
-                }else{
-                    continue stackloop;
-                }
+//                }
             }
 
             for (int i = node.leftIndex; i <= node.rightIndex; i++){
-                tree.getTriangle(i, v1,v2,v3);
-                if (box.intersects(v1,v2,v3)){
-                    results.addPick(g, tree.getTriangleIndex(i), 0);
+                tree.getTriangle(i, t.get1(), t.get2(), t.get3());
+                if (worldMatrix != null){
+                    worldMatrix.mult(t.get1(), t.get1());
+                    worldMatrix.mult(t.get2(), t.get2());
+                    worldMatrix.mult(t.get3(), t.get3());
+                }
+
+                int added = col.collideWith(t, results);
+
+                if (added > 0){
+                    int index = tree.getTriangleIndex(i);
+                    int start = results.size() - added;
+
+                    for (int j = start; j < results.size(); j++){
+                        CollisionResult cr = results.getCollision(j);
+                        cr.setTriangleIndex(index);
+                    }
+
+                    cols += added;
                 }
             }
         }
+
+        return cols;
     }
 
-    public final void intersectWhere(Ray r, BIHTree tree, Geometry g, float sceneMin, float sceneMax,
-                                            TrianglePickResults results){
+    public final int intersectWhere(Ray r,
+                                    Matrix4f worldMatrix,
+                                    BIHTree tree,
+                                    float sceneMin,
+                                    float sceneMax,
+                                    CollisionResults results){
         stack.clear();
 
         float tHit = Float.POSITIVE_INFINITY;
@@ -159,6 +190,7 @@ public class BIHNode implements Savable {
         Vector3f v1 = new Vector3f(),
                  v2 = new Vector3f(),
                  v3 = new Vector3f();
+        int cols = 0;
 
         stack.add(new BIHStackData(this, sceneMin, sceneMax));
         stackloop: while (stack.size() > 0){
@@ -223,16 +255,31 @@ public class BIHNode implements Savable {
             // a leaf
             for (int i = node.leftIndex; i <= node.rightIndex; i++){
                 tree.getTriangle(i, v1,v2,v3);
+
+                if (worldMatrix != null){
+                    worldMatrix.mult(v1);
+                    worldMatrix.mult(v2);
+                    worldMatrix.mult(v3);
+                }
+
                 float t = r.intersects(v1,v2,v3);
                 if (t < tHit){
                     tHit = t;
                     tMax = min(tMax, tHit);
-                    results.addPick(g, tree.getTriangleIndex(i), tHit);
+                    Vector3f contactPoint = new Vector3f(r.direction)
+                                                .multLocal(tHit)
+                                                .addLocal(r.origin);
+                    CollisionResult cr = new CollisionResult(contactPoint, tHit);
+                    cr.setTriangleIndex(tree.getTriangleIndex(i));
+                    results.addCollision(cr);
+                    cols ++;
                 }
             }
 //            if (results.size() > 0)
 //                return;
         }
+
+        return cols;
     }
 
 }

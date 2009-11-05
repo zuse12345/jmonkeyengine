@@ -7,6 +7,11 @@ import com.g3d.math.Vector3f;
 import static java.lang.Math.min;
 import static java.lang.Math.max;
 
+/**
+ * This class includes some utility methods for computing intersection
+ * between bounding volumes and triangles.
+ * @author Kirill
+ */
 public class Intersection {
 
     private static final void findMinMax(float x0, float x1, float x2, Vector3f minMax){

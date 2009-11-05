@@ -197,7 +197,7 @@ public class JoglDisplay extends JoglContext implements GLEventListener {
         }else{
             // production mode
         }
-        renderer = new JoglRenderer(this, gl);
+        renderer = new JoglRenderer(gl);
         super.create();
 
         if (frameRate > 0){
@@ -228,7 +228,7 @@ public class JoglDisplay extends JoglContext implements GLEventListener {
         needClose.set(true);
     }
 
-    public void restart(boolean updateCamera) {
+    public void restart() {
     }
 
     public void setTitle(String title){

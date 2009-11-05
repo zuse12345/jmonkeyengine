@@ -1,18 +1,21 @@
 package com.g3d.collision.bih;
 
 import com.g3d.bounding.BoundingBox;
+import com.g3d.bounding.BoundingSphere;
 import com.g3d.bounding.BoundingVolume;
-import com.g3d.bounding.IntersectionRecord;
-import com.g3d.collision.CollisionTree;
-import com.g3d.collision.TrianglePickResults;
+import com.g3d.collision.Collidable;
+import com.g3d.collision.CollisionResults;
+import com.g3d.collision.SweepSphere;
+import com.g3d.collision.UnsupportedCollisionException;
 import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
 import com.g3d.export.InputCapsule;
 import com.g3d.export.OutputCapsule;
+import com.g3d.export.Savable;
 import com.g3d.math.FastMath;
+import com.g3d.math.Matrix4f;
 import com.g3d.math.Ray;
 import com.g3d.math.Vector3f;
-import com.g3d.scene.Geometry;
 import com.g3d.scene.Mesh;
 
 import com.g3d.scene.VertexBuffer.Type;
@@ -24,11 +27,12 @@ import java.nio.ShortBuffer;
 import static java.lang.Math.min;
 import static java.lang.Math.max;
 
-public class BIHTree implements CollisionTree {
+public class BIHTree implements Savable {
 
     private Mesh mesh;
-    private Geometry geom;
     
+    // checks made with the bound to reduce range of ray
+    private CollisionResults boundResults = new CollisionResults();
     private BIHNode root;
     private int maxTrisPerNode;
     private int numTris;
@@ -43,12 +47,11 @@ public class BIHTree implements CollisionTree {
         comparators[2] = new TriangleAxisComparator(2);
     }
 
-    public BIHTree(Geometry geom, int maxTrisPerNode){
-        this.geom = geom;
-        this.mesh = geom.getMesh();
+    public BIHTree(Mesh mesh, int maxTrisPerNode){
+        this.mesh = mesh;
         this.maxTrisPerNode = maxTrisPerNode;
 
-        if (maxTrisPerNode < 1 || geom == null)
+        if (maxTrisPerNode < 1 || mesh == null)
             throw new IllegalArgumentException();
 
         mesh.updateCounts();
@@ -82,8 +85,8 @@ public class BIHTree implements CollisionTree {
             triIndices[i] = i;
     }
 
-    public BIHTree(Geometry geom){
-        this(geom, 21);
+    public BIHTree(Mesh mesh){
+        this(mesh, 21);
     }
 
     public BIHTree(){
@@ -342,9 +345,70 @@ public class BIHTree implements CollisionTree {
         triIndices[index2] = tmp2;
     }
 
+    private int collideWithRay(Ray r, 
+                               Matrix4f worldMatrix,
+                               BoundingVolume worldBound,
+                               CollisionResults results){
+
+        boundResults.clear();
+        worldBound.collideWith(r, boundResults);
+        if (boundResults.size() > 0){
+            float tMin = boundResults.getClosestCollision().getDistance();
+            float tMax = boundResults.getFarthestCollision().getDistance();
+            if (tMax <= 0)
+                tMax = Float.POSITIVE_INFINITY;
+            else if (tMin == tMax)
+                tMin = 0;
+
+            if (tMin <= 0)
+                tMin = 0;
+            
+            //tMax = min(tMax, farPlane);
+
+            return root.intersectWhere(r, worldMatrix, this, tMin, tMax, results);
+        }
+        return 0;
+    }
+
+    private int collideWithSweepSphere(SweepSphere ss,
+                                       Matrix4f worldMatrix,
+                                       BoundingVolume worldBound,
+                                       CollisionResults results){
+
+        Vector3f min = new Vector3f(ss.getCenter());
+        min.subtractLocal(ss.getDimension());
+
+        Vector3f max = new Vector3f(ss.getCenter());
+        max.addLocal(ss.getVelocity()).addLocal(ss.getDimension());
+
+        BoundingBox bbox = new BoundingBox();
+        bbox.setMinMax(min, max);
+
+        if (worldBound.intersectsBoundingBox(bbox)){
+            return root.intersectWhere(ss, bbox, worldMatrix, this, results);
+        }
+        return 0;
+    }
+
+    public int collideWith(Collidable other, 
+                           Matrix4f worldMatrix,
+                           BoundingVolume worldBound,
+                           CollisionResults results){
+        
+        if (other instanceof SweepSphere){
+            SweepSphere ss = (SweepSphere) other;
+            return collideWithSweepSphere(ss, worldMatrix, worldBound, results);
+        }else if (other instanceof Ray){
+            Ray ray = (Ray) other;
+            return collideWithRay(ray, worldMatrix, worldBound, results);
+        }else{
+            throw new UnsupportedCollisionException();
+        }
+    }
+
     public void write(G3DExporter ex) throws IOException {
         OutputCapsule oc = ex.getCapsule(this);
-        oc.write(geom, "geometry", null);
+        oc.write(mesh, "mesh", null);
         oc.write(root, "root", null);
         oc.write(maxTrisPerNode, "tris_per_node", 21);
         oc.write(pointData, "points", null);
@@ -353,30 +417,11 @@ public class BIHTree implements CollisionTree {
     
     public void read(G3DImporter im) throws IOException {
         InputCapsule ic = im.getCapsule(this);
-        geom = (Geometry) ic.readSavable("geometry", null);
+        mesh = (Mesh) ic.readSavable("mesh", null);
         root = (BIHNode) ic.readSavable("root", null);
         maxTrisPerNode = ic.readInt("tris_per_node", 21);
         pointData = ic.readFloatArray("points", null);
         triIndices = ic.readIntArray("indices", null);
-    }
-
-    public void intersectWhere(Ray r, float farPlane, TrianglePickResults results){
-        results.clear();
-        IntersectionRecord ir = mesh.getBound().intersectsWhere(r);
-        if (ir.getQuantity() > 0){
-            float tMin = ir.getClosestDistance();
-            float tMax = ir.getIntersectionDistance(ir.getFarthestPoint());
-
-            tMin = max(tMin, 0);
-            tMax = min(tMax, farPlane);
-            
-            root.intersectWhere(r, this, geom, tMin, tMax, results);
-            results.finish();
-        }
-    }
-
-    public void intersectWhere(BoundingVolume bv, TrianglePickResults results){
-        throw new UnsupportedOperationException();
     }
 
 }

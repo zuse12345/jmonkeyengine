@@ -9,6 +9,7 @@ import com.g3d.material.RenderState;
 import com.g3d.math.Quaternion;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
+import com.g3d.renderer.RenderManager;
 import com.g3d.renderer.Renderer;
 import com.g3d.renderer.queue.RenderQueue.Bucket;
 import com.g3d.scene.Node;
@@ -61,6 +62,8 @@ public abstract class SimpleApplication extends Application {
         fpsText = new BitmapText(font, false);
         fpsText.setSize(font.getCharSet().getRenderedSize());
         fpsText.setLocalTranslation(0, fpsText.getLineHeight(), 0);
+        fpsText.setText("Frames per second");
+        fpsText.assemble();
         guiNode.attachChild(fpsText);
     }
 
@@ -74,6 +77,8 @@ public abstract class SimpleApplication extends Application {
         guiNode.setQueueBucket(Bucket.Gui);
         guiNode.setCullHint(CullHint.Never);
         loadFPSText();
+        viewPort.attachScene(rootNode);
+        viewPort.attachScene(guiNode);
 
         if (inputManager != null){
             flyCam = new FlyByCamera(cam);
@@ -87,7 +92,6 @@ public abstract class SimpleApplication extends Application {
                     if (binding.equals("SIMPLEAPP_Exit")){
                         stop();
                     }else if (binding.equals("SIMPLEAPP_CameraPos")){
-                        Camera cam = renderer.getCamera();
                         if (cam != null){
                             Vector3f loc = cam.getLocation();
                             Quaternion rot = cam.getRotation();
@@ -115,7 +119,7 @@ public abstract class SimpleApplication extends Application {
         secondCounter += tpf;
         int fps = (int) timer.getFrameRate();
         if (secondCounter >= 1.0f){
-            fpsText.setText("FPS: "+fps);
+            fpsText.setText("Frames per second: "+fps);
             fpsText.assemble();
             secondCounter = 0.0f;
         }
@@ -127,10 +131,8 @@ public abstract class SimpleApplication extends Application {
         guiNode.updateGeometricState();
 
         renderer.clearBuffers(true, true, true);
-        render(rootNode, renderer);
-        render(guiNode, renderer);
-        simpleRender(renderer);
-        renderer.renderQueue();
+        renderManager.render();
+        simpleRender(renderManager);
     }
 
     public abstract void simpleInitApp();
@@ -138,7 +140,7 @@ public abstract class SimpleApplication extends Application {
     public void simpleUpdate(float tpf){
     }
 
-    public void simpleRender(Renderer r){
+    public void simpleRender(RenderManager rm){
     }
 
 }

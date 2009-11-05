@@ -1,18 +1,12 @@
 package com.g3d.renderer.lwjgl;
 
-import com.g3d.light.DirectionalLight;
-import com.g3d.light.Light;
 import com.g3d.light.LightList;
-import com.g3d.light.PointLight;
 import com.g3d.material.Material;
 import com.g3d.material.RenderState;
 import com.g3d.math.ColorRGBA;
-import com.g3d.math.Matrix3f;
 import com.g3d.math.Matrix4f;
-import com.g3d.math.Quaternion;
 import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
-import com.g3d.renderer.Camera;
 import com.g3d.renderer.Caps;
 import com.g3d.renderer.GLObjectManager;
 import com.g3d.renderer.IDList;
@@ -23,22 +17,17 @@ import com.g3d.scene.VertexBuffer.Format;
 import com.g3d.scene.VertexBuffer.Type;
 import com.g3d.scene.VertexBuffer.Usage;
 import com.g3d.renderer.RenderContext;
-import com.g3d.renderer.queue.RenderQueue;
-import com.g3d.renderer.queue.RenderQueue.Bucket;
-import com.g3d.scene.Geometry;
 import com.g3d.shader.Attribute;
 import com.g3d.shader.Shader;
 import com.g3d.shader.Shader.ShaderSource;
 import com.g3d.shader.Shader.ShaderType;
 import com.g3d.shader.Uniform;
-import com.g3d.system.lwjgl.LwjglContext;
 import com.g3d.texture.FrameBuffer;
 import com.g3d.texture.FrameBuffer.RenderBuffer;
 import com.g3d.texture.Image;
 import com.g3d.texture.Texture;
 import com.g3d.texture.Texture.WrapAxis;
 import com.g3d.util.BufferUtils;
-import com.g3d.util.TempVars;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
@@ -55,6 +44,7 @@ import java.util.logging.Logger;
 //import org.lwjgl.opengl.ARBHalfFloatVertex;
 //import org.lwjgl.opengl.ARBVertexArrayObject;
 import org.lwjgl.opengl.ARBDrawInstanced;
+import org.lwjgl.opengl.ARBMultisample;
 import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.EXTTextureArray;
 import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
@@ -85,19 +75,13 @@ public class LwjglRenderer implements Renderer {
     private IntBuffer intBuf1 = BufferUtils.createIntBuffer(1);
     private IntBuffer intBuf16 = BufferUtils.createIntBuffer(16);
 
-    private final LwjglContext owner;
-    private RenderQueue queue;
+//    private final LwjglContext owner;
     private RenderContext context = new RenderContext();
     private final GLObjectManager objManager = new GLObjectManager();
     private final EnumSet<Caps> caps = EnumSet.noneOf(Caps.class);
-    
-    private final Matrix4f worldMatrix = new Matrix4f();
-    private final Matrix4f orthoMatrix = new Matrix4f();
 
     // current state
-//    private Camera camera;
     private Shader boundShader;
-    private Material forcedMaterial;
 
     private int glslVer;
     private int vertexTextureUnits;
@@ -113,9 +97,9 @@ public class LwjglRenderer implements Renderer {
     private int maxVertCount;
     private int maxTriCount;
 
-    public LwjglRenderer(LwjglContext owner){
-        queue = new RenderQueue(this);
-        this.owner = owner;
+    private int lastWidth, lastHeight;
+
+    public LwjglRenderer(){
     }
 
     protected void updateNameBuffer(){
@@ -229,10 +213,20 @@ public class LwjglRenderer implements Renderer {
                 logger.log(Level.FINER, "FBO Max Samples: {0}", maxFBOSamples);
             }
         }
+
+        if (ctxCaps.GL_ARB_multisample){
+            glGetInteger(ARBMultisample.GL_SAMPLE_BUFFERS_ARB, intBuf16);
+            boolean available = intBuf16.get(0) != 0;
+            glGetInteger(ARBMultisample.GL_SAMPLES_ARB, intBuf16);
+            int samples = intBuf16.get(0);
+            boolean enabled = glIsEnabled(ARBMultisample.GL_MULTISAMPLE_ARB);
+            if (samples > 0 && available && !enabled){
+                glEnable(ARBMultisample.GL_MULTISAMPLE_ARB);
+            }
+        }
     }
 
     public void cleanup(){
-        queue.clear();
         objManager.deleteAllObjects(this);
     }
 
@@ -244,6 +238,10 @@ public class LwjglRenderer implements Renderer {
     /*********************************************************************\
     |* Render State                                                      *|
     \*********************************************************************/
+    public void setDepthRange(float start, float end){
+        glDepthRange(start, end);
+    }
+
     public void clearBuffers(boolean color, boolean depth, boolean stencil){
         int bits = 0;
         if (color) bits = GL_COLOR_BUFFER_BIT;
@@ -381,82 +379,24 @@ public class LwjglRenderer implements Renderer {
         }
     }
 
-//    public void setupDepthPass(){
-//        glEnable(GL_DEPTH_TEST);
-//        glStencilMask(0x0);
-//        glDepthMask(true);
-//        glColorMask(false, false, false, false);
-//        glDepthFunc(GL_LESS);
-//        context.depthTestEnabled = true;
-//    }
-//
-//    public void setupColorPass(){
-//        glEnable(GL_DEPTH_TEST);
-//        glStencilMask(0x0);
-//        glDepthMask(false);
-//        glColorMask(true, true, true, true);
-//        glDepthFunc(GL_EQUAL);
-//        context.depthTestEnabled = false;
-//    }
-
     /*********************************************************************\
     |* Camera and World transforms                                       *|
     \*********************************************************************/
-
-    public void setCamera(Camera cam) {
-        if (this.camera == cam)
-            return;
-        
-        this.camera = cam;
-        // the GL state needs an update in viewport
-        updateViewPort(cam.getWidth(), cam.getHeight());
-    }
-
-    public Camera getCamera(){
-        return camera;
-    }
-
-    public void setViewPort(int x, int y, int width, int height){
-        glViewport(x, y, width, height);
-    }
-
-    private void updateViewPort(float width, float height){
-        int x = (int) (camera.getViewPortLeft() * width);
-        int y = (int) (camera.getViewPortBottom() * height);
-        int w = (int) ((camera.getViewPortRight() - camera.getViewPortLeft()) * width);
-        int h = (int) ((camera.getViewPortTop() - camera.getViewPortBottom()) * height);
+    public void setViewPort(int x, int y, int w, int h){
         glViewport(x, y, w, h);
-
-        //also update ortho matrix
-        orthoMatrix.loadIdentity();
-
-        float tx = -(w+x)/(w-x);
-        float ty = -(h+y)/(h-y);
-        float tz = 0;
-        orthoMatrix.setTranslation(tx, ty, tz);
-
-        float m00 = 2f / (w-x);
-        float m11 = 2f / (h-y);
-        float m22 = -1f;
-        orthoMatrix.setScale(new Vector3f(m00,m11,m22));
     }
-
     
     public void onFrame(){
         objManager.deleteUnused(this);
-
-        if (camera == null)
-            return;
-
-        if (camera.isViewportChanged()){
-            updateViewPort(camera.getWidth(), camera.getHeight());
-            camera.clearViewportChanged();
-        }
     }
-
     
     public void setWorldMatrix(Matrix4f worldMatrix){
-        this.worldMatrix.set(worldMatrix);
+    }
+
+    public void setViewMatrix(Matrix4f viewMatrix){
+    }
+
+    public void setProjectionMatrix(Matrix4f projMatrix){
     }
 
     /*********************************************************************\
@@ -574,116 +514,6 @@ public class LwjglRenderer implements Renderer {
     public void setLighting(LightList list){
     }
     
-    /* (Non-Javadoc)
-     * TODO: Should really implement this in another class.
-     */
-    public void updateWorldParameters(List<Uniform> params){
-        // assums worldMatrix is properly set.
-        Matrix4f viewMatrix = camera.getViewMatrix();
-        Matrix4f projMatrix = camera.getProjectionMatrix();
-        Matrix4f viewProjMatrix = camera.getViewProjectionMatrix();
-
-        TempVars vars = TempVars.get();
-        assert vars.lock();
-        Matrix4f tempMat4 = vars.tempMat4;
-        Matrix3f tempMat3 = vars.tempMat3;
-        Vector3f tempVec3 = vars.vect1;
-        Vector2f tempVec2 = vars.vect2d;
-        Quaternion tempVec4 = vars.quat1;
-
-        for (int i = 0; i < params.size(); i++){
-            Uniform u = params.get(i);
-            switch (u.getBinding()){
-                case WorldMatrix:
-                    u.setMatrix4(worldMatrix);
-                    break;
-                case ViewMatrix:
-                    u.setMatrix4(viewMatrix);
-                    break;
-                case ProjectionMatrix:
-                    u.setMatrix4(projMatrix);
-                    break;
-                case WorldViewMatrix:
-//                    tempMat4.loadIdentity();
-                    tempMat4.set(viewMatrix);
-                    tempMat4.multLocal(worldMatrix);
-                    u.setMatrix4(tempMat4);
-                    break;
-                case NormalMatrix:
-//                    tempMat4.loadIdentity();
-                    tempMat4.set(viewMatrix);
-                    tempMat4.multLocal(worldMatrix);
-                    tempMat4.toRotationMatrix(tempMat3);
-                    tempMat3.invertLocal();
-                    tempMat3.transposeLocal();
-                    
-                    u.setMatrix3(tempMat3);
-                    break;
-                case OrthoMatrix:
-                    u.setMatrix4(orthoMatrix);
-                    break;
-                case WorldOrthoMatrix:
-//                    tempMat4.loadIdentity();
-                    tempMat4.set(orthoMatrix);
-                    tempMat4.multLocal(worldMatrix);
-                    u.setMatrix4(tempMat4);
-                    break;
-                case WorldViewProjectionMatrix:
-//                    tempMat4.loadIdentity();
-                    tempMat4.set(viewProjMatrix);
-                    tempMat4.multLocal(worldMatrix);
-                    u.setMatrix4(tempMat4);
-                    break;
-                case ViewMatrixInverse:
-                    tempMat4.set(viewMatrix);
-                    tempMat4.invertLocal();
-                    u.setMatrix4(tempMat4);
-                    break;
-                case ViewPort:
-                    tempVec4.set(camera.getViewPortLeft(),
-                                 camera.getViewPortTop(),
-                                 camera.getViewPortRight(),
-                                 camera.getViewPortBottom());
-                    u.setVector4(tempVec4);
-                    break;
-                case Resolution:
-                    tempVec2.set(camera.getWidth(), camera.getHeight());
-                    u.setVector2(tempVec2);
-                    break;
-                case Aspect:
-                    float aspect = ((float) camera.getWidth()) / camera.getHeight();
-                    u.setFloat(aspect);
-                    break;
-                case CameraPosition:
-                    u.setVector3(camera.getLocation());
-                    break;
-                case CameraDirection:
-                    camera.getDirection(tempVec3);
-                    u.setVector3(tempVec3);
-                    break;
-                case CameraLeft:
-                    camera.getLeft(tempVec3);
-                    u.setVector3(tempVec3);
-                    break;
-                case CameraUp:
-                    camera.getUp(tempVec3);
-                    u.setVector3(tempVec3);
-                    break;
-                case Time:
-                    u.setFloat(owner.getTimer().getTimeInSeconds());
-                    break;
-                case Tpf:
-                    u.setFloat(owner.getTimer().getTimePerFrame());
-                    break;
-                case FrameRate:
-                    u.setFloat(owner.getTimer().getFrameRate());
-                    break;
-            }
-        }
-
-        assert vars.unlock();
-    }
-
     public int convertShaderType(ShaderType type){
         switch (type){
             case Fragment:
@@ -926,8 +756,8 @@ public class LwjglRenderer implements Renderer {
 
             if (src == null){
                 glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, 0);
-                srcW = camera.getWidth();
-                srcH = camera.getHeight();
+//                srcW = viewWidth;
+//                srcH = viewHeight;
             }else{  
                 glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, src.getId());
                 srcW = src.getWidth();
@@ -935,8 +765,8 @@ public class LwjglRenderer implements Renderer {
             }
             if (dst == null){
                 glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, 0);
-                dstW = camera.getWidth();
-                dstH = camera.getHeight();
+//                dstW = viewWidth;
+//                dstH = viewHeight;
             }else{
                 glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, dst.getId());
                 dstW = dst.getWidth();
@@ -1093,16 +923,13 @@ public class LwjglRenderer implements Renderer {
     }
 
     public void setFrameBuffer(FrameBuffer fb) {
-        // make sure all prior render commands have been sent
-        renderQueue();
-
         if (fb == null){
             // unbind any fbos
             if (context.boundFBO != 0){
                 glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
                 // update viewport to reflect framebuffer's resolution
-                updateViewPort(camera.getWidth(), camera.getHeight());
+//                setViewPort(0, 0, viewWidth, viewHeight);
 
                 context.boundFBO = 0;
             }
@@ -1120,8 +947,7 @@ public class LwjglRenderer implements Renderer {
                 glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fb.getId());
                 
                 // update viewport to reflect framebuffer's resolution
-                if (fb.getWidth() != camera.getWidth() || fb.getHeight() != camera.getHeight())
-                    updateViewPort(fb.getWidth(), fb.getHeight());
+                setViewPort(0, 0, fb.getWidth(), fb.getHeight());
 
                 context.boundFBO = fb.getId();
             }
@@ -1179,7 +1005,6 @@ public class LwjglRenderer implements Renderer {
     /*********************************************************************\
     |* Textures                                                          *|
     \*********************************************************************/
-
     private int convertTextureType(Texture.Type type){
         switch (type){
             case OneDimensional:
@@ -1348,8 +1173,6 @@ public class LwjglRenderer implements Renderer {
          assert texId != -1;
 
          Texture[] textures = context.boundTextures;
-//         if (textures[unit] == tex)
-//             return;
 
          int type = convertTextureType(tex.getType());
          if (!context.textureIndexList.moveToNew(unit)){
@@ -1359,7 +1182,6 @@ public class LwjglRenderer implements Renderer {
              }
 
              glEnable(type);
-             //System.out.println("Enabled TEX UNIT: "+unit);
          }
 
          if (textures[unit] != tex){
@@ -1384,8 +1206,6 @@ public class LwjglRenderer implements Renderer {
                 context.boundTextureUnit = idx;
             }
             glDisable(convertTextureType(textures[idx].getType()));
-
-            //System.out.println("Disabled TEX UNIT: "+idx);
             textures[idx] = null;
         }
         context.textureIndexList.copyNewToOld();
@@ -1404,7 +1224,6 @@ public class LwjglRenderer implements Renderer {
     /*********************************************************************\
     |* Vertex Buffers and Attributes                                     *|
     \*********************************************************************/
-
     private int convertUsage(Usage usage){
         switch (usage){
             case Static:
@@ -1509,8 +1328,6 @@ public class LwjglRenderer implements Renderer {
             intBuf1.position(0).limit(1);
             glDeleteBuffers(intBuf1);
             vb.resetObject();
-
-            //System.out.println(vb + ": Deleted");
         }
     }
 
@@ -1519,11 +1336,9 @@ public class LwjglRenderer implements Renderer {
         for (int i = 0; i < attribList.oldLen; i++){
             int idx = attribList.oldList[i];
             glDisableVertexAttribArray(idx);
-            //System.out.println("Disabled ATTRIB IDX: "+idx);
             context.boundAttribs[idx] = null;
         }
         context.attribIndexList.copyNewToOld();
-//        context.attribIndexList.print();
     }
 
     public void setVertexAttrib(VertexBuffer vb, VertexBuffer idb){
@@ -1656,60 +1471,12 @@ public class LwjglRenderer implements Renderer {
                                 indexBuf.getData().capacity(),
                                 convertFormat(indexBuf.getFormat()),
                                 0);
-
-//            glDrawElements(convertElementMode(mode),
-//                           indexBuf.getData().capacity(),
-//                           convertFormat(indexBuf.getFormat()),
-//                           0);
         }
     }
 
     /*********************************************************************\
     |* Render Calls                                                      *|
     \*********************************************************************/
-    public void renderQueue(){
-        // render opaque objects with default depth range
-        // opaque objects are sorted front-to-back, reducing overdraw
-        queue.renderQueue(Bucket.Opaque);
-
-        // render the sky, with depth range set to the farthest
-        glDepthRange(1,1);
-        queue.renderQueue(Bucket.Sky);
-        
-        
-        // transparent objects are last because they require blending with the
-        // rest of the scene's objects. Consequently, they are sorted
-        // back-to-front.
-        glDepthRange(0,1);
-        queue.renderQueue(Bucket.Transparent);
-        
-        glDepthRange(0,0);
-        queue.renderQueue(Bucket.Gui);
-        
-        // restore range to default
-        glDepthRange(0,1);
-    }
-
-    public void renderShadowQueue(RenderQueue.ShadowMode shadBucket){
-        queue.renderShadowQueue(shadBucket);
-    }
-
-    public void addToQueue(Geometry geom, RenderQueue.Bucket bucket){
-        queue.addToQueue(geom, bucket);
-    }
-
-    public void addToShadowQueue(Geometry geom, RenderQueue.ShadowMode shadBucket){
-        queue.addToShadowQueue(geom, shadBucket);
-    }
-    
-    public RenderQueue getRenderQueue(){
-        return queue;
-    }
-
-    public void setForcedMaterial(Material mat){
-        forcedMaterial = mat;
-    }
-
     public int convertElementMode(Mesh.Mode mode){
         switch (mode){
             case Points:
@@ -1731,43 +1498,7 @@ public class LwjglRenderer implements Renderer {
         }
     }
 
-    public void renderMesh(Mesh mesh, int count) {
-        VertexBuffer indices = null;
-
-        VertexBuffer interleavedData = mesh.getBuffer(Type.InterleavedData);
-        if (interleavedData != null && interleavedData.isUpdateNeeded()){
-            updateBufferData(interleavedData);
-        }
-
-        for (VertexBuffer vb : mesh.getBuffers()){
-            if (vb.getBufferType() == Type.InterleavedData)
-                continue;
-            
-            if (vb.getBufferType() == Type.Index){
-                indices = vb;
-            }else{
-                if (vb.getStride() == 0){
-                    // not interleaved
-                    setVertexAttrib(vb);
-                }else{
-                    // interleaved
-                    setVertexAttrib(vb, interleavedData);
-                }
-            }
-        }
-        if (indices != null){
-            drawTriangleList(indices, mesh.getMode(), 1, mesh.getVertexCount());
-        }else{
-            throw new UnsupportedOperationException("Cannot render without index buffer");
-//            glDrawArrays(convertElementMode(mesh.getMode()), 0, mesh.getVertexCount());
-        }
-        clearVertexAttribs();
-        clearTextureUnits();
-        
-        Util.checkGLError();
-    }
-
-//    public void updateVertexArray(Mesh mesh){
+    public void updateVertexArray(Mesh mesh){
 //        int id = mesh.getId();
 //        if (id == -1){
 //            IntBuffer temp = intBuf1;
@@ -1786,52 +1517,66 @@ public class LwjglRenderer implements Renderer {
 //                setVertexAttrib(vb);
 //            }
 //        }
-//
-//    }
+    }
 
-    public void renderGeometry(Geometry geom){
-        Mesh mesh = geom.getMesh();
-        if (mesh.getVertexCount() <= 0){
-            logger.warning("Mesh does not contain vertex data: "+geom);
-            return;
-        }
-        if (mesh.getTriangleCount() <= 0){
-            logger.warning("Mesh does not contain index data: "+geom);
-            return;
-        }
-
-        setWorldMatrix(geom.getWorldMatrix());
-        if (geom.getMaterial() == null){
-            logger.warning("Unable to render geometry "+geom+". No material defined!");
-            return;
-        }
-        if (forcedMaterial != null){
-            // use forced material
-            forcedMaterial.apply(geom, this);
-        }else{
-            // use geometry's material
-            geom.getMaterial().apply(geom, this);
-        }
-
-//        if (GLContext.getCapabilities().GL_ARB_vertex_array_object){
-//            if (mesh.getId() == -1){
-//                updateVertexArray(mesh);
-//            }
+    private void renderMeshVertexArray(Mesh mesh, int count){
+//        if (mesh.getId() == -1){
+//            updateVertexArray(mesh);
+//        }
 //
-//            if (context.boundVertexArray != mesh.getId()){
-//                ARBVertexArrayObject.glBindVertexArray(mesh.getId());
-//                context.boundVertexArray = mesh.getId();
-//            }
+//        if (context.boundVertexArray != mesh.getId()){
+//            ARBVertexArrayObject.glBindVertexArray(mesh.getId());
+//            context.boundVertexArray = mesh.getId();
+//        }
 //
-//            VertexBuffer indices = mesh.getBuffer(Type.Index);
-//            if (indices != null){
-//                drawTriangleList(indices, mesh.getMode(), 1);
-//            }else{
-//                glDrawArrays(convertElementMode(mesh.getMode()), 0, mesh.getVertexCount());
-//            }
-//            clearTextureUnits();
+//        VertexBuffer indices = mesh.getBuffer(Type.Index);
+//        if (indices != null){
+//            drawTriangleList(indices, mesh.getMode(), 1);
 //        }else{
-            renderMesh(mesh, 1);
+//            glDrawArrays(convertElementMode(mesh.getMode()), 0, mesh.getVertexCount());
+//        }
+//        clearTextureUnits();
+    }
+
+    private void renderMeshDefault(Mesh mesh, int count){
+        VertexBuffer indices = null;
+
+        VertexBuffer interleavedData = mesh.getBuffer(Type.InterleavedData);
+        if (interleavedData != null && interleavedData.isUpdateNeeded()){
+            updateBufferData(interleavedData);
+        }
+
+        for (VertexBuffer vb : mesh.getBuffers()){
+            if (vb.getBufferType() == Type.InterleavedData)
+                continue;
+
+            if (vb.getBufferType() == Type.Index){
+                indices = vb;
+            }else{
+                if (vb.getStride() == 0){
+                    // not interleaved
+                    setVertexAttrib(vb);
+                }else{
+                    // interleaved
+                    setVertexAttrib(vb, interleavedData);
+                }
+            }
+        }
+        if (indices != null){
+            drawTriangleList(indices, mesh.getMode(), count, mesh.getVertexCount());
+        }else{
+            throw new UnsupportedOperationException("Cannot render without index buffer");
+//            glDrawArrays(convertElementMode(mesh.getMode()), 0, mesh.getVertexCount());
+        }
+        clearVertexAttribs();
+        clearTextureUnits();
+    }
+
+    public void renderMesh(Mesh mesh, int count) {
+//        if (GLContext.getCapabilities().GL_ARB_vertex_array_object){
+//            renderMeshVertexArray(mesh, count);
+//        }else{
+            renderMeshDefault(mesh, count);
 //        }
     }
 

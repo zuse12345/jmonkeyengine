@@ -1,5 +1,6 @@
 package com.g3d.input;
 
+import com.g3d.collision.MotionAllowedListener;
 import com.g3d.input.binding.BindingListener;
 import com.g3d.input.event.JoyAxisEvent;
 import com.g3d.math.FastMath;
@@ -27,6 +28,7 @@ public class FlyByCamera implements BindingListener {
     private Vector3f initialUpVec;
     private float rotationSpeed = 1f;
     private float moveSpeed = 3f;
+    private MotionAllowedListener motionAllowed = null;
 
     /**
      * Creates a new FlyByCamera to control the given Camera object.
@@ -35,6 +37,10 @@ public class FlyByCamera implements BindingListener {
     public FlyByCamera(Camera cam){
         this.cam = cam;
         initialUpVec = cam.getUp().clone();
+    }
+
+    public void setMotionAllowedListener(MotionAllowedListener listener){
+        this.motionAllowed = listener;
     }
 
     /**
@@ -177,24 +183,33 @@ public class FlyByCamera implements BindingListener {
     }
 
     public void riseCamera(float value){
-        assert TempVars.get().lock();
-        Vector3f pos = TempVars.get().vect1.set(cam.getLocation());
-        pos.addLocal(0, value * moveSpeed, 0);
-        Vector3f c = pos.clone();
-        assert TempVars.get().unlock();
-        cam.setLocation(c);
+        Vector3f vel = new Vector3f(0, value * moveSpeed, 0);
+        Vector3f pos = cam.getLocation().clone();
+
+        if (motionAllowed != null)
+            motionAllowed.checkMotionAllowed(pos, vel);
+        else
+            pos.addLocal(vel);
+        
+        cam.setLocation(pos);
     }
 
     public void moveCamera(float value, boolean sideways){
-        TempVars vars = TempVars.get();
         Vector3f vel = new Vector3f();
+        Vector3f pos = cam.getLocation().clone();
+
         if (sideways){
             cam.getLeft(vel);
         }else{
             cam.getDirection(vel);
         }
         vel.multLocal(value * moveSpeed);
-        vel.addLocal(cam.getLocation());
-        cam.setLocation(vel);
+
+        if (motionAllowed != null)
+            motionAllowed.checkMotionAllowed(pos, vel);
+        else
+            pos.addLocal(vel);
+
+        cam.setLocation(pos);
     }
 }

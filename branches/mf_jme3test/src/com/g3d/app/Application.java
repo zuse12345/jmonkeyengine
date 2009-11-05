@@ -10,6 +10,8 @@ import com.g3d.renderer.Renderer;
 import com.g3d.renderer.queue.RenderQueue;
 import com.g3d.asset.AssetManager;
 import com.g3d.input.InputManager;
+import com.g3d.renderer.RenderManager;
+import com.g3d.renderer.ViewPort;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Node;
 import com.g3d.scene.Spatial;
@@ -31,6 +33,9 @@ public class Application implements SystemListener {
     protected AssetManager manager;
 
     protected Renderer renderer;
+    protected RenderManager renderManager;
+    protected ViewPort viewPort;
+
     protected G3DContext context;
     protected AppSettings settings;
     protected Timer timer;
@@ -95,7 +100,8 @@ public class Application implements SystemListener {
         cam.setLocation(new Vector3f(0f, 0f, 10f));
         cam.lookAt(new Vector3f(0f, 0f, 0f), Vector3f.UNIT_Y);
 
-        renderer.setCamera(cam);
+        renderManager = new RenderManager(renderer);
+        viewPort = renderManager.createView("Default", cam);
     }
 
     /**
@@ -131,7 +137,7 @@ public class Application implements SystemListener {
     /**
      * @return The content manager for this application.
      */
-    public AssetManager getContentManager(){
+    public AssetManager getAssetManager(){
         return manager;
     }
 
@@ -163,46 +169,7 @@ public class Application implements SystemListener {
     public Camera getCamera(){
         return cam;
     }
-
-    private void renderShadow(Spatial s, Renderer r){
-        if (s instanceof Node){
-            Node n = (Node) s;
-            List<Spatial> children = n.getChildren();
-            for (int i = 0; i < children.size(); i++){
-                renderShadow(children.get(i), r);
-            }
-        }else if (s instanceof Geometry){
-            Geometry gm = (Geometry) s;
-            RenderQueue.ShadowMode shadowMode = s.getShadowMode();
-            if (shadowMode != RenderQueue.ShadowMode.Off)
-                r.addToShadowQueue(gm, shadowMode);
-        }
-    }
-
-    public void render(Spatial s, Renderer r){
-        if (!s.checkCulling(cam)){
-            // move on to shadow-only render
-            if (s.getShadowMode() != RenderQueue.ShadowMode.Off)
-                renderShadow(s,r);
-
-            return;
-        }
-        if (s instanceof Node){
-            Node n = (Node) s;
-            List<Spatial> children = n.getChildren();
-            for (int i = 0; i < children.size(); i++){
-                render(children.get(i), r);
-            }
-        }else if (s instanceof Geometry){
-            Geometry gm = (Geometry) s;
-            r.addToQueue(gm, s.getQueueBucket());
-
-            RenderQueue.ShadowMode shadowMode = s.getShadowMode();
-            if (shadowMode != RenderQueue.ShadowMode.Off)
-                r.addToShadowQueue(gm, shadowMode);
-        }
-    }
-
+    
     public void start(){
         start(G3DContext.Type.Display);
     }
@@ -226,8 +193,12 @@ public class Application implements SystemListener {
         context.create();
     }
 
+    public void reshape(int w, int h){
+        renderManager.notifyReshape(w, h);
+    }
+
     public void restart(){
-        context.restart(true);
+        context.restart();
     }
 
     /**
@@ -328,9 +299,6 @@ public class Application implements SystemListener {
         destroyInput();
         timer.reset();
         renderer.cleanup();
-        // NOTE: May cause issues with programs
-        // that use multiple Application instances
-//        G3DSystem.destroy();
     }
 
 }

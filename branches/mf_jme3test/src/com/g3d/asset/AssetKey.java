@@ -8,6 +8,8 @@ import com.g3d.export.Savable;
 import java.io.IOException;
 
 /**
+ * <code>AssetKey</code> is a key that is used to
+ * look up a resource from a cache. 
  * This class should be immutable.
  */
 public class AssetKey implements Savable {

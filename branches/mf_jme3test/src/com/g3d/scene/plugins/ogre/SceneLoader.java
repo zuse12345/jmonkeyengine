@@ -11,6 +11,7 @@ import com.g3d.scene.Node;
 import com.g3d.scene.Spatial;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayDeque;
 import java.util.logging.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -25,7 +26,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
 
     private static final Logger logger = Logger.getLogger(SceneLoader.class.getName());
 
-    private String curElement;
+    private ArrayDeque<String> elementStack = new ArrayDeque<String>();
     private String sceneName;
     private AssetManager assetManager;
     private OgreMaterialList materialList;
@@ -96,14 +97,12 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attribs) throws SAXException{
         if (qName.equals("scene")){
-            assert curElement == null;
-            curElement = "scene";
+            assert elementStack.size() == 0;
             String version = attribs.getValue("formatVersion");
             if (!version.equals("1.0.0"))
                 logger.warning("Unrecognized version number in dotScene file: "+version);
         }else if (qName.equals("nodes")){
             assert root == null;
-            curElement = "nodes";
             if (sceneName == null)
                 root = new Node("OgreDotScene"+(++sceneIdx));
             else
@@ -111,10 +110,10 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             
             node = root;
         }else if (qName.equals("externals")){
-            assert curElement.equals("scene");
+            assert elementStack.peek().equals("scene");
         }else if (qName.equals("node")){
+            String curElement = elementStack.peek();
             assert curElement.equals("nodes") || curElement.equals("node");
-            curElement = "node";
             String name = attribs.getValue("name");
             if (name == null)
                 name = "OgreNode-" + (++nodeIdx);
@@ -127,7 +126,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             }
             node = newNode;
         }else if (qName.equals("entity")){
-            assert curElement.equals("node");
+            assert elementStack.peek().equals("node");
             String name = attribs.getValue("name");
             if (name == null)
                 name = "OgreEntity-" + (++nodeIdx);
@@ -154,6 +153,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
         }else if (qName.equals("scale")){
             node.setLocalScale(parseVector3(attribs));
         }
+        elementStack.push(qName);
     }
 
     @Override
@@ -166,6 +166,8 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             node = entityNode.getParent();
             entityNode = null;
         }
+        assert elementStack.peek().equals(qName);
+        elementStack.pop();
     }
 
     @Override

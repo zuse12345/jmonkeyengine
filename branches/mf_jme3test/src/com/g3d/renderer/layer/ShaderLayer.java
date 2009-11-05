@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package com.g3d.renderer;
+package com.g3d.renderer.layer;
 
 import com.g3d.shader.Shader;
 import com.g3d.shader.Shader.ShaderSource;

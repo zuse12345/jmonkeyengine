@@ -99,6 +99,8 @@ public final class SettingsDialog extends JDialog {
             "1024 x 768", "1152 x 864", "1280 x 720" };
 
     // UI components
+    private JCheckBox vsyncBox = null;
+
     private JCheckBox fullscreenBox = null;
 
     private JComboBox displayResCombo = null;
@@ -108,6 +110,8 @@ public final class SettingsDialog extends JDialog {
     private JComboBox displayFreqCombo = null;
 
     private JComboBox rendererCombo = null;
+
+    private JComboBox antialiasCombo = null;
 
     private JLabel icon = null;
     
@@ -276,6 +280,8 @@ public final class SettingsDialog extends JDialog {
         colorDepthCombo.addKeyListener(aListener);
         displayFreqCombo = new JComboBox();
         displayFreqCombo.addKeyListener(aListener);
+        antialiasCombo = new JComboBox();
+        antialiasCombo.addKeyListener(aListener);
         fullscreenBox = new JCheckBox("Fullscreen?");
         fullscreenBox.setSelected(source.isFullscreen());
         fullscreenBox.addActionListener(new ActionListener() {
@@ -283,16 +289,21 @@ public final class SettingsDialog extends JDialog {
                 updateResolutionChoices();
             }
         });
+        vsyncBox = new JCheckBox("VSync?");
+        vsyncBox.setSelected(source.isVSync());
         rendererCombo = setUpRendererChooser();
         rendererCombo.addKeyListener(aListener);
 
         updateResolutionChoices();
+        updateAntialiasChoices();
         displayResCombo.setSelectedItem(source.getWidth() + " x " + source.getHeight());
 
         optionsPanel.add(displayResCombo);
         optionsPanel.add(colorDepthCombo);
         optionsPanel.add(displayFreqCombo);
+        optionsPanel.add(antialiasCombo);
         optionsPanel.add(fullscreenBox);
+        optionsPanel.add(vsyncBox);
         optionsPanel.add(rendererCombo);
 
         // Set the button action listeners. Cancel disposes without saving, OK
@@ -339,6 +350,7 @@ public final class SettingsDialog extends JDialog {
     private boolean verifyAndSaveCurrentSelection() {
         String display = (String) displayResCombo.getSelectedItem();
         boolean fullscreen = fullscreenBox.isSelected();
+        boolean vsync = vsyncBox.isSelected();
 
         int width = Integer.parseInt(display.substring(0, display
                 .indexOf(" x ")));
@@ -363,6 +375,14 @@ public final class SettingsDialog extends JDialog {
                 freq = Integer.parseInt(freqString.substring(0, freqString
                         .indexOf(' ')));
             }
+        }
+
+        String aaString = (String) antialiasCombo.getSelectedItem();
+        int multisample = -1;
+        if (aaString.equals("Disabled")){
+            multisample = 0;
+        }else{
+            multisample = Integer.parseInt(aaString.substring(0, aaString.indexOf('x')));
         }
 
         // FIXME: Does not work in Linux
@@ -396,7 +416,9 @@ public final class SettingsDialog extends JDialog {
             source.setBitsPerPixel(depth);
             source.setFrequency(freq);
             source.setFullscreen(fullscreen);
+            source.setVSync(vsync);
             source.setRenderer(renderer);
+            source.setSamples(multisample);
             try {
                 source.save();
             } catch (IOException ioe) {
@@ -499,6 +521,13 @@ public final class SettingsDialog extends JDialog {
             displayFreqCombo.setEnabled(true);
             updateDisplayChoices();
         }
+    }
+
+    private void updateAntialiasChoices(){
+        // maybe in the future will add support for determining this info
+        // through pbuffer
+        String[] choices = new String[]{ "Disabled", "2x", "4x", "6x", "8x", "16x" };
+        antialiasCombo.setModel(new DefaultComboBoxModel(choices));
     }
 
     //

@@ -45,7 +45,7 @@ import java.io.IOException;
  * @author Mark Powell
  * @author Joshua Slack
  */
-public class Triangle implements Savable {
+public class Triangle extends AbstractTriangle implements Savable {
 
     private Vector3f pointa = new Vector3f();
     private Vector3f pointb = new Vector3f();
@@ -131,6 +131,24 @@ public class Triangle implements Savable {
         case 1: pointb.set(x,y,z); break;
         case 2: pointc.set(x,y,z); break;
         }
+    }
+
+    public void set1(Vector3f v){
+        pointa.set(v);
+    }
+
+    public void set2(Vector3f v){
+        pointb.set(v);
+    }
+
+    public void set3(Vector3f v){
+        pointc.set(v);
+    }
+
+    public void set(Vector3f v1, Vector3f v2, Vector3f v3){
+        pointa.set(v1);
+        pointb.set(v2);
+        pointc.set(v3);
     }
     
     /**

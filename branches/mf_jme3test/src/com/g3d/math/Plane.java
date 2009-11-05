@@ -60,21 +60,6 @@ public class Plane implements Savable, Cloneable {
         Negative
     }
 
-    /**
-     * NO_SIDE represents the plane itself.
-     */
-//    public static final int NO_SIDE = 0;
-
-    /**
-     * POSITIVE_SIDE represents a point on the side the normal points.
-     */
-//    public static final int POSITIVE_SIDE = 1;
-
-    /**
-     * NEGATIVE_SIDE represents a point on the opposite side the normal points.
-     */
-//    public static final int NEGATIVE_SIDE = 2;
-
     /** 
      * Vector normal to the plane.
      */
@@ -237,8 +222,19 @@ public class Plane implements Savable, Cloneable {
      * @param t
      *            the triangle
      */
-    public void setPlanePoints(Triangle t) {
-        setPlanePoints(t.get(0), t.get(1), t.get(2));
+    public void setPlanePoints(AbstractTriangle t) {
+        setPlanePoints(t.get1(), t.get2(), t.get3());
+    }
+
+    /**
+     * Initialize this plane using a point of origin and a normal.
+     *
+     * @param origin
+     * @param normal
+     */
+    public void setOriginNormal(Vector3f origin, Vector3f normal){
+        this.normal.set(normal);
+        this.constant = normal.x * origin.x + normal.y * origin.y + normal.z * origin.z;
     }
 
     /**

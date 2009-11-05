@@ -1,13 +1,17 @@
 package com.g3d.effect;
 
-import com.g3d.bounding.BoundingSphere;
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
 import com.g3d.math.FastMath;
 import com.g3d.math.Vector3f;
+import java.io.IOException;
 
 public class EmitterSphereShape implements EmitterShape {
 
-    private final Vector3f center;
-    private final float radius;
+    private Vector3f center;
+    private float radius;
 
     public EmitterSphereShape(Vector3f center, float radius) {
         if (center == null)
@@ -27,6 +31,18 @@ public class EmitterSphereShape implements EmitterShape {
         store.x = FastMath.cos(t) * r;
         store.y = FastMath.sin(t) * r;
         store.multLocal(radius).addLocal(center);
+    }
+
+    public void write(G3DExporter ex) throws IOException {
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(center, "center", null);
+        oc.write(radius, "radius", 0);
+    }
+
+    public void read(G3DImporter im) throws IOException {
+        InputCapsule ic = im.getCapsule(this);
+        center = (Vector3f) ic.readSavable("center", null);
+        radius = ic.readFloat("radius", 0);
     }
     
 }

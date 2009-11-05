@@ -3,7 +3,8 @@ package com.g3d.asset;
 import java.io.InputStream;
 
 /**
- * Provides basic information about the asset 
+ * Provides basic information about the asset.
+ *
  * @author Kirill
  */
 public abstract class AssetInfo {

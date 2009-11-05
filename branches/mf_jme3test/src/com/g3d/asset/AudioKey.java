@@ -6,10 +6,22 @@ import com.g3d.export.InputCapsule;
 import com.g3d.export.OutputCapsule;
 import java.io.IOException;
 
+/**
+ * <code>AudioKey</code> is extending AssetKey by holding stream flag.
+ *
+ * @author Kirill
+ */
 public class AudioKey extends AssetKey {
 
     private boolean stream;
 
+    /**
+     * Create a new AudioKey
+     *
+     * @param name Name of the asset
+     * @param stream If true, the audio will be streamed from harddrive, other
+     * wise it will be buffered entirely and then played.
+     */
     public AudioKey(String name, boolean stream){
         super(name);
         this.stream = stream;

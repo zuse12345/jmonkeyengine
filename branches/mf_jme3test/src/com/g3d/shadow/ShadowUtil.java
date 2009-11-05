@@ -6,19 +6,14 @@
 package com.g3d.shadow;
 
 import com.g3d.bounding.BoundingBox;
-import com.g3d.bounding.BoundingSphere;
 import com.g3d.bounding.BoundingVolume;
 import com.g3d.math.FastMath;
 import com.g3d.math.Matrix4f;
-import com.g3d.math.Quaternion;
 import com.g3d.math.Transform;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
-import com.g3d.renderer.queue.SpatialList;
-import com.g3d.scene.Spatial;
+import com.g3d.renderer.queue.GeometryList;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 
 /**
  * Includes various useful shadow mapping functions.
@@ -127,7 +122,7 @@ public class ShadowUtil {
         }
     }
 
-    private static BoundingBox computeUnionBound(SpatialList list, Transform transform){
+    private static BoundingBox computeUnionBound(GeometryList list, Transform transform){
         BoundingBox bbox = new BoundingBox();
         for (int i = 0; i < list.size(); i++){
             BoundingVolume vol = list.get(i).getWorldBound();
@@ -137,7 +132,7 @@ public class ShadowUtil {
         return bbox;
     }
 
-    private static BoundingBox computeUnionBound(SpatialList list, Matrix4f mat){
+    private static BoundingBox computeUnionBound(GeometryList list, Matrix4f mat){
         BoundingBox bbox = new BoundingBox();
         BoundingVolume store = null;
         for (int i = 0; i < list.size(); i++){
@@ -190,8 +185,8 @@ public class ShadowUtil {
      * @param lightCam
      * @param points
      */
-    public static void updateShadowCamera(SpatialList occluders,
-                                          SpatialList recievers,
+    public static void updateShadowCamera(GeometryList occluders,
+                                          GeometryList recievers,
                                           Camera shadowCam,
                                           Vector3f[] points){
 

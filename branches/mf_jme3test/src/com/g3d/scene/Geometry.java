@@ -1,6 +1,8 @@
 package com.g3d.scene;
 
 import com.g3d.bounding.BoundingVolume;
+import com.g3d.collision.Collidable;
+import com.g3d.collision.CollisionResults;
 import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
 import com.g3d.export.InputCapsule;
@@ -120,6 +122,19 @@ public class Geometry extends Spatial {
         this.worldBound = null;
         mesh.setBound(modelBound);
         updateModelBound();
+    }
+
+    public int collideWith(Collidable other, CollisionResults results){
+        if (refreshFlags != 0)
+            throw new IllegalStateException("Scene graph must be updated" +
+                                            " before checking collision");
+
+        if (mesh != null){
+            // NOTE: BIHTree in mesh already checks collision with the
+            // mesh's bound
+            return mesh.collideWith(other, cachedWorldMat, worldBound, results);
+        }
+        return 0;
     }
 
     @Override

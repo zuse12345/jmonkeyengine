@@ -20,7 +20,6 @@ import com.g3d.scene.Spatial;
 import com.g3d.scene.plugins.ogre.*;
 import com.g3d.shader.Shader;
 import com.g3d.shader.ShaderKey;
-import com.g3d.system.G3DSystem;
 import com.g3d.texture.Image;
 import com.g3d.texture.Texture;
 import com.g3d.texture.Texture2D;
@@ -34,6 +33,12 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * <code>AssetManager</code> is the primary method for managing and loading
+ * resources inside jME.
+ *
+ * @author Kirill
+ */
 public class AssetManager {
 
     private static final Logger logger = Logger.getLogger(AssetManager.class.getName());
@@ -204,14 +209,14 @@ public class AssetManager {
      * select highest supported by video card.
      * @return
      */
-    public Texture loadTexture(String name, boolean generateMipmaps, boolean flipY, boolean asCube, int anisotropy){
-        Image img = (Image) loadContent(new TextureKey(name, flipY));
+    public Texture loadTexture(TextureKey key){
+        Image img = (Image) loadContent(key);
         if (img == null)
             return null;
 
         Texture tex;
-        if (asCube){
-            if (flipY){
+        if (key.isAsCube()){
+            if (key.isFlipY()){
                 // also flip -y and +y image in cubemap
                 ByteBuffer pos_y = img.getData(2);
                 img.setData(2, img.getData(3));
@@ -224,11 +229,11 @@ public class AssetManager {
 
         // enable mipmaps if image has them
         // or generate them if requested by user
-        if (img.hasMipmaps() || generateMipmaps)
+        if (img.hasMipmaps() || key.isGenerateMips())
             tex.setMinFilter(Texture.MinFilter.Trilinear);
 
-        tex.setAnisotropicFilter(anisotropy);
-        tex.setName(name);
+        tex.setAnisotropicFilter(key.getAnisotropy());
+        tex.setName(key.getName());
         tex.setImage(img);
         return tex;
     }
@@ -242,7 +247,19 @@ public class AssetManager {
      * @return
      */
     public Texture loadTexture(String name, boolean generateMipmaps){
-        return loadTexture(name, generateMipmaps, true, false, Integer.MAX_VALUE);
+        TextureKey key = new TextureKey(name, true);
+        key.setGenerateMips(generateMipmaps);
+        key.setAsCube(false);
+        key.setAnisotropy(Integer.MAX_VALUE);
+        return loadTexture(key);
+    }
+
+    public Texture loadTexture(String name, boolean generateMipmaps, boolean flipY, boolean asCube, int aniso){
+        TextureKey key = new TextureKey(name, flipY);
+        key.setGenerateMips(generateMipmaps);
+        key.setAsCube(asCube);
+        key.setAnisotropy(aniso);
+        return loadTexture(key);
     }
 
     public Texture loadTexture(String name){

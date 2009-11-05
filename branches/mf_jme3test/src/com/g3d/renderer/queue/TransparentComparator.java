@@ -2,17 +2,15 @@ package com.g3d.renderer.queue;
 
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
-import com.g3d.renderer.Renderer;
-import com.g3d.scene.Spatial;
+import com.g3d.scene.Geometry;
 import com.g3d.util.TempVars;
-import java.util.Comparator;
 
-public class TransparentComparator implements Comparator<Spatial> {
+public class TransparentComparator implements GeometryComparator {
 
-    private Renderer renderer;
+    private Camera cam;
 
-    public TransparentComparator(Renderer renderer){
-        this.renderer = renderer;
+    public void setCamera(Camera cam){
+        this.cam = cam;
     }
 
     /**
@@ -23,14 +21,12 @@ public class TransparentComparator implements Comparator<Spatial> {
      *            Spatial to distancize.
      * @return Distance from Spatial to camera.
      */
-    public float distanceToCam(Spatial spat, Vector3f tempVec){
+    public float distanceToCam(Geometry spat, Vector3f tempVec){
         if (spat == null)
             return Float.NEGATIVE_INFINITY;
 
         if (spat.queueDistance != Float.NEGATIVE_INFINITY)
                 return spat.queueDistance;
-
-        Camera cam = renderer.getCamera();
 
         Vector3f camPosition = cam.getLocation();
         Vector3f viewVector = cam.getDirection();
@@ -54,7 +50,7 @@ public class TransparentComparator implements Comparator<Spatial> {
         return spat.queueDistance;
     }
 
-    public int compare(Spatial o1, Spatial o2) {
+    public int compare(Geometry o1, Geometry o2) {
         assert TempVars.get().lock();
         Vector3f tempVec = TempVars.get().vect1;
         float d1 = distanceToCam(o1, tempVec);

@@ -45,8 +45,8 @@ public class TestHDR extends SimpleApplication {
         hdrRender.setExposure(0.87f);
         hdrRender.setThrottle(0.33f);
 
-        hdrRender.loadInitial();
-        hdrRender.load(renderer, settings.getWidth(), settings.getHeight(), 0);
+//        hdrRender.loadInitial();
+//        hdrRender.load(renderer, settings.getWidth(), settings.getHeight(), 0);
         
 
 //        config.setVisible(true);
@@ -68,9 +68,9 @@ public class TestHDR extends SimpleApplication {
         lastTpf = tpf;
     }
 
-    @Override
-    public void simpleRender(Renderer r){
-        hdrRender.update(lastTpf, this, fbNode);
-    }
+//    @Override
+//    public void simpleRender(Renderer r){
+//        hdrRender.update(lastTpf, this, fbNode);
+//    }
 
 }

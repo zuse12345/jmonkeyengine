@@ -4,7 +4,6 @@ import com.g3d.bounding.BoundingBox;
 import com.g3d.bounding.BoundingVolume;
 import com.g3d.collision.Collidable;
 import com.g3d.collision.CollisionResults;
-import com.g3d.collision.SweepSphere;
 import com.g3d.collision.bih.BIHTree;
 import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
@@ -17,6 +16,7 @@ import com.g3d.math.Vector3f;
 import com.g3d.scene.VertexBuffer.*;
 import com.g3d.util.BufferUtils;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -294,6 +294,21 @@ public class Mesh implements Savable {
 
     public VertexBuffer getBuffer(Type type){
         return buffers.get(type);
+    }
+
+    public FloatBuffer getFloatBuffer(Type type) {
+        return (FloatBuffer) buffers.get(type).getData();
+    }
+
+    public IndexBuffer getIndexBuffer() {
+        Buffer buf = buffers.get(Type.Index).getData();
+        if (buf instanceof ByteBuffer) {
+            return new IndexByteBuffer((ByteBuffer) buf);
+        } else if (buf instanceof ShortBuffer) {
+            return new IndexShortBuffer((ShortBuffer) buf);
+        } else {
+            return new IndexIntBuffer((IntBuffer) buf);
+        }
     }
 
     public void updateBound(){

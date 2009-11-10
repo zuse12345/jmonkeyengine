@@ -72,7 +72,16 @@ public class VertexBuffer extends GLObject implements Savable {
         /**
          * Specifies the index buffer, must contain integer data.
          */
-        Index;
+        Index,
+
+        /** Inital vertex position, used with animation */
+        BindPosePosition,
+        /** Inital vertex normals, used with animation */
+        BindPoseNormal,
+        /** Bone weights, used with animation */
+        BoneWeight,
+        /** Bone index, used with animation */
+        BoneIndex;
     }
 
     /**

@@ -253,10 +253,11 @@ public class LzmaReadableChannel implements ReadableByteChannel {
                 ByteBuffer tmp = ByteBuffer.allocate(1);
 		for (int ii = 0; ii < 8; ii++) {
                     tmp.clear();
-                    in.read(tmp);
-                    int b = tmp.get(0) & 0xFF;
-                    if (b == -1)
+                    int result = in.read(tmp);
+                    if (result <= 0)
                         throw new LzmaException ("LZMA header corrupted : Size error");
+
+                    int b = tmp.get(0) & 0xFF;
                     GlobalOutSize += ((long)b) << (ii * 8);
 		}
 

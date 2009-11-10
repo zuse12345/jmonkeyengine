@@ -93,31 +93,31 @@ public class TestRenderToTexture extends SimpleApplication {
         fbNode.updateGeometricState();
     }
 
-    @Override
-    public void simpleRender(Renderer r){
-        // make sure all previous objects have rendered
-        r.renderQueue();
-
-        //do FBO rendering
-        if (msFb != null)
-            r.setFrameBuffer(msFb);
-        else
-            r.setFrameBuffer(fb);
-
-        r.setCamera(fbCam);
-        r.setBackgroundColor(ColorRGBA.DarkGray);
-        r.clearBuffers(true, true, true);
-        render(fbNode, r);
-        r.renderQueue();
-
-        r.setBackgroundColor(ColorRGBA.Black);
-        //go back to default rendering and let
-        //SimpleApplication render the default scene
-        r.setFrameBuffer(null);
-        if (msFb != null)
-            r.copyFrameBuffer(msFb, fb);
-        
-        r.setCamera(cam);
-    }
+//    @Override
+//    public void simpleRender(Renderer r){
+//        // make sure all previous objects have rendered
+//        r.renderQueue();
+//
+//        //do FBO rendering
+//        if (msFb != null)
+//            r.setFrameBuffer(msFb);
+//        else
+//            r.setFrameBuffer(fb);
+//
+//        r.setCamera(fbCam);
+//        r.setBackgroundColor(ColorRGBA.DarkGray);
+//        r.clearBuffers(true, true, true);
+//        render(fbNode, r);
+//        r.renderQueue();
+//
+//        r.setBackgroundColor(ColorRGBA.Black);
+//        //go back to default rendering and let
+//        //SimpleApplication render the default scene
+//        r.setFrameBuffer(null);
+//        if (msFb != null)
+//            r.copyFrameBuffer(msFb, fb);
+//
+//        r.setCamera(cam);
+//    }
 
 }

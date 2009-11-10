@@ -15,6 +15,7 @@ import com.g3d.scene.Spatial;
 import com.g3d.scene.plugins.ogre.MeshLoader;
 import com.g3d.scene.shape.Sphere;
 import com.g3d.texture.Texture;
+import g3dtest.collision.SphereMotionAllowedListener;
 
 public class TestQ3 extends SimpleApplication {
 
@@ -50,35 +51,8 @@ public class TestQ3 extends SimpleApplication {
 //        gameLevel.setLocalScale(0.2f);
         rootNode.attachChild(gameLevel);
 
-        flyCam.setMotionAllowedListener(new SSListener());
-    }
-
-    private class SSListener implements MotionAllowedListener {
-
-        private SweepSphere ss = new SweepSphere();
-        private CollisionResults results = new CollisionResults();
-
-        public void checkMotionAllowed(Vector3f position, Vector3f velocity) {
-            ss.setDimension(10);
-            ss.setVelocity(velocity);
-            ss.setCenter(position);
-
-            results.clear();
-            gameLevel.collideWith(ss, results);
-
-            if (results.size() > 0){
-                CollisionResult res = results.getClosestCollision();
-                float dist = res.getDistance();
-                if (dist > FastMath.ZERO_TOLERANCE)
-                    dist -= FastMath.ZERO_TOLERANCE;
-                
-                Vector3f tempVel = velocity.normalize().multLocal(dist);
-                position.addLocal(tempVel);
-            }else{
-                position.addLocal(velocity);
-            }
-        }
-
+        cam.setLocation(new Vector3f(0, 500, 0));
+        flyCam.setMotionAllowedListener(new SphereMotionAllowedListener(rootNode, new Vector3f(5f, 5f, 5f)));
     }
 
     @Override

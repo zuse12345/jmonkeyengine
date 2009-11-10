@@ -87,14 +87,14 @@ public class SweepSphere implements Collidable {
     }
 
     private static float getLowestRoot(float a, float b, float c, float maxR) {
-        float determinant = b * b - 4 * a * c;
+        float determinant = b * b - 4f * a * c;
         if (determinant < 0){
             return Float.NaN;
         }
 
         float sqrtd = FastMath.sqrt(determinant);
-        float r1 = (-b - sqrtd) / (2 * a);
-        float r2 = (-b + sqrtd) / (2 * a);
+        float r1 = (-b - sqrtd) / (2f * a);
+        float r2 = (-b + sqrtd) / (2f * a);
 
         if (r1 > r2){
             float temp = r2;
@@ -223,7 +223,7 @@ public class SweepSphere implements Collidable {
 
         Vector3f contactPoint = new Vector3f();
         Vector3f contactNormal = new Vector3f();
-
+  
 //        if (!embedded){
             // check against the inside of the scaledTriangle
             // contactPoint = sCenter - p.normal + t0 * sVelocity
@@ -231,18 +231,20 @@ public class SweepSphere implements Collidable {
             contactPoint.multLocal(t0);
             contactPoint.addLocal(sCenter);
             contactPoint.subtractLocal(triPlane.getNormal());
-            
+
             // test to see if the collision is on a scaledTriangle interior
             if (isPointInTriangle(contactPoint, scaledTri) && !embedded){
                 foundCollision = true;
 
                 minT = t0;
-                
-//                contactNormal.set(velocity).multLocal(t0);
-//                contactNormal.addLocal(center);
-//                contactNormal.subtractLocal(contactPoint).normalizeLocal();
 
-                contactNormal.set(triPlane.getNormal());
+                // scale collision point back into R3
+                contactPoint.multLocal(dimension);
+                contactNormal.set(velocity).multLocal(t0);
+                contactNormal.addLocal(center);
+                contactNormal.subtractLocal(contactPoint).normalizeLocal();
+
+//                contactNormal.set(triPlane.getNormal());
                 
                 CollisionResult result = new CollisionResult();
                 result.setContactPoint(contactPoint);
@@ -306,15 +308,16 @@ public class SweepSphere implements Collidable {
 
         if (foundCollision){
             // compute contact normal based on minimum t
-            contactNormal.set(sVelocity).multLocal(minT);
-            contactNormal.addLocal(sCenter);
+            contactPoint.multLocal(dimension);
+            contactNormal.set(velocity).multLocal(t0);
+            contactNormal.addLocal(center);
             contactNormal.subtractLocal(contactPoint).normalizeLocal();
 
             CollisionResult result = new CollisionResult();
             result.setContactPoint(contactPoint);
             result.setContactNormal(contactNormal);
             result.setDistance(minT * velocity.length());
-            
+
             return result;
         }else{
             return null;
@@ -384,11 +387,6 @@ public class SweepSphere implements Collidable {
             AbstractTriangle tri = (AbstractTriangle) other;
             CollisionResult result = collideWithTriangle(tri);
             if (result != null){
-                // scale collision point back into R3
-                Vector3f pt = result.getContactPoint();
-                pt.multLocal(dimension);
-                result.setContactPoint(pt);
-                
                 results.addCollision(result);
                 return 1;
             }

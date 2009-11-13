@@ -2038,15 +2038,14 @@ class JmeSkinAndBone(object):
         # jvi is the jME vertBuf/noBuf we write; bvi is the Blender vert index
         for jvi in range(len(meshChild.blenderVertIndexes)):
             bvi = meshChild.blenderVertIndexes[jvi]
-            vWeightMap = {}   # Weight for this jvi
+            vertexWeights[jvi] = {}   # Weight for this jvi
             for g in vGroups:
                 try:
                     weight = mesh.getVertsFromGroup(g, 1, [bvi])[0][1]
                 except Exception, e:
                     continue
                 if weight >= JmeSkinAndBone.WEIGHT_THRESHOLD:
-                    vWeightMap[g] = weight
-            if len(vWeightMap) > 0: vertexWeights[jvi] = vWeightMap
+                    vertexWeights[jvi][g] = weight
         print (str(len(vertexWeights)) + " verts out of "
                 + str(len(meshChild.blenderVertIndexes))
                 + " weighted for skin '" + skin.getName()

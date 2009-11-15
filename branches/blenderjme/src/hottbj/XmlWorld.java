@@ -98,7 +98,7 @@ public class XmlWorld extends SimpleGame {
                         + " not initialized properly");
             for (URL url : modelUrls) loadModel(url);
         } catch (Exception e) {
-            // Programs should not just continue obvliviously when exceptions
+            // Programs should not just continue obliviously when exceptions
             // are thrown.  Since we aren't handling them, we exit gracefully.
             e.printStackTrace();
             finish();

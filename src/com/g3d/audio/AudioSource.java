@@ -39,7 +39,7 @@ public class AudioSource implements Cloneable, Savable {
     public AudioSource(AssetManager manager, String name, boolean stream){
         this();
         this.key = new AudioKey(name, stream);
-        this.data = (AudioData) manager.loadContent(key, !stream);
+        this.data = (AudioData) manager.loadContent(key);
     }
     
     public AudioSource(AssetManager manager, String name){
@@ -123,6 +123,9 @@ public class AudioSource implements Cloneable, Savable {
     }
 
     public void setTimeOffset(float timeOffset) {
+        if (timeOffset < 0f)
+            throw new IllegalArgumentException("Time offset cannot be negative");
+
         this.timeOffset = timeOffset;
     }
 

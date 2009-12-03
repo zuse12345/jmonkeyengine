@@ -9,6 +9,7 @@ import com.g3d.audio.AudioStream;
 import com.g3d.audio.DirectionalAudioSource;
 import com.g3d.audio.Environment;
 import com.g3d.audio.Filter;
+import com.g3d.audio.Listener;
 import com.g3d.audio.LowPassFilter;
 import com.g3d.audio.PointAudioSource;
 import com.g3d.math.Vector3f;
@@ -51,7 +52,7 @@ public class JoalAudioRenderer implements AudioRenderer {
      * The listener. The location, direction, and up vector is used to place the
      * listener inside the audio environment.
      */
-    private Camera listener;
+    private Listener listener;
 
     /**
      * Channels used for instanced source playback.
@@ -280,8 +281,6 @@ public class JoalAudioRenderer implements AudioRenderer {
                 al.alSource3i(id, AL.AL_AUXILIARY_SEND_FILTER, reverbFxSlot, 0, filter);
                 checkError();
             }
-
-            
         }else{
             // play in headspace
             al.alSourcei(id, AL.AL_SOURCE_RELATIVE, AL.AL_TRUE);
@@ -534,16 +533,19 @@ public class JoalAudioRenderer implements AudioRenderer {
             }
         }
 
-        if (listener != null){
+        if (listener != null && listener.isRefreshNeeded()){
             Vector3f pos = listener.getLocation();
+            Vector3f vel = listener.getVelocity();
             Vector3f dir = listener.getDirection();
             Vector3f up = listener.getUp();
-            setListenerParams(pos, Vector3f.ZERO, dir, up);
+            setListenerParams(pos, vel, dir, up);
+            al.alListenerf(al.AL_GAIN, listener.getGain());
+            listener.clearRefreshNeeded();
             checkError();
         }
     }
 
-    public void setListener(Camera listener) {
+    public void setListener(Listener listener) {
         this.listener = listener;
     }
 
@@ -575,12 +577,11 @@ public class JoalAudioRenderer implements AudioRenderer {
     }
 
     public void playSource(AudioSource src) {
-        assert src.getStatus() == Status.Stopped || src.getChannel() == -1;
+//        assert src.getStatus() == Status.Stopped || src.getChannel() == -1;
 
         if (src.getStatus() == Status.Playing){
             return;
         }else if (src.getStatus() == Status.Stopped){
-
             // allocate channel to this source
             int index = newChannel();
             clearChannel(index);

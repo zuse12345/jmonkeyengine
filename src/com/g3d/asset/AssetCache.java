@@ -33,6 +33,8 @@ public class AssetCache {
     public void addToCache(AssetKey key, Object obj){
         synchronized (loadedObjects){
             deleteUnused();
+
+            // add asset to ref queue
             new ContentRef(key, obj);
             loadedObjects.put(key, obj);
         }

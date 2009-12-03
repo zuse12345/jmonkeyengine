@@ -19,8 +19,8 @@ public class AudioKey extends AssetKey {
      * Create a new AudioKey
      *
      * @param name Name of the asset
-     * @param stream If true, the audio will be streamed from harddrive, other
-     * wise it will be buffered entirely and then played.
+     * @param stream If true, the audio will be streamed from harddrive,
+     * otherwise it will be buffered entirely and then played.
      */
     public AudioKey(String name, boolean stream){
         super(name);
@@ -37,6 +37,10 @@ public class AudioKey extends AssetKey {
 
     public boolean isStream() {
         return stream;
+    }
+
+    public boolean shouldCache(){
+        return !stream;
     }
 
     @Override

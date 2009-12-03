@@ -3,9 +3,10 @@ package com.g3d.asset;
 import java.io.InputStream;
 
 /**
- * Provides basic information about the asset.
+ * The result of locating an asset through an AssetKey. Provides
+ * a means to read the asset data through an InputStream.
  *
- * @author Kirill
+ * @author Kirill Vainer
  */
 public abstract class AssetInfo {
 
@@ -25,6 +26,7 @@ public abstract class AssetInfo {
         return manager;
     }
 
+    @Override
     public String toString(){
         return getClass().getName() + "[" + "key=" + key + "]";
     }

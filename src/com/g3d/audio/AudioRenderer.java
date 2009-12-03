@@ -1,7 +1,5 @@
 package com.g3d.audio;
 
-import com.g3d.renderer.Camera;
-
 /**
  * Interface to be implemented by audio renderers.
  * @author Kirill
@@ -12,7 +10,7 @@ public interface AudioRenderer {
      * @param listener The listener camera, all 3D sounds will be
      * oriented around the listener.
      */
-    public void setListener(Camera listener);
+    public void setListener(Listener listener);
 
     /**
      * Sets the environment, used for reverb effects.

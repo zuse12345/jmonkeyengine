@@ -123,15 +123,23 @@ public class BIHNode implements Savable {
 
                 float maxExt = maxExts[a];
                 float minExt = minExts[a];
-//
-//                if (node.leftPlane < node.rightPlane){
-//                    // means there's a gap in the middle
-//                    // if the box is in that gap, we stop there
-//                    if (minExt > node.leftPlane
-//                    &&  maxExt < node.rightPlane)
-//                        continue stackloop;
-//                }
 
+                if (node.leftPlane <= node.rightPlane){
+                    // means there's a gap in the middle
+                    // if the box is in that gap, we stop there
+                    if (minExt > node.leftPlane
+                    &&  maxExt < node.rightPlane)
+                        continue stackloop;
+                }
+
+                if (maxExt < node.rightPlane){
+                    node = node.left;
+                }else if (minExt > node.leftPlane){
+                    node = node.right;
+                }else{
+                    stack.add(new BIHStackData(node.right, 0, 0));
+                    node = node.left;
+                }
 //                if (maxExt < node.leftPlane
 //                 && maxExt < node.rightPlane){
 //                    node = node.left;
@@ -139,8 +147,7 @@ public class BIHNode implements Savable {
 //                       && minExt > node.rightPlane){
 //                    node = node.right;
 //                }else{
-                    stack.add(new BIHStackData(node.right, 0, 0));
-                    node = node.left;
+                    
 //                }
             }
 

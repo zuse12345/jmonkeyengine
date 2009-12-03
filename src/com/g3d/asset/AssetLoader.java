@@ -3,12 +3,12 @@ package com.g3d.asset;
 import java.io.IOException;
 
 /**
- * An interface for content loaders.
+ * An interface for asset loaders.
  */
 public interface AssetLoader {
 
     /**
-     * Loads content from the given input stream, parsing it into
+     * Loads asset from the given input stream, parsing it into
      * an application-usable object.
      *
      * @return An object representing the resource.

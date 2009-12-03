@@ -34,5 +34,11 @@ public interface Input {
      */
     public boolean isInitialized();
 
+    /**
+     * Sets the input listener to recieve events from this device. The
+     * appropriate events should be dispatched through the callbacks
+     * in RawInputListener.
+     * @param listener
+     */
     public void setInputListener(RawInputListener listener);
 }

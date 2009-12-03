@@ -37,7 +37,7 @@ import java.util.logging.Logger;
  * <code>AssetManager</code> is the primary method for managing and loading
  * resources inside jME.
  *
- * @author Kirill
+ * @author Kirill Vainer
  */
 public class AssetManager {
 
@@ -118,8 +118,8 @@ public class AssetManager {
      * @param name
      * @return
      */
-    public Object loadContent(AssetKey key, boolean useCache){
-        Object o = useCache ? cache.getFromCache(key) : null;
+    public Object loadContent(AssetKey key){
+        Object o = key.shouldCache() ? cache.getFromCache(key) : null;
         if (o == null){
             synchronized (alreadyLoadingSet){
                 if (alreadyLoadingSet.contains(key)){
@@ -159,10 +159,10 @@ public class AssetManager {
                 logger.warning("Error occured while loading resource "+key+
                                " using "+loader.getClass().getSimpleName());
             }else{
-                logger.finer("Loaded resource "+key+" successfuly using "+
+                logger.finer("Loaded "+key+" with "+
                              loader.getClass().getSimpleName());
 
-                if (useCache)
+                if (key.shouldCache())
                     cache.addToCache(key, o);
             }
 
@@ -177,10 +177,6 @@ public class AssetManager {
         }else{
             return o;
         }
-    }
-
-    public Object loadContent(AssetKey key){
-        return loadContent(key, true);
     }
 
     public void loadContents(String ... names){
@@ -338,7 +334,7 @@ public class AssetManager {
      * @return
      */
     public AudioData loadAudio(String name, boolean stream){
-        return (AudioData) loadContent(new AudioKey(name, stream), !stream);
+        return (AudioData) loadContent(new AudioKey(name, stream));
     }
 
     /**

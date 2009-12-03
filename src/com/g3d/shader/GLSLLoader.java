@@ -54,6 +54,15 @@ public class GLSLLoader implements AssetLoader {
 
     }
 
+    private class GlslDependKey extends AssetKey {
+        public GlslDependKey(String name){
+            super(name);
+        }
+        public boolean shouldCache(){
+            return false;
+        }
+    }
+
     private DependencyNode loadNode(InputStream in, String nodeName) throws IOException{
         DependencyNode node = new DependencyNode(nodeName);
         if (in == null)
@@ -75,10 +84,10 @@ public class GLSLLoader implements AssetLoader {
                     // check cache first
                     DependencyNode dependNode = dependCache.get(ln);
                     if (dependNode == null){
-                        AssetKey key = new AssetKey(ln);
+                        GlslDependKey key = new GlslDependKey(ln);
                         // make sure not to register an input stream with
                         // the cache..
-                        InputStream stream = (InputStream) owner.loadContent(key, false);
+                        InputStream stream = (InputStream) owner.loadContent(key);
                         dependNode = loadNode(stream, ln);
                     }
                     node.addDependency(dependNode);

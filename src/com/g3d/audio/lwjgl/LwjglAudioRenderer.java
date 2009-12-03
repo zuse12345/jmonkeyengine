@@ -8,6 +8,7 @@ import com.g3d.audio.AudioSource.Status;
 import com.g3d.audio.AudioStream;
 import com.g3d.audio.DirectionalAudioSource;
 import com.g3d.audio.Environment;
+import com.g3d.audio.Listener;
 import com.g3d.audio.PointAudioSource;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
@@ -38,12 +39,12 @@ public class LwjglAudioRenderer implements AudioRenderer {
     private final ByteBuffer nativeBuf = ByteBuffer.allocateDirect(BUFFER_SIZE);
     private final byte[] arrayBuf = new byte[BUFFER_SIZE];
 
-    private Camera listener;
-
     private int[] channels = new int[16];
     private AudioSource[] chanSrcs = new AudioSource[16];
     private int nextChan = 0;
     private ArrayList<Integer> freeChans = new ArrayList<Integer>();
+
+    private Listener listener;
 
     public LwjglAudioRenderer(){
         nativeBuf.order(ByteOrder.nativeOrder());
@@ -303,15 +304,18 @@ public class LwjglAudioRenderer implements AudioRenderer {
         }
 
         // update listener
-        if (listener != null){
+        if (listener != null && listener.isRefreshNeeded()){
             Vector3f pos = listener.getLocation();
+            Vector3f vel = listener.getVelocity();
             Vector3f dir = listener.getDirection();
             Vector3f up = listener.getUp();
-            setListenerParams(pos, Vector3f.ZERO, dir, up);
+            setListenerParams(pos, vel, dir, up);
+            alListenerf(AL_GAIN, listener.getGain());
+            listener.clearRefreshNeeded();
         }
     }
 
-    public void setListener(Camera listener) {
+    public void setListener(Listener listener) {
         this.listener = listener;
     }
 

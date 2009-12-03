@@ -1121,15 +1121,14 @@ public class Quaternion implements Savable, Cloneable {
      * <code>toString</code> creates the string representation of this
      * <code>Quaternion</code>. The values of the quaternion are displace (x,
      * y, z, w), in the following manner: <br>
-     * com.jme.math.Quaternion: [x=1" y=2 z=3 w=1]
+     * (x, y, z, w)
      *
      * @return the string representation of this object.
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString() {
-        return getClass().getSimpleName() + ": [x=" + x + " y=" + y + " z=" + z
-                + " w=" + w + "]";
+        return "(" + x + ", " + y + ", " + z + ", " + w + ")";
     }
 
     /**

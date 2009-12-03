@@ -701,7 +701,7 @@ public class Vector2f implements Savable, Cloneable {
      * @return the string representation of this vector.
      */
     public String toString() {
-        return "com.jme.math.Vector2f [X=" + x + ", Y=" + y + "]";
+        return "(" + x + ", " + y + ")";
     }
 
     /**

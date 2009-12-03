@@ -30,7 +30,7 @@ public class TestSimpleCollision extends SimpleApplication {
         g.setMaterial(manager.loadMaterial("jme_logo.j3m"));
         rootNode.attachChild(g);
 
-        flyCam.setMotionAllowedListener(new SphereMotionAllowedListener(rootNode, new Vector3f(1.3f, 1.3f, 1.3f)));
+        flyCam.setMotionAllowedListener(new SphereMotionAllowedListener(rootNode, new Vector3f(7f, 7f, 7f)));
     }
 
 }

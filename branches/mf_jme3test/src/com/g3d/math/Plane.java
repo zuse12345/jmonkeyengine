@@ -154,10 +154,10 @@ public class Plane implements Savable, Cloneable {
     }
 
     public Vector3f getClosestPoint(Vector3f point, Vector3f store){
-        float t = constant - normal.dot(point);
-        return store.set(normal).multLocal(t).addLocal(point);
-//        float t = (constant - normal.dot(point)) / normal.dot(normal);
+//        float t = constant - normal.dot(point);
 //        return store.set(normal).multLocal(t).addLocal(point);
+        float t = (constant - normal.dot(point)) / normal.dot(normal);
+        return store.set(normal).multLocal(t).addLocal(point);
     }
 
     public Vector3f getClosestPoint(Vector3f point){

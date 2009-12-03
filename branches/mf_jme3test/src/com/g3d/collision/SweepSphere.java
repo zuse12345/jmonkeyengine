@@ -197,6 +197,8 @@ public class SweepSphere implements Collidable {
                 t0 = 0;
                 t1 = 1;
                 embedded = true;
+                System.out.println("EMBEDDED");
+                return null;
             }
         }else{
             t0 = (-1f - signedDistanceToPlane) / normalDotVelocity;

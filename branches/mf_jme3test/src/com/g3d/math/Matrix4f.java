@@ -1679,7 +1679,7 @@ public class Matrix4f implements Savable, Cloneable {
      * @return the string representation of this object.
      */
     public String toString() {
-        StringBuffer result = new StringBuffer("com.jme.math.Matrix4f\n[\n");
+        StringBuffer result = new StringBuffer("Matrix4f\n[\n");
         result.append(" ");
         result.append(m00);
         result.append("  ");

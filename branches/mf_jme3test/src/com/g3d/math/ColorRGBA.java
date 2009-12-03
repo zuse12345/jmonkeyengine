@@ -378,7 +378,7 @@ public class ColorRGBA implements Savable, Cloneable {
      * @return the string representation of this color.
      */
     public String toString() {
-        return getClass().getName() + ": [R="+r+", G="+g+", B="+b+", A="+a+"]";
+        return "Color["+r+", "+g+", "+b+", "+a+"]";
     }
 
     @Override

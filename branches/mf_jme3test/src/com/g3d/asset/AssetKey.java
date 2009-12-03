@@ -40,6 +40,14 @@ public class AssetKey implements Savable {
     public String getExtension() {
         return extension;
     }
+
+    /**
+     * @return True if the asset for this key should be cached. Subclasses
+     * should override this method if they want to override caching behavior.
+     */
+    public boolean shouldCache(){
+        return true;
+    }
     
     @Override
     public boolean equals(Object other){

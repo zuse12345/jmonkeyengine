@@ -46,6 +46,22 @@ public class Environment {
     public Environment(){
     }
 
+    public Environment(Environment source) {
+        this.airAbsorbGainHf = source.airAbsorbGainHf;
+        this.roomRolloffFactor = source.roomRolloffFactor;
+        this.decayTime = source.decayTime;
+        this.decayHFRatio = source.decayHFRatio;
+        this.density = source.density;
+        this.diffusion = source.diffusion;
+        this.gain = source.gain;
+        this.gainHf = source.gainHf;
+        this.lateReverbDelay = source.lateReverbDelay;
+        this.lateReverbGain = source.lateReverbGain;
+        this.reflectDelay = source.reflectDelay;
+        this.reflectGain = source.reflectGain;
+        this.decayHfLimit = source.decayHfLimit;
+    }
+
     public Environment(float density, float diffusion, float gain, float gainHf,
                        float decayTime, float decayHf, float reflGain,
                        float reflDelay, float lateGain, float lateDelay){

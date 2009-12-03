@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The <code>Dispatcher</code> is responsible for converting input events
+ * The <code>InputManager</code> is responsible for converting input events
  * recieved from the Key, Mouse and Joy Input implementations into an
  * abstract, input device independent representation that user code can use.
  *
@@ -186,7 +186,7 @@ public class InputManager implements RawInputListener {
         lastButtonEvent = null;
         lastKeyEvent = null;
         frameTPF = tpf;
-        
+
         // query current keyboard state for all bindings
         for (Map.Entry<Integer, String> entry : keyBindings.entrySet()){
             if (entry.getKey() >= keyboard.length)
@@ -198,6 +198,8 @@ public class InputManager implements RawInputListener {
             }
         }
 
+        notifyListeners("UPDATE", tpf);
+        
         if (joyInput != null){
             for (Map.Entry<Integer, String> entry : joyAxisBindings.entrySet()){
                 int axisId = entry.getKey();

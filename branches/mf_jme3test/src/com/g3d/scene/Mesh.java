@@ -122,6 +122,9 @@ public class Mesh implements Savable {
     }
 
     public void updateCounts(){
+        if (getBuffer(Type.InterleavedData) != null)
+            throw new IllegalStateException("Should update counts before interleave");
+
         VertexBuffer pb = getBuffer(Type.Position);
         VertexBuffer ib = getBuffer(Type.Index);
         if (pb != null){

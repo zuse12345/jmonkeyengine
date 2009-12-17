@@ -7,15 +7,10 @@ import com.g3d.system.*;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
 import com.g3d.renderer.Renderer;
-import com.g3d.renderer.queue.RenderQueue;
 import com.g3d.asset.AssetManager;
 import com.g3d.input.InputManager;
 import com.g3d.renderer.RenderManager;
 import com.g3d.renderer.ViewPort;
-import com.g3d.scene.Geometry;
-import com.g3d.scene.Node;
-import com.g3d.scene.Spatial;
-import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -240,12 +235,12 @@ public class Application implements SystemListener {
 
     public void gainFocus(){
         speed = 1;
-        System.out.println("gainFocus");
+        context.setAutoFlushFrames(true);
     }
 
     public void loseFocus(){
         speed = 0;
-        System.out.println("loseFocus");
+        context.setAutoFlushFrames(false);
     }
 
     public void requestClose(boolean esc){

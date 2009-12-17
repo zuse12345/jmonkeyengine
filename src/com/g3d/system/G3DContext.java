@@ -88,7 +88,7 @@ public interface G3DContext {
      * @return The timer for this context, or null if not created yet.
      */
     public Timer getTimer();
-
+    
     /**
      * Sets the title of the display (if available). This does nothing
      * for fullscreen, headless, or canvas contexts.
@@ -100,6 +100,12 @@ public interface G3DContext {
      * @return True if the context has been created but not yet destroyed.
      */
     public boolean isCreated();
+
+    /**
+     * @param enabled If enabled, the context will automatically flush
+     * frames to the video card (swap buffers) after an update cycle.
+     */
+    public void setAutoFlushFrames(boolean enabled);
 
     /**
      * Creates the context and makes it active.

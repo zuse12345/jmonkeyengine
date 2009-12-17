@@ -1,9 +1,13 @@
 package com.g3d.material;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
+import com.g3d.export.Savable;
+import java.io.IOException;
 
-public class RenderState implements Cloneable {
+public class RenderState implements Cloneable, Savable {
 
     public static final RenderState DEFAULT = new RenderState();
     public static final RenderState NULL = new RenderState();
@@ -45,6 +49,36 @@ public class RenderState implements Cloneable {
     boolean offsetEnabled = false;
     float offsetFactor = 0;
     float offsetUnits = 0;
+
+    public void write(G3DExporter ex) throws IOException{
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(wireframe, "wireframe", false);
+        oc.write(cullMode, "cullMode", FaceCullMode.Back);
+        oc.write(depthWrite, "depthWrite", true);
+        oc.write(depthTest, "depthTest", true);
+        oc.write(colorWrite, "colorWrite", true);
+        oc.write(blendMode, "blendMode", BlendMode.Off);
+        oc.write(alphaTest, "alphaTest", false);
+        oc.write(alphaFallOff, "alphaFallOff", 0);
+        oc.write(offsetEnabled, "offsetEnabled", false);
+        oc.write(offsetFactor, "offsetFactor", 0);
+        oc.write(offsetUnits, "offsetUnits", 0);
+    }
+
+    public void read(G3DImporter im) throws IOException{
+        InputCapsule ic = im.getCapsule(this);
+        wireframe  = ic.readBoolean("wireframe", false);
+        cullMode  = ic.readEnum("cullMode", FaceCullMode.class, FaceCullMode.Back);
+        depthWrite  = ic.readBoolean("depthWrite", true);
+        depthTest  = ic.readBoolean("depthTest", true);
+        colorWrite  = ic.readBoolean("colorWrite", true);
+        blendMode  = ic.readEnum("blendMode", BlendMode.class, BlendMode.Off);
+        alphaTest  = ic.readBoolean("alphaTest", false);
+        alphaFallOff  = ic.readFloat("alphaFallOff", 0);
+        offsetEnabled  = ic.readBoolean("offsetEnabled", false);
+        offsetFactor  = ic.readFloat("offsetFactor", 0);
+        offsetUnits  = ic.readFloat("offsetUnits", 0);
+    }
 
     @Override
     public RenderState clone(){

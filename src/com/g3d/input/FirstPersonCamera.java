@@ -117,18 +117,18 @@ public class FirstPersonCamera implements BindingListener {
         }else{
             cam.getDirection(vel);
         }
-        vel.setY(0); // prevent rising
+        vel.setY(0.001f); // prevent rising
         vel.normalizeLocal();
         vel.multLocal(value * moveSpeed);
         
         grav.set(gravity);
         grav.multLocal(FastMath.abs(value));
 
-        pos.addLocal(0, -grav.getY() / 2, 0);
-
         if (motionAllowed != null){
             // check with gravity and velocity
+            pos.addLocal(0, -grav.getY() / 2, 0);
             motionAllowed.checkMotionAllowed(pos, vel);
+            pos.addLocal(0, +grav.getY() / 2, 0);
             motionAllowed.checkMotionAllowed(pos, grav);
         }else{
             pos.addLocal(vel);

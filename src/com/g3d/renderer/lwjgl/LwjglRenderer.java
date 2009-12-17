@@ -507,6 +507,13 @@ public class LwjglRenderer implements Renderer {
         }
     }
 
+
+    protected void resetUniformLocations(Shader shader){
+        for (Uniform uniform : shader.getUniforms()){
+            uniform.setLocation(-2); // e.g check location again
+        }
+    }
+
     /*
      * (Non-javadoc)
      * Only used for fixed-function. Ignored.
@@ -668,6 +675,10 @@ public class LwjglRenderer implements Renderer {
             shader.setUsable(true);
             if (needRegister)
                 objManager.registerForCleanup(shader);
+            else{
+                // OpenGL spec: uniform locations may change after re-link
+                resetUniformLocations(shader);
+            }
         }
     }
 

@@ -32,6 +32,7 @@
 
 package com.g3d.export;
 
+import com.g3d.material.RenderState.FaceCullMode;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;

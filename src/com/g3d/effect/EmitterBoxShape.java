@@ -12,6 +12,9 @@ public class EmitterBoxShape implements EmitterShape {
 
     private Vector3f min, len;
 
+    public EmitterBoxShape(){
+    }
+
     public EmitterBoxShape(Vector3f min, Vector3f max) {
         if (min == null || max == null)
             throw new NullPointerException();

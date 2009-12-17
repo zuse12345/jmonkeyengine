@@ -1,6 +1,10 @@
 package com.g3d.effect;
 
 import com.g3d.effect.ParticleMesh.Type;
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
 import com.g3d.math.ColorRGBA;
 import com.g3d.math.FastMath;
 import com.g3d.math.Vector3f;
@@ -9,6 +13,7 @@ import com.g3d.renderer.queue.RenderQueue.Bucket;
 import com.g3d.renderer.queue.RenderQueue.ShadowMode;
 import com.g3d.scene.Geometry;
 import com.g3d.util.TempVars;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class ParticleEmitter extends Geometry {
@@ -54,10 +59,17 @@ public class ParticleEmitter extends Geometry {
         setNumParticles(numParticles);
     }
 
+    public ParticleEmitter(){
+        super();
+    }
+
     public void setShape(EmitterShape shape) {
         this.shape = shape;
     }
 
+    // TODO: Remove dependency on a camera.
+    // This should be in some updateRender() method
+    // called by RenderManager
     public void setCamera(Camera cam){
         this.cam = cam;
     }
@@ -172,6 +184,79 @@ public class ParticleEmitter extends Geometry {
 
     public void setVariation(float variation) {
         this.variation = variation;
+    }
+
+    /*
+    private EmitterShape shape = DEFAULT_SHAPE;
+    private ParticleMesh particleMesh;
+    private ParticleMesh.Type meshType;
+    private Particle[] particles;
+    private int next = 0;
+    private ArrayList<Integer> unusedIndices = new ArrayList<Integer>();
+
+    private Camera cam;
+    private float particlesPerSec = 20;
+    private float emitCarry = 0f;
+    private float lowLife  = 3f;
+    private float highLife = 7f;
+    private float gravity = 0.1f;
+    private float variation = 0.2f;
+    private Vector3f startVel = new Vector3f();
+
+    private int imagesX = 1;
+    private int imagesY = 1;
+
+    private ColorRGBA startColor = new ColorRGBA(0.4f,0.4f,0.4f,0.5f);
+    private ColorRGBA endColor = new ColorRGBA(0.1f,0.1f,0.1f,0.0f);
+    private float startSize = 0.2f;
+    private float endSize = 2f;
+    private boolean worldSpace = false;
+     */
+
+    public void write(G3DExporter ex) throws IOException{
+        super.write(ex);
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(shape, "shape", DEFAULT_SHAPE);
+        oc.write(meshType, "meshType", ParticleMesh.Type.Triangle);
+        oc.write(particles.length, "numParticles", 0);
+        oc.write(particlesPerSec, "particlesPerSec", 0);
+        oc.write(lowLife, "lowLife", 0);
+        oc.write(highLife, "highLife", 0);
+        oc.write(gravity, "gravity", 0);
+        oc.write(variation, "variation", 0);
+        oc.write(imagesX, "imagesX", 1);
+        oc.write(imagesY, "imagesY", 1);
+
+        oc.write(startVel, "startVel", null);
+        oc.write(startColor, "startColor", null);
+        oc.write(endColor, "endColor", null);
+        oc.write(startSize, "startSize", 0);
+        oc.write(endSize, "endSize", 0);
+        oc.write(worldSpace, "worldSpace", false);
+    }
+
+    public void read(G3DImporter im) throws IOException{
+        super.read(im);
+        InputCapsule ic = im.getCapsule(this);
+        shape = (EmitterShape) ic.readSavable("shape", DEFAULT_SHAPE);
+        meshType = ic.readEnum("meshType", ParticleMesh.Type.class, ParticleMesh.Type.Triangle);
+        int numParticles = ic.readInt("numParticles", 0);
+        setNumParticles(numParticles);
+
+        particlesPerSec = ic.readFloat("particlesPerSec", 0);
+        lowLife = ic.readFloat("lowLife", 0);
+        highLife = ic.readFloat("highLife", 0);
+        gravity = ic.readFloat("gravity", 0);
+        variation = ic.readFloat("variation", 0);
+        imagesX = ic.readInt("imagesX", 1);
+        imagesY = ic.readInt("imagesY", 1);
+
+        startVel = (Vector3f) ic.readSavable("startVel", null);
+        startColor = (ColorRGBA) ic.readSavable("startColor", null);
+        endColor = (ColorRGBA) ic.readSavable("endColor", null);
+        startSize = ic.readFloat("startSiz", 0);
+        endSize = ic.readFloat("endSize", 0);
+        worldSpace = ic.readBoolean("worldSpace", false);
     }
 
     private int newIndex(){

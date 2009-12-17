@@ -245,6 +245,15 @@ public class JoglDisplay extends JoglContext implements GLEventListener {
         listener.initialize();
     }
 
+    public void setAutoFlushFrames(boolean enabled){
+        if (animator.isAnimating() != enabled){
+            if (enabled)
+                animator.stop();
+            else
+                animator.start();
+        }
+    }
+
     /**
      * Callback.
      */

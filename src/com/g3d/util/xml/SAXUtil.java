@@ -1,5 +1,8 @@
 package com.g3d.util.xml;
 
+import com.g3d.math.ColorRGBA;
+import com.g3d.math.Vector3f;
+import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 /**
@@ -79,6 +82,20 @@ public final class SAXUtil {
             throw new SAXException("Expected a string");
         else
             return str;
+    }
+
+    public static Vector3f parseVector3(Attributes attribs) throws SAXException{
+        float x = parseFloat(attribs.getValue("x"));
+        float y = parseFloat(attribs.getValue("y"));
+        float z = parseFloat(attribs.getValue("z"));
+        return new Vector3f(x,y,z);
+    }
+
+    public static ColorRGBA parseColor(Attributes attribs) throws SAXException{
+        float r = parseFloat(attribs.getValue("r"));
+        float g = parseFloat(attribs.getValue("g"));
+        float b = parseFloat(attribs.getValue("b"));
+        return new ColorRGBA(r, g, b, 1f);
     }
 
 }

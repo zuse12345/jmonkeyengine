@@ -13,6 +13,9 @@ public class EmitterSphereShape implements EmitterShape {
     private Vector3f center;
     private float radius;
 
+    public EmitterSphereShape(){
+    }
+
     public EmitterSphereShape(Vector3f center, float radius) {
         if (center == null)
             throw new NullPointerException();

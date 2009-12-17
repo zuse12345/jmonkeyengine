@@ -95,20 +95,20 @@ public class InputManager implements RawInputListener {
         if (evt.getDX() > 0){
             // positive X axis
             String name = mouseAxisBindings.get(1);
-            float value = evt.getDX() / 1000f;
+            float value = evt.getDX() / 1024f;
             notifyListeners(name, value);
         }else if (evt.getDX() < 0){
             String name = mouseAxisBindings.get(-1);
-            float value = evt.getDX() / -1000f;
+            float value = evt.getDX() / -1024f;
             notifyListeners(name, value);
         }
         if (evt.getDY() > 0){
             String name = mouseAxisBindings.get(2);
-            float value = evt.getDY() / 1000f;
+            float value = evt.getDY() / 1024f;
             notifyListeners(name, value);
         }else if (evt.getDY() < 0){
             String name = mouseAxisBindings.get(-2);
-            float value = evt.getDY() / -1000f;
+            float value = evt.getDY() / -1024f;
             notifyListeners(name, value);
         }
         if (evt.getDeltaWheel() > 0){

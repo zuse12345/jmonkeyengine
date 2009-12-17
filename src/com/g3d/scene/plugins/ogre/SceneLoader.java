@@ -9,6 +9,7 @@ import com.g3d.math.Quaternion;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Node;
 import com.g3d.scene.Spatial;
+import com.g3d.util.xml.SAXUtil;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayDeque;
@@ -40,10 +41,6 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
         super();
     }
 
-    public static void main(String[] args) throws SAXException{
-        AssetManager manager = new AssetManager(true);
-    }
-
     @Override
     public void startDocument() {
     }
@@ -52,19 +49,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
     public void endDocument() {
     }
 
-    private Vector3f parseVector3(Attributes attribs) throws SAXException{
-        float x = parseFloat(attribs.getValue("x"));
-        float y = parseFloat(attribs.getValue("y"));
-        float z = parseFloat(attribs.getValue("z"));
-        return new Vector3f(x,y,z);
-    }
-
-    private ColorRGBA parseColor(Attributes attribs) throws SAXException{
-        float r = parseFloat(attribs.getValue("r"));
-        float g = parseFloat(attribs.getValue("g"));
-        float b = parseFloat(attribs.getValue("b"));
-        return new ColorRGBA(r, g, b, 1f);
-    }
+    
 
     private Quaternion parseQuat(Attributes attribs) throws SAXException{
         if (attribs.getValue("x") != null){
@@ -147,11 +132,11 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             node.attachChild(entityNode);
             node = null;
         }else if (qName.equals("position")){
-            node.setLocalTranslation(parseVector3(attribs));
+            node.setLocalTranslation(SAXUtil.parseVector3(attribs));
         }else if (qName.equals("quaternion")){
             node.setLocalRotation(parseQuat(attribs));
         }else if (qName.equals("scale")){
-            node.setLocalScale(parseVector3(attribs));
+            node.setLocalScale(SAXUtil.parseVector3(attribs));
         }
         elementStack.push(qName);
     }
@@ -196,7 +181,6 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             ioEx.initCause(ex);
             throw ioEx;
         }
-
     }
 
 }

@@ -159,6 +159,9 @@ public class LwjglOffscreenBuffer extends LwjglContext implements Runnable {
     public void restart() {
     }
 
+    public void setAutoFlushFrames(boolean enabled){
+    }
+
     public Type getType() {
         return Type.OffscreenSurface;
     }

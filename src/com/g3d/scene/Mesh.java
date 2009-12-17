@@ -24,6 +24,7 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.List;
 
 public class Mesh implements Savable {
 
@@ -226,14 +227,18 @@ public class Mesh implements Savable {
         vertexArrayID = id;
     }
 
+    public void createCollisionData(){
+        collisionTree = new BIHTree(this);
+        collisionTree.construct();
+    }
+
     public int collideWith(Collidable other, 
                            Matrix4f worldMatrix,
                            BoundingVolume worldBound,
                            CollisionResults results){
 
         if (collisionTree == null){
-            collisionTree = new BIHTree(this);
-            collisionTree.construct();
+            createCollisionData();
         }
         
         return collisionTree.collideWith(other, worldMatrix, worldBound, results);
@@ -339,14 +344,12 @@ public class Mesh implements Savable {
         out.write(vertCount, "vertCount", -1);
         out.write(elementCount, "elementCount", -1);
         out.write(mode, "mode", Mode.Triangles);
-        out.write(buffers.size(), "numBuffers", 0);
-        if (buffers.size() > 0){
-            int i = 0;
-            for (VertexBuffer vb : buffers.values()){
-                out.write(vb, "buf"+i, null);
-                i++;
-            }
-        }
+        out.write(collisionTree, "collisionTree", null);
+
+        // export bufs as list
+        Collection<VertexBuffer> c = buffers.values();
+        List<VertexBuffer> vbList = new ArrayList<VertexBuffer>(c);
+        out.writeSavableList(vbList, "buffers", null);
     }
 
     public void read(G3DImporter im) throws IOException {
@@ -355,12 +358,11 @@ public class Mesh implements Savable {
         vertCount = in.readInt("vertCount", -1);
         elementCount = in.readInt("elementCount", -1);
         mode = in.readEnum("mode", Mode.class, Mode.Triangles);
-        int numBufs = in.readInt("numBuffers", -1);
-        if (numBufs > 0){
-            for (int i = 0; i < numBufs; i++){
-                VertexBuffer vb = (VertexBuffer) in.readSavable("buf"+i, null);
-                buffers.put(vb.getBufferType(), vb);
-            }
+        collisionTree = (BIHTree) in.readSavable("collisionTree", null);
+
+        List<VertexBuffer> vbList = in.readSavableList("buffers", null);
+        for (VertexBuffer vb : vbList){
+            buffers.put(vb.getBufferType(), vb);
         }
     }
 

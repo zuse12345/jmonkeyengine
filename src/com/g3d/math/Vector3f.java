@@ -734,12 +734,18 @@ public class Vector3f implements Savable, Cloneable {
      * @return unit vector of this vector.
      */
     public Vector3f normalize() {
-        float length = length();
-        if (length != 0) {
-            return divide(length);
+//        float length = length();
+//        if (length != 0) {
+//            return divide(length);
+//        }
+//
+//        return divide(1);
+        float length = x * x + y * y + z * z;
+        if (length != 1f && length != 0f){
+            length = 1.0f / FastMath.sqrt(length);
+            return new Vector3f(x * length, y * length, z * length);
         }
-        
-        return divide(1);        
+        return clone();
     }
 
     /**

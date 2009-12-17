@@ -1,14 +1,20 @@
 package com.g3d.shader;
 
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
+import com.g3d.export.Savable;
 import com.g3d.renderer.GLObject;
 import com.g3d.renderer.Renderer;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Shader extends GLObject {
+public class Shader extends GLObject implements Savable {
 
     private String language;
 
@@ -21,17 +27,17 @@ public class Shader extends GLObject {
     /**
      * A list of all shaders currently attached.
      */
-    private List<ShaderSource> shaderList = new ArrayList<ShaderSource>();
+    private List<ShaderSource> shaderList;
 
     /**
      * Maps uniform name to the uniform variable.
      */
-    private Map<String, Uniform> uniforms = new HashMap<String, Uniform>();
+    private Map<String, Uniform> uniforms;
 
     /**
      * Maps attribute name to the location of the attribute in the shader.
      */
-    private Map<String, Attribute> attribs = new HashMap<String, Attribute>();
+    private Map<String, Attribute> attribs;
 
     /**
      * Type of shader. The shader will control the pipeline of it's type.
@@ -57,9 +63,9 @@ public class Shader extends GLObject {
      * Shader source describes a shader object in OpenGL. Each shader source
      * is assigned a certain pipeline which it controls (described by it's type).
      */
-    public class ShaderSource extends GLObject {
+    public class ShaderSource extends GLObject implements Savable {
 
-        final ShaderType shaderType;
+        ShaderType shaderType;
 
         boolean usable = false;
         String name = null;
@@ -79,6 +85,26 @@ public class Shader extends GLObject {
             usable = false;
             name = ss.name;
             // forget source & defines
+        }
+
+        public ShaderSource(){
+            super(Type.ShaderSource);
+        }
+
+        public void write(G3DExporter ex) throws IOException{
+            OutputCapsule oc = ex.getCapsule(this);
+            oc.write(shaderType, "shaderType", null);
+            oc.write(name, "name", null);
+            oc.write(source, "source", null);
+            oc.write(defines, "defines", null);
+        }
+
+        public void read(G3DImporter im) throws IOException{
+            InputCapsule ic = im.getCapsule(this);
+            shaderType = ic.readEnum("shaderType", ShaderType.class, null);
+            name = ic.readString("name", null);
+            source = ic.readString("source", null);
+            defines = ic.readString("defines", null);
         }
 
         public void setName(String name){
@@ -159,13 +185,42 @@ public class Shader extends GLObject {
     public Shader(String language){
         super(Type.Shader);
         this.language = language;
+        shaderList = new ArrayList<ShaderSource>();
+        uniforms = new HashMap<String, Uniform>();
+        attribs = new HashMap<String, Attribute>();
+    }
+
+    /**
+     * Do not use this constructor. Serialization purposes only.
+     */
+    public Shader(){
+        super(Type.Shader);
     }
 
     protected Shader(Shader s){
         super(Type.Shader, s.id);
-        for (ShaderSource source : shaderList){
+        shaderList = new ArrayList<ShaderSource>();
+        uniforms = new HashMap<String, Uniform>();
+        attribs = new HashMap<String, Attribute>();
+        for (ShaderSource source : s.shaderList){
             this.addSource((ShaderSource) source.createDestructableClone());
         }
+    }
+
+    public void write(G3DExporter ex) throws IOException{
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(language, "language", null);
+        oc.writeSavableList(shaderList, "shaderList", null);
+        oc.writeStringSavableMap(attribs, "attribs", null);
+        oc.writeStringSavableMap(uniforms, "uniforms", null);
+    }
+
+    public void read(G3DImporter im) throws IOException{
+        InputCapsule ic = im.getCapsule(this);
+        language = ic.readString("language", null);
+        shaderList = ic.readSavableList("shaderList", null);
+        attribs = (Map<String, Attribute>) ic.readStringSavableMap("attribs", null);
+        uniforms = (Map<String, Uniform>) ic.readStringSavableMap("uniforms", null);
     }
 
     /**

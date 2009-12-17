@@ -6,6 +6,7 @@ import com.g3d.light.DirectionalLight;
 import com.g3d.math.ColorRGBA;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Spatial;
+import g3dtest.export.ImpExp;
 
 public class TestBumpModel2 extends SimpleApplication {
 

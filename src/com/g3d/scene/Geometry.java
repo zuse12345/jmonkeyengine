@@ -21,6 +21,12 @@ public class Geometry extends Spatial {
     protected transient Matrix4f cachedWorldMat = new Matrix4f();
 
     /**
+     * Do not use this constructor. Serialization purposes only.
+     */
+    public Geometry(){
+    }
+
+    /**
      * Create a geometry node without any mesh data.
      * @param name The name of this geometry
      */

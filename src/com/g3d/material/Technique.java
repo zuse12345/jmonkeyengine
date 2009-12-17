@@ -1,7 +1,5 @@
 package com.g3d.material;
 
-import com.g3d.material.Material.MatParamTextureValue;
-import com.g3d.material.Material.MatParamValue;
 import com.g3d.material.MaterialDef.MatParam;
 import com.g3d.material.MaterialDef.MatParamType;
 import com.g3d.math.ColorRGBA;
@@ -10,11 +8,17 @@ import com.g3d.math.Matrix4f;
 import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
 import com.g3d.asset.AssetManager;
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
+import com.g3d.export.Savable;
 import com.g3d.shader.DefineList;
 import com.g3d.shader.Shader;
 import com.g3d.shader.ShaderKey;
 import com.g3d.shader.Uniform;
 import com.g3d.shader.UniformBinding;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -23,20 +27,43 @@ import java.util.logging.Logger;
 /**
  * Represents a technique instance.
  */
-public class Technique {
+public class Technique implements Savable {
 
     private static final Logger logger = Logger.getLogger(Technique.class.getName());
 
-    private final TechniqueDef def;
-    private final Material owner;
-    private final List<Uniform> worldBindUniforms = new ArrayList<Uniform>();
-    private final DefineList defines = new DefineList();
+    private TechniqueDef def;
+    private Material owner;
+    private List<Uniform> worldBindUniforms;
+    private DefineList defines;
     private Shader shader;
     private boolean needReload = true;
 
     public Technique(Material owner, TechniqueDef def){
         this.owner = owner;
         this.def = def;
+        this.worldBindUniforms = new ArrayList<Uniform>();
+        this.defines = new DefineList();
+    }
+
+    public Technique(){
+    }
+
+    public void write(G3DExporter ex) throws IOException{
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(def, "def", null);
+        // TODO:
+        // oc.write(owner, "owner", null);
+        oc.writeSavableList(worldBindUniforms, "worldBindUniforms", null);
+        oc.write(defines, "defines", null);
+        oc.write(shader, "shader", null);
+    }
+
+    public void read(G3DImporter im) throws IOException{
+        InputCapsule ic = im.getCapsule(this);
+        def = (TechniqueDef) ic.readSavable("def", null);
+        worldBindUniforms = ic.readSavableList("worldBindUniforms", null);
+        defines = (DefineList) ic.readSavable("defines", null);
+        shader = (Shader) ic.readSavable("shader", null);
     }
 
     public TechniqueDef getDef() {

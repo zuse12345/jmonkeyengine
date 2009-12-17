@@ -1,6 +1,9 @@
 package com.g3d.scene.plugins.ogre;
 
+import com.g3d.animation.BoneAnimation;
+import com.g3d.animation.Model;
 import com.g3d.asset.AssetInfo;
+import com.g3d.asset.AssetKey;
 import com.g3d.asset.AssetLoader;
 import com.g3d.asset.AssetManager;
 import com.g3d.material.Material;
@@ -21,6 +24,10 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -50,11 +57,15 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     private VertexBuffer vb;
     private Mesh mesh;
     private Geometry geom;
-    private Node node;
     private int geomIdx = 0;
     private int texCoordIdx = 0;
     private static volatile int nodeIdx = 0;
     private String ignoreUntilEnd = null;
+
+    private List<Geometry> geoms = new ArrayList<Geometry>();
+    private AnimData animData;
+
+    private ByteBuffer weightsData, indicesData;
 
     public MeshLoader(){
         super();
@@ -62,10 +73,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
 
     @Override
     public void startDocument() {
-        if (meshName == null)
-            node = new Node("OgreMesh"+(++nodeIdx));
-        else
-            node = new Node(meshName+"-ogremesh");
+        geoms.clear();
     }
 
     @Override
@@ -86,7 +94,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     }
 
     private void startFaces(String count) throws SAXException{
-        int numFaces = parseInt(count, 0);
+        int numFaces = parseInt(count);
         int numIndices;
 
         if (mesh.getMode() == Mesh.Mode.Triangles){
@@ -152,12 +160,77 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             geom = new Geometry(meshName+"-geom-"+(++geomIdx), mesh);
 
         applyMaterial(geom, matName);
-        node.attachChild(geom);
+        geoms.add(geom);
     }
 
     private void startGeometry(String vertexcount) throws SAXException{
         int vertCount = parseInt(vertexcount);
         mesh.setVertexCount(vertCount);
+    }
+
+        int maxWeightsPerVert = 0;
+
+    /**
+     * Normalizes weights if needed and finds largest amount of weights used
+     * for all vertices in the buffer.
+     */
+    private void endBoneAssigns(){
+        int vertCount = mesh.getVertexCount();
+        weightsData.rewind();
+        for (int v = 0; v < vertCount; v++){
+            int   w0 = weightsData.get() & 0xFF,
+                  w1 = weightsData.get() & 0xFF,
+                  w2 = weightsData.get() & 0xFF,
+                  w3 = weightsData.get() & 0xFF;
+
+            if (w3 != 0){
+                maxWeightsPerVert = Math.max(maxWeightsPerVert, 4);
+            }else if (w2 != 0){
+                maxWeightsPerVert = Math.max(maxWeightsPerVert, 3);
+            }else if (w1 != 0){
+                maxWeightsPerVert = Math.max(maxWeightsPerVert, 2);
+            }else if (w0 != 0){
+                maxWeightsPerVert = Math.max(maxWeightsPerVert, 1);
+            }
+
+            float w0f = w0 / 254f,
+                  w1f = w1 / 254f,
+                  w2f = w2 / 254f,
+                  w3f = w3 / 254f;
+            float sum = w0f + w1f + w2f + w3f;
+            if (sum != 1f){
+                weightsData.position(weightsData.position()-4);
+                // compute new vals based on sum
+                float sumToB = 254f / sum;
+                weightsData.put( (byte) Math.round(w0f * sumToB) );
+                weightsData.put( (byte) Math.round(w1f * sumToB) );
+                weightsData.put( (byte) Math.round(w2f * sumToB) );
+                weightsData.put( (byte) Math.round(w3f * sumToB) );
+            }
+        }
+        weightsData.rewind();
+
+        weightsData = null;
+        indicesData = null;
+    }
+
+    private void startBoneAssigns(){
+        // current mesh will have bone assigns
+        int vertCount = mesh.getVertexCount();
+        // each vertex has
+        // - 4 bone weights
+        // - 4 bone indices
+        weightsData = BufferUtils.createByteBuffer(vertCount * 4);
+        indicesData = BufferUtils.createByteBuffer(vertCount * 4);
+
+        VertexBuffer weights = new VertexBuffer(Type.BoneWeight);
+        VertexBuffer indices = new VertexBuffer(Type.BoneIndex);
+
+        weights.setupData(Usage.Static, 4, Format.UnsignedByte, weightsData);
+        indices.setupData(Usage.Static, 4, Format.UnsignedByte, indicesData);
+        
+        mesh.setBuffer(weights);
+        mesh.setBuffer(indices);
     }
 
     private void startVertexBuffer(Attributes attribs) throws SAXException{
@@ -215,16 +288,13 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     }
 
     private void pushAttrib(Type type, Attributes attribs) throws SAXException{
-        try
-        {
+        try {
             FloatBuffer buf = (FloatBuffer) mesh.getBuffer(type).getData();
             buf.put(parseFloat(attribs.getValue("x")))
            .put(parseFloat(attribs.getValue("y")))
            .put(parseFloat(attribs.getValue("z")));
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (Exception ex){
+           throw new SAXException("Failed to push attrib", ex);
         }
     }
 
@@ -268,32 +338,49 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
         buf.put(color.r).put(color.g).put(color.b).put(color.a);
     }
 
+    private void pushBoneAssign(String vertIndex, String boneIndex, String weight) throws SAXException{
+        int vert = parseInt(vertIndex);
+        float w = parseFloat(weight);
+        byte bone = (byte) parseInt(boneIndex);
+
+        assert bone >= 0;
+        assert vert >= 0 && vert < mesh.getVertexCount();
+
+        int i;
+        // see which weights are unused for a given bone
+        for (i = vert * 4; i < vert * 4 + 4; i++){
+            int v = weightsData.get(i) & 0xFF;
+            if (v == 0)
+                break;
+        }
+
+        // convert fp weight to byte
+        byte weightByte = (byte) Math.round(w * 254f);
+        assert weightByte != 0;
+
+        weightsData.put(i, weightByte);
+        indicesData.put(i, bone);
+    }
+
+    private void startSkeleton(String name){
+        animData = (AnimData) assetManager.loadContent(new AssetKey(name+"xml"));
+    }
+
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attribs) throws SAXException{
         if (ignoreUntilEnd != null)
             return;
 
-        if (qName.equals("mesh")){
-            // ok
-        }else if (qName.equals("submeshes")){
-            // ok
-        }else if (qName.equals("submesh")){
-            startMesh(attribs.getValue("material"),
-                      attribs.getValue("usesharedvertices"),
-                      attribs.getValue("use32bitindexes"),
-                      attribs.getValue("operationtype"));
-        }else if (qName.equals("faces")){
-            startFaces(attribs.getValue("count"));
+        if (qName.equals("texcoord")){
+            pushTexCoord(attribs);
+        }else if (qName.equals("vertexboneassignment")){
+            pushBoneAssign(attribs.getValue("vertexindex"),
+                           attribs.getValue("boneindex"),
+                           attribs.getValue("weight"));
         }else if (qName.equals("face")){
             pushFace(attribs.getValue("v1"),
                      attribs.getValue("v2"),
                      attribs.getValue("v3"));
-        }else if (qName.equals("geometry")){
-            startGeometry(attribs.getValue("vertexcount"));
-        }else if (qName.equals("vertexbuffer")){
-            startVertexBuffer(attribs);
-        }else if (qName.equals("vertex")){
-            startVertex();
         }else if (qName.equals("position")){
             pushAttrib(Type.Position, attribs);
         }else if (qName.equals("normal")){
@@ -304,10 +391,29 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             pushAttrib(Type.Binormal, attribs);
         }else if (qName.equals("colour_diffuse")){
             pushColor(attribs);
-        }else if (qName.equals("texcoord")){
-            pushTexCoord(attribs);
+        }else if (qName.equals("vertex")){
+            startVertex(); 
+        }else if (qName.equals("faces")){
+            startFaces(attribs.getValue("count"));
+        }else if (qName.equals("geometry")){
+            startGeometry(attribs.getValue("vertexcount"));
+        }else if (qName.equals("vertexbuffer")){
+            startVertexBuffer(attribs);
+        }else if (qName.equals("boneassignments")){
+            startBoneAssigns();
+        }else if (qName.equals("submesh")){
+            startMesh(attribs.getValue("material"),
+                      attribs.getValue("usesharedvertices"),
+                      attribs.getValue("use32bitindexes"),
+                      attribs.getValue("operationtype"));
+        }else if (qName.equals("submeshes")){
+            // ok
+        }else if (qName.equals("skeletonlink")){
+            startSkeleton(attribs.getValue("name"));
+        }else if (qName.equals("mesh")){
+            // ok
         }else{
-            System.out.println("Unknown tag: "+qName+". Ignoring.");
+            logger.warning("Unknown tag: "+qName+". Ignoring.");
             ignoreUntilEnd = qName;
         }
     }
@@ -344,15 +450,55 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             mesh.updateBound();
             
             // XXX: Only needed for non-animated models!
-            mesh.setStatic();
-            if (AUTO_INTERLEAVE)
-                mesh.setInterleaved();
+//            mesh.setStatic();
+//            if (AUTO_INTERLEAVE)
+//                mesh.setInterleaved();
+        }else if (qName.equals("boneassignments")){
+            endBoneAssigns();
         }
-
     }
 
     @Override
     public void characters(char ch[], int start, int length) {
+    }
+
+    private Node compileModel(){
+        String nodeName;
+        if (meshName == null)
+            nodeName = "OgreMesh"+(++nodeIdx);
+        else
+            nodeName = meshName+"-ogremesh";
+
+        Node model;
+        if (animData != null){
+            Mesh[] meshes = new Mesh[geoms.size()];
+            for (int i = 0; i < geoms.size(); i++){
+                Mesh m = geoms.get(i).getMesh();
+                // create bind pose
+
+                
+                VertexBuffer bindPos = new VertexBuffer(Type.BindPosePosition);
+                bindPos.setupData(Usage.Static, 3, Format.Float, BufferUtils.clone(m)
+
+                meshes[i] = m;
+            }
+
+            Map<String, BoneAnimation> anims = new HashMap<String, BoneAnimation>();
+            List<BoneAnimation> animList = animData.anims;
+            for (int i = 0; i < animList.size(); i++){
+                BoneAnimation anim = animList.get(i);
+                anims.put(anim.getName(), anim);
+            }
+
+            model = new Model(nodeName, meshes, animData.skeleton, anims);
+        }else{
+            model = new Node(nodeName);
+        }
+
+        for (int i = 0; i < geoms.size(); i++)
+            model.attachChild(geoms.get(i));
+
+        return model;
     }
 
     public Object load(AssetInfo info) throws IOException {
@@ -369,8 +515,8 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             InputStreamReader r = new InputStreamReader(info.openStream());
             xr.parse(new InputSource(r));
             r.close();
-            
-            return node;
+
+            return compileModel();
         }catch (SAXException ex){
             IOException ioEx = new IOException("Error while parsing Ogre3D mesh.xml");
             ioEx.initCause(ex);

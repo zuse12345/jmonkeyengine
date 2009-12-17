@@ -1,4 +1,4 @@
-package LZMA;
+package com.lzma;
 
 import java.io.InputStream;
 import java.io.IOException;

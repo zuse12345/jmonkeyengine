@@ -1,4 +1,4 @@
-package LZMA;
+package com.lzma;
 
 public class LzmaException extends java.io.IOException {
 	/**

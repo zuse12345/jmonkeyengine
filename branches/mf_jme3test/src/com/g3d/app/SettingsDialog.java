@@ -337,7 +337,6 @@ public final class SettingsDialog extends JDialog {
         this.getContentPane().add(mainPanel);
 
         pack();
-        showDialog();
     }
 
     /**

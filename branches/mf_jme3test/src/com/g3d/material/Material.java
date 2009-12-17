@@ -6,6 +6,10 @@ import com.g3d.math.ColorRGBA;
 import com.g3d.math.Matrix4f;
 import com.g3d.math.Vector2f;
 import com.g3d.asset.AssetManager;
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.OutputCapsule;
+import com.g3d.export.Savable;
 import com.g3d.light.DirectionalLight;
 import com.g3d.light.Light;
 import com.g3d.light.LightList;
@@ -17,13 +21,14 @@ import com.g3d.scene.Geometry;
 import com.g3d.shader.Shader;
 import com.g3d.shader.Uniform;
 import com.g3d.texture.Texture;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Material implements Cloneable {
+public class Material implements Cloneable, Savable {
 
-    private final MaterialDef def;
+    private MaterialDef def;
     private Map<String, MatParam> paramValues = new HashMap<String, MatParam>();
 //    private final Map<String, MatParamValue> paramValues = new HashMap<String, MatParamValue>();
 //    private final Map<String, MatParamTextureValue> texValues = new HashMap<String, MatParamTextureValue>();
@@ -43,12 +48,21 @@ public class Material implements Cloneable {
             this.value = value;
         }
 
+        public MatParamValue(){
+        }
+
         public Object getValue(){
             return value;
         }
 
         public void setValue(Object value){
             this.value = value;
+        }
+
+        public void write(G3DExporter ex) throws IOException{
+            super.write(ex);
+            OutputCapsule oc = ex.getCapsule(this);
+            // TODO: ...
         }
     }
 
@@ -85,6 +99,18 @@ public class Material implements Cloneable {
 
     public Material(AssetManager contentMan, String defName){
         this(contentMan.loadMaterialDef(defName));
+    }
+
+    /**
+     * Do not use this constructor. Serialization purposes only.
+     */
+    public Material(){
+    }
+
+    public void write(G3DExporter ex){
+    }
+
+    public void read(G3DImporter im){
     }
 
     @Override

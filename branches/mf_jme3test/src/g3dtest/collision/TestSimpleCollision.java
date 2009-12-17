@@ -6,6 +6,7 @@ import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.shape.Quad;
 import com.g3d.system.AppSettings;
+import g3dtest.export.ImpExp;
 
 /**
  * Test simple collision with a plane.
@@ -25,11 +26,14 @@ public class TestSimpleCollision extends SimpleApplication {
 //        Sphere q = new Sphere(32, 32, 2);
         
         Quad q = new Quad(5, 5);
-        Geometry g = new Geometry("Quad Geom", q);
-        g.rotate(FastMath.HALF_PI, 0, FastMath.PI);
+        q.createCollisionData();
+        q = (Quad) ImpExp.reload(q);
+
+        Geometry g = new Geometry("Quad Geom", q);      
+        g.rotate(FastMath.HALF_PI, 0, FastMath.PI);        
         g.setMaterial(manager.loadMaterial("jme_logo.j3m"));
         rootNode.attachChild(g);
-
+        
         flyCam.setMotionAllowedListener(new SphereMotionAllowedListener(rootNode, new Vector3f(7f, 7f, 7f)));
     }
 

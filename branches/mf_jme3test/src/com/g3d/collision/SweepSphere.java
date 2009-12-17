@@ -26,6 +26,8 @@ public class SweepSphere implements Collidable {
     private final Vector3f temp1 = new Vector3f(),
                            temp2 = new Vector3f(),
                            temp3 = new Vector3f();
+    private final Vector3f sVelocity = new Vector3f(),
+                           sCenter = new Vector3f();
 
     public Vector3f getCenter() {
         return center;
@@ -172,8 +174,10 @@ public class SweepSphere implements Collidable {
         scaledTri.get1().set(tri.get1()).multLocal(invDim);
         scaledTri.get2().set(tri.get2()).multLocal(invDim);
         scaledTri.get3().set(tri.get3()).multLocal(invDim);
-        Vector3f sVelocity = velocity.mult(invDim);
-        Vector3f sCenter = center.mult(invDim);
+//        Vector3f sVelocity = velocity.mult(invDim);
+//        Vector3f sCenter = center.mult(invDim);
+        velocity.mult(invDim, sVelocity);
+        center.mult(invDim, sCenter);
 
         triPlane.setPlanePoints(scaledTri);
 

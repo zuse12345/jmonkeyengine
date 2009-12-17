@@ -1,6 +1,5 @@
-package LZMA;
+package com.lzma;
 
-import java.io.InputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
@@ -33,7 +32,10 @@ public class LzmaReadableChannel implements ReadableByteChannel {
     private static final int LZMA_BASE_SIZE = 1846;
     private static final int LZMA_LIT_SIZE  = 768;
 
-    private final static int kBlockSize = 0x10000;
+    /**
+     * Made package-private so that BufferPool can access it
+     */
+    final static int kBlockSize = 0x10000;
 
     private static final int kNumStates = 12;
 
@@ -241,6 +243,8 @@ public class LzmaReadableChannel implements ReadableByteChannel {
         }
     }
 
+    
+
     @SuppressWarnings("empty-statement")
 	private void readHeader() throws IOException {
 		byte [] properties = new byte[5];
@@ -282,7 +286,9 @@ public class LzmaReadableChannel implements ReadableByteChannel {
 		dictionarySize = 0;
 		for (int i = 0; i < 4; i++)
 			dictionarySize += (properties[1 + i]&0xFF) << (i * 8);
-		dictionary = new byte[dictionarySize];
+		
+                dictionary = BufferPool.aquireDict(dictionarySize);
+                //dictionary = new byte[dictionarySize];
 		if (dictionary == null) {
 			throw new LzmaException ("LZMA : can't allocate");
 		}
@@ -300,7 +306,8 @@ public class LzmaReadableChannel implements ReadableByteChannel {
 		for (int i = 0; i < numProbs; i++)
 			probs[i] = CRangeDecoder.kBitModelTotal >> 1;
 
-		uncompressed_buffer = new byte [kBlockSize];
+                uncompressed_buffer = BufferPool.aquireBuffer();
+		//uncompressed_buffer = new byte [kBlockSize];
 		uncompressed_size = 0;
 		uncompressed_offset = 0;
 
@@ -332,8 +339,18 @@ public class LzmaReadableChannel implements ReadableByteChannel {
     }
 
    public void close() throws IOException {
+       if (isClosed)
+           throw new IOException("Already closed.");
+
+       BufferPool.returnBuffer(uncompressed_buffer);
+       uncompressed_buffer = null;
+
+       BufferPool.returnDict(dictionary);
+       dictionary = null;
+
         isClosed = true;
         in.close();
+        
     }
 }
 

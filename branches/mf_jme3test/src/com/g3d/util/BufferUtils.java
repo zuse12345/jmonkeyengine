@@ -42,6 +42,7 @@ import java.nio.ByteOrder;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,6 +67,26 @@ public final class BufferUtils {
     ////  -- TRACKER HASH --  ////
     private static final Map<Buffer, Object> trackingHash = Collections.synchronizedMap(new WeakHashMap<Buffer, Object>());
     private static final Object ref = new Object();
+
+
+    ////  -- GENERIC CLONE -- ////
+
+    public static Buffer clone(Buffer buf){
+        if (buf.getClass() == FloatBuffer.class){
+            return clone( (FloatBuffer) buf );
+        }else if (buf.getClass() == ShortBuffer.class){
+            return clone( (ShortBuffer) buf );
+        }else if (buf.getClass() == ByteBuffer.class){
+            return clone( (ByteBuffer) buf );
+        }else if (buf.getClass() == IntBuffer.class){
+            return clone( (IntBuffer) buf );
+        }else if (buf.getClass() == DoubleBuffer.class){
+            return clone( (DoubleBuffer) buf );
+        }else{
+            throw new UnsupportedOperationException();
+        }
+    }
+
 
     ////  -- VECTOR3F METHODS -- ////
 

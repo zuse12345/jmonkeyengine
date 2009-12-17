@@ -1,5 +1,10 @@
 package com.g3d.shader;
 
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
+import com.g3d.export.Savable;
 import com.g3d.math.ColorRGBA;
 import com.g3d.math.Matrix3f;
 import com.g3d.math.Matrix4f;
@@ -7,6 +12,8 @@ import com.g3d.math.Quaternion;
 import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
 import com.g3d.util.BufferUtils;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.BufferOverflowException;
 import java.nio.FloatBuffer;
 
@@ -49,6 +56,96 @@ public class Uniform extends ShaderVariable {
      * Binding to a renderer value, or null if user-defined uniform
      */
     protected UniformBinding binding;
+
+    public void write(G3DExporter ex) throws IOException{
+        super.write(ex);
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(dataType, "dataType", null);
+        oc.write(binding, "binding", null);
+        switch (dataType){
+            case Boolean:
+                oc.write( ((Boolean)value).booleanValue(), "valueBoolean", false );
+                break;
+            case Float:
+                oc.write( ((Float)value).floatValue(), "valueFloat", 0);
+                break;
+            case FloatArray:
+                oc.write( (FloatBuffer)value, "valueFloatArray", null);
+                break;
+            case Int:
+                oc.write( ((Integer)value).intValue(), "valueInt", 0);
+                break;
+            case Matrix3:
+                oc.write( (Matrix3f)value, "valueMatrix3", null);
+                break;
+            case Matrix3Array:
+            case Matrix4Array:
+            case Vector2Array:
+                throw new UnsupportedOperationException("Come again?");
+            case Matrix4:
+                oc.write( (Matrix4f)value, "valueMatrix4", null);
+                break;
+            case Vector2:
+                oc.write( (Vector2f)value, "valueVector2", null);
+                break;
+            case Vector3:
+                oc.write( (Vector3f)value, "valueVector3", null);
+                break;
+            case Vector3Array:
+                oc.write( (FloatBuffer)value, "valueVector3Array", null);
+                break;
+            case Vector4:
+                oc.write( (ColorRGBA)value, "valueVector4", null);
+                break;
+            case Vector4Array:
+                oc.write( (FloatBuffer)value, "valueVector4Array", null);
+                break;
+        }
+    }
+
+    public void read(G3DImporter im) throws IOException{
+        super.read(im);
+        InputCapsule ic = im.getCapsule(this);
+        dataType = ic.readEnum("dataType", Type.class, null);
+        binding = ic.readEnum("binding", UniformBinding.class, null);
+        switch (dataType){
+            case Boolean:
+                value = ic.readBoolean("valueBoolean", false);
+                break;
+            case Float:
+                value = ic.readFloat("valueFloat", 0);
+                break;
+            case FloatArray:
+                value = ic.readFloatBuffer("valueFloatArray", null);
+                break;
+            case Int:
+                value = ic.readInt("valueInt", 0);
+                break;
+            case Matrix3:
+                matrixValue = ic.readFloatBuffer("valueMatrix3", null);
+                value = matrixValue;
+                break;
+            case Matrix4:
+                matrixValue = ic.readFloatBuffer("valueMatrix4", null);
+                value = matrixValue;
+                break;
+            case Vector2:
+                value = ic.readSavable("valueVector2", null);
+                break;
+            case Vector3:
+                value = ic.readSavable("valueVector3", null);
+                break;
+            case Vector3Array:
+                value = ic.readFloatBuffer("valueVector3Array", null);
+                break;
+            case Vector4:
+                value = ic.readSavable("valueVector4", null);
+                break;
+            case Vector4Array:
+                value = ic.readFloatBuffer("valueVector4Array", null);
+                break;
+        }
+    }
 
     public void setBinding(UniformBinding binding){
         this.binding = binding;
@@ -230,7 +327,7 @@ public class Uniform extends ShaderVariable {
         if (dataType != null && dataType != Type.Vector4)
             throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
 
-        value = val.clone();
+        value = new ColorRGBA(val.getX(), val.getY(), val.getZ(), val.getW());
         dataType = Type.Vector4;
         updateNeeded = true;
     }

@@ -1,13 +1,31 @@
 package com.g3d.shader;
 
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
+import com.g3d.export.Savable;
+import java.io.IOException;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class DefineList {
+public class DefineList implements Savable {
 
     private final SortedMap<String, String> defines = new TreeMap<String, String>();
     private String compiled = null;
+
+    public void write(G3DExporter ex) throws IOException{
+        OutputCapsule oc = ex.getCapsule(this);
+        // TODO: Fix exporting of defines
+        getCompiled();
+        oc.write(compiled, "compiled", null);
+    }
+
+    public void read(G3DImporter im) throws IOException{
+        InputCapsule ic = im.getCapsule(this);
+        compiled = ic.readString(compiled, null);
+    }
 
     public void clear() {
         defines.clear();

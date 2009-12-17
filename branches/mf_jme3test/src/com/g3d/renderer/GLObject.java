@@ -1,11 +1,14 @@
 package com.g3d.renderer;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Describes a GL object. An encapsulation of a certain object 
  * on the native side of the graphics library.
  * This class is used to track
  */
-public abstract class GLObject {
+public abstract class GLObject implements Cloneable {
 
     /**
      * The ID of the object, usually depends on its type.
@@ -114,6 +117,24 @@ public abstract class GLObject {
     @Override
     public String toString(){
         return type.name() + " " + Integer.toHexString(hashCode());
+    }
+
+    /**
+     * This should create a deep clone. For a shall clone, use
+     * createDestructableClone().
+     *
+     * @return
+     */
+    protected GLObject clone(){
+        try{
+            GLObject obj = (GLObject) super.clone();
+            obj.handleRef = new Object();
+            obj.id = -1;
+            obj.updateNeeded = true;
+            return obj;
+        }catch (CloneNotSupportedException ex){
+            throw new AssertionError();
+        }
     }
 
 //    @Override

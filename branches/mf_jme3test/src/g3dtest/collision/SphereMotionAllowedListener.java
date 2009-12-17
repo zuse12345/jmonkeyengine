@@ -34,10 +34,12 @@ public class SphereMotionAllowedListener implements MotionAllowedListener {
     }
 
     private void collideWithWorld(){
-        if (depth > 5)
+        if (depth > 5){
+            System.out.println("DEPTH LIMIT REACHED!!");
             return;
+        }
 
-        if (newVel.length() < FastMath.FLT_EPSILON)
+        if (newVel.length() < veryCloseDist)
             return;
 
         Vector3f destination = newPos.add(newVel);
@@ -54,10 +56,10 @@ public class SphereMotionAllowedListener implements MotionAllowedListener {
             return;
         }
 
-        for (int i = 0; i < 1; i++){
+        for (int i = 0; i < results.size(); i++){
             CollisionResult collision = results.getCollision(i);
             // *** collision occured ***
-            Vector3f destination = newPos.add(newVel);
+//            Vector3f destination = newPos.add(newVel);
             Vector3f contactPoint = collision.getContactPoint().clone();
             float dist = collision.getDistance();
 

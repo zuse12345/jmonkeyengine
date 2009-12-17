@@ -16,7 +16,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
-public class VertexBuffer extends GLObject implements Savable {
+public class VertexBuffer extends GLObject implements Savable, Cloneable {
 
     /**
      * Type of buffer. Specifies the actual attribute it defines.
@@ -152,6 +152,13 @@ public class VertexBuffer extends GLObject implements Savable {
     public VertexBuffer(Type type){
         super(GLObject.Type.VertexBuffer);
         this.bufType = type;
+    }
+
+    /**
+     * Do not use this constructor. Serialization purposes only.
+     */
+    public VertexBuffer(){
+        super(GLObject.Type.VertexBuffer);
     }
 
     protected VertexBuffer(int id){
@@ -383,6 +390,13 @@ public class VertexBuffer extends GLObject implements Savable {
         }
     }
 
+    public VertexBuffer clone(){
+        VertexBuffer vb = (VertexBuffer) super.clone();
+        // as per specification, create deep clone
+        vb.updateData(BufferUtils.clone(data));
+        return vb;
+    }
+
     @Override
     public String toString(){
         String dataTxt = null;
@@ -422,22 +436,23 @@ public class VertexBuffer extends GLObject implements Savable {
         oc.write(offset, "offset", 0);
         oc.write(stride, "stride", 0);
 
+        String dataName = "data" + format.name();
         switch (format){
             case Float:
-                oc.write((FloatBuffer) data, "data", null);
+                oc.write((FloatBuffer) data, dataName, null);
                 break;
             case Short:
             case UnsignedShort:
-                oc.write((ShortBuffer) data, "data", null);
+                oc.write((ShortBuffer) data, dataName, null);
                 break;
             case UnsignedByte:
             case Byte:
             case Half:
-                oc.write((ByteBuffer) data, "data", null);
+                oc.write((ByteBuffer) data, dataName, null);
                 break;
             case Int:
             case UnsignedInt:
-                oc.write((IntBuffer) data, "data", null);
+                oc.write((IntBuffer) data, dataName, null);
                 break;
             default:
                 throw new IOException("Unsupported export buffer format: "+format);
@@ -455,22 +470,23 @@ public class VertexBuffer extends GLObject implements Savable {
         stride = ic.readInt("stride", 0);
         componentsLength = components * format.getComponentSize();
 
+        String dataName = "data" + format.name();
         switch (format){
             case Float:
-                data = ic.readFloatBuffer("data", null);
+                data = ic.readFloatBuffer(dataName, null);
                 break;
             case Short:
             case UnsignedShort:
-                data = ic.readShortBuffer("data", null);
+                data = ic.readShortBuffer(dataName, null);
                 break;
             case UnsignedByte:
             case Byte:
             case Half:
-                data = ic.readByteBuffer("data", null);
+                data = ic.readByteBuffer(dataName, null);
                 break;
             case Int:
             case UnsignedInt:
-                data = ic.readIntBuffer("data", null);
+                data = ic.readIntBuffer(dataName, null);
                 break;
             default:
                 throw new IOException("Unsupported import buffer format: "+format);

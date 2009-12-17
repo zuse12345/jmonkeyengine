@@ -31,16 +31,12 @@ public class TestOgreAnim extends SimpleApplication {
         dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
         rootNode.addLight(dl);
 
-        Spatial model = manager.loadOgreModel("ninja.meshxml", "ninja.material");
-        float scale = 0.05f;
+        Spatial model = manager.loadOgreModel("OTO.meshxml", "OTO.material");
+        float scale = 1.00f;
+//        Spatial model = manager.loadOgreModel("ninja.meshxml", "ninja.material");
+//        float scale = 0.05f;
         model.scale(scale,scale,scale);
         rootNode.attachChild(model);
-    }
-
-    @Override
-    public void simpleUpdate(float tpf) {
-        // 10 000 fps causes my video card to make a loud beeping noise
-        try { Thread.sleep(1); } catch (InterruptedException e) { }
     }
 
 }

@@ -1,30 +1,71 @@
 package com.g3d.material;
 
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
+import com.g3d.export.Savable;
 import com.g3d.shader.DefineList;
 import com.g3d.shader.UniformBinding;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TechniqueDef {
+public class TechniqueDef implements Savable {
 
     private String name;
 
     private String vertName;
     private String fragName;
     private String shaderLang;
-    private DefineList presetDefines = new DefineList();
+    private DefineList presetDefines;;
 
     private boolean useLighting;
     private RenderState renderState;
 
-    private final Map<String, String> defineParams = new HashMap<String, String>();
-    private final List<UniformBinding> worldBinds = new ArrayList<UniformBinding>();
+    private Map<String, String> defineParams;
+    private List<UniformBinding> worldBinds;
 //    private final Map<String, Attribute> attribs = new HashMap<String, Attribute>();
 
     public TechniqueDef(String name){
         this.name = name == null ? "Default" : name;
+        worldBinds = new ArrayList<UniformBinding>();
+        presetDefines = new DefineList();
+        defineParams = new HashMap<String, String>();
+    }
+
+    /**
+     * Do not use this constructor.
+     */
+    public TechniqueDef(){
+    }
+
+    public void write(G3DExporter ex) throws IOException{
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(name, "name", null);
+        oc.write(vertName, "vertName", null);
+        oc.write(fragName, "fragName", null);
+        oc.write(shaderLang, "shaderLang", null);
+        oc.write(presetDefines, "presetDefines", null);
+        oc.write(useLighting, "useLighting", false);
+        oc.write(renderState, "renderState", null);
+        // TODO: Finish this when Map<String, String> export is available
+//        oc.writeS(defineParams, "defineParams", null);
+        // TODO: Finish this when List<Enum> export is available
+//        oc.write(worldBinds, "worldBinds", null);
+    }
+
+    public void read(G3DImporter im) throws IOException{
+        InputCapsule ic = im.getCapsule(this);
+        name = ic.readString("name", null);
+        vertName = ic.readString("vertName", null);
+        fragName = ic.readString("fragName", null);
+        shaderLang = ic.readString("shaderLang", null);
+        presetDefines = (DefineList) ic.readSavable("presetDefines", null);
+        useLighting = ic.readBoolean("useLighting", false);
+        renderState = (RenderState) ic.readSavable("renderState", null);
     }
 
     public String getName(){

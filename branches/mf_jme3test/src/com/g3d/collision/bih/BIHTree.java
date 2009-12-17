@@ -1,7 +1,6 @@
 package com.g3d.collision.bih;
 
 import com.g3d.bounding.BoundingBox;
-import com.g3d.bounding.BoundingSphere;
 import com.g3d.bounding.BoundingVolume;
 import com.g3d.collision.Collidable;
 import com.g3d.collision.CollisionResults;
@@ -24,7 +23,6 @@ import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
-import static java.lang.Math.min;
 import static java.lang.Math.max;
 
 public class BIHTree implements Savable {
@@ -38,6 +36,7 @@ public class BIHTree implements Savable {
     private int numTris;
     private float[] pointData;
     private int[] triIndices;
+    private float[] bihSwapTmp;
 
     private static final TriangleAxisComparator[] comparators = new TriangleAxisComparator[3];
 
@@ -79,6 +78,8 @@ public class BIHTree implements Savable {
             pointData[p++] = vb.get(vert++);
             pointData[p++] = vb.get(vert);
         }
+        
+        bihSwapTmp = new float[9];
 
         triIndices = new int[numTris];
         for (int i = 0; i < numTris; i++)
@@ -102,11 +103,11 @@ public class BIHTree implements Savable {
         assert vars.lock();
         Vector3f min = vars.vect1.set(new Vector3f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY));
         Vector3f max = vars.vect2.set(new Vector3f(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY));
-    
-        Vector3f v1 = new Vector3f(),
-                 v2 = new Vector3f(),
-                 v3 = new Vector3f();
-        
+
+        Vector3f v1 = vars.vect3,
+                 v2 = vars.vect4,
+                 v3 = vars.vect5;
+
         for (int i = l; i <= r; i++) {
             getTriangle(i, v1,v2,v3);
             BoundingBox.checkMinMax(min, max, v1);
@@ -127,9 +128,11 @@ public class BIHTree implements Savable {
         int pivot = l;
         int j = r;
 
-        Vector3f v1 = new Vector3f(),
-                 v2 = new Vector3f(),
-                 v3 = new Vector3f();
+        TempVars vars = TempVars.get();
+        assert vars.lock();
+        Vector3f v1 = vars.vect1,
+                 v2 = vars.vect2,
+                 v3 = vars.vect3;
 
         while (pivot <= j){
             getTriangle(pivot, v1, v2, v3);
@@ -142,6 +145,7 @@ public class BIHTree implements Savable {
             }
         }
 
+        assert vars.unlock();
         pivot = (pivot == l && j < pivot) ? j : pivot;
         return pivot;
     }
@@ -330,14 +334,13 @@ public class BIHTree implements Savable {
         int p2 = index2 * 9;
 
         // store p1 in tmp
-        float[] tmp = new float[9];
-        System.arraycopy(pointData, p1, tmp, 0, 9);
+        System.arraycopy(pointData, p1, bihSwapTmp, 0, 9);
 
         // copy p2 to p1
         System.arraycopy(pointData, p2, pointData, p1, 9);
 
         // copy tmp to p2
-        System.arraycopy(tmp, 0, pointData, p2, 9);
+        System.arraycopy(bihSwapTmp, 0, pointData, p2, 9);
 
         // swap indices
         int tmp2 = triIndices[index1];

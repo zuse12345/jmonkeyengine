@@ -64,7 +64,7 @@ public class AssetManager {
             registerLocator("/materials/", ClasspathLocator.class, "j3md", "j3m");
             registerLocator("/shaders/", ClasspathLocator.class, "glsl", "vert", "frag");
             registerLocator("/shaderlib/", ClasspathLocator.class, "glsllib");
-            registerLocator("/models/", ClasspathLocator.class, "obj", "meshxml", "material");
+            registerLocator("/models/", ClasspathLocator.class, "obj", "meshxml", "skeletonxml", "material");
             registerLocator("/fonts/", ClasspathLocator.class, "fnt");
             registerLocator("/", ClasspathLocator.class, "*");
             registerLoader(AWTLoader.class, "jpg", "bmp", "gif", "png", "jpeg");
@@ -79,6 +79,7 @@ public class AssetManager {
             registerLoader(TGALoader.class, "tga");
             registerLoader(OBJLoader.class, "obj");
             registerLoader(MeshLoader.class, "meshxml");
+            registerLoader(SkeletonLoader.class, "skeletonxml");
             registerLoader(MaterialLoader.class, "material");
             registerLoader(SceneLoader.class, "scene");
             registerLoader(GLSLLoader.class, "vert", "frag", "glsl", "glsllib");

@@ -26,14 +26,15 @@ public class Natives {
     public static void extractNativeLib(String sysName, String name) throws IOException{
         String fullname = System.mapLibraryName(name);
         File targetFile = new File(workingDir, fullname);
+        if (targetFile.exists())
+            return;
+
         InputStream in = Natives.class.getResourceAsStream("/native/"+sysName+"/" + fullname);
         if (in == null) {
             logger.warning("Cannot locate native library " + name);
             return;
         }
-        if (targetFile.exists())
-            return;
-
+        
         OutputStream out = new FileOutputStream(targetFile);
         byte[] buf = new byte[1024];
         int len;

@@ -6,6 +6,7 @@ import com.g3d.audio.AudioRenderer;
 import com.g3d.audio.joal.JoalAudioRenderer;
 import com.g3d.audio.lwjgl.LwjglAudioRenderer;
 import com.g3d.system.jogl.JoglDisplay;
+import com.g3d.system.lwjgl.LwjglCanvas;
 import com.g3d.system.lwjgl.LwjglDisplay;
 import com.g3d.system.lwjgl.LwjglOffscreenBuffer;
 import com.g3d.util.Natives;
@@ -15,16 +16,20 @@ import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
 
 public class G3DSystem {
 
     private static final Logger logger = Logger.getLogger(G3DSystem.class.getName());
 
     private static boolean initialized = false;
+    private static boolean lowPermissions = false;
     
     public static boolean trackDirectMemory(){
         return false;
+    }
+
+    public static void setLowPermissions(boolean lowPerm){
+        lowPermissions = lowPerm;
     }
 
     public static String getPlatformID(){
@@ -40,18 +45,36 @@ public class G3DSystem {
         }
     }
 
+    private static G3DContext newContextLwjgl(AppSettings settings, G3DContext.Type type){
+        switch (type){
+            case Canvas:
+                return new LwjglCanvas();
+            case Display:
+                return new LwjglDisplay();
+            case OffscreenSurface:
+                return new LwjglOffscreenBuffer();
+            default:
+                throw new IllegalArgumentException("Unsupported context type "+type);
+        }
+    }
+
+    public static G3DContext newContextJogl(AppSettings settings, G3DContext.Type type){
+        switch (type) {
+            case Display:
+                return new JoglDisplay();
+            default:
+                throw new IllegalArgumentException("Unsupported context type "+type);
+        }
+    }
+
     public static G3DContext newContext(AppSettings settings, G3DContext.Type contextType) {
         initialize(settings);
         G3DContext ctx;
         if (settings.getRenderer().startsWith("LWJGL")){
-            if (contextType == G3DContext.Type.OffscreenSurface){
-                ctx = new LwjglOffscreenBuffer();
-            }else{
-                ctx = new LwjglDisplay();
-            }
+            ctx = newContextLwjgl(settings, contextType);
             ctx.setSettings(settings);
         }else if (settings.getRenderer().startsWith("JOGL")){
-            ctx = new JoglDisplay();
+            ctx = newContextJogl(settings, contextType);
             ctx.setSettings(settings);
         }else{
             throw new UnsupportedOperationException(
@@ -82,13 +105,17 @@ public class G3DSystem {
         
         initialized = true;
         try {
-            Handler fileHandler = new FileHandler("jme.log");
-            Handler consoleHandler = new ConsoleHandler();
             G3DFormatter formatter = new G3DFormatter();
-            fileHandler.setFormatter(formatter);
+
+            if (!lowPermissions){
+                Handler fileHandler = new FileHandler("jme.log");
+                fileHandler.setFormatter(formatter);
+                Logger.getLogger("").addHandler(fileHandler);
+            }
+            
+            Handler consoleHandler = new ConsoleHandler();
             consoleHandler.setFormatter(formatter);
             Logger.getLogger("").removeHandler(Logger.getLogger("").getHandlers()[0]);
-            Logger.getLogger("").addHandler(fileHandler);
             Logger.getLogger("").addHandler(consoleHandler);
             Logger.getLogger("com.g3d").setLevel(Level.FINEST);
         } catch (IOException ex){
@@ -98,8 +125,8 @@ public class G3DSystem {
         }
         logger.info("Running on "+getFullName());
 
-        String val = System.getProperty("jnlp.g3d.nonativecopy");
-        if (val == null || !val.equals("true")){
+        
+        if (!lowPermissions){
             try {
                 Natives.extractNativeLibs(getPlatformID(), settings);
             } catch (IOException ex) {
@@ -118,7 +145,7 @@ public class G3DSystem {
 //    }
 
     public static String getFullName(){
-        return "jMonkey Engine 3 ALPHA 0.25";
+        return "jMonkey Engine 3 ALPHA 0.30";
     }
 
    

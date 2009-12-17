@@ -8,6 +8,12 @@ public class Quad extends Mesh {
     private float width;
     private float height;
 
+    /**
+     * Do not use this constructor. Serialization purposes only.
+     */
+    public Quad(){
+    }
+
     public Quad(float width, float height){
         updateGeometry(width, height);
     }

@@ -6,6 +6,7 @@ import com.g3d.effect.ParticleEmitter;
 import com.g3d.effect.ParticleMesh.Type;
 import com.g3d.material.Material;
 import com.g3d.math.Vector3f;
+import g3dtest.export.ImpExp;
 
 public class TestParticleEmitter extends SimpleApplication {
 
@@ -28,7 +29,6 @@ public class TestParticleEmitter extends SimpleApplication {
         emit.setStartVel(new Vector3f(0, 0, 0));
         emit.setImagesX(15);
         emit.setCamera(cam);
-
         Material mat = new Material(manager, "point_sprite.j3md");
         mat.setTexture("m_Texture", manager.loadTexture("zsmoke.png"));
         emit.setMaterial(mat);

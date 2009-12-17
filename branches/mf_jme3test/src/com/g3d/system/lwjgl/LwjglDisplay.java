@@ -1,34 +1,15 @@
 package com.g3d.system.lwjgl;
 
-import com.g3d.input.JoyInput;
-import com.g3d.input.KeyInput;
-import com.g3d.input.MouseInput;
-import com.g3d.input.lwjgl.LwjglJoyInput;
-import com.g3d.input.lwjgl.LwjglKeyInput;
-import com.g3d.input.lwjgl.LwjglMouseInput;
 import com.g3d.system.G3DContext.Type;
-import java.util.logging.Logger;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
-import org.lwjgl.opengl.PixelFormat;
 import com.g3d.system.AppSettings;
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.lwjgl.Sys;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
-//import org.lwjgl.opengl.ContextAttribs;
-import org.lwjgl.opengl.ARBMultisample;
-import org.lwjgl.opengl.GLContext;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.*;
+import java.util.logging.Logger;
 
-public class LwjglDisplay extends LwjglContext implements Runnable {
+public class LwjglDisplay extends LwjglAbstractDisplay {
 
     private static final Logger logger = Logger.getLogger(LwjglDisplay.class.getName());
-    protected AtomicBoolean needClose = new AtomicBoolean(false);
-    protected boolean wasActive = false;
-    protected int frameRate = 0;
 
     protected DisplayMode getFullscreenDisplayMode(int width, int height, int bpp, int freq){
         try {
@@ -73,119 +54,6 @@ public class LwjglDisplay extends LwjglContext implements Runnable {
         }
     }
 
-    protected void initInThread(){
-        PixelFormat pf = new PixelFormat(settings.getBitsPerPixel(),
-                                         0,
-                                         settings.getDepthBits(),
-                                         settings.getStencilBits(),
-                                         settings.getSamples());
-
-        try{
-            applySettings(settings);
-            String rendererStr = settings.getString("Renderer");
-//            if (rendererStr.startsWith("LWJGL-OpenGL3")){
-//                ContextAttribs attribs;
-//                if (rendererStr.equals("LWJGL-OpenGL3.1")){
-//                    attribs = new ContextAttribs(3, 1);
-//                }else{
-//                    attribs = new ContextAttribs(3, 0);
-//                }
-//                attribs.withForwardCompatible(true);
-//                attribs.withDebug(false);
-//                Display.create(pf, attribs);
-//            }else{
-                Display.create(pf);
-//                Display.create();
-//            }
-
-//            if (!Display.isFullscreen()){
-//                // put it in the center
-//                DisplayMode desktop = Display.getDesktopDisplayMode();
-//                DisplayMode displayMode = Display.getDisplayMode();
-//                Display.setLocation((desktop.getWidth() - displayMode.getWidth()) / 2,
-//                                  (desktop.getHeight() - displayMode.getHeight()) / 2);
-//            }
-
-            logger.info("Display created.");
-            logger.fine("Running on thread: "+Thread.currentThread().getName());
-
-            Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-                public void uncaughtException(Thread thread, Throwable thrown) {
-                    listener.handleError("Uncaught exception thrown in "+thread.toString(), thrown);
-                }
-            });
-
-//            try{
-//                 Util.checkGLError();
-//            } catch (OpenGLException ex){
-//                System.out.println(ex.getMessage());
-//            }
-
-            Keyboard.poll();
-            Mouse.poll();
-
-            String vendor = glGetString(GL_VENDOR);
-            String version = glGetString(GL_VERSION);
-            String renderer = glGetString(GL_RENDERER);
-            String shadingLang = glGetString(GL_SHADING_LANGUAGE_VERSION);
-
-            logger.info("Vendor: "+vendor);
-            logger.info("Renderer: "+renderer);
-
-            logger.info("Adapter: "+Display.getAdapter());
-            logger.info("Driver Version: "+Display.getVersion());
-
-            logger.info("OpenGL Version: "+version);
-            logger.info("GLSL Ver: "+shadingLang);
-
-            created.set(true);
-        } catch (LWJGLException ex){
-            listener.handleError("Failed to create display", ex);
-        } finally {
-            // TODO: It is possible to avoid "Failed to find pixel format"
-            // error here by creating a default display.
-
-            if (!created.get()){
-                if (Display.isCreated())
-                    Display.destroy();
-            }
-        }
-        super.create();
-        listener.initialize();
-    }
-
-    protected void runLoop(){
-        if (!created.get())
-            throw new IllegalStateException();
-
-        listener.update();
-        
-        // calls swap buffers, etc.
-        try {
-            Display.update();
-        } catch (Throwable ex){
-            listener.handleError("Error while swapping buffers", ex);
-        }
-
-        if (frameRate > 0)
-            Display.sync(frameRate);
-
-        renderer.onFrame();
-    }
-
-    protected void deinitInThread(){
-        listener.destroy();
-        renderer.cleanup();
-        Display.destroy();
-        logger.info("Display destroyed.");
-        super.destroy();
-    }
-
-    @Override
-    public void destroy(){
-        needClose.set(true);
-    }
-
     @Override
     public void restart() {
         if (created.get()){
@@ -204,53 +72,6 @@ public class LwjglDisplay extends LwjglContext implements Runnable {
     public void setTitle(String title){
         if (created.get())
             Display.setTitle(title);
-    }
-
-    public void run(){
-        logger.info("Using LWJGL "+Sys.getVersion());
-        initInThread();
-        while (true){
-            if (needClose.get())
-                break;
-
-            if (Display.isCloseRequested())
-                listener.requestClose(false);
-
-            if (wasActive != Display.isActive()){
-                if (!wasActive){
-                    listener.gainFocus();
-                    wasActive = true;
-                }else{
-                    listener.loseFocus();
-                    wasActive = false;
-                }
-            }
-
-            runLoop();
-        }
-        deinitInThread();
-    }
-
-    @Override
-    public void create(){
-        if (created.get()){
-            logger.warning("create() called when display is already created!");
-            return;
-        }
-
-        new Thread(this, "LWJGL Renderer Thread").start();
-    }
-
-    public JoyInput getJoyInput() {
-        return new LwjglJoyInput();
-    }
-
-    public MouseInput getMouseInput() {
-        return new LwjglMouseInput();
-    }
-
-    public KeyInput getKeyInput() {
-        return new LwjglKeyInput();
     }
 
 }

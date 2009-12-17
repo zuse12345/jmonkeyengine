@@ -1,6 +1,6 @@
 package com.g3d.asset.pack;
 
-import LZMA.LzmaReadableChannel;
+import com.lzma.LzmaReadableChannel;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

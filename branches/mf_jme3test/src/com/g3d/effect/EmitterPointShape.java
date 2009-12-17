@@ -10,6 +10,9 @@ public class EmitterPointShape implements EmitterShape {
 
     private Vector3f point;
 
+    public EmitterPointShape(){
+    }
+
     public EmitterPointShape(Vector3f point){
         this.point = point;
     }

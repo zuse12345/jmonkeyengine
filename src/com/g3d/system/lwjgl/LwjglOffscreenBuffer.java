@@ -10,7 +10,6 @@ import com.g3d.input.KeyInput;
 import com.g3d.input.MouseInput;
 import com.g3d.input.dummy.DummyKeyInput;
 import com.g3d.input.dummy.DummyMouseInput;
-import com.g3d.system.G3DContext.Type;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import org.lwjgl.LWJGLException;
@@ -155,7 +154,6 @@ public class LwjglOffscreenBuffer extends LwjglContext implements Runnable {
         new Thread(this, "LWJGL Renderer Thread").start();
     }
 
-    @Override
     public void restart() {
     }
 

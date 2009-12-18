@@ -7,5 +7,14 @@
 	<classpathentry kind="lib" path="lib/lwjgl/2.2_jar/jinput.jar"/>
 	<classpathentry kind="lib" path="lib/lwjgl/2.2_jar/lwjgl.jar"/>
 	<classpathentry kind="lib" path="lib/lwjgl/jME3-natives2.2.jar"/>
+	<classpathentry kind="lib" path="lib/j7zip/J7Zip.jar"/>
+	<classpathentry kind="lib" path="lib/joal/gluegen-rt.jar"/>
+	<classpathentry kind="lib" path="lib/joal/joal.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="jme3_test/lib/joal/win32"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/jogg/j-ogg-oggd.jar"/>
+	<classpathentry kind="lib" path="lib/jogg/j-ogg-vorbisd.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

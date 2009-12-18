@@ -41,12 +41,27 @@ public class Compressor {
         p.put(Packer.DEFLATE_HINT, Packer.FALSE);
         p.put(Packer.CODE_ATTRIBUTE_PFX+"LineNumberTable", Packer.STRIP);
         p.put(Packer.UNKNOWN_ATTRIBUTE, Packer.ERROR);
-        
-        jarLzma.SeNumFastBytes(128);
+
+        jarLzma.SetNumFastBytes(128);
+        // Fast bytes, aka Word Size [5, 273], default: 128
+
         jarLzma.SetAlgorithm(1);
-        jarLzma.SetEndMarkerMode(true);
+        // 1 = normal, 0 = fast
+
+        jarLzma.SetEndMarkerMode(false);
+        // Not needed if size is written at the beginning of the file (default)
+
         jarLzma.SetLcLpPb(3, 0, 2);
+        // Literal context bits Lc [0, 8], default: 3 (4 may help for big files)
+        // Literal position bits Lp [0, 4], default: 0
+        // Position bits Pb [0, 4], default: 2
+
         jarLzma.SetMatchFinder(1);
+        // bt2  -> 0
+        // bt4  -> 1
+        // bt4b -> 2
+
+        jarLzma.SetDictionarySize(22); // aka 2^22 bytes = 4 MB
     }
 
     private int copy(InputStream in, OutputStream out) throws IOException{
@@ -110,7 +125,6 @@ public class Compressor {
         copy(src, defChan);
         defChan.finish();
         entry.flags |= J3PEntry.DEFLATE_COMPRESSED;
-        System.out.println("Comprssion: Deflate");
     }
 
     public void deflateHigh(InputStream src, WritableByteChannel chan, J3PEntry entry) throws IOException{
@@ -120,7 +134,6 @@ public class Compressor {
         copy(src, defChan);
         defChan.finish();
         entry.flags |= J3PEntry.DEFLATE_COMPRESSED;
-        System.out.println("Comprssion: Deflate");
     }
 
     public void lzma(InputStream src, WritableByteChannel chan, J3PEntry entry, long length) throws IOException{
@@ -131,7 +144,6 @@ public class Compressor {
 
         jarLzma.Code(src, out, -1, -1, null);
         entry.flags |= J3PEntry.LZMA_COMPRESSED;
-        System.out.println("Comprssion: LZMA");
     }
 
     public void packDeflate(InputStream src, WritableByteChannel chan, J3PEntry entry) throws IOException{
@@ -143,7 +155,6 @@ public class Compressor {
         pack.pack(jis, out);
         defChan.finish();
         entry.flags |= J3PEntry.PACK200_DEFLATE_COMPRESSED;
-        System.out.println("Comprssion: Pack200 Deflate");
     }
 
     public void packLzma(InputStream src, WritableByteChannel chan, J3PEntry entry, long length) throws IOException{
@@ -161,7 +172,6 @@ public class Compressor {
         jarLzma.Code(bais, out, -1, -1, null);
 
         entry.flags |= J3PEntry.PACK200_LZMA_COMPRESSED;
-        System.out.println("Comprssion: Pack200 LZMA");
     }
 
     public void compress(InputStream src, WritableByteChannel chan, J3PEntry entry, long length) throws IOException{
@@ -185,7 +195,7 @@ public class Compressor {
             return;
         }
 
-        if (name.equals("jpg") || name.equals("jpeg") || name.equals("png")){
+        if (name.equals("jpg") || name.equals("jpeg") || name.equals("png") || name.equals("avi")){
             copy(src, chan);
         } else if (name.equals("xml") || name.equals("txt") || name.equals("material")
          || name.equals("sh")){

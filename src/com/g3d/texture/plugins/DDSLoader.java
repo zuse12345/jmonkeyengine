@@ -116,6 +116,13 @@ public class DDSLoader implements AssetLoader {
         return new Image(pixelFormat, width, height, 0, data, sizes);
     }
 
+    public Image load(InputStream stream) throws IOException{
+        in = new LittleEndien(stream);
+        loadHeader();
+        ArrayList<ByteBuffer> data = readData(false);
+        return new Image(pixelFormat, width, height, 0, data, sizes);
+    }
+
     /**
      * Reads the header (first 128 bytes) of a DDS File
      */

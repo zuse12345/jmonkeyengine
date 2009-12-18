@@ -1,8 +1,7 @@
 package com.g3d.asset.pack;
 
-import g3dtools.deploy.PackerInputStream;
-import g3dtools.deploy.PackerProgressListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -13,6 +12,7 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class J3PCreator {
@@ -26,11 +26,16 @@ public class J3PCreator {
     private J3PHeader header;
     private List<J3PEntry> entries = new ArrayList<J3PEntry>();
     private List<InputStream> streams = new ArrayList<InputStream>();
-    private PackerProgressListener progListener;
+    private ProgressListener progListener;
     private int maxProgress = 0;
 
     private FileChannel channel;
     private Compressor compressor = new Compressor();
+    private StringBuffer infoLine = new StringBuffer();
+    private long totalCompressed = 0,
+                 totalUncompressed = 0;
+    private boolean cancel = false;
+
 
     /**
      * Size of the entry table, including the # of entries integer.
@@ -61,6 +66,10 @@ public class J3PCreator {
         if (idx > 0)
             name = name.substring(0, idx) + "meshxml";
 
+        idx = name.indexOf("skeleton.xml");
+        if (idx > 0)
+            name = name.substring(0, idx) + "skeletonxml";
+
         J3PEntry out = new J3PEntry(name);
         out.length = (int) size;
         entryTableSize += 4 + 1 + 4 + 4;
@@ -71,15 +80,17 @@ public class J3PCreator {
             usedHashes.add(out.hash);
         }
 
+        // use uncompressed size of all entries as
+        // maximum progress value
         maxProgress += size;
-        
+
         return out;
     }
 
     private void writeEntry(J3PEntry entry, ByteBuffer store){
         if (entry == null)
             return;
-        
+
         store.putInt(entry.hash);
         store.put((byte)entry.flags);
         if ((entry.flags & J3PEntry.KEY_INCLUDED) != 0){
@@ -96,37 +107,36 @@ public class J3PCreator {
         store.putInt(entry.length);
     }
 
-    
+
     private long writeEntryData(J3PEntry entry, InputStream in, FileChannel out) throws IOException{
         long t = System.nanoTime();
         long initialPos = out.position();
-        long read = entry.length;
+        long uncompSize = entry.length;
 
-        if (progListener != null){
-            progListener.notifyProgress("Saving "+entry.name);
-            in = new PackerInputStream(in, progListener);
-        }
+        progListener.onText(infoLine.toString());
+        in = new PackerInputStream(in, progListener);
+        
         compressor.compress(in, out, entry, entry.length);
+        long compSize = out.position() - initialPos;
 
-        long finalPos = out.position();
-        long length = finalPos - initialPos;
+        entry.offset = initialPos - header.dataOffset;
+        entry.length = (int) compSize;
 
-        System.out.println("------------");
-
-        System.out.println("Entry "+entry.name);
+        totalUncompressed += uncompSize;
+        totalCompressed += compSize;
 
         double seconds = ((double) (System.nanoTime() - t)) / 1000000000.0;
-        double mbs = (length / 1024.0) / 1024.0;
-        System.out.format("MB/s = %9.3f\n", mbs / seconds);
-        System.out.println("Read: "+read+", Written: "+length);
-        System.out.format("Compression ratio: %1.0f%%\n", (double)length / read * 100.0);
-        
-        entry.offset = initialPos - header.dataOffset;
-        entry.length = (int) length;
-        System.out.println(entry.name + "[offset="+entry.offset+", length="+entry.length+"]");
-        System.out.println("------------");
+        double mbs = (compSize / 1024.0) / 1024.0;
+        String speed = String.format("%9.3f", mbs / seconds);
+        String compRatio = String.format("%1.0f%%", 
+                (double)totalCompressed / totalUncompressed * 100.0);
 
-        return length;
+        infoLine.setLength(0);
+//        infoLine.append("MB/s: ").append(speed).append('\n');
+        infoLine.append("Ratio: ").append(compRatio).append('\n');
+        progListener.onText(infoLine.toString());
+
+        return uncompSize;
     }
 
     private ByteBuffer createTable(){
@@ -165,11 +175,13 @@ public class J3PCreator {
         usedHashes.clear();
         entries.clear();
         maxProgress = 0;
+        totalCompressed = 0;
+        totalUncompressed = 0;
     }
 
-    public void setProgressListener(PackerProgressListener listener){
+    public void setProgressListener(ProgressListener listener){
         this.progListener = listener;
-        progListener.setMaximum(maxProgress);
+        progListener.onMaxProgress(maxProgress);
     }
 
     public void addEntry(String name, long size, InputStream stream){
@@ -181,37 +193,80 @@ public class J3PCreator {
         streams.add(stream);
     }
 
-    public void finish(File outFile) throws IOException {
+    private void innerCancel(){
+
+    }
+
+    public void cancel(){
+        synchronized (this){
+            cancel = true;
+        }
+    }
+
+    public void finish(File outFile) {
+        progListener.onMaxProgress(maxProgress);
+
         // create header, also updates header.dataOffset variable
         ByteBuffer headerBuf = createHeader();
 
         // go to dataoffset
-        channel = new RandomAccessFile(outFile, "rw").getChannel();
-        channel.truncate(header.dataOffset);
-        channel.position(header.dataOffset);
+        try {
+            channel = new RandomAccessFile(outFile, "rw").getChannel();
+            channel.truncate(header.dataOffset);
+            channel.position(header.dataOffset);
+        } catch (IOException ex){
+            progListener.onError("Error occured while saving to archive", ex);
+        }
 
         // write data of entries
         for (int i = 0; i < entries.size(); i++){
             J3PEntry entry = entries.get(i);
             InputStream in = streams.get(i);
-            writeEntryData(entry, in, channel);
-            in.close();
+            System.out.println("Writing: "+entry.name);
+            try {
+                writeEntryData(entry, in, channel);
+            } catch (IOException ex){
+                progListener.onError("Error occured while reading input files", ex);
+                cancel = true;
+            } finally {
+                try{
+                    in.close();
+                }catch (IOException ex){
+                }
+            }
+            synchronized (this){
+                if (cancel){
+                    cancel = false;
+                    try {
+                        for (int j = i + 1; j < entries.size(); i++){
+                            streams.get(j).close();
+                        }
+                        channel.close();
+                        outFile.delete();
+                        return;
+                    } catch (IOException ex) {}
+                }
+            }
         }
 
-        // position after writing all entries
-        long fileSize = channel.position();
+        try {
+            // position after writing all entries
+            long fileSize = channel.position();
 
-        // generate table after writing entries,
-        // since compression may alter entry data size
-        ByteBuffer tableBuf = createTable();
+            // generate table after writing entries,
+            // since compression may alter entry data size
+            ByteBuffer tableBuf = createTable();
 
-        channel.position(0);
-        channel.write(new ByteBuffer[]{ headerBuf, tableBuf });
+            channel.position(0);
+            channel.write(new ByteBuffer[]{ headerBuf, tableBuf });
 
-        if (channel.size() != fileSize)
-            throw new IOException("Channel size and end offset do not match!");
+            if (channel.size() != fileSize)
+                throw new IOException("Channel size and end offset do not match!");
 
-        channel.close();
+            channel.close();
+        } catch (IOException ex){
+            progListener.onError("Error occured while finalizing archive", ex);
+        }
         reset();
     }
 

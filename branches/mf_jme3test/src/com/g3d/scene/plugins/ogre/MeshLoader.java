@@ -462,6 +462,26 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     public void characters(char ch[], int start, int length) {
     }
 
+    private void createBindPose(Mesh mesh){
+        VertexBuffer pos = mesh.getBuffer(Type.Position);
+        VertexBuffer bindPos = new VertexBuffer(Type.BindPosePosition);
+        bindPos.setupData(Usage.Static,
+                          3,
+                          Format.Float,
+                          BufferUtils.clone(pos.getData()));
+        mesh.setBuffer(bindPos);
+
+        VertexBuffer norm = mesh.getBuffer(Type.Normal);
+        if (norm != null){
+            VertexBuffer bindNorm = new VertexBuffer(Type.BindPoseNormal);
+            bindNorm.setupData(Usage.Static,
+                              3,
+                              Format.Float,
+                              BufferUtils.clone(norm.getData()));
+            mesh.setBuffer(bindNorm);
+        }
+    }
+
     private Node compileModel(){
         String nodeName;
         if (meshName == null)
@@ -475,11 +495,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             for (int i = 0; i < geoms.size(); i++){
                 Mesh m = geoms.get(i).getMesh();
                 // create bind pose
-
-                
-                VertexBuffer bindPos = new VertexBuffer(Type.BindPosePosition);
-                bindPos.setupData(Usage.Static, 3, Format.Float, BufferUtils.clone(m)
-
+                createBindPose(m);
                 meshes[i] = m;
             }
 

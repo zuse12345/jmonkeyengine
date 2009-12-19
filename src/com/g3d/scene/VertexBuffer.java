@@ -74,13 +74,24 @@ public class VertexBuffer extends GLObject implements Savable, Cloneable {
          */
         Index,
 
-        /** Inital vertex position, used with animation */
+        /** 
+         * Inital vertex position, used with animation 
+         */
         BindPosePosition,
-        /** Inital vertex normals, used with animation */
+
+        /** 
+         * Inital vertex normals, used with animation
+         */
         BindPoseNormal,
-        /** Bone weights, used with animation */
+
+        /** 
+         * Bone weights, used with animation
+         */
         BoneWeight,
-        /** Bone index, used with animation */
+
+        /** 
+         * Bone indices, used with animation
+         */
         BoneIndex;
     }
 
@@ -90,6 +101,7 @@ public class VertexBuffer extends GLObject implements Savable, Cloneable {
      * or held in video memory, but no garantees are made- it's only a hint.
      */
     public static enum Usage {
+        
         /**
          * Mesh data is sent once and very rarely updated.
          */
@@ -103,7 +115,13 @@ public class VertexBuffer extends GLObject implements Savable, Cloneable {
         /**
          * Mesh data is updated every frame.
          */
-        Stream;
+        Stream,
+
+        /**
+         * Mesh data is not sent to GPU at all. It is only
+         * used by the CPU.
+         */
+        CpuOnly;
     }
 
     public static enum Format {

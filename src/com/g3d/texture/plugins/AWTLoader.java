@@ -56,6 +56,13 @@ public class AWTLoader implements AssetLoader {
                ByteBuffer data = BufferUtils.createByteBuffer(img.getWidth()*img.getHeight()*3);
                data.put(dataBuf);
                return new Image(Format.BGR8, width, height, data);
+            case BufferedImage.TYPE_BYTE_GRAY: // grayscale fonts
+                byte[] dataBuf2 = extractImageData(img);
+                if (flip)
+                    flipImage(dataBuf2, width, height, 8);
+                ByteBuffer data2 = BufferUtils.createByteBuffer(img.getWidth()*img.getHeight());
+                data2.put(dataBuf2);
+                return new Image(Format.Luminance8, width, height, data2);
             default:
                 break;
         }

@@ -336,15 +336,16 @@ public class RenderManager {
 
     public void renderViewPort(ViewPort vp){
         setCamera(vp.getCamera());
-        for (Spatial scene : vp.getScenes()){
-            renderScene(scene, vp);
+        List<Spatial> scenes = vp.getScenes();
+        for (int i = scenes.size() - 1; i >= 0; i--){
+            renderScene(scenes.get(i), vp);
         }
         flushQueue(vp);
     }
 
      public void render(){
-         for (ViewPort vp : viewPorts){
-             renderViewPort(vp);
+         for (int i = viewPorts.size() - 1; i >= 0; i--){
+             renderViewPort(viewPorts.get(i));
          }
      }
 

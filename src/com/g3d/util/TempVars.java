@@ -88,6 +88,12 @@ public class TempVars {
     public final FloatBuffer floatBuffer16 = BufferUtils.createFloatBuffer(16);
 
     /**
+     * Skinning buffers
+     */
+    public final float[] skinPositions = new float[512 * 3];
+    public final float[] skinNormals = new float[512 * 3];
+    
+    /**
      * Fetching triangle from mesh
      */
     public final Triangle triangle = new Triangle();

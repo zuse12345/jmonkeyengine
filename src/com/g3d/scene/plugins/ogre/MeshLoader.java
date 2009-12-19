@@ -8,6 +8,7 @@ import com.g3d.asset.AssetLoader;
 import com.g3d.asset.AssetManager;
 import com.g3d.material.Material;
 import com.g3d.math.ColorRGBA;
+import com.g3d.math.FastMath;
 import com.g3d.renderer.queue.RenderQueue.Bucket;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Mesh;
@@ -46,6 +47,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     private static final Logger logger = Logger.getLogger(MeshLoader.class.getName());
 
     public static boolean AUTO_INTERLEAVE = true;
+    public static boolean HARDWARE_SKINNING = false;
 
     private String meshName;
     private AssetManager assetManager;
@@ -65,7 +67,8 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     private List<Geometry> geoms = new ArrayList<Geometry>();
     private AnimData animData;
 
-    private ByteBuffer weightsData, indicesData;
+    private ByteBuffer indicesData;
+    private FloatBuffer weightsFloatData;
 
     public MeshLoader(){
         super();
@@ -168,20 +171,19 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
         mesh.setVertexCount(vertCount);
     }
 
-        int maxWeightsPerVert = 0;
-
     /**
      * Normalizes weights if needed and finds largest amount of weights used
      * for all vertices in the buffer.
      */
     private void endBoneAssigns(){
         int vertCount = mesh.getVertexCount();
-        weightsData.rewind();
+        int maxWeightsPerVert = 0;
+        weightsFloatData.rewind();
         for (int v = 0; v < vertCount; v++){
-            int   w0 = weightsData.get() & 0xFF,
-                  w1 = weightsData.get() & 0xFF,
-                  w2 = weightsData.get() & 0xFF,
-                  w3 = weightsData.get() & 0xFF;
+            float w0 = weightsFloatData.get(),
+                  w1 = weightsFloatData.get(),
+                  w2 = weightsFloatData.get(),
+                  w3 = weightsFloatData.get();
 
             if (w3 != 0){
                 maxWeightsPerVert = Math.max(maxWeightsPerVert, 4);
@@ -193,25 +195,23 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
                 maxWeightsPerVert = Math.max(maxWeightsPerVert, 1);
             }
 
-            float w0f = w0 / 254f,
-                  w1f = w1 / 254f,
-                  w2f = w2 / 254f,
-                  w3f = w3 / 254f;
-            float sum = w0f + w1f + w2f + w3f;
+            float sum = w0 + w1 + w2 + w3;
             if (sum != 1f){
-                weightsData.position(weightsData.position()-4);
+                weightsFloatData.position(weightsFloatData.position()-4);
                 // compute new vals based on sum
-                float sumToB = 254f / sum;
-                weightsData.put( (byte) Math.round(w0f * sumToB) );
-                weightsData.put( (byte) Math.round(w1f * sumToB) );
-                weightsData.put( (byte) Math.round(w2f * sumToB) );
-                weightsData.put( (byte) Math.round(w3f * sumToB) );
+                float sumToB = 1f / sum;
+                weightsFloatData.put( w0 * sumToB );
+                weightsFloatData.put( w1 * sumToB );
+                weightsFloatData.put( w2 * sumToB );
+                weightsFloatData.put( w3 * sumToB );
             }
         }
-        weightsData.rewind();
+        weightsFloatData.rewind();
 
-        weightsData = null;
+        weightsFloatData = null;
         indicesData = null;
+        
+        mesh.setMaxNumWeights(maxWeightsPerVert);
     }
 
     private void startBoneAssigns(){
@@ -220,14 +220,21 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
         // each vertex has
         // - 4 bone weights
         // - 4 bone indices
-        weightsData = BufferUtils.createByteBuffer(vertCount * 4);
-        indicesData = BufferUtils.createByteBuffer(vertCount * 4);
-
+        if (HARDWARE_SKINNING){
+            weightsFloatData = BufferUtils.createFloatBuffer(vertCount * 4);
+            indicesData = BufferUtils.createByteBuffer(vertCount * 4);
+        }else{
+            // create array-backed buffers if software skinning for access speed
+            weightsFloatData = FloatBuffer.allocate(vertCount * 4);
+            indicesData = ByteBuffer.allocate(vertCount * 4);
+        }
+        
         VertexBuffer weights = new VertexBuffer(Type.BoneWeight);
         VertexBuffer indices = new VertexBuffer(Type.BoneIndex);
 
-        weights.setupData(Usage.Static, 4, Format.UnsignedByte, weightsData);
-        indices.setupData(Usage.Static, 4, Format.UnsignedByte, indicesData);
+        Usage usage = HARDWARE_SKINNING ? Usage.Static : Usage.CpuOnly;
+        weights.setupData(usage, 4, Format.Float, weightsFloatData);
+        indices.setupData(usage, 4, Format.UnsignedByte, indicesData);
         
         mesh.setBuffer(weights);
         mesh.setBuffer(indices);
@@ -349,16 +356,12 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
         int i;
         // see which weights are unused for a given bone
         for (i = vert * 4; i < vert * 4 + 4; i++){
-            int v = weightsData.get(i) & 0xFF;
+            float v = weightsFloatData.get(i);
             if (v == 0)
                 break;
         }
 
-        // convert fp weight to byte
-        byte weightByte = (byte) Math.round(w * 254f);
-        assert weightByte != 0;
-
-        weightsData.put(i, weightByte);
+        weightsFloatData.put(i, w);
         indicesData.put(i, bone);
     }
 
@@ -439,6 +442,9 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             vb = null;
             ib = null;
             sb = null;
+        }else if (qName.equals("vertexbuffer")){
+            fb = null;
+            vb = null;
         }else if (qName.equals("geometry")){
             // finish writing to buffers
             for (VertexBuffer vBuf : mesh.getBuffers()){
@@ -450,7 +456,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             mesh.updateBound();
             
             // XXX: Only needed for non-animated models!
-//            mesh.setStatic();
+            mesh.setStatic();
 //            if (AUTO_INTERLEAVE)
 //                mesh.setInterleaved();
         }else if (qName.equals("boneassignments")){
@@ -465,20 +471,25 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     private void createBindPose(Mesh mesh){
         VertexBuffer pos = mesh.getBuffer(Type.Position);
         VertexBuffer bindPos = new VertexBuffer(Type.BindPosePosition);
-        bindPos.setupData(Usage.Static,
+        bindPos.setupData(Usage.CpuOnly,
                           3,
                           Format.Float,
                           BufferUtils.clone(pos.getData()));
         mesh.setBuffer(bindPos);
 
+        // XXX: note that this method also sets stream mode
+        // so that animation is faster. this is not needed for hardware skinning
+        pos.setUsage(Usage.Stream);
+
         VertexBuffer norm = mesh.getBuffer(Type.Normal);
         if (norm != null){
             VertexBuffer bindNorm = new VertexBuffer(Type.BindPoseNormal);
-            bindNorm.setupData(Usage.Static,
+            bindNorm.setupData(Usage.CpuOnly,
                               3,
                               Format.Float,
                               BufferUtils.clone(norm.getData()));
             mesh.setBuffer(bindNorm);
+            norm.setUsage(Usage.Stream);
         }
     }
 

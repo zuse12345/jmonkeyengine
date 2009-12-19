@@ -63,10 +63,10 @@ public class Matrix4f implements Savable, Cloneable {
 
     private static final Logger logger = Logger.getLogger(Matrix4f.class.getName());
 
-    protected float m00, m01, m02, m03;
-    protected float m10, m11, m12, m13;
-    protected float m20, m21, m22, m23;
-    protected float m30, m31, m32, m33;
+    public float m00, m01, m02, m03;
+    public float m10, m11, m12, m13;
+    public float m20, m21, m22, m23;
+    public float m30, m31, m32, m33;
 
     public static final Matrix4f IDENTITY = new Matrix4f();
 

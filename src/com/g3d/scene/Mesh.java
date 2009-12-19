@@ -25,8 +25,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class Mesh implements Savable {
+public class Mesh implements Savable, Cloneable {
 
     public enum Mode {
         Points,
@@ -52,10 +54,20 @@ public class Mesh implements Savable {
 
     private int vertCount = -1;
     private int elementCount = -1;
+    private int maxNumWeights = -1; // only if using skeletal animation
 
     private Mode mode = Mode.Triangles;
 
     public Mesh(){
+    }
+
+    public Mesh clone(){
+        try{
+            Mesh clone = (Mesh) super.clone();
+        }catch (CloneNotSupportedException ex){
+            throw new AssertionError();
+        }
+        return null;
     }
 
     public Mode getMode() {
@@ -64,6 +76,14 @@ public class Mesh implements Savable {
 
     public void setMode(Mode mode) {
         this.mode = mode;
+    }
+
+    public int getMaxNumWeights() {
+        return maxNumWeights;
+    }
+
+    public void setMaxNumWeights(int maxNumWeights) {
+        this.maxNumWeights = maxNumWeights;
     }
 
     /**

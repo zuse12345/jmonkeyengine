@@ -38,6 +38,7 @@ import com.g3d.export.InputCapsule;
 import com.g3d.export.OutputCapsule;
 import com.g3d.export.Savable;
 import com.g3d.math.Matrix4f;
+import com.g3d.util.TempVars;
 import java.io.IOException;
 
 import java.util.ArrayList;
@@ -67,15 +68,17 @@ public final class Skeleton implements Savable {
         this.boneList = boneList;
 
         List<Bone> rootBoneList = new ArrayList<Bone>();
-        for (Bone b : boneList){
+        for (int i = boneList.length - 1; i >= 0; i--){
+            Bone b = boneList[i];
             if (b.getParent() == null)
                 rootBoneList.add(b);
         }
-        rootBones = rootBoneList.toArray(new Bone[0]);
+        rootBones = rootBoneList.toArray(new Bone[rootBoneList.size()]);
 
         createSkinningMatrices();
 
-        for (Bone rootBone : rootBones){
+        for (int i = rootBones.length - 1; i >= 0; i--){
+            Bone rootBone = rootBones[i];
             rootBone.update();
             rootBone.setBindingPose();
         }
@@ -98,8 +101,8 @@ public final class Skeleton implements Savable {
         }
         createSkinningMatrices();
 
-        for (Bone rootBone : rootBones)
-            rootBone.update();
+        for (int i = rootBones.length - 1; i >= 0; i--)
+            rootBones[i].update();
     }
 
     /**
@@ -135,28 +138,29 @@ public final class Skeleton implements Savable {
      * Typically called after setting local animation transforms.
      */
     public void updateWorldVectors(){
-        for (Bone rootBone : rootBones)
-            rootBone.update();
+        for (int i = rootBones.length - 1; i >= 0; i--)
+            rootBones[i].update();
     }
 
     /**
      * Saves the current skeleton state as it's binding pose.
      */
     public void setBindingPose(){
-        for (Bone rootBone : rootBones)
-            rootBone.setBindingPose();
+        for (int i = rootBones.length - 1; i >= 0; i--)
+            rootBones[i].setBindingPose();
     }
 
     /**
      * Reset the skeleton to bind pose.
      */
-    public void reset(){
-        for (Bone rootBone : rootBones)
-            rootBone.reset();
+    public final void reset(){
+        for (int i = rootBones.length-1; i >= 0; i--)
+            rootBones[i].reset();
     }
 
-    public void resetAndUpdate(){
-        for (Bone rootBone : rootBones){
+    public final void resetAndUpdate(){
+        for (int i = rootBones.length-1; i >= 0; i--){
+            Bone rootBone = rootBones[i];
             rootBone.reset();
             rootBone.update();
         }
@@ -187,9 +191,12 @@ public final class Skeleton implements Savable {
     }
 
     public Matrix4f[] computeSkinningMatrices(){
+        TempVars vars = TempVars.get();
+        assert vars.lock();
         for (int i = 0; i < boneList.length; i++){
-            boneList[i].getOffsetTransform(skinningMatrixes[i]);
+            boneList[i].getOffsetTransform(skinningMatrixes[i], vars.quat1, vars.vect1);
         }
+        assert vars.unlock();
         return skinningMatrixes;
     }
 

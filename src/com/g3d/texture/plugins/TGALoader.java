@@ -78,13 +78,12 @@ public final class TGALoader implements AssetLoader {
     // 11 - run-length encoded, black and white image
     public static final int TYPE_BLACKANDWHITE_RLE = 11;
 
-    public Object load(AssetInfo info){
+    public Object load(AssetInfo info) throws IOException{
         boolean flip = ((TextureKey)info.getKey()).isFlipY();
-        try{
-            return load(info.openStream(), flip);
-        }catch (IOException ex){
-            return null;
-        }
+        InputStream in = info.openStream();
+        Image img = load(in, flip);
+        in.close();
+        return img;
     }
 
     /**

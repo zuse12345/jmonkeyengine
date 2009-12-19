@@ -1307,9 +1307,9 @@ public class LwjglRenderer implements Renderer {
         switch (vb.getFormat()){
             case Byte:
             case UnsignedByte:
-            case Half:
                 glBufferData(target, (ByteBuffer) vb.getData(), usage);
                 break;
+//            case Half:
             case Short:
             case UnsignedShort:
                 glBufferData(target, (ShortBuffer) vb.getData(), usage);
@@ -1558,7 +1558,8 @@ public class LwjglRenderer implements Renderer {
         }
 
         for (VertexBuffer vb : mesh.getBuffers()){
-            if (vb.getBufferType() == Type.InterleavedData)
+            if (vb.getBufferType() == Type.InterleavedData 
+             || vb.getUsage() == Usage.CpuOnly) // ignore cpu-only buffers
                 continue;
 
             if (vb.getBufferType() == Type.Index){

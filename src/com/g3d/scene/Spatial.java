@@ -723,10 +723,12 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
     public Spatial clone(){
         try{
             Spatial s = (Spatial) super.clone();
-            s.worldBound = worldBound.clone();
+            if (worldBound != null)
+                s.worldBound = worldBound.clone();
             s.worldLights = worldLights.clone();
             s.localLights = worldLights.clone();
-            s.material = material.clone();
+            if (material != null)
+                s.material = material.clone();
             s.worldTransform = worldTransform.clone();
             s.localTransform = localTransform.clone();
             s.parent = null;

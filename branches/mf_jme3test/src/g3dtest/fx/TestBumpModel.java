@@ -12,7 +12,6 @@ import com.g3d.scene.Spatial;
 import com.g3d.scene.shape.Sphere;
 import com.g3d.system.AppSettings;
 import com.g3d.util.TangentBinormalGenerator;
-import g3dtest.export.ImpExp;
 
 public class TestBumpModel extends SimpleApplication {
 
@@ -28,7 +27,6 @@ public class TestBumpModel extends SimpleApplication {
     @Override
     public void simpleInitApp() {
         Spatial signpost = manager.loadModel("signpost.obj");
-        ImpExp.export(signpost);
         signpost.setMaterial(manager.loadMaterial("signpost.j3m"));
         rootNode.attachChild(signpost);
 

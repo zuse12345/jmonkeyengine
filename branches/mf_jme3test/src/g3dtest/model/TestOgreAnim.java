@@ -5,11 +5,11 @@
 
 package g3dtest.model;
 
+import com.g3d.animation.Model;
 import com.g3d.app.SimpleApplication;
 import com.g3d.light.DirectionalLight;
 import com.g3d.math.ColorRGBA;
 import com.g3d.math.Vector3f;
-import com.g3d.scene.Spatial;
 
 /**
  *
@@ -31,12 +31,14 @@ public class TestOgreAnim extends SimpleApplication {
         dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
         rootNode.addLight(dl);
 
-        Spatial model = manager.loadOgreModel("OTO.meshxml", "OTO.material");
+        Model model = (Model) manager.loadOgreModel("OTO.meshxml", "OTO.material");
         float scale = 1.00f;
-//        Spatial model = manager.loadOgreModel("ninja.meshxml", "ninja.material");
+//        Model model = (Model) manager.loadOgreModel("ninja.meshxml", "ninja.material");
 //        float scale = 0.05f;
         model.scale(scale,scale,scale);
         rootNode.attachChild(model);
+
+        model.setAnimation("Walk");
     }
 
 }

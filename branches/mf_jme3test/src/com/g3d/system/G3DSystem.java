@@ -130,8 +130,7 @@ public class G3DSystem {
             try {
                 Natives.extractNativeLibs(getPlatformID(), settings);
             } catch (IOException ex) {
-                ex.printStackTrace();
-                //reportError("Error while copying native libraries", ex);
+                logger.log(Level.SEVERE, "Error while copying native libraries", ex);
             }
         }
     }

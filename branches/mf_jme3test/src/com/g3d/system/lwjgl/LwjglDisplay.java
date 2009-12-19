@@ -5,6 +5,7 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import com.g3d.system.AppSettings;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class LwjglDisplay extends LwjglAbstractDisplay {
@@ -21,12 +22,12 @@ public class LwjglDisplay extends LwjglAbstractDisplay {
                 }
             }
         } catch (LWJGLException ex) {
-            ex.printStackTrace();
+            logger.log(Level.SEVERE, "Failed to acquire fullscreen display mode!", ex);
         }
         return null;
     }
 
-    protected void applySettings(AppSettings settings){
+    protected void applySettings(AppSettings settings) throws LWJGLException{
         DisplayMode displayMode = null;
         if (settings.getWidth() <= 0 || settings.getHeight() <= 0){
 //            displayMode = org.lwjgl.opengl.Display.getDesktopDisplayMode();
@@ -42,22 +43,23 @@ public class LwjglDisplay extends LwjglAbstractDisplay {
 
         frameRate = settings.getFrameRate();
         logger.info("Selected display mode: "+displayMode);
-        try{
-            Display.setTitle(settings.getTitle());
-            if (displayMode != null)
-                Display.setDisplayMode(displayMode);
-            
-            Display.setFullscreen(settings.isFullscreen());
-            Display.setVSyncEnabled(settings.isVSync());
-        } catch (LWJGLException ex){
-            throw new RuntimeException("Failed to create display.", ex);
-        }
+        
+        Display.setTitle(settings.getTitle());
+        if (displayMode != null)
+            Display.setDisplayMode(displayMode);
+
+        Display.setFullscreen(settings.isFullscreen());
+        Display.setVSyncEnabled(settings.isVSync());
     }
 
     @Override
     public void restart() {
         if (created.get()){
-            applySettings(settings);
+            try{
+                applySettings(settings);
+            }catch (LWJGLException ex){
+                logger.log(Level.SEVERE, "Failed to set display settings!", ex);
+            }
             listener.reshape(settings.getWidth(), settings.getHeight());
             logger.info("Display restarted.");
         }else{

@@ -161,14 +161,16 @@ public final class Bone implements Savable {
     /**
      * Updates the world transforms for this bone, and, possibly the attach node if not null.
      */
-    void updateWorldVectors(){
+    final void updateWorldVectors(){
         if (parent != null){
             // worldRot = localRot * parentWorldRot
-            worldRot = parent.worldRot.mult(localRot);
+            parent.worldRot.mult(localRot, worldRot);
+            //worldRot = parent.worldRot.mult(localRot);
             //worldRot = parent.worldRot.mult(localRot, worldRot);
 
             // worldPos = parentWorldPos + (parentWorldRot * localPos)
-            worldPos = parent.worldRot.mult(localPos);
+            //worldPos = parent.worldRot.mult(localPos);
+            parent.worldRot.mult(localPos, worldPos);
             //parent.worldRot.mult(localPos, worldPos);
             worldPos.addLocal(parent.worldPos);
         }else{
@@ -185,11 +187,11 @@ public final class Bone implements Savable {
     /**
      * Updates world transforms for this bone and it's children.
      */
-    void update(){
+    final void update(){
         updateWorldVectors();
 
-        for (Bone b : children)
-            b.update();
+        for (int i = children.size() - 1; i >= 0; i--)
+            children.get(i).update();
     }
 
     /**
@@ -213,14 +215,14 @@ public final class Bone implements Savable {
     /**
      * Reset the bone and it's children to bind pose.
      */
-    void reset(){
+    final void reset(){
         if (!userControl){
             localPos.set(initialPos);
             localRot.set(initialRot);
         }
 
-        for (Bone b : children)
-            b.reset();
+        for (int i = children.size() - 1; i >= 0; i--)
+            children.get(i).reset();
     }
 
     /**
@@ -228,9 +230,9 @@ public final class Bone implements Savable {
      * The skinning transform applies the animation of the bone to a vertex.
      * @param m
      */
-    void getOffsetTransform(Matrix4f m){
-        Quaternion rotate = worldRot.mult(worldBindInverseRot);
-        Vector3f translate = worldPos.add(rotate.mult(worldBindInversePos));
+    void getOffsetTransform(Matrix4f m, Quaternion tmp1, Vector3f tmp2){
+        Quaternion rotate = worldRot.mult(worldBindInverseRot, tmp1);
+        Vector3f translate = worldPos.add(rotate.mult(worldBindInversePos, tmp2), tmp2);
 
         m.loadIdentity();
         m.setTranslation(translate);
@@ -273,7 +275,8 @@ public final class Bone implements Savable {
             return;
 
         localPos.addLocal(translation);
-        localRot = localRot.mult(rotation);
+        localRot.multLocal(rotation);
+        //localRot = localRot.mult(rotation);
     }
 
     /**

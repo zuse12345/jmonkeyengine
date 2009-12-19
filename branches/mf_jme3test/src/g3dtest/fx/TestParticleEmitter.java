@@ -6,7 +6,6 @@ import com.g3d.effect.ParticleEmitter;
 import com.g3d.effect.ParticleMesh.Type;
 import com.g3d.material.Material;
 import com.g3d.math.Vector3f;
-import g3dtest.export.ImpExp;
 
 public class TestParticleEmitter extends SimpleApplication {
 

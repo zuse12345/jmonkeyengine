@@ -1,11 +1,12 @@
 package com.g3d.animation;
 
+import com.g3d.math.FastMath;
 import com.g3d.math.Matrix4f;
-import com.g3d.math.Vector3f;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.Node;
 import com.g3d.scene.VertexBuffer;
 import com.g3d.scene.VertexBuffer.Type;
+import com.g3d.util.TempVars;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.Map;
@@ -55,6 +56,15 @@ public class Model extends Node {
         reset();
     }
 
+    public Model clone(){
+        Model clone = (Model) super.clone();
+        clone.skeleton = new Skeleton(skeleton);
+        Mesh[] meshes = new Mesh[targets.length];
+        for (int i = 0; i < meshes.length; i++)
+            meshes[i] = targets[i].clone();
+        return clone;
+    }
+
     /**
      * Used only for Saving/Loading models (all parameters of the non-default
      * constructor are restored from the saved model, but the object must be
@@ -102,7 +112,16 @@ public class Model extends Node {
                 VertexBuffer bindNorm = targets[i].getBuffer(Type.BindPoseNormal);
                 VertexBuffer pos = targets[i].getBuffer(Type.Position);
                 VertexBuffer norm = targets[i].getBuffer(Type.Normal);
-                
+                FloatBuffer pb = (FloatBuffer) pos.getData();
+                FloatBuffer nb = (FloatBuffer) norm.getData();
+                FloatBuffer bpb = (FloatBuffer) bindPos.getData();
+                FloatBuffer bnb = (FloatBuffer) bindNorm.getData();
+                pb.clear();
+                nb.clear();
+                bpb.clear();
+                bnb.clear();
+                pb.put(bpb).clear();
+                nb.put(bnb).clear();
             }
         }
     }
@@ -132,10 +151,8 @@ public class Model extends Node {
     }
 
     private void softwareSkinUpdate(Mesh mesh, Matrix4f[] offsetMatrices){
-        Vector3f vt = new Vector3f();
-        Vector3f nm = new Vector3f();
-        Vector3f resultVert = new Vector3f();
-        Vector3f resultNorm = new Vector3f();
+        int maxWeightsPerVert = mesh.getMaxNumWeights();
+        int fourMinusMaxWeights = 4 - maxWeightsPerVert;
 
         // NOTE: This code assumes the vertex buffer is in bind pose
         // resetToBind() has been called this frame
@@ -149,52 +166,85 @@ public class Model extends Node {
 
         // get boneIndexes and weights for mesh
         ByteBuffer ib = (ByteBuffer) mesh.getBuffer(Type.BoneIndex).getData();
-        ByteBuffer wb = (ByteBuffer) mesh.getBuffer(Type.BoneWeight).getData();
-        int maxWeightsPerVert = 4;//mesh.getWeightBuffer().maxWeightsPerVert;
-        int fourMinusMaxWeights = 4 - maxWeightsPerVert;
+        FloatBuffer wb = (FloatBuffer) mesh.getBuffer(Type.BoneWeight).getData();
+        
         ib.rewind();
         wb.rewind();
 
-        Vector3f tmp = new Vector3f();
+        float[] weights = wb.array();
+        byte[] indices = ib.array();
+        int idxWeights = 0;
 
-        // iterate vertices and apply skinning transform for each effecting bone
-        for (int vert = 0; vert < mesh.getVertexCount(); vert++){
-            vt.x = fvb.get();
-            vt.y = fvb.get();
-            vt.z = fvb.get();
-            nm.x = fnb.get();
-            nm.y = fnb.get();
-            nm.z = fnb.get();
-            resultVert.x = resultVert.y = resultVert.z = 0;
-            resultNorm.x = resultNorm.y = resultNorm.z = 0;
+        TempVars vars = TempVars.get();
+        float[] posBuf = vars.skinPositions;
+        float[] normBuf = vars.skinNormals;
 
-            for (int w = 0; w < maxWeightsPerVert; w++){
-                float weight = wb.get();
-                Matrix4f mat = offsetMatrices[ib.get()];
+        int iterations = (int) FastMath.ceil(fvb.capacity() / ((float)posBuf.length));
+        int bufLength = posBuf.length * 3;
+        for (int i = iterations-1; i >= 0; i--){
+            // read next set of positions and normals from native buffer
+            bufLength = Math.min(posBuf.length, fvb.remaining());
+            fvb.get(posBuf, 0, bufLength);
+            fnb.get(normBuf, 0, bufLength);
+            int verts = bufLength / 3;
+            int idxPositions = 0;
 
-                mat.mult(vt, tmp).multLocal(weight);
-                resultVert.addLocal(tmp);
+            // iterate vertices and apply skinning transform for each effecting bone
+            for (int vert = verts - 1; vert >= 0; vert--){
+                float nmx = normBuf[idxPositions];
+                float vtx = posBuf[idxPositions++];
+                float nmy = normBuf[idxPositions];
+                float vty = posBuf[idxPositions++];
+                float nmz = normBuf[idxPositions];
+                float vtz = posBuf[idxPositions++];
 
-                mat.multNormal(nm, tmp).multLocal(weight);
-                resultNorm.addLocal(tmp);
-//                resultVert.x += (mat.m00 * vt.x + mat.m01 * vt.y + mat.m02 * vt.z + mat.m03) * weight;
-//                resultVert.y += (mat.m10 * vt.x + mat.m11 * vt.y + mat.m12 * vt.z + mat.m13) * weight;
-//                resultVert.z += (mat.m20 * vt.x + mat.m21 * vt.y + mat.m22 * vt.z + mat.m23) * weight;
-//
-//                resultNorm.x += (nm.x * mat.m00 + nm.y * mat.m01 + nm.z * mat.m02) * weight;
-//                resultNorm.y += (nm.x * mat.m10 + nm.y * mat.m11 + nm.z * mat.m12) * weight;
-//                resultNorm.z += (nm.x * mat.m20 + nm.y * mat.m21 + nm.z * mat.m22) * weight;
+                float rx=0, ry=0, rz=0, rnx=0, rny=0, rnz=0;
+
+    //            float vtx = fvb.get();
+    //            float vty = fvb.get();
+    //            float vtz = fvb.get();
+    //            float nmx = fnb.get();
+    //            float nmy = fnb.get();
+    //            float nmz = fnb.get();
+    //            float rx=0, ry=0, rz=0, rnx=0, rny=0, rnz=0;
+
+                for (int w = maxWeightsPerVert - 1; w >= 0; w--){
+                    float weight = weights[idxWeights];//wb.get();
+                    Matrix4f mat = offsetMatrices[indices[idxWeights++]];//offsetMatrices[ib.get()];
+
+                    rx += (mat.m00 * vtx + mat.m01 * vty + mat.m02 * vtz + mat.m03) * weight;
+                    ry += (mat.m10 * vtx + mat.m11 * vty + mat.m12 * vtz + mat.m13) * weight;
+                    rz += (mat.m20 * vtx + mat.m21 * vty + mat.m22 * vtz + mat.m23) * weight;
+
+//                    rnx += (nmx * mat.m00 + nmy * mat.m01 + nmz * mat.m02) * weight;
+//                    rny += (nmx * mat.m10 + nmy * mat.m11 + nmz * mat.m12) * weight;
+//                    rnz += (nmx * mat.m20 + nmy * mat.m21 + nmz * mat.m22) * weight;
+                }
+
+                idxWeights += fourMinusMaxWeights;
+    //            ib.position(ib.position()+fourMinusMaxWeights);
+    //            wb.position(wb.position()+fourMinusMaxWeights);
+
+                idxPositions -= 3;
+                normBuf[idxPositions] = rnx;
+                posBuf[idxPositions++] = rx;
+                normBuf[idxPositions] = rny;
+                posBuf[idxPositions++] = ry;
+                normBuf[idxPositions] = rnz;
+                posBuf[idxPositions++] = rz;
+
+                // overwrite vertex with transformed pos
+    //            fvb.position(fvb.position()-3);
+    //            fvb.put(rx).put(ry).put(rz);
+    //
+    //            fnb.position(fnb.position()-3);
+    //            fnb.put(rnx).put(rny).put(rnz);
             }
 
-            ib.position(ib.position()+fourMinusMaxWeights);
-            wb.position(wb.position()+fourMinusMaxWeights);
-
-            // overwrite vertex with transformed pos
-            fvb.position(fvb.position()-3);
-            fvb.put(resultVert.x).put(resultVert.y).put(resultVert.z);
-
-            fnb.position(fnb.position()-3);
-            fnb.put(resultNorm.x).put(resultNorm.y).put(resultNorm.z);
+            fvb.position(fvb.position()-bufLength);
+            fvb.put(posBuf, 0, bufLength);
+//            fnb.position(fnb.position()-bufLength);
+//            fnb.put(normBuf, 0, bufLength);
         }
 
         fvb.flip();
@@ -203,7 +253,7 @@ public class Model extends Node {
         vb.updateData(fvb);
         nb.updateData(fnb);
 
-        mesh.updateBound();
+//        mesh.updateBound();
     }
 
     public void updateLogicalState(float tpf) {

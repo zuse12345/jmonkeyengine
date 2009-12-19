@@ -48,7 +48,7 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
      * Apply the settings, changing resolution, etc.
      * @param settings
      */
-    protected abstract void applySettings(AppSettings settings);
+    protected abstract void applySettings(AppSettings settings) throws LWJGLException;
 
     /**
      * Does LWJGL display initialization in the OpenGL thread

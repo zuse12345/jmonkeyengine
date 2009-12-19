@@ -72,15 +72,15 @@ public final class BufferUtils {
     ////  -- GENERIC CLONE -- ////
 
     public static Buffer clone(Buffer buf){
-        if (buf.getClass() == FloatBuffer.class){
+        if (buf instanceof FloatBuffer){
             return clone( (FloatBuffer) buf );
-        }else if (buf.getClass() == ShortBuffer.class){
+        }else if (buf instanceof ShortBuffer){
             return clone( (ShortBuffer) buf );
-        }else if (buf.getClass() == ByteBuffer.class){
+        }else if (buf instanceof ByteBuffer){
             return clone( (ByteBuffer) buf );
-        }else if (buf.getClass() == IntBuffer.class){
+        }else if (buf instanceof IntBuffer){
             return clone( (IntBuffer) buf );
-        }else if (buf.getClass() == DoubleBuffer.class){
+        }else if (buf instanceof DoubleBuffer){
             return clone( (DoubleBuffer) buf );
         }else{
             throw new UnsupportedOperationException();

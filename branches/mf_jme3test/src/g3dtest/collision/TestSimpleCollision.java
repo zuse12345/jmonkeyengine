@@ -6,7 +6,6 @@ import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.shape.Quad;
 import com.g3d.system.AppSettings;
-import g3dtest.export.ImpExp;
 
 /**
  * Test simple collision with a plane.
@@ -27,7 +26,6 @@ public class TestSimpleCollision extends SimpleApplication {
         
         Quad q = new Quad(5, 5);
         q.createCollisionData();
-        q = (Quad) ImpExp.reload(q);
 
         Geometry g = new Geometry("Quad Geom", q);      
         g.rotate(FastMath.HALF_PI, 0, FastMath.PI);        

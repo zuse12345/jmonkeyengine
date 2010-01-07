@@ -15,6 +15,19 @@ import java.util.Map;
 
 public class TechniqueDef implements Savable {
 
+    public enum LightMode {
+        Disable,
+        SinglePass,
+        MultiPass,
+        FixedPipeline,
+    }
+
+    public enum ShadowMode {
+        Disable,
+        InPass,
+        PostPass,
+    }
+
     private String name;
 
     private String vertName;
@@ -22,8 +35,9 @@ public class TechniqueDef implements Savable {
     private String shaderLang;
     private DefineList presetDefines;;
 
-    private boolean useLighting;
     private RenderState renderState;
+    private LightMode lightMode   = LightMode.Disable;
+    private ShadowMode shadowMode = ShadowMode.Disable;
 
     private Map<String, String> defineParams;
     private List<UniformBinding> worldBinds;
@@ -49,7 +63,8 @@ public class TechniqueDef implements Savable {
         oc.write(fragName, "fragName", null);
         oc.write(shaderLang, "shaderLang", null);
         oc.write(presetDefines, "presetDefines", null);
-        oc.write(useLighting, "useLighting", false);
+        oc.write(lightMode, "lightMode", LightMode.Disable);
+        oc.write(shadowMode, "shadowMode", ShadowMode.Disable);
         oc.write(renderState, "renderState", null);
         // TODO: Finish this when Map<String, String> export is available
 //        oc.writeS(defineParams, "defineParams", null);
@@ -64,7 +79,8 @@ public class TechniqueDef implements Savable {
         fragName = ic.readString("fragName", null);
         shaderLang = ic.readString("shaderLang", null);
         presetDefines = (DefineList) ic.readSavable("presetDefines", null);
-        useLighting = ic.readBoolean("useLighting", false);
+        lightMode = ic.readEnum("lightMode", LightMode.class, LightMode.Disable);
+        shadowMode = ic.readEnum("shadowMode", ShadowMode.class, ShadowMode.Disable);
         renderState = (RenderState) ic.readSavable("renderState", null);
     }
 
@@ -72,12 +88,20 @@ public class TechniqueDef implements Savable {
         return name;
     }
 
-    public void setUsesLighting(boolean lighting){
-        useLighting = lighting;
+    public LightMode getLightMode() {
+        return lightMode;
     }
 
-    public boolean isUsingLighting(){
-        return useLighting;
+    public void setLightMode(LightMode lightMode) {
+        this.lightMode = lightMode;
+    }
+
+    public ShadowMode getShadowMode() {
+        return shadowMode;
+    }
+
+    public void setShadowMode(ShadowMode shadowMode) {
+        this.shadowMode = shadowMode;
     }
 
     public RenderState getRenderState() {

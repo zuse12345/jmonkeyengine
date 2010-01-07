@@ -86,6 +86,10 @@ public class Natives {
         if (needLWJGL){
             extractNativeLib(sysName, "lwjgl");
             extractNativeLib(sysName, "lwjgl64");
+            if (audioRenderer != null){
+                extractNativeLib(sysName, "OpenAL32");
+                extractNativeLib(sysName, "OpenAL64");
+            }
             System.setProperty("org.lwjgl.librarypath", workingDir.toString());
         }else{
             // user must set property java.library.path  ..

@@ -18,7 +18,7 @@ public class AudioApp {
     public AudioApp(){
         AppSettings settings = new AppSettings(true);
         settings.setRenderer(null); // force dummy renderer (?)
-        settings.setAudioRenderer("JOAL");
+        settings.setAudioRenderer("LWJGL");
         ar = G3DSystem.newAudioRenderer(settings);
         ar.initialize();
         manager = new AssetManager(true);

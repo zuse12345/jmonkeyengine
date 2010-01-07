@@ -184,7 +184,6 @@ public class Node extends Spatial implements Savable {
             child.updateGeometricState();
         }
 
-        // XXX: Room for optimization, merge the above loop with this one.
         if ((refreshFlags & RF_BOUND) != 0){
             updateWorldBound();
         }

@@ -28,6 +28,13 @@ import java.util.Map;
 
 public class Material implements Cloneable, Savable {
 
+    private static final RenderState additiveLight = new RenderState();
+
+    static {
+//        additiveLight.set
+        additiveLight.setBlendMode(RenderState.BlendMode.Additive);
+    }
+
     private MaterialDef def;
     private Map<String, MatParam> paramValues = new HashMap<String, MatParam>();
 //    private final Map<String, MatParamValue> paramValues = new HashMap<String, MatParamValue>();
@@ -309,14 +316,60 @@ public class Material implements Cloneable, Savable {
         }
     }
 
+
+
+    private void renderMultipassLighting(Shader shader, Geometry g, Renderer r){
+        LightList lightList = g.getWorldLightList();
+        Uniform lightColor = shader.getUniform("g_LightColor");
+        Uniform lightPos = shader.getUniform("g_LightPosition");
+
+        for (int i = 0; i < lightList.size(); i++){
+            if (i == 1){
+                r.applyRenderState(additiveLight);
+            }
+
+            Light l = lightList.get(i);
+            ColorRGBA color = l.getColor();
+            lightColor.setVector4(color.getRed(),
+                                  color.getGreen(),
+                                  color.getBlue(),
+                                  l.getType().getId());
+
+            switch (l.getType()){
+                case Directional:
+                    DirectionalLight dl = (DirectionalLight) l;
+                    Vector3f dir = dl.getDirection();
+                    lightPos.setVector4(dir.getX(), dir.getY(), dir.getZ(), -1);
+                    break;
+                case Point:
+                    PointLight pl = (PointLight) l;
+                    Vector3f pos = pl.getPosition();
+                    float invRadius = pl.getRadius();
+                    if (invRadius != 0){
+                        invRadius = 1f / invRadius;
+                    }
+                    lightPos.setVector4(pos.getX(), pos.getY(), pos.getZ(), invRadius);
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Unknown type of light: "+l.getType());
+            }
+
+            r.setShader(shader);
+            r.renderMesh(g.getMesh(), 1);
+        }
+        
+    }
+
     /**
      * Should be called after selectTechnique()
      * @param geom
      * @param r
      */
-    public void apply(Geometry geom, RenderManager rm){
+    public void render(Geometry geom, RenderManager rm){
         if (technique == null)
             selectTechnique("Default");
+        else if (technique.isNeedReload())
+            technique.makeCurrent(def.getAssetManager());
 
         Renderer r = rm.getRenderer();
         TechniqueDef techDef = technique.getDef();
@@ -331,17 +384,7 @@ public class Material implements Cloneable, Savable {
                 r.applyRenderState(RenderState.DEFAULT);
         }
 
-        Shader shader = technique.getShader();
-
-        // send lighting information, if needed
-        if (techDef.isUsingLighting() && shader != null){
-            // shader method to set lighting
-            updateLightListUniforms(shader, geom, 4);
-        }else if (techDef.isUsingLighting()){
-            // fixed-function method to set lighting
-            r.setLighting(geom.getWorldLightList());
-        }
-
+        
         // update camera and world matrices
         // NOTE: setWorldTransform should have been called already
         // XXX:
@@ -364,8 +407,26 @@ public class Material implements Cloneable, Savable {
             }
         }
 
+        Shader shader = technique.getShader();
+
+        // send lighting information, if needed
+        switch (techDef.getLightMode()){
+            case SinglePass:
+                updateLightListUniforms(shader, geom, 4);
+                break;
+            case FixedPipeline:
+                r.setLighting(geom.getWorldLightList());
+                break;
+            case MultiPass:
+                // NOTE: Special case!
+                renderMultipassLighting(shader, geom, r);
+                // very important, notice the return statement!
+                return;
+        }
+
         // upload and bind shader
         r.setShader(shader);
+        r.renderMesh(geom.getMesh(), 1);
     }
 
 }

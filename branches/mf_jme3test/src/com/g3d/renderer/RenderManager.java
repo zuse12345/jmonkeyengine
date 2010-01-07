@@ -189,13 +189,11 @@ public class RenderManager {
 
         if (forcedMaterial != null){
             // use forced material
-            forcedMaterial.apply(g, this);
+            forcedMaterial.render(g, this);
         }else{
             // use geometry's material
-            g.getMaterial().apply(g, this);
+            g.getMaterial().render(g, this);
         }
-
-        renderer.renderMesh(mesh, 1);
     }
 
     public void renderGeometryList(GeometryList gl){

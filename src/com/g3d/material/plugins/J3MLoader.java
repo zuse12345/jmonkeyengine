@@ -12,6 +12,8 @@ import com.g3d.asset.AssetManager;
 import com.g3d.asset.TextureKey;
 import com.g3d.material.RenderState.BlendMode;
 import com.g3d.material.RenderState.FaceCullMode;
+import com.g3d.material.TechniqueDef.LightMode;
+import com.g3d.material.TechniqueDef.ShadowMode;
 import com.g3d.shader.Shader.ShaderType;
 import com.g3d.texture.Image;
 import com.g3d.texture.Image.Format;
@@ -108,9 +110,26 @@ public class J3MLoader implements AssetLoader {
         shaderLang = lang;
     }
 
+    private void readLightMode(){
+        String mode = readString("[\n;(\\})]");
+        LightMode lm = LightMode.valueOf(mode);
+        technique.setLightMode(lm);
+    }
+
+    private void readShadowMode(){
+        String mode = readString("[\n;(\\})]");
+        ShadowMode sm = ShadowMode.valueOf(mode);
+        technique.setShadowMode(sm);
+    }
+
     private void readParam() throws IOException{
         String word = scan.next();
-        MaterialDef.MatParamType type = MaterialDef.MatParamType.valueOf(word);
+        MaterialDef.MatParamType type;
+        if (word.equals("Color")){
+            type = MatParamType.Vector4;
+        }else{
+            type = MaterialDef.MatParamType.valueOf(word);
+        }
         
         word = readString("[\n;(//)(\\})]");
         materialDef.addMaterialParam(type, word);
@@ -374,8 +393,10 @@ public class J3MLoader implements AssetLoader {
             readShaderStatement(ShaderType.Vertex);
         }else if (word.equals("FragmentShader")){
             readShaderStatement(ShaderType.Fragment);
-        }else if (word.equals("UseLighting")){
-            technique.setUsesLighting(true);
+        }else if (word.equals("LightMode")){
+            readLightMode();
+        }else if (word.equals("ShadowMode")){
+            readShadowMode();
         }else if (word.equals("WorldParameters")){
             readWorldParams();
         }else if (word.equals("RenderState")){

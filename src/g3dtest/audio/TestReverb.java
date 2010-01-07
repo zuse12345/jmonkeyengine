@@ -27,7 +27,7 @@ public class TestReverb extends AudioApp {
             ;
 
         Environment env = Environment.Garage;
-//        ar.setEnvironment(env);
+        ar.setEnvironment(env);
     }
 
     @Override

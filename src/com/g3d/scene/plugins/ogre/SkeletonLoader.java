@@ -1,6 +1,5 @@
 package com.g3d.scene.plugins.ogre;
 
-import com.g3d.animation.Animation;
 import com.g3d.animation.Bone;
 import com.g3d.animation.BoneAnimation;
 import com.g3d.animation.BoneTrack;

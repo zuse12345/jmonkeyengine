@@ -1,16 +1,25 @@
 MaterialDef Phong Lighting {
 
     MaterialParameters {
-        Float m_Shininess
+
+        Boolean m_VertexLighting // sp impl need
+        Boolean m_LowQuality // sp impl need
+
+        Boolean m_UseAlpha // mp impl need
+        Boolean m_UseMaterialColors // sp impl need  -v-
+        Color m_Ambient
+        Color m_Diffuse
+        Color m_Specular
+
         Texture2D m_DiffuseMap
         Texture2D m_NormalMap
         Texture2D m_SpecularMap
-        Boolean m_UseAlpha
+        Float m_Shininess
     }
 
     Technique {
 
-        UseLighting
+        LightMode SinglePass
 
         VertexShader GLSL100: phong_lighting.vert
         FragmentShader GLSL100: phong_lighting.frag
@@ -29,6 +38,33 @@ MaterialDef Phong Lighting {
             HAS_SPECULARMAP : m_SpecularMap
             USE_ALPHA : m_UseAlpha
         }
+    }
+
+    Technique OldGpu {
+
+        LightMode MultiPass
+
+        VertexShader GLSL100: per_light.vert
+        FragmentShader GLSL100: per_light.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+            NormalMatrix
+            WorldViewMatrix
+            ViewMatrix
+        }
+
+        Defines {
+            VERTEX_LIGHTING : m_VertexLighting
+            ATTENUATION : m_Attenuation
+            MATERIAL_COLORS : m_UseMaterialColors
+            LOW_QUALITY : m_LowQuality
+
+            DIFFUSEMAP : m_DiffuseMap
+            NORMALMAP : m_NormalMap
+            SPECULARMAP : m_SpecularMap
+        }
+
     }
 
 }

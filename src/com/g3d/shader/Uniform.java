@@ -320,6 +320,18 @@ public class Uniform extends ShaderVariable {
         updateNeeded = true;
     }
 
+    public void setVector4(float x, float y, float z, float w){
+        if (location == -1)
+            return;
+
+        if (dataType != null && dataType != Type.Vector4)
+            throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
+
+        value = new ColorRGBA(x, y, z, w);
+        dataType = Type.Vector4;
+        updateNeeded = true;
+    }
+
     public void setVector4(Quaternion val){
         if (location == -1)
             return;

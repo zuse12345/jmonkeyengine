@@ -188,6 +188,25 @@ public class Application implements SystemListener {
         context.create();
     }
 
+    public void createCanvas(){
+        if (context != null && context.isCreated()){
+            logger.warning("createCanvas() called when application already created!");
+            return;
+        }
+
+        if (settings == null){
+            settings = new AppSettings(true);
+        }
+
+        logger.fine("Starting application: "+getClass().getName());
+        context = G3DSystem.newContext(settings, G3DContext.Type.Canvas);
+    }
+
+    public void startCanvas(){
+        context.setSystemListener(this);
+        context.create();
+    }
+
     public void reshape(int w, int h){
         renderManager.notifyReshape(w, h);
     }

@@ -8,6 +8,7 @@ import com.g3d.input.lwjgl.LwjglKeyInput;
 import com.g3d.input.lwjgl.LwjglMouseInput;
 import com.g3d.system.AppSettings;
 import com.g3d.system.G3DContext.Type;
+import com.g3d.system.G3DSystem;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import org.lwjgl.LWJGLException;
@@ -68,11 +69,13 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
             logger.info("Display created.");
             logger.fine("Running on thread: "+Thread.currentThread().getName());
 
-            Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-                public void uncaughtException(Thread thread, Throwable thrown) {
-                    listener.handleError("Uncaught exception thrown in "+thread.toString(), thrown);
-                }
-            });
+            if (!G3DSystem.isLowPermissions()){
+                Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                    public void uncaughtException(Thread thread, Throwable thrown) {
+                        listener.handleError("Uncaught exception thrown in "+thread.toString(), thrown);
+                    }
+                });
+            }
 
             Keyboard.poll();
             Mouse.poll();

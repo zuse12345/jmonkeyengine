@@ -16,6 +16,7 @@ public class BitmapText extends Geometry {
     private QuadList quadList = new QuadList();
     private float lineWidth = 0f;
     private boolean rightToLeft = false;
+    private boolean needRefresh = true;
 
     public BitmapText(BitmapFont font, boolean rightToLeft){
         super("BitmapFont", new Mesh());
@@ -37,14 +38,17 @@ public class BitmapText extends Geometry {
 
     public void setSize(float size) {
         block.setSize(size);
+        needRefresh = true;
     }
 
     public void setText(String text){
         block.setText(text);
+        needRefresh = true;
     }
 
     public void setBox(Rectangle rect){
         block.setTextBox(rect);
+        needRefresh = true;
     }
 
     public float getLineHeight(){
@@ -55,7 +59,13 @@ public class BitmapText extends Geometry {
         return lineWidth;
     }
 
-    public void assemble(){
+    public void updateLogicalState(float tpf){
+        super.updateLogicalState(tpf);
+        if (needRefresh)
+            assemble();
+    }
+
+    private void assemble(){
         // first generate quadlist
         if (block.getTextBox() == null){
             lineWidth = font.updateText(block, quadList, rightToLeft);

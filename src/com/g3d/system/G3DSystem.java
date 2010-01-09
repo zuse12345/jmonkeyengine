@@ -32,6 +32,10 @@ public class G3DSystem {
         lowPermissions = lowPerm;
     }
 
+    public static boolean isLowPermissions() {
+        return lowPermissions;
+    }
+
     public static String getPlatformID(){
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("windows")){
@@ -105,19 +109,22 @@ public class G3DSystem {
         
         initialized = true;
         try {
-            G3DFormatter formatter = new G3DFormatter();
-
             if (!lowPermissions){
+                // can only modify logging settings
+                // if permissions are available
+
+                G3DFormatter formatter = new G3DFormatter();
                 Handler fileHandler = new FileHandler("jme.log");
                 fileHandler.setFormatter(formatter);
                 Logger.getLogger("").addHandler(fileHandler);
+
+                Handler consoleHandler = new ConsoleHandler();
+                consoleHandler.setFormatter(formatter);
+                Logger.getLogger("").removeHandler(Logger.getLogger("").getHandlers()[0]);
+                Logger.getLogger("").addHandler(consoleHandler);
+
+                Logger.getLogger("com.g3d").setLevel(Level.FINEST);
             }
-            
-            Handler consoleHandler = new ConsoleHandler();
-            consoleHandler.setFormatter(formatter);
-            Logger.getLogger("").removeHandler(Logger.getLogger("").getHandlers()[0]);
-            Logger.getLogger("").addHandler(consoleHandler);
-            Logger.getLogger("com.g3d").setLevel(Level.FINEST);
         } catch (IOException ex){
             logger.log(Level.SEVERE, "I/O Error while creating log file", ex);
         } catch (SecurityException ex){
@@ -147,6 +154,6 @@ public class G3DSystem {
         return "jMonkey Engine 3 ALPHA 0.30";
     }
 
-   
+
 
 }

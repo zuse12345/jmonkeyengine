@@ -82,7 +82,7 @@ public final class TGALoader implements AssetLoader {
         boolean flip = ((TextureKey)info.getKey()).isFlipY();
         InputStream in = info.openStream();
         Image img = load(in, flip);
-        in.close();
+//        in.close();
         return img;
     }
 

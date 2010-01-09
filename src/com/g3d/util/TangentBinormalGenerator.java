@@ -521,6 +521,7 @@ public class TangentBinormalGenerator {
         lineMesh.setBuffer(Type.Color, 4, lineColor);
 
         lineMesh.setStatic();
+        lineMesh.setInterleaved();
         return lineMesh;
     }
 
@@ -599,6 +600,7 @@ public class TangentBinormalGenerator {
         lineMesh.setBuffer(Type.Color, 4, lineColor);
 
         lineMesh.setStatic();
+        lineMesh.setInterleaved();
         return lineMesh;
     }
 }

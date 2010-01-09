@@ -70,19 +70,23 @@ public class TestApplet extends Applet {
 
     public void init(){
         createCanvas();
+        System.out.println("applet:init");
     }
 
     public void start(){
         context.setAutoFlushFrames(true);
+        System.out.println("applet:start");
     }
 
     public void stop(){
         context.setAutoFlushFrames(false);
+        System.out.println("applet:stop");
     }
 
     public void destroy(){
         removeAll();
         context.destroy();
+        System.out.println("applet:destroy");
     }
 
 }

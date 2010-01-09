@@ -30,7 +30,6 @@ public class TestBitmapFont extends SimpleApplication {
         BitmapText txt4 = new BitmapText(fnt, false);
         txt4.setSize(32);
         txt4.setText("Text without restriction. Text without restriction. Text without restriction. Text without restriction");
-        txt4.assemble();
         txt4.setLocalTranslation(40, txt4.getLineHeight() * 2, 0);
 
         guiNode.attachChild(txt4);

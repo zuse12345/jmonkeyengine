@@ -732,6 +732,9 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
             s.worldTransform = worldTransform.clone();
             s.localTransform = localTransform.clone();
             s.parent = null;
+            s.setBoundRefresh();
+            s.setTransformRefresh();
+            s.setLightListRefresh();
             return s;
         }catch (CloneNotSupportedException ex){
             throw new AssertionError();

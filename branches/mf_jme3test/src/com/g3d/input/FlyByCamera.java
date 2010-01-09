@@ -29,6 +29,7 @@ public class FlyByCamera implements BindingListener {
     private float rotationSpeed = 1f;
     private float moveSpeed = 3f;
     private MotionAllowedListener motionAllowed = null;
+    private boolean enabled = true;
 
     /**
      * Creates a new FlyByCamera to control the given Camera object.
@@ -57,6 +58,21 @@ public class FlyByCamera implements BindingListener {
      */
     public void setRotationSpeed(float rotationSpeed){
         this.rotationSpeed = rotationSpeed;
+    }
+
+    /**
+     * @param enable If false, the camera will ignore input.
+     */
+    public void setEnabled(boolean enable){
+        enabled = enable;
+    }
+
+    /**
+     * @return If enabled
+     * @see FlyByCamera#setEnabled(boolean)
+     */
+    public boolean isEnabled(){
+        return enabled;
     }
 
     /**
@@ -101,7 +117,7 @@ public class FlyByCamera implements BindingListener {
         dispacher.addTriggerListener(this);
     }
 
-    public void rotateCamera(float value, Vector3f axis){
+    private void rotateCamera(float value, Vector3f axis){
         Matrix3f mat = new Matrix3f();
         mat.fromAngleNormalAxis(rotationSpeed * value, axis);
 
@@ -120,7 +136,62 @@ public class FlyByCamera implements BindingListener {
         cam.setAxes(q);
     }
 
+    private void zoomCamera(float value){
+        // derive fovY value
+        float h = cam.getFrustumTop();
+        float w = cam.getFrustumRight();
+        float aspect = w / h;
+
+        float near = cam.getFrustumNear();
+
+        float fovY = FastMath.atan(h / near)
+                  / (FastMath.DEG_TO_RAD * .5f);
+        fovY += value * 0.1f;
+
+        h = FastMath.tan( fovY * FastMath.DEG_TO_RAD * .5f) * near;
+        w = h * aspect;
+
+        cam.setFrustumTop(h);
+        cam.setFrustumBottom(-h);
+        cam.setFrustumLeft(-w);
+        cam.setFrustumRight(w);
+    }
+
+    private void riseCamera(float value){
+        Vector3f vel = new Vector3f(0, value * moveSpeed, 0);
+        Vector3f pos = cam.getLocation().clone();
+
+        if (motionAllowed != null)
+            motionAllowed.checkMotionAllowed(pos, vel);
+        else
+            pos.addLocal(vel);
+
+        cam.setLocation(pos);
+    }
+
+    private void moveCamera(float value, boolean sideways){
+        Vector3f vel = new Vector3f();
+        Vector3f pos = cam.getLocation().clone();
+
+        if (sideways){
+            cam.getLeft(vel);
+        }else{
+            cam.getDirection(vel);
+        }
+        vel.multLocal(value * moveSpeed);
+
+        if (motionAllowed != null)
+            motionAllowed.checkMotionAllowed(pos, vel);
+        else
+            pos.addLocal(vel);
+
+        cam.setLocation(pos);
+    }
+
     public void onBinding(String binding, float value) {
+        if (!enabled)
+            return;
+
         if (binding.equals("FLYCAM_Left")){
             rotateCamera(value, initialUpVec);
         }else if (binding.equals("FLYCAM_Right")){
@@ -148,55 +219,5 @@ public class FlyByCamera implements BindingListener {
         }
     }
 
-    public void zoomCamera(float value){
-        // derive fovY value
-        float h = cam.getFrustumTop();
-        float w = cam.getFrustumRight();
-        float aspect = w / h;
-
-        float near = cam.getFrustumNear();
-
-        float fovY = FastMath.atan(h / near)
-                  / (FastMath.DEG_TO_RAD * .5f);
-        fovY += value * 0.1f;
-
-        h = FastMath.tan( fovY * FastMath.DEG_TO_RAD * .5f) * near;
-        w = h * aspect;
-
-        cam.setFrustumTop(h);
-        cam.setFrustumBottom(-h);
-        cam.setFrustumLeft(-w);
-        cam.setFrustumRight(w);
-    }
-
-    public void riseCamera(float value){
-        Vector3f vel = new Vector3f(0, value * moveSpeed, 0);
-        Vector3f pos = cam.getLocation().clone();
-
-        if (motionAllowed != null)
-            motionAllowed.checkMotionAllowed(pos, vel);
-        else
-            pos.addLocal(vel);
-        
-        cam.setLocation(pos);
-    }
-
-    public void moveCamera(float value, boolean sideways){
-        Vector3f vel = new Vector3f();
-        Vector3f pos = cam.getLocation().clone();
-
-        if (sideways){
-            cam.getLeft(vel);
-        }else{
-            cam.getDirection(vel);
-        }
-        vel.multLocal(value * moveSpeed);
-
-        if (motionAllowed != null)
-            motionAllowed.checkMotionAllowed(pos, vel);
-        else
-            pos.addLocal(vel);
-
-        cam.setLocation(pos);
-    }
+    
 }

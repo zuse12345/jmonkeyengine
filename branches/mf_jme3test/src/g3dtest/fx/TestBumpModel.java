@@ -26,7 +26,7 @@ public class TestBumpModel extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        Spatial signpost = manager.loadModel("signpost.obj");
+        Spatial signpost = manager.loadOgreModel("signpost.meshxml", null);
         signpost.setMaterial(manager.loadMaterial("signpost.j3m"));
         rootNode.attachChild(signpost);
 

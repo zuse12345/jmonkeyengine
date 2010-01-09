@@ -14,5 +14,5 @@ public interface BindingListener {
      * @param binding
      * @param value
      */
-    public void onBinding(String binding, float value);
+    void onBinding(String binding, float value);
 }

@@ -12,6 +12,7 @@ MaterialDef Wire Color {
             FaceCull Off
             Blend Alpha
             AlphaTestFalloff 0.01
+            Wireframe On
         }
 
         WorldParameters {

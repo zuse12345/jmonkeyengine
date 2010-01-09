@@ -15,6 +15,7 @@ import com.g3d.renderer.queue.RenderQueue.Bucket;
 import com.g3d.scene.Node;
 import com.g3d.scene.Spatial.CullHint;
 import com.g3d.system.AppSettings;
+import com.g3d.system.G3DContext.Type;
 import java.net.URL;
 
 /**
@@ -31,6 +32,7 @@ public abstract class SimpleApplication extends Application {
     protected BitmapText fpsText;
 
     protected FlyByCamera flyCam;
+    protected boolean showSettings = true;
 
     public SimpleApplication(){
         super();
@@ -40,20 +42,28 @@ public abstract class SimpleApplication extends Application {
         setSettings(new AppSettings(true));
     }
 
-    
-
     @Override
     public void start(){
         // show settings dialog
-        URL iconUrl = SimpleApplication.class.getResource("Monkey.png");
-        SettingsDialog dialog = new SettingsDialog(settings, iconUrl);
-        dialog.showDialog();
-        if (dialog.waitForSelection() == SettingsDialog.CANCEL_SELECTION){
-            // user pressed cancel/exit
-            return;
+        if (showSettings){
+            URL iconUrl = SimpleApplication.class.getResource("Monkey.png");
+            SettingsDialog dialog = new SettingsDialog(settings, iconUrl);
+            dialog.showDialog();
+            if (dialog.waitForSelection() == SettingsDialog.CANCEL_SELECTION){
+                // user pressed cancel/exit
+                return;
+            }
         }
-        
+
         super.start();
+    }
+
+    public boolean isShowSettings() {
+        return showSettings;
+    }
+
+    public void setShowSettings(boolean showSettings) {
+        this.showSettings = showSettings;
     }
 
     public void loadFPSText(){
@@ -63,7 +73,6 @@ public abstract class SimpleApplication extends Application {
         fpsText.setSize(font.getCharSet().getRenderedSize());
         fpsText.setLocalTranslation(0, fpsText.getLineHeight(), 0);
         fpsText.setText("Frames per second");
-        fpsText.assemble();
         guiNode.attachChild(fpsText);
     }
 
@@ -84,8 +93,11 @@ public abstract class SimpleApplication extends Application {
             flyCam = new FlyByCamera(cam);
             flyCam.setMoveSpeed(1f);
             flyCam.registerWithDispatcher(inputManager);
-        
-            inputManager.registerKeyBinding("SIMPLEAPP_Exit", KeyInput.KEY_ESCAPE);
+
+            if (context.getType() == Type.Display){
+                inputManager.registerKeyBinding("SIMPLEAPP_Exit", KeyInput.KEY_ESCAPE);
+            }
+
             inputManager.registerKeyBinding("SIMPLEAPP_CameraPos", KeyInput.KEY_C);
             inputManager.addTriggerListener(new BindingListener() {
                 public void onBinding(String binding, float value) {
@@ -120,7 +132,6 @@ public abstract class SimpleApplication extends Application {
         int fps = (int) timer.getFrameRate();
         if (secondCounter >= 1.0f){
             fpsText.setText("Frames per second: "+fps);
-            fpsText.assemble();
             secondCounter = 0.0f;
         }
         

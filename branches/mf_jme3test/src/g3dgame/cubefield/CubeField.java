@@ -19,6 +19,9 @@ import com.g3d.scene.Node;
 import com.g3d.scene.shape.Box;
 import com.g3d.scene.shape.Dome;
 
+/**
+ * @author Kyle "bonechilla" Williams
+ */
 public class CubeField extends SimpleApplication implements BindingListener {
 
     public static void main(String[] args) {

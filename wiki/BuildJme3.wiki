@@ -31,6 +31,23 @@
    * FP\mf_jme3test\lib\lwjgl\2.2_jar\lwjgl.jar 
   # Click ok.
   # Browse to the src/g3dtest folder and run TestDebugShapes?.java
-  # If it worked, you're in! Check out some of the other nice test apps... 
+  # If it worked, you're in! Check out some of the other nice test apps...
 
-All I can say is KUDOS to the new jmonkey team! From what I can tell, jme3 has enormous potential and is definitely the right way to go. I was just getting my feet wet with jme2 when i caught on to this project, and first impression is that the changes are good. I am sure there are plenty others like me that really appreciate all the development time that is going into this.
+== Check out jME3 from SVN using NetBeansIDE 6.8 ==
+
+  # Go to Team -> Subversion -> Checkout 
+  # Enter http://jmonkeyengine.googlecode.com/svn for Repository URL, leave username and password blank. 
+  # Click Next 
+  # Click Browse... to the right of "Repository Folder(s). 
+  # In the new window, open branches tree, and select mf_jme3test 
+  # Under Local Folder specify the folder where you want the jME3 project. 
+  # Click Finish 
+  # Open project when it finished transferring.
+  # Go to http://www.7-zip.org/sdk.html
+  # Download the lzma SDK, extract it in [any]\zma907
+  # In netbeans, file -> new project -> java project with existing sources, click next
+  # Project name "SevenZip" -> next
+  # Source Package Folders: -> add folder, select [any]\zma907\java
+  # In netbeans, Projects Tab, right click on the jme3 project, press "resolve reference problems" and use the "SevenZip" of step 12 project as the missing reference.
+  # Clean and build the JME3 project
+  # Browse to the src/g3dtest folder and run TestDebugShapes.java 

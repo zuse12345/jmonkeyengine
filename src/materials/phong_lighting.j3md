@@ -14,6 +14,7 @@ MaterialDef Phong Lighting {
         Texture2D m_DiffuseMap
         Texture2D m_NormalMap
         Texture2D m_SpecularMap
+        Texture2D m_ParallaxMap // sp impl need
         Float m_Shininess
     }
 
@@ -63,6 +64,7 @@ MaterialDef Phong Lighting {
             DIFFUSEMAP : m_DiffuseMap
             NORMALMAP : m_NormalMap
             SPECULARMAP : m_SpecularMap
+            PARALLAXMAP : m_ParallaxMap
         }
 
     }

@@ -3,6 +3,7 @@ package com.g3d.terrain;
 import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Mesh;
+import com.g3d.scene.VertexBuffer;
 import com.g3d.scene.VertexBuffer.Type;
 import com.g3d.util.BufferUtils;
 import java.nio.BufferUnderflowException;
@@ -252,37 +253,6 @@ public abstract class AbstractGeomap implements Geomap {
         m.setStatic();
         m.updateBound();
         return m;
-    }
-
-    /*
-     * (non-Javadoc)
-     * Convinience method
-     */
-    public Mesh createMesh(Mesh store, Vector3f scale, Vector2f tcScale) {
-        if (store==null)
-            store = new Mesh();
-
-//        if (store.getVertexBuffer()!=null) writeVertexArray(store.getVertexBuffer(),scale);
-//        else store.setVertexBuffer(writeVertexArray(null,scale));
-//
-//        if (hasNormalmap()){
-//            if (store.getNormalBuffer()!=null) writeNormalArray(store.getNormalBuffer());
-//            else store.setNormalBuffer(writeNormalArray(null));
-//        }else{
-//            // generate normals
-//        }
-//
-//        if (store.getIndexBuffer()!=null) writeIndexArray(store.getIndexBuffer());
-//        else store.setIndexBuffer(writeIndexArray(null));
-//
-//        for (int i = 0; i < tcScale.length; i++){
-//            if (store.getTextureBuffer(i)!=null)
-//                writeTexCoordArray(store.getTextureBuffer(i),null,tcScale[i]);
-//            else
-//                store.setTextureBuffer(writeTexCoordArray(null,null,tcScale[i]),i);
-//        }
-
-        return store;
     }
 
 }

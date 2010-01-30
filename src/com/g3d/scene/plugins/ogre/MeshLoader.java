@@ -11,6 +11,7 @@ import com.g3d.math.ColorRGBA;
 import com.g3d.math.FastMath;
 import com.g3d.renderer.queue.RenderQueue.Bucket;
 import com.g3d.scene.Geometry;
+import com.g3d.scene.LodData;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.Node;
 import com.g3d.scene.VertexBuffer;
@@ -52,6 +53,10 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     private String meshName;
     private AssetManager assetManager;
     private OgreMaterialList materialList;
+
+    private int numLevels;
+    private float dist;
+    private LodData lodData;
 
     private ShortBuffer sb;
     private IntBuffer ib;
@@ -345,6 +350,20 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
         buf.put(color.r).put(color.g).put(color.b).put(color.a);
     }
 
+    private void startLodFaceList(String submeshindex, String numfaces){
+        int index = Integer.parseInt(submeshindex);
+        int faceCount = Integer.parseInt(numfaces);
+        
+    }
+
+    private void startLevelOfDetail(String numlevels){
+        numLevels = Integer.parseInt(numlevels);
+    }
+
+    private void startLodGenerated(String depthsqr){
+        dist = Float.parseFloat(depthsqr);
+    }
+
     private void pushBoneAssign(String vertIndex, String boneIndex, String weight) throws SAXException{
         int vert = parseInt(vertIndex);
         float w = parseFloat(weight);
@@ -366,7 +385,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     }
 
     private void startSkeleton(String name){
-        animData = (AnimData) assetManager.loadContent(new AssetKey(name+"xml"));
+        animData = assetManager.loadAnimData(name+"xml");
     }
 
     @Override
@@ -402,6 +421,13 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             startGeometry(attribs.getValue("vertexcount"));
         }else if (qName.equals("vertexbuffer")){
             startVertexBuffer(attribs);
+//        }else if (qName.equals("lodfacelist")){
+//            startLodFaceList(attribs.getValue("submeshindex"),
+//                             attribs.getValue("numfaces"));
+//        }else if (qName.equals("lodgenerated")){
+//            startLodGenerated(attribs.getValue("fromdepthsquared"));
+//        }else if (qName.equals("levelofdetail")){
+//            startLevelOfDetail(attribs.getValue("numlevels"));
         }else if (qName.equals("boneassignments")){
             startBoneAssigns();
         }else if (qName.equals("submesh")){

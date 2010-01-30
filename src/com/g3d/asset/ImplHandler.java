@@ -1,6 +1,7 @@
 package com.g3d.asset;
 
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -147,6 +148,30 @@ public class ImplHandler {
                 extension = extension.toLowerCase();
                 synchronized (locators){
                     locators.put(extension, local);
+                }
+            }
+        }
+    }
+
+    public void unregisterLocator(final Class<?> locatorType, String rootPath, String ... extensions){
+        if (extensions.length == 1 && extensions[0].equals("*")){
+            synchronized (locators){
+                if (genericLocator != null && genericLocator.getClass().equals(locatorType)){
+                    genericLocator = null;
+                }
+            }
+        }else{
+            for (String extension : extensions){
+                extension = extension.toLowerCase();
+                synchronized (locators){
+                    Iterator<ImplThreadLocal> it = locators.values().iterator();
+                    while (it.hasNext()){
+                        ImplThreadLocal locator = it.next();
+                        if (locator.getExtraData().equals(rootPath) &&
+                            locator.getClass().equals(locatorType)){
+                            it.remove();
+                        }
+                    }
                 }
             }
         }

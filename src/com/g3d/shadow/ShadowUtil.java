@@ -10,18 +10,33 @@ import com.g3d.bounding.BoundingVolume;
 import com.g3d.math.FastMath;
 import com.g3d.math.Matrix4f;
 import com.g3d.math.Transform;
+import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.Camera;
 import com.g3d.renderer.queue.GeometryList;
 
+import com.g3d.scene.Geometry;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static java.lang.Math.*;
 
 /**
  * Includes various useful shadow mapping functions.
  *
- * See: http://appsrv.cse.cuhk.edu.hk/~fzhang/pssm_vrcia/
+ * See: 
+ * http://appsrv.cse.cuhk.edu.hk/~fzhang/pssm_vrcia/
+ * http://http.developer.nvidia.com/GPUGems3/gpugems3_ch10.html
  * for more info.
  */
 public class ShadowUtil {
+
+    public static void main(String[] args){
+        float[] splits = new float[3];
+        updateFrustumSplits(splits, 1, 1000, 0.6f);
+        System.out.println(Arrays.toString(splits));
+    }
 
     /**
      * Updates the frustum splits stores in <code>splits</code> using PSSM.
@@ -38,6 +53,27 @@ public class ShadowUtil {
         // of the camera always stay the same, no matter what happens.
         splits[0] = near;
         splits[splits.length-1] = far;
+    }
+
+    public static void updateFrustumPoints2(Camera viewCam,
+                                     float nearOverride,
+                                     float farOverride,
+                                     float scale,
+                                     Vector3f[] points){
+        int w = viewCam.getWidth();
+        int h = viewCam.getHeight();
+        float n = viewCam.getFrustumNear();
+        float f = viewCam.getFrustumFar();
+        
+        points[0].set(viewCam.getWorldCoordinates(new Vector2f(0, 0), n));
+        points[1].set(viewCam.getWorldCoordinates(new Vector2f(0, h), n));
+        points[2].set(viewCam.getWorldCoordinates(new Vector2f(w, h), n));
+        points[3].set(viewCam.getWorldCoordinates(new Vector2f(w, 0), n));
+        
+        points[4].set(viewCam.getWorldCoordinates(new Vector2f(0, 0), f));
+        points[5].set(viewCam.getWorldCoordinates(new Vector2f(0, h), f));
+        points[6].set(viewCam.getWorldCoordinates(new Vector2f(w, h), f));
+        points[7].set(viewCam.getWorldCoordinates(new Vector2f(w, 0), f));
     }
 
     /**
@@ -137,8 +173,17 @@ public class ShadowUtil {
         BoundingVolume store = null;
         for (int i = 0; i < list.size(); i++){
             BoundingVolume vol = list.get(i).getWorldBound();
-            store = vol.transform(mat, store);
+            store = vol.clone().transform(mat, null);
             bbox.mergeLocal(store);
+        }
+        return bbox;
+    }
+
+    private static BoundingBox computeUnionBound(List<BoundingVolume> bv){
+        BoundingBox bbox = new BoundingBox();
+        for (int i = 0; i < bv.size(); i++){
+            BoundingVolume vol = bv.get(i);
+            bbox.mergeLocal(vol);
         }
         return bbox;
     }
@@ -204,9 +249,36 @@ public class ShadowUtil {
         //Transform t = new Transform(shadowCam.getRotation());
         Matrix4f viewProjMatrix = shadowCam.getViewProjectionMatrix();
 
-        BoundingBox casterBB   = computeUnionBound(occluders, viewProjMatrix);
-        BoundingBox recieverBB = computeUnionBound(recievers, viewProjMatrix);
+//        BoundingBox casterBB   = computeUnionBound(occluders, viewProjMatrix);
+//        BoundingBox recieverBB = computeUnionBound(recievers, viewProjMatrix);
         BoundingBox splitBB    = computeBoundForPoints(points, viewProjMatrix);
+
+        ArrayList<BoundingVolume> visRecvList = new ArrayList<BoundingVolume>();
+        for (int i = 0; i < recievers.size(); i++){
+            // convert bounding box to light's viewproj space
+            Geometry reciever = recievers.get(i);
+            BoundingVolume bv = reciever.getWorldBound();
+            BoundingVolume recvBox = bv.transform(viewProjMatrix, null);
+
+            if (splitBB.intersects(recvBox)){
+                visRecvList.add(recvBox);
+            }
+        }
+        
+        ArrayList<BoundingVolume> visOccList = new ArrayList<BoundingVolume>();
+        for (int i = 0; i < occluders.size(); i++){
+            // convert bounding box to light's viewproj space
+            Geometry occluder = occluders.get(i);
+            BoundingVolume bv = occluder.getWorldBound();
+            BoundingVolume occBox = bv.transform(viewProjMatrix, null);
+
+            if (splitBB.intersects(occBox)){
+                visOccList.add(occBox);
+            }
+        }
+
+        BoundingBox casterBB   = computeUnionBound(visOccList);
+        BoundingBox recieverBB = computeUnionBound(visRecvList);
 
         Vector3f casterMin = casterBB.getMin(null);
         Vector3f casterMax = casterBB.getMax(null);
@@ -217,33 +289,33 @@ public class ShadowUtil {
         Vector3f splitMin = splitBB.getMin(null);
         Vector3f splitMax = splitBB.getMax(null);
 
-//        splitMin.set(casterMin);
-//        splitMax.set(casterMax);
+//        actualMin.x = FastMath.clamp(actualMin.x, -1, 1);
+//        actualMin.y = FastMath.clamp(actualMin.y, -1, 1);
+//        actualMax.x = FastMath.clamp(actualMax.x, -1, 1);
+//        actualMax.y = FastMath.clamp(actualMax.y, -1, 1);
+//        float far = actualMin.z + actualMax.z * 4 + 1.0f + 1.5f;
+        splitMin.z = 0;
 
-        splitMin.x = FastMath.clamp(splitMin.x, -1, 1);
-        splitMin.y = FastMath.clamp(splitMin.y, -1, 1);
-        splitMax.x = FastMath.clamp(splitMax.x, -1, 1);
-        splitMax.y = FastMath.clamp(splitMax.y, -1, 1);
-        float far = splitMax.z + 1.0f + 1.5f;
-
-        shadowCam.setFrustumPerspective(45, 1, 1, far);
+        if (!ortho)
+            shadowCam.setFrustumPerspective(45, 1, 1, splitMax.z);
+        
         Matrix4f projMatrix = shadowCam.getProjectionMatrix();
 
         Vector3f cropMin = new Vector3f();
         Vector3f cropMax = new Vector3f();
 
         // IMPORTANT: Special handling for Z values
-//        cropMin.x = max(max(casterMin.x, recieverMin.x), splitMin.x);
-//        cropMax.x = min(min(casterMax.x, recieverMax.x), splitMax.x);
-//
-//        cropMin.y = max(max(casterMin.y, recieverMin.y), splitMin.y);
-//        cropMax.y = min(min(casterMax.y, recieverMax.y), splitMax.y);
-//
-//        cropMin.z = min(casterMin.z, splitMin.z);
-//        cropMax.z = min(recieverMax.z, splitMax.z);
+        cropMin.x = max(max(casterMin.x, recieverMin.x), splitMin.x);
+        cropMax.x = min(min(casterMax.x, recieverMax.x), splitMax.x);
 
-        cropMin.set(splitMin);
-        cropMax.set(splitMax);
+        cropMin.y = max(max(casterMin.y, recieverMin.y), splitMin.y);
+        cropMax.y = min(min(casterMax.y, recieverMax.y), splitMax.y);
+
+        cropMin.z = min(casterMin.z, splitMin.z);
+        cropMax.z = min(recieverMax.z, splitMax.z);
+
+//        cropMin.set(splitMin);
+//        cropMax.set(splitMax);
 
 //        cropMin.z = Math.min(cropMin.z, cropMax.z - cropMin.z - 1000);
 //        cropMin.z = Math.max(10f, cropMin.z);
@@ -254,17 +326,19 @@ public class ShadowUtil {
 
         scaleX = (2.0f) / (cropMax.x - cropMin.x);
         scaleY = (2.0f) / (cropMax.y - cropMin.y);
-//        scaleZ = 2.0f / (cropMax.z - cropMin.z);
+        
         offsetX = -0.5f * (cropMax.x + cropMin.x) * scaleX;
         offsetY = -0.5f * (cropMax.y + cropMin.y) * scaleY;
+
+        scaleZ = 1.0f / (cropMax.z - cropMin.z);
+        offsetZ = -cropMin.z * scaleZ;
+
+//        scaleZ = 2.0f / (cropMax.z - cropMin.z);
 //        offsetZ = -0.5f * (cropMax.z + cropMin.z) * scaleZ;
-
-
-//        offsetZ = -cropMin.z * scaleZ;
 
         Matrix4f cropMatrix = new Matrix4f(scaleX,  0f,      0f,      offsetX,
                                            0f,      scaleY,  0f,      offsetY,
-                                           0f,      0f,      1f,      0f,
+                                           0f,      0f,      scaleZ,  offsetZ,
                                            0f,      0f,      0f,      1f);
 //        cropMatrix.transposeLocal();
 //        Matrix4f cropMatrix = new Matrix4f();

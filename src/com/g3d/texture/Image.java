@@ -61,12 +61,12 @@ public class Image implements Savable {
 
         Luminance8(8),
         Luminance16(16),
-        Luminance16F(16),
-        Luminance32F(32),
+        Luminance16F(16,true),
+        Luminance32F(32,true),
         
         Luminance8Alpha8(16),
         Luminance16Alpha16(32),
-        Luminance16FAlpha16F(32),
+        Luminance16FAlpha16F(32,true),
 
         Intensity8(8),
         Intensity16(16),
@@ -81,40 +81,43 @@ public class Image implements Savable {
         ABGR8(32),
         RGBA16(64),
 
-        DXT1(4,false,true),
-        DXT1A(4,false,true),
-        DXT3(8,false,true),
-        DXT5(8,false,true),
+        DXT1(4,false,true, false),
+        DXT1A(4,false,true, false),
+        DXT3(8,false,true, false),
+        DXT5(8,false,true, false),
+        LATC(8, false, true, false),
 
-        Depth(0,true),
-        Depth16(16,true),
-        Depth24(24,true),
-        Depth32(32,true),
-        Depth32F(32,true),
+        Depth(0,true,false,false),
+        Depth16(16,true,false,false),
+        Depth24(24,true,false,false),
+        Depth32(32,true,false,false),
+        Depth32F(32,true,false,true),
 
-        RGB16F_to_RGB111110F(48),
-        RGB111110F(32),
-        RGB16F_to_RGB9E5(48),
-        RGB9E5(32),
+        RGB16F_to_RGB111110F(48,true),
+        RGB111110F(32,true),
+        RGB16F_to_RGB9E5(48,true),
+        RGB9E5(32,true),
         
-        RGB16F(48),
-        RGB32F(96);
+        RGB16F(48,true),
+        RGB32F(96,true);
 
         private int bpp;
         private boolean isDepth;
         private boolean isCompressed;
+        private boolean isFloatingPoint;
 
         private Format(int bpp){
             this.bpp = bpp;
         }
 
-        private Format(int bpp, boolean isDepth){
+        private Format(int bpp, boolean isFP){
             this(bpp);
-            this.isDepth = isDepth;
+            this.isFloatingPoint = isFP;
         }
 
-        private Format(int bpp, boolean isDepth, boolean isCompressed){
-            this(bpp,isDepth);
+        private Format(int bpp, boolean isDepth, boolean isCompressed, boolean isFP){
+            this(bpp, isFP);
+            this.isDepth = isDepth;
             this.isCompressed = isCompressed;
         }
 
@@ -128,6 +131,10 @@ public class Image implements Savable {
 
         public boolean isCompressed() {
             return isCompressed;
+        }
+
+        public boolean isFloatingPont(){
+            return isFloatingPoint;
         }
 
     }

@@ -32,6 +32,7 @@
 
 package com.g3d.texture;
 
+import com.g3d.asset.TextureKey;
 import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
 import com.g3d.export.InputCapsule;
@@ -59,10 +60,6 @@ import java.io.IOException;
 public abstract class Texture extends GLObject implements Savable {
 
     public enum Type {
-        /**
-         * One dimensional texture. (basically a line)
-         */
-        OneDimensional,
 
         /**
          * Two dimensional texture (default). A rectangle.
@@ -294,6 +291,12 @@ public abstract class Texture extends GLObject implements Savable {
      */
     private Image image = null;
 
+    /**
+     * The texture key allows to reload a texture from a file
+     * if needed.
+     */
+    private TextureKey key = null;
+
     private MinFilter minificationFilter = MinFilter.BilinearNoMipMaps;
     private MagFilter magnificationFilter = MagFilter.Bilinear;
     private ShadowCompareMode shadowCompareMode = ShadowCompareMode.Off;
@@ -386,6 +389,17 @@ public abstract class Texture extends GLObject implements Savable {
     public void setImage(Image image) {
         this.image = image;
         setUpdateNeeded();
+    }
+
+    /**
+     * @param key The texture key that was used to load this texture
+     */
+    public void setTextureKey(TextureKey key){
+        this.key = key;
+    }
+
+    public TextureKey getTextureKey(){
+        return key;
     }
 
     /**
@@ -489,7 +503,7 @@ public abstract class Texture extends GLObject implements Savable {
     @Override
     public void resetObject() {
         this.id = -1;
-        this.updateNeeded = true;
+        setUpdateNeeded();
     }
 
     @Override
@@ -575,6 +589,8 @@ public abstract class Texture extends GLObject implements Savable {
     public Texture createSimpleClone(Texture rVal) {
         rVal.setMinFilter(minificationFilter);
         rVal.setMagFilter(magnificationFilter);
+        rVal.setShadowCompareMode(shadowCompareMode);
+        rVal.setImageDataIndex(imageIndex);
 //        rVal.setHasBorder(hasBorder);
         rVal.setAnisotropicFilter(anisotropicFilter);
         rVal.setImage(image); // NOT CLONED.

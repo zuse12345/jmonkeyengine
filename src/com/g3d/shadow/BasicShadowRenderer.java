@@ -28,9 +28,11 @@ public class BasicShadowRenderer implements SceneProcessor {
     private Material preshadowMat;
     private Material postshadowMat;
     private Material dispMat;
-    private Picture dispPic = new Picture("Display");
+
+    private Picture dispPic = new Picture("Picture");
 
     private Vector3f[] points = new Vector3f[8];
+    private Vector3f direction = new Vector3f();
 
     public BasicShadowRenderer(AssetManager manager, int size){
         shadowFB =  new FrameBuffer(size,size,0);
@@ -55,8 +57,24 @@ public class BasicShadowRenderer implements SceneProcessor {
         viewPort = vp;
     }
 
+    public boolean isInitialized(){
+        return viewPort != null;
+    }
+
+    public Vector3f getDirection() {
+        return direction;
+    }
+
+    public void setDirection(Vector3f direction) {
+        this.direction.set(direction).normalizeLocal();
+    }
+
     public Vector3f[] getPoints() {
         return points;
+    }
+
+    public Camera getShadowCamera(){
+        return shadowCam;
     }
 
     public void postQueue(RenderQueue rq){
@@ -68,11 +86,20 @@ public class BasicShadowRenderer implements SceneProcessor {
                                        1.0f,
                                        points);
 
+        Vector3f frustaCenter = new Vector3f();
+        for (Vector3f point : points){
+            frustaCenter.addLocal(point);
+        }
+        frustaCenter.multLocal(1f / 8f);
+
         // update light direction
         shadowCam.setProjectionMatrix(null);
-        shadowCam.setFrustumPerspective(45, 1, 1, 20);
-        shadowCam.setLocation(new Vector3f(5, 5, 5));
-        shadowCam.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
+        shadowCam.setParallelProjection(true);
+//        shadowCam.setFrustumPerspective(45, 1, 1, 20);
+        
+        shadowCam.setDirection(direction);
+        shadowCam.update();
+        shadowCam.setLocation(frustaCenter);
         shadowCam.update();
         shadowCam.updateViewProjection();
 
@@ -88,21 +115,17 @@ public class BasicShadowRenderer implements SceneProcessor {
         r.setFrameBuffer(shadowFB);
         r.clearBuffers(false,true,false);
         viewPort.getQueue().renderShadowQueue(ShadowMode.Cast, renderManager, shadowCam);
-        r.setFrameBuffer(null);
+        r.setFrameBuffer(viewPort.getOutputFrameBuffer());
 
         renderManager.setForcedMaterial(null);
         renderManager.setCamera(viewCam);
-    }
-
-    public Camera getShadowCamera(){
-        return shadowCam;
     }
 
     public void displayShadowMap(Renderer r){
         Camera cam = viewPort.getCamera();
         int w = cam.getWidth();
         int h = cam.getHeight();
-        
+
         dispPic.setPosition(w / 20f, h / 20f);
         dispPic.setWidth(w / 5f);
         dispPic.setHeight(h / 5f);
@@ -117,7 +140,7 @@ public class BasicShadowRenderer implements SceneProcessor {
         viewPort.getQueue().renderShadowQueue(ShadowMode.Recieve, renderManager, viewPort.getCamera());
         renderManager.setForcedMaterial(null);
 
-        displayShadowMap(renderManager.getRenderer());
+//        displayShadowMap(renderManager.getRenderer());
     }
 
     public void preFrame(float tpf) {

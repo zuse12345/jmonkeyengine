@@ -11,6 +11,7 @@ import com.g3d.asset.AssetManager;
 import com.g3d.input.InputManager;
 import com.g3d.renderer.RenderManager;
 import com.g3d.renderer.ViewPort;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -30,6 +31,7 @@ public class Application implements SystemListener {
     protected Renderer renderer;
     protected RenderManager renderManager;
     protected ViewPort viewPort;
+    protected ViewPort guiViewPort;
 
     protected G3DContext context;
     protected AppSettings settings;
@@ -37,11 +39,17 @@ public class Application implements SystemListener {
     protected Camera cam;
 
     protected boolean inputEnabled = true;
+    protected boolean pauseOnFocus = true;
     protected float speed = 1f;
     protected MouseInput mouseInput;
     protected KeyInput keyInput;
     protected JoyInput joyInput;
     protected InputManager inputManager;
+
+    protected boolean locked = false;
+    protected boolean waitForOk = false;
+    protected final Object lock = new Object();
+    protected final Object waitForLock = new Object();
 
     /**
      * Create a new instance of <code>Application</code>.
@@ -50,6 +58,14 @@ public class Application implements SystemListener {
         // Why initialize it here? 
         // Because it allows offline loading of content.
         initContentManager();
+    }
+
+    public boolean isPauseOnLostFocus() {
+        return pauseOnFocus;
+    }
+
+    public void setPauseOnLostFocus(boolean pauseOnLostFocus) {
+        this.pauseOnFocus = pauseOnLostFocus;
     }
 
     /**
@@ -96,7 +112,9 @@ public class Application implements SystemListener {
         cam.lookAt(new Vector3f(0f, 0f, 0f), Vector3f.UNIT_Y);
 
         renderManager = new RenderManager(renderer);
-        viewPort = renderManager.createView("Default", cam);
+        viewPort = renderManager.createMainView("Default", cam);
+        guiViewPort = renderManager.createPostView("Gui Default", cam);
+        guiViewPort.setClearEnabled(false);
     }
 
     /**
@@ -253,17 +271,49 @@ public class Application implements SystemListener {
     }
 
     public void gainFocus(){
-        speed = 1;
-        context.setAutoFlushFrames(true);
+        if (pauseOnFocus){
+            speed = 1;
+            context.setAutoFlushFrames(true);
+        }
     }
 
     public void loseFocus(){
-        speed = 0;
-        context.setAutoFlushFrames(false);
+        if (pauseOnFocus){
+            speed = 0;
+            context.setAutoFlushFrames(false);
+        }
     }
 
     public void requestClose(boolean esc){
         context.destroy();
+    }
+
+    public void lock(){
+        synchronized (lock){
+            if (!locked)
+                return;
+
+            locked = true;
+            waitForOk = true;
+
+            while (waitForOk){
+                synchronized (waitForLock){
+                    try{
+                        waitForLock.wait();
+                    }catch (InterruptedException ex){
+                    }
+                }
+            }
+        }
+    }
+
+    public void unlock(){
+        synchronized (lock){
+            if (locked){
+                locked = false;
+                lock.notifyAll();
+            }
+        }
     }
 
     /**
@@ -271,6 +321,21 @@ public class Application implements SystemListener {
      * Callback from ContextListener.
      */
     public void update(){
+        synchronized (lock){
+            if (waitForOk){
+                waitForOk = false;
+                synchronized (waitForLock){
+                    waitForLock.notifyAll();
+                }
+            }
+            while (locked){
+                try{
+                    lock.wait();
+                }catch (InterruptedException ex){
+                }
+            }
+        }
+
         if (speed == 0)
             return;
 

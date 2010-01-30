@@ -6,6 +6,7 @@ import com.g3d.math.Matrix4f;
 import com.g3d.math.Quaternion;
 import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
+import com.g3d.post.SceneProcessor;
 import com.g3d.renderer.queue.GeometryList;
 import com.g3d.renderer.queue.RenderQueue;
 import com.g3d.renderer.queue.RenderQueue.Bucket;
@@ -26,7 +27,9 @@ public class RenderManager {
 
     private Renderer renderer;
     private Timer timer;
+    private List<ViewPort> preViewPorts = new ArrayList<ViewPort>();
     private List<ViewPort> viewPorts = new ArrayList<ViewPort>();
+    private List<ViewPort> postViewPorts = new ArrayList<ViewPort>();
     private Camera prevCam = null;
     private Material forcedMaterial = null;
 
@@ -52,20 +55,51 @@ public class RenderManager {
 
     /**
      * Creates a new viewport, to display the given camera's content.
+     * The view will be processed before the primary viewport.
      * @param viewName
      * @param cam
      * @return
      */
-     public ViewPort createView(String viewName, Camera cam){
+     public ViewPort createPreView(String viewName, Camera cam){
+        ViewPort vp = new ViewPort(viewName, cam);
+        preViewPorts.add(vp);
+        return vp;
+     }
+
+     public ViewPort createMainView(String viewName, Camera cam){
         ViewPort vp = new ViewPort(viewName, cam);
         viewPorts.add(vp);
         return vp;
      }
 
+     public ViewPort createPostView(String viewName, Camera cam){
+        ViewPort vp = new ViewPort(viewName, cam);
+        postViewPorts.add(vp);
+        return vp;
+     }
+
+     /**
+      * @param w
+      * @param h
+      */
      public void notifyReshape(int w, int h) {
+        for (ViewPort vp : preViewPorts){
+            if (vp.getOutputFrameBuffer() == null){
+                Camera cam = vp.getCamera();
+                cam.resize(w, h, true);
+            }
+        }
         for (ViewPort vp : viewPorts){
-            Camera cam = vp.getCamera();
-            cam.resize(w, h, true);
+            if (vp.getOutputFrameBuffer() == null){
+                Camera cam = vp.getCamera();
+                cam.resize(w, h, true);
+            }
+        }
+        for (ViewPort vp : postViewPorts){
+            if (vp.getOutputFrameBuffer() == null){
+                Camera cam = vp.getCamera();
+                cam.resize(w, h, true);
+            }
         }
     }
 
@@ -272,27 +306,40 @@ public class RenderManager {
     public void flushQueue(ViewPort vp){
         RenderQueue rq = vp.getQueue();
         Camera cam = vp.getCamera();
+        boolean depthRangeChanged = false;
 
         // render opaque objects with default depth range
         // opaque objects are sorted front-to-back, reducing overdraw
         rq.renderQueue(Bucket.Opaque, this, cam);
 
         // render the sky, with depth range set to the farthest
-        renderer.setDepthRange(1, 1);
-        rq.renderQueue(Bucket.Sky, this, cam);
+        if (!rq.isQueueEmpty(Bucket.Sky)){
+            renderer.setDepthRange(1, 1);
+            rq.renderQueue(Bucket.Sky, this, cam);
+            depthRangeChanged = true;
+        }
 
 
         // transparent objects are last because they require blending with the
         // rest of the scene's objects. Consequently, they are sorted
         // back-to-front.
-        renderer.setDepthRange(0, 1);
-        rq.renderQueue(Bucket.Transparent, this, cam);
+        if (!rq.isQueueEmpty(Bucket.Transparent)){
+            if (depthRangeChanged){
+                renderer.setDepthRange(0, 1);
+                depthRangeChanged = false;
+            }
+            rq.renderQueue(Bucket.Transparent, this, cam);
+        }
 
-        renderer.setDepthRange(0, 0);
-        rq.renderQueue(Bucket.Gui, this, cam);
+        if (!rq.isQueueEmpty(Bucket.Gui)){
+            renderer.setDepthRange(0, 0);
+            rq.renderQueue(Bucket.Gui, this, cam);
+            depthRangeChanged = true;
+        }
 
         // restore range to default
-        renderer.setDepthRange(0, 1);
+        if (depthRangeChanged)
+            renderer.setDepthRange(0, 1);
     }
 
     private void setViewPort(Camera cam){
@@ -332,7 +379,7 @@ public class RenderManager {
         setViewProjection(cam);
     }
 
-    public void renderViewPort(ViewPort vp){
+    public void renderViewPortRaw(ViewPort vp){
         setCamera(vp.getCamera());
         List<Spatial> scenes = vp.getScenes();
         for (int i = scenes.size() - 1; i >= 0; i--){
@@ -341,9 +388,46 @@ public class RenderManager {
         flushQueue(vp);
     }
 
-     public void render(){
+    public void renderViewPort(ViewPort vp, float tpf){
+        List<SceneProcessor> processors = vp.getProcessors();
+        for (SceneProcessor proc : processors){
+            if (!proc.isInitialized()){
+                proc.initialize(this, vp);
+            }
+            proc.preFrame(tpf);
+        }
+
+        renderer.setFrameBuffer(vp.getOutputFrameBuffer());
+        if (vp.isClearEnabled()){
+            renderer.setBackgroundColor(vp.getBackgroundColor());
+            renderer.clearBuffers(true, true, true);
+        }
+        setCamera(vp.getCamera());
+        List<Spatial> scenes = vp.getScenes();
+        for (int i = scenes.size() - 1; i >= 0; i--){
+            renderScene(scenes.get(i), vp);
+        }
+
+        for (SceneProcessor proc : processors){
+            proc.postQueue(vp.getQueue());
+        }
+
+        flushQueue(vp);
+
+        for (SceneProcessor proc : processors){
+            proc.postFrame(vp.getOutputFrameBuffer());
+        }
+    }
+
+     public void render(float tpf){
+         for (int i = preViewPorts.size() - 1; i >= 0; i--){
+             renderViewPort(preViewPorts.get(i), tpf);
+         }
          for (int i = viewPorts.size() - 1; i >= 0; i--){
-             renderViewPort(viewPorts.get(i));
+             renderViewPort(viewPorts.get(i), tpf);
+         }
+         for (int i = postViewPorts.size() - 1; i >= 0; i--){
+             renderViewPort(postViewPorts.get(i), tpf);
          }
      }
 

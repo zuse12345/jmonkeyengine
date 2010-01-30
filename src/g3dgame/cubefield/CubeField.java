@@ -40,6 +40,9 @@ public class CubeField extends SimpleApplication implements BindingListener {
     private BitmapText fpsScoreText, pressStart;
     private String boxSolid;
 
+    private Material playerMaterial;
+    private Material floorMaterial;
+
     /**
      * Initializes game 
      */
@@ -167,18 +170,20 @@ public class CubeField extends SimpleApplication implements BindingListener {
         Dome b = new Dome(Vector3f.ZERO, 10, 100, 1);
         Geometry playerMesh = new Geometry("Box", b);
         playerMesh.updateModelBound();
-        Material mat = new Material(manager, "solid_color.j3md");
-        mat.setColor("m_Color", ColorRGBA.Red);
-        playerMesh.setMaterial(mat);
+
+        playerMaterial = new Material(manager, "solid_color.j3md");
+        playerMaterial.setColor("m_Color", ColorRGBA.Red);
+        playerMesh.setMaterial(playerMaterial);
         playerMesh.setName("player");
 
         Box floor = new Box(Vector3f.ZERO.add(playerMesh.getLocalTranslation().getX(),
                 playerMesh.getLocalTranslation().getY() - 1, 0), 100, 0, 100);
         Geometry floorMesh = new Geometry("Box", floor);
         floorMesh.updateModelBound();
-        mat = new Material(manager, "solid_color.j3md");
-        mat.setColor("m_Color", ColorRGBA.LightGray);
-        floorMesh.setMaterial(mat);
+
+        floorMaterial = new Material(manager, "solid_color.j3md");
+        floorMaterial.setColor("m_Color", ColorRGBA.LightGray);
+        floorMesh.setMaterial(floorMaterial);
         floorMesh.setName("floor");
 
         Node playerNode = new Node();
@@ -197,6 +202,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
         loadText(pressStart, "You lost! Press enter to try again.", font, 0, 5, 0);
         gameReset();
     }
+    
     /**
      * Core Game Logic
      */
@@ -294,15 +300,15 @@ public class CubeField extends SimpleApplication implements BindingListener {
 	                boxSolid(false);
 	                obstacleColors.add(ColorRGBA.Green);
 	                renderer.setBackgroundColor(ColorRGBA.Black);
-	                player.getChild("player").getMaterial().setColor("m_Color", ColorRGBA.White);
-					player.getChild("floor").getMaterial().setColor("m_Color", ColorRGBA.Black);
+	                playerMaterial.setColor("m_Color", ColorRGBA.White);
+			floorMaterial.setColor("m_Color", ColorRGBA.Black);
 	                break;
 	            case 2:
 	                obstacleColors.set(0, ColorRGBA.Black);
 	                boxSolid(true);
 	                renderer.setBackgroundColor(ColorRGBA.White);
-	                player.getChild("player").getMaterial().setColor("m_Color", ColorRGBA.Gray);
-					player.getChild("floor").getMaterial().setColor("m_Color", ColorRGBA.LightGray);
+	                playerMaterial.setColor("m_Color", ColorRGBA.Gray);
+                        floorMaterial.setColor("m_Color", ColorRGBA.LightGray);
 	                break;
 	            case 3:
 	                obstacleColors.set(0, ColorRGBA.Pink);
@@ -311,39 +317,39 @@ public class CubeField extends SimpleApplication implements BindingListener {
 	                obstacleColors.set(0, ColorRGBA.Cyan);
 	                obstacleColors.add(ColorRGBA.Magneta);
 	                renderer.setBackgroundColor(ColorRGBA.Gray);
-					player.getChild("floor").getMaterial().setColor("m_Color", ColorRGBA.Gray);
-	                player.getChild("player").getMaterial().setColor("m_Color", ColorRGBA.White);
+                        floorMaterial.setColor("m_Color", ColorRGBA.Gray);
+	                playerMaterial.setColor("m_Color", ColorRGBA.White);
 	                break;
 	            case 5:
 	                obstacleColors.remove(0);
 	                renderer.setBackgroundColor(ColorRGBA.Pink);
 	                boxSolid(false);
-	                player.getChild("player").getMaterial().setColor("m_Color", ColorRGBA.White);
+	                playerMaterial.setColor("m_Color", ColorRGBA.White);
 	                break;
 	            case 6:
 	                obstacleColors.set(0, ColorRGBA.White);
 	                boxSolid(true);
 	                renderer.setBackgroundColor(ColorRGBA.Black);
-	                player.getChild("player").getMaterial().setColor("m_Color", ColorRGBA.Gray);
-					player.getChild("floor").getMaterial().setColor("m_Color", ColorRGBA.LightGray);
+	                playerMaterial.setColor("m_Color", ColorRGBA.Gray);
+                        floorMaterial.setColor("m_Color", ColorRGBA.LightGray);
 	                break;
 	            case 7:
 	                obstacleColors.set(0, ColorRGBA.Green);
 	                renderer.setBackgroundColor(ColorRGBA.Gray);
-	                player.getChild("player").getMaterial().setColor("m_Color", ColorRGBA.Black);
-					player.getChild("floor").getMaterial().setColor("m_Color", ColorRGBA.Orange);
+	                playerMaterial.setColor("m_Color", ColorRGBA.Black);
+                        floorMaterial.setColor("m_Color", ColorRGBA.Orange);
 	                break;
 	            case 8:
 	                obstacleColors.set(0, ColorRGBA.Red);
-					player.getChild("floor").getMaterial().setColor("m_Color", ColorRGBA.Pink);
+                        floorMaterial.setColor("m_Color", ColorRGBA.Pink);
 	                break;
 	            case 9:
 	                obstacleColors.set(0, ColorRGBA.Orange);
 	                obstacleColors.add(ColorRGBA.Red);
 	                obstacleColors.add(ColorRGBA.Yellow);
 	                renderer.setBackgroundColor(ColorRGBA.White);
-	                player.getChild("player").getMaterial().setColor("m_Color", ColorRGBA.Red);
-	                player.getChild("floor").getMaterial().setColor("m_Color", ColorRGBA.Gray);
+	                playerMaterial.setColor("m_Color", ColorRGBA.Red);
+	                floorMaterial.setColor("m_Color", ColorRGBA.Gray);
 	                colorInt=0;
 	                break;
 	            default:

@@ -113,8 +113,10 @@ public class J3PCreator {
         long initialPos = out.position();
         long uncompSize = entry.length;
 
-        progListener.onText(infoLine.toString());
-        in = new PackerInputStream(in, progListener);
+        if (progListener != null){
+            progListener.onText(infoLine.toString());
+            in = new PackerInputStream(in, progListener);
+        }
         
         compressor.compress(in, out, entry, entry.length);
         long compSize = out.position() - initialPos;
@@ -134,7 +136,9 @@ public class J3PCreator {
         infoLine.setLength(0);
 //        infoLine.append("MB/s: ").append(speed).append('\n');
         infoLine.append("Ratio: ").append(compRatio).append('\n');
-        progListener.onText(infoLine.toString());
+
+        if (progListener != null)
+            progListener.onText(infoLine.toString());
 
         return uncompSize;
     }
@@ -204,7 +208,8 @@ public class J3PCreator {
     }
 
     public void finish(File outFile) {
-        progListener.onMaxProgress(maxProgress);
+        if (progListener != null)
+            progListener.onMaxProgress(maxProgress);
 
         // create header, also updates header.dataOffset variable
         ByteBuffer headerBuf = createHeader();

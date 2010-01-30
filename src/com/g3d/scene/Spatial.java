@@ -98,8 +98,6 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
 
     public transient float queueDistance = Float.NEGATIVE_INFINITY;
 
-    protected Material material;
-
     protected Transform localTransform;
 
     protected Transform worldTransform;
@@ -586,13 +584,8 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
     public Transform getTransform(){
         return localTransform;
     }
-
-    public void setMaterial(Material material){
-        this.material = material;
-    }
-
-    public Material getMaterial(){
-        return material;
+    
+    public void setMaterial(Material mat){
     }
 
     public void addLight(Light l){
@@ -727,8 +720,6 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
                 s.worldBound = worldBound.clone();
             s.worldLights = worldLights.clone();
             s.localLights = worldLights.clone();
-            if (material != null)
-                s.material = material.clone();
             s.worldTransform = worldTransform.clone();
             s.localTransform = localTransform.clone();
             s.parent = null;
@@ -745,12 +736,6 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         OutputCapsule capsule = ex.getCapsule(this);
         capsule.write(name, "name", null);
         capsule.write(worldBound, "world_bound", null);
-
-        // XXX: How to handle materials here?
-        // Export it to J3M? or write as binary?
-        // write name only?
-
-//        capsule.write(material.getMaterialDef()., name, null)
         capsule.write(cullHint, "cull_mode", CullHint.Inherit);
         capsule.write(queueBucket, "queue", RenderQueue.Bucket.Inherit);
         capsule.write(shadowMode, "shadow_mode", ShadowMode.Inherit);
@@ -766,7 +751,6 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         InputCapsule ic = im.getCapsule(this);
         name = ic.readString("name", null);
         worldBound = (BoundingVolume) ic.readSavable("world_bound", null);
-
         cullHint = ic.readEnum("cull_mode", CullHint.class, CullHint.Inherit);
         queueBucket = ic.readEnum("queue", RenderQueue.Bucket.class,
                                     RenderQueue.Bucket.Inherit);

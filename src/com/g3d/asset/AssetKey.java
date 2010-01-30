@@ -42,11 +42,37 @@ public class AssetKey implements Savable {
     }
 
     /**
+     * Do any post-processing on the resource after it has been loaded.
+     * @param asset
+     */
+    public Object postProcess(Object asset){
+        return asset;
+    }
+
+    /**
+     * Create an instance of the asset. Usually it's a special type of cloning.
+     * @param asset
+     * @return The asset, possibly cloned.
+     */
+    public Object createClonedInstance(Object asset){
+        return asset;
+    }
+
+    /**
      * @return True if the asset for this key should be cached. Subclasses
      * should override this method if they want to override caching behavior.
      */
     public boolean shouldCache(){
         return true;
+    }
+
+    /**
+     * @return Should return true, if the asset objects implement the "Asset"
+     * interface and want to be removed from the cache when no longer
+     * referenced in user-code.
+     */
+    public boolean useSmartCache(){
+        return false;
     }
     
     @Override

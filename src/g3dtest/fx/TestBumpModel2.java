@@ -3,6 +3,7 @@ package g3dtest.fx;
 import com.g3d.app.SimpleApplication;
 import com.g3d.asset.plugins.ClasspathLocator;
 import com.g3d.light.PointLight;
+import com.g3d.material.Material;
 import com.g3d.math.ColorRGBA;
 import com.g3d.math.FastMath;
 import com.g3d.math.Quaternion;
@@ -27,18 +28,19 @@ public class TestBumpModel2 extends SimpleApplication {
 
         manager.registerLocator("/bump/", ClasspathLocator.class, "dds", "jpg", "png");
 
-        Spatial ball = manager.loadOgreModel("/bump/ShinyBall.meshxml", null);
-        ball.setMaterial(manager.loadMaterial("/bump/ShinyBall.j3m"));
-        
-        ball.getMaterial().selectTechnique("OldGpu");
-//        ball.getMaterial().setBoolean("m_VertexLighting", true);
+        Spatial ball = manager.loadOgreModel("/bump/ShinyBall.meshxml", (String) null);
+        Material mat = manager.loadMaterial("/bump/ShinyBall.j3m");
+        mat.selectTechnique("OldGpu");
+        ball.setMaterial(mat);
+      
 
         rootNode.attachChild(ball);
 
-        Spatial conn = manager.loadOgreModel("/bump/Conn.meshxml", null);
-        conn.setMaterial(manager.loadMaterial("/bump/Conn.j3m"));
-//        ball.getMaterial().setBoolean("m_VertexLighting", true);
-        conn.getMaterial().selectTechnique("OldGpu");
+        Spatial conn = manager.loadOgreModel("/bump/Conn.meshxml", (String) null);
+        mat = manager.loadMaterial("/bump/Conn.j3m");
+        mat.selectTechnique("OldGpu");
+        conn.setMaterial(mat);
+        
         rootNode.attachChild(conn);
         conn.setLocalScale(10);
         conn.setLocalTranslation(60, 0, 0);

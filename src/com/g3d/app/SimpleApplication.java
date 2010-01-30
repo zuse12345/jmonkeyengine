@@ -16,6 +16,7 @@ import com.g3d.scene.Node;
 import com.g3d.scene.Spatial.CullHint;
 import com.g3d.system.AppSettings;
 import com.g3d.system.G3DContext.Type;
+import com.g3d.util.BufferUtils;
 import java.net.URL;
 
 /**
@@ -87,7 +88,7 @@ public abstract class SimpleApplication extends Application {
         guiNode.setCullHint(CullHint.Never);
         loadFPSText();
         viewPort.attachScene(rootNode);
-        viewPort.attachScene(guiNode);
+        guiViewPort.attachScene(guiNode);
 
         if (inputManager != null){
             flyCam = new FlyByCamera(cam);
@@ -99,6 +100,7 @@ public abstract class SimpleApplication extends Application {
             }
 
             inputManager.registerKeyBinding("SIMPLEAPP_CameraPos", KeyInput.KEY_C);
+            inputManager.registerKeyBinding("SIMPLEAPP_Memory",    KeyInput.KEY_M);
             inputManager.addTriggerListener(new BindingListener() {
                 public void onBinding(String binding, float value) {
                     if (binding.equals("SIMPLEAPP_Exit")){
@@ -111,6 +113,8 @@ public abstract class SimpleApplication extends Application {
                                     loc.x+", "+loc.y+", "+loc.z+")");
                             System.out.println("Camera Position: "+rot);
                         }
+                    }else if (binding.equals("SIMPLEAPP_Memory")){
+                        BufferUtils.printCurrentDirectMemory(null);
                     }
                 }
             });
@@ -141,8 +145,7 @@ public abstract class SimpleApplication extends Application {
         rootNode.updateGeometricState();
         guiNode.updateGeometricState();
 
-        renderer.clearBuffers(true, true, true);
-        renderManager.render();
+        renderManager.render(tpf);
         simpleRender(renderManager);
     }
 

@@ -3,14 +3,17 @@ package com.g3d.renderer.lwjgl;
 import com.g3d.texture.Image;
 import com.g3d.texture.Image.Format;
 import java.nio.ByteBuffer;
+import org.lwjgl.opengl.ARBDepthBufferFloat;
 import org.lwjgl.opengl.ARBHalfFloatPixel;
 import org.lwjgl.opengl.ARBTextureFloat;
-import org.lwjgl.opengl.EXTBgra;
+import org.lwjgl.opengl.ATITextureCompression3DC;
 import org.lwjgl.opengl.EXTPackedFloat;
 import org.lwjgl.opengl.EXTTextureArray;
 import org.lwjgl.opengl.EXTTextureSharedExponent;
 import org.lwjgl.opengl.NVDepthBufferFloat;
 import static org.lwjgl.opengl.EXTTextureCompressionS3TC.*;
+import static org.lwjgl.opengl.EXTTextureCompressionLATC.*;
+import static org.lwjgl.opengl.ATITextureCompression3DC.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL13.*;
@@ -32,6 +35,8 @@ public class TextureUtil {
                 return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
             case DXT5:
                 return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+            case LATC:
+                return GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT;
             case Depth:
                 return GL_DEPTH_COMPONENT;
             case Depth16:
@@ -41,7 +46,7 @@ public class TextureUtil {
             case Depth32:
                 return GL_DEPTH_COMPONENT32;
             case Depth32F:
-                return NVDepthBufferFloat.GL_DEPTH_COMPONENT32F_NV;
+                return ARBDepthBufferFloat.GL_DEPTH_COMPONENT32F;
             case Luminance8Alpha8:
                 return GL_LUMINANCE8_ALPHA8;
             case Luminance16Alpha16:
@@ -90,7 +95,8 @@ public class TextureUtil {
     public static void uploadTexture(Image img,
                                      int target,
                                      int index,
-                                     int border){
+                                     int border,
+                                     boolean tdc){
 
         Image.Format fmt = img.getFormat();
         ByteBuffer data;
@@ -142,6 +148,16 @@ public class TextureUtil {
                 compress = true;
                 internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
                 format = GL_RGBA;
+                dataType = GL_UNSIGNED_BYTE;
+                break;
+            case LATC:
+                compress = true;
+                if (tdc){
+                    internalFormat = GL_COMPRESSED_LUMINANCE_ALPHA_3DC_ATI;
+                }else{
+                    internalFormat = GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT;
+                }
+                format = GL_LUMINANCE_ALPHA;
                 dataType = GL_UNSIGNED_BYTE;
                 break;
             case Depth:

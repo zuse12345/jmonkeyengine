@@ -12,6 +12,7 @@ import com.g3d.export.OutputCapsule;
 import com.g3d.export.Savable;
 import com.g3d.math.Matrix4f;
 import com.g3d.math.Triangle;
+import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.VertexBuffer.*;
 import com.g3d.util.BufferUtils;
@@ -25,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Mesh implements Savable, Cloneable {
 
@@ -49,6 +48,7 @@ public class Mesh implements Savable, Cloneable {
     private BIHTree collisionTree = null;
 
     private EnumMap<VertexBuffer.Type, VertexBuffer> buffers = new EnumMap<Type, VertexBuffer>(VertexBuffer.Type.class);
+    private ShortBuffer[] lodData;
 
     private transient int vertexArrayID = -1;
 
@@ -68,6 +68,15 @@ public class Mesh implements Savable, Cloneable {
             throw new AssertionError();
         }
         return null;
+    }
+
+    public Mesh cloneForAnim(){
+        Mesh clone = clone();
+        if (getBuffer(Type.BindPosePosition) != null){
+            VertexBuffer newPos = new VertexBuffer(Type.Position);
+            
+        }
+        return clone;
     }
 
     public Mode getMode() {
@@ -264,6 +273,10 @@ public class Mesh implements Savable, Cloneable {
         return collisionTree.collideWith(other, worldMatrix, worldBound, results);
     }
 
+    public void setLodData(ShortBuffer[] lodData){
+        this.lodData = lodData;
+    }
+
     public void setBuffer(Type type, int components, FloatBuffer buf) {
         VertexBuffer vb = buffers.get(type);
         if (vb == null){
@@ -339,6 +352,30 @@ public class Mesh implements Savable, Cloneable {
         }
     }
 
+    public void scaleTextureCoordinates(Vector2f scaleFactor){
+        VertexBuffer tc = buffers.get(Type.TexCoord);
+        if (tc == null)
+            throw new IllegalStateException("The mesh has no texture coordinates");
+
+        if (tc.getFormat() != VertexBuffer.Format.Float)
+            throw new UnsupportedOperationException("Only float texture coord format is supported");
+
+        if (tc.getNumComponents() != 2)
+            throw new UnsupportedOperationException("Only 2D texture coords are supported");
+
+        FloatBuffer fb = (FloatBuffer) tc.getData();
+        fb.clear();
+        for (int i = 0; i < fb.capacity() / 2; i++){
+            float x = fb.get();
+            float y = fb.get();
+            fb.position(fb.position()-2);
+            x *= scaleFactor.getX();
+            y *= scaleFactor.getY();
+            fb.put(x).put(y);
+        }
+        fb.clear();
+    }
+
     public void updateBound(){
         VertexBuffer posBuf = buffers.get(VertexBuffer.Type.Position);
         if (meshBound != null && posBuf != null){
@@ -363,6 +400,7 @@ public class Mesh implements Savable, Cloneable {
         out.write(meshBound, "modelBound", null);
         out.write(vertCount, "vertCount", -1);
         out.write(elementCount, "elementCount", -1);
+        out.write(maxNumWeights, "max_num_weights", -1);
         out.write(mode, "mode", Mode.Triangles);
         out.write(collisionTree, "collisionTree", null);
 
@@ -377,6 +415,7 @@ public class Mesh implements Savable, Cloneable {
         meshBound = (BoundingVolume) in.readSavable("modelBound", null);
         vertCount = in.readInt("vertCount", -1);
         elementCount = in.readInt("elementCount", -1);
+        maxNumWeights = in.readInt("max_num_weights", -1);
         mode = in.readEnum("mode", Mode.class, Mode.Triangles);
         collisionTree = (BIHTree) in.readSavable("collisionTree", null);
 

@@ -355,8 +355,6 @@ public class JoglRenderer implements Renderer {
 
     private int convertTextureType(Texture.Type type){
         switch (type){
-            case OneDimensional:
-                return gl.GL_TEXTURE_1D;
             case TwoDimensional:
                 return gl.GL_TEXTURE_2D;
             case TwoDimensionalArray:

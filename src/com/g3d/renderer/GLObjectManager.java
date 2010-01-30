@@ -85,4 +85,12 @@ public class GLObjectManager {
         }
         objectList.clear();
     }
+
+    public void printObjects(){
+        System.out.println(" ------------------- ");
+        System.out.println(" GL Object count: "+ objectList.size());
+        for (GLObject obj : objectList){
+            System.out.println(obj);
+        }
+    }
 }

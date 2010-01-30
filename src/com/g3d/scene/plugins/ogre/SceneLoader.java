@@ -4,7 +4,6 @@ import com.g3d.asset.AssetInfo;
 import com.g3d.asset.AssetKey;
 import com.g3d.asset.AssetLoader;
 import com.g3d.asset.AssetManager;
-import com.g3d.math.ColorRGBA;
 import com.g3d.math.Quaternion;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Node;
@@ -12,7 +11,8 @@ import com.g3d.scene.Spatial;
 import com.g3d.util.xml.SAXUtil;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayDeque;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.logging.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -27,7 +27,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
 
     private static final Logger logger = Logger.getLogger(SceneLoader.class.getName());
 
-    private ArrayDeque<String> elementStack = new ArrayDeque<String>();
+    private Queue<String> elementStack = new LinkedList<String>();
     private String sceneName;
     private AssetManager assetManager;
     private OgreMaterialList materialList;
@@ -127,7 +127,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             
             entityNode = new Node(name);
             Spatial ogreMesh = 
-                    (Spatial) assetManager.loadContent(new OgreMeshKey(meshFile, materialList));
+                    (Spatial) assetManager.loadOgreModel(meshFile, materialList);
             entityNode.attachChild(ogreMesh);
             node.attachChild(entityNode);
             node = null;
@@ -138,7 +138,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
         }else if (qName.equals("scale")){
             node.setLocalScale(SAXUtil.parseVector3(attribs));
         }
-        elementStack.push(qName);
+        elementStack.add(qName);
     }
 
     @Override
@@ -152,7 +152,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             entityNode = null;
         }
         assert elementStack.peek().equals(qName);
-        elementStack.pop();
+        elementStack.remove();
     }
 
     @Override
@@ -167,7 +167,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             sceneName = sceneName.substring(0, sceneName.length() - ext.length() - 1);
 
             materialList = (OgreMaterialList) 
-                    assetManager.loadContent(new AssetKey("Scene.material"));
+                    assetManager.loadOgreMaterial("Scene.material");
 
             XMLReader xr = XMLReaderFactory.createXMLReader();
             xr.setContentHandler(this);

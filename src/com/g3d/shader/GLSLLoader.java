@@ -87,7 +87,7 @@ public class GLSLLoader implements AssetLoader {
                         GlslDependKey key = new GlslDependKey(ln);
                         // make sure not to register an input stream with
                         // the cache..
-                        InputStream stream = (InputStream) owner.loadContent(key);
+                        InputStream stream = owner.loadGLSLLibrary(key);
                         dependNode = loadNode(stream, ln);
                     }
                     node.addDependency(dependNode);

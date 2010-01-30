@@ -661,6 +661,9 @@ public class DOMOutputCapsule implements OutputCapsule {
 
         Element el = appendElement(name);
         el.setAttribute("size", String.valueOf(value.limit()));
+        if (!value.isDirect())
+            el.setAttribute("indirect", "true");
+        
         StringBuilder buf = new StringBuilder();
         int pos = value.position();
         value.rewind();
@@ -691,6 +694,9 @@ public class DOMOutputCapsule implements OutputCapsule {
 
         Element el = appendElement(name);
         el.setAttribute("size", String.valueOf(value.limit()));
+        if (!value.isDirect())
+            el.setAttribute("indirect", "true");
+
         StringBuilder buf = new StringBuilder();
         int pos = value.position();
         value.rewind();
@@ -717,6 +723,9 @@ public class DOMOutputCapsule implements OutputCapsule {
 
         Element el = appendElement(name);
         el.setAttribute("size", String.valueOf(value.limit()));
+        if (!value.isDirect())
+            el.setAttribute("indirect", "true");
+
         StringBuilder buf = new StringBuilder();
         int pos = value.position();
         value.rewind();
@@ -747,6 +756,9 @@ public class DOMOutputCapsule implements OutputCapsule {
 
         Element el = appendElement(name);
         el.setAttribute("size", String.valueOf(value.limit()));
+        if (!value.isDirect())
+            el.setAttribute("indirect", "true");
+
         StringBuilder buf = new StringBuilder();
         int pos = value.position();
         value.rewind();

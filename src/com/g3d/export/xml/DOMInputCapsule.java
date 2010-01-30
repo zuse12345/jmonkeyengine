@@ -1275,6 +1275,7 @@ public class DOMInputCapsule implements InputCapsule {
             }
             String sizeString = tmpEl.getAttribute("size");
             String[] strings = parseTokens(tmpEl.getAttribute("data"));
+            boolean bufsOnHeap = Boolean.parseBoolean(tmpEl.getAttribute("indirect"));
             if (sizeString.length() > 0) {
                 int requiredSize = Integer.parseInt(sizeString);
                 if (strings.length != requiredSize)
@@ -1282,7 +1283,9 @@ public class DOMInputCapsule implements InputCapsule {
                             + name + "'.  size says " + requiredSize
                             + ", data contains " + strings.length);
             }
-            FloatBuffer tmp = BufferUtils.createFloatBuffer(strings.length);
+            FloatBuffer tmp = bufsOnHeap ?
+                                FloatBuffer.allocate(strings.length) :
+                                BufferUtils.createFloatBuffer(strings.length);
             for (String s : strings) tmp.put(Float.parseFloat(s));
             tmp.flip();
             return tmp;
@@ -1308,6 +1311,7 @@ public class DOMInputCapsule implements InputCapsule {
 
             String sizeString = tmpEl.getAttribute("size");
             String[] strings = parseTokens(tmpEl.getAttribute("data"));
+            boolean bufsOnHeap = Boolean.parseBoolean(tmpEl.getAttribute("indirect"));
             if (sizeString.length() > 0) {
                 int requiredSize = Integer.parseInt(sizeString);
                 if (strings.length != requiredSize)
@@ -1315,7 +1319,9 @@ public class DOMInputCapsule implements InputCapsule {
                             + name + "'.  size says " + requiredSize
                             + ", data contains " + strings.length);
             }
-            IntBuffer tmp = BufferUtils.createIntBuffer(strings.length);
+            IntBuffer tmp = bufsOnHeap ?
+                                IntBuffer.allocate(strings.length) :
+                                BufferUtils.createIntBuffer(strings.length);
             for (String s : strings) tmp.put(Integer.parseInt(s));
             tmp.flip();
             return tmp;
@@ -1341,6 +1347,7 @@ public class DOMInputCapsule implements InputCapsule {
 
             String sizeString = tmpEl.getAttribute("size");
             String[] strings = parseTokens(tmpEl.getAttribute("data"));
+            boolean bufsOnHeap = Boolean.parseBoolean(tmpEl.getAttribute("indirect"));
             if (sizeString.length() > 0) {
                 int requiredSize = Integer.parseInt(sizeString);
                 if (strings.length != requiredSize)
@@ -1348,7 +1355,9 @@ public class DOMInputCapsule implements InputCapsule {
                             + name + "'.  size says " + requiredSize
                             + ", data contains " + strings.length);
             }
-            ByteBuffer tmp = BufferUtils.createByteBuffer(strings.length);
+            ByteBuffer tmp = bufsOnHeap ?
+                                ByteBuffer.allocate(strings.length) :
+                                BufferUtils.createByteBuffer(strings.length);
             for (String s : strings) tmp.put(Byte.valueOf(s));
             tmp.flip();
             return tmp;
@@ -1374,6 +1383,7 @@ public class DOMInputCapsule implements InputCapsule {
 
             String sizeString = tmpEl.getAttribute("size");
             String[] strings = parseTokens(tmpEl.getAttribute("data"));
+            boolean bufsOnHeap = Boolean.parseBoolean(tmpEl.getAttribute("indirect"));
             if (sizeString.length() > 0) {
                 int requiredSize = Integer.parseInt(sizeString);
                 if (strings.length != requiredSize)
@@ -1381,7 +1391,9 @@ public class DOMInputCapsule implements InputCapsule {
                             + name + "'.  size says " + requiredSize
                             + ", data contains " + strings.length);
             }
-            ShortBuffer tmp = BufferUtils.createShortBuffer(strings.length);
+            ShortBuffer tmp = bufsOnHeap ?
+                                ShortBuffer.allocate(strings.length) :
+                                BufferUtils.createShortBuffer(strings.length);
             for (String s : strings) tmp.put(Short.valueOf(s));
             tmp.flip();
             return tmp;

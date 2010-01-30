@@ -876,14 +876,23 @@ public class BoundingBox extends BoundingVolume {
     }
 
     public void setXExtent(float xExtent) {
+        if (xExtent < 0)
+            throw new IllegalArgumentException();
+
         this.xExtent = xExtent;
     }
 
     public void setYExtent(float yExtent) {
+        if (yExtent < 0)
+            throw new IllegalArgumentException();
+
         this.yExtent = yExtent;
     }
 
     public void setZExtent(float zExtent) {
+        if (zExtent < 0)
+            throw new IllegalArgumentException();
+
         this.zExtent = zExtent;
     }
     

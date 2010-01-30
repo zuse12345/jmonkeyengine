@@ -8,52 +8,91 @@ import com.g3d.texture.Image.Format;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Scanner;
 import java.util.logging.Logger;
 
 public class HDRLoader implements AssetLoader {
 
     private static final Logger logger = Logger.getLogger(HDRLoader.class.getName());
-    
+
+    private boolean writeRGBE = false;
     private ByteBuffer rleTempBuffer;
     private ByteBuffer dataStore;
     private final float[] tempF = new float[3];
+
+    public HDRLoader(boolean writeRGBE){
+        this.writeRGBE = writeRGBE;
+    }
+
+    public HDRLoader(){
+    }
     
-    private void convertRGBEtoFloat(byte[] rgbe){
+    public static final void convertFloatToRGBE(byte[] rgbe, float red, float green, float blue){
+        double max = red;
+        if (green > max) max = green;
+        if (blue > max) max = blue;
+        if (max < 1.0e-32){
+            rgbe[0] = rgbe[1] = rgbe[2] = rgbe[3] = 0;
+        }else{
+            double exp = Math.ceil( Math.log10(max) / Math.log10(2) );
+            double divider = Math.pow(2.0, exp);
+            rgbe[0] = (byte) ((red   / divider) * 255.0);
+            rgbe[1] = (byte) ((green / divider) * 255.0);
+            rgbe[2] = (byte) ((blue  / divider) * 255.0);
+            rgbe[3] = (byte) (exp + 128.0);
+      }
+    }
+
+    public static final void convertRGBEtoFloat(byte[] rgbe, float[] rgbf){
         int R = rgbe[0] & 0xFF, 
             G = rgbe[1] & 0xFF,
             B = rgbe[2] & 0xFF, 
             E = rgbe[3] & 0xFF;
         
         float e = (float) Math.pow(2f, E - (128 + 8) );
-        tempF[0] = R * e;
-        tempF[1] = G * e;
-        tempF[2] = B * e;
+        rgbf[0] = R * e;
+        rgbf[1] = G * e;
+        rgbf[2] = B * e;
     }
-    
-//    private static void convertRGBEtoFloat2(byte[] rgbe, float[] store){
-//        if (rgbe.length != 4 || store.length != 3)
-//            throw new IllegalArgumentException();
-//
-//        int R = rgbe[0] & 0xFF,
-//            G = rgbe[1] & 0xFF,
-//            B = rgbe[2] & 0xFF,
-//            E = rgbe[3] & 0xFF;
-//
-//        float e = (float) Math.pow(2f, E - 128);
-//        store[0] = (R / 256.0f) * e;
-//        store[1] = (G / 256.0f) * e;
-//        store[2] = (B / 256.0f) * e;
-//    }
-    
+
+    public static final void convertRGBEtoFloat2(byte[] rgbe, float[] rgbf){
+        int R = rgbe[0] & 0xFF,
+            G = rgbe[1] & 0xFF,
+            B = rgbe[2] & 0xFF,
+            E = rgbe[3] & 0xFF;
+
+        float e = (float) Math.pow(2f, E - 128);
+        rgbf[0] = (R / 256.0f) * e;
+        rgbf[1] = (G / 256.0f) * e;
+        rgbf[2] = (B / 256.0f) * e;
+    }
+
+    public static final void convertRGBEtoFloat3(byte[] rgbe, float[] rgbf){
+        int R = rgbe[0] & 0xFF,
+            G = rgbe[1] & 0xFF,
+            B = rgbe[2] & 0xFF,
+            E = rgbe[3] & 0xFF;
+
+        float e = (float) Math.pow(2f, E - (128 + 8) );
+        rgbf[0] = R * e;
+        rgbf[1] = G * e;
+        rgbf[2] = B * e;
+    }
+
     private short flip(int in){
         return (short) ((in << 8 & 0xFF00) | (in >> 8));
     }
     
     private void writeRGBE(byte[] rgbe){
-        convertRGBEtoFloat(rgbe);
-        dataStore.putShort(FastMath.convertFloatToHalf(tempF[0]))
-                 .putShort(FastMath.convertFloatToHalf(tempF[1])).
-                  putShort(FastMath.convertFloatToHalf(tempF[2]));
+        if (writeRGBE){
+            dataStore.put(rgbe);
+        }else{
+            convertRGBEtoFloat(rgbe, tempF);
+            dataStore.putShort(FastMath.convertFloatToHalf(tempF[0]))
+                     .putShort(FastMath.convertFloatToHalf(tempF[1])).
+                      putShort(FastMath.convertFloatToHalf(tempF[2]));
+        }
     }
     
     private String readString(InputStream is) throws IOException{
@@ -146,23 +185,22 @@ public class HDRLoader implements AssetLoader {
             decodeScanlineRLE(in, width);
         }
     }
-    
-    public Object load(AssetInfo info) throws IOException {
+
+    public Image load(InputStream in, boolean flipY) throws IOException{
         float gamma = -1f;
         float exposure = -1f;
         float[] colorcorr = new float[]{ -1f, -1f, -1f };
-        
+
         int width = -1, height = -1;
         boolean verifiedFormat = false;
-        InputStream in = info.openStream();
-        
+
         while (true){
             String ln = readString(in);
             ln = ln.trim();
             if (ln.startsWith("#") || ln.equals("")){
                 if (ln.equals("#?RADIANCE") || ln.equals("#?RGBE"))
                     verifiedFormat = true;
-                
+
                 continue; // comment or empty statement
             } else if (ln.startsWith("+") || ln.startsWith("-")){
                 // + or - mark image resolution and start of data
@@ -170,11 +208,11 @@ public class HDRLoader implements AssetLoader {
                 if (resData.length != 4){
                     throw new IOException("Invalid resolution string in HDR file");
                 }
-                
+
                 if (!resData[0].equals("-Y") || !resData[2].equals("+X")){
                     logger.warning("Flipping/Rotating attributes ignored!");
                 }
-                
+
                 //if (resData[0].endsWith("X")){
                     // first width then height
                 //    width = Integer.parseInt(resData[1]);
@@ -183,7 +221,7 @@ public class HDRLoader implements AssetLoader {
                     width = Integer.parseInt(resData[3]);
                     height = Integer.parseInt(resData[1]);
                 //}
-                
+
                 break;
             } else {
                 // regular command
@@ -192,7 +230,7 @@ public class HDRLoader implements AssetLoader {
                     logger.fine("Ignored string: "+ln);
                     continue;
                 }
-                
+
                 String var = ln.substring(0, index).trim().toLowerCase();
                 String value = ln.substring(index+1).trim().toLowerCase();
                 if (var.equals("format")){
@@ -208,9 +246,9 @@ public class HDRLoader implements AssetLoader {
                 }
             }
         }
-        
+
         assert width != -1 && height != -1;
-        
+
         if (!verifiedFormat)
             logger.warning("Unsure if specified image is Radiance HDR");
 
@@ -218,21 +256,35 @@ public class HDRLoader implements AssetLoader {
         System.gc();
 
         // each pixel times size of component times # of components
-        dataStore = BufferUtils.createByteBuffer(width * height * Format.RGB16F.getBitsPerPixel());
+        Format pixelFormat;
+        if (writeRGBE){
+            pixelFormat = Format.RGBA8;
+        }else{
+            pixelFormat = Format.RGB16F;
+        }
 
-        boolean flip = ((TextureKey) info.getKey()).isFlipY();
-        int bytesPerPixel = Format.RGB16F.getBitsPerPixel() / 8;
+        dataStore = BufferUtils.createByteBuffer(width * height * pixelFormat.getBitsPerPixel());
+
+        int bytesPerPixel = pixelFormat.getBitsPerPixel() / 8;
         int scanLineBytes = bytesPerPixel * width;
         for (int y = height - 1; y >= 0; y--) {
-            if (flip)
+            if (flipY)
                 dataStore.position(scanLineBytes * y);
-            
+
             decodeScanline(in, width);
         }
         in.close();
-        
+
         dataStore.rewind();
-        return new Image(Format.RGB16F, width, height, dataStore);
+        return new Image(pixelFormat, width, height, dataStore);
+    }
+
+    public Object load(AssetInfo info) throws IOException {
+        boolean flip = ((TextureKey) info.getKey()).isFlipY();
+        InputStream in = info.openStream();
+        Image img = load(in, flip);
+        in.close();
+        return img;
     }
 
 }

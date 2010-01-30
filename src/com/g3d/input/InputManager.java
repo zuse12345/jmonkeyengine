@@ -198,6 +198,17 @@ public class InputManager implements RawInputListener {
             }
         }
 
+        // query current mouse button state for all bindings
+        for (Map.Entry<Integer, String> entry : mouseBtnBindings.entrySet()){
+            if (entry.getKey() > mouse.length)
+                continue;
+            
+            if (mouse[entry.getKey()]){
+                // mouse is currently down
+                notifyListeners(entry.getValue(), tpf);
+            }
+        }
+
         notifyListeners("UPDATE", tpf);
         
         if (joyInput != null){

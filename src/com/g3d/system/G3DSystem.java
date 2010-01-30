@@ -1,7 +1,6 @@
 package com.g3d.system;
 
 import com.g3d.util.G3DFormatter;
-import com.g3d.*;
 import com.g3d.audio.AudioRenderer;
 import com.g3d.audio.joal.JoalAudioRenderer;
 import com.g3d.audio.lwjgl.LwjglAudioRenderer;
@@ -25,7 +24,7 @@ public class G3DSystem {
     private static boolean lowPermissions = false;
     
     public static boolean trackDirectMemory(){
-        return false;
+        return true;
     }
 
     public static void setLowPermissions(boolean lowPerm){

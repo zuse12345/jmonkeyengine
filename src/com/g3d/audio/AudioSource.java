@@ -39,7 +39,7 @@ public class AudioSource implements Cloneable, Savable {
     public AudioSource(AssetManager manager, String name, boolean stream){
         this();
         this.key = new AudioKey(name, stream);
-        this.data = (AudioData) manager.loadContent(key);
+        this.data = manager.loadAudio(key);
     }
     
     public AudioSource(AssetManager manager, String name){

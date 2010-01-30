@@ -1181,7 +1181,7 @@ public class BinaryInputCapsule implements InputCapsule {
         }
         return rVal;
     }
-
+    
     // NIO BUFFERS
     // float buffer
 
@@ -1189,7 +1189,16 @@ public class BinaryInputCapsule implements InputCapsule {
         int length = readInt(content);
         if (length == BinaryOutputCapsule.NULL_OBJECT)
             return null;
-        FloatBuffer value = BufferUtils.createFloatBuffer(length);
+
+        boolean bufsOnHeap = false;
+        if (length < -1){
+            length = (-length) + 1;
+            bufsOnHeap = true;
+        }
+
+        FloatBuffer value = bufsOnHeap ? 
+                                FloatBuffer.allocate(length) :
+                                BufferUtils.createFloatBuffer(length);
         for (int x = 0; x < length; x++) {
             value.put(readFloat(content));
         }
@@ -1203,7 +1212,16 @@ public class BinaryInputCapsule implements InputCapsule {
         int length = readInt(content);
         if (length == BinaryOutputCapsule.NULL_OBJECT)
             return null;
-        IntBuffer value = BufferUtils.createIntBuffer(length);
+
+        boolean bufsOnHeap = false;
+        if (length < -1){
+            length = (-length) + 1;
+            bufsOnHeap = true;
+        }
+
+        IntBuffer value = bufsOnHeap ?
+                            IntBuffer.allocate(length) :
+                            BufferUtils.createIntBuffer(length);
         for (int x = 0; x < length; x++) {
             value.put(readInt(content));
         }
@@ -1217,7 +1235,16 @@ public class BinaryInputCapsule implements InputCapsule {
         int length = readInt(content);
         if (length == BinaryOutputCapsule.NULL_OBJECT)
             return null;
-        ByteBuffer value = BufferUtils.createByteBuffer(length);
+
+        boolean bufsOnHeap = false;
+        if (length < -1){
+            length = (-length) + 1;
+            bufsOnHeap = true;
+        }
+
+        ByteBuffer value = bufsOnHeap ?
+                            ByteBuffer.allocate(length) :
+                            BufferUtils.createByteBuffer(length);
         for (int x = 0; x < length; x++) {
             value.put(readByte(content));
         }
@@ -1231,7 +1258,16 @@ public class BinaryInputCapsule implements InputCapsule {
         int length = readInt(content);
         if (length == BinaryOutputCapsule.NULL_OBJECT)
             return null;
-        ShortBuffer value = BufferUtils.createShortBuffer(length);
+
+        boolean bufsOnHeap = false;
+        if (length < -1){
+            length = (-length) + 1;
+            bufsOnHeap = true;
+        }
+        
+        ShortBuffer value = bufsOnHeap ?
+                                ShortBuffer.allocate(length) :
+                                BufferUtils.createShortBuffer(length);
         for (int x = 0; x < length; x++) {
             value.put(readShort(content));
         }

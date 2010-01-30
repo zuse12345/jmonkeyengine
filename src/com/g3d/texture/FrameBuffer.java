@@ -42,6 +42,10 @@ public class FrameBuffer extends GLObject {
         public void setSlot(int slot) {
             this.slot = slot;
         }
+
+        public void resetObject(){
+            id = -1;
+        }
     }
 
     public FrameBuffer(int width, int height, int samples){
@@ -152,7 +156,13 @@ public class FrameBuffer extends GLObject {
     @Override
     public void resetObject() {
         this.id = -1;
-        this.updateNeeded = true;
+        if (colorBuf != null)
+            colorBuf.resetObject();
+        
+        if (depthBuf != null)
+            depthBuf.resetObject();
+
+        setUpdateNeeded();
     }
 
     @Override

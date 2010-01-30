@@ -35,8 +35,8 @@ class CRangeDecoderChannel {
     int Readbyte() throws IOException {
         if (buffer_size == buffer_ind){
             byteBuf.clear();
-            inChannel.read(byteBuf);
-            buffer_size = byteBuf.position();
+            buffer_size = inChannel.read(byteBuf);
+            //buffer_size = byteBuf.position();
             byteBuf.clear();
             buffer_ind = 0;
 

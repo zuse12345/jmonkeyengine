@@ -234,26 +234,28 @@ public class Node extends Spatial implements Savable {
      * @param child
      *            the child to attach to this node.
      * @return the number of children maintained by this node.
+     * @throws NullPointerException If child is null.
      */
     public int attachChild(Spatial child) {
-        if (child != null) {
-            if (child.getParent() != this) {
-                if (child.getParent() != null) {
-                    child.getParent().detachChild(child);
-                }
-                child.setParent(this);
-                children.add(child);
-                
-                // XXX: Not entirely correct? Forces bound update up the 
-                // tree stemming from the attached child. Also forces
-                // transform update down the tree-
-                child.setTransformRefresh();
-                child.setLightListRefresh();
-                if (logger.isLoggable(Level.INFO)) {
-                    logger.info("Child (" + child.getName()
-                            + ") attached to this" + " node (" + getName()
-                            + ")");
-                }
+        if (child == null)
+            throw new NullPointerException();
+
+        if (child.getParent() != this) {
+            if (child.getParent() != null) {
+                child.getParent().detachChild(child);
+            }
+            child.setParent(this);
+            children.add(child);
+
+            // XXX: Not entirely correct? Forces bound update up the
+            // tree stemming from the attached child. Also forces
+            // transform update down the tree-
+            child.setTransformRefresh();
+            child.setLightListRefresh();
+            if (logger.isLoggable(Level.INFO)) {
+                logger.info("Child (" + child.getName()
+                        + ") attached to this" + " node (" + getName()
+                        + ")");
             }
         }
         
@@ -271,25 +273,27 @@ public class Node extends Spatial implements Savable {
      * @param child
      *            the child to attach to this node.
      * @return the number of children maintained by this node.
+     * @throws NullPointerException if child is null.
      */
     public int attachChildAt(Spatial child, int index) {
-        if (child != null) {
-            if (child.getParent() != this) {
-                if (child.getParent() != null) {
-                    child.getParent().detachChild(child);
-                }
-                child.setParent(this);
-                children.add(index, child);
-                child.setTransformRefresh();
-                child.setLightListRefresh();
-                if (logger.isLoggable(Level.INFO)) {
-                    logger.info("Child (" + child.getName()
-                            + ") attached to this" + " node (" + getName()
-                            + ")");
-                }
+        if (child == null)
+            throw new NullPointerException();
+
+        if (child.getParent() != this) {
+            if (child.getParent() != null) {
+                child.getParent().detachChild(child);
+            }
+            child.setParent(this);
+            children.add(index, child);
+            child.setTransformRefresh();
+            child.setLightListRefresh();
+            if (logger.isLoggable(Level.INFO)) {
+                logger.info("Child (" + child.getName()
+                        + ") attached to this" + " node (" + getName()
+                        + ")");
             }
         }
-
+        
         return children.size();
     }
 
@@ -303,7 +307,7 @@ public class Node extends Spatial implements Savable {
      */
     public int detachChild(Spatial child) {
         if (child == null)
-            return -1;
+            throw new NullPointerException();
 
         if (child.getParent() == this) {
             int index = children.indexOf(child);
@@ -327,7 +331,8 @@ public class Node extends Spatial implements Savable {
      */
     public int detachChildNamed(String childName) {
         if (childName == null)
-            return -1;
+            throw new NullPointerException();
+
         for (int x = 0, max = children.size(); x < max; x++) {
             Spatial child =  children.get(x);
             if (childName.equals(child.getName())) {
@@ -417,7 +422,9 @@ public class Node extends Spatial implements Savable {
      * @return the child if found, or null.
      */
     public Spatial getChild(String name) {
-        if (name == null) return null;
+        if (name == null) 
+            return null;
+
         for (int x = 0, cSize = getQuantity(); x < cSize; x++) {
             Spatial child = children.get(x);
             if (name.equals(child.getName())) {
@@ -516,9 +523,8 @@ public class Node extends Spatial implements Savable {
     }
 
     public void setMaterial(Material mat){
-        super.setMaterial(mat);
-        for (Spatial child : children){
-            child.setMaterial(mat);
+        for (int i = 0; i < children.size(); i++){
+            children.get(i).setMaterial(mat);
         }
     }
 

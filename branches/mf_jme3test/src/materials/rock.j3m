@@ -1,0 +1,7 @@
+Material Rock : phong_lighting.j3md {
+     MaterialParameters {
+         m_Shininess: 16.0
+         m_DiffuseMap : rock.PNG
+         m_NormalMap : rockNorm.PNG
+     }
+}

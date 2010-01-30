@@ -17,7 +17,7 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class J3PHttpFile {
+public class J3PHttpFile extends J3P {
 
     private static final int VERSION = 1;
     private static final Logger logger = Logger.getLogger(J3PHttpFile.class.getName());
@@ -26,12 +26,6 @@ public class J3PHttpFile {
     private URL url;
     private StringBuilder sb = new StringBuilder();
     private final byte[] buffer = new byte[4096];
-
-    public static enum Access {
-        Copy,
-        Parse,
-        Stream
-    }
 
     public J3PHttpFile(){
     }
@@ -234,6 +228,22 @@ public class J3PHttpFile {
         }
 
         return null;
+    }
+
+    public InputStream openStream(String name, Access access){
+        J3PEntry entry = findEntry(name);
+        if (entry == null)
+            return null;
+
+        return openStream(entry, name, access);
+    }
+
+    public InputStream openStream(int hash, Access access){
+        J3PEntry entry = findEntry(hash);
+        if (entry == null)
+            return null;
+
+        return openStream(entry, Integer.toHexString(hash), access);
     }
 
     private ReadableByteChannel openChannel(J3PEntry entry, String name, Access access){

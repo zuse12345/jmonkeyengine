@@ -2,7 +2,9 @@ package com.g3d.asset;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.WeakHashMap;
 
 /**
  * An <code>AssetCache</code> allows storage of loaded resources in order
@@ -13,16 +15,9 @@ import java.util.Hashtable;
  */
 public class AssetCache {
 
-    private final ReferenceQueue<Object> refQueue = new ReferenceQueue<Object>();
-    private final Hashtable<AssetKey, Object> loadedObjects = new Hashtable<AssetKey, Object>();
+    private final WeakHashMap<AssetKey, Asset> smartCache = new WeakHashMap<AssetKey, Asset>();
+    private final HashMap<AssetKey, Object> regularCache = new HashMap<AssetKey, Object>();
 
-    private class ContentRef extends WeakReference<Object>{
-        private AssetKey key;
-        public ContentRef(AssetKey key, Object obj){
-            super(obj, refQueue);
-            this.key = key;
-        }
-    }
 
     /**
      * Adds a resource to the cache.
@@ -31,12 +26,16 @@ public class AssetCache {
      * @see #getFromCache(java.lang.String)
      */
     public void addToCache(AssetKey key, Object obj){
-        synchronized (loadedObjects){
-            deleteUnused();
-
-            // add asset to ref queue
-            new ContentRef(key, obj);
-            loadedObjects.put(key, obj);
+        synchronized (regularCache){
+            if (obj instanceof Asset && key.useSmartCache()){
+                // put in smart cache
+                Asset asset = (Asset) obj;
+                asset.setKey(null); // no circular references
+                smartCache.put(key, asset);
+            }else{
+                // put in regular cache
+                regularCache.put(key, obj);
+            }
         }
     }
 
@@ -48,28 +47,17 @@ public class AssetCache {
      * @return
      */
     public Object getFromCache(AssetKey key){
-        synchronized (loadedObjects){
-            deleteUnused();
-            return loadedObjects.get(key);
+        synchronized (regularCache){
+            return regularCache.get(key);
         }
     }
 
     /**
-     * Removes unused references from the cache.
-     */
-    private void deleteUnused(){
-        for (ContentRef ref = (ContentRef) refQueue.poll(); ref != null;){
-            // remove from cache..
-            loadedObjects.remove(ref.key);
-        }
-    }
-
-    /**
-     * Deletes all the assets.
+     * Deletes all the assets in the regular cache.
      */
     public void deleteAllAssets(){
-        synchronized (loadedObjects){
-            loadedObjects.clear();
+        synchronized (regularCache){
+            regularCache.clear();
         }
     }
 }

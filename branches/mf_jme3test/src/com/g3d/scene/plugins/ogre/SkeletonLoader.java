@@ -15,11 +15,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.logging.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -33,7 +34,7 @@ public class SkeletonLoader extends DefaultHandler implements AssetLoader {
     private static final Logger logger = Logger.getLogger(SceneLoader.class.getName());
 
     private AssetManager assetManager;
-    private ArrayDeque<String> elementStack = new ArrayDeque<String>();
+    private Queue<String> elementStack = new LinkedList<String>();
 
     private Map<Integer, Bone> indexToBone = new HashMap<Integer, Bone>();
     private Map<String, Bone> nameToBone = new HashMap<String, Bone>();
@@ -42,7 +43,7 @@ public class SkeletonLoader extends DefaultHandler implements AssetLoader {
     private List<BoneTrack> tracks = new ArrayList<BoneTrack>();
 
     private BoneAnimation animation;
-    private List<BoneAnimation> animations = new ArrayList<BoneAnimation>();
+    private List<BoneAnimation> animations;
 
     private Bone bone;
     private Skeleton skeleton;
@@ -117,13 +118,13 @@ public class SkeletonLoader extends DefaultHandler implements AssetLoader {
             assert elementStack.peek().equals("skeleton");
         }else if (qName.equals("animations")){
             assert elementStack.peek().equals("skeleton");
-            animations.clear();
+            animations = new ArrayList<BoneAnimation>();
         }else if (qName.equals("bones")){
             assert elementStack.peek().equals("skeleton");
         }else if (qName.equals("skeleton")){
             assert elementStack.size() == 0;
         }
-        elementStack.push(qName);
+        elementStack.add(qName);
     }
 
     public void endElement(String uri, String name, String qName) {
@@ -190,7 +191,7 @@ public class SkeletonLoader extends DefaultHandler implements AssetLoader {
             nameToBone.clear();
         }
         assert elementStack.peek().equals(qName);
-        elementStack.pop();
+        elementStack.remove();
     }
 
     /**

@@ -3,9 +3,9 @@ package com.g3d.asset.pack;
 import com.lzma.LzmaReadableChannel;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -18,7 +18,7 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class J3PFile {
+public class J3PFile extends J3P {
 
     private static final int VERSION = 1;
     private static final boolean USE_FILE_MAPPING = false;
@@ -26,12 +26,6 @@ public class J3PFile {
 
     private HashMap<NamedEntry, J3PEntry> entryMap;
     private FileChannel channel;
-
-    public static enum Access {
-        Copy,
-        Parse,
-        Stream
-    }
 
     /**
      * Test method. Extract all files in the J3P file given in the args 
@@ -227,6 +221,46 @@ public class J3PFile {
         return null;
     }
 
+    private InputStream openStream(J3PEntry entry, String name, Access access){
+        if (access == Access.Copy)
+            throw new IllegalArgumentException("Illegal access mode for stream: Copy");
+
+        InputStream in;
+//        try{
+//            if (USE_FILE_MAPPING){
+//                if (access == Access.Parse){
+//                    MappedByteBuffer mbb = channel.map(MapMode.READ_ONLY, entry.offset, entry.length);
+//                    mbb.clear();
+//                    if (mbb.capacity() != entry.length){
+//                        logger.severe("File mapping failed: "+mbb.capacity()+" != "+entry.length);
+//                        return null;
+//                    }
+//                    entryChan = new ReadableBufferChannel(mbb);
+//                }else{
+//                    entryChan = new FileRangeChannel(channel, entry.offset, entry.length);
+//                }
+//            } else {
+//                if (access == Access.Parse){
+//                    ByteBuffer bb = ByteBuffer.allocateDirect(entry.length);
+//                    channel.read(bb, entry.offset);
+//                    bb.clear();
+//                    entryChan = new ReadableBufferChannel(bb);
+//                }else{
+//                    entryChan = new FileRangeChannel(channel, entry.offset, entry.length);
+//                }
+//            }
+//            if ((entry.flags & J3PEntry.LZMA_COMPRESSED) != 0){
+//                // wrap with LZMA decomressor
+//                return new LzmaReadableChannel(entryChan);
+//            }else{
+//                return entryChan;
+//            }
+//        } catch (IOException ex){
+//            logger.log(Level.SEVERE, "Failed to open buffer: " + name, ex);
+//        }
+        return null;
+    }
+
     private ReadableByteChannel openChannel(J3PEntry entry, String name, Access access){
         if (access == Access.Copy)
             throw new IllegalArgumentException("Illegal access mode for channel: Copy");
@@ -265,6 +299,22 @@ public class J3PFile {
             logger.log(Level.SEVERE, "Failed to open buffer: " + name, ex);
         }
         return null;
+    }
+
+    public InputStream openStream(String name, Access access){
+        J3PEntry entry = findEntry(name);
+        if (entry == null)
+            return null;
+
+        return openStream(entry, name, access);
+    }
+
+    public InputStream openStream(int hash, Access access){
+        J3PEntry entry = findEntry(hash);
+        if (entry == null)
+            return null;
+
+        return openStream(entry, Integer.toHexString(hash), access);
     }
 
     public ReadableByteChannel openChannel(String name, Access access){

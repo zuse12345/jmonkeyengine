@@ -51,18 +51,19 @@ public class MaterialLoader implements AssetLoader {
 
     private void readTextureImage(){
         // texture image def
-        String path = scan.next();
+        String ln = scan.nextLine();
+        Scanner lnScan = new Scanner(ln);
+        String path = lnScan.next();
         String mips = null;
         String type = null;
-        if (!scan.hasNext("\n")){
+        if (lnScan.hasNext()){
             // more params
-            type = scan.next();
-            if (!scan.hasNext("\n")){
-                mips = scan.next();
-                if (!scan.hasNext("\n")){
+            type = lnScan.next();
+            if (!lnScan.hasNext("\n")){
+                mips = lnScan.next();
+                if (lnScan.hasNext()){
                     // even more params..
                     // will have to ignore
-                    readString("\n");
                 }
             }
         }
@@ -114,6 +115,9 @@ public class MaterialLoader implements AssetLoader {
         }else if (keyword.equals("max_anisotropy")){
             int amount = scan.nextInt();
             texture.setAnisotropicFilter(amount);
+        }else{
+            System.out.println("Unsupported texture_unit directive: "+keyword);
+            readString("\n");
         }
     }
 
@@ -210,19 +214,36 @@ public class MaterialLoader implements AssetLoader {
             name = readString("\\{");
         }
         scan.next(); // skip "{"
-        while (scan.hasNext("pass")){
+        while (!scan.hasNext("\\}")){
             readPass();
+        }
+        scan.next();
+    }
+
+    private boolean readMaterialStatement(){
+        if (scan.hasNext("technique")){
+            readTechnique();
+            return true;
+        }else if (scan.hasNext("receive_shadows")){
+            // skip "recieve_shadows"
+            scan.next();
+            String isOn = scan.next();
+            return true;
+        }else{
+            return false;
         }
     }
 
+    @SuppressWarnings("empty-statement")
     private void readMaterial(){
         scan.next(); // skip "material"
         // read name
         matName = readString("\\{");
         scan.next(); // skip "{"
-        while (scan.hasNext("technique")){
-            readTechnique();
+        while (!scan.hasNext("\\}")){
+            readMaterialStatement();
         }
+        scan.next();
     }
 
     private Material compileMaterial(){

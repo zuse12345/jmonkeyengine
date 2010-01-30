@@ -1,7 +1,6 @@
 package com.g3d.renderer.lwjgl;
 
 import com.g3d.light.LightList;
-import com.g3d.material.Material;
 import com.g3d.material.RenderState;
 import com.g3d.math.ColorRGBA;
 import com.g3d.math.Matrix4f;
@@ -43,6 +42,7 @@ import java.util.logging.Logger;
 //import org.lwjgl.opengl.ARBVertexArrayObject;
 //import org.lwjgl.opengl.ARBHalfFloatVertex;
 //import org.lwjgl.opengl.ARBVertexArrayObject;
+import org.lwjgl.opengl.ARBDrawBuffers;
 import org.lwjgl.opengl.ARBDrawInstanced;
 import org.lwjgl.opengl.ARBMultisample;
 import org.lwjgl.opengl.ContextCapabilities;
@@ -51,7 +51,6 @@ import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
 import org.lwjgl.opengl.GLContext;
 import org.lwjgl.opengl.NVHalfFloat;
 
-import org.lwjgl.opengl.Util;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL13.*;
@@ -91,11 +90,13 @@ public class LwjglRenderer implements Renderer {
     private int vertexAttribs;
     private int maxFBOSamples;
     private int maxFBOAttachs;
+    private int maxMRTFBOAttachs;
     private int maxRBSize;
     private int maxTexSize;
     private int maxCubeTexSize;
     private int maxVertCount;
     private int maxTriCount;
+    private boolean tdc;
 
     private int lastWidth, lastHeight;
 
@@ -194,6 +195,47 @@ public class LwjglRenderer implements Renderer {
         maxCubeTexSize = intBuf16.get(0);
         logger.log(Level.FINER, "Maximum CubeMap Resolution: {0}", maxCubeTexSize);
 
+        if (ctxCaps.GL_ARB_color_buffer_float)
+            caps.add(Caps.FloatColorBuffer);
+
+        if (ctxCaps.GL_ARB_depth_buffer_float)
+            caps.add(Caps.FloatDepthBuffer);
+
+        if (ctxCaps.GL_ARB_draw_instanced)
+            caps.add(Caps.MeshInstancing);
+
+        if (ctxCaps.GL_ARB_fragment_program)
+            caps.add(Caps.ARBprogram);
+
+        if (ctxCaps.GL_ARB_texture_buffer_object)
+            caps.add(Caps.TextureBuffer);
+
+        if (ctxCaps.GL_ARB_texture_float)
+            caps.add(Caps.FloatTexture);
+
+        if (ctxCaps.GL_ARB_vertex_array_object)
+            caps.add(Caps.VertexBufferArray);
+
+        boolean latc = ctxCaps.GL_EXT_texture_compression_latc;
+        boolean atdc = ctxCaps.GL_ATI_texture_compression_3dc;
+        if (latc || atdc){
+            caps.add(Caps.TextureCompressionLATC);
+            if (atdc && !latc){
+                tdc = true;
+            }
+        }
+
+        if (ctxCaps.GL_EXT_packed_float){
+            caps.add(Caps.PackedFloatTexture);
+            caps.add(Caps.PackedFloatColorBuffer);
+        }
+
+        if (ctxCaps.GL_EXT_texture_array)
+            caps.add(Caps.TextureArray);
+
+        if (ctxCaps.GL_EXT_texture_shared_exponent)
+            caps.add(Caps.SharedExponentTexture);
+
         if (ctxCaps.GL_EXT_framebuffer_object){
             caps.add(Caps.FrameBuffer);
 
@@ -212,6 +254,13 @@ public class LwjglRenderer implements Renderer {
                 maxFBOSamples = intBuf16.get(0);
                 logger.log(Level.FINER, "FBO Max Samples: {0}", maxFBOSamples);
             }
+
+            if (ctxCaps.GL_ARB_draw_buffers){
+                caps.add(Caps.FrameBufferMRT);
+                glGetInteger(ARBDrawBuffers.GL_MAX_DRAW_BUFFERS_ARB, intBuf16);
+                maxMRTFBOAttachs = intBuf16.get(0);
+                logger.log(Level.FINER, "FBO Max MRT renderbuffers: {0}", maxMRTFBOAttachs);
+            }
         }
 
         if (ctxCaps.GL_ARB_multisample){
@@ -224,6 +273,9 @@ public class LwjglRenderer implements Renderer {
                 glEnable(ARBMultisample.GL_MULTISAMPLE_ARB);
             }
         }
+
+        // XXX: remove this line
+//        caps.clear();
     }
 
     public void cleanup(){
@@ -728,6 +780,7 @@ public class LwjglRenderer implements Renderer {
         source.setUsable(false);
         source.clearUpdateNeeded();
         glDeleteShader(source.getId());
+        source.resetObject();
     }
 
     public void deleteShader(Shader shader){
@@ -1018,8 +1071,6 @@ public class LwjglRenderer implements Renderer {
     \*********************************************************************/
     private int convertTextureType(Texture.Type type){
         switch (type){
-            case OneDimensional:
-                return GL_TEXTURE_1D;
             case TwoDimensional:
                 return GL_TEXTURE_2D;
             case TwoDimensionalArray:
@@ -1124,7 +1175,7 @@ public class LwjglRenderer implements Renderer {
             case TwoDimensionalArray:
                 glTexParameteri(target, GL_TEXTURE_WRAP_T, convertWrapMode(tex.getWrap(WrapAxis.T)));
                 // fall down here is intentional..
-            case OneDimensional:
+//            case OneDimensional:
                 glTexParameteri(target, GL_TEXTURE_WRAP_S, convertWrapMode(tex.getWrap(WrapAxis.S)));
                 break;
             default:
@@ -1157,19 +1208,19 @@ public class LwjglRenderer implements Renderer {
                     return;
                 }
                 for (int i = 0; i < 6; i++){
-                    TextureUtil.uploadTexture(img, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, i, 0);
+                    TextureUtil.uploadTexture(img, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, i, 0, tdc);
                 }
             }else if (target == EXTTextureArray.GL_TEXTURE_2D_ARRAY_EXT){
                 List<ByteBuffer> data = img.getData();
                 // -1 index specifies prepare data for 2D Array
-                TextureUtil.uploadTexture(img, target, -1, 0);
+                TextureUtil.uploadTexture(img, target, -1, 0, tdc);
                 for (int i = 0; i < data.size(); i++){
                     // upload each slice of 2D array in turn
                     // this time with the appropriate index
-                     TextureUtil.uploadTexture(img, target, i, 0);
+                     TextureUtil.uploadTexture(img, target, i, 0, tdc);
                 }
             }else{
-                TextureUtil.uploadTexture(img, target, tex.getImageDataIndex(), 0);
+                TextureUtil.uploadTexture(img, target, tex.getImageDataIndex(), 0, tdc);
             }
         }
 
@@ -1463,6 +1514,7 @@ public class LwjglRenderer implements Renderer {
                                            count);
             }else{
                 // emulate it
+                // this wouldn't work though, this uniform must be defined..
                 Uniform u = boundShader.getUniform("gl_InstanceIDARB");
                 for (int i = 0; i < count; i++){
                     u.setInt(i);

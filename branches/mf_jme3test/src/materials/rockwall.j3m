@@ -1,0 +1,8 @@
+Material Pong Rock : phong_lighting.j3md {
+     MaterialParameters {
+         m_Shininess: 2.0
+         m_DiffuseMap : rockwall.jpg
+         m_NormalMap : rockwall_normal.jpg
+         m_ParallaxMap : rockwall_height.jpg
+     }
+}

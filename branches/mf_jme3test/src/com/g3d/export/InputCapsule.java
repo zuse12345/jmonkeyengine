@@ -130,7 +130,7 @@ public interface InputCapsule {
     public Map<? extends Savable, ? extends Savable> readSavableMap(String name, Map<? extends Savable, ? extends Savable> defVal) throws IOException;
     public Map<String, ? extends Savable> readStringSavableMap(String name, Map<String, ? extends Savable> defVal) throws IOException;
 
-    
+
     // NIO BUFFERS
     // float buffer
     

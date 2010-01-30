@@ -16,20 +16,17 @@ import com.g3d.scene.plugins.OBJLoader;
 import com.g3d.texture.plugins.PFMLoader;
 import com.g3d.texture.plugins.TGALoader;
 import com.g3d.audio.plugins.WAVLoader;
+import com.g3d.export.binary.BinaryImporter;
 import com.g3d.scene.Spatial;
 import com.g3d.scene.plugins.ogre.*;
 import com.g3d.shader.Shader;
 import com.g3d.shader.ShaderKey;
-import com.g3d.texture.Image;
 import com.g3d.texture.Texture;
-import com.g3d.texture.Texture2D;
-import com.g3d.texture.TextureCubeMap;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -64,7 +61,7 @@ public class AssetManager {
             registerLocator("/materials/", ClasspathLocator.class, "j3md", "j3m");
             registerLocator("/shaders/", ClasspathLocator.class, "glsl", "vert", "frag");
             registerLocator("/shaderlib/", ClasspathLocator.class, "glsllib");
-            registerLocator("/models/", ClasspathLocator.class, "obj", "meshxml", "skeletonxml", "material");
+            registerLocator("/models/", ClasspathLocator.class, "j3o", "obj", "meshxml", "skeletonxml", "material");
             registerLocator("/fonts/", ClasspathLocator.class, "fnt");
             registerLocator("/", ClasspathLocator.class, "*");
             registerLoader(AWTLoader.class, "jpg", "bmp", "gif", "png", "jpeg");
@@ -77,6 +74,7 @@ public class AssetManager {
             registerLoader(HDRLoader.class, "hdr");
             registerLoader(DDSLoader.class, "dds");
             registerLoader(TGALoader.class, "tga");
+            registerLoader(BinaryImporter.class, "j3o");
             registerLoader(OBJLoader.class, "obj");
             registerLoader(MeshLoader.class, "meshxml");
             registerLoader(SkeletonLoader.class, "skeletonxml");
@@ -109,9 +107,20 @@ public class AssetManager {
             logger.finer("Registered locator: "+locator.getSimpleName());
         }
     }
+    
+    public void unregisterLocator(String rootPath, Class<?> locator, String ... extensions){
+        handler.unregisterLocator(locator, rootPath, extensions);
+        if (logger.isLoggable(Level.FINER)){
+            logger.finer("Unregistered locator: "+locator.getSimpleName());
+        }
+    }
 
     public void clearCache(){
         cache.deleteAllAssets();
+    }
+
+    public void addToCache(AssetKey key, Object asset){
+        cache.addToCache(key, asset);
     }
 
     /**
@@ -119,7 +128,7 @@ public class AssetManager {
      * @param name
      * @return
      */
-    public Object loadContent(AssetKey key){
+    Object loadContent(AssetKey key){
         Object o = key.shouldCache() ? cache.getFromCache(key) : null;
         if (o == null){
             synchronized (alreadyLoadingSet){
@@ -163,6 +172,9 @@ public class AssetManager {
                 logger.finer("Loaded "+key+" with "+
                              loader.getClass().getSimpleName());
 
+                // do processing on asset before caching
+                o = key.postProcess(o);
+
                 if (key.shouldCache())
                     cache.addToCache(key, o);
             }
@@ -174,25 +186,26 @@ public class AssetManager {
                 }
                 alreadyLoadingSet.remove(key);
             }
-            return o;
-        }else{
-            return o;
         }
+
+        // object o is the asset
+        // create an instance for user
+        return key.createClonedInstance(o);
     }
 
-    public void loadContents(String ... names){
-        for (String name : names){
-            loadContent(new AssetKey(name));
-        }
-    }
+//    public void loadContents(String ... names){
+//        for (String name : names){
+//            loadContent(new AssetKey(name));
+//        }
+//    }
 
-    private Future<Object> loadContentLater(String name){
-        return threadingMan.loadContent(name);
-    }
-
-    private Future<Void> loadContentsLater(String ... names){
-        return threadingMan.loadContents(names);
-    }
+//    private Future<Object> loadContentLater(String name){
+//        return threadingMan.loadContent(name);
+//    }
+//
+//    private Future<Void> loadContentsLater(String ... names){
+//        return threadingMan.loadContents(names);
+//    }
 
     /**
      * Loads a texture.
@@ -207,32 +220,7 @@ public class AssetManager {
      * @return
      */
     public Texture loadTexture(TextureKey key){
-        Image img = (Image) loadContent(key);
-        if (img == null)
-            return null;
-
-        Texture tex;
-        if (key.isAsCube()){
-            if (key.isFlipY()){
-                // also flip -y and +y image in cubemap
-                ByteBuffer pos_y = img.getData(2);
-                img.setData(2, img.getData(3));
-                img.setData(3, pos_y);
-            }
-            tex = new TextureCubeMap();
-        }else{
-            tex = new Texture2D();
-        }
-
-        // enable mipmaps if image has them
-        // or generate them if requested by user
-        if (img.hasMipmaps() || key.isGenerateMips())
-            tex.setMinFilter(Texture.MinFilter.Trilinear);
-
-        tex.setAnisotropicFilter(key.getAnisotropy());
-        tex.setName(key.getName());
-        tex.setImage(img);
-        return tex;
+        return (Texture) loadContent(key);
     }
 
     /**
@@ -270,7 +258,11 @@ public class AssetManager {
      * @return
      */
     public BitmapFont loadFont(String name){
-        return (BitmapFont) loadContent(new TextureKey(name, true));
+        return (BitmapFont) loadContent(new AssetKey(name));
+    }
+
+    public InputStream loadGLSLLibrary(AssetKey key){
+        return (InputStream) loadContent(key);
     }
 
     /**
@@ -299,7 +291,17 @@ public class AssetManager {
         return s;
     }
 
+    public AnimData loadAnimData(String name){
+        return (AnimData) loadContent(new AssetKey(name));
+    }
 
+    public Spatial loadOgreModel(String name, OgreMaterialList matList){
+        return (Spatial) loadContent(new OgreMeshKey(name, matList));
+    }
+
+    public OgreMaterialList loadOgreMaterial(String name){
+        return (OgreMaterialList) loadContent(new AssetKey(name));
+    }
 
       /**
      * Load a Ogre model given a matFileName.
@@ -311,9 +313,9 @@ public class AssetManager {
     public Spatial loadOgreModel(String name, String matFileName){
         OgreMaterialList materialList = null;
         if (matFileName != null){
-            materialList = (OgreMaterialList) loadContent(new AssetKey(matFileName));
+            materialList = loadOgreMaterial(matFileName);
         }
-        return (Spatial) loadContent(new OgreMeshKey(name, materialList));
+        return loadOgreModel(name, materialList);
     }
 
     /**
@@ -326,6 +328,16 @@ public class AssetManager {
         return (Spatial) loadContent(new AssetKey(name));
     }
 
+     /**
+     * Load an audio file.
+     *
+     * @param key
+     * @return
+     */
+    public AudioData loadAudio(AudioKey key){
+        return (AudioData) loadContent(key);
+    }
+    
     /**
      * Load an audio file.
      *
@@ -335,7 +347,7 @@ public class AssetManager {
      * @return
      */
     public AudioData loadAudio(String name, boolean stream){
-        return (AudioData) loadContent(new AudioKey(name, stream));
+        return loadAudio(new AudioKey(name, stream));
     }
 
     /**

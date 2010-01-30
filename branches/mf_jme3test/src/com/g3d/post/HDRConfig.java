@@ -4,9 +4,11 @@ public class HDRConfig extends javax.swing.JFrame {
 
     private float gamma, a, white;
     private int lod;
+    private HDRRenderer hdrRender;
 
-    public HDRConfig() {
+    public HDRConfig(HDRRenderer hdrRender) {
         initComponents();
+        this.hdrRender = hdrRender;
         sldWhiteStateChanged(null);
         sldGammaStateChanged(null);
         sldLODStateChanged(null);
@@ -27,6 +29,12 @@ public class HDRConfig extends javax.swing.JFrame {
 
     public float getWhite() {
         return white;
+    }
+
+    private void updateHdr(){
+        hdrRender.setWhiteLevel(getWhite());
+        hdrRender.setThrottle(getLod());
+        hdrRender.setExposure(getA());
     }
 
     /** This method is called from within the constructor to
@@ -120,14 +128,17 @@ public class HDRConfig extends javax.swing.JFrame {
 
     private void sldWhiteStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sldWhiteStateChanged
         white = sldWhite.getValue() / 100f;
+        updateHdr();
     }//GEN-LAST:event_sldWhiteStateChanged
 
     private void sldGammaStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sldGammaStateChanged
         gamma = sldGamma.getValue() / 100f;
+        updateHdr();
     }//GEN-LAST:event_sldGammaStateChanged
 
     private void sldLODStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sldLODStateChanged
         lod = sldLOD.getValue();
+        updateHdr();
     }//GEN-LAST:event_sldLODStateChanged
 
     private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
@@ -137,6 +148,7 @@ public class HDRConfig extends javax.swing.JFrame {
             case 2: a = 0.36f; break;
             case 3: a = 0.72f; break;
         }
+        updateHdr();
     }//GEN-LAST:event_jComboBox1ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

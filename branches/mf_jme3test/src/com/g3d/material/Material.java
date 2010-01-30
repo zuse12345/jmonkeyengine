@@ -6,8 +6,10 @@ import com.g3d.math.ColorRGBA;
 import com.g3d.math.Matrix4f;
 import com.g3d.math.Vector2f;
 import com.g3d.asset.AssetManager;
+import com.g3d.asset.TextureKey;
 import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
 import com.g3d.export.OutputCapsule;
 import com.g3d.export.Savable;
 import com.g3d.light.DirectionalLight;
@@ -66,10 +68,45 @@ public class Material implements Cloneable, Savable {
             this.value = value;
         }
 
+        public MatParamValue clone(){
+            return (MatParamValue) super.clone();
+        }
+
         public void write(G3DExporter ex) throws IOException{
             super.write(ex);
             OutputCapsule oc = ex.getCapsule(this);
-            // TODO: ...
+            if (value instanceof Savable){
+                Savable s = (Savable) value;
+                oc.write(s, "value_savable", null);
+            }else if (value instanceof Float){
+                Float f = (Float) value;
+                oc.write(f.floatValue(), "value_float", 0f);
+            }else if (value instanceof Integer){
+                Integer i = (Integer) value;
+                oc.write(i.intValue(), "value_int", 0);
+            }else if (value instanceof Boolean){
+                Boolean b = (Boolean) value;
+                oc.write(b.booleanValue(), "value_bool", false);
+            }
+        }
+
+        public void read(G3DImporter im) throws IOException{
+            super.read(im);
+            InputCapsule ic = im.getCapsule(this);
+            switch (getType()){
+                case Boolean:
+                    value = ic.readBoolean("value_bool", false);
+                    break;
+                case Float:
+                    value = ic.readFloat("value_float", 0f);
+                    break;
+                case Int:
+                    value = ic.readInt("value_int", 0);
+                    break;
+                default:
+                    value = ic.readSavable("value_savable", null);
+                    break;
+            }
         }
     }
 
@@ -77,11 +114,15 @@ public class Material implements Cloneable, Savable {
 
         private Texture value;
         private int unit;
+        private transient TextureKey key;
 
         public MatParamTextureValue(MatParamType type, String name, Texture value, int unit){
             super(type, name);
             this.value = value;
             this.unit = unit;
+        }
+
+        public MatParamTextureValue(){
         }
 
         public Texture getValue(){
@@ -94,6 +135,27 @@ public class Material implements Cloneable, Savable {
         
         public int getUnit() {
             return unit;
+        }
+
+        public void tryLoadFromKey(AssetManager manager){
+            if (key != null){
+                value = manager.loadTexture(key);
+                key = null;
+            }
+        }
+
+        public void write(G3DExporter ex) throws IOException{
+            super.write(ex);
+            OutputCapsule oc = ex.getCapsule(this);
+            oc.write(unit, "texture_unit", -1);
+            oc.write(value.getTextureKey(), "texture_key", null);
+        }
+
+        public void read(G3DImporter im) throws IOException{
+            super.read(im);
+            InputCapsule ic = im.getCapsule(this);
+            unit = ic.readInt("texture_unit", -1);
+            key = (TextureKey) ic.readSavable("texture_key", null);
         }
     }
 
@@ -114,10 +176,32 @@ public class Material implements Cloneable, Savable {
     public Material(){
     }
 
-    public void write(G3DExporter ex){
+    public void write(G3DExporter ex) throws IOException{
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(def.getAssetName(), "material_def", null);
+        oc.write(additionalState, "render_state", null);
+        oc.write(transparent, "is_transparent", false);
+        oc.writeStringSavableMap(paramValues, "parameters", null);
     }
 
-    public void read(G3DImporter im){
+    public void read(G3DImporter im) throws IOException{
+        InputCapsule ic = im.getCapsule(this);
+        String defName = ic.readString("material_def", null);
+        def = im.getAssetManager().loadMaterialDef(defName);
+        additionalState = (RenderState) ic.readSavable("render_state", null);
+        transparent = ic.readBoolean("is_transparent", false);
+        paramValues = (Map<String, MatParam>) ic.readStringSavableMap("parameters", null);
+
+        // load the textures and update nextTexUnit
+        for (MatParam param : paramValues.values()){
+            if (param instanceof MatParamTextureValue){
+                MatParamTextureValue texVal = (MatParamTextureValue) param;
+                texVal.tryLoadFromKey(im.getAssetManager());
+                if (nextTexUnit < texVal.getUnit()+1){
+                    nextTexUnit = texVal.getUnit()+1;
+                }
+            }
+        }
     }
 
     @Override
@@ -228,11 +312,25 @@ public class Material implements Cloneable, Savable {
     }
 
     public void setTexture(String name, Texture value){
-        if (value.getType() == Texture.Type.TwoDimensional){
-            setTextureParam(name, MatParamType.Texture2D, value);
-        }else if (value.getType() == Texture.Type.CubeMap){
-            setTextureParam(name, MatParamType.TextureCubeMap, value);
+        MatParamType paramType = null;
+        switch (value.getType()){
+            case TwoDimensional:
+                paramType = MatParamType.Texture2D;
+                break;
+            case TwoDimensionalArray:
+                paramType = MatParamType.TextureArray;
+                break;
+            case ThreeDimensional:
+                paramType = MatParamType.Texture3D;
+                break;
+            case CubeMap:
+                paramType = MatParamType.TextureCubeMap;
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown texture type: "+value.getType());
         }
+        
+        setTextureParam(name, paramType, value);
     }
 
     public void setMatrix4(String name, Matrix4f value) {
@@ -253,6 +351,10 @@ public class Material implements Cloneable, Savable {
 
     public void setVector2(String name, Vector2f value) {
         setParam(name, MatParamType.Vector2, value);
+    }
+    
+    public void setVector3(String name, Vector3f value) {
+        setParam(name, MatParamType.Vector3, value);
     }
 
     /**

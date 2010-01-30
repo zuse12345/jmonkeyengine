@@ -1,7 +1,8 @@
 package com.g3d.audio;
 
-import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class QueuedAudioRenderer implements AudioRenderer, Runnable {
 
@@ -9,7 +10,7 @@ public class QueuedAudioRenderer implements AudioRenderer, Runnable {
 
     private AudioRenderer wrapped;
     private final Thread thread = new Thread(this, "jME3 Audio Thread");
-    private final ArrayDeque<Command> commandQueue = new ArrayDeque<Command>(10);
+    private final Queue<Command> commandQueue = new LinkedList<Command>();
 
     private enum CmdType {
         Cleanup,
@@ -46,7 +47,7 @@ public class QueuedAudioRenderer implements AudioRenderer, Runnable {
             // execute commands and update
             synchronized (thread){
                 while (commandQueue.size() > 0){
-                    Command cmd = commandQueue.pop();
+                    Command cmd = commandQueue.remove();
                     if (cmd.type == CmdType.Cleanup)
                         break mainloop;
 
@@ -74,7 +75,7 @@ public class QueuedAudioRenderer implements AudioRenderer, Runnable {
 
     private void enqueueCommand(Command cmd){
         synchronized (thread){
-            commandQueue.push(cmd);
+            commandQueue.add(cmd);
         }
     }
 

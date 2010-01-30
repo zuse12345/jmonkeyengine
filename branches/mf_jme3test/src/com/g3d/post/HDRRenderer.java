@@ -4,10 +4,11 @@ import com.g3d.material.Material;
 import com.g3d.math.Vector2f;
 import com.g3d.renderer.Renderer;
 import com.g3d.asset.AssetManager;
+import com.g3d.renderer.Camera;
+import com.g3d.renderer.Caps;
 import com.g3d.renderer.RenderManager;
 import com.g3d.renderer.ViewPort;
 import com.g3d.renderer.queue.RenderQueue;
-import com.g3d.scene.Geometry;
 import com.g3d.texture.FrameBuffer;
 import com.g3d.texture.Image;
 import com.g3d.texture.Image.Format;
@@ -16,6 +17,8 @@ import com.g3d.texture.Texture.MagFilter;
 import com.g3d.texture.Texture.MinFilter;
 import com.g3d.texture.Texture2D;
 import com.g3d.ui.Picture;
+import java.util.Collection;
+import java.util.logging.Logger;
 
 public class HDRRenderer implements SceneProcessor {
 
@@ -26,6 +29,9 @@ public class HDRRenderer implements SceneProcessor {
     private Renderer renderer;
     private RenderManager renderManager;
     private ViewPort viewPort;
+    private static final Logger logger = Logger.getLogger(HDRRenderer.class.getName());
+
+    private Camera fbCam = new Camera(1, 1);
 
     private FrameBuffer msFB;
 
@@ -60,16 +66,29 @@ public class HDRRenderer implements SceneProcessor {
     private MagFilter fbMagFilter = MagFilter.Bilinear;
     private AssetManager manager;
 
-    public HDRRenderer(AssetManager manager){
+    private boolean enabled = true;
+
+    public HDRRenderer(AssetManager manager, Renderer renderer){
         this.manager = manager;
+        this.renderer = renderer;
+        
+        Collection<Caps> caps = renderer.getCaps();
+        if (caps.contains(Caps.PackedFloatColorBuffer))
+            bufFormat = Format.RGB111110F;
+        else if (caps.contains(Caps.FloatColorBuffer))
+            bufFormat = Format.RGB16F;
+        else{
+            enabled = false;
+            return;
+        }
+    }
+
+    public boolean isEnabled() {
+        return enabled;
     }
 
     public void setSamples(int samples){
         this.numSamples = samples;
-    }
-
-    public void setBufferFormat(Format fmt){
-        bufFormat = fmt;
     }
 
     public void setExposure(float exp){
@@ -100,6 +119,23 @@ public class HDRRenderer implements SceneProcessor {
             fbMagFilter = MagFilter.Bilinear;
             fbMinFilter = MinFilter.BilinearNoMipMaps;
         }
+    }
+
+    public Picture createDisplayQuad(/*int mode, Texture tex*/){
+        if (scene64 == null)
+            return null;
+
+        Material mat = new Material(manager, "loglum.j3md");
+//        if (mode == LUMMODE_ENCODE_LUM)
+//            mat.setBoolean("m_EncodeLum", true);
+//        else if (mode == LUMMODE_DECODE_LUM)
+            mat.setBoolean("m_DecodeLum", true);
+            mat.setTexture("m_Texture", scene64);
+//        mat.setTexture("m_Texture", tex);
+        
+        Picture dispQuad = new Picture("Luminance Display");
+        dispQuad.setMaterial(mat);
+        return dispQuad;
     }
 
     private Material createLumShader(int srcW, int srcH, int bufW, int bufH, int mode,
@@ -154,12 +190,15 @@ public class HDRRenderer implements SceneProcessor {
         if (dst == null){
             fsQuad.setWidth(mainSceneFB.getWidth());
             fsQuad.setHeight(mainSceneFB.getHeight());
+            fbCam.resize(mainSceneFB.getWidth(), mainSceneFB.getHeight(), true);
         }else{
             fsQuad.setWidth(dst.getWidth());
             fsQuad.setHeight(dst.getHeight());
+            fbCam.resize(dst.getWidth(), dst.getHeight(), true);
         }
         fsQuad.setMaterial(mat);
         fsQuad.updateGeometricState();
+        renderManager.setCamera(fbCam);
 
         r.setFrameBuffer(dst);
         r.clearBuffers(true, true, true);
@@ -175,7 +214,20 @@ public class HDRRenderer implements SceneProcessor {
         renderProcessing(r, out, tone);
     }
 
+    private void updateAverageLuminance(Renderer r){
+        renderProcessing(r, scene64FB, hdr64);
+        renderProcessing(r, scene8FB, hdr8);
+        renderProcessing(r, scene1FB[curSrc], hdr1);
+    }
+
+    public boolean isInitialized(){
+        return viewPort != null;
+    }
+
     public void initialize(RenderManager rm, ViewPort vp){
+        if (!enabled)
+            return;
+
         renderer = rm.getRenderer();
         renderManager = rm;
         viewPort = vp;
@@ -183,34 +235,30 @@ public class HDRRenderer implements SceneProcessor {
         // loadInitial()
         fsQuad = new Picture("HDR Fullscreen Quad");
 
+        Format lumFmt = Format.Luminance8;
         scene64FB = new FrameBuffer(64, 64, 0);
-        scene64 = new Texture2D(64, 64, Format.Luminance8);
+        scene64 = new Texture2D(64, 64, lumFmt);
         scene64FB.setColorTexture(scene64);
         scene64.setMagFilter(fbMagFilter);
         scene64.setMinFilter(fbMinFilter);
 
         scene8FB = new FrameBuffer(8, 8, 0);
-        scene8 = new Texture2D(8, 8, Format.Luminance8);
+        scene8 = new Texture2D(8, 8, lumFmt);
         scene8FB.setColorTexture(scene8);
         scene8.setMagFilter(fbMagFilter);
         scene8.setMinFilter(fbMinFilter);
 
         scene1FB[0] = new FrameBuffer(1, 1, 0);
-        scene1[0] = new Texture2D(1, 1, Format.Luminance8);
+        scene1[0] = new Texture2D(1, 1, lumFmt);
         scene1FB[0].setColorTexture(scene1[0]);
 
         scene1FB[1] = new FrameBuffer(1, 1, 0);
-        scene1[1] = new Texture2D(1, 1, Format.Luminance8);
+        scene1[1] = new Texture2D(1, 1, lumFmt);
         scene1FB[1].setColorTexture(scene1[1]);
 
         // load();
         int w = vp.getCamera().getWidth();
         int h = vp.getCamera().getHeight();
-        if (numSamples > 1){
-            msFB = new FrameBuffer(w, h, numSamples);
-            msFB.setDepthBuffer(Format.Depth);
-            msFB.setColorBuffer(bufFormat);
-        }
 
         mainSceneFB = new FrameBuffer(w, h, 0);
         mainScene = new Texture2D(w, h, bufFormat);
@@ -218,6 +266,19 @@ public class HDRRenderer implements SceneProcessor {
         mainSceneFB.setColorTexture(mainScene);
         mainScene.setMagFilter(fbMagFilter);
         mainScene.setMinFilter(fbMinFilter);
+
+        Collection<Caps> caps = renderer.getCaps();
+        if (numSamples > 1 && caps.contains(Caps.FrameBufferMultisample)){
+            msFB = new FrameBuffer(w, h, numSamples);
+            msFB.setDepthBuffer(Format.Depth);
+            msFB.setColorBuffer(bufFormat);
+            vp.setOutputFrameBuffer(msFB);
+        }else{
+            if (numSamples > 1)
+                logger.warning("FBO multisampling not supported on this GPU, request ignored.");
+
+            vp.setOutputFrameBuffer(mainSceneFB);
+        }
 
         // prepare tonemap shader
         tone = new Material(manager, "tonemap.j3md");
@@ -229,6 +290,9 @@ public class HDRRenderer implements SceneProcessor {
     }
 
     public void preFrame(float tpf) {
+        if (!enabled)
+            return;
+
         time += tpf;
         blendFactor = (time / throttle);
     }
@@ -237,20 +301,23 @@ public class HDRRenderer implements SceneProcessor {
     }
 
     public void postFrame(FrameBuffer out) {
+        if (!enabled)
+            return;
+
         if (msFB != null){
             // first render to multisampled FB
-            renderer.setFrameBuffer(msFB);
-            renderer.clearBuffers(true,true,true);
-
-            renderManager.renderViewPort(viewPort);
+//            renderer.setFrameBuffer(msFB);
+//            renderer.clearBuffers(true,true,true);
+//
+//            renderManager.renderViewPortRaw(viewPort);
 
             // render back to non-multisampled FB
             renderer.copyFrameBuffer(msFB, mainSceneFB);
         }else{
-            renderer.setFrameBuffer(mainSceneFB);
-            renderer.clearBuffers(true,true,false);
-
-            renderManager.renderViewPort(viewPort);
+//            renderer.setFrameBuffer(mainSceneFB);
+//            renderer.clearBuffers(true,true,false);
+//
+//            renderManager.renderViewPortRaw(viewPort);
         }
 
         // should we update avg lum?
@@ -283,10 +350,16 @@ public class HDRRenderer implements SceneProcessor {
                 time = 0;
             }
         }
-        renderToneMap(renderer, out);
+
+        // since out == mainSceneFB, tonemap into the main screen instead
+        //renderToneMap(renderer, out);
+        renderToneMap(renderer, null);
     }
 
     public void cleanup() {
+        if (!enabled)
+            return;
+
         if (msFB != null)
             renderer.deleteFrameBuffer(msFB);
         if (mainSceneFB != null)
@@ -297,14 +370,6 @@ public class HDRRenderer implements SceneProcessor {
             renderer.deleteFrameBuffer(scene1FB[0]);
             renderer.deleteFrameBuffer(scene1FB[1]);
         }
-
-    }
-
-
-    private void updateAverageLuminance(Renderer r){
-        renderProcessing(r, scene64FB, hdr64);
-        renderProcessing(r, scene8FB, hdr8);
-        renderProcessing(r, scene1FB[curSrc], hdr1);
     }
 
 }

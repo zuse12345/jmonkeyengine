@@ -2,6 +2,7 @@ MaterialDef Sky Plane {
     MaterialParameters {
         TextureCubeMap m_Texture
         Boolean m_SphereMap
+        Vector3 m_NormalScale
     }
     Technique {
         VertexShader GLSL100: sky.vert

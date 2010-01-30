@@ -118,6 +118,21 @@ public class RenderQueue {
         }
     }
 
+    public boolean isQueueEmpty(Bucket bucket){
+        switch (bucket){
+            case Gui:
+                return guiList.size() == 0;
+            case Opaque:
+                return opaqueList.size() == 0;
+            case Sky:
+                return skyList.size() == 0;
+            case Transparent:
+                return transparentList.size() == 0;
+            default:
+                throw new UnsupportedOperationException("Unsupported bucket type: "+bucket);
+        }
+    }
+
     public void renderQueue(Bucket bucket, RenderManager rm, Camera cam){
         switch (bucket){
             case Gui:

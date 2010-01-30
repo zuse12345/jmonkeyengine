@@ -1,5 +1,10 @@
 package com.g3d.animation;
 
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
+import com.g3d.export.Savable;
 import com.g3d.math.FastMath;
 import com.g3d.math.Matrix4f;
 import com.g3d.scene.Mesh;
@@ -7,8 +12,10 @@ import com.g3d.scene.Node;
 import com.g3d.scene.VertexBuffer;
 import com.g3d.scene.VertexBuffer.Type;
 import com.g3d.util.TempVars;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.Collection;
 import java.util.Map;
 
 public class Model extends Node {
@@ -62,6 +69,7 @@ public class Model extends Node {
         Mesh[] meshes = new Mesh[targets.length];
         for (int i = 0; i < meshes.length; i++)
             meshes[i] = targets[i].clone();
+
         return clone;
     }
 
@@ -95,6 +103,23 @@ public class Model extends Node {
 
         return true;
     }
+
+    public Collection<String> getAnimationNames(){
+        return animationMap.keySet();
+    }
+
+    public float getAnimationLength(String name){
+        BoneAnimation a = animationMap.get(name);
+        if (a == null)
+            return -1;
+
+        return a.getLength();
+    }
+
+    public String getCurrentAnimation(){
+        return animation.getName();
+    }
+
 
     void reset(){
         resetToBind();
@@ -216,9 +241,9 @@ public class Model extends Node {
                     ry += (mat.m10 * vtx + mat.m11 * vty + mat.m12 * vtz + mat.m13) * weight;
                     rz += (mat.m20 * vtx + mat.m21 * vty + mat.m22 * vtz + mat.m23) * weight;
 
-//                    rnx += (nmx * mat.m00 + nmy * mat.m01 + nmz * mat.m02) * weight;
-//                    rny += (nmx * mat.m10 + nmy * mat.m11 + nmz * mat.m12) * weight;
-//                    rnz += (nmx * mat.m20 + nmy * mat.m21 + nmz * mat.m22) * weight;
+                    rnx += (nmx * mat.m00 + nmy * mat.m01 + nmz * mat.m02) * weight;
+                    rny += (nmx * mat.m10 + nmy * mat.m11 + nmz * mat.m12) * weight;
+                    rnz += (nmx * mat.m20 + nmy * mat.m21 + nmz * mat.m22) * weight;
                 }
 
                 idxWeights += fourMinusMaxWeights;
@@ -241,14 +266,12 @@ public class Model extends Node {
     //            fnb.put(rnx).put(rny).put(rnz);
             }
 
+        
             fvb.position(fvb.position()-bufLength);
             fvb.put(posBuf, 0, bufLength);
-//            fnb.position(fnb.position()-bufLength);
-//            fnb.put(normBuf, 0, bufLength);
+            fnb.position(fnb.position()-bufLength);
+            fnb.put(normBuf, 0, bufLength);
         }
-
-        fvb.flip();
-        fnb.flip();
 
         vb.updateData(fvb);
         nb.updateData(fnb);
@@ -277,5 +300,29 @@ public class Model extends Node {
         }
 
         time += tpf;
+    }
+
+    @Override
+    public void read(G3DImporter im) throws IOException{
+        super.read(im);
+
+        InputCapsule in = im.getCapsule(this);
+        Savable[] sav = in.readSavableArray("targets", null);
+        if (sav != null){
+            targets = new Mesh[sav.length];
+            System.arraycopy(sav, 0, targets, 0, sav.length);
+        }
+        skeleton = (Skeleton) in.readSavable("skeleton", null);
+        animationMap = (Map<String, BoneAnimation>) in.readStringSavableMap("animations", null);
+    }
+
+    @Override
+    public void write(G3DExporter ex) throws IOException{
+        super.write(ex);
+
+        OutputCapsule out = ex.getCapsule(this);
+        out.write(targets, "targets", null);
+        out.write(skeleton, "skeleton", null);
+        out.writeStringSavableMap(animationMap, "animations", null);
     }
 }

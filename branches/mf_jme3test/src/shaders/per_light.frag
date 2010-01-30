@@ -7,6 +7,8 @@
 //#define NORMALMAP
 //#define LOW_QUALITY
 //#define SPECULARMAP
+//#define PARALLAXMAP
+//#define NORMALMAP_PARALLAX
 
 varying vec2 texCoord;
 
@@ -28,6 +30,10 @@ varying vec4 SpecularSum;
   uniform sampler2D m_SpecularMap;
 #endif
 
+#ifdef PARALLAXMAP
+  uniform sampler2D m_ParallaxMap;
+#endif
+  
 #ifdef NORMALMAP
   uniform sampler2D m_NormalMap;
 #else
@@ -63,9 +69,23 @@ vec2 computeLighting(in vec3 wvPos, in vec3 wvNorm, in vec3 vDir, in vec3 lightD
 #endif
 
 void main(){
-    //float h = texture2D(m_DiffuseMap, texCoord).a;
-    //h = ( h *1.0 ) * vViewDir.z;
-	vec2 newTexCoord = texCoord; //+ vViewDir.xy * h;
+    vec2 newTexCoord;
+    #if defined(PARALLAXMAP) || defined(NORMALMAP_PARALLAX)
+       float h;
+       #ifdef PARALLAXMAP
+          h = texture2D(m_ParallaxMap, texCoord).r;
+       #else
+          h = texture2D(m_NormalMap, texCoord).a;
+       #endif
+       float heightScale = 0.05;
+       float heightBias = heightScale * -0.5;
+       vec3 normView = normalize(vViewDir);
+       h = (h * heightScale + heightBias) * normView.z;
+       newTexCoord = texCoord + (h * -normView.xy);
+    #else
+       newTexCoord = texCoord;
+    #endif
+    
 
     // ***********************
     // Read from textures
@@ -73,6 +93,7 @@ void main(){
     #if defined(NORMALMAP) && !defined(VERTEX_LIGHTING)
       vec4 normalHeight = texture2D(m_NormalMap, newTexCoord);
       vec3 normal = (normalHeight.xyz * vec3(2.0) - vec3(1.0));
+      normal.y = -normal.y;
     #elif !defined(VERTEX_LIGHTING)
       vec3 normal = vNormal;
     #endif

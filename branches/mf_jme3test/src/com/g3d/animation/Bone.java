@@ -164,14 +164,15 @@ public final class Bone implements Savable {
     final void updateWorldVectors(){
         if (parent != null){
             // worldRot = localRot * parentWorldRot
+
             parent.worldRot.mult(localRot, worldRot);
-            //worldRot = parent.worldRot.mult(localRot);
-            //worldRot = parent.worldRot.mult(localRot, worldRot);
+//            worldRot = parent.worldRot.mult(localRot);
+//            worldRot = parent.worldRot.mult(localRot, worldRot);
+
 
             // worldPos = parentWorldPos + (parentWorldRot * localPos)
-            //worldPos = parent.worldRot.mult(localPos);
             parent.worldRot.mult(localPos, worldPos);
-            //parent.worldRot.mult(localPos, worldPos);
+//            worldPos = parent.worldRot.mult(localPos);
             worldPos.addLocal(parent.worldPos);
         }else{
             worldRot.set(localRot);
@@ -201,6 +202,11 @@ public final class Bone implements Savable {
         initialPos.set(localPos);
         initialRot.set(localRot);
 
+        if (worldBindInversePos == null){
+            worldBindInversePos = new Vector3f();
+            worldBindInverseRot = new Quaternion();
+        }
+        
         // Save inverse derived position/scale/orientation, used for calculate offset transform later
         worldBindInversePos.set(worldPos);
         worldBindInversePos.negateLocal();
@@ -322,6 +328,9 @@ public final class Bone implements Savable {
         initialPos = (Vector3f) input.readSavable("initialPos", null);
         initialRot = (Quaternion) input.readSavable("initialRot", null);
         attachNode = (Node) input.readSavable("attachNode", null);
+
+        localPos.set(initialPos);
+        localRot.set(initialRot);
 
         List<Bone> childList = input.readSavableList("children", null);
         for (Bone child : childList){

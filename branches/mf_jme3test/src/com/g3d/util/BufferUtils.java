@@ -42,7 +42,6 @@ import java.nio.ByteOrder;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,7 +66,6 @@ public final class BufferUtils {
     ////  -- TRACKER HASH --  ////
     private static final Map<Buffer, Object> trackingHash = Collections.synchronizedMap(new WeakHashMap<Buffer, Object>());
     private static final Object ref = new Object();
-
 
     ////  -- GENERIC CLONE -- ////
 
@@ -976,6 +974,9 @@ public final class BufferUtils {
                 dBufs++;
             }
         }
+        long heapMem = Runtime.getRuntime().totalMemory() -
+                       Runtime.getRuntime().freeMemory();
+
         boolean printStout = store == null;
         if (store == null) {
             store = new StringBuilder();
@@ -984,6 +985,7 @@ public final class BufferUtils {
         store.append("(b: ").append(bBufs).append("  f: ").append(fBufs)
                 .append("  i: ").append(iBufs).append("  s: ").append(sBufs)
                 .append("  d: ").append(dBufs).append(")").append("\n");
+        store.append("Total   heap memory held: ").append(heapMem/1024).append("kb\n");
         store.append("Total direct memory held: ").append(totalHeld/1024).append("kb\n");
         store.append("(b: ").append(bBufsM/1024).append("kb  f: ").append(fBufsM/1024)
                 .append("kb  i: ").append(iBufsM/1024).append("kb  s: ").append(sBufsM/1024)

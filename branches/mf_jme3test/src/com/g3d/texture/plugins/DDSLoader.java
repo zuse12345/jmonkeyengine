@@ -63,6 +63,8 @@ public class DDSLoader implements AssetLoader {
     private static final boolean forceRGBA = false;
 
     private static final int DDSD_MANDATORY = 0x1007;
+    private static final int DDSD_MANDATORY_DX10 = 0x6;
+
     private static final int DDSD_MIPMAPCOUNT = 0x20000;
     private static final int DDSD_LINEARSIZE = 0x80000;
     private static final int DDSD_DEPTH = 0x800000;
@@ -74,6 +76,10 @@ public class DDSLoader implements AssetLoader {
     private static final int DDPF_GRAYSCALE = 0x20000;
     // used by compressonator to mark alpha images, alpha channel mask is used for data and bitcount is 8
     private static final int DDPF_ALPHA = 0x2;
+    // used by NVTextureTools to mark normal images.
+    private static final int DDPF_NORMAL = 0x80000000;
+
+    private static final int SWIZZLE_xGxR = 0x78477852;
 
     private static final int DDSCAPS_COMPLEX = 0x8;
     private static final int DDSCAPS_TEXTURE = 0x1000;
@@ -85,6 +91,16 @@ public class DDSLoader implements AssetLoader {
     private static final int PF_DXT1 = 0x31545844;
     private static final int PF_DXT3 = 0x33545844;
     private static final int PF_DXT5 = 0x35545844;
+    private static final int PF_ATI2 = 0x41544932;
+    private static final int PF_DX10 = 0x30315844; // a DX10 format
+    
+    private static final int DX10DIM_BUFFER = 0x1,
+                             DX10DIM_TEXTURE1D = 0x2,
+                             DX10DIM_TEXTURE2D = 0x3,
+                             DX10DIM_TEXTURE3D = 0x4;
+
+    private static final int DX10MISC_GENERATE_MIPS = 0x1,
+                             DX10MISC_TEXTURECUBE = 0x4;
 
     private static final double LOG2 = Math.log(2);
     private int width;
@@ -95,8 +111,10 @@ public class DDSLoader implements AssetLoader {
     private int mipMapCount;
     private int caps1;
     private int caps2;
+    private boolean directx10;
     private boolean compressed;
     private boolean grayscaleOrAlpha;
+    private boolean normal;
     private Format pixelFormat;
     private int bpp;
     private int[] sizes;
@@ -123,17 +141,43 @@ public class DDSLoader implements AssetLoader {
         return new Image(pixelFormat, width, height, 0, data, sizes);
     }
 
+    private void loadDX10Header() throws IOException{
+        int dxgiFormat = in.readInt();
+        if (dxgiFormat != 83){
+            throw new IOException("Only DXGI_FORMAT_BC5_UNORM " +
+                                  "is supported for DirectX10 DDS! Got: "+dxgiFormat);
+        }
+        pixelFormat = Format.LATC;
+        bpp = 8;
+        compressed = true;
+
+        int resDim = in.readInt();
+        if (resDim == DX10DIM_TEXTURE3D){
+            // mark texture as 3D
+        }
+        int miscFlag = in.readInt();
+        int arraySize = in.readInt();
+        if (is(miscFlag, DX10MISC_TEXTURECUBE)){
+            // mark texture as cube
+            if (arraySize != 6){
+                throw new IOException("Cubemaps should consist of 6 images!");
+            }
+        }
+        
+        in.skipBytes(4); // skip reserved value
+    }
+
     /**
      * Reads the header (first 128 bytes) of a DDS File
      */
-    public void loadHeader() throws IOException {
+    private void loadHeader() throws IOException {
         if (in.readInt() != 0x20534444 || in.readInt() != 124) {
             throw new IOException("Not a DDS file");
         }
 
         flags = in.readInt();
 
-        if (!is(flags, DDSD_MANDATORY)) {
+        if (!is(flags, DDSD_MANDATORY) && !is(flags, DDSD_MANDATORY_DX10)) {
             throw new IOException("Mandatory flags missing");
         }
         
@@ -143,17 +187,25 @@ public class DDSLoader implements AssetLoader {
         depth = in.readInt();
         mipMapCount = in.readInt();
         in.skipBytes(44);
+        pixelFormat = null;
+        directx10 = false;
         readPixelFormat();
         caps1 = in.readInt();
         caps2 = in.readInt();
         in.skipBytes(12);
 
-        if (!is(caps1, DDSCAPS_TEXTURE)) {
-            throw new IOException("File is not a texture");
-        }
+        if (!directx10){
+            if (!is(caps1, DDSCAPS_TEXTURE)) {
+                throw new IOException("File is not a texture");
+            }
 
-        if (depth <= 0)
-            depth = 1;
+            if (depth <= 0)
+                depth = 1;
+
+            if (is(caps2, DDSCAPS2_CUBEMAP)) {
+                depth = 6; // somewhat of a hack, force loading 6 textures if a cubemap
+            }
+        }
 
         int expectedMipmaps = 1 + (int) Math.ceil(Math.log(Math.max(height, width)) / LOG2);
 
@@ -169,6 +221,10 @@ public class DDSLoader implements AssetLoader {
             mipMapCount = 1;
         }
 
+        if (directx10){
+            loadDX10Header();
+        }
+
         loadSizes();
     }
 
@@ -182,10 +238,13 @@ public class DDSLoader implements AssetLoader {
         }
 
         int pfFlags = in.readInt();
+        normal = is(pfFlags, DDPF_NORMAL);
+
         if (is(pfFlags, DDPF_FOURCC)) {
             compressed = true;
             int fourcc = in.readInt();
-            in.skipBytes(20);
+            int swizzle = in.readInt();
+            in.skipBytes(16);
 
             switch (fourcc) {
                 case PF_DXT1:
@@ -203,7 +262,20 @@ public class DDSLoader implements AssetLoader {
                 case PF_DXT5:
                     bpp = 8;
                     pixelFormat = Image.Format.DXT5;
+                    if (swizzle == SWIZZLE_xGxR){
+                        normal = true;
+                    }
                     break;
+                case PF_ATI2:
+                    bpp = 8;
+                    pixelFormat = Image.Format.LATC;
+                    break;
+                case PF_DX10:
+                    compressed = false;
+                    directx10 = true;
+                    // exit here, the rest of the structure is not valid
+                    // the real format will be available in the DX10 header
+                    return;
                 default:
                     throw new IOException("Unknown fourcc: " + string(fourcc));
             }
@@ -712,18 +784,10 @@ public class DDSLoader implements AssetLoader {
             totalSize += sizes[i];
         }
 
+        flip = false; // hack
+        
         ArrayList<ByteBuffer> allMaps = new ArrayList<ByteBuffer>();
-        if (is(caps2, DDSCAPS2_CUBEMAP)) {
-            for (int i = 0; i < 6; i++) {
-                if (compressed) {
-                    allMaps.add(readDXT2D(flip,totalSize));
-                } else if (grayscaleOrAlpha) {
-                    allMaps.add(readGrayscale2D(flip, totalSize));
-                } else {
-                    allMaps.add(readRGB2D(flip, totalSize));
-                }
-            }
-        } else if (depth > 1){
+        if (depth > 1){
             for (int i = 0; i < depth; i++){
                 if (compressed) {
                     allMaps.add(readDXT2D(flip,totalSize));

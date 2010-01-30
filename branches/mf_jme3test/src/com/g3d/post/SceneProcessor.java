@@ -16,6 +16,12 @@ public interface SceneProcessor {
     public void initialize(RenderManager rm, ViewPort vp);
 
     /**
+     * @return True if initialize() has been called on this SceneProcessor,
+     * false if otherwise.
+     */
+    public boolean isInitialized();
+
+    /**
      * Called before a frame
      *
      * @param tpf Time per frame

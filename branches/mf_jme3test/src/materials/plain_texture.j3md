@@ -3,6 +3,8 @@ MaterialDef Plain Texture {
     MaterialParameters {
         Texture2D m_ColorMap
         Boolean m_YCoCg
+        Boolean m_LATC
+        Boolean m_Normalize
     }
 
     Technique {
@@ -15,6 +17,8 @@ MaterialDef Plain Texture {
 
         Defines {
             DXT_YCOCG : m_YCoCg
+            NORMAL_LATC : m_LATC
+            NORMALIZE : m_Normalize
         }
     }
 

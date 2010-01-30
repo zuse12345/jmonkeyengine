@@ -45,24 +45,24 @@ public class ThreadingManager {
         }
     }
 
-    protected class MultiLoadingTask implements Callable<Void> {
-        private final String[] resourceNames;
-        public MultiLoadingTask(String[] resourceNames){
-            this.resourceNames = resourceNames;
-        }
-        public Void call(){
-            owner.loadContents(resourceNames);
-            return null;
-        }
-    }
+//    protected class MultiLoadingTask implements Callable<Void> {
+//        private final String[] resourceNames;
+//        public MultiLoadingTask(String[] resourceNames){
+//            this.resourceNames = resourceNames;
+//        }
+//        public Void call(){
+//            owner.loadContents(resourceNames);
+//            return null;
+//        }
+//    }
 
-    public Future<Void> loadContents(String ... names){
-        return executor.submit(new MultiLoadingTask(names));
-    }
+//    public Future<Void> loadContents(String ... names){
+//        return executor.submit(new MultiLoadingTask(names));
+//    }
 
-    public Future<Object> loadContent(String name) {
-        return executor.submit(new LoadingTask(name));
-    }
+//    public Future<Object> loadContent(String name) {
+//        return executor.submit(new LoadingTask(name));
+//    }
 
     public static boolean isLoadingThread() {
         return Thread.currentThread().getName().startsWith("pool");

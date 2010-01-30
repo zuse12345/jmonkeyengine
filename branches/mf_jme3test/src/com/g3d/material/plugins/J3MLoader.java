@@ -9,7 +9,6 @@ import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
 import com.g3d.asset.AssetLoader;
 import com.g3d.asset.AssetManager;
-import com.g3d.asset.TextureKey;
 import com.g3d.material.RenderState.BlendMode;
 import com.g3d.material.RenderState.FaceCullMode;
 import com.g3d.material.TechniqueDef.LightMode;
@@ -17,8 +16,7 @@ import com.g3d.material.TechniqueDef.ShadowMode;
 import com.g3d.shader.Shader.ShaderType;
 import com.g3d.texture.Image;
 import com.g3d.texture.Image.Format;
-import com.g3d.texture.Texture2D;
-import com.g3d.texture.TextureCubeMap;
+import com.g3d.texture.Texture;
 import com.g3d.util.BufferUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -147,33 +145,44 @@ public class J3MLoader implements AssetLoader {
         MatParamType type = p.getType();
         if (type.isTextureType()){
             String texturePath = readString("[\n;(//)(\\})]");
-            Image img;
-            if (texturePath.startsWith("color")){
+            boolean flipY = false;
+            if (texturePath.startsWith("Flip ")){
                 texturePath = texturePath.substring(5).trim();
-                String[] split = texturePath.split(" ");
-                if (split.length == 4){
-                    img = createColorTexture(new ColorRGBA(Float.parseFloat(split[0]),
-                                                           Float.parseFloat(split[1]),
-                                                           Float.parseFloat(split[2]),
-                                                           Float.parseFloat(split[3])));
-                }else if (split.length == 3){
-                    img = createColorTexture(new ColorRGBA(Float.parseFloat(split[0]),
-                                                           Float.parseFloat(split[1]),
-                                                           Float.parseFloat(split[2]),
-                                                           1.0f));
-                }else{
-                    throw new IOException("Expected 3 or 4 floats, got '"+texturePath+"'");
-                }
-            }else{
-                img = (Image) owner.loadContent(new TextureKey(texturePath, false));
+                flipY = true;
             }
 
-            // parse texture
-            if (type == MatParamType.Texture2D){
-                material.setTextureParam(name, type, new Texture2D(img));
-            }else if (type == MatParamType.TextureCubeMap){
-                material.setTextureParam(name, type, new TextureCubeMap(img));
-            }
+            Texture tex = owner.loadTexture(texturePath, true, flipY,
+                                            p.getType() == MatParamType.TextureCubeMap,
+                                            0);
+
+            material.setTextureParam(name, type, tex);
+//            Image img;
+//            if (texturePath.startsWith("color")){
+//                texturePath = texturePath.substring(5).trim();
+//                String[] split = texturePath.split(" ");
+//                if (split.length == 4){
+//                    img = createColorTexture(new ColorRGBA(Float.parseFloat(split[0]),
+//                                                           Float.parseFloat(split[1]),
+//                                                           Float.parseFloat(split[2]),
+//                                                           Float.parseFloat(split[3])));
+//                }else if (split.length == 3){
+//                    img = createColorTexture(new ColorRGBA(Float.parseFloat(split[0]),
+//                                                           Float.parseFloat(split[1]),
+//                                                           Float.parseFloat(split[2]),
+//                                                           1.0f));
+//                }else{
+//                    throw new IOException("Expected 3 or 4 floats, got '"+texturePath+"'");
+//                }
+//            }else{
+//                img = (Image) owner.loadContent(new TextureKey(texturePath, false));
+//            }
+//
+//            // parse texture
+//            if (type == MatParamType.Texture2D){
+//                material.setTextureParam(name, type, new Texture2D(img));
+//            }else if (type == MatParamType.TextureCubeMap){
+//                material.setTextureParam(name, type, new TextureCubeMap(img));
+//            }
         }else{
             switch (type){
                 case Float:
@@ -445,7 +454,7 @@ public class J3MLoader implements AssetLoader {
 
     public Object load(AssetInfo info) throws IOException {
         this.owner = info.getManager();
-        load(info.openStream());
+        load(info.openStream(), info.getKey().getName());
         if (material != null){
             // material implementation
             return material;
@@ -455,7 +464,7 @@ public class J3MLoader implements AssetLoader {
         }
     }
 
-    public void load(InputStream in) throws IOException{
+    public void load(InputStream in, String fileName) throws IOException{
         scan = new Scanner(in);
         scan.useLocale(Locale.US);
 
@@ -499,7 +508,9 @@ public class J3MLoader implements AssetLoader {
             if (extending){
                 throw new IOException("Expected ':', got '{'");
             }
-            materialDef = new MaterialDef(owner,name);
+            materialDef = new MaterialDef(owner, name);
+            // NOTE: pass file name for defs so they can be loaded later
+            materialDef.setAssetName(fileName);
         }
         scan.next(); // skip {
 

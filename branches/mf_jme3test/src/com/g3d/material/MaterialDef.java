@@ -11,9 +11,10 @@ import com.g3d.shader.Uniform;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class MaterialDef implements Savable {
+public class MaterialDef /*implements Savable*/ {
 
     private static final Logger logger = Logger.getLogger(MaterialDef.class.getName());
 
@@ -48,7 +49,7 @@ public class MaterialDef implements Savable {
         }
     }
 
-    public static class MatParam implements Savable {
+    public static class MatParam implements Savable, Cloneable {
         
         private MatParamType type;
         private String name;
@@ -66,6 +67,15 @@ public class MaterialDef implements Savable {
         }
         public String getName(){
             return name;
+        }
+
+        public MatParam clone(){
+            try{
+                MatParam param = (MatParam) super.clone();
+                return param;
+            }catch (CloneNotSupportedException ex){
+                throw new AssertionError();
+            }
         }
 
         public void write(G3DExporter ex) throws IOException{
@@ -97,6 +107,7 @@ public class MaterialDef implements Savable {
     }
 
     private String name;
+    private String assetName;
     private AssetManager assetManager;
     private Map<String, TechniqueDef> techniques;
     private Map<String, MatParam> matParams;
@@ -111,20 +122,28 @@ public class MaterialDef implements Savable {
         matParams = new HashMap<String, MatParam>();
     }
 
-    public void write(G3DExporter ex) throws IOException{
-        OutputCapsule oc = ex.getCapsule(this);
-        oc.write(name, "name", null);
-        oc.writeStringSavableMap(techniques, "techniques", null);
-        oc.writeStringSavableMap(matParams, "matParams", null);
+    public void setAssetName(String assetName){
+        this.assetName = assetName;
     }
 
-    public void read(G3DImporter im) throws IOException{
-        InputCapsule ic = im.getCapsule(this);
-        name = ic.readString("name", null);
-        techniques = (Map<String, TechniqueDef>) ic.readStringSavableMap("techniques", null);
-        matParams = (Map<String, MatParam>) ic.readStringSavableMap("matParams", null);
-        assetManager = im.getAssetManager();
+    public String getAssetName(){
+        return assetName;
     }
+
+//    public void write(G3DExporter ex) throws IOException{
+//        OutputCapsule oc = ex.getCapsule(this);
+//        oc.write(name, "name", null);
+//        oc.writeStringSavableMap(techniques, "techniques", null);
+//        oc.writeStringSavableMap(matParams, "matParams", null);
+//    }
+//
+//    public void read(G3DImporter im) throws IOException{
+//        InputCapsule ic = im.getCapsule(this);
+//        name = ic.readString("name", null);
+//        techniques = (Map<String, TechniqueDef>) ic.readStringSavableMap("techniques", null);
+//        matParams = (Map<String, MatParam>) ic.readStringSavableMap("matParams", null);
+//        assetManager = im.getAssetManager();
+//    }
 
     public AssetManager getAssetManager(){
         return assetManager;

@@ -4,7 +4,12 @@ import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
 import com.g3d.export.InputCapsule;
 import com.g3d.export.OutputCapsule;
+import com.g3d.texture.Image;
+import com.g3d.texture.Texture;
+import com.g3d.texture.Texture2D;
+import com.g3d.texture.TextureCubeMap;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class TextureKey extends AssetKey {
 
@@ -24,6 +29,36 @@ public class TextureKey extends AssetKey {
     }
 
     public TextureKey(){
+    }
+
+    public Object postProcess(Object asset){
+        Image img = (Image) asset;
+        if (img == null)
+            return null;
+
+        Texture tex;
+        if (isAsCube()){
+            if (isFlipY()){
+                // also flip -y and +y image in cubemap
+                ByteBuffer pos_y = img.getData(2);
+                img.setData(2, img.getData(3));
+                img.setData(3, pos_y);
+            }
+            tex = new TextureCubeMap();
+        }else{
+            tex = new Texture2D();
+        }
+
+        // enable mipmaps if image has them
+        // or generate them if requested by user
+        if (img.hasMipmaps() || isGenerateMips())
+            tex.setMinFilter(Texture.MinFilter.Trilinear);
+
+        tex.setTextureKey(this);
+        tex.setAnisotropicFilter(getAnisotropy());
+        tex.setName(getName());
+        tex.setImage(img);
+        return tex;
     }
 
     public boolean isFlipY() {

@@ -8,6 +8,7 @@ import com.g3d.scene.Geometry;
 import com.g3d.scene.shape.Quad;
 import com.g3d.system.AppSettings;
 import com.g3d.texture.Image;
+import com.g3d.texture.Texture;
 import com.g3d.texture.Texture2D;
 
 public class TestHdrLoading extends SimpleApplication {
@@ -40,9 +41,9 @@ public class TestHdrLoading extends SimpleApplication {
         quadMesh.updateGeometry(1, 1, true);
         quadMesh.updateBound();
 
-        Image original = (Image) manager.loadContent(new TextureKey("nave.hdr", true));
+        Texture original = manager.loadTexture("nave.hdr", true, true, false, 0);
 //        createToneMappedPanel(new Vector3f(-5,0,0), original, 0.3f);
-        createToneMappedPanel(new Vector3f(0,0,0),  original, 1.5f);
+        createToneMappedPanel(new Vector3f(0,0,0),  original.getImage(), 1.5f);
 //        createToneMappedPanel(new Vector3f(5,0,0),  original, 4f);
     }
 

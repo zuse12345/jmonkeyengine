@@ -4,12 +4,11 @@ import com.g3d.app.SimpleApplication;
 import com.g3d.material.Material;
 import com.g3d.math.Vector3f;
 import com.g3d.post.HDRRenderer;
-import com.g3d.renderer.RenderManager;
+import com.g3d.renderer.Caps;
 import com.g3d.renderer.queue.RenderQueue.Bucket;
 import com.g3d.scene.Geometry;
-import com.g3d.scene.Node;
+import com.g3d.scene.Spatial.CullHint;
 import com.g3d.scene.shape.Sphere;
-import com.g3d.texture.Image.Format;
 import com.g3d.texture.Texture;
 
 public class TestCubeMap extends SimpleApplication {
@@ -17,9 +16,7 @@ public class TestCubeMap extends SimpleApplication {
     private Sphere sky = new Sphere(32, 32, 10f);
     private Geometry skyGeom = new Geometry("Sky", sky);
     private Texture envMap;
-    private Node hdrNode = new Node("HDR Node");
 
-    private float lastTpf;
     private HDRRenderer hdrRender;
 
     public static void main(String[] args){
@@ -28,11 +25,14 @@ public class TestCubeMap extends SimpleApplication {
     }
 
     public void loadEnvMap(){ 
-        envMap = manager.loadTexture("stpeters_probe.hdr");
+        if (renderer.getCaps().contains(Caps.FloatTexture)){
+            envMap = manager.loadTexture("stpeters_probe.hdr", false, true, false, 0);
+        }else{
+            envMap = manager.loadTexture("stpeters_probe.jpg", false, true, false, 0);
+        }
     }
 
     public Geometry createReflectiveTeapot(){
-//        Torus t = new Torus(32, 32, 1f, 2f);
         Geometry g = (Geometry) manager.loadModel("teapot.obj");
         g.setLocalScale(5);
         g.updateModelBound();
@@ -45,52 +45,44 @@ public class TestCubeMap extends SimpleApplication {
         return g;
     }
 
-    public void initHDR(Format bufFormat){
-        hdrRender = new HDRRenderer(manager);
+    public void initHDR(){
+        hdrRender = new HDRRenderer(manager, renderer);
 
+        hdrRender.setSamples(settings.getSamples());
         hdrRender.setExposure(0.80f);
         hdrRender.setWhiteLevel(10);
         hdrRender.setThrottle(0.25f);
         hdrRender.setMaxIterations(30);
         hdrRender.setUseFastFilter(false);
-        hdrRender.setBufferFormat(bufFormat);
 
-//        hdrRender.loadInitial();
-//        hdrRender.load(renderer, settings.getWidth(), settings.getHeight(), 0);
+        viewPort.addProcessor(hdrRender);
+    }
+
+    public void setupSkyBox(){
+        skyGeom.setQueueBucket(Bucket.Sky);
+        skyGeom.updateModelBound();
+        skyGeom.setCullHint(CullHint.Never);
+
+        Material skyMat = new Material(manager, "sky.j3md");
+        skyMat.setBoolean("m_SphereMap", true);
+        skyMat.setTexture("m_Texture", envMap);
+        skyMat.setVector3("m_NormalScale", new Vector3f(1, 1, 1));
+        skyGeom.setMaterial(skyMat);
+
+        rootNode.attachChild(skyGeom);
     }
 
     @Override
     public void simpleInitApp() {
-        initHDR(Format.RGB111110F);
+        initHDR();
         loadEnvMap();
+        setupSkyBox();
 
-        skyGeom.updateModelBound();
-        skyGeom.setQueueBucket(Bucket.Sky);
-        Material skyMat = new Material(manager, "sky.j3md");
-        skyMat.setBoolean("m_SphereMap", true);
-        skyMat.setTexture("m_Texture", envMap);
-        skyGeom.setMaterial(skyMat);
-
-        hdrNode.attachChild(createReflectiveTeapot());
-        hdrNode.attachChild(skyGeom);
-        hdrNode.updateGeometricState();
-
-        cam.setLocation(new Vector3f(6, 6, -4));
-        cam.lookAt(hdrNode.getWorldBound().getCenter(), Vector3f.UNIT_Y);
-    }
-
-    @Override
-    public void simpleUpdate(float tpf){
-        hdrNode.updateLogicalState(tpf);
-        hdrNode.updateGeometricState();
-        lastTpf = tpf;
-    }
-
-    @Override
-    public void simpleRender(RenderManager rm){
-//        hdrRender.update(lastTpf, this, hdrNode);
-//        render(guiNode, r);
-//        viewPort.getQueue().renderQueue();
+        rootNode.attachChild(createReflectiveTeapot());
+//        rootNode.updateGeometricState();
+ 
+//        cam.setLocation(new Vector3f(6, 6, -4));
+//        cam.lookAt(rootNode.getWorldBound().getCenter(), Vector3f.UNIT_Y);
     }
 
 }

@@ -41,7 +41,7 @@ float Shadow_BorderCheck(in vec2 coord){
     return dot(t,t);
 }
 
-float Shadow_DoDither_2x2(in SHADOWMAP tex, in vec4 projCoord){
+float Shadow_DoDither_2x2_deprecated(in SHADOWMAP tex, in vec4 projCoord){
    vec2 offset = fract(gl_FragCoord.xy * vec2(0.5));
    //offset = step(vec2(0.25), offset);
    if (offset.x > 0.25 && offset.y > 0.25)
@@ -65,25 +65,32 @@ float Shadow_DoDither_2x2(in SHADOWMAP tex, in vec4 projCoord){
 
 }
 
+float Shadow_DoDither_2x2(in SHADOWMAP tex, in vec4 projCoord){
+    float shadow = 0.0;
+    vec2 o = mod(floor(gl_FragCoord.xy), 2.0);
+    shadow += Shadow_DoShadowCompareOffset(tex,projCoord,vec2(-1.5, 1.5) + o);
+    shadow += Shadow_DoShadowCompareOffset(tex,projCoord,vec2( 0.5, 1.5) + o);
+    shadow += Shadow_DoShadowCompareOffset(tex,projCoord,vec2(-1.5, -0.5) + o);
+    shadow += Shadow_DoShadowCompareOffset(tex,projCoord,vec2( 0.5, -0.5) + o);
+    shadow *= 0.25 ;
+    return shadow;
+}
+
 float Shadow_DoPCF_2x2(in SHADOWMAP tex, in vec4 projCoord){
-    float shadow[4];
-    shadow[0] = Shadow_DoShadowCompare(tex, projCoord);
-    shadow[1] = Shadow_DoShadowCompareOffset(tex,projCoord,vec2(1.0,0.0));
-    shadow[2] = Shadow_DoShadowCompareOffset(tex,projCoord,vec2(0.0,1.0));
-    shadow[3] = Shadow_DoShadowCompareOffset(tex,projCoord,vec2(1.0));
-    
-    vec2 fac;
-    fac.x = fract(texSize * projCoord.x);
-    fac.y = fract(texSize * projCoord.y);
-    return mix(shadow[0], shadow[1], 1.0 - fac.x);
-    //return mix(mix(shadow[1], shadow[0], fac.x),
-    //           mix(shadow[3], shadow[2], fac.x),
-    //           fac.y);
+
+    float shadow = 0.0;
+    float x,y;
+    for (y = -1.5 ; y <=1.5 ; y+=1.0)
+            for (x = -1.5 ; x <=1.5 ; x+=1.0)
+                    shadow += Shadow_DoShadowCompareOffset(tex,projCoord,vec2(x,y));
+
+    shadow /= 16.0 ;
+    return shadow;
 }
 
 
 float Shadow_GetShadow(in SHADOWMAP tex, in vec4 projCoord){
-    return Shadow_DoDither_2x2(tex, projCoord) + Shadow_BorderCheck(projCoord.xy);
+    return Shadow_DoDither_2x2(tex, projCoord) ;//+ Shadow_BorderCheck(projCoord.xy);
 }
 
 

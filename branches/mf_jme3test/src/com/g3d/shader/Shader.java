@@ -313,6 +313,10 @@ public class Shader extends GLObject implements Savable {
         return shaderList;
     }
 
+    public String getLanguage(){
+        return language;
+    }
+
     public String toString(){
         return getClass().getSimpleName() + "[language="+language
                                            + ", numSources="+shaderList.size()

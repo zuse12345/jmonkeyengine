@@ -810,7 +810,11 @@ public class BinaryOutputCapsule implements OutputCapsule {
         }
         value.rewind();
         int length = value.limit();
-        write(length);
+        if (value.isDirect() || length == 0)
+            write(length);
+        else
+            write(-length-1);
+
         for (int x = 0; x < length; x++) {
             write(value.get());
         }
@@ -826,7 +830,11 @@ public class BinaryOutputCapsule implements OutputCapsule {
         }
         value.rewind();
         int length = value.limit();
-        write(length);
+        if (value.isDirect() || length == 0)
+            write(length);
+        else
+            write(-length-1);
+
         for (int x = 0; x < length; x++) {
             write(value.get());
         }
@@ -842,7 +850,11 @@ public class BinaryOutputCapsule implements OutputCapsule {
         }
         value.rewind();
         int length = value.limit();
-        write(length);
+        if (value.isDirect() || length == 0)
+            write(length);
+        else
+            write(-length-1);
+
         for (int x = 0; x < length; x++) {
             write(value.get());
         }
@@ -858,7 +870,11 @@ public class BinaryOutputCapsule implements OutputCapsule {
         }
         value.rewind();
         int length = value.limit();
-        write(length);
+        if (value.isDirect() || length == 0)
+            write(length);
+        else
+            write(-length-1);
+        
         for (int x = 0; x < length; x++) {
             write(value.get());
         }

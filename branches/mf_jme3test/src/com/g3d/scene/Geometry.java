@@ -7,6 +7,7 @@ import com.g3d.export.G3DExporter;
 import com.g3d.export.G3DImporter;
 import com.g3d.export.InputCapsule;
 import com.g3d.export.OutputCapsule;
+import com.g3d.material.Material;
 import com.g3d.math.Matrix4f;
 import com.g3d.util.TempVars;
 import java.io.IOException;
@@ -17,6 +18,8 @@ public class Geometry extends Spatial {
      * The mesh contained herein
      */
     protected Mesh mesh;
+
+    protected Material material;
 
     protected transient Matrix4f cachedWorldMat = new Matrix4f();
 
@@ -66,6 +69,14 @@ public class Geometry extends Spatial {
 
     public Mesh getMesh(){
         return mesh;
+    }
+
+    public void setMaterial(Material material){
+        this.material = material;
+    }
+
+    public Material getMaterial(){
+        return material;
     }
 
     /**
@@ -147,6 +158,8 @@ public class Geometry extends Spatial {
     public Geometry clone(){
         Geometry geomClone = (Geometry) super.clone();
         geomClone.cachedWorldMat = cachedWorldMat.clone();
+        if (material != null)
+                geomClone.material = material.clone();
         return geomClone;
     }
 
@@ -155,6 +168,7 @@ public class Geometry extends Spatial {
         super.write(ex);
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(mesh, "mesh", null);
+        oc.write(material, "material", null);
     }
 
     @Override
@@ -162,6 +176,7 @@ public class Geometry extends Spatial {
         super.read(im);
         InputCapsule ic = im.getCapsule(this);
         mesh = (Mesh) ic.readSavable("mesh", null);
+        material = (Material) ic.readSavable("material", null);
     }
 
 }

@@ -3,15 +3,12 @@ package g3dtest.fx;
 import com.g3d.app.SimpleApplication;
 import com.g3d.light.DirectionalLight;
 import com.g3d.light.PointLight;
-import com.g3d.material.Material;
 import com.g3d.math.ColorRGBA;
 import com.g3d.math.FastMath;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Spatial;
 import com.g3d.scene.shape.Sphere;
-import com.g3d.system.AppSettings;
-import com.g3d.util.TangentBinormalGenerator;
 
 public class TestBumpModel extends SimpleApplication {
 
@@ -26,7 +23,7 @@ public class TestBumpModel extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        Spatial signpost = manager.loadOgreModel("signpost.meshxml", null);
+        Spatial signpost = manager.loadOgreModel("signpost.meshxml", (String) null);
         signpost.setMaterial(manager.loadMaterial("signpost.j3m"));
         rootNode.attachChild(signpost);
 

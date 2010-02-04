@@ -1,6 +1,6 @@
 #summary Wiki Sidebar
 *Menu*
- * Introduction
+ * [Introduction]
  * CoreTeam
  * RoadMap
  * DependsJme3

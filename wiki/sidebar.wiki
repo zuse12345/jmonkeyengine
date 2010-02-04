@@ -1,7 +1,8 @@
 #summary Wiki Sidebar
 *Menu*
  * [Introduction]
- * CoreTeam
- * RoadMap
- * DependsJme3
- * BuildJme3
+ * JME3
+  * CoreTeam
+  * RoadMap
+  * DependsJme3
+  * BuildJme3

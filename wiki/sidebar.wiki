@@ -2,7 +2,7 @@
 *Menu*
  * [Introduction]
  * JME3
-  * CoreTeam
   * RoadMap
   * DependsJme3
   * BuildJme3
+ * CoreTeam

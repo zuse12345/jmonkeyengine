@@ -1,0 +1,20 @@
+MaterialDef Font 2D {
+
+    MaterialParameters {
+        Texture2D m_Texture
+    }
+
+    Technique {
+        VertexShader GLSL100: sprite2d.vert
+        FragmentShader GLSL100: font.frag
+
+        WorldParameters {
+            WorldOrthoMatrix
+        }
+
+        RenderState {
+            Blend Alpha
+        }
+    }
+
+}

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<packsetting>
+    <types>
+        <type name="image">
+            <convert format="jpg">
+                <quality value="0.75" />
+            </convert>
+        </type>
+        <type name="normalmap">
+            <convert format="jpg">
+                <quality value="0.90" />
+                <subsampling enabled="false" />
+                <colorspace type="RGB" />
+            </convert>
+        </type>
+        <type name="hdrmap">
+            <convert format="png">
+                <colorspace type="RGBE" />
+            </convert>
+        </type>
+        <type name="model">
+            <convert format="j3o" />
+        </type>
+    </types>
+</packsetting>

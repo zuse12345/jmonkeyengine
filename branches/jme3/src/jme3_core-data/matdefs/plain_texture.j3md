@@ -1,0 +1,25 @@
+MaterialDef Plain Texture {
+
+    MaterialParameters {
+        Texture2D m_ColorMap
+        Boolean m_YCoCg
+        Boolean m_LATC
+        Boolean m_Normalize
+    }
+
+    Technique {
+        VertexShader GLSL100: plain_texture.vert
+        FragmentShader GLSL100: plain_texture.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+        }
+
+        Defines {
+            DXT_YCOCG : m_YCoCg
+            NORMAL_LATC : m_LATC
+            NORMALIZE : m_Normalize
+        }
+    }
+
+}

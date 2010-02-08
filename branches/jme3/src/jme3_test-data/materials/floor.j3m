@@ -1,0 +1,7 @@
+Material Floor : phong_lighting.j3md {
+     MaterialParameters {
+         m_Shininess: 2.0
+         m_DiffuseMap : floor.PNG
+         m_NormalMap : floorNorm.png
+     }
+}

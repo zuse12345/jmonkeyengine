@@ -5,4 +5,5 @@
   * RoadMap
   * DependsJme3
   * BuildJme3
+  * SourcePackagesJme3
  * CoreTeam

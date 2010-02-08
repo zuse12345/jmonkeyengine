@@ -1,0 +1,39 @@
+#summary Description of the various source packages in the jme3/src folder
+#labels Featured,Phase-Implementation
+
+= Introduction =
+
+In order to support both Desktop and Android Java platforms, it is necessary to split the source code of jme3 into several parts. This wiki page describes the packages and their purpose. 
+
+
+= Source Packages =
+
+ * jme3_core - This is the main package. Must always be included as all other packages depend on it.
+ * jme3_core-data - Contains basic material definitions, shaders and fonts that are needed by most jME3 applications.
+ * jme3_core_plugins - Includes important asset plugins, such as j3o model loader, obj loader, font loader and basic image loaders.
+ * jme3_desktop - Must be included if deploying on desktop, applet or web start. Android applications cannot use this package.
+
+= Display implementations =
+
+ * jme3_lwjgl-ogl - LWJGL OpenGL display implementation. 
+ * jme3_jogl - JOGL/OpenGL display implementation.
+
+= Audio system implementations = 
+ * jme3_lwjgl-oal - LWJGL OpenAL audio implementation. Does not support reverb or low-pass effects.
+ * jme3_joal - JOAL/OpenAL audio implementation.
+
+= Plugins and Extra packages =
+
+ * jme3_desktop-fx - Various post processing effects that can be used alongside jme3. Android applications cannot use this package.
+ * jme3_animation - Animation system. Required by the jme3_ogre package.
+ * jme3_xml - Has an XML-to-binary and vice versa converter. 
+ * jme3_pack - J3P (jME3 package) format. Contains j3p locators for file system and http, as well as generators.
+ * jme3_ogre - The Ogre3D model and scene loader. Currently the best supported model loader for jme3. Supports skeletal and vertex animation, scene loading, and materials.
+ * jme3_jogg - OGG/Vorbis loader. Required to read .ogg sound files. Jars in /lib/jogg/ must be included in the classpath to use it.
+
+= Tests, Games and Tools =
+
+ * jme3_test - Applications that test every feature of jme3, requires jme3_test-data.
+ * jme3_test-data - Data used by jme3_test.
+ * jme3_tools - Tools and programs that help you use jme3.
+ * jme3_games - Simple games that use jme3.

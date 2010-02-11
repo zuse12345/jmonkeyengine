@@ -41,7 +41,7 @@ public class Arrow extends Mesh {
 
         setBuffer(Type.Position, 3, newPositions);
         setBuffer(Type.Index, 2,
-                new int[]{
+                new short[]{
                     0, 1,
                     1, 2,
                     1, 3,

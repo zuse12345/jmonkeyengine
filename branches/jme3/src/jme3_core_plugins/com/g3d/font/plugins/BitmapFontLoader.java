@@ -6,6 +6,7 @@ import com.g3d.material.MaterialDef;
 import com.g3d.asset.AssetInfo;
 import com.g3d.asset.AssetKey;
 import com.g3d.asset.AssetLoader;
+import com.g3d.asset.TextureKey;
 import com.g3d.texture.Texture;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -66,7 +67,9 @@ public class BitmapFontLoader implements AssetLoader {
                         if (file.startsWith("\"")){
                             file = file.substring(1, file.length()-1);
                         }
-                        tex = info.getManager().loadTexture(file, true);
+                        TextureKey key = new TextureKey(file, true);
+                        key.setGenerateMips(false);
+                        tex = info.getManager().loadTexture(key);
                     }
                 }
                 // set page

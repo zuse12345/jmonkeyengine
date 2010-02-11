@@ -18,7 +18,11 @@ public class BitmapText extends Geometry {
     private boolean rightToLeft = false;
     private boolean needRefresh = true;
 
-    public BitmapText(BitmapFont font, boolean rightToLeft){
+    private final float[] pos;
+    private final float[] tc;
+    private final short[] idx;
+
+    public BitmapText(BitmapFont font, boolean rightToLeft, boolean arrayBased){
         super("BitmapFont", new Mesh());
 
         setQueueBucket(Bucket.Gui);
@@ -34,6 +38,18 @@ public class BitmapText extends Geometry {
         m.setBuffer(Type.Position, 3, new float[0]);
         m.setBuffer(Type.TexCoord, 2, new float[0]);
         m.setBuffer(Type.Index, 3, new short[0]);
+
+        if (arrayBased){
+            pos = new float[4 * 3]; // 4 verticies * 3 floats
+            tc  = new float[4 * 2]; // 4 verticies * 2 floats
+            idx = new short[2 * 3]; // 2 triangles * 3 indices
+        }else{
+            pos = null; tc = null; idx = null;
+        }
+    }
+
+    public BitmapText(BitmapFont font, boolean rightToLeft){
+        this(font, rightToLeft, false);
     }
 
     public void setSize(float size) {
@@ -59,6 +75,7 @@ public class BitmapText extends Geometry {
         return lineWidth;
     }
 
+    @Override
     public void updateLogicalState(float tpf){
         super.updateLogicalState(tpf);
         if (needRefresh)
@@ -99,11 +116,21 @@ public class BitmapText extends Geometry {
         ib.updateData(sib);
 
         // go for each quad and append it to the buffers
-        for (int i = 0; i < quadList.getQuantity(); i++){
-            FontQuad fq = quadList.getQuad(i);
-            fq.appendPositions(fpb);
-            fq.appendTexCoords(ftb);
-            fq.appendIndices(sib, i);
+        if (pos != null){
+            for (int i = 0; i < quadList.getQuantity(); i++){
+                FontQuad fq = quadList.getQuad(i);
+                fq.storeToArrays(pos, tc, idx, i);
+                fpb.put(pos);
+                ftb.put(tc);
+                sib.put(idx);
+            }
+        }else{
+            for (int i = 0; i < quadList.getQuantity(); i++){
+                FontQuad fq = quadList.getQuad(i);
+                fq.appendPositions(fpb);
+                fq.appendTexCoords(ftb);
+                fq.appendIndices(sib, i);
+            }
         }
         
         fpb.rewind();

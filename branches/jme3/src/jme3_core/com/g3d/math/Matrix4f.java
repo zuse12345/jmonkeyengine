@@ -674,6 +674,20 @@ public class Matrix4f implements Savable, Cloneable {
 	    }
         return fb;
     }
+
+    public void fillFloatArray(float[] f, boolean columnMajor) {
+        if(columnMajor) {
+            f[ 0] = m00; f[ 1] = m10; f[ 2] = m20; f[ 3] = m30;
+            f[ 4] = m01; f[ 5] = m11; f[ 6] = m21; f[ 7] = m31;
+            f[ 8] = m02; f[ 9] = m12; f[10] = m22; f[11] = m32;
+            f[12] = m03; f[13] = m13; f[14] = m23; f[15] = m33;
+	    } else {
+            f[ 0] = m00; f[ 1] = m01; f[ 2] = m02; f[ 3] = m03;
+            f[ 4] = m10; f[ 5] = m11; f[ 6] = m12; f[ 7] = m13;
+            f[ 8] = m20; f[ 9] = m21; f[10] = m22; f[11] = m23;
+            f[12] = m30; f[13] = m31; f[14] = m32; f[15] = m33;
+	    }
+    }
     
     /**
      * <code>readFloatBuffer</code> reads value for this matrix from a FloatBuffer.

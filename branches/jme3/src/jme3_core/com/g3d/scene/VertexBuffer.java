@@ -144,6 +144,9 @@ public class VertexBuffer extends GLObject implements Savable, Cloneable {
             this.componentSize = componentSize;
         }
 
+        /**
+         * @return Size in bytes of this data type.
+         */
         public int getComponentSize(){
             return componentSize;
         }

@@ -1,11 +1,9 @@
 package com.g3d.renderer;
 
 import com.g3d.light.LightList;
-import com.g3d.material.Material;
 import com.g3d.material.RenderState;
 import com.g3d.math.ColorRGBA;
 import com.g3d.math.Matrix4f;
-import com.g3d.scene.Geometry;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.VertexBuffer;
 import com.g3d.shader.Shader;
@@ -61,9 +59,7 @@ public interface Renderer {
      */
     public void setWorldMatrix(Matrix4f worldMatrix);
 
-    public void setViewMatrix(Matrix4f viewMatrix);
-
-    public void setProjectionMatrix(Matrix4f projMatrix);
+    public void setViewProjectionMatrices(Matrix4f viewMatrix, Matrix4f projMatrix);
 
     public void setViewPort(int x, int y, int width, int height);
 

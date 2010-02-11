@@ -74,6 +74,8 @@ public class BinaryImporter implements G3DImporter {
 
     public BinaryImporter(AssetManager owner) {
         assetManager = owner;
+        contentTable = new HashMap<Integer, Savable>();
+        classes = new HashMap<String, BinaryClassObject>();
     }
 
     public AssetManager getAssetManager(){
@@ -94,14 +96,21 @@ public class BinaryImporter implements G3DImporter {
 //    public Savable load(InputStream is, ReadListener listener) throws IOException {
 //    	return load(is, listener, null);
 //    }
-    
+
+    private void reset(){
+        contentTable.clear();
+        classes.clear();
+    }
+
     public Savable load(InputStream is, ReadListener listener, ByteArrayOutputStream baos) throws IOException {
-        contentTable = new HashMap<Integer, Savable>();
+        reset();
+
         BufferedInputStream bis = new BufferedInputStream(is);
         int numClasses = ByteUtils.readInt(bis);
         int bytes = 4;
         aliasWidth = ((int)FastMath.log(numClasses, 256) + 1);
-        classes = new HashMap<String, BinaryClassObject>(numClasses);
+
+        
         for(int i = 0; i < numClasses; i++) {
             String alias = readString(bis, aliasWidth);
             
@@ -181,22 +190,40 @@ public class BinaryImporter implements G3DImporter {
     }
 
     protected String readString(InputStream f, int length) throws IOException {
-        byte[] data = new byte[length];
+        char[] data = new char[length];
         for(int j = 0; j < length; j++) {
-            data[j] = (byte)f.read();
+            data[j] = (char)f.read();
         }
-        
+
         return new String(data);
     }
-    
+
     protected String readString(int length, int offset) throws IOException {
-        byte[] data = new byte[length];
+        char[] data = new char[length];
         for(int j = 0; j < length; j++) {
-            data[j] = dataArray[j+offset];
+            data[j] = (char) dataArray[j+offset];
         }
         
         return new String(data);
     }
+
+//    protected String readString(InputStream f, int length) throws IOException {
+//        byte[] data = new byte[length];
+//        for(int j = 0; j < length; j++) {
+//            data[j] = (byte)f.read();
+//        }
+//
+//        return new String(data);
+//    }
+//
+//    protected String readString(int length, int offset) throws IOException {
+//        byte[] data = new byte[length];
+//        for(int j = 0; j < length; j++) {
+//            data[j] = dataArray[j+offset];
+//        }
+//
+//        return new String(data);
+//    }
     
     public Savable readObject(int id) {
         

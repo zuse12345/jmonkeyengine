@@ -144,7 +144,7 @@ public class Application implements SystemListener {
      * Initializes the content manager.
      */
     private void initContentManager(){
-        manager = new AssetManager(true);
+        manager = G3DSystem.newAssetManager();
     }
 
     /**

@@ -5,6 +5,7 @@ import com.g3d.material.Material;
 import com.g3d.math.Vector3f;
 import com.g3d.renderer.queue.RenderQueue.Bucket;
 import com.g3d.asset.AssetManager;
+import com.g3d.asset.TextureKey;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.shape.Quad;
 import com.g3d.texture.Texture2D;
@@ -45,7 +46,8 @@ public class Picture extends Geometry {
             Material mat = new Material(manager, "sprite2d.j3md");
             setMaterial(mat);
         }
-        material.setTexture("m_Texture", manager.loadTexture(imgName, true));
+        TextureKey key = new TextureKey(imgName, true);
+        material.setTexture("m_Texture", manager.loadTexture(key));
     }
 
     public void setTexture(AssetManager manager, Texture2D tex, boolean useAlpha){

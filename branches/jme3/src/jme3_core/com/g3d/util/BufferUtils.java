@@ -812,6 +812,13 @@ public final class BufferUtils {
         return buf;
     }
 
+    public static ByteBuffer createByteBuffer(byte ... data){
+        ByteBuffer bb = createByteBuffer(data.length);
+        bb.put(data);
+        bb.flip();
+        return bb;
+    }
+
     public static ByteBuffer createByteBuffer(String data){
         byte[] bytes = data.getBytes();
         ByteBuffer bb = createByteBuffer(bytes.length);

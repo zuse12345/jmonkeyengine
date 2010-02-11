@@ -18,6 +18,7 @@ import com.g3d.light.Light;
 import com.g3d.light.LightList;
 import com.g3d.light.PointLight;
 import com.g3d.math.Vector3f;
+import com.g3d.renderer.Caps;
 import com.g3d.renderer.RenderManager;
 import com.g3d.renderer.Renderer;
 import com.g3d.scene.Geometry;
@@ -257,6 +258,8 @@ public class Material implements Cloneable, Savable {
         if (tech == null){
             // create technique instance
             TechniqueDef techDef = def.getTechniqueDef(name);
+            if (techDef == null)
+                throw new IllegalArgumentException("Technique not found: "+name);
             tech = new Technique(this, techDef);
             techniques.put(name, tech);
         }else if (technique == tech){
@@ -469,10 +472,17 @@ public class Material implements Cloneable, Savable {
      * @param r
      */
     public void render(Geometry geom, RenderManager rm){
-        if (technique == null)
-            selectTechnique("Default");
-        else if (technique.isNeedReload())
+        if (technique == null){
+            // XXX: hack warning, choose "FixedFunc" if GLSL100
+            // not supported by renderer
+            if (!rm.getRenderer().getCaps().contains(Caps.GLSL100)){
+                selectTechnique("FixedFunc");
+            }else{
+                selectTechnique("Default");
+            }
+        }else if (technique.isNeedReload()){
             technique.makeCurrent(def.getAssetManager());
+        }
 
         Renderer r = rm.getRenderer();
         TechniqueDef techDef = technique.getDef();
@@ -491,7 +501,8 @@ public class Material implements Cloneable, Savable {
         // update camera and world matrices
         // NOTE: setWorldTransform should have been called already
         // XXX:
-        rm.updateUniformBindings(technique.getWorldBindUniforms());
+        if (techDef.isUsingShaders())
+            rm.updateUniformBindings(technique.getWorldBindUniforms());
 
         // setup textures
         Collection<MatParam> params = paramValues.values();
@@ -499,10 +510,14 @@ public class Material implements Cloneable, Savable {
             if (param instanceof MatParamTextureValue){
                 MatParamTextureValue texParam = (MatParamTextureValue) param;
                 r.setTexture(texParam.getUnit(), texParam.getValue());
-                technique.updateUniformParam(texParam.getName(),
-                                             texParam.getType(),
-                                             texParam.getUnit());
+                if (techDef.isUsingShaders())
+                    technique.updateUniformParam(texParam.getName(),
+                                                 texParam.getType(),
+                                                 texParam.getUnit());
             }else{
+                if (!techDef.isUsingShaders())
+                    continue;
+                
                 MatParamValue valParam = (MatParamValue) param;
                 technique.updateUniformParam(valParam.getName(),
                                              valParam.getType(),
@@ -528,7 +543,9 @@ public class Material implements Cloneable, Savable {
         }
 
         // upload and bind shader
-        r.setShader(shader);
+        if (techDef.isUsingShaders())
+            r.setShader(shader);
+        
         r.renderMesh(geom.getMesh(), 1);
     }
 

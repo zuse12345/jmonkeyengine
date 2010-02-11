@@ -10,6 +10,7 @@ import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
 import com.g3d.asset.AssetLoader;
 import com.g3d.asset.AssetManager;
+import com.g3d.asset.TextureKey;
 import com.g3d.material.RenderState.BlendMode;
 import com.g3d.material.RenderState.FaceCullMode;
 import com.g3d.material.TechniqueDef.LightMode;
@@ -152,10 +153,12 @@ public class J3MLoader implements AssetLoader {
                 flipY = true;
             }
 
-            Texture tex = owner.loadTexture(texturePath, true, flipY,
-                                            p.getType() == MatParamType.TextureCubeMap,
-                                            0);
+            TextureKey key = new TextureKey(texturePath, flipY);
+            key.setAnisotropy(0);
+            key.setAsCube(p.getType() == MatParamType.TextureCubeMap);
+            key.setGenerateMips(true);
 
+            Texture tex = owner.loadTexture(key);
             material.setTextureParam(name, type, tex);
 //            Image img;
 //            if (texturePath.startsWith("color")){

@@ -141,7 +141,7 @@ import java.util.logging.Logger;
  * @author Joshua Slack
  */
 
-public class BinaryExporter implements G3DExporter {
+public final class BinaryExporter implements G3DExporter {
     private static final Logger logger = Logger.getLogger(BinaryExporter.class
             .getName());
     
@@ -161,16 +161,28 @@ public class BinaryExporter implements G3DExporter {
     public static final boolean debug = true;
 
     public BinaryExporter() {
+        classes = new HashMap<String, BinaryClassObject>();
+        contentTable = new IdentityHashMap<Savable, BinaryIdContentPair>();
+        locationTable = new HashMap<Integer, Integer>();
     }
 
     public static BinaryExporter getInstance() {
         return new BinaryExporter();
     }
 
+    private void reset(){
+        aliasCount = 1;
+        idCount = 1;
+
+        classes.clear();
+        contentTable.clear();
+        locationTable.clear();
+
+        contentKeys.clear();
+    }
+
     public boolean save(Savable object, OutputStream os) throws IOException {
-        classes = new HashMap<String, BinaryClassObject>();
-        contentTable = new IdentityHashMap<Savable, BinaryIdContentPair>();
-        locationTable = new HashMap<Integer, Integer>();
+        reset();
         int id = processBinarySavable(object);
 
         // write out tag table

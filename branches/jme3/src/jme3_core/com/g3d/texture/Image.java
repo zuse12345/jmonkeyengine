@@ -76,10 +76,17 @@ public class Image implements Savable {
         RGB10(30),
         RGB16(48),
 
+        RGB565(16),
+        ARGB4444(16),
         RGB5A1(16),
         RGBA8(32),
         ABGR8(32),
         RGBA16(64),
+
+        Pal4_RGB565(0,false,true,false),
+        Pal8_RGB565(0,false,true,false),
+        Pal4_RGB8(0,false,true,false),
+        Pal8_RGB8(0,false,true,false),
 
         DXT1(4,false,true, false),
         DXT1A(4,false,true, false),
@@ -144,6 +151,7 @@ public class Image implements Savable {
     protected int width, height, depth;
     protected int[] mipMapSizes;
     protected transient List<ByteBuffer> data;
+    protected transient Object efficentData;
 //    protected int mipOffset = 0;
 
     /**
@@ -209,8 +217,10 @@ public class Image implements Savable {
         setFormat(format);
         this.width = width;
         this.height = height;
-        this.data = new ArrayList<ByteBuffer>(1);
-        this.data.add(data);
+        if (data != null){
+            this.data = new ArrayList<ByteBuffer>(1);
+            this.data.add(data);
+        }
         this.mipMapSizes = mipMapSizes;
     }
 
@@ -286,6 +296,26 @@ public class Image implements Savable {
         } else {
             throw new IllegalArgumentException("index must be greater than or equal to 0.");
         }
+    }
+
+    /**
+     * Set the efficent data representation of this image.
+     * <p>
+     * Some system implementations are more efficent at operating
+     * on data other than ByteBuffers, in that case, this method can be used.
+     *
+     * @param efficentData
+     */
+    public void setEfficentData(Object efficentData){
+        this.efficentData = efficentData;
+    }
+
+    /**
+     * @return The efficent data representation of this image.
+     * @see Image#setEfficentData(java.lang.Object)
+     */
+    public Object getEfficentData(){
+        return efficentData;
     }
 
     /**

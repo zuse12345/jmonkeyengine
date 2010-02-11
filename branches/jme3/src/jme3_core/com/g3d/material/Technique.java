@@ -41,8 +41,10 @@ public class Technique implements Savable {
     public Technique(Material owner, TechniqueDef def){
         this.owner = owner;
         this.def = def;
-        this.worldBindUniforms = new ArrayList<Uniform>();
-        this.defines = new DefineList();
+        if (def.isUsingShaders()){
+            this.worldBindUniforms = new ArrayList<Uniform>();
+            this.defines = new DefineList();
+        }
     }
 
     public Technique(){
@@ -132,27 +134,29 @@ public class Technique implements Savable {
      */
     public void makeCurrent(AssetManager manager){
         // check if reload is needed..
-        DefineList newDefines = new DefineList();
-        Collection<MatParam> params = owner.getParams();
-        for (MatParam param : params){
-            String defineName = def.getShaderParamDefine(param.getName());
-            if (defineName != null){
-                newDefines.set(defineName, "1");
+        if (def.isUsingShaders()){
+            DefineList newDefines = new DefineList();
+            Collection<MatParam> params = owner.getParams();
+            for (MatParam param : params){
+                String defineName = def.getShaderParamDefine(param.getName());
+                if (defineName != null){
+                    newDefines.set(defineName, "1");
+                }
             }
-        }
 
-        if (!needReload && defines.getCompiled().equals(newDefines.getCompiled())){
-            newDefines = null;
-            // defines have not been changed..
-        }else{
-            defines.clear();
-            defines.addFrom(newDefines);
-            // defines changed, recompile needed
-            loadShader(manager);
+            if (!needReload && defines.getCompiled().equals(newDefines.getCompiled())){
+                newDefines = null;
+                // defines have not been changed..
+            }else{
+                defines.clear();
+                defines.addFrom(newDefines);
+                // defines changed, recompile needed
+                loadShader(manager);
+            }
         }
     }
 
-    public void loadShader(AssetManager manager){
+    private void loadShader(AssetManager manager){
         // recompute define list
         DefineList allDefines = new DefineList();
         allDefines.addFrom(def.getShaderPresetDefines());

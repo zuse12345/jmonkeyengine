@@ -322,11 +322,29 @@ public class Mesh implements Savable, Cloneable {
         }
     }
 
+    public void setBuffer(Type type, int components, byte[] buf){
+        setBuffer(type, components, BufferUtils.createByteBuffer(buf));
+    }
+
+    public void setBuffer(Type type, int components, ByteBuffer buf) {
+        VertexBuffer vb = buffers.get(type);
+        if (vb == null){
+            vb = new VertexBuffer(type);
+            vb.setupData(Usage.Dynamic, components, Format.UnsignedByte, buf);
+            buffers.put(type, vb);
+            updateCounts();
+        }
+    }
+
     public void setBuffer(VertexBuffer vb){
         if (buffers.get(vb.getBufferType()) != null)
             throw new IllegalArgumentException("Buffer type already set: "+vb.getBufferType());
 
         buffers.put(vb.getBufferType(), vb);
+    }
+
+    public void clearBuffer(VertexBuffer.Type type){
+        buffers.remove(type);
     }
 
     public void setBuffer(Type type, int components, short[] buf){

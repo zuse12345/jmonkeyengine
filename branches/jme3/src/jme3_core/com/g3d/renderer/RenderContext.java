@@ -30,6 +30,8 @@ public class RenderContext {
     public float polyOffsetFactor = 0;
     public float polyOffsetUnits = 0;
 
+    public boolean normalizeEnabled = false;
+
     public int matrixMode = -1;
 
     public RenderState.BlendMode blendMode = RenderState.BlendMode.Off;

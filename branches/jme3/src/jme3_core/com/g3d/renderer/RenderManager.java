@@ -216,6 +216,7 @@ public class RenderManager {
         }
 
         worldMatrix.set(g.getWorldMatrix());
+        renderer.setWorldMatrix(worldMatrix);
         if (g.getMaterial() == null){
             logger.warning("Unable to render geometry "+g+". No material defined!");
             return;
@@ -333,7 +334,9 @@ public class RenderManager {
 
         if (!rq.isQueueEmpty(Bucket.Gui)){
             renderer.setDepthRange(0, 0);
+            setOrtho();
             rq.renderQueue(Bucket.Gui, this, cam);
+            unsetOrtho();
             depthRangeChanged = true;
         }
 
@@ -367,11 +370,20 @@ public class RenderManager {
         viewMatrix.set(cam.getViewMatrix());
         projMatrix.set(cam.getProjectionMatrix());
         viewProjMatrix.set(cam.getViewProjectionMatrix());
+        renderer.setViewProjectionMatrices(viewMatrix, projMatrix);
 
         camLoc.set(cam.getLocation());
         cam.getLeft(camLeft);
         cam.getUp(camUp);
         cam.getDirection(camDir);
+    }
+
+    private void setOrtho(){
+        renderer.setViewProjectionMatrices(Matrix4f.IDENTITY, orthoMatrix);
+    }
+
+    private void unsetOrtho(){
+        renderer.setViewProjectionMatrices(viewMatrix, projMatrix);
     }
 
     public void setCamera(Camera cam){

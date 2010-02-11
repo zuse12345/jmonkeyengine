@@ -1,12 +1,18 @@
 package com.g3d.font;
 
+import com.g3d.export.G3DExporter;
+import com.g3d.export.G3DImporter;
+import com.g3d.export.InputCapsule;
+import com.g3d.export.OutputCapsule;
+import com.g3d.export.Savable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Represents a single bitmap character.
  */
-public class BitmapCharacter {
+public class BitmapCharacter implements Savable {
 
     private int x;
     private int y;
@@ -15,7 +21,7 @@ public class BitmapCharacter {
     private int xOffset;
     private int yOffset;
     private int xAdvance;
-    private List<Kerning> kerningList = new ArrayList<Kerning>();
+    private ArrayList<Kerning> kerningList = new ArrayList<Kerning>();
 
     // / <summary>Clones the BitmapCharacter</summary>
     // / <returns>Cloned BitmapCharacter</returns>
@@ -92,7 +98,31 @@ public class BitmapCharacter {
         return kerningList;
     }
 
-    public void setKerningList(List<Kerning> kerningList) {
+    public void setKerningList(ArrayList<Kerning> kerningList) {
         this.kerningList = kerningList;
+    }
+
+    public void write(G3DExporter ex) throws IOException {
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(x, "x", 0);
+        oc.write(y, "y", 0);
+        oc.write(width, "width", 0);
+        oc.write(height, "height", 0);
+        oc.write(xOffset, "xOffset", 0);
+        oc.write(yOffset, "yOffset", 0);
+        oc.write(xAdvance, "xAdvance", 0);
+        oc.writeSavableList(kerningList, "kerningList", null);
+    }
+
+    public void read(G3DImporter im) throws IOException {
+        InputCapsule ic = im.getCapsule(this);
+        x = ic.readInt("x", 0);
+        y = ic.readInt("y", 0);
+        width = ic.readInt("width", 0);
+        height = ic.readInt("height", 0);
+        xOffset = ic.readInt("xOffset", 0);
+        yOffset = ic.readInt("yOffset", 0);
+        xAdvance = ic.readInt("xAdvance", 0);
+        kerningList = (ArrayList<Kerning>) ic.readSavableList("kerningList", null);
     }
 }

@@ -33,7 +33,8 @@ public class TechniqueDef implements Savable {
     private String vertName;
     private String fragName;
     private String shaderLang;
-    private DefineList presetDefines;;
+    private DefineList presetDefines;
+    private boolean usesShaders;
 
     private RenderState renderState;
     private LightMode lightMode   = LightMode.Disable;
@@ -45,9 +46,6 @@ public class TechniqueDef implements Savable {
 
     public TechniqueDef(String name){
         this.name = name == null ? "Default" : name;
-        worldBinds = new ArrayList<UniformBinding>();
-        presetDefines = new DefineList();
-        defineParams = new HashMap<String, String>();
     }
 
     /**
@@ -66,6 +64,7 @@ public class TechniqueDef implements Savable {
         oc.write(lightMode, "lightMode", LightMode.Disable);
         oc.write(shadowMode, "shadowMode", ShadowMode.Disable);
         oc.write(renderState, "renderState", null);
+        oc.write(usesShaders, "usesShaders", false);
         // TODO: Finish this when Map<String, String> export is available
 //        oc.writeS(defineParams, "defineParams", null);
         // TODO: Finish this when List<Enum> export is available
@@ -82,6 +81,7 @@ public class TechniqueDef implements Savable {
         lightMode = ic.readEnum("lightMode", LightMode.class, LightMode.Disable);
         shadowMode = ic.readEnum("shadowMode", ShadowMode.class, ShadowMode.Disable);
         renderState = (RenderState) ic.readSavable("renderState", null);
+        usesShaders = ic.readBoolean("usesShaders", false);
     }
 
     public String getName(){
@@ -112,10 +112,18 @@ public class TechniqueDef implements Savable {
         this.renderState = renderState;
     }
 
+    public boolean isUsingShaders(){
+        return usesShaders;
+    }
+
     public void setShaderFile(String vert, String frag, String lang){
         this.vertName = vert;
         this.fragName = frag;
         this.shaderLang = lang;
+
+        usesShaders = true;
+        presetDefines = new DefineList();
+        defineParams = new HashMap<String, String>();
     }
 
     public DefineList getShaderPresetDefines() {
@@ -127,10 +135,16 @@ public class TechniqueDef implements Savable {
     }
 
     public void addShaderParamDefine(String paramName, String defineName){
+        if (defineParams == null)
+            defineParams = new HashMap<String, String>();
+
         defineParams.put(paramName, defineName);
     }
 
     public void addShaderPresetDefine(String defineName, String value){
+        if (presetDefines == null)
+            presetDefines = new DefineList();
+
         presetDefines.set(defineName, value);
     }
 
@@ -147,6 +161,9 @@ public class TechniqueDef implements Savable {
     }
 
     public boolean addWorldParam(String name) {
+        if (worldBinds == null){
+            worldBinds = new ArrayList<UniformBinding>();
+        }
         for (UniformBinding binding : UniformBinding.values()) {
             if (binding.name().equals(name)) {
                 worldBinds.add(binding);

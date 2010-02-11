@@ -1,6 +1,7 @@
 package g3dtest.model;
 
 import com.g3d.app.SimpleApplication;
+import com.g3d.asset.TextureKey;
 import com.g3d.material.Material;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
@@ -21,7 +22,9 @@ public class TestBox extends SimpleApplication {
         geom.updateModelBound();
 
         Material mat = new Material(manager, "plain_texture.j3md");
-        Texture tex = manager.loadTexture("Monkey.jpg", true, true, false, 16);
+        TextureKey key = new TextureKey("Monkey.jpg", true);
+        key.setGenerateMips(true);
+        Texture tex = manager.loadTexture(key);
         tex.setMinFilter(Texture.MinFilter.Trilinear);
         mat.setTexture("m_ColorMap", tex);
 

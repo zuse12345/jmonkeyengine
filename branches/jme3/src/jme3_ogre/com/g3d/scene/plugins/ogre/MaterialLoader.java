@@ -3,6 +3,7 @@ package com.g3d.scene.plugins.ogre;
 import com.g3d.asset.AssetInfo;
 import com.g3d.asset.AssetLoader;
 import com.g3d.asset.AssetManager;
+import com.g3d.asset.TextureKey;
 import com.g3d.material.Material;
 import com.g3d.material.RenderState;
 import com.g3d.math.ColorRGBA;
@@ -77,7 +78,11 @@ public class MaterialLoader implements AssetLoader {
             cubic = true;
         }
 
-        texture = assetManager.loadTexture(path, genMips, false, cubic, 0);
+        TextureKey key = new TextureKey(path, false);
+        key.setGenerateMips(genMips);
+        key.setAsCube(cubic);
+        key.setAnisotropy(0);
+        texture = assetManager.loadTexture(key);
         if (texture == null){
             ByteBuffer tempData = BufferUtils.createByteBuffer(3);
             tempData.put((byte)0xFF).put((byte)0x00).put((byte)0x00);

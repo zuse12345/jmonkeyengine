@@ -303,6 +303,9 @@ public class Material implements Cloneable, Savable {
     }
 
     public void setTextureParam(String name, MatParamType type, Texture value){
+        if (value == null)
+            return;
+
         MatParamTextureValue val = getTextureParam(name);
 
         if (val == null)

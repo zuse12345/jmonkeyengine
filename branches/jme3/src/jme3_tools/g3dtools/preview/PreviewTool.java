@@ -10,6 +10,7 @@ import com.g3d.renderer.queue.RenderQueue.Bucket;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Node;
 import com.g3d.scene.Spatial;
+import com.g3d.scene.plugins.ogre.MeshLoader;
 import com.g3d.scene.plugins.ogre.OgreMeshKey;
 import com.g3d.scene.shape.Sphere;
 import com.g3d.system.AppSettings;
@@ -424,12 +425,12 @@ public class PreviewTool extends javax.swing.JFrame {
                         
                     try{
                         display.getAssetManager().registerLocator(selected.getParent(),
-                                                                  FileSystemLocator.class,
+                                                                  "com.g3d.asset.plugins.FileSystemLocator",
                                                                   "*");
 
                         Spatial model;
                         if (ogreMaterial != null){
-                            model = display.getAssetManager().loadOgreModel(selected.getName(),
+                            model = MeshLoader.loadModel(display.getAssetManager(), selected.getName(),
                                                                             ogreMaterial);
                         }else{
                             model = display.getAssetManager().loadModel(selected.getName());

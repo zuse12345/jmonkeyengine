@@ -24,7 +24,7 @@ public class TestHDR extends SimpleApplication {
         Geometry box = new Geometry("Box", boxMesh);
         box.updateModelBound();
         boxMesh.setStatic();
-        Material mat = manager.loadMaterial("hdr_pic.j3m");
+        Material mat = (Material) manager.loadContent("hdr_pic.j3m");
         box.setMaterial(mat);
         return box;
     }

@@ -1,14 +1,15 @@
 package g3dtest.fx;
 
 import com.g3d.app.SimpleApplication;
+import com.g3d.asset.AssetKey;
 import com.g3d.light.DirectionalLight;
 import com.g3d.light.PointLight;
+import com.g3d.material.Material;
 import com.g3d.math.ColorRGBA;
 import com.g3d.math.FastMath;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Spatial;
-import com.g3d.scene.plugins.ogre.OgreMaterialList;
 import com.g3d.scene.plugins.ogre.OgreMeshKey;
 import com.g3d.scene.shape.Sphere;
 
@@ -26,11 +27,11 @@ public class TestBumpModel extends SimpleApplication {
     @Override
     public void simpleInitApp() {
         Spatial signpost = (Spatial) manager.loadContent(new OgreMeshKey("signpost.meshxml", null));
-        signpost.setMaterial(manager.loadMaterial("signpost.j3m"));
+        signpost.setMaterial( (Material) manager.loadContent(new AssetKey("signpost.j3m")));
         rootNode.attachChild(signpost);
 
         lightMdl = new Geometry("Light", new Sphere(10, 10, 0.1f));
-        lightMdl.setMaterial(manager.loadMaterial("red_color.j3m"));
+        lightMdl.setMaterial( (Material) manager.loadContent(new AssetKey("red_color.j3m")));
         rootNode.attachChild(lightMdl);
 
         // flourescent main light

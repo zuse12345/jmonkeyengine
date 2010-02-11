@@ -3,11 +3,14 @@ package g3dtest.model;
 import com.g3d.app.SimpleApplication;
 import com.g3d.light.PointLight;
 import com.g3d.light.DirectionalLight;
+import com.g3d.material.Material;
 import com.g3d.math.Vector3f;
 import com.g3d.math.ColorRGBA;
 import com.g3d.math.FastMath;
 import com.g3d.scene.Spatial;
 import com.g3d.scene.Geometry;
+import com.g3d.scene.plugins.ogre.OgreMaterialList;
+import com.g3d.scene.plugins.ogre.OgreMeshKey;
 import com.g3d.scene.shape.Sphere;
 
 public class TestOgreLoadingElephant extends SimpleApplication
@@ -42,11 +45,11 @@ public class TestOgreLoadingElephant extends SimpleApplication
 
 
         lightMdl = new Geometry("Light", new Sphere(10, 10, 0.1f));
-        lightMdl.setMaterial(manager.loadMaterial("red_color.j3m"));
+        lightMdl.setMaterial( (Material) manager.loadContent("red_color.j3m"));
         rootNode.attachChild(lightMdl);
 
         lightMd2 = new Geometry("Light", new Sphere(10, 10, 0.1f));
-        lightMd2.setMaterial(manager.loadMaterial("white_color.j3m"));
+        lightMd2.setMaterial( (Material) manager.loadContent("white_color.j3m"));
         rootNode.attachChild(lightMd2);
 
 
@@ -62,7 +65,9 @@ public class TestOgreLoadingElephant extends SimpleApplication
 
 
         // create the geometry and attach it
-        Spatial elephant = manager.loadOgreModel("elephant_lowres.meshxml", "elephant.material");
+        OgreMaterialList matList = (OgreMaterialList) manager.loadContent("elephant.material");
+        OgreMeshKey key = new OgreMeshKey("elephant_lowres.meshxml", matList);
+        Spatial elephant = (Spatial) manager.loadContent(key);
         float scale = 0.05f;
         elephant.scale(scale,scale,scale);
         rootNode.attachChild(elephant);

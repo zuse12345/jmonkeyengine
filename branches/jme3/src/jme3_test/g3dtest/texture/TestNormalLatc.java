@@ -1,6 +1,7 @@
 package g3dtest.texture;
 
 import com.g3d.app.SimpleApplication;
+import com.g3d.asset.TextureKey;
 import com.g3d.font.BitmapFont;
 import com.g3d.font.BitmapText;
 import com.g3d.material.Material;
@@ -22,7 +23,9 @@ public class TestNormalLatc extends SimpleApplication {
         Geometry quad = new Geometry("Textured Quad", quadMesh);
         quad.updateModelBound();
 
-        Texture tex = manager.loadTexture(texName, true, false, false, 16);
+        TextureKey key = new TextureKey(texName, true);
+        key.setGenerateMips(false);
+        Texture tex = manager.loadTexture(key);
         Material mat = new Material(manager, "plain_texture.j3md");
         mat.setTexture("m_ColorMap", tex);
 //        mat.setBoolean("m_Normalize", true);

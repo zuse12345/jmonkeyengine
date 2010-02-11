@@ -28,8 +28,8 @@ public class TestOctree extends SimpleApplication {
         this.cam.setFrustumFar(10000);
         MeshLoader.AUTO_INTERLEAVE = false;
 
-        manager.registerLocator("Q3.j3p", J3PFileLocator.class, "tga", "meshxml", "material");
-        Spatial scene = manager.loadOgreModel("main.meshxml","Scene.material");
+        manager.registerLocator("Q3.j3p", "com.g3d.asset.pack.J3PFileLocator", "tga", "meshxml", "material");
+        Spatial scene = MeshLoader.loadModel(manager, "main.meshxml","Scene.material");
 //        scene.setLocalScale(0.2f);
 //        Spatial scene = manager.loadModel("teapot.obj");
 //        Material mat = new Material(manager, "debug_normals.j3md");

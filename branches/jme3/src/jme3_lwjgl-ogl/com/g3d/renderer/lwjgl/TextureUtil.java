@@ -100,7 +100,7 @@ public class TextureUtil {
 
         Image.Format fmt = img.getFormat();
         ByteBuffer data;
-        if (index >= 0 || img.getData() != null && img.getData().size() > 0){
+        if (index >= 0 && img.getData() != null && img.getData().size() > 0){
             data = img.getData(index);
         }else{
             data = null;

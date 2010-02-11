@@ -9,6 +9,8 @@ import com.g3d.math.FastMath;
 import com.g3d.math.Quaternion;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Spatial;
+import com.g3d.scene.plugins.ogre.OgreMaterialList;
+import com.g3d.scene.plugins.ogre.OgreMeshKey;
 
 public class TestBumpModel2 extends SimpleApplication {
 
@@ -26,9 +28,10 @@ public class TestBumpModel2 extends SimpleApplication {
         cam.setRotation(new Quaternion(0.074364014f, 0.92519957f, -0.24794696f, 0.27748522f));
         cam.update();
 
-        manager.registerLocator("/bump/", ClasspathLocator.class, "dds", "jpg", "png");
+        manager.registerLocator("/bump/", "com.g3d.asset.plugins.ClasspathLocator", "dds", "jpg", "png");
 
-        Spatial ball = manager.loadOgreModel("/bump/ShinyBall.meshxml", (String) null);
+        OgreMeshKey key = new OgreMeshKey("/bump/ShinyBall.meshxml", null);
+        Spatial ball = (Spatial) manager.loadContent(key);
         Material mat = manager.loadMaterial("/bump/ShinyBall.j3m");
         mat.selectTechnique("OldGpu");
         ball.setMaterial(mat);
@@ -36,7 +39,8 @@ public class TestBumpModel2 extends SimpleApplication {
 
         rootNode.attachChild(ball);
 
-        Spatial conn = manager.loadOgreModel("/bump/Conn.meshxml", (String) null);
+        key = new OgreMeshKey("/bump/Conn.meshxml", null);
+        Spatial conn = (Spatial) manager.loadContent(key);
         mat = manager.loadMaterial("/bump/Conn.j3m");
         mat.selectTechnique("OldGpu");
         conn.setMaterial(mat);

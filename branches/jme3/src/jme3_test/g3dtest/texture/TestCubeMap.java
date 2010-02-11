@@ -1,6 +1,8 @@
 package g3dtest.texture;
 
 import com.g3d.app.SimpleApplication;
+import com.g3d.asset.AssetKey;
+import com.g3d.asset.TextureKey;
 import com.g3d.material.Material;
 import com.g3d.math.Vector3f;
 import com.g3d.post.HDRRenderer;
@@ -24,16 +26,20 @@ public class TestCubeMap extends SimpleApplication {
         app.start();
     }
 
-    public void loadEnvMap(){ 
+    public void loadEnvMap(){
+        TextureKey key;
         if (renderer.getCaps().contains(Caps.FloatTexture)){
-            envMap = manager.loadTexture("stpeters_probe.hdr", false, true, false, 0);
+            key = new TextureKey("stpeters_probe.hdr", true);
         }else{
-            envMap = manager.loadTexture("stpeters_probe.jpg", false, true, false, 0);
+            key = new TextureKey("stpeters_probe.jpg", true);
         }
+        key.setGenerateMips(true);
+        key.setAsCube(false);
+        envMap = manager.loadTexture(key);
     }
 
     public Geometry createReflectiveTeapot(){
-        Geometry g = (Geometry) manager.loadModel("teapot.obj");
+        Geometry g = (Geometry) manager.loadContent(new AssetKey("teapot.obj"));
         g.setLocalScale(5);
         g.updateModelBound();
 

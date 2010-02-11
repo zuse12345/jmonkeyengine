@@ -2,6 +2,7 @@ package g3dtest.export;
 
 import com.g3d.animation.Model;
 import com.g3d.app.SimpleApplication;
+import com.g3d.asset.AssetKey;
 import com.g3d.export.binary.BinaryExporter;
 import com.g3d.export.binary.BinaryImporter;
 import com.g3d.scene.plugins.ogre.OgreMaterialList;
@@ -19,7 +20,7 @@ public class TestOgreConvert extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        OgreMaterialList materials = (OgreMaterialList) manager.loadContent("OTO.material");
+        OgreMaterialList materials = (OgreMaterialList) manager.loadContent(new AssetKey("OTO.material"));
         Model ogreModel = (Model) manager.loadContent(new OgreMeshKey("OTO.meshxml", materials));
         ogreModel.setLocalScale(0.1f);
 

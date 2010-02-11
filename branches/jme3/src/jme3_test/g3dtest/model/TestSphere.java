@@ -17,7 +17,7 @@ public class TestSphere extends SimpleApplication  {
     @Override
     public void simpleInitApp() {
         Sphere sphMesh = new Sphere(20, 20, 1);
-        Material solidColor = manager.loadMaterial("red_color.j3m");
+        Material solidColor = (Material) manager.loadContent("red_color.j3m");
 
         for (int y = -5; y < 5; y++){
             for (int x = -5; x < 5; x++){

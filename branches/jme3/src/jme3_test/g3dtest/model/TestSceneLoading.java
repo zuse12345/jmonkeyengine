@@ -1,6 +1,7 @@
 package g3dtest.model;
 
 import com.g3d.app.SimpleApplication;
+import com.g3d.asset.TextureKey;
 import com.g3d.asset.pack.J3PFileLocator;
 import com.g3d.material.Material;
 import com.g3d.renderer.queue.RenderQueue.Bucket;
@@ -31,14 +32,19 @@ public class TestSceneLoading extends SimpleApplication {
         sphere.updateModelBound();
         sphere.setQueueBucket(Bucket.Sky);
         Material sky = new Material(manager, "sky.j3md");
-        Texture tex = manager.loadTexture("sky3.dds", false, true, true, 0);
+        TextureKey key = new TextureKey("sky3.dds", false);
+        key.setGenerateMips(true);
+        key.setAsCube(true);
+        Texture tex = manager.loadTexture(key);
         sky.setTexture("m_Texture", tex);
         sphere.setMaterial(sky);
         rootNode.attachChild(sphere);
 
         // create the geometry and attach it
-        manager.registerLocator("wildhouse.zip.j3p", J3PFileLocator.class, "scene", "meshxml",
-                                                                  "material", "jpg", "png");
+        manager.registerLocator("wildhouse.j3p", 
+                                "com.g3d.asset.pack.J3PFileLocator",
+                                "scene", "meshxml",
+                                "material", "jpg", "png");
 
         Spatial scene = manager.loadModel("main.scene");
         rootNode.attachChild(scene);

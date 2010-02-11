@@ -49,6 +49,9 @@ public class DefineList implements Savable {
 
     public void addFrom(DefineList other){
         compiled = null;
+        if (other == null)
+            return;
+        
         defines.putAll(other.defines);
     }
 

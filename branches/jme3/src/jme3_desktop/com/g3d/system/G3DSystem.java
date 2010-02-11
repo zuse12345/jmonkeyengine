@@ -1,5 +1,7 @@
 package com.g3d.system;
 
+import com.g3d.asset.AssetManager;
+import com.g3d.asset.DesktopAssetManager;
 import com.g3d.util.G3DFormatter;
 import com.g3d.audio.AudioRenderer;
 import com.g3d.util.Natives;
@@ -27,6 +29,10 @@ public class G3DSystem {
 
     public static boolean isLowPermissions() {
         return lowPermissions;
+    }
+
+    public static AssetManager newAssetManager(){
+        return new DesktopAssetManager(true);
     }
 
     public static String getPlatformID(){

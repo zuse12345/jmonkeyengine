@@ -21,7 +21,7 @@ public class AudioApp {
         settings.setAudioRenderer("LWJGL");
         ar = G3DSystem.newAudioRenderer(settings);
         ar.initialize();
-        manager = new AssetManager(true);
+        manager = G3DSystem.newAssetManager();
 
         listener = new Listener();
         ar.setListener(listener);

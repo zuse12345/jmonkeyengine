@@ -10,6 +10,8 @@ import com.g3d.app.SimpleApplication;
 import com.g3d.light.DirectionalLight;
 import com.g3d.math.ColorRGBA;
 import com.g3d.math.Vector3f;
+import com.g3d.scene.plugins.ogre.OgreMaterialList;
+import com.g3d.scene.plugins.ogre.OgreMeshKey;
 
 /**
  *
@@ -31,7 +33,9 @@ public class TestOgreAnim extends SimpleApplication {
         dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
         rootNode.addLight(dl);
 
-        Model model = (Model) manager.loadOgreModel("OTO.meshxml", "OTO.material");
+        OgreMaterialList matList = (OgreMaterialList) manager.loadContent("OTO.material");
+        OgreMeshKey key = new OgreMeshKey("OTO.meshxml", matList);
+        Model model = (Model) manager.loadContent(key);
         float scale = 1.00f;
 //        Model model = (Model) manager.loadOgreModel("ninja.meshxml", "ninja.material");
 //        float scale = 0.05f;

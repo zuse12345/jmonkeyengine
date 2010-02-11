@@ -4,6 +4,8 @@ import com.g3d.app.SimpleApplication;
 import com.g3d.light.PointLight;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Spatial;
+import com.g3d.scene.plugins.ogre.OgreMaterialList;
+import com.g3d.scene.plugins.ogre.OgreMeshKey;
 
 public class TestOgreLoading extends SimpleApplication {
 
@@ -18,7 +20,9 @@ public class TestOgreLoading extends SimpleApplication {
         rootNode.addLight(pl);
 
         // create the geometry and attach it
-        Spatial cube = manager.loadOgreModel("test.meshxml","test.material");
+        OgreMaterialList matList = (OgreMaterialList) manager.loadContent("Scene.material");
+        OgreMeshKey key = new OgreMeshKey("Cube.meshxml", matList);
+        Spatial cube = (Spatial) manager.loadContent(key);
         rootNode.attachChild(cube);
     }
 }

@@ -1,6 +1,8 @@
 package g3dtest.collision;
 
 import com.g3d.app.SimpleApplication;
+import com.g3d.asset.AssetKey;
+import com.g3d.material.Material;
 import com.g3d.math.FastMath;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
@@ -29,7 +31,7 @@ public class TestSimpleCollision extends SimpleApplication {
 
         Geometry g = new Geometry("Quad Geom", q);      
         g.rotate(FastMath.HALF_PI, 0, FastMath.PI);        
-        g.setMaterial(manager.loadMaterial("jme_logo.j3m"));
+        g.setMaterial( (Material) manager.loadContent(new AssetKey("jme_logo.j3m")));
         rootNode.attachChild(g);
         
         flyCam.setMotionAllowedListener(new SphereMotionAllowedListener(rootNode, new Vector3f(7f, 7f, 7f)));

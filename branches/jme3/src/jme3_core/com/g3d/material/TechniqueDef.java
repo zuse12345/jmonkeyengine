@@ -122,8 +122,6 @@ public class TechniqueDef implements Savable {
         this.shaderLang = lang;
 
         usesShaders = true;
-        presetDefines = new DefineList();
-        defineParams = new HashMap<String, String>();
     }
 
     public DefineList getShaderPresetDefines() {
@@ -131,6 +129,9 @@ public class TechniqueDef implements Savable {
     }
 
     public String getShaderParamDefine(String paramName){
+        if (defineParams == null)
+            return null;
+        
         return defineParams.get(paramName);
     }
 

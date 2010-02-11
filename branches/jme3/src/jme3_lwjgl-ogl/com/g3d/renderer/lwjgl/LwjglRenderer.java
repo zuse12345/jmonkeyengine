@@ -445,10 +445,7 @@ public class LwjglRenderer implements Renderer {
     public void setWorldMatrix(Matrix4f worldMatrix){
     }
 
-    public void setViewMatrix(Matrix4f viewMatrix){
-    }
-
-    public void setProjectionMatrix(Matrix4f projMatrix){
+    public void setViewProjectionMatrices(Matrix4f viewMatrix, Matrix4f projMatrix){
     }
 
     /*********************************************************************\
@@ -1195,7 +1192,7 @@ public class LwjglRenderer implements Renderer {
 
         Image img = tex.getImage();
         if (img != null){
-            if (img.getData().size() > 0 && !img.hasMipmaps() && tex.getMinFilter().usesMipMapLevels()){
+            if (!img.hasMipmaps() && tex.getMinFilter().usesMipMapLevels()){
                 // No pregenerated mips available,
                 // generate from base level if required
                 glTexParameteri(target, GL_GENERATE_MIPMAP, GL_TRUE);

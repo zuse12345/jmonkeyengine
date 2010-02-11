@@ -1,22 +1,16 @@
 package g3dtest.model;
 
 import com.g3d.app.SimpleApplication;
-import com.g3d.asset.pack.J3PFileLocator;
-import com.g3d.collision.CollisionResult;
-import com.g3d.collision.CollisionResults;
 import com.g3d.collision.MotionAllowedListener;
-import com.g3d.collision.SweepSphere;
 import com.g3d.input.FirstPersonCamera;
-import com.g3d.material.Material;
-import com.g3d.math.FastMath;
 import com.g3d.math.Quaternion;
 import com.g3d.math.Vector3f;
-import com.g3d.renderer.queue.RenderQueue.Bucket;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Spatial;
 import com.g3d.scene.plugins.ogre.MeshLoader;
+import com.g3d.scene.plugins.ogre.OgreMaterialList;
+import com.g3d.scene.plugins.ogre.OgreMeshKey;
 import com.g3d.scene.shape.Sphere;
-import com.g3d.texture.Texture;
 import g3dtest.collision.SphereMotionAllowedListener;
 
 public class TestQ3 extends SimpleApplication {
@@ -50,10 +44,12 @@ public class TestQ3 extends SimpleApplication {
 //        rootNode.attachChild(sphere);
 
         // create the geometry and attach it
-        manager.registerLocator("Q3.j3p", J3PFileLocator.class, "tga", "meshxml", "material");
+        manager.registerLocator("Q3.bin", "com.g3d.asset.pack.J3PFileLocator", "tga", "meshxml", "material");
 
         // create the geometry and attach it
-        gameLevel = manager.loadOgreModel("main.meshxml","Scene.material");
+        OgreMaterialList matList = (OgreMaterialList) manager.loadContent("Scene.material");
+        OgreMeshKey key = new OgreMeshKey("main.meshxml", matList);
+        gameLevel = (Spatial) manager.loadContent(key);
         gameLevel.updateGeometricState();
 //        gameLevel.setLocalScale(0.2f);
         rootNode.attachChild(gameLevel);

@@ -15,20 +15,14 @@ import com.g3d.renderer.Caps;
 import com.g3d.renderer.queue.RenderQueue.Bucket;
 import com.g3d.renderer.queue.RenderQueue.ShadowMode;
 import com.g3d.scene.Geometry;
-import com.g3d.scene.Mesh;
 import com.g3d.scene.Spatial;
 import com.g3d.scene.Spatial.CullHint;
+import com.g3d.scene.plugins.ogre.MeshLoader;
 import com.g3d.scene.shape.Box;
 import com.g3d.scene.shape.Sphere;
 import com.g3d.shadow.BasicShadowRenderer;
-import com.g3d.terrain.Geomap;
-import com.g3d.terrain.GeomapLoader;
 import com.g3d.texture.Texture;
 import com.g3d.texture.Texture.WrapMode;
-import com.g3d.util.TangentBinormalGenerator;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class TestEverything extends SimpleApplication {
 
@@ -87,9 +81,9 @@ public class TestEverything extends SimpleApplication {
     }
 
     public void setupShinyBall(){
-        manager.registerLocator("/bump/", ClasspathLocator.class, "dds", "jpg", "png");
+        manager.registerLocator("/bump/", "com.g3d.asset.plugins.ClasspathLocator", "dds", "jpg", "png");
         
-        Spatial ball = manager.loadOgreModel("/bump/ShinyBall.meshxml", (String) null);
+        Spatial ball = MeshLoader.loadModel(manager, "/bump/ShinyBall.meshxml", null);
         Material mat = manager.loadMaterial("/bump/ShinyBall.j3m");
         mat.selectTechnique("OldGpu");
         ball.setMaterial(mat);
@@ -97,7 +91,8 @@ public class TestEverything extends SimpleApplication {
         ball.setShadowMode(ShadowMode.CastAndRecieve);
         rootNode.attachChild(ball);
 
-        manager.unregisterLocator("/bump/", ClasspathLocator.class, "dds", "jpg", "png");
+        //XXX: uncomment this when possible
+//        manager.unregisterLocator("/bump/", "com.g3d.asset.plugins.ClasspathLocator", "dds", "jpg", "png");
     }
 
     public void setupLighting(){
@@ -137,30 +132,30 @@ public class TestEverything extends SimpleApplication {
         rootNode.attachChild(floorGeom);
     }
 
-    public void setupTerrain(){
-        Material mat = manager.loadMaterial("rock.j3m");
-        mat.selectTechnique("OldGpu");
-        mat.getTextureParam("m_DiffuseMap").getValue().setWrap(WrapMode.Repeat);
-        mat.getTextureParam("m_NormalMap").getValue().setWrap(WrapMode.Repeat);
-        try{
-            Geomap map = GeomapLoader.fromImage(TestEverything.class.getResource("/textures/heightmap.png"));
-            Mesh m = map.createMesh(new Vector3f(0.35f, 0.0005f, 0.35f), new Vector2f(10, 10), true);
-            Logger.getLogger(TangentBinormalGenerator.class.getName()).setLevel(Level.SEVERE);
-            TangentBinormalGenerator.generate(m);
-            Geometry t = new Geometry("Terrain", m);
-            t.setLocalTranslation(85, -15, 0);
-            t.setMaterial(mat);
-            t.updateModelBound();
-            t.setShadowMode(ShadowMode.Recieve);
-            rootNode.attachChild(t);
-        }catch (IOException ex){
-            ex.printStackTrace();
-        }
-
-    }
+//    public void setupTerrain(){
+//        Material mat = manager.loadMaterial("rock.j3m");
+//        mat.selectTechnique("OldGpu");
+//        mat.getTextureParam("m_DiffuseMap").getValue().setWrap(WrapMode.Repeat);
+//        mat.getTextureParam("m_NormalMap").getValue().setWrap(WrapMode.Repeat);
+//        try{
+//            Geomap map = GeomapLoader.fromImage(TestEverything.class.getResource("/textures/heightmap.png"));
+//            Mesh m = map.createMesh(new Vector3f(0.35f, 0.0005f, 0.35f), new Vector2f(10, 10), true);
+//            Logger.getLogger(TangentBinormalGenerator.class.getName()).setLevel(Level.SEVERE);
+//            TangentBinormalGenerator.generate(m);
+//            Geometry t = new Geometry("Terrain", m);
+//            t.setLocalTranslation(85, -15, 0);
+//            t.setMaterial(mat);
+//            t.updateModelBound();
+//            t.setShadowMode(ShadowMode.Recieve);
+//            rootNode.attachChild(t);
+//        }catch (IOException ex){
+//            ex.printStackTrace();
+//        }
+//
+//    }
 
     public void setupRobotGuy(){
-        Model model = (Model) manager.loadOgreModel("OTO.meshxml", (String) null);
+        Model model = (Model) MeshLoader.loadModel(manager, "OTO.meshxml", null);
         Material mat = manager.loadMaterial("oto_lit.j3m");
         mat.selectTechnique("OldGpu");
         model.getChild(0).setMaterial(mat);
@@ -172,7 +167,7 @@ public class TestEverything extends SimpleApplication {
     }
 
     public void setupSignpost(){
-        Spatial signpost = manager.loadOgreModel("signpost.meshxml", (String) null);
+        Spatial signpost = MeshLoader.loadModel(manager, "signpost.meshxml", null);
         Material mat = manager.loadMaterial("signpost.j3m");
         mat.selectTechnique("OldGpu");
         signpost.setMaterial(mat);

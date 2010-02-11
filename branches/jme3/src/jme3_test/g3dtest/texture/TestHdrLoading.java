@@ -41,7 +41,9 @@ public class TestHdrLoading extends SimpleApplication {
         quadMesh.updateGeometry(1, 1, true);
         quadMesh.updateBound();
 
-        Texture original = manager.loadTexture("nave.hdr", true, true, false, 0);
+        TextureKey key = new TextureKey("nave.hdr", true);
+        key.setGenerateMips(true);
+        Texture original = manager.loadTexture(key);
 //        createToneMappedPanel(new Vector3f(-5,0,0), original, 0.3f);
         createToneMappedPanel(new Vector3f(0,0,0),  original.getImage(), 1.5f);
 //        createToneMappedPanel(new Vector3f(5,0,0),  original, 4f);

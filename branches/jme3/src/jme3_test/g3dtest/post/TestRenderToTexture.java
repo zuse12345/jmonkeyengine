@@ -56,7 +56,7 @@ public class TestRenderToTexture extends SimpleApplication {
 
         // setup framebuffer's scene
         Box boxMesh = new Box(Vector3f.ZERO, 1,1,1);
-        Material material = manager.loadMaterial("jme_logo.j3m");
+        Material material = (Material) manager.loadContent("jme_logo.j3m");
         offBox = new Geometry("sphere", boxMesh);
         offBox.setMaterial(material);
 

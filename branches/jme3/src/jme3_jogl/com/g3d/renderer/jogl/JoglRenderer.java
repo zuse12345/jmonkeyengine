@@ -253,11 +253,8 @@ public class JoglRenderer implements Renderer {
         assert TempVars.get().unlock();
     }
 
-    public void setViewMatrix(Matrix4f viewMatrix) {
+    public void setViewProjectionMatrices(Matrix4f viewMatrix, Matrix4f projMatrix) {
         this.viewMatrix.set(viewMatrix);
-    }
-
-    public void setProjectionMatrix(Matrix4f projMatrix) {
         this.projMatrix.set(projMatrix);
     }
 

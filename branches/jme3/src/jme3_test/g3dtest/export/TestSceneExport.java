@@ -23,7 +23,7 @@ public class TestSceneExport extends SimpleApplication {
         this.cam.setFrustumFar(2000);
 
         // create the geometry and attach it
-        manager.registerLocator("data.j3p", J3PFileLocator.class, "dds", "meshxml", "material");
+        manager.registerLocator("data.j3p", "com.g3d.asset.pack.J3PFileLocator", "dds", "meshxml", "material");
 
         // create the geometry and attach it
         OgreMaterialList materials = (OgreMaterialList) manager.loadContent("Scene.material");

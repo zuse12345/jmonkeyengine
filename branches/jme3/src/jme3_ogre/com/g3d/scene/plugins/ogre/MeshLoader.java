@@ -8,12 +8,12 @@ import com.g3d.asset.AssetLoader;
 import com.g3d.asset.AssetManager;
 import com.g3d.material.Material;
 import com.g3d.math.ColorRGBA;
-import com.g3d.math.FastMath;
 import com.g3d.renderer.queue.RenderQueue.Bucket;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.LodData;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.Node;
+import com.g3d.scene.Spatial;
 import com.g3d.scene.VertexBuffer;
 import com.g3d.scene.VertexBuffer.Format;
 import com.g3d.scene.VertexBuffer.Type;
@@ -77,6 +77,15 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
 
     public MeshLoader(){
         super();
+    }
+
+    public static Spatial loadModel(AssetManager manager,
+                                    String meshName, String materialName){
+        OgreMaterialList matList = materialName != null ?
+                        (OgreMaterialList) manager.loadContent(materialName)
+                        : null;
+        OgreMeshKey key = new OgreMeshKey(meshName, matList);
+        return (Spatial) manager.loadContent(key);
     }
 
     @Override

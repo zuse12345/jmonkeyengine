@@ -1,4 +1,4 @@
-package g3dtools.preview;
+package com.g3d.asset.plugins;
 
 import com.g3d.asset.AssetInfo;
 import com.g3d.asset.AssetKey;

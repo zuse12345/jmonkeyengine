@@ -5,7 +5,6 @@ import com.g3d.material.Material;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.shape.Sphere;
-import com.g3d.system.AppSettings;
 
 public class TestSphere extends SimpleApplication  {
 
@@ -16,7 +15,7 @@ public class TestSphere extends SimpleApplication  {
 
     @Override
     public void simpleInitApp() {
-        Sphere sphMesh = new Sphere(20, 20, 1);
+        Sphere sphMesh = new Sphere(14, 14, 1);
         Material solidColor = (Material) manager.loadContent("red_color.j3m");
 
         for (int y = -5; y < 5; y++){

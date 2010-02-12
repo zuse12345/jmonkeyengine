@@ -171,7 +171,7 @@ public interface Renderer {
      *
      * @param count The number of instances to draw
      */
-    public void drawTriangleList(VertexBuffer indexBuf, Mesh.Mode mode, int count, int vertCount);
+    public void drawTriangleList(VertexBuffer indexBuf, Mesh mesh, int count);
 
     /**
      * Clears all vertex attributes set with <code>setVertexAttrib</code>.

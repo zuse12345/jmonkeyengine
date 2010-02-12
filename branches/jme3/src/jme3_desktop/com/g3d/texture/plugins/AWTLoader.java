@@ -37,28 +37,21 @@ public class AWTLoader implements AssetLoader {
         }
     }
 
-    private Image loadAWT(AssetInfo info) throws IOException{
-        InputStream in = info.openStream();
-        ImageIO.setUseCache(false);
-        BufferedImage img = ImageIO.read(in);
-        if (img == null)
-            return null;
-
+    public Image load(BufferedImage img, boolean flipY){
         int width = img.getWidth();
         int height = img.getHeight();
-        boolean flip = ((TextureKey) info.getKey()).isFlipY();
 
         switch (img.getType()){
             case BufferedImage.TYPE_3BYTE_BGR: // most common in JPEG images
                byte[] dataBuf = extractImageData(img);
-               if (flip)
+               if (flipY)
                    flipImage(dataBuf, width, height, 24);
                ByteBuffer data = BufferUtils.createByteBuffer(img.getWidth()*img.getHeight()*3);
                data.put(dataBuf);
                return new Image(Format.BGR8, width, height, data);
             case BufferedImage.TYPE_BYTE_GRAY: // grayscale fonts
                 byte[] dataBuf2 = extractImageData(img);
-                if (flip)
+                if (flipY)
                     flipImage(dataBuf2, width, height, 8);
                 ByteBuffer data2 = BufferUtils.createByteBuffer(img.getWidth()*img.getHeight());
                 data2.put(dataBuf2);
@@ -73,10 +66,10 @@ public class AWTLoader implements AssetLoader {
             for (int y = 0; y < height; y++){
                 for (int x = 0; x < width; x++){
                     int ny = y;
-                    if (flip){
+                    if (flipY){
                         ny = height - y - 1;
                     }
-                    
+
                     int rgb = img.getRGB(x,ny);
                     byte r = (byte) ((rgb & 0x00FF0000) >> 16);
                     byte g = (byte) ((rgb & 0x0000FF00) >> 8);
@@ -92,7 +85,7 @@ public class AWTLoader implements AssetLoader {
             for (int y = 0; y < height; y++){
                 for (int x = 0; x < width; x++){
                     int ny = y;
-                    if (flip){
+                    if (flipY){
                         ny = height - y - 1;
                     }
 
@@ -109,9 +102,22 @@ public class AWTLoader implements AssetLoader {
         }
     }
 
+    public Image load(InputStream in, boolean flipY) throws IOException{
+        ImageIO.setUseCache(false);
+        BufferedImage img = ImageIO.read(in);
+        if (img == null)
+            return null;
+
+        return load(img, flipY);
+    }
+
     public Object load(AssetInfo info) throws IOException {
         if (ImageIO.getImageWritersBySuffix(info.getKey().getExtension()) != null){
-            return loadAWT(info);
+            InputStream in = info.openStream();
+            boolean flip = ((TextureKey) info.getKey()).isFlipY();
+            Image img = load(in, flip);
+            in.close();
+            return img;
         }
         return null;
     }

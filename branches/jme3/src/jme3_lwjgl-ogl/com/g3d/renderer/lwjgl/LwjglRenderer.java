@@ -16,6 +16,7 @@ import com.g3d.scene.VertexBuffer.Format;
 import com.g3d.scene.VertexBuffer.Type;
 import com.g3d.scene.VertexBuffer.Usage;
 import com.g3d.renderer.RenderContext;
+import com.g3d.scene.Mesh.Mode;
 import com.g3d.shader.Attribute;
 import com.g3d.shader.Shader;
 import com.g3d.shader.Shader.ShaderSource;
@@ -46,6 +47,7 @@ import org.lwjgl.opengl.ARBDrawBuffers;
 import org.lwjgl.opengl.ARBDrawInstanced;
 import org.lwjgl.opengl.ARBMultisample;
 import org.lwjgl.opengl.ContextCapabilities;
+import org.lwjgl.opengl.EXTMultiDrawArrays;
 import org.lwjgl.opengl.EXTTextureArray;
 import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
 import org.lwjgl.opengl.GLContext;
@@ -1476,7 +1478,7 @@ public class LwjglRenderer implements Renderer {
         }
     }
 
-    public void drawTriangleList(VertexBuffer indexBuf, Mesh.Mode mode, int count, int vertCount){
+    public void drawTriangleList(VertexBuffer indexBuf, Mesh mesh, int count){
         if (indexBuf.getBufferType() != VertexBuffer.Type.Index)
             throw new IllegalArgumentException("Only index buffers are allowed as triangle lists.");
 
@@ -1491,6 +1493,7 @@ public class LwjglRenderer implements Renderer {
             context.boundElementArrayVBO = bufId;
         }
 
+        int vertCount = mesh.getVertexCount();
         if (vertCount > maxVertCount){
             logger.warning("Mesh may be rendered with reduced performance. \n" +
                            "vertex count > max vertex count.");
@@ -1501,31 +1504,43 @@ public class LwjglRenderer implements Renderer {
                            "triangle count > max triangle count.");
         }
 
-        if (count > 1){
-            if (caps.contains(Caps.MeshInstancing)){
-                ARBDrawInstanced.
-                glDrawElementsInstancedARB(convertElementMode(mode),
-                                           indexBuf.getData().capacity(),
-                                           convertFormat(indexBuf.getFormat()),
-                                           0,
-                                           count);
-            }else{
-                // emulate it
-                // this wouldn't work though, this uniform must be defined..
-                Uniform u = boundShader.getUniform("gl_InstanceIDARB");
-                for (int i = 0; i < count; i++){
-                    u.setInt(i);
-                    updateUniform(boundShader, u);
-                    glDrawRangeElements(convertElementMode(mode),
-                                        0,
-                                        vertCount,
-                                        indexBuf.getData().capacity(),
-                                        convertFormat(indexBuf.getFormat()),
-                                        0);
+        if (count > 1 && caps.contains(Caps.MeshInstancing)){
+            ARBDrawInstanced.
+            glDrawElementsInstancedARB(convertElementMode(mesh.getMode()),
+                                       indexBuf.getData().capacity(),
+                                       convertFormat(indexBuf.getFormat()),
+                                       0,
+                                       count);
+        }
+
+        if (mesh.getMode() == Mode.Hybrid){
+            int[] modeStart      = mesh.getModeStart();
+            int[] elementLengths = mesh.getElementLengths();
+            
+            int elMode = convertElementMode(Mode.Triangles);
+            int fmt    = convertFormat(indexBuf.getFormat());
+            int elSize = indexBuf.getFormat().getComponentSize();
+            int listStart = modeStart[0];
+            int stripStart = modeStart[1];
+            int fanStart = modeStart[2];
+            int curOffset = 0;
+            for (int i = 0; i < elementLengths.length; i++){
+                if (i == stripStart){
+                    elMode = convertElementMode(Mode.TriangleStrip);
+                }else if (i == fanStart){
+                    elMode = convertElementMode(Mode.TriangleStrip);
                 }
+                int elementLength = elementLengths[i];
+                glDrawRangeElements(elMode,
+                                    0,
+                                    vertCount,
+                                    elementLength,
+                                    fmt,
+                                    curOffset);
+                curOffset += elementLength * elSize;
             }
         }else{
-            glDrawRangeElements(convertElementMode(mode),
+            glDrawRangeElements(convertElementMode(mesh.getMode()),
                                 0,
                                 vertCount,
                                 indexBuf.getData().capacity(),
@@ -1624,7 +1639,7 @@ public class LwjglRenderer implements Renderer {
             }
         }
         if (indices != null){
-            drawTriangleList(indices, mesh.getMode(), count, mesh.getVertexCount());
+            drawTriangleList(indices, mesh, count);
         }else{
             throw new UnsupportedOperationException("Cannot render without index buffer");
 //            glDrawArrays(convertElementMode(mesh.getMode()), 0, mesh.getVertexCount());

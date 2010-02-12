@@ -37,6 +37,7 @@ public class Mesh implements Savable, Cloneable {
         Triangles,
         TriangleStrip,
         TriangleFan,
+        Hybrid
     }
 
     /**
@@ -55,6 +56,9 @@ public class Mesh implements Savable, Cloneable {
     private int vertCount = -1;
     private int elementCount = -1;
     private int maxNumWeights = -1; // only if using skeletal animation
+
+    private int[] elementLengths;
+    private int[] modeStart;
 
     private Mode mode = Mode.Triangles;
 
@@ -77,6 +81,22 @@ public class Mesh implements Savable, Cloneable {
             
         }
         return clone;
+    }
+
+    public int[] getElementLengths() {
+        return elementLengths;
+    }
+
+    public void setElementLengths(int[] elementLengths) {
+        this.elementLengths = elementLengths;
+    }
+
+    public int[] getModeStart() {
+        return modeStart;
+    }
+
+    public void setModeStart(int[] modeStart) {
+        this.modeStart = modeStart;
     }
 
     public Mode getMode() {
@@ -117,25 +137,53 @@ public class Mesh implements Savable, Cloneable {
         vbs.remove(getBuffer(Type.Index));
 
         int stride = 0; // aka bytes per vertex
-        for (VertexBuffer vb : vbs){
-            if (vb.getFormat() != Format.Float){
-                throw new UnsupportedOperationException("Cannot interleave vertex buffer.\n" +
-                                                        "Contains not-float data.");
-            }
+        for (int i = 0; i < vbs.size(); i++){
+            VertexBuffer vb = vbs.get(i);
+//            if (vb.getFormat() != Format.Float){
+//                throw new UnsupportedOperationException("Cannot interleave vertex buffer.\n" +
+//                                                        "Contains not-float data.");
+//            }
             stride += vb.componentsLength;
             vb.getData().clear(); // reset position & limit (used later)
         }
 
         VertexBuffer allData = new VertexBuffer(Type.InterleavedData);
         ByteBuffer dataBuf = BufferUtils.createByteBuffer(stride * getVertexCount());
-        allData.setupData(Usage.Static, -1, Format.Byte, dataBuf);
+        allData.setupData(Usage.Static, -1, Format.UnsignedByte, dataBuf);
         setBuffer(allData);
 
         for (int vert = 0; vert < getVertexCount(); vert++){
-            for (VertexBuffer vb : vbs){
-                FloatBuffer fb = (FloatBuffer) vb.getData();
-                for (int comp = 0; comp < vb.components; comp++){
-                    dataBuf.putFloat(fb.get());
+            for (int i = 0; i < vbs.size(); i++){
+                VertexBuffer vb = vbs.get(i);
+                switch (vb.getFormat()){
+                    case Float:
+                        FloatBuffer fb = (FloatBuffer) vb.getData();
+                        for (int comp = 0; comp < vb.components; comp++){
+                            dataBuf.putFloat(fb.get());
+                        }
+                        break;
+                    case Byte:
+                    case UnsignedByte:
+                        ByteBuffer bb = (ByteBuffer) vb.getData();
+                        for (int comp = 0; comp < vb.components; comp++){
+                            dataBuf.put(bb.get());
+                        }
+                        break;
+                    case Half:
+                    case Short:
+                    case UnsignedShort:
+                        ShortBuffer sb = (ShortBuffer) vb.getData();
+                        for (int comp = 0; comp < vb.components; comp++){
+                            dataBuf.putShort(sb.get());
+                        }
+                        break;
+                    case Int:
+                    case UnsignedInt:
+                        IntBuffer ib = (IntBuffer) vb.getData();
+                        for (int comp = 0; comp < vb.components; comp++){
+                            dataBuf.putInt(ib.get());
+                        }
+                        break;
                 }
             }
         }
@@ -435,6 +483,8 @@ public class Mesh implements Savable, Cloneable {
         elementCount = in.readInt("elementCount", -1);
         maxNumWeights = in.readInt("max_num_weights", -1);
         mode = in.readEnum("mode", Mode.class, Mode.Triangles);
+        elementLengths = in.readIntArray("elementLengths", null);
+        modeStart = in.readIntArray("modeStart", null);
         collisionTree = (BIHTree) in.readSavable("collisionTree", null);
 
         List<VertexBuffer> vbList = in.readSavableList("buffers", null);

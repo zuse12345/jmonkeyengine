@@ -16,6 +16,7 @@ import com.g3d.scene.Node;
 import com.g3d.scene.Spatial.CullHint;
 import com.g3d.system.AppSettings;
 import com.g3d.system.G3DContext.Type;
+import com.g3d.system.G3DSystem;
 import com.g3d.util.BufferUtils;
 import java.net.URL;
 
@@ -47,13 +48,8 @@ public abstract class SimpleApplication extends Application {
     public void start(){
         // show settings dialog
         if (showSettings){
-            URL iconUrl = SimpleApplication.class.getResource("Monkey.png");
-            SettingsDialog dialog = new SettingsDialog(settings, iconUrl);
-            dialog.showDialog();
-            if (dialog.waitForSelection() == SettingsDialog.CANCEL_SELECTION){
-                // user pressed cancel/exit
+            if (!G3DSystem.showSettingsDialog(settings))
                 return;
-            }
         }
 
         super.start();

@@ -57,7 +57,7 @@ import java.io.IOException;
  * @author Joshua Slack
  * @version $Id: Texture.java 4131 2009-03-19 20:15:28Z blaine.dev $
  */
-public abstract class Texture extends GLObject implements Savable {
+public abstract class Texture extends GLObject implements Savable, Cloneable {
 
     public enum Type {
 
@@ -302,6 +302,10 @@ public abstract class Texture extends GLObject implements Savable {
     private ShadowCompareMode shadowCompareMode = ShadowCompareMode.Off;
     private int anisotropicFilter;
     private int imageIndex = 0;
+
+    public Texture clone(){
+        return (Texture) super.clone();
+    }
 
     /**
      * Constructor instantiates a new <code>Texture</code> object with default

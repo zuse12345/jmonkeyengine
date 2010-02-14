@@ -99,6 +99,7 @@ public class LwjglRenderer implements Renderer {
     private int maxVertCount;
     private int maxTriCount;
     private boolean tdc;
+    private FrameBuffer lastFb = null;
 
     private int lastWidth, lastHeight;
 
@@ -986,6 +987,9 @@ public class LwjglRenderer implements Renderer {
     }
 
     public void setFrameBuffer(FrameBuffer fb) {
+        if (lastFb == fb)
+            return;
+
         if (fb == null){
             // unbind any fbos
             if (context.boundFBO != 0){
@@ -1002,6 +1006,8 @@ public class LwjglRenderer implements Renderer {
                 glReadBuffer(GL_BACK);
                 context.boundDrawBuf = -1;
             }
+
+            lastFb = null;
         }else{
             if (fb.isUpdateNeeded())
                updateFrameBuffer(fb);
@@ -1031,11 +1037,11 @@ public class LwjglRenderer implements Renderer {
                 }
             }
 
-
             assert fb.getId() >= 0;
             assert context.boundFBO == fb.getId();
+            lastFb = fb;
         }
-
+        
         checkFrameBufferError();
     }
 
@@ -1621,7 +1627,12 @@ public class LwjglRenderer implements Renderer {
             updateBufferData(interleavedData);
         }
 
-        for (VertexBuffer vb : mesh.getBuffers()){
+        VertexBuffer[] buffers = mesh.getBuffers();
+        for (int i = buffers.length - 1; i >= 0; i--){
+            VertexBuffer vb = buffers[i];
+            if (vb == null)
+                continue;
+            
             if (vb.getBufferType() == Type.InterleavedData 
              || vb.getUsage() == Usage.CpuOnly) // ignore cpu-only buffers
                 continue;

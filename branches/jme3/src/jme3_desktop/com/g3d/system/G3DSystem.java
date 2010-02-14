@@ -1,11 +1,13 @@
 package com.g3d.system;
 
+import com.g3d.app.SettingsDialog;
 import com.g3d.asset.AssetManager;
 import com.g3d.asset.DesktopAssetManager;
 import com.g3d.util.G3DFormatter;
 import com.g3d.audio.AudioRenderer;
 import com.g3d.util.Natives;
 import java.io.IOException;
+import java.net.URL;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
@@ -33,6 +35,13 @@ public class G3DSystem {
 
     public static AssetManager newAssetManager(){
         return new DesktopAssetManager(true);
+    }
+
+    public static boolean showSettingsDialog(AppSettings settings){
+        URL iconUrl = G3DSystem.class.getResource("com/g3d/app/Monkey.png");
+        SettingsDialog dialog = new SettingsDialog(settings, iconUrl);
+        dialog.showDialog();
+        return dialog.waitForSelection() != SettingsDialog.CANCEL_SELECTION;
     }
 
     public static String getPlatformID(){

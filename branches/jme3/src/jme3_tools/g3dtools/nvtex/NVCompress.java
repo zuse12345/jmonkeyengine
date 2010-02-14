@@ -1,21 +1,28 @@
 package g3dtools.nvtex;
 
+import com.g3d.asset.AssetManager;
+import com.g3d.export.binary.BinaryExporter;
+import com.g3d.system.G3DSystem;
+import com.g3d.texture.Image;
+import com.g3d.texture.Texture;
+import g3dtools.converters.ImageToAwt;
+import g3dtools.converters.MipMapGenerator;
+import g3dtools.converters.palette.PaletteTextureConverter;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
@@ -26,6 +33,7 @@ public class NVCompress extends javax.swing.JFrame {
     private static File texToolsPath;
     private static final String appName = "NVCompress GUI 1.00";
     private Thread workThread = null;
+    private AssetManager manager;
 
     public NVCompress() {
         initComponents();
@@ -122,7 +130,7 @@ public class NVCompress extends javax.swing.JFrame {
 
         pnlCompressOpt.setBorder(javax.swing.BorderFactory.createTitledBorder("Compression Options"));
 
-        cmbCompressType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "RGBA", "DXT1", "DXT1nm", "DXT1a", "DXT3", "DXT5", "DXT5nm", "ATI1", "ATI2/3Dc" }));
+        cmbCompressType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "RGBA", "DXT1", "DXT1nm", "DXT1a", "DXT3", "DXT5", "DXT5nm", "ATI1", "ATI2/3Dc", "P4RGB565", "P8RGB565", "AWT" }));
         cmbCompressType.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmbCompressTypeActionPerformed(evt);
@@ -412,6 +420,37 @@ public class NVCompress extends javax.swing.JFrame {
         btnDecompress.setText("Decompress");
     }
 
+    private void runJ3(File input, File output, String statusStr) throws InterruptedException{
+        updateWork(statusStr, 0);
+        if (manager == null)
+            manager = G3DSystem.newAssetManager();
+
+        manager.registerLocator(input.getParent().toString(),
+                                "com.g3d.asset.plugins.FileSystemLocator",
+                                "*");
+        Texture tex = manager.loadTexture(input.getName());
+        Image image = tex.getImage();
+        String format = (String) cmbCompressType.getSelectedItem();
+        boolean mips = chkMips.isSelected();
+        if (mips && !image.hasMipmaps()){
+            MipMapGenerator.generateMipMaps(image);
+        }
+        if (format.startsWith("P")){
+            image = PaletteTextureConverter.encodePaletteTexture(image);
+            tex.setImage(image);
+        }
+        if (output == null){
+            output = new File(input.getParent(), input.getName() + ".j3i");
+        }
+
+        try{
+            BinaryExporter.getInstance().save(image, output);
+            BufferedImage preview = ImageToAwt.convert(image, false, 0);
+            ImageIO.write(preview, "png", new File(output + ".png"));
+        }catch (IOException ex){
+        }
+    }
+
     private void runCommand(String[] args, String statusStr) throws InterruptedException{
         Process p = null;
         try{
@@ -485,6 +524,11 @@ public class NVCompress extends javax.swing.JFrame {
         runCommand(args, "Converting "+inFile.getName());
     }
 
+    private void runJ3Compress(final File inFile, File outFile) throws InterruptedException{
+        System.out.println("Converting file "+inFile);
+        runJ3(inFile, outFile, "Converting "+inFile.getName());
+    }
+
     private Object[] compileFileList(){
         Object[] values = lstFileList.getSelectedValues();
         if (values == null || values.length == 0){
@@ -515,6 +559,38 @@ public class NVCompress extends javax.swing.JFrame {
                         }
                         try{
                             runNVCompress(inFile, outFile);
+                        }catch (InterruptedException ex){
+                            return; // user canceled
+                        }
+                    }
+                    endWork();
+                }
+            };
+            workThread.setDaemon(true);
+            workThread.start();
+        }
+    }
+
+    private void runJ3CompressAll(final File exportDir){
+        final Object[] fileList = compileFileList();
+        if (fileList != null && fileList.length > 0){
+            startWork();
+            workThread = new Thread(){
+                @Override
+                public void run(){
+                    for (Object val : fileList){
+                        File inFile = (File) val;
+                        File outFile = null;
+                        if (exportDir != null){
+                            String name = inFile.getName();
+                            int extPt = name.lastIndexOf(".");
+                            if (extPt > 0)
+                                name = name.substring(0, extPt);
+
+                            outFile = new File(exportDir, name+".j3i");
+                        }
+                        try{
+                            runJ3Compress(inFile, outFile);
                         }catch (InterruptedException ex){
                             return; // user canceled
                         }
@@ -570,7 +646,14 @@ public class NVCompress extends javax.swing.JFrame {
                    exportDir = new File(exportPath);
             }
 
-            runNVCompressAll(exportDir);
+            String compression = (String) cmbCompressType.getSelectedItem();
+            if (compression.equals("AWT") || compression.startsWith("P4")
+             || compression.startsWith("P8")){
+                runJ3CompressAll(exportDir);
+            }else{
+                runNVCompressAll(exportDir);
+            }
+            
             btnCompress.setEnabled(true);
             btnCompress.setText("Cancel");
         }

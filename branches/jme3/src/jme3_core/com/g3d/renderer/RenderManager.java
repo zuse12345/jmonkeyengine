@@ -11,7 +11,6 @@ import com.g3d.renderer.queue.GeometryList;
 import com.g3d.renderer.queue.RenderQueue;
 import com.g3d.renderer.queue.RenderQueue.Bucket;
 import com.g3d.scene.Geometry;
-import com.g3d.scene.Mesh;
 import com.g3d.scene.Node;
 import com.g3d.scene.Spatial;
 import com.g3d.shader.Uniform;
@@ -32,6 +31,7 @@ public class RenderManager {
     private List<ViewPort> postViewPorts = new ArrayList<ViewPort>();
     private Camera prevCam = null;
     private Material forcedMaterial = null;
+    private final boolean shader;
 
     private int viewX, viewY, viewWidth, viewHeight;
     private Matrix4f orthoMatrix = new Matrix4f();
@@ -51,6 +51,7 @@ public class RenderManager {
      */
     public RenderManager(Renderer renderer){
         this.renderer = renderer;
+        this.shader = renderer.getCaps().contains(Caps.GLSL100);
     }
 
     /**
@@ -209,18 +210,21 @@ public class RenderManager {
     }
 
     public void renderGeometry(Geometry g) {
-        Mesh mesh = g.getMesh();
-        if (mesh.getVertexCount() <= 0
-         || mesh.getTriangleCount() <= 0){
-            logger.warning("Unable to render geometry "+g+". Missing triangles.");
-        }
+//        Mesh mesh = g.getMesh();
+//        if (mesh.getVertexCount() <= 0
+//         || mesh.getTriangleCount() <= 0){
+//            logger.warning("Unable to render geometry "+g+". Missing triangles.");
+//        }
 
-        worldMatrix.set(g.getWorldMatrix());
-        renderer.setWorldMatrix(worldMatrix);
-        if (g.getMaterial() == null){
-            logger.warning("Unable to render geometry "+g+". No material defined!");
-            return;
-        }
+        if (shader)
+            worldMatrix.set(g.getWorldMatrix());
+        else
+            renderer.setWorldMatrix(g.getWorldMatrix());
+        
+//        if (g.getMaterial() == null){
+//            logger.warning("Unable to render geometry "+g+". No material defined!");
+//            return;
+//        }
 
         if (forcedMaterial != null){
             // use forced material
@@ -367,15 +371,19 @@ public class RenderManager {
     }
 
     private void setViewProjection(Camera cam){
-        viewMatrix.set(cam.getViewMatrix());
-        projMatrix.set(cam.getProjectionMatrix());
-        viewProjMatrix.set(cam.getViewProjectionMatrix());
-        renderer.setViewProjectionMatrices(viewMatrix, projMatrix);
+        if (shader){
+            viewMatrix.set(cam.getViewMatrix());
+            projMatrix.set(cam.getProjectionMatrix());
+            viewProjMatrix.set(cam.getViewProjectionMatrix());
 
-        camLoc.set(cam.getLocation());
-        cam.getLeft(camLeft);
-        cam.getUp(camUp);
-        cam.getDirection(camDir);
+            camLoc.set(cam.getLocation());
+            cam.getLeft(camLeft);
+            cam.getUp(camUp);
+            cam.getDirection(camDir);
+        }else{
+            renderer.setViewProjectionMatrices(cam.getViewMatrix(),
+                                               cam.getProjectionMatrix());
+        }
     }
 
     private void setOrtho(){
@@ -402,16 +410,21 @@ public class RenderManager {
 
     public void renderViewPort(ViewPort vp, float tpf){
         List<SceneProcessor> processors = vp.getProcessors();
-        for (SceneProcessor proc : processors){
-            if (!proc.isInitialized()){
-                proc.initialize(this, vp);
+        if (processors.size() == 0)
+            processors = null;
+
+        if (processors != null){
+            for (SceneProcessor proc : processors){
+                if (!proc.isInitialized()){
+                    proc.initialize(this, vp);
+                }
+                proc.preFrame(tpf);
             }
-            proc.preFrame(tpf);
         }
 
         renderer.setFrameBuffer(vp.getOutputFrameBuffer());
         if (vp.isClearEnabled()){
-            renderer.setBackgroundColor(vp.getBackgroundColor());
+//            renderer.setBackgroundColor(vp.getBackgroundColor());
             renderer.clearBuffers(true, true, true);
         }
         setCamera(vp.getCamera());
@@ -420,14 +433,18 @@ public class RenderManager {
             renderScene(scenes.get(i), vp);
         }
 
-        for (SceneProcessor proc : processors){
-            proc.postQueue(vp.getQueue());
+        if (processors != null){
+            for (SceneProcessor proc : processors){
+                proc.postQueue(vp.getQueue());
+            }
         }
 
         flushQueue(vp);
 
-        for (SceneProcessor proc : processors){
-            proc.postFrame(vp.getOutputFrameBuffer());
+        if (processors != null){
+            for (SceneProcessor proc : processors){
+                proc.postFrame(vp.getOutputFrameBuffer());
+            }
         }
     }
 

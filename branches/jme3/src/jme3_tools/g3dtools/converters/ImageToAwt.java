@@ -2,6 +2,7 @@ package g3dtools.converters;
 
 import com.g3d.texture.Image;
 import com.g3d.texture.Image.Format;
+import g3dtools.converters.palette.PaletteTextureConverter;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
@@ -159,6 +160,12 @@ public class ImageToAwt {
     }
 
     public static BufferedImage convert(Image image, boolean do16bit, int mipLevel){
+        Format format = image.getFormat();
+        if (format == Format.Pal4_RGB565
+         || format == Format.Pal8_RGB565){
+            return PaletteTextureConverter.decodePaletteTexture(image, mipLevel);
+        }
+
         DecodeParams p = params.get(image.getFormat());
         if (p == null)
             throw new UnsupportedOperationException();

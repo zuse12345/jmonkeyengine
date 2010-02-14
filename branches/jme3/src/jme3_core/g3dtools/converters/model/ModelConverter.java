@@ -3,7 +3,6 @@ package g3dtools.converters.model;
 import com.g3d.scene.IndexBuffer;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.Mesh.Mode;
-import com.g3d.scene.Spatial;
 import com.g3d.scene.VertexBuffer;
 import com.g3d.scene.VertexBuffer.Format;
 import com.g3d.scene.VertexBuffer.Type;
@@ -12,6 +11,7 @@ import g3dtools.converters.model.strip.TriStrip;
 import java.nio.Buffer;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Map;
 
 public class ModelConverter {
 
@@ -111,8 +111,41 @@ public class ModelConverter {
         }
     }
 
-    public static void convertModel(Spatial spatial){
+    private static boolean getBoolean(Map<String, String> params, String param){
+        String val = params.get(param);
+        return val != null && val.equals("true");
+    }
 
+    private static int getInt(Map<String, String> params, String param){
+        String val = params.get(param);
+        try {
+            return Integer.parseInt(val);
+        } catch (NumberFormatException ex){
+            return -1;
+        }
+    }
+
+    public static void convertMeshForAndroid(Mesh mesh){
+        compressIndexBuffer(mesh);
+        generateStrips(mesh, false, false, 24, 4);
+//        FloatToFixed
+
+    }
+
+    public static void convertMesh(Mesh mesh, Map<String, String> params){
+        Format tcFmt  = Format.valueOf(params.get("buffer.texcoord.format"));
+        Format posFmt = Format.valueOf(params.get("buffer.position.format"));
+        Format clrFmt = Format.valueOf(params.get("buffer.color.format"));
+        Format nmFmt = Format.valueOf(params.get("buffer.normal.format"));
+        boolean strip = getBoolean(params, "tristrip.enabled");
+        boolean compIdx = getBoolean(params, "buffer.index.compress");
+
+        if (strip){
+            int cacheSize = getInt(params, "tristrip.cachesize");
+            boolean listOnly = getBoolean(params, "tristrip.listonly");
+            int minStripSize = getInt(params, "tristrip.minstripsize");
+            
+        }
     }
 
 }

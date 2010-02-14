@@ -53,7 +53,7 @@ import com.g3d.export.Savable;
  * @author Joshua Slack
  * @version $Id: Image.java 4131 2009-03-19 20:15:28Z blaine.dev $
  */
-public class Image implements Savable {
+public class Image implements Savable, Cloneable {
 
     public enum Format {
         Alpha8(8),
@@ -150,9 +150,21 @@ public class Image implements Savable {
     protected Format format;
     protected int width, height, depth;
     protected int[] mipMapSizes;
-    protected transient List<ByteBuffer> data;
+    protected transient ArrayList<ByteBuffer> data;
     protected transient Object efficentData;
 //    protected int mipOffset = 0;
+
+    public Image clone(){
+        try{
+            Image clone = (Image) super.clone();
+            clone.mipMapSizes = mipMapSizes != null ? mipMapSizes.clone() : null;
+            clone.data = data != null ? new ArrayList<ByteBuffer>(data) : null;
+            return clone;
+        }catch (CloneNotSupportedException ex){
+        }
+        return null;
+
+    }
 
     /**
      * Constructor instantiates a new <code>Image</code> object. All values
@@ -507,7 +519,7 @@ public class Image implements Savable {
         height = capsule.readInt("height", 0);
         depth = capsule.readInt("depth", 0);
         mipMapSizes = capsule.readIntArray("mipMapSizes", null);
-        data = capsule.readByteBufferList("data", null);
+        data = (ArrayList<ByteBuffer>) capsule.readByteBufferList("data", null);
     }
 
 }

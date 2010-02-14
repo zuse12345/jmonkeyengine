@@ -30,7 +30,7 @@ public class FloatToFixed {
     private static final float byteSize = Byte.MAX_VALUE - Byte.MIN_VALUE;
     private static final float byteOff  = (Byte.MAX_VALUE + Byte.MIN_VALUE) * 0.5f;
 
-    public static final void convertToFixed(Geometry geom){
+    public static final void convertToFixed(Geometry geom, Format posFmt, Format tcFmt){
         geom.updateModelBound();
         BoundingBox bbox = (BoundingBox) geom.getModelBound();
         Mesh mesh = geom.getMesh();
@@ -42,21 +42,25 @@ public class FloatToFixed {
 
         // positions
         FloatBuffer fb = (FloatBuffer) positions.getData();
-//        Buffer pb = BufferUtils.createShortBuffer(fb.capacity());
-//        Format posFmt = Format.Short;
-//        Buffer pb = BufferUtils.createByteBuffer(fb.capacity());
-//        Format posFmt = Format.Byte;
-//        Transform transform = convertPositions(fb, bbox, pb);
-//
-//        positions = new VertexBuffer(Type.Position);
-//        positions.setupData(Usage.Static, 3, posFmt, pb);
-//        mesh.clearBuffer(Type.Position);
-//        mesh.setBuffer(positions);
-//
-//        geom.setTransform(transform);
+        if (posFmt != Format.Float){
+            Buffer newBuf = VertexBuffer.createBuffer(posFmt, positions.getNumComponents(),
+                                                      mesh.getVertexCount());
+            Transform t = convertPositions(fb, bbox, newBuf);
+            t.combineWithParent(geom.getTransform());
+            geom.setTransform(t);
 
-        // normals
+            VertexBuffer newPosVb = new VertexBuffer(Type.Position);
+            newPosVb.setupData(positions.getUsage(),
+                               positions.getNumComponents(),
+                               posFmt,
+                               newBuf);
+            mesh.clearBuffer(Type.Position);
+            mesh.setBuffer(newPosVb);
+        }
+
+        // normals, automatically convert to signed byte
         fb = (FloatBuffer) normals.getData();
+
         ByteBuffer bb = BufferUtils.createByteBuffer(fb.capacity());
         convertNormals(fb, bb);
 
@@ -67,25 +71,20 @@ public class FloatToFixed {
         mesh.setBuffer(normals);
 
         // texcoords
-//        fb = (FloatBuffer) texcoords.getData();
-//        IntBuffer ib = BufferUtils.createIntBuffer(fb.capacity());
-//        convertTexCoords2D(fb, ib);
-//
-//        texcoords = new VertexBuffer(Type.TexCoord);
-//        texcoords.setupData(Usage.Static, 2, Format.Int, sb);
-//        mesh.clearBuffer(Type.TexCoord);
-//        mesh.setBuffer(texcoords);
+        fb = (FloatBuffer) texcoords.getData();
+        if (tcFmt != Format.Float){
+            Buffer newBuf = VertexBuffer.createBuffer(tcFmt,
+                                                      texcoords.getNumComponents(),
+                                                      mesh.getVertexCount());
+            convertTexCoords2D(fb, newBuf);
 
-        // indices
-        if (mesh.getVertexCount() <= 255){
-            ShortBuffer sb = (ShortBuffer) indices.getData();
-            bb = BufferUtils.createByteBuffer(sb.capacity());
-            convertIndices(sb, bb);
-
-            indices = new VertexBuffer(Type.Index);
-            indices.setupData(Usage.Static, 3, Format.UnsignedByte, bb);
-            mesh.clearBuffer(Type.Index);
-            mesh.setBuffer(indices);
+            VertexBuffer newTcVb = new VertexBuffer(Type.TexCoord);
+            newTcVb.setupData(texcoords.getUsage(),
+                              texcoords.getNumComponents(),
+                              tcFmt,
+                              newBuf);
+            mesh.clearBuffer(Type.TexCoord);
+            mesh.setBuffer(newTcVb);
         }
     }
 
@@ -124,7 +123,7 @@ public class FloatToFixed {
         }
     }
 
-    public static final void convertTexCoords2D(FloatBuffer input, IntBuffer output){
+    public static final void convertTexCoords2D(FloatBuffer input, Buffer output){
         if (output.capacity() < input.capacity())
             throw new RuntimeException("Output must be at least as large as input!");
 
@@ -132,13 +131,28 @@ public class FloatToFixed {
         output.clear();
         Vector2f temp = new Vector2f();
         int vertexCount = input.capacity() / 2;
+
+        ShortBuffer sb = null;
+        IntBuffer ib = null;
+
+        if (output instanceof ShortBuffer)
+            sb = (ShortBuffer) output;
+        else if (output instanceof IntBuffer)
+            ib = (IntBuffer) output;
+        else
+            throw new UnsupportedOperationException();
+
         for (int i = 0; i < vertexCount; i++){
             BufferUtils.populateFromBuffer(temp, input, i);
 
-            int v1 = (int) (temp.getX() * (1 << 16));
-            int v2 = (int) (temp.getY() * (1 << 16));
-            
-            output.put(v1).put(v2);
+            if (sb != null){
+                sb.put( (short) (temp.getX()*Short.MAX_VALUE) );
+                sb.put( (short) (temp.getY()*Short.MAX_VALUE) );
+            }else{
+                int v1 = (int) (temp.getX() * ((float)(1 << 16)));
+                int v2 = (int) (temp.getY() * ((float)(1 << 16)));
+                ib.put(v1).put(v2);
+            }
         }
     }
 

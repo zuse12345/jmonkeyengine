@@ -1,7 +1,6 @@
 package g3dtools.optimize;
 
 import com.g3d.app.SimpleApplication;
-import com.g3d.asset.pack.J3PFileLocator;
 import com.g3d.material.Material;
 import com.g3d.math.ColorRGBA;
 import com.g3d.math.Matrix4f;

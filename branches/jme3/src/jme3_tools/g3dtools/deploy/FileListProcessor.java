@@ -1,6 +1,5 @@
 package g3dtools.deploy;
 
-import com.g3d.asset.pack.J3PCreator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -22,7 +21,6 @@ import java.util.zip.ZipFile;
 public class FileListProcessor {
 
     private static JarOutputStream jarOut;
-    private static J3PCreator j3p;
     private static long time;
 
     private static void addToJar(String path, InputStream stream) throws IOException {
@@ -68,15 +66,11 @@ public class FileListProcessor {
     }
 
     public static final void iterateFile(String path, long size, InputStream stream){
-        if (path.toLowerCase().endsWith(".class")){
-            try{
-                // this is a class, put in codefile
-                addToJar(path, stream);
-            }catch (IOException ex){
-                ex.printStackTrace();
-            }
-        }else{
-            j3p.addEntry(path, size, stream);
+        try{
+            // this is a class, put in codefile
+            addToJar(path, stream);
+        }catch (IOException ex){
+            ex.printStackTrace();
         }
     }
 
@@ -147,11 +141,6 @@ public class FileListProcessor {
         }
     }
 
-    private static void finishJ3P(File outJ3p){
-        j3p.finish(outJ3p);
-        j3p.reset();
-    }
-
     public static final void process(AppConfig cfg){
         if (!cfg.isFTPOutput()){
             File tmp = new File(cfg.getOutputPath(), "code.jar.tmp");
@@ -166,8 +155,6 @@ public class FileListProcessor {
             }catch (IOException ex){
                 ex.printStackTrace();
             }
-
-            j3p = new J3PCreator();
         }
 
         File[] fs = cfg.getInputSources();
@@ -182,8 +169,6 @@ public class FileListProcessor {
         if (!cfg.isFTPOutput()){
             File tmp = new File(cfg.getOutputPath(), "code.jar.tmp");
             File pklz = new File(cfg.getOutputPath(), "code.pklz");
-            File j3pF = new File(cfg.getOutputPath(), "data.j3p");
-            finishJ3P(j3pF);
             finishJar(tmp, pklz);
             tmp.delete();
         }

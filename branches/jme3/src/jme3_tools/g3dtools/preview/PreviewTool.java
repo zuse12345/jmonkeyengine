@@ -1,23 +1,16 @@
 package g3dtools.preview;
 
 import com.g3d.animation.Model;
-import com.g3d.asset.AssetManager;
+import com.g3d.bounding.BoundingBox;
+import com.g3d.bounding.BoundingVolume;
 import com.g3d.export.binary.BinaryExporter;
 import com.g3d.export.xml.XMLExporter;
-import com.g3d.math.FastMath;
-import com.g3d.math.Quaternion;
-import com.g3d.renderer.queue.RenderQueue.Bucket;
-import com.g3d.scene.Geometry;
-import com.g3d.scene.Node;
+import com.g3d.math.Vector3f;
 import com.g3d.scene.Spatial;
 import com.g3d.scene.plugins.ogre.MeshLoader;
-import com.g3d.scene.plugins.ogre.OgreMeshKey;
-import com.g3d.scene.shape.Sphere;
 import com.g3d.system.AppSettings;
 import com.g3d.system.G3DCanvasContext;
-import com.g3d.system.G3DContext.Type;
-import com.g3d.system.G3DSystem;
-import com.g3d.system.SystemListener;
+import g3dtools.converters.model.ModelConverter;
 import java.awt.Canvas;
 import java.io.File;
 import javax.swing.DefaultListModel;
@@ -46,7 +39,7 @@ public class PreviewTool extends javax.swing.JFrame {
     private FileNameExtensionFilter meshxml = new FileNameExtensionFilter("Ogre3D Mesh XML (*.xml, *.meshxml)", "xml", "meshxml");
     private FileNameExtensionFilter scene = new FileNameExtensionFilter("Ogre3D dotScene (*.scene)", "scene");
     private FileNameExtensionFilter import_combo = new FileNameExtensionFilter("All supported formats (*.j3o, *.xml, *.obj, *.meshxml, *.scene)",
-                                                                       "obj", "meshxml", "xml", "scene");
+                                                                       "j3o", "obj", "meshxml", "xml", "scene");
     
     
     public PreviewTool() {
@@ -55,6 +48,7 @@ public class PreviewTool extends javax.swing.JFrame {
         
         // create canvas
         AppSettings settings = new AppSettings(true);
+        settings.setSamples(4);
         display = new PreviewDisplay();
         display.setSettings(settings);
         display.createCanvas();
@@ -101,12 +95,16 @@ public class PreviewTool extends javax.swing.JFrame {
         sldSpeed = new javax.swing.JSlider();
         jScrollPane1 = new javax.swing.JScrollPane();
         lstAnims = new javax.swing.JList();
+        chkAndroid = new javax.swing.JCheckBox();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("PreviewTool");
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent evt) {
                 formWindowClosed(evt);
+            }
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
             }
         });
 
@@ -290,6 +288,8 @@ public class PreviewTool extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+        chkAndroid.setText("Export for Android");
+
         org.jdesktop.layout.GroupLayout pnlButtonsLayout = new org.jdesktop.layout.GroupLayout(pnlButtons);
         pnlButtons.setLayout(pnlButtonsLayout);
         pnlButtonsLayout.setHorizontalGroup(
@@ -306,12 +306,13 @@ public class PreviewTool extends javax.swing.JFrame {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(pnlButtonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(btnExport)
-                    .add(btnLoad))
+                    .add(btnLoad)
+                    .add(chkAndroid))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(pnlOptions, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(12, 12, 12)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(51, Short.MAX_VALUE))
+                .addContainerGap(35, Short.MAX_VALUE))
         );
         pnlButtonsLayout.setVerticalGroup(
             pnlButtonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -327,7 +328,9 @@ public class PreviewTool extends javax.swing.JFrame {
                         .add(pnlButtonsLayout.createSequentialGroup()
                             .add(btnLoad)
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(btnExport))
+                            .add(btnExport)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                            .add(chkAndroid))
                         .add(pnlOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap(105, Short.MAX_VALUE))
@@ -394,8 +397,41 @@ public class PreviewTool extends javax.swing.JFrame {
     }//GEN-LAST:event_btnMaterialActionPerformed
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-        display.stop();
+//        display.stop();
     }//GEN-LAST:event_formWindowClosed
+
+    private static Spatial scaleAndCenter(Spatial model, float size) {
+        if (model != null) {
+           model.updateGeometricState();
+
+            BoundingVolume worldBound = model.getWorldBound();
+            if (worldBound == null) {
+                model.setModelBound(new BoundingBox());
+                model.updateModelBound();
+                model.updateGeometricState();
+                worldBound = model.getWorldBound();
+            }
+
+            if (worldBound != null){ // check not still null (no geoms)
+                Vector3f center = worldBound.getCenter();
+
+                BoundingBox boundingBox = new BoundingBox(center, 0, 0, 0);
+                boundingBox.mergeLocal(worldBound);
+
+                Vector3f extent = boundingBox.getExtent( null );
+                float maxExtent = Math.max( Math.max( extent.x, extent.y ), extent.z );
+                float height = extent.y;
+                if ( maxExtent != 0 ) {
+                    model.setLocalScale( size / maxExtent );
+                    Vector3f pos = center.negate().addLocal(0.0f, height / 2.0f, 0.0f); //.multLocal(model.getLocalScale().x);
+                    model.setLocalTranslation(pos);
+                    System.out.println("Model size: "+maxExtent);
+                    System.out.println("Model position: "+center);
+                }
+            }
+        }
+        return model;
+    }
 
     private void btnLoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadActionPerformed
         chooser.resetChoosableFileFilters();
@@ -422,7 +458,7 @@ public class PreviewTool extends javax.swing.JFrame {
                             ogreMaterial = lowerCaseName.substring(0, i) + ".material";
                         }
                     }
-                        
+                    
                     try{
                         display.getAssetManager().registerLocator(selected.getParent(),
                                                                   "com.g3d.asset.plugins.FileSystemLocator",
@@ -437,12 +473,15 @@ public class PreviewTool extends javax.swing.JFrame {
                         }
                         if (model == null)
                             return;
+
+//                        model = model.clone();
                         
                         // call this before scaling so access to the controllers is available
                         updateAnimationMode(model);
+                        scaleAndCenter(model, 40f);
                         
 //                        model = ModelLoader.scaleAndCenter(model, 40.0f);
-                        
+
                         display.setModel(model);
                     } catch (Throwable ex){
                         JOptionPane.showMessageDialog(this, 
@@ -492,7 +531,7 @@ public class PreviewTool extends javax.swing.JFrame {
         
         if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             File selected = chooser.getSelectedFile();
-            String ext = "jme";
+            String ext = "j3o";
             if (chooser.getFileFilter() == jmexml) {
                 ext = "xml";
             } else if (chooser.getFileFilter() == obj) {
@@ -500,18 +539,24 @@ public class PreviewTool extends javax.swing.JFrame {
             }
 
             if (!selected.getName().toLowerCase().endsWith(ext))
-                selected = new File(selected.getName() + "." + ext);
+                selected = new File(selected.toString() + "." + ext);
             
             try {
                 if (display.getModel() == null) {
                     return;
                 }
 
-                if (ext.equals("jme")){
+                Spatial s = display.getModel();
+                if (chkAndroid.isSelected()){
+                    s = s.deepClone();
+                    ModelConverter.optimize(s);
+                }
+
+                if (ext.equals("j3o")){
                     BinaryExporter exp = BinaryExporter.getInstance();
-                    exp.save(display.getModel(), selected);
+                    exp.save(s, selected);
                 }else if (ext.equals("xml")){
-                    XMLExporter.getInstance().save(display.getModel(), selected);
+                    XMLExporter.getInstance().save(s, selected);
                 }
                 //ModelLoader.saveModel(model, selected, ext);
             } catch (Throwable ex) {
@@ -527,6 +572,9 @@ public class PreviewTool extends javax.swing.JFrame {
     private void lstAnimsValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_lstAnimsValueChanged
         if (animHandler != null){
             String selected = (String) lstAnims.getSelectedValue();
+            if (selected == null)
+                return;
+
             if (selected.equals("<bind>")){
                 // reset to bind pose
                 animHandler.play("<bind>");
@@ -542,6 +590,10 @@ public class PreviewTool extends javax.swing.JFrame {
             animHandler.setSpeed(sldSpeed.getValue() / 100f);
         }
     }//GEN-LAST:event_sldSpeedStateChanged
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        display.stop();
+    }//GEN-LAST:event_formWindowClosing
     
     /**
      * @param args the command line arguments
@@ -562,6 +614,7 @@ public class PreviewTool extends javax.swing.JFrame {
     private javax.swing.JToggleButton btnTextured;
     private javax.swing.JToggleButton btnWire;
     private java.awt.Canvas canvas;
+    private javax.swing.JCheckBox chkAndroid;
     private javax.swing.JCheckBox chkBackfaces;
     private javax.swing.JCheckBox chkBones;
     private javax.swing.JCheckBox chkBounds;

@@ -13,8 +13,8 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  *
- * * Neither the name of 'jMonkeyEngine' nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of 'jMonkeyEngine' nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -39,9 +39,14 @@ import com.g3d.export.ReadListener;
 import com.g3d.export.Savable;
 import com.g3d.math.FastMath;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.logging.Level;
@@ -50,76 +55,87 @@ import java.util.logging.Logger;
 /**
  * @author Joshua Slack
  */
-public class BinaryImporter implements G3DImporter {
+public final class BinaryImporter implements G3DImporter {
     private static final Logger logger = Logger.getLogger(BinaryImporter.class
             .getName());
 
     //TODO: Provide better cleanup and reuse of this class -- Good for now.
-    
+    private AssetManager assetManager;
+
     //Key - alias, object - bco
-    protected HashMap<String, BinaryClassObject> classes;
+    private HashMap<String, BinaryClassObject> classes
+             = new HashMap<String, BinaryClassObject>();
     //Key - id, object - the savable
-    protected HashMap<Integer, Savable> contentTable;
+    private HashMap<Integer, Savable> contentTable
+            = new HashMap<Integer, Savable>();
     //Key - savable, object - capsule
-    protected IdentityHashMap<Savable, BinaryInputCapsule> capsuleTable;
+    private IdentityHashMap<Savable, BinaryInputCapsule> capsuleTable
+             = new IdentityHashMap<Savable, BinaryInputCapsule>();
     //Key - id, opject - location in the file
-    protected HashMap<Integer, Integer> locationTable;
-    
-    private static final boolean debug = true;
+    private HashMap<Integer, Integer> locationTable
+             = new HashMap<Integer, Integer>();
 
-    protected byte[] dataArray;
-    protected int aliasWidth;
+    public static boolean debug = false;
 
-    protected AssetManager assetManager;
+    private byte[] dataArray;
+    private int aliasWidth;
 
-    public BinaryImporter(AssetManager owner) {
-        assetManager = owner;
-        contentTable = new HashMap<Integer, Savable>();
-        classes = new HashMap<String, BinaryClassObject>();
+    private static final boolean fastRead = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN;
+
+    public BinaryImporter() {
+    }
+
+    public static boolean canUseFastBuffers(){
+        return fastRead;
+    }
+
+    public static BinaryImporter getInstance() {
+        return new BinaryImporter();
     }
 
     public AssetManager getAssetManager(){
         return assetManager;
     }
 
-    public Object load(AssetInfo info) throws IOException{
-        InputStream in = info.openStream();
-        Savable obj = load(in, null, null);
-        in.close();
-        return obj;
-    }
-//
-//    public Savable load(InputStream is) throws IOException {
-//        return load(is, null, null);
-//    }
-//
-//    public Savable load(InputStream is, ReadListener listener) throws IOException {
-//    	return load(is, listener, null);
-//    }
+    public Object load(AssetInfo info){
+        assetManager = info.getManager();
 
-    private void reset(){
-        contentTable.clear();
-        classes.clear();
+        try{
+            InputStream is = info.openStream();
+            Savable s = load(is);
+            is.close();
+            return s;
+        }catch (IOException ex){
+            logger.log(Level.SEVERE, "An error occured while loading jME binary object", ex);
+        }
+        return null;
+    }
+
+    public Savable load(InputStream is) throws IOException {
+        return load(is, null, null);
+    }
+
+    public Savable load(InputStream is, ReadListener listener) throws IOException {
+        return load(is, listener, null);
     }
 
     public Savable load(InputStream is, ReadListener listener, ByteArrayOutputStream baos) throws IOException {
-        reset();
-
+        contentTable.clear();
         BufferedInputStream bis = new BufferedInputStream(is);
         int numClasses = ByteUtils.readInt(bis);
         int bytes = 4;
         aliasWidth = ((int)FastMath.log(numClasses, 256) + 1);
 
-        
+        classes.clear();
         for(int i = 0; i < numClasses; i++) {
             String alias = readString(bis, aliasWidth);
-            
+
             int classLength = ByteUtils.readInt(bis);
             String className = readString(bis, classLength);
             BinaryClassObject bco = new BinaryClassObject();
             bco.alias = alias.getBytes();
             bco.className = className;
-            
+
             int fields = ByteUtils.readInt(bis);
             bytes += (8 + aliasWidth + classLength);
 
@@ -128,7 +144,7 @@ public class BinaryImporter implements G3DImporter {
             for (int x = 0; x < fields; x++) {
                 byte fieldAlias = (byte)bis.read();
                 byte fieldType = (byte)bis.read();
-                
+
                 int fieldNameLength = ByteUtils.readInt(bis);
                 String fieldName = readString(bis, fieldNameLength);
                 BinaryClassField bcf = new BinaryClassField(fieldName, fieldAlias, fieldType);
@@ -139,12 +155,12 @@ public class BinaryImporter implements G3DImporter {
             classes.put(alias, bco);
         }
         if (listener != null) listener.readBytes(bytes);
-        
+
         int numLocs = ByteUtils.readInt(bis);
         bytes = 4;
 
-        capsuleTable = new IdentityHashMap<Savable, BinaryInputCapsule>(numLocs);
-        locationTable = new HashMap<Integer, Integer>(numLocs);
+        capsuleTable.clear();
+        locationTable.clear();
         for(int i = 0; i < numLocs; i++) {
             int id = ByteUtils.readInt(bis);
             int loc = ByteUtils.readInt(bis);
@@ -159,9 +175,9 @@ public class BinaryImporter implements G3DImporter {
         if (listener != null) listener.readBytes(bytes);
 
         if (baos == null) {
-        	baos = new ByteArrayOutputStream(bytes);
+                baos = new ByteArrayOutputStream(bytes);
         } else {
-        	baos.reset();
+                baos.reset();
         }
         int size = -1;
         byte[] cache = new byte[4096];
@@ -173,7 +189,7 @@ public class BinaryImporter implements G3DImporter {
 
         dataArray = baos.toByteArray();
         baos = null;
-        
+
         Savable rVal = readObject(id);
         if (debug) {
             logger.info("Importer Stats: ");
@@ -184,56 +200,67 @@ public class BinaryImporter implements G3DImporter {
         dataArray = null;
         return rVal;
     }
-    
+
+    public Savable load(URL f) throws IOException {
+        return load(f, null);
+    }
+
+    public Savable load(URL f, ReadListener listener) throws IOException {
+        InputStream is = f.openStream();
+        Savable rVal = load(is, listener);
+        is.close();
+        return rVal;
+    }
+
+    public Savable load(File f) throws IOException {
+        return load(f, null);
+    }
+
+    public Savable load(File f, ReadListener listener) throws IOException {
+        FileInputStream fis = new FileInputStream(f);
+        Savable rVal = load(fis, listener);
+        fis.close();
+        return rVal;
+    }
+
+    public Savable load(byte[] data) throws IOException {
+        ByteArrayInputStream bais = new ByteArrayInputStream(data);
+        Savable rVal = load(bais);
+        bais.close();
+        return rVal;
+    }
+
     public BinaryInputCapsule getCapsule(Savable id) {
         return capsuleTable.get(id);
     }
 
     protected String readString(InputStream f, int length) throws IOException {
-        char[] data = new char[length];
+        byte[] data = new byte[length];
         for(int j = 0; j < length; j++) {
-            data[j] = (char)f.read();
+            data[j] = (byte)f.read();
         }
 
         return new String(data);
     }
 
     protected String readString(int length, int offset) throws IOException {
-        char[] data = new char[length];
+        byte[] data = new byte[length];
         for(int j = 0; j < length; j++) {
-            data[j] = (char) dataArray[j+offset];
+            data[j] = dataArray[j+offset];
         }
-        
+
         return new String(data);
     }
 
-//    protected String readString(InputStream f, int length) throws IOException {
-//        byte[] data = new byte[length];
-//        for(int j = 0; j < length; j++) {
-//            data[j] = (byte)f.read();
-//        }
-//
-//        return new String(data);
-//    }
-//
-//    protected String readString(int length, int offset) throws IOException {
-//        byte[] data = new byte[length];
-//        for(int j = 0; j < length; j++) {
-//            data[j] = dataArray[j+offset];
-//        }
-//
-//        return new String(data);
-//    }
-    
     public Savable readObject(int id) {
-        
+
         if(contentTable.get(id) != null) {
             return contentTable.get(id);
         }
-        
+
         try {
             int loc = locationTable.get(id);
-            
+
             String alias = readString(aliasWidth, loc);
             loc+=aliasWidth;
 
@@ -242,8 +269,8 @@ public class BinaryImporter implements G3DImporter {
             if(bco == null) {
                 logger.logp(Level.SEVERE, this.getClass().toString(), "readObject(int id)", "NULL class object: " + alias);
                 return null;
-            }            
-            
+            }
+
             int dataLength = ByteUtils.convertIntFromBytes(dataArray, loc);
             loc+=4;
 
@@ -251,16 +278,16 @@ public class BinaryImporter implements G3DImporter {
             cap.setContent(dataArray, loc, loc+dataLength);
 
             Savable out = BinaryClassLoader.fromName(bco.className, cap);
-            
+
             capsuleTable.put(out, cap);
             contentTable.put(id, out);
 
             out.read(this);
-            
+
             capsuleTable.remove(out);
-            
+
             return out;
-            
+
         } catch (IOException e) {
             logger.logp(Level.SEVERE, this.getClass().toString(), "readObject(int id)", "Exception", e);
             return null;

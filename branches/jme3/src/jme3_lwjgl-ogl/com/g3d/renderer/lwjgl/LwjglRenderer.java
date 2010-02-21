@@ -28,6 +28,8 @@ import com.g3d.texture.Image;
 import com.g3d.texture.Texture;
 import com.g3d.texture.Texture.WrapAxis;
 import com.g3d.util.BufferUtils;
+import com.g3d.util.IntMap;
+import com.g3d.util.IntMap.Entry;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
@@ -47,7 +49,6 @@ import org.lwjgl.opengl.ARBDrawBuffers;
 import org.lwjgl.opengl.ARBDrawInstanced;
 import org.lwjgl.opengl.ARBMultisample;
 import org.lwjgl.opengl.ContextCapabilities;
-import org.lwjgl.opengl.EXTMultiDrawArrays;
 import org.lwjgl.opengl.EXTTextureArray;
 import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
 import org.lwjgl.opengl.GLContext;
@@ -1627,11 +1628,9 @@ public class LwjglRenderer implements Renderer {
             updateBufferData(interleavedData);
         }
 
-        VertexBuffer[] buffers = mesh.getBuffers();
-        for (int i = buffers.length - 1; i >= 0; i--){
-            VertexBuffer vb = buffers[i];
-            if (vb == null)
-                continue;
+        IntMap<VertexBuffer> buffers = mesh.getBuffers();
+        for (Entry<VertexBuffer> entry : buffers){
+            VertexBuffer vb = entry.getValue();
             
             if (vb.getBufferType() == Type.InterleavedData 
              || vb.getUsage() == Usage.CpuOnly) // ignore cpu-only buffers

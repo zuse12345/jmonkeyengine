@@ -83,11 +83,6 @@ public class Image implements Savable, Cloneable {
         ABGR8(32),
         RGBA16(64),
 
-        Pal4_RGB565(0,false,true,false),
-        Pal8_RGB565(0,false,true,false),
-        Pal4_RGB8(0,false,true,false),
-        Pal8_RGB8(0,false,true,false),
-
         DXT1(4,false,true, false),
         DXT1A(4,false,true, false),
         DXT3(8,false,true, false),
@@ -509,7 +504,7 @@ public class Image implements Savable, Cloneable {
         capsule.write(height, "height", 0);
         capsule.write(depth, "depth", 0);
         capsule.write(mipMapSizes, "mipMapSizes", null);
-        capsule.writeByteBufferList(data, "data", null);
+        capsule.writeByteBufferArrayList(data, "data", null);
     }
 
     public void read(G3DImporter e) throws IOException {
@@ -519,7 +514,7 @@ public class Image implements Savable, Cloneable {
         height = capsule.readInt("height", 0);
         depth = capsule.readInt("depth", 0);
         mipMapSizes = capsule.readIntArray("mipMapSizes", null);
-        data = (ArrayList<ByteBuffer>) capsule.readByteBufferList("data", null);
+        data = (ArrayList<ByteBuffer>) capsule.readByteBufferArrayList("data", null);
     }
 
 }

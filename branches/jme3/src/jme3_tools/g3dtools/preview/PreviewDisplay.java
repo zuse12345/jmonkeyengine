@@ -2,18 +2,24 @@ package g3dtools.preview;
 
 import com.g3d.app.Application;
 import com.g3d.input.binding.BindingListener;
+import com.g3d.light.DirectionalLight;
+import com.g3d.light.PointLight;
 import com.g3d.material.Material;
 import com.g3d.material.RenderState;
+import com.g3d.math.ColorRGBA;
 import com.g3d.math.FastMath;
 import com.g3d.math.Quaternion;
 import com.g3d.math.Vector3f;
+import com.g3d.post.HDRRenderer;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Node;
 import com.g3d.scene.Spatial;
 import com.g3d.scene.shape.Sphere;
+import com.g3d.shadow.BasicShadowRenderer;
 
 public class PreviewDisplay extends Application implements BindingListener {
 
+    private Node rootNode = new Node("Root Node");
     private Spatial model;
     private RenderState wireFrame;
 
@@ -24,6 +30,7 @@ public class PreviewDisplay extends Application implements BindingListener {
 
     private boolean leftMouse, rightMouse, middleMouse;
     private float deltaX, deltaY, deltaWheel;
+    private PointLight camLight;
     
     {
         wireFrame = new RenderState();
@@ -34,14 +41,40 @@ public class PreviewDisplay extends Application implements BindingListener {
         super.initialize();
         setPauseOnLostFocus(false);
 
+        viewPort.attachScene(rootNode);
+//        HDRRenderer r = new HDRRenderer(manager, renderer);
+//        r.setSamples(4);
+//        r.setWhiteLevel(2);
+//        r.setExposure(.60f);
+//        r.setMaxIterations(20);
+//        viewPort.addProcessor(r);
+//        BasicShadowRenderer bsr = new BasicShadowRenderer(manager, 512);
+//        bsr.setDirection(new Vector3f(0,-1, -1).normalizeLocal());
+//        viewPort.addProcessor(bsr);
+
         Sphere s = new Sphere(30, 20, 10);
         Geometry geom = new Geometry("sphere", s);
         geom.setMaterial(manager.loadMaterial("jme_logo.j3m"));
         model = geom;
         model.getLocalRotation().fromAngles(-FastMath.HALF_PI, 0, 0);
-        viewPort.attachScene(model);
+        rootNode.attachChild(model);
+
         cam.setLocation(new Vector3f(0, 0, -50));
         cam.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
+
+        DirectionalLight dl = new DirectionalLight();
+        dl.setDirection(new Vector3f(-.5f,-1, -.5f).normalizeLocal());
+        dl.setColor(new ColorRGBA(1f, 1f, .9f, 1f));
+        rootNode.addLight(dl);
+
+        DirectionalLight dl2 = new DirectionalLight();
+        dl.setDirection(new Vector3f(-1 ,-0.2f,1).normalizeLocal());
+        dl.setColor(new ColorRGBA(0.2f, 0.2f, 0.4f, 1.0f));
+        rootNode.addLight(dl2);
+        
+        camLight = new PointLight();
+        camLight.setColor(ColorRGBA.DarkGray);
+        rootNode.addLight(camLight);
 
         renderer.applyRenderState(RenderState.DEFAULT);
         inputManager.addTriggerListener(this);
@@ -99,7 +132,7 @@ public class PreviewDisplay extends Application implements BindingListener {
                 rotateCamera(cam.getLeft(), -deltaY * 5);
             }
             if (deltaWheel != 0){
-                zoomCamera(deltaWheel * 50);
+                zoomCamera(deltaWheel * 10);
             }
             if (rightMouse){
                 panCamera(deltaX * 10, -deltaY * 10);
@@ -143,6 +176,9 @@ public class PreviewDisplay extends Application implements BindingListener {
         }else if (spatial instanceof Geometry){
             Geometry geom = (Geometry) spatial;
             Material mat = geom.getMaterial();
+            if (mat == null)
+                return;
+            
             mat.getAdditionalRenderState().setWireframe(false);
             switch (mode){
                 case MODE_WIREFRAME:
@@ -165,8 +201,8 @@ public class PreviewDisplay extends Application implements BindingListener {
     }
 
     public void setModel(Spatial model){
-        viewPort.clearScenes();
-        viewPort.attachScene(model);
+        rootNode.detachAllChildren();
+        rootNode.attachChild(model);
         this.model = model;
     }
 
@@ -178,8 +214,13 @@ public class PreviewDisplay extends Application implements BindingListener {
         super.update();
         float tpf = timer.getTimePerFrame();
 
-        model.updateLogicalState(tpf);
-        model.updateGeometricState();
+        Vector3f temp = camLight.getPosition();
+        temp.set(cam.getLeft()).multLocal(5.0f);
+        temp.addLocal(cam.getLocation());
+        camLight.setPosition(temp);
+
+        rootNode.updateLogicalState(tpf);
+        rootNode.updateGeometricState();
 
         renderManager.render(tpf);
     }

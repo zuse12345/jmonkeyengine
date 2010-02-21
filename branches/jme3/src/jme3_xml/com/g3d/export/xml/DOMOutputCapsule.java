@@ -13,8 +13,8 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  *
- * * Neither the name of 'jMonkeyEngine' nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of 'jMonkeyEngine' nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -35,16 +35,19 @@ package com.g3d.export.xml;
 import com.g3d.export.G3DExporter;
 import com.g3d.export.OutputCapsule;
 import com.g3d.export.Savable;
+import com.g3d.export.Savable;
+import com.g3d.util.IntMap;
+import com.g3d.util.IntMap.Entry;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.w3c.dom.DOMException;
@@ -53,7 +56,7 @@ import org.w3c.dom.Element;
 
 /**
  * Part of the jME XML IO system as introduced in the google code jmexml project.
- * 
+ *
  * @author Kai Rabien (hevee) - original author of the code.google.com jmexml project
  * @author Doug Daniels (dougnukem) - adjustments for jME 2.0 and Java 1.5
  */
@@ -76,7 +79,7 @@ public class DOMOutputCapsule implements OutputCapsule {
     }
 
     /**
-     * appends a new Element with the given name to currentElement, sets 
+     * appends a new Element with the given name to currentElement, sets
      * currentElement to be new Element, and returns the new Element as well
      */
     private Element appendElement(String name) {
@@ -159,7 +162,7 @@ public class DOMOutputCapsule implements OutputCapsule {
         StringBuilder buf = new StringBuilder();
         if (value == null) { return; }
         if (Arrays.equals(value, defVal)) { return; }
-        
+
         for (int b : value) {
             buf.append(b);
             buf.append(" ");
@@ -173,16 +176,16 @@ public class DOMOutputCapsule implements OutputCapsule {
         currentElement = (Element) currentElement.getParentNode();
     }
 
-    public void write(int[][] value, String name, int[][] defVal) throws IOException {        
+    public void write(int[][] value, String name, int[][] defVal) throws IOException {
         if (value == null) return;
         if(Arrays.deepEquals(value, defVal)) return;
-        
+
         Element el = appendElement(name);
-        el.setAttribute("size", String.valueOf(value.length));        
-        
+        el.setAttribute("size", String.valueOf(value.length));
+
         for (int i=0; i<value.length; i++) {
-        	int[] array = value[i];        	
-        	write(array, "array_"+i, defVal==null?null:defVal[i]);
+                int[] array = value[i];
+                write(array, "array_"+i, defVal==null?null:defVal[i]);
         }
         currentElement = (Element) el.getParentNode();
     }
@@ -218,7 +221,7 @@ public class DOMOutputCapsule implements OutputCapsule {
         StringBuilder buf = new StringBuilder();
         if (value == null) return;
         if(Arrays.deepEquals(value, defVal)) return;
-        
+
         for (float[] bs : value) {
             for(float b : bs){
                 buf.append(b);
@@ -260,16 +263,16 @@ public class DOMOutputCapsule implements OutputCapsule {
         currentElement = (Element) currentElement.getParentNode();
     }
 
-    public void write(double[][] value, String name, double[][] defVal) throws IOException {    
+    public void write(double[][] value, String name, double[][] defVal) throws IOException {
             if (value == null) return;
             if(Arrays.deepEquals(value, defVal)) return;
-            
+
             Element el = appendElement(name);
-            el.setAttribute("size", String.valueOf(value.length));        
-            
+            el.setAttribute("size", String.valueOf(value.length));
+
             for (int i=0; i<value.length; i++) {
-            	double[] array = value[i];        	
-            	write(array, "array_"+i, defVal==null?null:defVal[i]);
+                double[] array = value[i];
+                write(array, "array_"+i, defVal==null?null:defVal[i]);
             }
             currentElement = (Element) el.getParentNode();
     }
@@ -302,13 +305,13 @@ public class DOMOutputCapsule implements OutputCapsule {
     public void write(long[][] value, String name, long[][] defVal) throws IOException {
         if (value == null) return;
         if(Arrays.deepEquals(value, defVal)) return;
-        
+
         Element el = appendElement(name);
-        el.setAttribute("size", String.valueOf(value.length));        
-        
+        el.setAttribute("size", String.valueOf(value.length));
+
         for (int i=0; i<value.length; i++) {
-        	long[] array = value[i];        	
-        	write(array, "array_"+i, defVal==null?null:defVal[i]);
+                long[] array = value[i];
+                write(array, "array_"+i, defVal==null?null:defVal[i]);
         }
         currentElement = (Element) el.getParentNode();
     }
@@ -341,13 +344,13 @@ public class DOMOutputCapsule implements OutputCapsule {
     public void write(short[][] value, String name, short[][] defVal) throws IOException {
         if (value == null) return;
         if(Arrays.deepEquals(value, defVal)) return;
-        
+
         Element el = appendElement(name);
-        el.setAttribute("size", String.valueOf(value.length));        
-        
+        el.setAttribute("size", String.valueOf(value.length));
+
         for (int i=0; i<value.length; i++) {
-        	short[] array = value[i];        	
-        	write(array, "array_"+i, defVal==null?null:defVal[i]);
+                short[] array = value[i];
+                write(array, "array_"+i, defVal==null?null:defVal[i]);
         }
         currentElement = (Element) el.getParentNode();
     }
@@ -380,13 +383,13 @@ public class DOMOutputCapsule implements OutputCapsule {
     public void write(boolean[][] value, String name, boolean[][] defVal) throws IOException {
         if (value == null) return;
         if(Arrays.deepEquals(value, defVal)) return;
-        
+
         Element el = appendElement(name);
-        el.setAttribute("size", String.valueOf(value.length));        
-        
+        el.setAttribute("size", String.valueOf(value.length));
+
         for (int i=0; i<value.length; i++) {
-        	boolean[] array = value[i];        	
-        	write(array, "array_"+i, defVal==null?null:defVal[i]);
+                boolean[] array = value[i];
+                write(array, "array_"+i, defVal==null?null:defVal[i]);
         }
         currentElement = (Element) el.getParentNode();
     }
@@ -400,16 +403,16 @@ public class DOMOutputCapsule implements OutputCapsule {
 
     public void write(String[] value, String name, String[] defVal) throws IOException {
         Element el = appendElement(name);
-        
+
         if (value == null) {
             value = defVal;
         }
 
         el.setAttribute("size", String.valueOf(value.length));
-        
+
         for (int i=0; i<value.length; i++) {
-        	String b = value[i];
-        	appendElement("String_"+i);
+                String b = value[i];
+                appendElement("String_"+i);
             String val = encodeString(b);
             currentElement.setAttribute("value", val);
             currentElement = el;
@@ -420,13 +423,13 @@ public class DOMOutputCapsule implements OutputCapsule {
     public void write(String[][] value, String name, String[][] defVal) throws IOException {
         if (value == null) return;
         if(Arrays.deepEquals(value, defVal)) return;
-        
+
         Element el = appendElement(name);
-        el.setAttribute("size", String.valueOf(value.length));        
-        
+        el.setAttribute("size", String.valueOf(value.length));
+
         for (int i=0; i<value.length; i++) {
-        	String[] array = value[i];        	
-        	write(array, "array_"+i, defVal==null?null:defVal[i]);
+                String[] array = value[i];
+                write(array, "array_"+i, defVal==null?null:defVal[i]);
         }
         currentElement = (Element) el.getParentNode();
     }
@@ -455,7 +458,7 @@ public class DOMOutputCapsule implements OutputCapsule {
 
         Element old = currentElement;
         Element el = writtenSavables.get(object);
-        
+
         String className = null;
         if(!object.getClass().getName().equals(name)){
             className = object.getClass().getName();
@@ -521,7 +524,7 @@ public class DOMOutputCapsule implements OutputCapsule {
     public void write(Savable[][] value, String name, Savable[][] defVal) throws IOException {
         if (value == null) return;
         if(Arrays.deepEquals(value, defVal)) return;
-        
+
         Element el = appendElement(name);
         el.setAttribute("size_outer", String.valueOf(value.length));
         el.setAttribute("size_inner", String.valueOf(value[0].length));
@@ -533,7 +536,7 @@ public class DOMOutputCapsule implements OutputCapsule {
         currentElement = (Element) currentElement.getParentNode();
     }
 
-    public void writeSavableList(List array, String name, List defVal) throws IOException {
+    public void writeSavableArrayList(ArrayList array, String name, ArrayList defVal) throws IOException {
         if (array == null) {
             return;
         }
@@ -545,10 +548,10 @@ public class DOMOutputCapsule implements OutputCapsule {
         currentElement = el;
         el.setAttribute(XMLExporter.ATTRIBUTE_SIZE, String.valueOf(array.size()));
         for (Object o : array) {
-        	if(o == null) {
-        		continue;
-        	}
-        	else if (o instanceof Savable) {
+                if(o == null) {
+                        continue;
+                }
+                else if (o instanceof Savable) {
                 Savable s = (Savable) o;
                 write(s, s.getClass().getName(), null);
             } else {
@@ -558,7 +561,7 @@ public class DOMOutputCapsule implements OutputCapsule {
         currentElement = old;
     }
 
-    public void writeSavableListArray(List[] objects, String name, List[] defVal) throws IOException {
+    public void writeSavableArrayListArray(ArrayList[] objects, String name, ArrayList[] defVal) throws IOException {
         if (objects == null) {return;}
         if (Arrays.equals(objects, defVal)) {return;}
 
@@ -566,36 +569,36 @@ public class DOMOutputCapsule implements OutputCapsule {
         Element el = appendElement(name);
         el.setAttribute(XMLExporter.ATTRIBUTE_SIZE, String.valueOf(objects.length));
         for (int i = 0; i < objects.length; i++) {
-            List o = objects[i];
+            ArrayList o = objects[i];
             if(o == null){
                 Element before = currentElement;
                 appendElement("null");
                 currentElement = before;
             }else{
-                StringBuilder buf = new StringBuilder("SavableList_");
+                StringBuilder buf = new StringBuilder("SavableArrayList_");
                 buf.append(i);
-                writeSavableList(o, buf.toString(), null);
+                writeSavableArrayList(o, buf.toString(), null);
             }
         }
         currentElement = old;
     }
 
-    public void writeSavableListArray2D(List[][] value, String name, List[][] defVal) throws IOException {
+    public void writeSavableArrayListArray2D(ArrayList[][] value, String name, ArrayList[][] defVal) throws IOException {
         if (value == null) return;
         if(Arrays.deepEquals(value, defVal)) return;
-        
+
         Element el = appendElement(name);
         int size = value.length;
         el.setAttribute(XMLExporter.ATTRIBUTE_SIZE, String.valueOf(size));
-        
+
         for (int i=0; i< size; i++) {
-            List[] vi = value[i];
-            writeSavableListArray(vi, "SavableListArray_"+i, null);
+            ArrayList[] vi = value[i];
+            writeSavableArrayListArray(vi, "SavableArrayListArray_"+i, null);
         }
         currentElement = (Element) el.getParentNode();
     }
 
-    public void writeFloatBufferList(List<FloatBuffer> array, String name, List<FloatBuffer> defVal) throws IOException {
+    public void writeFloatBufferArrayList(ArrayList<FloatBuffer> array, String name, ArrayList<FloatBuffer> defVal) throws IOException {
         if (array == null) {
             return;
         }
@@ -611,25 +614,25 @@ public class DOMOutputCapsule implements OutputCapsule {
     }
 
     public void writeSavableMap(Map<? extends Savable, ? extends Savable> map, String name, Map<? extends Savable, ? extends Savable> defVal) throws IOException {
-    	if (map == null) {
+        if (map == null) {
             return;
         }
         if (map.equals(defVal)) {
             return;
         }
-		Element stringMap = appendElement(name);				
-		
-		Iterator<? extends Savable> keyIterator = map.keySet().iterator();
-		while(keyIterator.hasNext()) {
-			Savable key = keyIterator.next();
-			Element mapEntry = appendElement(XMLExporter.ELEMENT_MAPENTRY);	
-			write(key, XMLExporter.ELEMENT_KEY, null);						
-			Savable value = map.get(key);
-			write(value, XMLExporter.ELEMENT_VALUE, null);
-			currentElement = stringMap;
-		}		
-		
-		currentElement = (Element) stringMap.getParentNode();
+                Element stringMap = appendElement(name);
+
+                Iterator<? extends Savable> keyIterator = map.keySet().iterator();
+                while(keyIterator.hasNext()) {
+                        Savable key = keyIterator.next();
+                        Element mapEntry = appendElement(XMLExporter.ELEMENT_MAPENTRY);
+                        write(key, XMLExporter.ELEMENT_KEY, null);
+                        Savable value = map.get(key);
+                        write(value, XMLExporter.ELEMENT_VALUE, null);
+                        currentElement = stringMap;
+                }
+
+                currentElement = (Element) stringMap.getParentNode();
     }
 
     public void writeStringSavableMap(Map<String, ? extends Savable> map, String name, Map<String, ? extends Savable> defVal) throws IOException {
@@ -639,19 +642,40 @@ public class DOMOutputCapsule implements OutputCapsule {
         if (map.equals(defVal)) {
             return;
         }
-		Element stringMap = appendElement(name);				
-		
-		Iterator<String> keyIterator = map.keySet().iterator();
-		while(keyIterator.hasNext()) {
-			String key = keyIterator.next();
-			Element mapEntry = appendElement("MapEntry");	
-			mapEntry.setAttribute("key", key);
-			Savable s = map.get(key);
-			write(s, "Savable", null);
-			currentElement = stringMap;
-		}		
-		
-		currentElement = (Element) stringMap.getParentNode();
+                Element stringMap = appendElement(name);
+
+                Iterator<String> keyIterator = map.keySet().iterator();
+                while(keyIterator.hasNext()) {
+                        String key = keyIterator.next();
+                        Element mapEntry = appendElement("MapEntry");
+                        mapEntry.setAttribute("key", key);
+                        Savable s = map.get(key);
+                        write(s, "Savable", null);
+                        currentElement = stringMap;
+                }
+
+                currentElement = (Element) stringMap.getParentNode();
+    }
+
+    public void writeIntSavableMap(IntMap<? extends Savable> map, String name, IntMap<? extends Savable> defVal) throws IOException {
+        if (map == null) {
+            return;
+        }
+        if (map.equals(defVal)) {
+            return;
+        }
+                Element stringMap = appendElement(name);
+
+                for(Entry<? extends Savable> entry : map) {
+                        int key = entry.getKey();
+                        Element mapEntry = appendElement("MapEntry");
+                        mapEntry.setAttribute("key", Integer.toString(key));
+                        Savable s = entry.getValue();
+                        write(s, "Savable", null);
+                        currentElement = stringMap;
+                }
+
+                currentElement = (Element) stringMap.getParentNode();
     }
 
     public void write(FloatBuffer value, String name, FloatBuffer defVal) throws IOException {
@@ -661,9 +685,6 @@ public class DOMOutputCapsule implements OutputCapsule {
 
         Element el = appendElement(name);
         el.setAttribute("size", String.valueOf(value.limit()));
-        if (!value.isDirect())
-            el.setAttribute("indirect", "true");
-        
         StringBuilder buf = new StringBuilder();
         int pos = value.position();
         value.rewind();
@@ -694,9 +715,6 @@ public class DOMOutputCapsule implements OutputCapsule {
 
         Element el = appendElement(name);
         el.setAttribute("size", String.valueOf(value.limit()));
-        if (!value.isDirect())
-            el.setAttribute("indirect", "true");
-
         StringBuilder buf = new StringBuilder();
         int pos = value.position();
         value.rewind();
@@ -723,9 +741,6 @@ public class DOMOutputCapsule implements OutputCapsule {
 
         Element el = appendElement(name);
         el.setAttribute("size", String.valueOf(value.limit()));
-        if (!value.isDirect())
-            el.setAttribute("indirect", "true");
-
         StringBuilder buf = new StringBuilder();
         int pos = value.position();
         value.rewind();
@@ -756,9 +771,6 @@ public class DOMOutputCapsule implements OutputCapsule {
 
         Element el = appendElement(name);
         el.setAttribute("size", String.valueOf(value.limit()));
-        if (!value.isDirect())
-            el.setAttribute("indirect", "true");
-
         StringBuilder buf = new StringBuilder();
         int pos = value.position();
         value.rewind();
@@ -779,16 +791,16 @@ public class DOMOutputCapsule implements OutputCapsule {
         currentElement = (Element) el.getParentNode();
     }
 
-	public void write(Enum value, String name, Enum defVal) throws IOException {
+        public void write(Enum value, String name, Enum defVal) throws IOException {
         if (value == defVal) {
             return;
         }
         currentElement.setAttribute(name, String.valueOf(value));
-		
-	}
 
-	public void writeByteBufferList(List<ByteBuffer> array,
-			String name, List<ByteBuffer> defVal) throws IOException {
+        }
+
+        public void writeByteBufferArrayList(ArrayList<ByteBuffer> array,
+                        String name, ArrayList<ByteBuffer> defVal) throws IOException {
         if (array == null) {
             return;
         }
@@ -801,6 +813,6 @@ public class DOMOutputCapsule implements OutputCapsule {
             write(o, "ByteBuffer", null);
         }
         currentElement = (Element) el.getParentNode();
-		
-	}
+
+        }
 }

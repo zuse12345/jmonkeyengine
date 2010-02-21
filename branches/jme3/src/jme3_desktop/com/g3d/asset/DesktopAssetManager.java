@@ -28,6 +28,7 @@ public class DesktopAssetManager implements AssetManager {
     private final ImplHandler handler = new ImplHandler(this);
     private final ThreadingManager threadingMan = new ThreadingManager(this);
     private final Set<AssetKey> alreadyLoadingSet = new HashSet<AssetKey>();
+    private final int forceAniso = 16;
 
     public DesktopAssetManager(){
         this(false);
@@ -213,6 +214,7 @@ public class DesktopAssetManager implements AssetManager {
      * @return
      */
     public Texture loadTexture(TextureKey key){
+        key.setAnisotropy(forceAniso);
         return (Texture) loadContent(key);
     }
 
@@ -232,7 +234,6 @@ public class DesktopAssetManager implements AssetManager {
         TextureKey key = new TextureKey(name, true);
         key.setGenerateMips(generateMipmaps);
         key.setAsCube(false);
-        key.setAnisotropy(Integer.MAX_VALUE);
         return loadTexture(key);
     }
 

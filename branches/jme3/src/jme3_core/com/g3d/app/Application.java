@@ -11,7 +11,9 @@ import com.g3d.asset.AssetManager;
 import com.g3d.input.InputManager;
 import com.g3d.renderer.RenderManager;
 import com.g3d.renderer.ViewPort;
-import java.util.logging.Level;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
 /**
@@ -46,10 +48,7 @@ public class Application implements SystemListener {
     protected JoyInput joyInput;
     protected InputManager inputManager;
 
-    protected boolean locked = false;
-    protected boolean waitForOk = false;
-    protected final Object lock = new Object();
-    protected final Object waitForLock = new Object();
+    private final ConcurrentLinkedQueue<AppTask<?>> taskQueue = new ConcurrentLinkedQueue<AppTask<?>>();
 
     /**
      * Create a new instance of <code>Application</code>.
@@ -288,32 +287,10 @@ public class Application implements SystemListener {
         context.destroy();
     }
 
-    public void lock(){
-        synchronized (lock){
-            if (!locked)
-                return;
-
-            locked = true;
-            waitForOk = true;
-
-            while (waitForOk){
-                synchronized (waitForLock){
-                    try{
-                        waitForLock.wait();
-                    }catch (InterruptedException ex){
-                    }
-                }
-            }
-        }
-    }
-
-    public void unlock(){
-        synchronized (lock){
-            if (locked){
-                locked = false;
-                lock.notifyAll();
-            }
-        }
+    public <V> Future<V> enqueue(Callable<V> callable) {
+        AppTask<V> task = new AppTask<V>(callable);
+        taskQueue.add(task);
+        return task;
     }
 
     /**
@@ -321,21 +298,16 @@ public class Application implements SystemListener {
      * Callback from ContextListener.
      */
     public void update(){
-        synchronized (lock){
-            if (waitForOk){
-                waitForOk = false;
-                synchronized (waitForLock){
-                    waitForLock.notifyAll();
-                }
+        AppTask<?> task = taskQueue.poll();
+        toploop: do {
+            if (task == null) break;
+            while (task.isCancelled()) {
+                task = taskQueue.poll();
+                if (task == null) break toploop;
             }
-            while (locked){
-                try{
-                    lock.wait();
-                }catch (InterruptedException ex){
-                }
-            }
-        }
-
+            task.invoke();
+        } while (((task = taskQueue.poll()) != null));
+    
         if (speed == 0)
             return;
 

@@ -25,6 +25,7 @@ import com.g3d.renderer.queue.RenderQueue;
 import com.g3d.renderer.queue.RenderQueue.ShadowMode;
 import com.g3d.util.TempVars;
 import java.io.IOException;
+import java.util.ArrayList;
 
 
 /**
@@ -101,6 +102,8 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
     protected Transform localTransform;
 
     protected Transform worldTransform;
+
+    protected ArrayList<Control> controls = new ArrayList<Control>(1);
 
     /** 
      * Spatial's parent, or null if it has none.
@@ -671,6 +674,9 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
             return ShadowMode.Off;
     }
 
+    public void setLodLevel(int lod){
+    }
+
     /**
      * <code>updateBound</code> recalculates the bounding object for this
      * Spatial.
@@ -719,7 +725,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
             if (worldBound != null)
                 s.worldBound = worldBound.clone();
             s.worldLights = worldLights.clone();
-            s.localLights = worldLights.clone();
+            s.localLights = localLights.clone();
             s.worldTransform = worldTransform.clone();
             s.localTransform = localTransform.clone();
             s.parent = null;
@@ -731,6 +737,12 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
             throw new AssertionError();
         }
     }
+
+    /**
+     * Create a deep clone, including of the mesh (copy the buffers).
+     * @return
+     */
+    public abstract Spatial deepClone();
 
     public void write(G3DExporter ex) throws IOException {
         OutputCapsule capsule = ex.getCapsule(this);

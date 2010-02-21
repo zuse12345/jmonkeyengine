@@ -14,8 +14,8 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  *
- * * Neither the name of 'jMonkeyEngine' nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of 'jMonkeyEngine' nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -35,14 +35,16 @@ package com.g3d.export.xml;
 import com.g3d.export.InputCapsule;
 import com.g3d.export.Savable;
 import com.g3d.export.binary.BinaryClassLoader;
+import com.g3d.export.xml.XMLExporter;
+import com.g3d.export.xml.XMLImporter;
 import com.g3d.util.BufferUtils;
+import com.g3d.util.IntMap;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +60,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * Part of the jME XML IO system as introduced in the google code jmexml project.
- * 
+ *
  * @author Kai Rabien (hevee) - original author of the code.google.com jmexml project
  * @author Doug Daniels (dougnukem) - adjustments for jME 2.0 and Java 1.5
  */
@@ -188,11 +190,11 @@ public class DOMInputCapsule implements InputCapsule {
             List<byte[]> byteArrays = new ArrayList<byte[]>();
 
             for (int i = 0; i < nodes.getLength(); i++) {
-           	 	Node n = nodes.item(i);
-				if (n instanceof Element && n.getNodeName().contains("array")) {
+                        Node n = nodes.item(i);
+                                if (n instanceof Element && n.getNodeName().contains("array")) {
                 // Very unsafe assumption
                     byteArrays.add(readByteArray(n.getNodeName(), null));
-				}                
+                                }
             }
             if (sizeString.length() > 0) {
                 int requiredSize = Integer.parseInt(sizeString);
@@ -291,11 +293,11 @@ public class DOMInputCapsule implements InputCapsule {
             List<int[]> intArrays = new ArrayList<int[]>();
 
             for (int i = 0; i < nodes.getLength(); i++) {
-           	 	Node n = nodes.item(i);
-				if (n instanceof Element && n.getNodeName().contains("array")) {
+                        Node n = nodes.item(i);
+                                if (n instanceof Element && n.getNodeName().contains("array")) {
                 // Very unsafe assumption
                     intArrays.add(readIntArray(n.getNodeName(), null));
-				}                
+                                }
             }
             if (sizeString.length() > 0) {
                 int requiredSize = Integer.parseInt(sizeString);
@@ -476,11 +478,11 @@ public class DOMInputCapsule implements InputCapsule {
             List<double[]> doubleArrays = new ArrayList<double[]>();
 
             for (int i = 0; i < nodes.getLength(); i++) {
-           	 	Node n = nodes.item(i);
-				if (n instanceof Element && n.getNodeName().contains("array")) {
+                        Node n = nodes.item(i);
+                                if (n instanceof Element && n.getNodeName().contains("array")) {
                 // Very unsafe assumption
                     doubleArrays.add(readDoubleArray(n.getNodeName(), null));
-				}                
+                                }
             }
             if (sizeString.length() > 0) {
                 int requiredSize = Integer.parseInt(sizeString);
@@ -575,11 +577,11 @@ public class DOMInputCapsule implements InputCapsule {
             List<long[]> longArrays = new ArrayList<long[]>();
 
             for (int i = 0; i < nodes.getLength(); i++) {
-           	 	Node n = nodes.item(i);
-				if (n instanceof Element && n.getNodeName().contains("array")) {
+                        Node n = nodes.item(i);
+                                if (n instanceof Element && n.getNodeName().contains("array")) {
                 // Very unsafe assumption
                     longArrays.add(readLongArray(n.getNodeName(), null));
-				}                
+                                }
             }
             if (sizeString.length() > 0) {
                 int requiredSize = Integer.parseInt(sizeString);
@@ -675,11 +677,11 @@ public class DOMInputCapsule implements InputCapsule {
             List<short[]> shortArrays = new ArrayList<short[]>();
 
             for (int i = 0; i < nodes.getLength(); i++) {
-           	 	Node n = nodes.item(i);
-				if (n instanceof Element && n.getNodeName().contains("array")) {
+                        Node n = nodes.item(i);
+                                if (n instanceof Element && n.getNodeName().contains("array")) {
                 // Very unsafe assumption
                     shortArrays.add(readShortArray(n.getNodeName(), null));
-				}                
+                                }
             }
             if (sizeString.length() > 0) {
                 int requiredSize = Integer.parseInt(sizeString);
@@ -766,11 +768,11 @@ public class DOMInputCapsule implements InputCapsule {
             List<boolean[]> booleanArrays = new ArrayList<boolean[]>();
 
             for (int i = 0; i < nodes.getLength(); i++) {
-           	 	Node n = nodes.item(i);
-				if (n instanceof Element && n.getNodeName().contains("array")) {
+                        Node n = nodes.item(i);
+                                if (n instanceof Element && n.getNodeName().contains("array")) {
                 // Very unsafe assumption
                     booleanArrays.add(readBooleanArray(n.getNodeName(), null));
-				}                
+                                }
             }
             if (sizeString.length() > 0) {
                 int requiredSize = Integer.parseInt(sizeString);
@@ -823,11 +825,11 @@ public class DOMInputCapsule implements InputCapsule {
             List<String> strings = new ArrayList<String>();
 
             for (int i = 0; i < nodes.getLength(); i++) {
-           	 	Node n = nodes.item(i);
-				if (n instanceof Element && n.getNodeName().contains("String")) {
+                        Node n = nodes.item(i);
+                                if (n instanceof Element && n.getNodeName().contains("String")) {
                 // Very unsafe assumption
                     strings.add(((Element) n).getAttributeNode("value").getValue());
-				}                
+                                }
             }
             if (sizeString.length() > 0) {
                 int requiredSize = Integer.parseInt(sizeString);
@@ -867,11 +869,11 @@ public class DOMInputCapsule implements InputCapsule {
             List<String[]> stringArrays = new ArrayList<String[]>();
 
             for (int i = 0; i < nodes.getLength(); i++) {
-           	 	Node n = nodes.item(i);
-				if (n instanceof Element && n.getNodeName().contains("array")) {
+                        Node n = nodes.item(i);
+                                if (n instanceof Element && n.getNodeName().contains("array")) {
                 // Very unsafe assumption
                     stringArrays.add(readStringArray(n.getNodeName(), null));
-				}                
+                                }
             }
             if (sizeString.length() > 0) {
                 int requiredSize = Integer.parseInt(sizeString);
@@ -903,10 +905,10 @@ public class DOMInputCapsule implements InputCapsule {
             BitSet set = new BitSet();
             String[] strings = parseTokens(tmpString);
             for (int i = 0; i < strings.length; i++) {
-            	int isSet = Integer.parseInt(strings[i]);
+                int isSet = Integer.parseInt(strings[i]);
                 if (isSet == 1) {
-            		set.set(i);
-            	}
+                        set.set(i);
+                }
             }
             return set;
         } catch (NumberFormatException nfe) {
@@ -953,7 +955,7 @@ public class DOMInputCapsule implements InputCapsule {
         }
         return ret;
     }
-    
+
     private Savable readSavableFromCurrentElem(Savable defVal) throws
             InstantiationException, ClassNotFoundException,
             IOException, IllegalAccessException {
@@ -1008,7 +1010,6 @@ public class DOMInputCapsule implements InputCapsule {
                             + ", data contains " + savables.size());
             }
             ret = savables.toArray(new Savable[0]);
-            
             currentElem = (Element) tmpEl.getParentNode();
             return ret;
         } catch (IOException ioe) {
@@ -1030,7 +1031,7 @@ public class DOMInputCapsule implements InputCapsule {
 
             int size_outer = Integer.parseInt(tmpEl.getAttribute("size_outer"));
             int size_inner = Integer.parseInt(tmpEl.getAttribute("size_outer"));
-            
+
             Savable[][] tmp = new Savable[size_outer][size_inner];
             currentElem = findFirstChildElement(tmpEl);
             for (int i = 0; i < size_outer; i++) {
@@ -1054,7 +1055,7 @@ public class DOMInputCapsule implements InputCapsule {
         }
     }
 
-    public List<Savable> readSavableList(String name, List defVal) throws IOException {
+    public ArrayList<Savable> readSavableArrayList(String name, ArrayList defVal) throws IOException {
         try {
             Element tmpEl = findChildElement(currentElem, name);
             if (tmpEl == null) {
@@ -1062,7 +1063,7 @@ public class DOMInputCapsule implements InputCapsule {
             }
 
             String sizeString = tmpEl.getAttribute("size");
-            List<Savable> savables = new ArrayList<Savable>();
+            ArrayList<Savable> savables = new ArrayList<Savable>();
             for (currentElem = findFirstChildElement(tmpEl);
                     currentElem != null;
                     currentElem = findNextSiblingElement(currentElem)) {
@@ -1087,26 +1088,26 @@ public class DOMInputCapsule implements InputCapsule {
         }
     }
 
-    public List<Savable>[] readSavableListArray(
-            String name, List[] defVal) throws IOException {
+    public ArrayList<Savable>[] readSavableArrayListArray(
+            String name, ArrayList[] defVal) throws IOException {
         try {
             Element tmpEl = findChildElement(currentElem, name);
             if (tmpEl == null) {
                 return defVal;
             }
             currentElem = tmpEl;
-            
+
             String sizeString = tmpEl.getAttribute("size");
             int requiredSize = (sizeString.length() > 0)
                              ? Integer.parseInt(sizeString)
                              : -1;
 
-            List<Savable> sal;
-            List<List<Savable>> savableArrayLists =
-                    new ArrayList<List<Savable>>();
+            ArrayList<Savable> sal;
+            List<ArrayList<Savable>> savableArrayLists =
+                    new ArrayList<ArrayList<Savable>>();
             int i = -1;
             while (true) {
-                sal = readSavableList("SavableList_" + ++i, null);
+                sal = readSavableArrayList("SavableArrayList_" + ++i, null);
                 if (sal == null && savableArrayLists.size() >= requiredSize)
                     break;
                 savableArrayLists.add(sal);
@@ -1132,7 +1133,7 @@ public class DOMInputCapsule implements InputCapsule {
         }
     }
 
-    public List<Savable>[][] readSavableListArray2D(String name, List[][] defVal) throws IOException {
+    public ArrayList<Savable>[][] readSavableArrayListArray2D(String name, ArrayList[][] defVal) throws IOException {
         try {
             Element tmpEl = findChildElement(currentElem, name);
             if (tmpEl == null) {
@@ -1140,12 +1141,12 @@ public class DOMInputCapsule implements InputCapsule {
             }
             currentElem = tmpEl;
             String sizeString = tmpEl.getAttribute("size");
-            
-            List<Savable>[] arr;
-            List<List<Savable>[]> sall = new ArrayList<List<Savable>[]>();
+
+            ArrayList<Savable>[] arr;
+            List<ArrayList<Savable>[]> sall = new ArrayList<ArrayList<Savable>[]>();
             int i = -1;
-            while ((arr = readSavableListArray(
-                    "SavableListArray_" + ++i, null)) != null) sall.add(arr);
+            while ((arr = readSavableArrayListArray(
+                    "SavableArrayListArray_" + ++i, null)) != null) sall.add(arr);
             if (sizeString.length() > 0) {
                 int requiredSize = Integer.parseInt(sizeString);
                 if (sall.size() != requiredSize)
@@ -1165,8 +1166,8 @@ public class DOMInputCapsule implements InputCapsule {
         }
     }
 
-    public List<FloatBuffer> readFloatBufferList(
-            String name, List<FloatBuffer> defVal) throws IOException {
+    public ArrayList<FloatBuffer> readFloatBufferArrayList(
+            String name, ArrayList<FloatBuffer> defVal) throws IOException {
         try {
             Element tmpEl = findChildElement(currentElem, name);
             if (tmpEl == null) {
@@ -1174,7 +1175,7 @@ public class DOMInputCapsule implements InputCapsule {
             }
 
             String sizeString = tmpEl.getAttribute("size");
-            List<FloatBuffer> tmp = new ArrayList<FloatBuffer>();
+            ArrayList<FloatBuffer> tmp = new ArrayList<FloatBuffer>();
             for (currentElem = findFirstChildElement(tmpEl);
                     currentElem != null;
                     currentElem = findNextSiblingElement(currentElem)) {
@@ -1204,58 +1205,88 @@ public class DOMInputCapsule implements InputCapsule {
     }
 
     public Map<? extends Savable, ? extends Savable> readSavableMap(String name, Map<? extends Savable, ? extends Savable> defVal) throws IOException {
-    	Map<Savable, Savable> ret;
-    	Element tempEl;
-    	
-    	if (name != null) {
-    		tempEl = findChildElement(currentElem, name);
+        Map<Savable, Savable> ret;
+        Element tempEl;
+
+        if (name != null) {
+                tempEl = findChildElement(currentElem, name);
         } else {
-        	tempEl = currentElem;
+                tempEl = currentElem;
         }
-    	ret = new HashMap<Savable, Savable>();
-    	
-    	NodeList nodes = tempEl.getChildNodes();
+        ret = new HashMap<Savable, Savable>();
+
+        NodeList nodes = tempEl.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
-    		Node n = nodes.item(i);
+                Node n = nodes.item(i);
             if (n instanceof Element && n.getNodeName().equals("MapEntry")) {
                 Element elem = (Element) n;
-    			currentElem = elem;
-    			Savable key = readSavable(XMLExporter.ELEMENT_KEY, null);    			
-    			Savable val = readSavable(XMLExporter.ELEMENT_VALUE, null);
-    			ret.put(key, val);    			
-    		}
-    	}
-    	currentElem = (Element) tempEl.getParentNode();
+                        currentElem = elem;
+                        Savable key = readSavable(XMLExporter.ELEMENT_KEY, null);
+                        Savable val = readSavable(XMLExporter.ELEMENT_VALUE, null);
+                        ret.put(key, val);
+                }
+        }
+        currentElem = (Element) tempEl.getParentNode();
         return ret;
     }
 
     public Map<String, ? extends Savable> readStringSavableMap(String name, Map<String, ? extends Savable> defVal) throws IOException {
-    	Map<String, Savable> ret = null;
-    	Element tempEl;
-    	
-    	if (name != null) {
-    		tempEl = findChildElement(currentElem, name);
+        Map<String, Savable> ret = null;
+        Element tempEl;
+
+        if (name != null) {
+                tempEl = findChildElement(currentElem, name);
         } else {
-        	tempEl = currentElem;
+                tempEl = currentElem;
         }
         if (tempEl != null) {
-	    	ret = new HashMap<String, Savable>();
-	    	
-	    	NodeList nodes = tempEl.getChildNodes();
-		    for (int i = 0; i < nodes.getLength(); i++) {
-				Node n = nodes.item(i);
-				if (n instanceof Element && n.getNodeName().equals("MapEntry")) {
-					Element elem = (Element) n;
-					currentElem = elem;
-					String key = currentElem.getAttribute("key");
-					Savable val = readSavable("Savable", null);
-					ret.put(key, val);
-				}
-			}
+                ret = new HashMap<String, Savable>();
+
+                NodeList nodes = tempEl.getChildNodes();
+                    for (int i = 0; i < nodes.getLength(); i++) {
+                                Node n = nodes.item(i);
+                                if (n instanceof Element && n.getNodeName().equals("MapEntry")) {
+                                        Element elem = (Element) n;
+                                        currentElem = elem;
+                                        String key = currentElem.getAttribute("key");
+                                        Savable val = readSavable("Savable", null);
+                                        ret.put(key, val);
+                                }
+                        }
         } else {
-	    	return defVal;
-	    }
-    	currentElem = (Element) tempEl.getParentNode();
+                return defVal;
+            }
+        currentElem = (Element) tempEl.getParentNode();
+        return ret;
+    }
+
+    public IntMap<? extends Savable> readIntSavableMap(String name, IntMap<? extends Savable> defVal) throws IOException {
+        IntMap<Savable> ret = null;
+        Element tempEl;
+
+        if (name != null) {
+                tempEl = findChildElement(currentElem, name);
+        } else {
+                tempEl = currentElem;
+        }
+        if (tempEl != null) {
+                ret = new IntMap<Savable>();
+
+                NodeList nodes = tempEl.getChildNodes();
+                    for (int i = 0; i < nodes.getLength(); i++) {
+                                Node n = nodes.item(i);
+                                if (n instanceof Element && n.getNodeName().equals("MapEntry")) {
+                                        Element elem = (Element) n;
+                                        currentElem = elem;
+                                        int key = Integer.parseInt(currentElem.getAttribute("key"));
+                                        Savable val = readSavable("Savable", null);
+                                        ret.put(key, val);
+                                }
+                        }
+        } else {
+                return defVal;
+            }
+        currentElem = (Element) tempEl.getParentNode();
         return ret;
     }
 
@@ -1275,7 +1306,6 @@ public class DOMInputCapsule implements InputCapsule {
             }
             String sizeString = tmpEl.getAttribute("size");
             String[] strings = parseTokens(tmpEl.getAttribute("data"));
-            boolean bufsOnHeap = Boolean.parseBoolean(tmpEl.getAttribute("indirect"));
             if (sizeString.length() > 0) {
                 int requiredSize = Integer.parseInt(sizeString);
                 if (strings.length != requiredSize)
@@ -1283,9 +1313,7 @@ public class DOMInputCapsule implements InputCapsule {
                             + name + "'.  size says " + requiredSize
                             + ", data contains " + strings.length);
             }
-            FloatBuffer tmp = bufsOnHeap ?
-                                FloatBuffer.allocate(strings.length) :
-                                BufferUtils.createFloatBuffer(strings.length);
+            FloatBuffer tmp = BufferUtils.createFloatBuffer(strings.length);
             for (String s : strings) tmp.put(Float.parseFloat(s));
             tmp.flip();
             return tmp;
@@ -1311,7 +1339,6 @@ public class DOMInputCapsule implements InputCapsule {
 
             String sizeString = tmpEl.getAttribute("size");
             String[] strings = parseTokens(tmpEl.getAttribute("data"));
-            boolean bufsOnHeap = Boolean.parseBoolean(tmpEl.getAttribute("indirect"));
             if (sizeString.length() > 0) {
                 int requiredSize = Integer.parseInt(sizeString);
                 if (strings.length != requiredSize)
@@ -1319,9 +1346,7 @@ public class DOMInputCapsule implements InputCapsule {
                             + name + "'.  size says " + requiredSize
                             + ", data contains " + strings.length);
             }
-            IntBuffer tmp = bufsOnHeap ?
-                                IntBuffer.allocate(strings.length) :
-                                BufferUtils.createIntBuffer(strings.length);
+            IntBuffer tmp = BufferUtils.createIntBuffer(strings.length);
             for (String s : strings) tmp.put(Integer.parseInt(s));
             tmp.flip();
             return tmp;
@@ -1347,7 +1372,6 @@ public class DOMInputCapsule implements InputCapsule {
 
             String sizeString = tmpEl.getAttribute("size");
             String[] strings = parseTokens(tmpEl.getAttribute("data"));
-            boolean bufsOnHeap = Boolean.parseBoolean(tmpEl.getAttribute("indirect"));
             if (sizeString.length() > 0) {
                 int requiredSize = Integer.parseInt(sizeString);
                 if (strings.length != requiredSize)
@@ -1355,9 +1379,7 @@ public class DOMInputCapsule implements InputCapsule {
                             + name + "'.  size says " + requiredSize
                             + ", data contains " + strings.length);
             }
-            ByteBuffer tmp = bufsOnHeap ?
-                                ByteBuffer.allocate(strings.length) :
-                                BufferUtils.createByteBuffer(strings.length);
+            ByteBuffer tmp = BufferUtils.createByteBuffer(strings.length);
             for (String s : strings) tmp.put(Byte.valueOf(s));
             tmp.flip();
             return tmp;
@@ -1383,7 +1405,6 @@ public class DOMInputCapsule implements InputCapsule {
 
             String sizeString = tmpEl.getAttribute("size");
             String[] strings = parseTokens(tmpEl.getAttribute("data"));
-            boolean bufsOnHeap = Boolean.parseBoolean(tmpEl.getAttribute("indirect"));
             if (sizeString.length() > 0) {
                 int requiredSize = Integer.parseInt(sizeString);
                 if (strings.length != requiredSize)
@@ -1391,9 +1412,7 @@ public class DOMInputCapsule implements InputCapsule {
                             + name + "'.  size says " + requiredSize
                             + ", data contains " + strings.length);
             }
-            ShortBuffer tmp = bufsOnHeap ?
-                                ShortBuffer.allocate(strings.length) :
-                                BufferUtils.createShortBuffer(strings.length);
+            ShortBuffer tmp = BufferUtils.createShortBuffer(strings.length);
             for (String s : strings) tmp.put(Short.valueOf(s));
             tmp.flip();
             return tmp;
@@ -1410,7 +1429,7 @@ public class DOMInputCapsule implements InputCapsule {
         }
     }
 
-	public List<ByteBuffer> readByteBufferList(String name, List<ByteBuffer> defVal) throws IOException {
+        public ArrayList<ByteBuffer> readByteBufferArrayList(String name, ArrayList<ByteBuffer> defVal) throws IOException {
         try {
             Element tmpEl = findChildElement(currentElem, name);
             if (tmpEl == null) {
@@ -1418,7 +1437,7 @@ public class DOMInputCapsule implements InputCapsule {
             }
 
             String sizeString = tmpEl.getAttribute("size");
-            List<ByteBuffer> tmp = new ArrayList<ByteBuffer>();
+            ArrayList<ByteBuffer> tmp = new ArrayList<ByteBuffer>();
             for (currentElem = findFirstChildElement(tmpEl);
                     currentElem != null;
                     currentElem = findNextSiblingElement(currentElem)) {
@@ -1444,10 +1463,10 @@ public class DOMInputCapsule implements InputCapsule {
             io.initCause(de);
             throw io;
         }
-	}
+        }
 
-	public <T extends Enum<T>> T readEnum(String name, Class<T> enumType,
-			T defVal) throws IOException {
+        public <T extends Enum<T>> T readEnum(String name, Class<T> enumType,
+                        T defVal) throws IOException {
         T ret = defVal;
         try {
             String eVal = currentElem.getAttribute(name);
@@ -1459,8 +1478,8 @@ public class DOMInputCapsule implements InputCapsule {
             io.initCause(e);
             throw io;
         }
-        return ret;       
-	}
+        return ret;
+        }
 
     private static final String[] zeroStrings = new String[0];
 

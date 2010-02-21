@@ -40,15 +40,12 @@ import com.g3d.export.Savable;
 import com.g3d.math.Quaternion;
 import com.g3d.math.Vector3f;
 import java.io.IOException;
-import java.io.Serializable;
 
 
 /**
  * Contains a list of transforms and times for each keyframe.
  */
-public final class BoneTrack implements Serializable, Savable {
-    
-    private static final long serialVersionUID = 1L;
+public final class BoneTrack implements Savable {
 
     /**
      * Bone index in the skeleton which this track effects.
@@ -101,7 +98,7 @@ public final class BoneTrack implements Serializable, Savable {
         Bone target = skeleton.getBone(targetBoneIndex);
 
         int lastFrame = times.length - 1;
-        if (time < 0 || times.length == 1){
+        if (time < 0 || lastFrame == 0){
             tempQ.set(rotations[0]);
             tempV.set(translations[0]);
         }else if (time >= times[lastFrame]){

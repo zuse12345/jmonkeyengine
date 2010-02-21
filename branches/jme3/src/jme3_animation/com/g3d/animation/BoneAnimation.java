@@ -76,7 +76,7 @@ public final class BoneAnimation implements Serializable, Savable {
         this.tracks = tracks;
     }
 
-    BoneTrack[] getTracks(){
+    public BoneTrack[] getTracks(){
         return tracks;
     }
 

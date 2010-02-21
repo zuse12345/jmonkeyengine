@@ -211,8 +211,8 @@ public class VertexBuffer extends GLObject implements Savable, Cloneable {
     }
 
     public void setUsage(Usage usage){
-        if (id != -1)
-            throw new UnsupportedOperationException("Data has already been sent. Cannot set usage.");
+//        if (id != -1)
+//            throw new UnsupportedOperationException("Data has already been sent. Cannot set usage.");
 
         this.usage = usage;
     }
@@ -412,9 +412,26 @@ public class VertexBuffer extends GLObject implements Savable, Cloneable {
     }
 
     public VertexBuffer clone(){
+        // NOTE: Superclass GLObject automatically creates shallow clone
+        // e.g re-use ID.
         VertexBuffer vb = (VertexBuffer) super.clone();
-        // as per specification, create deep clone
         vb.updateData(BufferUtils.clone(data));
+        return vb;
+    }
+
+    public VertexBuffer clone(Type overrideType){
+        VertexBuffer vb = new VertexBuffer(overrideType);
+        vb.components = components;
+        vb.componentsLength = componentsLength;
+        vb.data = BufferUtils.clone(data);
+        vb.format = format;
+        vb.handleRef = new Object();
+        vb.id = -1;
+        vb.normalized = normalized;
+        vb.offset = offset;
+        vb.stride = stride;
+        vb.updateNeeded = true;
+        vb.usage = usage;
         return vb;
     }
 

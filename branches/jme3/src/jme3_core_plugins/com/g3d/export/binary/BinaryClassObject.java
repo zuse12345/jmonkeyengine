@@ -34,13 +34,13 @@ package com.g3d.export.binary;
 
 import java.util.HashMap;
 
-public class BinaryClassObject {
+class BinaryClassObject {
 
     // When exporting, use nameFields field, importing use aliasFields.
-    public HashMap<String, BinaryClassField> nameFields;
-    public HashMap<Byte, BinaryClassField> aliasFields;
+    HashMap<String, BinaryClassField> nameFields;
+    HashMap<Byte, BinaryClassField> aliasFields;
     
-    public byte[] alias;
-    public String className;
+    byte[] alias;
+    String className;
     
 }

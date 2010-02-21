@@ -17,6 +17,8 @@ import com.g3d.scene.Geometry;
 import com.g3d.scene.Node;
 import com.g3d.scene.shape.Box;
 import com.g3d.scene.shape.Dome;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Kyle "bonechilla" Williams
@@ -48,6 +50,8 @@ public class CubeField extends SimpleApplication implements BindingListener {
      */
     @Override
     public void simpleInitApp() {
+        Logger.getLogger("com.g3d").setLevel(Level.WARNING);
+
         flyCam.setEnabled(false);
 
         Keys();

@@ -198,11 +198,11 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(owner, "owner", null);
 
-        List<Light> lights = new ArrayList<Light>();
+        ArrayList<Light> lights = new ArrayList<Light>();
         for (int i = 0; i < listSize; i++){
             lights.add(list[i]);
         }
-        oc.writeSavableList(lights, "lights", null);
+        oc.writeSavableArrayList(lights, "lights", null);
     }
 
     public void read(G3DImporter im) throws IOException {
@@ -212,7 +212,7 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
         list = new Light[DEFAULT_SIZE];
         distToOwner = new float[DEFAULT_SIZE];
         
-        List<Light> lights = ic.readSavableList("lights", null);
+        List<Light> lights = ic.readSavableArrayList("lights", null);
         listSize = lights.size();
         for (int i = 0; i < listSize; i++){
             list[i] = lights.get(i);

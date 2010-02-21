@@ -5,15 +5,33 @@ import com.g3d.texture.Image;
 import com.g3d.texture.Image.Format;
 import com.g3d.util.BufferUtils;
 import java.awt.Transparency;
+import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
+import java.awt.image.DirectColorModel;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import javax.imageio.ImageIO;
 
 public class AWTLoader implements AssetLoader {
+
+    public static final ColorModel AWT_RGBA4444 = new DirectColorModel(16,
+                                                                       0xf000,
+                                                                       0x0f00,
+                                                                       0x00f0,
+                                                                       0x000f);
+
+    public static final ColorModel AWT_RGBA5551
+            = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB), 
+                                      new int[]{5, 5, 5, 1},
+                                      true,
+                                      false,
+                                      Transparency.BITMASK,
+                                      DataBuffer.TYPE_BYTE);
 
     private byte[] extractImageData(BufferedImage img){
         DataBuffer buf = img.getRaster().getDataBuffer();

@@ -44,8 +44,9 @@ import java.io.IOException;
  * @author mpowell
  *
  */
-public interface BinaryLoaderModule {
-    public String getKey();
+interface BinaryLoaderModule {
+    
+    String getKey();
 
     /**
      * The inputCapsule parameter is not used at all.
@@ -57,5 +58,5 @@ public interface BinaryLoaderModule {
      * @param inputCapsule  A value which is currently ignored by all
      *                      implementation classes.
      */
-    public Savable load(InputCapsule inputCapsule) throws IOException;
+    Savable load(InputCapsule inputCapsule) throws IOException;
 }

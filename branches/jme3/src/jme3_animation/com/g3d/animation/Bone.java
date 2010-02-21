@@ -141,7 +141,7 @@ public final class Bone implements Savable {
         return parent;
     }
 
-    public List<Bone> getChildren(){
+    public ArrayList<Bone> getChildren(){
         return children;
     }
 
@@ -332,9 +332,9 @@ public final class Bone implements Savable {
         localPos.set(initialPos);
         localRot.set(initialRot);
 
-        List<Bone> childList = input.readSavableList("children", null);
-        for (Bone child : childList){
-            addChild(child);
+        ArrayList<Bone> childList = input.readSavableArrayList("children", null);
+        for (int i = childList.size() - 1; i >= 0; i--){
+            addChild(childList.get(i));
         }
 
         // NOTE: Parent skeleton will call update() then setBindingPose()
@@ -350,7 +350,7 @@ public final class Bone implements Savable {
         output.write(attachNode, "attachNode", null);
         output.write(initialPos, "initialPos", null);
         output.write(initialRot, "initialRot", null);
-        output.writeSavableList(children, "children", null);
+        output.writeSavableArrayList(children, "children", null);
     }
 
 }

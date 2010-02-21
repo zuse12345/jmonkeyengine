@@ -64,7 +64,7 @@ public class Node extends Spatial implements Savable {
     /** 
      * This node's children.
      */
-    protected List<Spatial> children = new ArrayList<Spatial>(1);
+    protected ArrayList<Spatial> children = new ArrayList<Spatial>(1);
 
     /**
      * Default constructor.
@@ -528,6 +528,13 @@ public class Node extends Spatial implements Savable {
         }
     }
 
+    public void setLodLevel(int lod){
+        super.setLodLevel(lod);
+        for (int i = 0; i < children.size(); i++){
+            children.get(i).setLodLevel(lod);
+        }
+    }
+
     public int collideWith(Collidable other, CollisionResults results){
         int total = 0;
         for (Spatial child : children){
@@ -542,7 +549,19 @@ public class Node extends Spatial implements Savable {
         nodeClone.children = new ArrayList<Spatial>();
         for (Spatial child : children){
             Spatial childClone = child.clone();
-            childClone.parent = this;
+            childClone.parent = nodeClone;
+            nodeClone.children.add(childClone);
+        }
+        return nodeClone;
+    }
+
+    @Override
+    public Spatial deepClone(){
+        Node nodeClone = (Node) super.clone();
+        nodeClone.children = new ArrayList<Spatial>();
+        for (Spatial child : children){
+            Spatial childClone = child.deepClone();
+            childClone.parent = nodeClone;
             nodeClone.children.add(childClone);
         }
         return nodeClone;
@@ -551,13 +570,13 @@ public class Node extends Spatial implements Savable {
     @Override
     public void write(G3DExporter e) throws IOException {
         super.write(e);
-        e.getCapsule(this).writeSavableList(children, "children", null);
+        e.getCapsule(this).writeSavableArrayList(children, "children", null);
     }
 
     @Override
     public void read(G3DImporter e) throws IOException {
         super.read(e);
-        children = e.getCapsule(this).readSavableList("children", null);
+        children = e.getCapsule(this).readSavableArrayList("children", null);
 
         // go through children and set parent to this node
         if (children != null) {

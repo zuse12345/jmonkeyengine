@@ -31,6 +31,11 @@ public class TextureKey extends AssetKey {
     public TextureKey(){
     }
 
+    public Object createClonedInstance(Object asset){
+        Texture tex = (Texture) asset;
+        return tex.createSimpleClone();
+    }
+
     @Override
     public Object postProcess(Object asset){
         Image img = (Image) asset;

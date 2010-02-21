@@ -7,6 +7,7 @@ import com.g3d.export.OutputCapsule;
 import com.g3d.export.Savable;
 import com.g3d.math.FastMath;
 import com.g3d.math.Matrix4f;
+import com.g3d.scene.Geometry;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.Node;
 import com.g3d.scene.VertexBuffer;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Model extends Node {
@@ -33,7 +35,7 @@ public class Model extends Node {
     /**
      * List of animations, bone or vertex based.
      */
-    private Map<String, BoneAnimation> animationMap;
+    private HashMap<String, BoneAnimation> animationMap;
 
     /**
      * The currently playing animation.
@@ -44,7 +46,7 @@ public class Model extends Node {
      public Model(String name,
                   Mesh[] meshes,
                   Skeleton skeleton,
-                  Map<String, BoneAnimation> anims) {
+                  HashMap<String, BoneAnimation> anims) {
         super(name);
         this.skeleton = skeleton;
         this.animationMap = anims;
@@ -67,9 +69,10 @@ public class Model extends Node {
         Model clone = (Model) super.clone();
         clone.skeleton = new Skeleton(skeleton);
         Mesh[] meshes = new Mesh[targets.length];
-        for (int i = 0; i < meshes.length; i++)
-            meshes[i] = targets[i].clone();
-
+        for (int i = 0; i < meshes.length; i++){
+            meshes[i] = ((Geometry) clone.getChild(i)).getMesh();
+        }
+        clone.targets = meshes;
         return clone;
     }
 
@@ -88,6 +91,9 @@ public class Model extends Node {
      * @returns true if the animation has been successfuly set. False if no such animation exists.
      */
     public boolean setAnimation(String name){
+        if (animation != null && animation.getName().equals(name))
+            return true;
+
         if (name.equals("<bind>")){
             reset();
             return true;
@@ -280,6 +286,7 @@ public class Model extends Node {
     }
 
     public void updateLogicalState(float tpf) {
+        super.updateLogicalState(tpf);
         if (animation == null)
             return;
 
@@ -313,7 +320,7 @@ public class Model extends Node {
             System.arraycopy(sav, 0, targets, 0, sav.length);
         }
         skeleton = (Skeleton) in.readSavable("skeleton", null);
-        animationMap = (Map<String, BoneAnimation>) in.readStringSavableMap("animations", null);
+        animationMap = (HashMap<String, BoneAnimation>) in.readStringSavableMap("animations", null);
     }
 
     @Override

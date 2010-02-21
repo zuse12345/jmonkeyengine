@@ -27,17 +27,17 @@ public class Shader extends GLObject implements Savable {
     /**
      * A list of all shaders currently attached.
      */
-    private List<ShaderSource> shaderList;
+    private ArrayList<ShaderSource> shaderList;
 
     /**
      * Maps uniform name to the uniform variable.
      */
-    private Map<String, Uniform> uniforms;
+    private HashMap<String, Uniform> uniforms;
 
     /**
      * Maps attribute name to the location of the attribute in the shader.
      */
-    private Map<String, Attribute> attribs;
+    private HashMap<String, Attribute> attribs;
 
     /**
      * Type of shader. The shader will control the pipeline of it's type.
@@ -210,7 +210,7 @@ public class Shader extends GLObject implements Savable {
     public void write(G3DExporter ex) throws IOException{
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(language, "language", null);
-        oc.writeSavableList(shaderList, "shaderList", null);
+        oc.writeSavableArrayList(shaderList, "shaderList", null);
         oc.writeStringSavableMap(attribs, "attribs", null);
         oc.writeStringSavableMap(uniforms, "uniforms", null);
     }
@@ -218,9 +218,9 @@ public class Shader extends GLObject implements Savable {
     public void read(G3DImporter im) throws IOException{
         InputCapsule ic = im.getCapsule(this);
         language = ic.readString("language", null);
-        shaderList = ic.readSavableList("shaderList", null);
-        attribs = (Map<String, Attribute>) ic.readStringSavableMap("attribs", null);
-        uniforms = (Map<String, Uniform>) ic.readStringSavableMap("uniforms", null);
+        shaderList = ic.readSavableArrayList("shaderList", null);
+        attribs = (HashMap<String, Attribute>) ic.readStringSavableMap("attribs", null);
+        uniforms = (HashMap<String, Uniform>) ic.readStringSavableMap("uniforms", null);
     }
 
     /**

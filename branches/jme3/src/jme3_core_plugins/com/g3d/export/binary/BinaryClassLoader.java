@@ -33,7 +33,6 @@
 package com.g3d.export.binary;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.logging.Logger;
 
 import com.g3d.export.InputCapsule;

@@ -81,7 +81,6 @@ public class MaterialLoader implements AssetLoader {
         TextureKey key = new TextureKey(path, false);
         key.setGenerateMips(genMips);
         key.setAsCube(cubic);
-        key.setAnisotropy(0);
         texture = assetManager.loadTexture(key);
         if (texture == null){
             ByteBuffer tempData = BufferUtils.createByteBuffer(3);
@@ -233,6 +232,9 @@ public class MaterialLoader implements AssetLoader {
             // skip "recieve_shadows"
             scan.next();
             String isOn = scan.next();
+            if (isOn != null && isOn.equals("true")){
+
+            }
             return true;
         }else{
             return false;
@@ -252,27 +254,31 @@ public class MaterialLoader implements AssetLoader {
     }
 
     private Material compileMaterial(){
-        Material mat = new Material(assetManager, "unshaded.j3md");
+        Material mat = new Material(assetManager, "phong_lighting.j3md");
         if (blend){
             RenderState rs = mat.getAdditionalRenderState();
             rs.setAlphaTest(true);
             rs.setAlphaFallOff(0.01f);
-            rs.setBlendMode(RenderState.BlendMode.PremultAlpha);
+            rs.setBlendMode(RenderState.BlendMode.Alpha);
             if (twoSide)
                 rs.setFaceCullMode(RenderState.FaceCullMode.Off);
 //            rs.setDepthWrite(false);
             mat.setTransparent(true);
         }else{
-            RenderState rs = mat.getAdditionalRenderState();
-            if (twoSide)
+            if (twoSide){
+                RenderState rs = mat.getAdditionalRenderState();
                 rs.setFaceCullMode(RenderState.FaceCullMode.Off);
+            }
         }
 
+        if (shinines > 0f)
+            mat.setFloat("m_Shininess", shinines);
+        
         if (vcolor)
             mat.setBoolean("m_UseVertexColor", true);
 
         if (texture != null)
-            mat.setTexture("m_ColorMap", texture);
+            mat.setTexture("m_DiffuseMap", texture);
 
         texture = null;
         diffuse = null;

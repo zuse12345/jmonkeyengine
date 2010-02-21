@@ -303,6 +303,10 @@ public abstract class Texture extends GLObject implements Savable, Cloneable {
     private int anisotropicFilter;
     private int imageIndex = 0;
 
+    /**
+     * Incorrect ?? Should clone ID
+     * @return
+     */
     public Texture clone(){
         return (Texture) super.clone();
     }
@@ -599,6 +603,7 @@ public abstract class Texture extends GLObject implements Savable, Cloneable {
         rVal.setAnisotropicFilter(anisotropicFilter);
         rVal.setImage(image); // NOT CLONED.
 //        rVal.memReq = memReq;
+        rVal.setTextureKey(key);
         rVal.setName(name);
         rVal.setId(id);
 //        rVal.setBlendColor(blendColor != null ? blendColor.clone() : null);
@@ -608,44 +613,36 @@ public abstract class Texture extends GLObject implements Savable, Cloneable {
         return rVal;
     }
 
+    public abstract Texture createSimpleClone();
+
     public void write(G3DExporter e) throws IOException {
         OutputCapsule capsule = e.getCapsule(this);
         capsule.write(name, "name", null);
-//        if (storeTexture) {
-//            capsule.write(image, "image", null);
-//        }
-//        capsule.write(borderColor, "borderColor", null);
-//        capsule.write(hasBorder, "hasBorder", false);
+        capsule.write(key, "key", null);
         capsule.write(anisotropicFilter, "anisotropicFilter", 1);
         capsule.write(minificationFilter, "minificationFilter",
                 MinFilter.BilinearNoMipMaps);
         capsule.write(magnificationFilter, "magnificationFilter",
                 MagFilter.Bilinear);
-//        capsule.write(rttSource, "rttSource", RenderToTextureType.RGBA);
-//        if (!storeTexture) {
-//            capsule.write(key, "textureKey", null);
-//        }
     }
 
     public void read(G3DImporter e) throws IOException {
         InputCapsule capsule = e.getCapsule(this);
         name = capsule.readString("name", null);
-        image = (Image) capsule.readSavable("image", null);
-        if (image == null) {
-//            key = (TextureKey) capsule.readSavable("textureKey", null);
-//            if (key != null && key.getLocation() != null) {
-//                TextureManager.loadTexture(this, key);
-//            }
+        key = (TextureKey) capsule.readSavable("key", null);
+        // load texture from key
+        if (key != null){
+            Texture loadedTex = e.getAssetManager().loadTexture(key);
+            image = loadedTex.getImage();
         }
-//        borderColor = (ColorRGBA) capsule.readSavable("borderColor", null);
-//        hasBorder = capsule.readBoolean("hasBorder", false);
+//        image = (Image) capsule.readSavable("image", null);
+//        if (image == null) {
+//        }
         anisotropicFilter = capsule.readInt("anisotropicFilter", 1);
         minificationFilter = capsule.readEnum("minificationFilter",
                 MinFilter.class,
                 MinFilter.NearestNoMipMaps);
         magnificationFilter = capsule.readEnum("magnificationFilter",
                 MagFilter.class, MagFilter.Nearest);
-//        rttSource = capsule.readEnum("rttSource", RenderToTextureType.class,
-//                RenderToTextureType.RGBA);
     }
 }

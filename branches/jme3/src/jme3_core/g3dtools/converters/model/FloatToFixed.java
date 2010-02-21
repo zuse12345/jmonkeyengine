@@ -10,6 +10,7 @@ import com.g3d.math.Transform;
 import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.Geometry;
+import com.g3d.scene.IndexBuffer;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.VertexBuffer;
 import com.g3d.scene.VertexBuffer.Format;
@@ -30,7 +31,7 @@ public class FloatToFixed {
     private static final float byteSize = Byte.MAX_VALUE - Byte.MIN_VALUE;
     private static final float byteOff  = (Byte.MAX_VALUE + Byte.MIN_VALUE) * 0.5f;
 
-    public static final void convertToFixed(Geometry geom, Format posFmt, Format tcFmt){
+    public static final void convertToFixed(Geometry geom, Format posFmt, Format nmFmt, Format tcFmt){
         geom.updateModelBound();
         BoundingBox bbox = (BoundingBox) geom.getModelBound();
         Mesh mesh = geom.getMesh();
@@ -88,18 +89,119 @@ public class FloatToFixed {
         }
     }
 
-    public static final void convertIndices(ShortBuffer input, ByteBuffer output){
-        input.clear();
-        output.clear();
-        int triangleCount = input.capacity() / 3;
-        for (int i = 0; i < triangleCount; i++){
-            output.put((byte) input.get());
-            output.put((byte) input.get());
-            output.put((byte) input.get());
+    public static void compressIndexBuffer(Mesh mesh){
+        int vertCount = mesh.getVertexCount();
+        VertexBuffer vb = mesh.getBuffer(Type.Index);
+        Format targetFmt;
+        if (vb.getFormat() == Format.UnsignedInt && vertCount <= 0xffff){
+            if (vertCount <= 256)
+                targetFmt = Format.UnsignedByte;
+            else
+                targetFmt = Format.UnsignedShort;
+        }else if (vb.getFormat() == Format.UnsignedShort && vertCount <= 0xff){
+            targetFmt = Format.UnsignedByte;
+        }else{
+            return;
+        }
+
+        IndexBuffer src = mesh.getIndexBuffer();
+        Buffer newBuf = VertexBuffer.createBuffer(targetFmt, vb.getNumComponents(), src.size());
+
+        VertexBuffer newVb = new VertexBuffer(Type.Index);
+        newVb.setupData(vb.getUsage(), vb.getNumComponents(), targetFmt, newBuf);
+        mesh.clearBuffer(Type.Index);
+        mesh.setBuffer(newVb);
+
+        IndexBuffer dst = mesh.getIndexBuffer();
+        for (int i = 0; i < src.size(); i++){
+            dst.put(i, src.get(i));
         }
     }
 
-    public static final void convertNormals(FloatBuffer input, ByteBuffer output){
+    private static void convertToFixed(FloatBuffer input, IntBuffer output){
+        if (output.capacity() < input.capacity())
+            throw new RuntimeException("Output must be at least as large as input!");
+
+        input.clear();
+        output.clear();
+        for (int i = 0; i < input.capacity(); i++){
+            output.put( (int) (input.get() * (float)(1<<16)) );
+        }
+        output.flip();
+    }
+
+    private static void convertToFloat(IntBuffer input, FloatBuffer output){
+        if (output.capacity() < input.capacity())
+            throw new RuntimeException("Output must be at least as large as input!");
+
+        input.clear();
+        output.clear();
+        for (int i = 0; i < input.capacity(); i++){
+            output.put( ((float)input.get() / (float)(1<<16)) );
+        }
+        output.flip();
+    }
+
+    private static void convertToUByte(FloatBuffer input, ByteBuffer output){
+        if (output.capacity() < input.capacity())
+            throw new RuntimeException("Output must be at least as large as input!");
+
+        input.clear();
+        output.clear();
+        for (int i = 0; i < input.capacity(); i++){
+            output.put( (byte) (input.get() * 255f) );
+        }
+        output.flip();
+    }
+
+
+    public static VertexBuffer convertToUByte(VertexBuffer vb){
+        FloatBuffer fb = (FloatBuffer) vb.getData();
+        ByteBuffer bb = BufferUtils.createByteBuffer(fb.capacity());
+        convertToUByte(fb, bb);
+
+        VertexBuffer newVb = new VertexBuffer(vb.getBufferType());
+        newVb.setupData(vb.getUsage(),
+                        vb.getNumComponents(),
+                        Format.UnsignedByte,
+                        bb);
+        newVb.setNormalized(true);
+        return newVb;
+    }
+
+    public static VertexBuffer convertToFixed(VertexBuffer vb){
+        if (vb.getFormat() == Format.Int)
+            return vb;
+
+        FloatBuffer fb = (FloatBuffer) vb.getData();
+        IntBuffer ib = BufferUtils.createIntBuffer(fb.capacity());
+        convertToFixed(fb, ib);
+
+        VertexBuffer newVb = new VertexBuffer(vb.getBufferType());
+        newVb.setupData(vb.getUsage(),
+                        vb.getNumComponents(),
+                        Format.Int,
+                        ib);
+        return newVb;
+    }
+
+    public static VertexBuffer convertToFloat(VertexBuffer vb){
+        if (vb.getFormat() == Format.Float)
+            return vb;
+
+        IntBuffer ib = (IntBuffer) vb.getData();
+        FloatBuffer fb = BufferUtils.createFloatBuffer(ib.capacity());
+        convertToFloat(ib, fb);
+
+        VertexBuffer newVb = new VertexBuffer(vb.getBufferType());
+        newVb.setupData(vb.getUsage(),
+                        vb.getNumComponents(),
+                        Format.Float,
+                        fb);
+        return newVb;
+    }
+
+    private static final void convertNormals(FloatBuffer input, ByteBuffer output){
         if (output.capacity() < input.capacity())
             throw new RuntimeException("Output must be at least as large as input!");
 
@@ -123,7 +225,7 @@ public class FloatToFixed {
         }
     }
 
-    public static final void convertTexCoords2D(FloatBuffer input, Buffer output){
+    private static final void convertTexCoords2D(FloatBuffer input, Buffer output){
         if (output.capacity() < input.capacity())
             throw new RuntimeException("Output must be at least as large as input!");
 
@@ -156,7 +258,7 @@ public class FloatToFixed {
         }
     }
 
-    public static final Transform convertPositions(FloatBuffer input, BoundingBox bbox, Buffer output){
+    private static final Transform convertPositions(FloatBuffer input, BoundingBox bbox, Buffer output){
         if (output.capacity() < input.capacity())
             throw new RuntimeException("Output must be at least as large as input!");
 

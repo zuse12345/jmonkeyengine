@@ -18,7 +18,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.logging.Logger;
@@ -36,21 +35,21 @@ public class SkeletonLoader extends DefaultHandler implements AssetLoader {
     private AssetManager assetManager;
     private Queue<String> elementStack = new LinkedList<String>();
 
-    private Map<Integer, Bone> indexToBone = new HashMap<Integer, Bone>();
-    private Map<String, Bone> nameToBone = new HashMap<String, Bone>();
+    private HashMap<Integer, Bone> indexToBone = new HashMap<Integer, Bone>();
+    private HashMap<String, Bone> nameToBone = new HashMap<String, Bone>();
 
     private BoneTrack track;
-    private List<BoneTrack> tracks = new ArrayList<BoneTrack>();
+    private ArrayList<BoneTrack> tracks = new ArrayList<BoneTrack>();
 
     private BoneAnimation animation;
-    private List<BoneAnimation> animations;
+    private ArrayList<BoneAnimation> animations;
 
     private Bone bone;
     private Skeleton skeleton;
 
-    private List<Float> times = new ArrayList<Float>();
-    private List<Vector3f> translations = new ArrayList<Vector3f>();
-    private List<Quaternion> rotations = new ArrayList<Quaternion>();
+    private ArrayList<Float> times = new ArrayList<Float>();
+    private ArrayList<Vector3f> translations = new ArrayList<Vector3f>();
+    private ArrayList<Quaternion> rotations = new ArrayList<Quaternion>();
 
     private float time = -1;
     private Vector3f position;

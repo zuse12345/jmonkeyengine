@@ -2,7 +2,8 @@ package g3dtools.converters;
 
 import com.g3d.texture.Image;
 import com.g3d.texture.Image.Format;
-import g3dtools.converters.palette.PaletteTextureConverter;
+import com.g3d.texture.plugins.AWTLoader;
+import com.g3d.util.BufferUtils;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
@@ -113,7 +114,7 @@ public class ImageToAwt {
         params.put(Format.ABGR8,    new DecodeParams(4, mx___, m___x, m__x_, m_x__,
                                                         sx___, s___x, s__x_, s_x__,
                                                         mxxxx, sxxxx));
-        params.put(Format.ARGB4444, new DecodeParams(4, m4x___, m4_x__, m4__x_, m4___x,
+        params.put(Format.ARGB4444, new DecodeParams(2, m4x___, m4_x__, m4__x_, m4___x,
                                                         s4x___, s4_x__, s4__x_, s4___x,
                                                         mxxxx, sxxxx));
         params.put(Format.Alpha16,  new DecodeParams(2, mxxxx, sxxxx, mxxxx, sxxxx, true));
@@ -159,13 +160,110 @@ public class ImageToAwt {
         return original;
     }
 
-    public static BufferedImage convert(Image image, boolean do16bit, int mipLevel){
-        Format format = image.getFormat();
-        if (format == Format.Pal4_RGB565
-         || format == Format.Pal8_RGB565){
-            return PaletteTextureConverter.decodePaletteTexture(image, mipLevel);
+    private static void writePixel(ByteBuffer buf, int idx, int pixel, int bpp){
+        buf.position(idx);
+        while ((--bpp) >= 0){
+//            pixel = pixel >> 8;
+            byte bt = (byte) ((pixel >> (bpp * 8)) & 0xff);
+//            buf.put( (byte) (pixel & 0xff) );
+            buf.put(bt);
         }
+    }
 
+
+    /**
+     * Convert an AWT image to jME image.
+     */
+    public static void convert(BufferedImage image, Format format, ByteBuffer buf){
+        DecodeParams p = params.get(format);
+        if (p == null)
+            throw new UnsupportedOperationException();
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        boolean alpha = true;
+        boolean luminance = false;
+
+        int reductionA = 8 - Integer.bitCount(p.am);
+        int reductionR = 8 - Integer.bitCount(p.rm);
+        int reductionG = 8 - Integer.bitCount(p.gm);
+        int reductionB = 8 - Integer.bitCount(p.bm);
+
+        int initialPos = buf.position();
+        for (int y = 0; y < height; y++){
+            for (int x = 0; x < width; x++){
+                // Get ARGB
+                int argb = image.getRGB(x, y);
+
+                // Extract color components
+                int a = (argb & 0xff000000) >> 24;
+                int r = (argb & 0x00ff0000) >> 16;
+                int g = (argb & 0x0000ff00) >> 8;
+                int b = (argb & 0x000000ff);
+
+                // Remove anything after 8 bits
+                a = a & 0xff;
+                r = r & 0xff;
+                g = g & 0xff;
+                b = b & 0xff;
+
+                // Set full alpha if target image has no alpha
+                if (!alpha)
+                    a = 0xff;
+
+                // Convert color to luminance if target
+                // image is in luminance format
+                if (luminance){
+                    // convert RGB to luminance
+                }
+
+                // Do bit reduction, assumes proper rounding has already been
+                // done.
+                a = a >> reductionA;
+                r = r >> reductionR;
+                g = g >> reductionG;
+                b = b >> reductionB;
+                
+                // Put components into appropriate positions
+                a = (a << p.as) & p.am;
+                r = (r << p.rs) & p.rm;
+                g = (g << p.gs) & p.gm;
+                b = (b << p.bs) & p.bm;
+
+                int outputPixel = ((a | r | g | b) << p.is) & p.im;
+                int i = initialPos + (Ix(x,y,width) * p.bpp);
+                writePixel(buf, i, outputPixel, p.bpp);
+            }
+        }
+    }
+
+    private static final double LOG2 = Math.log(2);
+
+    public static void createData(Image image, boolean mipmaps){
+        int bpp = image.getFormat().getBitsPerPixel();
+        int w = image.getWidth();
+        int h = image.getHeight();
+        if (!mipmaps){
+            image.setData(BufferUtils.createByteBuffer(w*h*bpp/8));
+            return;
+        }
+        int expectedMipmaps = 1 + (int) Math.ceil(Math.log(Math.max(h, w)) / LOG2);
+        int[] mipMapSizes = new int[expectedMipmaps];
+        int total = 0;
+        for (int i = 0; i < mipMapSizes.length; i++){
+            int size = (w * h * bpp) / 8;
+            total += size;
+            mipMapSizes[i] = size;
+            w /= 2;
+            h /= 2;
+        }
+        image.setMipMapSizes(mipMapSizes);
+        image.setData(BufferUtils.createByteBuffer(total));
+    }
+
+    public static BufferedImage convert(Image image, boolean do16bit, boolean fullalpha, int mipLevel){
+        Format format = image.getFormat();
         DecodeParams p = params.get(image.getFormat());
         if (p == null)
             throw new UnsupportedOperationException();
@@ -200,18 +298,24 @@ public class ImageToAwt {
             out = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         }else if ( (rgb && alpha) || (luminance && alpha) ){
             if (do16bit){
-                // RGB5_A1
-                ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
-                int[] nBits = {5, 5, 5, 1};
-                int[] bOffs = {0, 1, 2, 3};
-                ColorModel colorModel = new ComponentColorModel(cs, nBits, true, false,
-                                                                Transparency.BITMASK,
-                                                                DataBuffer.TYPE_BYTE);
-                WritableRaster raster = Raster.createInterleavedRaster(DataBuffer.TYPE_BYTE,
-                                                                       width, height,
-                                                                       width*2, 2,
-                                                                       bOffs, null);
-                out = new BufferedImage(colorModel, raster, false, null);
+                if (fullalpha){
+                    ColorModel model = AWTLoader.AWT_RGBA4444;
+                    WritableRaster raster = model.createCompatibleWritableRaster(width, width);
+                    out = new BufferedImage(model, raster, false, null);
+                }else{
+                    // RGB5_A1
+                    ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
+                    int[] nBits = {5, 5, 5, 1};
+                    int[] bOffs = {0, 1, 2, 3};
+                    ColorModel colorModel = new ComponentColorModel(cs, nBits, true, false,
+                                                                    Transparency.BITMASK,
+                                                                    DataBuffer.TYPE_BYTE);
+                    WritableRaster raster = Raster.createInterleavedRaster(DataBuffer.TYPE_BYTE,
+                                                                           width, height,
+                                                                           width*2, 2,
+                                                                           bOffs, null);
+                    out = new BufferedImage(colorModel, raster, false, null);
+                }
             }else{
                 out = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             }
@@ -222,6 +326,11 @@ public class ImageToAwt {
                 out = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
             }
         }
+
+        int expansionA = 8 - Integer.bitCount(p.am);
+        int expansionR = 8 - Integer.bitCount(p.rm);
+        int expansionG = 8 - Integer.bitCount(p.gm);
+        int expansionB = 8 - Integer.bitCount(p.bm);
         
         int mipPos = 0;
         for (int i = 0; i < mipLevel; i++){
@@ -237,6 +346,16 @@ public class ImageToAwt {
                 int g = (inputPixel & p.gm) >> p.gs;
                 int b = (inputPixel & p.bm) >> p.bs;
 
+                r = r & 0xff;
+                g = g & 0xff;
+                b = b & 0xff;
+                a = a & 0xff;
+
+                a = a << expansionA;
+                r = r << expansionR;
+                g = g << expansionG;
+                b = b << expansionB;
+                
                 if (luminance)
                     b = g = r;
 

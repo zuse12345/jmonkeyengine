@@ -1,11 +1,12 @@
 package g3dtools.optimize;
 
-import com.g3d.math.Transform;
 import com.g3d.scene.Geometry;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.VertexBuffer;
 import com.g3d.scene.VertexBuffer.Type;
 import com.g3d.util.BufferUtils;
+import com.g3d.util.IntMap;
+import com.g3d.util.IntMap.Entry;
 import java.nio.Buffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
@@ -101,7 +102,9 @@ public class TriangleCollector {
             out.setBuffer(Type.Index, 3, ib);
 
             // generate output buffers based on input buffers
-            for (VertexBuffer vb : in.getBuffers()){
+            IntMap<VertexBuffer> bufs = in.getBuffers();
+            for (Entry<VertexBuffer> ent : bufs){
+                VertexBuffer vb = ent.getValue();
                 if (vb.getBufferType() == Type.Index)
                     continue;
 
@@ -159,7 +162,9 @@ public class TriangleCollector {
 
                 // if any verticies were created for this triangle
                 // copy them to the output mesh
-                for (VertexBuffer vb : in.getBuffers()){
+                IntMap<VertexBuffer> inbufs = in.getBuffers();
+                for (Entry<VertexBuffer> ent : inbufs){
+                    VertexBuffer vb = ent.getValue();
                     if (vb.getBufferType() == Type.Index)
                         continue;
                     
@@ -185,7 +190,9 @@ public class TriangleCollector {
 
             // since some verticies were cached, it means there's
             // extra data in some buffers
-            for (VertexBuffer vb : out.getBuffers()){
+            IntMap<VertexBuffer> outbufs = out.getBuffers();
+            for (Entry<VertexBuffer> ent : outbufs){
+                VertexBuffer vb = ent.getValue();
                 if (vb.getBufferType() == Type.Index)
                     continue;
 

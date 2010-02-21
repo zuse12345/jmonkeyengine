@@ -5,9 +5,9 @@ import com.g3d.export.G3DImporter;
 import com.g3d.export.InputCapsule;
 import com.g3d.export.OutputCapsule;
 import com.g3d.export.Savable;
+import com.g3d.util.IntMap;
+import com.g3d.util.IntMap.Entry;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map.Entry;
 import java.util.Set;
 
 public class BitmapCharacterSet implements Savable {
@@ -17,7 +17,7 @@ public class BitmapCharacterSet implements Savable {
     private int renderedSize;
     private int width;
     private int height;
-    private HashMap<Integer, BitmapCharacter> characters;
+    private IntMap<BitmapCharacter> characters;
 
     public void write(G3DExporter ex) throws IOException {
         OutputCapsule oc = ex.getCapsule(this);
@@ -27,12 +27,12 @@ public class BitmapCharacterSet implements Savable {
         oc.write(width, "width", 0);
         oc.write(height, "height", 0);
 
-        Set<Entry<Integer, BitmapCharacter>> entries = characters.entrySet();
-        short[] indexes = new short[entries.size()];
-        BitmapCharacter[] chars = new BitmapCharacter[entries.size()];
+        int size = characters.size();
+        short[] indexes = new short[size];
+        BitmapCharacter[] chars = new BitmapCharacter[size];
         int i = 0;
-        for (Entry<Integer, BitmapCharacter> chr : entries){
-            indexes[i] = chr.getKey().shortValue();
+        for (Entry<BitmapCharacter> chr : characters){
+            indexes[i] = (short) chr.getKey();
             chars[i] = chr.getValue();
             i++;
         }
@@ -60,7 +60,7 @@ public class BitmapCharacterSet implements Savable {
     }
 
     public BitmapCharacterSet() {
-        characters = new HashMap<Integer, BitmapCharacter>();
+        characters = new IntMap<BitmapCharacter>();
     }
 
     public BitmapCharacter getCharacter(int index){

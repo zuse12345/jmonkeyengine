@@ -33,7 +33,7 @@ public class Technique implements Savable {
 
     private TechniqueDef def;
     private Material owner;
-    private List<Uniform> worldBindUniforms;
+    private ArrayList<Uniform> worldBindUniforms;
     private DefineList defines;
     private Shader shader;
     private boolean needReload = true;
@@ -55,7 +55,7 @@ public class Technique implements Savable {
         oc.write(def, "def", null);
         // TODO:
         // oc.write(owner, "owner", null);
-        oc.writeSavableList(worldBindUniforms, "worldBindUniforms", null);
+        oc.writeSavableArrayList(worldBindUniforms, "worldBindUniforms", null);
         oc.write(defines, "defines", null);
         oc.write(shader, "shader", null);
     }
@@ -63,7 +63,7 @@ public class Technique implements Savable {
     public void read(G3DImporter im) throws IOException{
         InputCapsule ic = im.getCapsule(this);
         def = (TechniqueDef) ic.readSavable("def", null);
-        worldBindUniforms = ic.readSavableList("worldBindUniforms", null);
+        worldBindUniforms = ic.readSavableArrayList("worldBindUniforms", null);
         defines = (DefineList) ic.readSavable("defines", null);
         shader = (Shader) ic.readSavable("shader", null);
     }

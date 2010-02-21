@@ -6,10 +6,9 @@ import com.g3d.input.event.KeyInputEvent;
 import com.g3d.input.event.MouseButtonEvent;
 import com.g3d.input.event.MouseMotionEvent;
 import com.g3d.input.binding.BindingListener;
+import com.g3d.util.IntMap;
+import com.g3d.util.IntMap.Entry;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * The <code>InputManager</code> is responsible for converting input events
@@ -26,13 +25,13 @@ public class InputManager implements RawInputListener {
     private KeyInput keyInput;
     private JoyInput joyInput;
 
-    private Map<Integer, String> keyBindings = new HashMap<Integer, String>();
-    private Map<Integer, String> mouseBtnBindings = new HashMap<Integer, String>();
-    private Map<Integer, String> mouseAxisBindings = new HashMap<Integer, String>();
-    private Map<Integer, String> joyAxisBindings = new HashMap<Integer, String>();
-    private Map<Integer, String> joyButtonBindings = new HashMap<Integer, String>();
+    private IntMap<String> keyBindings = new IntMap<String>();
+    private IntMap<String> mouseBtnBindings = new IntMap<String>();
+    private IntMap<String> mouseAxisBindings = new IntMap<String>();
+    private IntMap<String> joyAxisBindings = new IntMap<String>();
+    private IntMap<String> joyButtonBindings = new IntMap<String>();
 
-    private List<BindingListener> listeners = new ArrayList<BindingListener>();
+    private ArrayList<BindingListener> listeners = new ArrayList<BindingListener>();
 
     private MouseButtonEvent lastButtonEvent = null;
     private KeyInputEvent lastKeyEvent = null;
@@ -188,7 +187,7 @@ public class InputManager implements RawInputListener {
         frameTPF = tpf;
 
         // query current keyboard state for all bindings
-        for (Map.Entry<Integer, String> entry : keyBindings.entrySet()){
+        for (Entry<String> entry : keyBindings){
             if (entry.getKey() >= keyboard.length)
                 continue;
 
@@ -199,7 +198,7 @@ public class InputManager implements RawInputListener {
         }
 
         // query current mouse button state for all bindings
-        for (Map.Entry<Integer, String> entry : mouseBtnBindings.entrySet()){
+        for (Entry<String> entry : mouseBtnBindings){
             if (entry.getKey() > mouse.length)
                 continue;
             
@@ -212,7 +211,7 @@ public class InputManager implements RawInputListener {
         notifyListeners("UPDATE", tpf);
         
         if (joyInput != null){
-            for (Map.Entry<Integer, String> entry : joyAxisBindings.entrySet()){
+            for (Entry<String> entry : joyAxisBindings){
                 int axisId = entry.getKey();
                 boolean negative = false;
                 if (axisId < 0){

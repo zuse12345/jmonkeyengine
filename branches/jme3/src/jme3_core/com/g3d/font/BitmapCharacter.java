@@ -111,7 +111,7 @@ public class BitmapCharacter implements Savable {
         oc.write(xOffset, "xOffset", 0);
         oc.write(yOffset, "yOffset", 0);
         oc.write(xAdvance, "xAdvance", 0);
-        oc.writeSavableList(kerningList, "kerningList", null);
+        oc.writeSavableArrayList(kerningList, "kerningList", null);
     }
 
     public void read(G3DImporter im) throws IOException {
@@ -123,6 +123,6 @@ public class BitmapCharacter implements Savable {
         xOffset = ic.readInt("xOffset", 0);
         yOffset = ic.readInt("yOffset", 0);
         xAdvance = ic.readInt("xAdvance", 0);
-        kerningList = (ArrayList<Kerning>) ic.readSavableList("kerningList", null);
+        kerningList = (ArrayList<Kerning>) ic.readSavableArrayList("kerningList", null);
     }
 }

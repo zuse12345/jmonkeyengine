@@ -16,6 +16,8 @@ import com.g3d.math.Vector2f;
 import com.g3d.math.Vector3f;
 import com.g3d.scene.VertexBuffer.*;
 import com.g3d.util.BufferUtils;
+import com.g3d.util.IntMap;
+import com.g3d.util.IntMap.Entry;
 import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -23,10 +25,6 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.List;
 
 public class Mesh implements Savable, Cloneable {
 
@@ -41,7 +39,7 @@ public class Mesh implements Savable, Cloneable {
         Hybrid
     }
 
-    private static final int BUFFERS_SIZE = VertexBuffer.Type.BoneIndex.ordinal() + 1;
+//    private static final int BUFFERS_SIZE = VertexBuffer.Type.BoneIndex.ordinal() + 1;
 
     /**
      * The bounding volume that contains the mesh entirely.
@@ -52,8 +50,10 @@ public class Mesh implements Savable, Cloneable {
     private BIHTree collisionTree = null;
 
 //    private EnumMap<VertexBuffer.Type, VertexBuffer> buffers = new EnumMap<Type, VertexBuffer>(VertexBuffer.Type.class);
-    private VertexBuffer[] buffers = new VertexBuffer[BUFFERS_SIZE];
-    private ShortBuffer[] lodData;
+//    private VertexBuffer[] buffers = new VertexBuffer[BUFFERS_SIZE];
+    private IntMap<VertexBuffer> buffers = new IntMap<VertexBuffer>();
+    private VertexBuffer[] lodLevels;
+    private int lodLevel = 0;
 
     private transient int vertexArrayID = -1;
 
@@ -72,21 +72,77 @@ public class Mesh implements Savable, Cloneable {
     public Mesh clone(){
         try{
             Mesh clone = (Mesh) super.clone();
+            clone.meshBound = meshBound.clone();
+            clone.collisionTree = collisionTree != null ? collisionTree : null;
+            clone.buffers = buffers.clone();
+            clone.vertexArrayID = -1;
+            if (elementLengths != null)
+                clone.elementLengths = elementLengths.clone();
+            if (modeStart != null)
+                clone.modeStart = modeStart.clone();
+            return clone;
         }catch (CloneNotSupportedException ex){
             throw new AssertionError();
         }
-        return null;
+    }
+
+    public Mesh deepClone(){
+        try{
+            Mesh clone = (Mesh) super.clone();
+            clone.meshBound = meshBound != null ? meshBound.clone() : null;
+            clone.collisionTree = collisionTree != null ? collisionTree : null;
+            clone.buffers = new IntMap<VertexBuffer>();
+            for (Entry<VertexBuffer> ent : buffers){
+                clone.buffers.put(ent.getKey(), ent.getValue().clone());
+            }
+            vertexArrayID = -1;
+            vertCount = -1;
+            elementCount = -1;
+            maxNumWeights = -1;
+            elementLengths = elementLengths != null ? elementLengths.clone() : null;
+            modeStart = modeStart != null ? modeStart.clone() : null;
+            return clone;
+        }catch (CloneNotSupportedException ex){
+            throw new AssertionError();
+        }
     }
 
     public Mesh cloneForAnim(){
         Mesh clone = clone();
         if (getBuffer(Type.BindPosePosition) != null){
-            VertexBuffer newPos = new VertexBuffer(Type.Position);
-            
+            VertexBuffer oldPos = getBuffer(Type.Position);
+            // NOTE: creates deep clone
+            VertexBuffer newPos = oldPos.clone();
+            clone.clearBuffer(Type.Position);
+            clone.setBuffer(newPos);
+
+            if (getBuffer(Type.BindPoseNormal) != null){
+                VertexBuffer oldNorm = getBuffer(Type.Normal);
+                VertexBuffer newNorm = oldNorm.clone();
+                clone.clearBuffer(Type.Normal);
+                clone.setBuffer(newNorm);
+            }
         }
         return clone;
     }
 
+    public void setLodLevels(VertexBuffer[] lodLevels){
+        this.lodLevels = lodLevels;
+    }
+
+    public void setLodLevel(int lod){
+        if (lodLevels == null)
+            throw new IllegalStateException("LOD levels are not set on this mesh");
+
+        if (lod < 0 || lod >= lodLevels.length)
+            throw new IllegalArgumentException("LOD level is out of range: "+lod);
+
+        if (lod != lodLevel){
+            buffers.put(Type.Index.ordinal(), lodLevels[lod]);
+            lodLevel = lod;
+        }
+    }
+    
     public int[] getElementLengths() {
         return elementLengths;
     }
@@ -124,30 +180,21 @@ public class Mesh implements Savable, Cloneable {
      * optimizing its data.
      */
     public void setStatic() {
-//        for (VertexBuffer vb : buffers.values()){
-//            vb.setUsage(Usage.Static);
-//        }
-        for (int i = buffers.length - 1; i >= 0; i--){
-            if (buffers[i] != null)
-                buffers[i].setUsage(Usage.Static);
+        for (Entry<VertexBuffer> entry : buffers){
+            entry.getValue().setUsage(Usage.Static);
         }
     }
 
     public void setStreamed(){
-//        for (VertexBuffer vb : buffers.values()){
-//            vb.setUsage(Usage.Stream);
-//        }
-        for (int i = buffers.length - 1; i >= 0; i--){
-            if (buffers[i] != null)
-                buffers[i].setUsage(Usage.Stream);
+        for (Entry<VertexBuffer> entry : buffers){
+            entry.getValue().setUsage(Usage.Stream);
         }
     }
 
     public void setInterleaved(){
         ArrayList<VertexBuffer> vbs = new ArrayList<VertexBuffer>();
-        for (VertexBuffer vb : buffers){
-            if (vb != null)
-                vbs.add(vb);
+        for (Entry<VertexBuffer> entry : buffers){
+            vbs.add(entry.getValue());
         }
 //        ArrayList<VertexBuffer> vbs = new ArrayList<VertexBuffer>(buffers.values());
         // index buffer not included when interleaving
@@ -338,13 +385,13 @@ public class Mesh implements Savable, Cloneable {
         return collisionTree.collideWith(other, worldMatrix, worldBound, results);
     }
 
-    public void setLodData(ShortBuffer[] lodData){
-        this.lodData = lodData;
-    }
+//    public void setLodData(ShortBuffer[] lodData){
+//        this.lodData = lodData;
+//    }
 
     public void setBuffer(Type type, int components, FloatBuffer buf) {
 //        VertexBuffer vb = buffers.get(type);
-        VertexBuffer vb = buffers[type.ordinal()];
+        VertexBuffer vb = buffers.get(type.ordinal());
         if (vb == null){
             if (buf == null)
                 return;
@@ -352,7 +399,7 @@ public class Mesh implements Savable, Cloneable {
             vb = new VertexBuffer(type);
             vb.setupData(Usage.Dynamic, components, Format.Float, buf);
 //            buffers.put(type, vb);
-            buffers[type.ordinal()] = vb;
+            buffers.put(type.ordinal(), vb);
         }else{
             vb.setupData(Usage.Dynamic, components, Format.Float, buf);
         }
@@ -364,13 +411,11 @@ public class Mesh implements Savable, Cloneable {
     }
 
     public void setBuffer(Type type, int components, IntBuffer buf) {
-//        VertexBuffer vb = buffers.get(type);
-        VertexBuffer vb = buffers[type.ordinal()];
+        VertexBuffer vb = buffers.get(type.ordinal());
         if (vb == null){
             vb = new VertexBuffer(type);
             vb.setupData(Usage.Dynamic, components, Format.UnsignedInt, buf);
-//            buffers.put(type, vb);
-            buffers[type.ordinal()] = vb;
+            buffers.put(type.ordinal(), vb);
             updateCounts();
         }
     }
@@ -380,13 +425,11 @@ public class Mesh implements Savable, Cloneable {
     }
 
     public void setBuffer(Type type, int components, ShortBuffer buf) {
-//        VertexBuffer vb = buffers.get(type);
-        VertexBuffer vb = buffers[type.ordinal()];
+        VertexBuffer vb = buffers.get(type.ordinal());
         if (vb == null){
             vb = new VertexBuffer(type);
             vb.setupData(Usage.Dynamic, components, Format.UnsignedShort, buf);
-//            buffers.put(type, vb);
-            buffers[type.ordinal()] = vb;
+            buffers.put(type.ordinal(), vb);
             updateCounts();
         }
     }
@@ -396,29 +439,24 @@ public class Mesh implements Savable, Cloneable {
     }
 
     public void setBuffer(Type type, int components, ByteBuffer buf) {
-//        VertexBuffer vb = buffers.get(type);
-        VertexBuffer vb = buffers[type.ordinal()];
+        VertexBuffer vb = buffers.get(type.ordinal());
         if (vb == null){
             vb = new VertexBuffer(type);
             vb.setupData(Usage.Dynamic, components, Format.UnsignedByte, buf);
-//            buffers.put(type, vb);
-            buffers[type.ordinal()] = vb;
+            buffers.put(type.ordinal(), vb);
             updateCounts();
         }
     }
 
     public void setBuffer(VertexBuffer vb){
-        if (buffers[vb.getBufferType().ordinal()] != null)
-//        if (buffers.get(vb.getBufferType()) != null)
+        if (buffers.containsKey(vb.getBufferType().ordinal()))
             throw new IllegalArgumentException("Buffer type already set: "+vb.getBufferType());
 
-//        buffers.put(vb.getBufferType(), vb);
-        buffers[vb.getBufferType().ordinal()] = vb;
+        buffers.put(vb.getBufferType().ordinal(), vb);
     }
 
     public void clearBuffer(VertexBuffer.Type type){
-//        buffers.remove(type);
-        buffers[type.ordinal()] = null;
+        buffers.remove(type.ordinal());
     }
 
     public void setBuffer(Type type, int components, short[] buf){
@@ -426,8 +464,7 @@ public class Mesh implements Savable, Cloneable {
     }
 
     public VertexBuffer getBuffer(Type type){
-//        return buffers.get(type);
-        return buffers[type.ordinal()];
+        return buffers.get(type.ordinal());
     }
 
     public FloatBuffer getFloatBuffer(Type type) {
@@ -484,28 +521,30 @@ public class Mesh implements Savable, Cloneable {
         meshBound = modelBound;
     }
 
-//    public Collection<VertexBuffer> getBuffers(){
-//        return buffers.values();
-//    }
-
-    public VertexBuffer[] getBuffers(){
+    public IntMap getBuffers(){
         return buffers;
     }
 
     public void write(G3DExporter ex) throws IOException {
         OutputCapsule out = ex.getCapsule(this);
+
+//        HashMap<String, VertexBuffer> map = new HashMap<String, VertexBuffer>();
+//        for (Entry<VertexBuffer> buf : buffers){
+//            if (buf.getValue() != null)
+//                map.put(buf.getKey()+"a", buf.getValue());
+//        }
+//        out.writeStringSavableMap(map, "buffers", null);
+
         out.write(meshBound, "modelBound", null);
         out.write(vertCount, "vertCount", -1);
         out.write(elementCount, "elementCount", -1);
         out.write(maxNumWeights, "max_num_weights", -1);
         out.write(mode, "mode", Mode.Triangles);
         out.write(collisionTree, "collisionTree", null);
+        out.write(elementLengths, "elementLengths", null);
+        out.write(modeStart, "modeStart", null);
 
-        // export bufs as list
-        out.write(buffers, "buffers", null);
-//        Collection<VertexBuffer> c = buffers.values();
-//        List<VertexBuffer> vbList = new ArrayList<VertexBuffer>(c);
-//        out.writeSavableList(vbList, "buffers", null);
+        out.writeIntSavableMap(buffers, "buffers", null);
     }
 
     public void read(G3DImporter im) throws IOException {
@@ -518,12 +557,11 @@ public class Mesh implements Savable, Cloneable {
         elementLengths = in.readIntArray("elementLengths", null);
         modeStart = in.readIntArray("modeStart", null);
         collisionTree = (BIHTree) in.readSavable("collisionTree", null);
+        elementLengths = in.readIntArray("elementLengths", null);
+        modeStart = in.readIntArray("modeStart", null);
 
-        buffers = (VertexBuffer[]) in.readSavableArray("buffers", null);
-//        List<VertexBuffer> vbList = in.readSavableList("buffers", null);
-//        for (VertexBuffer vb : vbList){
-//            buffers.put(vb.getBufferType(), vb);
-//        }
+//        in.readStringSavableMap("buffers", null);
+        buffers = (IntMap<VertexBuffer>) in.readIntSavableMap("buffers", null);
     }
 
 }

@@ -152,11 +152,11 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
         logger.info("Using LWJGL "+Sys.getVersion());
         initInThread();
         while (true){
-            if (needClose.get())
-                break;
-
             if (Display.isCloseRequested())
                 listener.requestClose(false);
+
+            if (needClose.get())
+                break;
 
             if (wasActive != Display.isActive()){
                 if (!wasActive){

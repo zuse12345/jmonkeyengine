@@ -27,7 +27,7 @@ public class MipMapGenerator {
     }
 
     public static void generateMipMaps(Image image){
-        BufferedImage original = ImageToAwt.convert(image, false, 0);
+        BufferedImage original = ImageToAwt.convert(image, false, true, 0);
         int width = original.getWidth();
         int height = original.getHeight();
         int level = 0;

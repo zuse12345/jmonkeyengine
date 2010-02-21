@@ -646,7 +646,12 @@ public final class BufferUtils {
         if (buf == null) return null;
         buf.rewind();
 
-        DoubleBuffer copy = createDoubleBuffer(buf.limit());
+        DoubleBuffer copy;
+        if (buf.isDirect()){
+            copy = createDoubleBuffer(buf.limit());
+        }else{
+            copy = DoubleBuffer.allocate(buf.limit());
+        }
         copy.put(buf);
 
         return copy;
@@ -706,7 +711,12 @@ public final class BufferUtils {
         if (buf == null) return null;
         buf.rewind();
 
-        FloatBuffer copy = createFloatBuffer(buf.limit());
+        FloatBuffer copy;
+        if (buf.isDirect()){
+            copy = createFloatBuffer(buf.limit());
+        }else{
+            copy = FloatBuffer.allocate(buf.limit());
+        }
         copy.put(buf);
 
         return copy;
@@ -766,7 +776,12 @@ public final class BufferUtils {
         if (buf == null) return null;
         buf.rewind();
 
-        IntBuffer copy = createIntBuffer(buf.limit());
+        IntBuffer copy;
+        if (buf.isDirect()){
+            copy = createIntBuffer(buf.limit());
+        }else{
+            copy = IntBuffer.allocate(buf.limit());
+        }
         copy.put(buf);
 
         return copy;
@@ -841,7 +856,12 @@ public final class BufferUtils {
         if (buf == null) return null;
         buf.rewind();
 
-        ByteBuffer copy = createByteBuffer(buf.limit());
+        ByteBuffer copy;
+        if (buf.isDirect()){
+            copy = createByteBuffer(buf.limit());
+        }else{
+            copy = ByteBuffer.allocate(buf.limit());
+        }
         copy.put(buf);
 
         return copy;
@@ -910,7 +930,12 @@ public final class BufferUtils {
         if (buf == null) return null;
         buf.rewind();
 
-        ShortBuffer copy = createShortBuffer(buf.limit());
+        ShortBuffer copy;
+        if (buf.isDirect()){
+            copy = createShortBuffer(buf.limit());
+        }else{
+            copy = ShortBuffer.allocate(buf.limit());
+        }
         copy.put(buf);
 
         return copy;

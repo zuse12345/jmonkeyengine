@@ -7,18 +7,23 @@ import com.g3d.asset.AssetKey;
 import com.g3d.asset.AssetLoader;
 import com.g3d.asset.AssetManager;
 import com.g3d.material.Material;
+import com.g3d.material.RenderState.BlendMode;
+import com.g3d.material.RenderState.FaceCullMode;
 import com.g3d.math.ColorRGBA;
 import com.g3d.renderer.queue.RenderQueue.Bucket;
+import com.g3d.renderer.queue.RenderQueue.ShadowMode;
 import com.g3d.scene.Geometry;
-import com.g3d.scene.LodData;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.Node;
 import com.g3d.scene.Spatial;
+import com.g3d.scene.Spatial.CullHint;
 import com.g3d.scene.VertexBuffer;
 import com.g3d.scene.VertexBuffer.Format;
 import com.g3d.scene.VertexBuffer.Type;
 import com.g3d.scene.VertexBuffer.Usage;
 import com.g3d.util.BufferUtils;
+import com.g3d.util.IntMap;
+import com.g3d.util.IntMap.Entry;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.Buffer;
@@ -54,22 +59,22 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     private AssetManager assetManager;
     private OgreMaterialList materialList;
 
-    private int numLevels;
-    private float dist;
-    private LodData lodData;
-
     private ShortBuffer sb;
     private IntBuffer ib;
     private FloatBuffer fb;
     private VertexBuffer vb;
     private Mesh mesh;
     private Geometry geom;
+    private Mesh sharedmesh;
+    private Geometry sharedgeom;
     private int geomIdx = 0;
     private int texCoordIdx = 0;
     private static volatile int nodeIdx = 0;
     private String ignoreUntilEnd = null;
 
     private List<Geometry> geoms = new ArrayList<Geometry>();
+    private List<Boolean> usesSharedGeom = new ArrayList<Boolean>();
+    private IntMap<List<VertexBuffer>> lodLevels = new IntMap<List<VertexBuffer>>();
     private AnimData animData;
 
     private ByteBuffer indicesData;
@@ -91,6 +96,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     @Override
     public void startDocument() {
         geoms.clear();
+        usesSharedGeom.clear();
     }
 
     @Override
@@ -122,32 +128,51 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             // TODO: Support triangle strip/fan in Ogre3D Loader.
         }
 
-        vb = mesh.getBuffer(Type.Index);
-        if (vb.getFormat() == Format.UnsignedShort){
+        int numVerts;
+        if (usesSharedGeom.size() > 0 && usesSharedGeom.get(geoms.size()-1)){
+            numVerts = sharedmesh.getVertexCount();
+        }else{
+            numVerts = mesh.getVertexCount();
+        }
+        vb = new VertexBuffer(VertexBuffer.Type.Index);
+        if (numVerts < 65536){
             sb = BufferUtils.createShortBuffer(numIndices);
-            vb.updateData(sb);
+            ib = null;
+            vb.setupData(Usage.Static, 3, Format.UnsignedShort, sb);
         }else{
             ib = BufferUtils.createIntBuffer(numIndices);
-            vb.updateData(ib);
+            sb = null;
+            vb.setupData(Usage.Static, 3, Format.UnsignedInt, ib);
         }
+        mesh.setBuffer(vb);
     }
 
     private void applyMaterial(Geometry geom, String matName){
-//        Material mat = new Material(assetManager, "phong_lighting.j3md");
-//        mat.setFloat("m_Shininess", 32f);
-//        geom.setMaterial(mat);
-//        geom.setMaterial(new Material(assetManager, "vertex_color.j3md"));
         Material mat = null;
-        if (materialList != null){
-            mat = materialList.get(matName);
-        }
-        if (mat == null){
-            logger.warning("Material "+matName+" not found. Applying default material");
-            mat = (Material) assetManager.loadContent(new AssetKey("red_color.j3m"));
+        if (matName.endsWith(".j3m")){
+            // load as native jme3 material instance
+            mat = assetManager.loadMaterial(matName);
+            // XXX: hack!
+//            mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+//            mat.getAdditionalRenderState().setFaceCullMode(FaceCullMode.Off);
+//            mat.getAdditionalRenderState().setAlphaFallOff(0.1f);
+        }else{
+            if (materialList != null){
+                mat = materialList.get(matName);
+            }
+            if (mat == null){
+                logger.warning("Material "+matName+" not found. Applying default material");
+                mat = (Material) assetManager.loadContent(new AssetKey("red_color.j3m"));
+            }
         }
         
         if (mat.isTransparent())
             geom.setQueueBucket(Bucket.Transparent);
+//        else
+//            geom.setShadowMode(ShadowMode.CastAndRecieve);
+        
+//        if (mat.isRecievesShadows())
+            
             
         geom.setMaterial(mat);
     }
@@ -162,14 +187,18 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             mesh.setMode(Mesh.Mode.TriangleFan);
         }
 
-        vb = new VertexBuffer(VertexBuffer.Type.Index);
-        if (parseBool(use32bitIndices, false)){
-            vb.setupData(Usage.Static, 3, Format.UnsignedInt, null);
+        boolean sharedverts = parseBool(usesharedvertices, false);
+        if (sharedverts){
+            usesSharedGeom.add(true);
+            // import vertexbuffers from shared geom
+            IntMap<VertexBuffer> sharedBufs = sharedmesh.getBuffers();
+            for (Entry<VertexBuffer> entry : sharedBufs){
+                    mesh.setBuffer(entry.getValue());
+            }
+            // this mesh is shared!
         }else{
-            vb.setupData(Usage.Static, 3, Format.UnsignedShort, null);
+            usesSharedGeom.add(false);
         }
-        mesh.setBuffer(vb);
-        vb = null;
 
         if (meshName == null)
             geom = new Geometry("OgreSubmesh-"+(++geomIdx), mesh);
@@ -178,6 +207,24 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
 
         applyMaterial(geom, matName);
         geoms.add(geom);
+    }
+
+    private void startSharedGeom(String vertexcount) throws SAXException{
+        sharedmesh = new Mesh();
+        int vertCount = parseInt(vertexcount);
+        sharedmesh.setVertexCount(vertCount);
+
+        if (meshName == null)
+            sharedgeom = new Geometry("Ogre-SharedGeom", sharedmesh);
+        else
+            sharedgeom = new Geometry(meshName+"-sharedgeom", sharedmesh);
+
+        sharedgeom.setCullHint(CullHint.Always);
+        geoms.add(sharedgeom);
+        usesSharedGeom.add(false); // shared geometry doesnt use shared geometry (?)
+
+        geom = sharedgeom;
+        mesh = sharedmesh;
     }
 
     private void startGeometry(String vertexcount) throws SAXException{
@@ -190,6 +237,10 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
      * for all vertices in the buffer.
      */
     private void endBoneAssigns(){
+        if (mesh != sharedmesh && usesSharedGeom.get(geoms.size() - 1)){
+            return;
+        }
+
         int vertCount = mesh.getVertexCount();
         int maxWeightsPerVert = 0;
         weightsFloatData.rewind();
@@ -229,6 +280,11 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     }
 
     private void startBoneAssigns(){
+        if (mesh != sharedmesh && usesSharedGeom.get(geoms.size() - 1)){
+            // will use bone assignments from shared mesh (?)
+            return;
+        }
+
         // current mesh will have bone assigns
         int vertCount = mesh.getVertexCount();
         // each vertex has
@@ -268,10 +324,6 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             mesh.setBuffer(vb);
         }
         if (parseBool(attribs.getValue("colours_diffuse"), false)){
-//            vb = new VertexBuffer(Type.Color);
-//            ByteBuffer bb = BufferUtils.createByteBuffer(mesh.getVertexCount() * 4);
-//            vb.setupData(Usage.Static, 4, Format.UnsignedByte, bb);
-//            mesh.setBuffer(vb);
             vb = new VertexBuffer(Type.Color);
             fb = BufferUtils.createFloatBuffer(mesh.getVertexCount() * 4);
             vb.setupData(Usage.Static, 4, Format.Float, fb);
@@ -363,14 +415,39 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
         int index = Integer.parseInt(submeshindex);
         int faceCount = Integer.parseInt(numfaces);
         
+        vb = new VertexBuffer(VertexBuffer.Type.Index);
+        sb = BufferUtils.createShortBuffer(faceCount * 3);
+        ib = null;
+        vb.setupData(Usage.Static, 3, Format.UnsignedShort, sb);
+
+        List<VertexBuffer> levels = lodLevels.get(index);
+        if (levels == null){
+            levels = new ArrayList<VertexBuffer>();
+            Mesh submesh = geoms.get(index).getMesh();
+            levels.add(submesh.getBuffer(Type.Index));
+            lodLevels.put(index, levels);
+        }
+
+        levels.add(vb);
     }
 
     private void startLevelOfDetail(String numlevels){
-        numLevels = Integer.parseInt(numlevels);
+//        numLevels = Integer.parseInt(numlevels);
+    }
+
+    private void endLevelOfDetail(){
+        // set the lod data for each mesh
+        for (Entry<List<VertexBuffer>> entry : lodLevels){
+            Mesh m = geoms.get(entry.getKey()).getMesh();
+            List<VertexBuffer> levels = entry.getValue();
+            VertexBuffer[] levelArray = new VertexBuffer[levels.size()];
+            levels.toArray(levelArray);
+            m.setLodLevels(levelArray);
+        }
     }
 
     private void startLodGenerated(String depthsqr){
-        dist = Float.parseFloat(depthsqr);
+//        dist = Float.parseFloat(depthsqr);
     }
 
     private void pushBoneAssign(String vertIndex, String boneIndex, String weight) throws SAXException{
@@ -394,7 +471,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     }
 
     private void startSkeleton(String name){
-        animData = (AnimData) assetManager.loadContent(new AssetKey(name+"xml"));
+        animData = (AnimData) assetManager.loadContent(name+"xml");
     }
 
     @Override
@@ -430,13 +507,13 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             startGeometry(attribs.getValue("vertexcount"));
         }else if (qName.equals("vertexbuffer")){
             startVertexBuffer(attribs);
-//        }else if (qName.equals("lodfacelist")){
-//            startLodFaceList(attribs.getValue("submeshindex"),
-//                             attribs.getValue("numfaces"));
-//        }else if (qName.equals("lodgenerated")){
-//            startLodGenerated(attribs.getValue("fromdepthsquared"));
-//        }else if (qName.equals("levelofdetail")){
-//            startLevelOfDetail(attribs.getValue("numlevels"));
+        }else if (qName.equals("lodfacelist")){
+            startLodFaceList(attribs.getValue("submeshindex"),
+                             attribs.getValue("numfaces"));
+        }else if (qName.equals("lodgenerated")){
+            startLodGenerated(attribs.getValue("fromdepthsquared"));
+        }else if (qName.equals("levelofdetail")){
+            startLevelOfDetail(attribs.getValue("numlevels"));
         }else if (qName.equals("boneassignments")){
             startBoneAssigns();
         }else if (qName.equals("submesh")){
@@ -444,6 +521,8 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
                       attribs.getValue("usesharedvertices"),
                       attribs.getValue("use32bitindexes"),
                       attribs.getValue("operationtype"));
+        }else if (qName.equals("sharedgeometry")){
+            startSharedGeom(attribs.getValue("vertexcount"));
         }else if (qName.equals("submeshes")){
             // ok
         }else if (qName.equals("skeletonlink")){
@@ -468,6 +547,10 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
         if (qName.equals("submesh")){
             geom = null;
             mesh = null;
+        }else if (qName.equals("submeshes")){
+            // IMPORTANT: restore sharedgeoemtry, for use with shared boneweights
+            geom = sharedgeom;
+            mesh = sharedmesh;
         }else if (qName.equals("faces")){
             if (ib != null)
                 ib.flip();
@@ -480,20 +563,26 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
         }else if (qName.equals("vertexbuffer")){
             fb = null;
             vb = null;
-        }else if (qName.equals("geometry")){
+        }else if (qName.equals("geometry")
+               || qName.equals("sharedgeometry")){
             // finish writing to buffers
-            for (VertexBuffer vBuf : mesh.getBuffers()){
-                Buffer data = vBuf.getData();
+            IntMap<VertexBuffer> bufs = mesh.getBuffers();
+            for (Entry<VertexBuffer> entry : bufs){
+                Buffer data = entry.getValue().getData();
                 if (data.position() != 0)
                     data.flip();
             }
-            // update bounds
             mesh.updateBound();
-            
-            // XXX: Only needed for non-animated models!
             mesh.setStatic();
-//            if (AUTO_INTERLEAVE)
-//                mesh.setInterleaved();
+
+            geom = null;
+            mesh = null;
+        }else if (qName.equals("lodfacelist")){
+            sb.flip();
+            vb = null;
+            sb = null;
+        }else if (qName.equals("levelofdetail")){
+            endLevelOfDetail();
         }else if (qName.equals("boneassignments")){
             endBoneAssigns();
         }
@@ -505,6 +594,11 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
 
     private void createBindPose(Mesh mesh){
         VertexBuffer pos = mesh.getBuffer(Type.Position);
+        if (pos == null){
+            // ignore, this mesh doesn't have positional data
+            return;
+        }
+
         VertexBuffer bindPos = new VertexBuffer(Type.BindPosePosition);
         bindPos.setupData(Usage.CpuOnly,
                           3,
@@ -537,16 +631,44 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
 
         Node model;
         if (animData != null){
-            Mesh[] meshes = new Mesh[geoms.size()];
-            for (int i = 0; i < geoms.size(); i++){
-                Mesh m = geoms.get(i).getMesh();
-                // create bind pose
-                createBindPose(m);
-                meshes[i] = m;
-            }
+            ArrayList<Mesh> newMeshes = new ArrayList<Mesh>(geoms.size());
 
-            Map<String, BoneAnimation> anims = new HashMap<String, BoneAnimation>();
-            List<BoneAnimation> animList = animData.anims;
+            // generate bind pose for mesh and add to skin-list
+            // ONLY if not using shared geometry
+            // This includes the shared geoemtry itself actually
+            for (int i = 0; i < geoms.size(); i++){
+                Geometry g = geoms.get(i);
+                Mesh m = geoms.get(i).getMesh();
+                boolean useShared = usesSharedGeom.get(i);
+                // create bind pose
+                if (!useShared){
+                    createBindPose(m);
+                    newMeshes.add(m);
+                }else{
+                    VertexBuffer bindPos  = sharedmesh.getBuffer(Type.BindPosePosition);
+                    VertexBuffer bindNorm = sharedmesh.getBuffer(Type.BindPoseNormal);
+                    VertexBuffer boneIndex = sharedmesh.getBuffer(Type.BoneIndex);
+                    VertexBuffer boneWeight = sharedmesh.getBuffer(Type.BoneWeight);
+                    
+                    if (bindPos != null)
+                        m.setBuffer(bindPos);
+
+                    if (bindNorm != null)
+                        m.setBuffer(bindNorm);
+
+                    if (boneIndex != null)
+                        m.setBuffer(boneIndex);
+
+                    if (boneWeight != null)
+                        m.setBuffer(boneWeight);
+                }
+            }
+            Mesh[] meshes = new Mesh[newMeshes.size()];
+            for (int i = 0; i < meshes.length; i++)
+                meshes[i] = newMeshes.get(i);
+
+            HashMap<String, BoneAnimation> anims = new HashMap<String, BoneAnimation>();
+            ArrayList<BoneAnimation> animList = animData.anims;
             for (int i = 0; i < animList.size(); i++){
                 BoneAnimation anim = animList.get(i);
                 anims.put(anim.getName(), anim);
@@ -559,7 +681,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
 
         for (int i = 0; i < geoms.size(); i++)
             model.attachChild(geoms.get(i));
-
+        
         return model;
     }
 

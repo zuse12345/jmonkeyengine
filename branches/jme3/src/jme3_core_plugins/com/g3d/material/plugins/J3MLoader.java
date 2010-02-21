@@ -154,7 +154,6 @@ public class J3MLoader implements AssetLoader {
             }
 
             TextureKey key = new TextureKey(texturePath, flipY);
-            key.setAnisotropy(0);
             key.setAsCube(p.getType() == MatParamType.TextureCubeMap);
             key.setGenerateMips(true);
 

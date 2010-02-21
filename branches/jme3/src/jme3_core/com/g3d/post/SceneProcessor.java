@@ -16,6 +16,12 @@ public interface SceneProcessor {
     public void initialize(RenderManager rm, ViewPort vp);
 
     /**
+     * Called when the resolution of the viewport has been changed.
+     * @param vp
+     */
+    public void reshape(ViewPort vp, int w, int h);
+
+    /**
      * @return True if initialize() has been called on this SceneProcessor,
      * false if otherwise.
      */

@@ -4,37 +4,28 @@ import com.g3d.light.DirectionalLight;
 import com.g3d.light.Light;
 import com.g3d.light.LightList;
 import com.g3d.light.PointLight;
-import com.g3d.material.Material;
 import com.g3d.material.RenderState;
 import com.g3d.math.ColorRGBA;
 import com.g3d.math.Matrix4f;
-import com.g3d.math.Vector3f;
-import com.g3d.renderer.Camera;
 import com.g3d.renderer.Caps;
 import com.g3d.renderer.GLObjectManager;
 import com.g3d.renderer.RenderContext;
 import com.g3d.renderer.Renderer;
-import com.g3d.renderer.queue.RenderQueue;
-import com.g3d.renderer.queue.RenderQueue.Bucket;
-import com.g3d.renderer.queue.RenderQueue.ShadowMode;
-import com.g3d.scene.Geometry;
 import com.g3d.scene.Mesh;
-import com.g3d.scene.Mesh.Mode;
 import com.g3d.scene.VertexBuffer;
 import com.g3d.scene.VertexBuffer.Type;
 import com.g3d.shader.Shader;
 import com.g3d.shader.Shader.ShaderSource;
-import com.g3d.shader.Uniform;
-import com.g3d.system.jogl.JoglContext;
 import com.g3d.texture.FrameBuffer;
 import com.g3d.texture.Texture;
 import com.g3d.util.BufferUtils;
+import com.g3d.util.IntMap;
+import com.g3d.util.IntMap.Entry;
 import com.g3d.util.TempVars;
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.logging.Logger;
 import javax.media.opengl.GL;
 
@@ -512,7 +503,9 @@ public class JoglRenderer implements Renderer {
 
     public void renderMeshDefault(Mesh mesh, int count) {
         VertexBuffer indices = null;
-        for (VertexBuffer vb : mesh.getBuffers()){
+        IntMap<VertexBuffer> bufs = mesh.getBuffers();
+        for (Entry<VertexBuffer> entry : bufs){
+            VertexBuffer vb = entry.getValue();
             if (vb.getBufferType() == Type.Index){
                 indices = vb;
             }else{
@@ -596,8 +589,9 @@ public class JoglRenderer implements Renderer {
         updateProjection();
         
         boolean dynamic = false;
-        for (VertexBuffer vb : mesh.getBuffers()){
-            if (vb.getUsage() != VertexBuffer.Usage.Static){
+        IntMap<VertexBuffer> bufs = mesh.getBuffers();
+        for (Entry<VertexBuffer> entry : bufs){
+            if (entry.getValue().getUsage() != VertexBuffer.Usage.Static){
                 dynamic = true;
             }
         }

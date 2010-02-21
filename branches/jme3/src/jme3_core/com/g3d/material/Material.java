@@ -40,15 +40,16 @@ public class Material implements Cloneable, Savable {
     }
 
     private MaterialDef def;
-    private Map<String, MatParam> paramValues = new HashMap<String, MatParam>();
+    private HashMap<String, MatParam> paramValues = new HashMap<String, MatParam>();
 //    private final Map<String, MatParamValue> paramValues = new HashMap<String, MatParamValue>();
 //    private final Map<String, MatParamTextureValue> texValues = new HashMap<String, MatParamTextureValue>();
 
     private Technique technique;
-    private Map<String, Technique> techniques = new HashMap<String, Technique>();
+    private HashMap<String, Technique> techniques = new HashMap<String, Technique>();
     private int nextTexUnit = 0;
     private RenderState additionalState = null;
     private boolean transparent = false;
+    private boolean recievesShadows = false;
 
     public static class MatParamValue extends MatParam {
 
@@ -139,25 +140,19 @@ public class Material implements Cloneable, Savable {
             return unit;
         }
 
-        public void tryLoadFromKey(AssetManager manager){
-            if (key != null){
-                value = manager.loadTexture(key);
-                key = null;
-            }
-        }
-
         public void write(G3DExporter ex) throws IOException{
             super.write(ex);
             OutputCapsule oc = ex.getCapsule(this);
             oc.write(unit, "texture_unit", -1);
-            oc.write(value.getTextureKey(), "texture_key", null);
+            oc.write(value, "texture", null);
         }
 
         public void read(G3DImporter im) throws IOException{
             super.read(im);
             InputCapsule ic = im.getCapsule(this);
             unit = ic.readInt("texture_unit", -1);
-            key = (TextureKey) ic.readSavable("texture_key", null);
+            value = (Texture) ic.readSavable("texture", null);
+            key = value.getTextureKey();
         }
     }
 
@@ -192,13 +187,13 @@ public class Material implements Cloneable, Savable {
         def = (MaterialDef) im.getAssetManager().loadContent(new AssetKey(defName));
         additionalState = (RenderState) ic.readSavable("render_state", null);
         transparent = ic.readBoolean("is_transparent", false);
-        paramValues = (Map<String, MatParam>) ic.readStringSavableMap("parameters", null);
+        paramValues = (HashMap<String, MatParam>) ic.readStringSavableMap("parameters", null);
 
         // load the textures and update nextTexUnit
         for (MatParam param : paramValues.values()){
             if (param instanceof MatParamTextureValue){
                 MatParamTextureValue texVal = (MatParamTextureValue) param;
-                texVal.tryLoadFromKey(im.getAssetManager());
+//                texVal.tryLoadFromKey(im.getAssetManager());
                 if (nextTexUnit < texVal.getUnit()+1){
                     nextTexUnit = texVal.getUnit()+1;
                 }
@@ -242,6 +237,14 @@ public class Material implements Cloneable, Savable {
         this.transparent = transparent;
     }
 
+    public boolean isRecievesShadows() {
+        return recievesShadows;
+    }
+
+    public void setRecievesShadows(boolean recievesShadows) {
+        this.recievesShadows = recievesShadows;
+    }
+    
     public RenderState getAdditionalRenderState(){
         if (additionalState == null)
             additionalState = new RenderState();

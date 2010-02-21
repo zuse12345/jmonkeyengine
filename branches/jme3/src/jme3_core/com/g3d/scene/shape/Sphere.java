@@ -83,7 +83,12 @@ public class Sphere extends Mesh {
     public float radius;
 
     protected TextureMode textureMode = TextureMode.Original;
-    
+
+    /**
+     * Empty constructor for serialization only, do not use.
+     */
+    public Sphere(){
+    }
 
     /**
      * Constructs a sphere. All geometry data buffers are updated automatically.

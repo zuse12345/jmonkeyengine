@@ -1,17 +1,21 @@
 package g3dtools.converters.model;
 
+import com.g3d.scene.Geometry;
 import com.g3d.scene.IndexBuffer;
 import com.g3d.scene.Mesh;
 import com.g3d.scene.Mesh.Mode;
+import com.g3d.scene.Node;
+import com.g3d.scene.Spatial;
 import com.g3d.scene.VertexBuffer;
 import com.g3d.scene.VertexBuffer.Format;
 import com.g3d.scene.VertexBuffer.Type;
+import com.g3d.util.IntMap;
+import com.g3d.util.IntMap.Entry;
 import g3dtools.converters.model.strip.PrimitiveGroup;
 import g3dtools.converters.model.strip.TriStrip;
 import java.nio.Buffer;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Map;
 
 public class ModelConverter {
 
@@ -81,71 +85,63 @@ public class ModelConverter {
         mesh.setModeStart(modeStart);
     }
 
-    public static void compressIndexBuffer(Mesh mesh){
-        int vertCount = mesh.getVertexCount();
-        VertexBuffer vb = mesh.getBuffer(Type.Index);
-        Format targetFmt = vb.getFormat();
-        if (vb.getFormat() == Format.UnsignedInt && vertCount <= 0xffff){
-            if (vertCount <= 256)
-                targetFmt = Format.UnsignedByte;
-            else
-                targetFmt = Format.UnsignedShort;
-        }else if (vb.getFormat() == Format.UnsignedShort && vertCount <= 0xff){
-            targetFmt = Format.UnsignedByte;
+    public static void optimize(Mesh mesh){
+        // update any data that need updating
+        mesh.updateBound();
+        mesh.updateCounts();
+
+        // set all buffers into STATIC_DRAW mode
+        mesh.setStatic();
+
+        if (mesh.getBuffer(Type.Index) != null){
+            // compress index buffer from UShort to UByte (if possible)
+            FloatToFixed.compressIndexBuffer(mesh);
+
+            // generate triangle strips stitched with degenerate tris
+            generateStrips(mesh, false, false, 16, 0);
         }
 
-        if (vb.getFormat() == targetFmt)
-            return;
+        IntMap<VertexBuffer> bufs = mesh.getBuffers();
+        for (Entry<VertexBuffer> entry : bufs){
+            VertexBuffer vb = entry.getValue();
+            if (vb == null || vb.getBufferType() == Type.Index)
+                continue;
 
-        IndexBuffer src = mesh.getIndexBuffer();
-        Buffer newBuf = VertexBuffer.createBuffer(targetFmt, vb.getNumComponents(), src.size());
+             if (vb.getFormat() == Format.Float){
+                if (vb.getBufferType() == Type.Color){
+                    // convert the color buffer to UByte
+                    vb = FloatToFixed.convertToUByte(vb);
+                }else{
+                    // convert normals, positions, and texcoords
+                    // to fixed-point (16.16)
+                    vb = FloatToFixed.convertToFixed(vb);
+//                    vb = FloatToFixed.convertToFloat(vb);
+                }
+                mesh.clearBuffer(vb.getBufferType());
+                mesh.setBuffer(vb);
+            }
+        }
+        mesh.setInterleaved();
+    }
 
-        VertexBuffer newVb = new VertexBuffer(Type.Index);
-        newVb.setupData(vb.getUsage(), vb.getNumComponents(), targetFmt, newBuf);
-        mesh.clearBuffer(Type.Index);
-        mesh.setBuffer(newVb);
-
-        IndexBuffer dst = mesh.getIndexBuffer();
-        for (int i = 0; i < src.size(); i++){
-            dst.put(i, src.get(i));
+    private static void optimizeScene(Spatial source){
+        if (source instanceof Geometry){
+            Geometry geom = (Geometry) source;
+            Mesh mesh = geom.getMesh();
+            optimize(mesh);
+        }else if (source instanceof Node){
+            Node node = (Node) source;
+            for (int i = node.getQuantity() - 1; i >= 0; i--){
+                Spatial child = node.getChild(i);
+                optimizeScene(child);
+            }
         }
     }
 
-    private static boolean getBoolean(Map<String, String> params, String param){
-        String val = params.get(param);
-        return val != null && val.equals("true");
-    }
-
-    private static int getInt(Map<String, String> params, String param){
-        String val = params.get(param);
-        try {
-            return Integer.parseInt(val);
-        } catch (NumberFormatException ex){
-            return -1;
-        }
-    }
-
-    public static void convertMeshForAndroid(Mesh mesh){
-        compressIndexBuffer(mesh);
-        generateStrips(mesh, false, false, 24, 4);
-//        FloatToFixed
-
-    }
-
-    public static void convertMesh(Mesh mesh, Map<String, String> params){
-        Format tcFmt  = Format.valueOf(params.get("buffer.texcoord.format"));
-        Format posFmt = Format.valueOf(params.get("buffer.position.format"));
-        Format clrFmt = Format.valueOf(params.get("buffer.color.format"));
-        Format nmFmt = Format.valueOf(params.get("buffer.normal.format"));
-        boolean strip = getBoolean(params, "tristrip.enabled");
-        boolean compIdx = getBoolean(params, "buffer.index.compress");
-
-        if (strip){
-            int cacheSize = getInt(params, "tristrip.cachesize");
-            boolean listOnly = getBoolean(params, "tristrip.listonly");
-            int minStripSize = getInt(params, "tristrip.minstripsize");
-            
-        }
+    public static void optimize(Spatial source){
+        optimizeScene(source);
+        source.updateLogicalState(0);
+        source.updateGeometricState();
     }
 
 }

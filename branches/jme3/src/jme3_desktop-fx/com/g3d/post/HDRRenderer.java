@@ -224,6 +224,40 @@ public class HDRRenderer implements SceneProcessor {
         return viewPort != null;
     }
 
+    public void reshape(ViewPort vp, int w, int h){
+        if (mainSceneFB != null){
+            renderer.deleteFrameBuffer(mainSceneFB);
+        }
+
+        mainSceneFB = new FrameBuffer(w, h, 0);
+        mainScene = new Texture2D(w, h, bufFormat);
+        mainSceneFB.setDepthBuffer(Format.Depth);
+        mainSceneFB.setColorTexture(mainScene);
+        mainScene.setMagFilter(fbMagFilter);
+        mainScene.setMinFilter(fbMinFilter);
+
+        if (msFB != null){
+            renderer.deleteFrameBuffer(msFB);
+        }
+
+        tone.setTexture("m_Texture", mainScene);
+        
+        Collection<Caps> caps = renderer.getCaps();
+        if (numSamples > 1 && caps.contains(Caps.FrameBufferMultisample)){
+            msFB = new FrameBuffer(w, h, numSamples);
+            msFB.setDepthBuffer(Format.Depth);
+            msFB.setColorBuffer(bufFormat);
+            vp.setOutputFrameBuffer(msFB);
+        }else{
+            if (numSamples > 1)
+                logger.warning("FBO multisampling not supported on this GPU, request ignored.");
+
+            vp.setOutputFrameBuffer(mainSceneFB);
+        }
+
+        createLumShaders();
+    }
+
     public void initialize(RenderManager rm, ViewPort vp){
         if (!enabled)
             return;
@@ -256,37 +290,17 @@ public class HDRRenderer implements SceneProcessor {
         scene1[1] = new Texture2D(1, 1, lumFmt);
         scene1FB[1].setColorTexture(scene1[1]);
 
-        // load();
-        int w = vp.getCamera().getWidth();
-        int h = vp.getCamera().getHeight();
-
-        mainSceneFB = new FrameBuffer(w, h, 0);
-        mainScene = new Texture2D(w, h, bufFormat);
-        mainSceneFB.setDepthBuffer(Format.Depth);
-        mainSceneFB.setColorTexture(mainScene);
-        mainScene.setMagFilter(fbMagFilter);
-        mainScene.setMinFilter(fbMinFilter);
-
-        Collection<Caps> caps = renderer.getCaps();
-        if (numSamples > 1 && caps.contains(Caps.FrameBufferMultisample)){
-            msFB = new FrameBuffer(w, h, numSamples);
-            msFB.setDepthBuffer(Format.Depth);
-            msFB.setColorBuffer(bufFormat);
-            vp.setOutputFrameBuffer(msFB);
-        }else{
-            if (numSamples > 1)
-                logger.warning("FBO multisampling not supported on this GPU, request ignored.");
-
-            vp.setOutputFrameBuffer(mainSceneFB);
-        }
-
         // prepare tonemap shader
         tone = new Material(manager, "tonemap.j3md");
-        tone.setTexture("m_Texture", mainScene);
         tone.setFloat("m_A", 0.18f);
         tone.setFloat("m_White", 100);
 
-        createLumShaders();
+        // load();
+        int w = vp.getCamera().getWidth();
+        int h = vp.getCamera().getHeight();
+        reshape(vp, w, h);
+
+        
     }
 
     public void preFrame(float tpf) {

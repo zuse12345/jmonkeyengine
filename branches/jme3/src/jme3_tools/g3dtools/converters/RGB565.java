@@ -3,13 +3,13 @@
  * and open the template in the editor.
  */
 
-package g3dtools.converters.palette;
+package g3dtools.converters;
 
 /**
  *
  * @author Kirill
  */
-public class PaletteUtil {
+public class RGB565 {
 
     public static short ARGB8_to_RGB565(int argb){
         int a = (argb & 0xFF000000) >> 24;

@@ -13,8 +13,8 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  *
- * * Neither the name of 'jMonkeyEngine' nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of 'jMonkeyEngine' nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -34,6 +34,8 @@ package com.g3d.export.binary;
 
 import com.g3d.export.OutputCapsule;
 import com.g3d.export.Savable;
+import com.g3d.util.IntMap;
+import com.g3d.util.IntMap.Entry;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -43,13 +45,12 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.List;
 import java.util.Map;
 
 /**
  * @author Joshua Slack
  */
-public class BinaryOutputCapsule implements OutputCapsule {
+final class BinaryOutputCapsule implements OutputCapsule {
 
     public static final int NULL_OBJECT = -1;
     public static final int DEFAULT_OBJECT = -2;
@@ -321,44 +322,44 @@ public class BinaryOutputCapsule implements OutputCapsule {
         write(value);
     }
 
-    public void writeFloatBufferList(List<FloatBuffer> array,
-            String name, List<FloatBuffer> defVal) throws IOException {
+    public void writeFloatBufferArrayList(ArrayList<FloatBuffer> array,
+            String name, ArrayList<FloatBuffer> defVal) throws IOException {
         if (array == defVal)
             return;
         writeAlias(name, BinaryClassField.FLOATBUFFER_ARRAYLIST);
-        writeFloatBufferList(array);
+        writeFloatBufferArrayList(array);
     }
 
-    public void writeByteBufferList(List<ByteBuffer> array,
-            String name, List<ByteBuffer> defVal) throws IOException {
+    public void writeByteBufferArrayList(ArrayList<ByteBuffer> array,
+            String name, ArrayList<ByteBuffer> defVal) throws IOException {
         if (array == defVal)
             return;
         writeAlias(name, BinaryClassField.BYTEBUFFER_ARRAYLIST);
-        writeByteBufferList(array);
+        writeByteBufferArrayList(array);
     }
 
-    public void writeSavableList(List array, String name,
-            List defVal) throws IOException {
+    public void writeSavableArrayList(ArrayList array, String name,
+            ArrayList defVal) throws IOException {
         if (array == defVal)
             return;
         writeAlias(name, BinaryClassField.SAVABLE_ARRAYLIST);
-        writeSavableList(array);
+        writeSavableArrayList(array);
     }
 
-    public void writeSavableListArray(List[] array, String name,
-            List[] defVal) throws IOException {
+    public void writeSavableArrayListArray(ArrayList[] array, String name,
+            ArrayList[] defVal) throws IOException {
         if (array == defVal)
             return;
         writeAlias(name, BinaryClassField.SAVABLE_ARRAYLIST_1D);
-        writeSavableListArray(array);
+        writeSavableArrayListArray(array);
     }
 
-    public void writeSavableListArray2D(List[][] array, String name,
-            List[][] defVal) throws IOException {
+    public void writeSavableArrayListArray2D(ArrayList[][] array, String name,
+            ArrayList[][] defVal) throws IOException {
         if (array == defVal)
             return;
         writeAlias(name, BinaryClassField.SAVABLE_ARRAYLIST_2D);
-        writeSavableListArray2D(array);
+        writeSavableArrayListArray2D(array);
     }
 
     public void writeSavableMap(Map<? extends Savable, ? extends Savable> map,
@@ -377,6 +378,15 @@ public class BinaryOutputCapsule implements OutputCapsule {
             return;
         writeAlias(name, BinaryClassField.STRING_SAVABLE_MAP);
         writeStringSavableMap(map);
+    }
+
+    public void writeIntSavableMap(IntMap<? extends Savable> map,
+            String name, IntMap<? extends Savable> defVal)
+            throws IOException {
+        if (map == defVal)
+            return;
+        writeAlias(name, BinaryClassField.INT_SAVABLE_MAP);
+        writeIntSavableMap(map);
     }
 
     protected void writeAlias(String name, byte fieldType) throws IOException {
@@ -421,6 +431,10 @@ public class BinaryOutputCapsule implements OutputCapsule {
         baos.write(value);
     }
 
+    protected void writeForBuffer(byte value) throws IOException {
+        baos.write(value);
+    }
+    
     protected void write(byte[] value) throws IOException {
         if (value == null) {
             write(NULL_OBJECT);
@@ -444,6 +458,15 @@ public class BinaryOutputCapsule implements OutputCapsule {
 
     protected void write(int value) throws IOException {
         baos.write(deflate(ByteUtils.convertToBytes(value)));
+    }
+
+    protected void writeForBuffer(int value) throws IOException {
+        byte[] byteArray = new byte[4];
+        byteArray[0] = (byte) value;
+        byteArray[1] = (byte) (value >> 8);
+        byteArray[2] = (byte) (value >> 16);
+        byteArray[3] = (byte) (value >> 24);
+        baos.write(byteArray);
     }
 
     protected void write(int[] value) throws IOException {
@@ -470,6 +493,11 @@ public class BinaryOutputCapsule implements OutputCapsule {
 
     protected void write(float value) throws IOException {
         baos.write(ByteUtils.convertToBytes(value));
+    }
+
+    protected void writeForBuffer(float value) throws IOException {
+        int integer = Float.floatToIntBits(value);
+        writeForBuffer(integer);
     }
 
     protected void write(float[] value) throws IOException {
@@ -550,6 +578,13 @@ public class BinaryOutputCapsule implements OutputCapsule {
         baos.write(ByteUtils.convertToBytes(value));
     }
 
+    protected void writeForBuffer(short value) throws IOException {
+        byte[] byteArray = new byte[2];
+        byteArray[0] = (byte) value;
+        byteArray[1] = (byte) (value >> 8);
+        baos.write(byteArray);
+    }
+
     protected void write(short[] value) throws IOException {
         if (value == null) {
             write(NULL_OBJECT);
@@ -603,7 +638,7 @@ public class BinaryOutputCapsule implements OutputCapsule {
             write(NULL_OBJECT);
             return;
         }
-        // write our output as UTF-8. Java misspells UTF-8 as UTF8 for official use in java.lang 
+        // write our output as UTF-8. Java misspells UTF-8 as UTF8 for official use in java.lang
         byte[] bytes = value.getBytes("UTF8");
         write(bytes.length);
         baos.write(bytes);
@@ -706,7 +741,7 @@ public class BinaryOutputCapsule implements OutputCapsule {
 
     // ArrayList<BinarySavable>
 
-    protected void writeSavableList(List array) throws IOException {
+    protected void writeSavableArrayList(ArrayList array) throws IOException {
         if (array == null) {
             write(NULL_OBJECT);
             return;
@@ -717,27 +752,27 @@ public class BinaryOutputCapsule implements OutputCapsule {
         }
     }
 
-    protected void writeSavableListArray(List[] array)
+    protected void writeSavableArrayListArray(ArrayList[] array)
             throws IOException {
         if (array == null) {
             write(NULL_OBJECT);
             return;
         }
         write(array.length);
-        for (List bs : array) {
-            writeSavableList(bs);
+        for (ArrayList bs : array) {
+            writeSavableArrayList(bs);
         }
     }
 
-    protected void writeSavableListArray2D(List[][] array)
+    protected void writeSavableArrayListArray2D(ArrayList[][] array)
             throws IOException {
         if (array == null) {
             write(NULL_OBJECT);
             return;
         }
         write(array.length);
-        for (List[] bs : array) {
-            writeSavableListArray(bs);
+        for (ArrayList[] bs : array) {
+            writeSavableArrayListArray(bs);
         }
     }
 
@@ -772,9 +807,33 @@ public class BinaryOutputCapsule implements OutputCapsule {
         write(values);
     }
 
+    protected void writeIntSavableMap(IntMap<? extends Savable> array)
+            throws IOException {
+        if (array == null) {
+            write(NULL_OBJECT);
+            return;
+        }
+        write(array.size());
+
+        int[] keys = new int[array.size()];
+        Savable[] values = new Savable[keys.length];
+        int i = 0;
+        for (Entry<? extends Savable> entry : array){
+            keys[i] = entry.getKey();
+            values[i] = entry.getValue();
+            i++;
+        }
+
+        // write String array for keys
+        write(keys);
+
+        // write Savable array for values
+        write(values);
+    }
+
     // ArrayList<FloatBuffer>
 
-    protected void writeFloatBufferList(List<FloatBuffer> array)
+    protected void writeFloatBufferArrayList(ArrayList<FloatBuffer> array)
             throws IOException {
         if (array == null) {
             write(NULL_OBJECT);
@@ -788,7 +847,7 @@ public class BinaryOutputCapsule implements OutputCapsule {
 
     // ArrayList<FloatBuffer>
 
-    protected void writeByteBufferList(List<ByteBuffer> array)
+    protected void writeByteBufferArrayList(ArrayList<ByteBuffer> array)
             throws IOException {
         if (array == null) {
             write(NULL_OBJECT);
@@ -810,13 +869,10 @@ public class BinaryOutputCapsule implements OutputCapsule {
         }
         value.rewind();
         int length = value.limit();
-        if (value.isDirect() || length == 0)
-            write(length);
-        else
-            write(-length-1);
-
+        write(length);
         for (int x = 0; x < length; x++) {
-            write(value.get());
+//            write(value.get());
+            writeForBuffer(value.get());
         }
         value.rewind();
     }
@@ -830,13 +886,11 @@ public class BinaryOutputCapsule implements OutputCapsule {
         }
         value.rewind();
         int length = value.limit();
-        if (value.isDirect() || length == 0)
-            write(length);
-        else
-            write(-length-1);
+        write(length);
 
         for (int x = 0; x < length; x++) {
-            write(value.get());
+//            write(value.get());
+            writeForBuffer(value.get());
         }
         value.rewind();
     }
@@ -850,13 +904,9 @@ public class BinaryOutputCapsule implements OutputCapsule {
         }
         value.rewind();
         int length = value.limit();
-        if (value.isDirect() || length == 0)
-            write(length);
-        else
-            write(-length-1);
-
+        write(length);
         for (int x = 0; x < length; x++) {
-            write(value.get());
+            writeForBuffer(value.get());
         }
         value.rewind();
     }
@@ -870,13 +920,9 @@ public class BinaryOutputCapsule implements OutputCapsule {
         }
         value.rewind();
         int length = value.limit();
-        if (value.isDirect() || length == 0)
-            write(length);
-        else
-            write(-length-1);
-        
+        write(length);
         for (int x = 0; x < length; x++) {
-            write(value.get());
+            writeForBuffer(value.get());
         }
         value.rewind();
     }

@@ -13,8 +13,8 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  *
- * * Neither the name of 'jMonkeyEngine' nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of 'jMonkeyEngine' nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -137,52 +137,49 @@ import java.util.logging.Logger;
  * 18. "field data" - 1...X bytes representing the field data. The data length
  * is dependent on the field type and contents.
  * </p>
- * 
+ *
  * @author Joshua Slack
  */
 
-public final class BinaryExporter implements G3DExporter {
+public class BinaryExporter implements G3DExporter {
     private static final Logger logger = Logger.getLogger(BinaryExporter.class
             .getName());
-    
+
     //TODO: Provide better cleanup and reuse of this class.
     protected int aliasCount = 1;
     protected int idCount = 1;
 
-    protected IdentityHashMap<Savable, BinaryIdContentPair> contentTable;
+    protected IdentityHashMap<Savable, BinaryIdContentPair> contentTable
+             = new IdentityHashMap<Savable, BinaryIdContentPair>();
 
-    protected HashMap<Integer, Integer> locationTable;
+    protected HashMap<Integer, Integer> locationTable
+             = new HashMap<Integer, Integer>();
 
     // key - class name, value = bco
-    private HashMap<String, BinaryClassObject> classes;
+    private HashMap<String, BinaryClassObject> classes
+             = new HashMap<String, BinaryClassObject>();
 
     private ArrayList<Savable> contentKeys = new ArrayList<Savable>();
-    
-    public static final boolean debug = true;
+
+    public static boolean debug = false;
+    public static boolean useFastBufs = true;
 
     public BinaryExporter() {
-        classes = new HashMap<String, BinaryClassObject>();
-        contentTable = new IdentityHashMap<Savable, BinaryIdContentPair>();
-        locationTable = new HashMap<Integer, Integer>();
     }
 
     public static BinaryExporter getInstance() {
         return new BinaryExporter();
     }
 
-    private void reset(){
+    public boolean save(Savable object, OutputStream os) throws IOException {
+        // reset some vars
         aliasCount = 1;
         idCount = 1;
-
         classes.clear();
         contentTable.clear();
         locationTable.clear();
-
         contentKeys.clear();
-    }
-
-    public boolean save(Savable object, OutputStream os) throws IOException {
-        reset();
+        
         int id = processBinarySavable(object);
 
         // write out tag table
@@ -194,7 +191,7 @@ public final class BinaryExporter implements G3DExporter {
         os.write(ByteUtils.convertToBytes(classNum));
         for (String key : classes.keySet()) {
             BinaryClassObject bco = classes.get(key);
-            
+
             // write alias
             byte[] aliasBytes = fixClassAlias(bco.alias,
                     aliasWidth);
@@ -208,12 +205,12 @@ public final class BinaryExporter implements G3DExporter {
             ttbytes += 4 + classBytes.length;
 
             os.write(ByteUtils.convertToBytes(bco.nameFields.size()));
-            
+
             for (String fieldName : bco.nameFields.keySet()) {
                 BinaryClassField bcf = bco.nameFields.get(fieldName);
                 os.write(bcf.alias);
                 os.write(bcf.type);
-                
+
                 // write classname size & classname
                 byte[] fNameBytes = fieldName.getBytes();
                 os.write(ByteUtils.convertToBytes(fNameBytes.length));
@@ -238,8 +235,8 @@ public final class BinaryExporter implements G3DExporter {
             if (prevLoc != -1) {
                 locationTable.put(pair.getId(), prevLoc);
                 continue;
-            } 
-                
+            }
+
             locationTable.put(pair.getId(), location);
             if (bucket == null) {
                 bucket = new ArrayList<BinaryIdContentPair>();
@@ -266,7 +263,7 @@ public final class BinaryExporter implements G3DExporter {
             os.write(ByteUtils.convertToBytes(locationTable.get(key)));
             locbytes += 8;
         }
-        
+
         // write out number of root ids - hardcoded 1 for now
         os.write(ByteUtils.convertToBytes(1));
 
@@ -276,8 +273,7 @@ public final class BinaryExporter implements G3DExporter {
         // append stream to the output stream
         out.writeTo(os);
 
-        os.close();
-        
+
         out = null;
         os = null;
 
@@ -325,7 +321,7 @@ public final class BinaryExporter implements G3DExporter {
         if(parentDirectory != null && !parentDirectory.exists()) {
             parentDirectory.mkdirs();
         }
-        
+
         FileOutputStream fos = new FileOutputStream(f);
         boolean rVal = save(object, fos);
         fos.close();
@@ -377,7 +373,7 @@ public final class BinaryExporter implements G3DExporter {
         }
         return bytes;
     }
-    
+
     protected BinaryIdContentPair generateIdContentPair(BinaryClassObject bco) {
         BinaryIdContentPair pair = new BinaryIdContentPair(idCount++,
                 new BinaryOutputCapsule(this, bco));

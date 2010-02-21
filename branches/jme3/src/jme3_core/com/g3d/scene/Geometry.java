@@ -9,6 +9,7 @@ import com.g3d.export.InputCapsule;
 import com.g3d.export.OutputCapsule;
 import com.g3d.material.Material;
 import com.g3d.math.Matrix4f;
+import com.g3d.scene.VertexBuffer.Type;
 import com.g3d.util.TempVars;
 import java.io.IOException;
 
@@ -115,7 +116,6 @@ public class Geometry extends Spatial {
         super.updateWorldTransforms();
 
         cachedWorldMat.loadIdentity();
-
         cachedWorldMat.setRotationQuaternion(worldTransform.getRotation());
         cachedWorldMat.setTranslation(worldTransform.getTranslation());
 
@@ -132,6 +132,11 @@ public class Geometry extends Spatial {
 
     public Matrix4f getWorldMatrix(){
         return cachedWorldMat;
+    }
+
+    public void setLodLevel(int lod){
+        if (mesh != null)
+            mesh.setLodLevel(lod);
     }
 
     @Override
@@ -154,12 +159,37 @@ public class Geometry extends Spatial {
         return 0;
     }
 
+    /**
+     * This version of clone is a shallow clone, in other words, the
+     * same mesh is referenced as the original geometry.
+     * Exception: if the mesh is marked as being a software
+     * animated mesh, (bind pose is set) then the positions
+     * and normals are deep copied.
+     * @return
+     */
     @Override
     public Geometry clone(){
         Geometry geomClone = (Geometry) super.clone();
         geomClone.cachedWorldMat = cachedWorldMat.clone();
         if (material != null)
-                geomClone.material = material.clone();
+            geomClone.material = material.clone();
+        
+        if (mesh.getBuffer(Type.BindPosePosition) != null){
+            geomClone.mesh = mesh.cloneForAnim();
+        }
+        return geomClone;
+    }
+
+    /**
+     * Creates a deep clone of the geometry,
+     * this creates an identical copy of the mesh
+     * with the vertexbuffer data duplicated.
+     * @return
+     */
+    @Override
+    public Spatial deepClone(){
+        Geometry geomClone = clone();
+        geomClone.mesh = mesh.deepClone();
         return geomClone;
     }
 

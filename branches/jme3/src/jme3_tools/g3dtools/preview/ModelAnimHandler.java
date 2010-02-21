@@ -3,6 +3,10 @@ package g3dtools.preview;
 import com.g3d.animation.Model;
 import com.g3d.app.Application;
 import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ModelAnimHandler implements IAnimationHandler {
 
@@ -18,29 +22,48 @@ public class ModelAnimHandler implements IAnimationHandler {
     }
 
     public Collection<String> list() {
-        app.lock();
-        Collection<String> anims = model.getAnimationNames();
-        app.unlock();
-        return anims;
+        try{
+            Collection<String> anims = (Collection<String>) app.enqueue(new Callable<Collection<String>>(){
+            public Collection<String> call() throws Exception {
+                return model.getAnimationNames();
+            }
+        }).get();
+            return anims;
+        }catch (InterruptedException ex){
+            Logger.getLogger(ModelAnimHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }catch (ExecutionException ex){
+            Logger.getLogger(ModelAnimHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
-    public float getLength(String name) {
-        app.lock();
-        float len = model.getAnimationLength(name);
-        app.unlock();
-        return len;
+    public float getLength(final String name) {
+        try{
+            float len = app.enqueue(new Callable<Float>() {
+                public Float call() throws Exception {
+                    return model.getAnimationLength(name);
+                }
+            }).get();
+            return len;
+        }catch (InterruptedException ex){
+            Logger.getLogger(ModelAnimHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }catch (ExecutionException ex){
+            Logger.getLogger(ModelAnimHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return 0;
     }
 
-    public void play(String name) {
-        app.lock();
-        model.setAnimation(name);
-        app.unlock();
+    public void play(final String name) {
+        app.enqueue(new Callable<Void>() {
+            public Void call() throws Exception {
+                model.setAnimation(name);
+                return null;
+            }
+        });
     }
 
     public void blendTo(String name, float time) {
-        app.lock();
-        model.setAnimation(name);
-        app.unlock();
+        play(name);
     }
 
     public void setSpeed(float speed) {
@@ -51,10 +74,18 @@ public class ModelAnimHandler implements IAnimationHandler {
     }
 
     public String getCurrent() {
-        app.lock();
-        String cur = model.getCurrentAnimation();
-        app.unlock();
-        return cur;
+        try{
+            return app.enqueue(new Callable<String>() {
+                public String call() throws Exception {
+                    return model.getCurrentAnimation();
+                }
+            }).get();
+        }catch (InterruptedException ex){
+            Logger.getLogger(ModelAnimHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }catch (ExecutionException ex){
+            Logger.getLogger(ModelAnimHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
 }

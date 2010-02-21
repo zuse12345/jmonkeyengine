@@ -26,9 +26,9 @@ public class RenderManager {
 
     private Renderer renderer;
     private Timer timer;
-    private List<ViewPort> preViewPorts = new ArrayList<ViewPort>();
-    private List<ViewPort> viewPorts = new ArrayList<ViewPort>();
-    private List<ViewPort> postViewPorts = new ArrayList<ViewPort>();
+    private ArrayList<ViewPort> preViewPorts = new ArrayList<ViewPort>();
+    private ArrayList<ViewPort> viewPorts = new ArrayList<ViewPort>();
+    private ArrayList<ViewPort> postViewPorts = new ArrayList<ViewPort>();
     private Camera prevCam = null;
     private Material forcedMaterial = null;
     private final boolean shader;
@@ -79,6 +79,17 @@ public class RenderManager {
         return vp;
      }
 
+     private void notifyReshape(ViewPort vp, int w, int h){
+        List<SceneProcessor> processors = vp.getProcessors();
+        for (SceneProcessor proc : processors){
+            if (!proc.isInitialized()){
+                proc.initialize(this, vp);
+            }else{
+                proc.reshape(vp, w, h);
+            }
+        }
+     }
+
      /**
       * @param w
       * @param h
@@ -89,18 +100,21 @@ public class RenderManager {
                 Camera cam = vp.getCamera();
                 cam.resize(w, h, true);
             }
+            notifyReshape(vp, w, h);
         }
         for (ViewPort vp : viewPorts){
             if (vp.getOutputFrameBuffer() == null){
                 Camera cam = vp.getCamera();
                 cam.resize(w, h, true);
             }
+            notifyReshape(vp, w, h);
         }
         for (ViewPort vp : postViewPorts){
             if (vp.getOutputFrameBuffer() == null){
                 Camera cam = vp.getCamera();
                 cam.resize(w, h, true);
             }
+            notifyReshape(vp, w, h);
         }
     }
 

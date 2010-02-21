@@ -81,8 +81,11 @@ public class Texture2D extends Texture {
         super(id);
     }
 
+    @Override
     public Texture createSimpleClone() {
-        return createSimpleClone(new Texture2D());
+        Texture2D clone = new Texture2D();
+        createSimpleClone(clone);
+        return clone;
     }
 
     @Override

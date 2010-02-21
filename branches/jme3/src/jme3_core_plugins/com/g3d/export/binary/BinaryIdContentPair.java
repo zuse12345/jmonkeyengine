@@ -32,28 +32,29 @@
 
 package com.g3d.export.binary;
 
-public class BinaryIdContentPair {
+class BinaryIdContentPair {
+
     private int id;
     private BinaryOutputCapsule content;
     
-    public BinaryIdContentPair(int id, BinaryOutputCapsule content) {
+    BinaryIdContentPair(int id, BinaryOutputCapsule content) {
         this.id = id;
         this.content = content;
     }
 
-    public BinaryOutputCapsule getContent() {
+    BinaryOutputCapsule getContent() {
         return content;
     }
 
-    public void setContent(BinaryOutputCapsule content) {
+    void setContent(BinaryOutputCapsule content) {
         this.content = content;
     }
 
-    public int getId() {
+    int getId() {
         return id;
     }
 
-    public void setId(int id) {
+    void setId(int id) {
         this.id = id;
     }
 }

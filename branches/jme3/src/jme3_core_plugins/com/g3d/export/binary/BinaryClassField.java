@@ -32,7 +32,7 @@
 
 package com.g3d.export.binary;
 
-public class BinaryClassField {
+class BinaryClassField {
 
     public static final byte BYTE = 0;
     public static final byte BYTE_1D = 1;
@@ -78,6 +78,7 @@ public class BinaryClassField {
     
     public static final byte SAVABLE_MAP = 105;
     public static final byte STRING_SAVABLE_MAP = 106;
+    public static final byte INT_SAVABLE_MAP = 107;
     
     public static final byte FLOATBUFFER_ARRAYLIST = 110;
     public static final byte BYTEBUFFER_ARRAYLIST = 111;
@@ -88,11 +89,11 @@ public class BinaryClassField {
     public static final byte SHORTBUFFER = 123;
 
     
-    public byte type;
-    public String name;
-    public byte alias;
+    byte type;
+    String name;
+    byte alias;
 
-    public BinaryClassField(String name, byte alias, byte type) {
+    BinaryClassField(String name, byte alias, byte type) {
         this.name = name;
         this.alias = alias;
         this.type = type;

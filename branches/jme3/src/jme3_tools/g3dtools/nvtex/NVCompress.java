@@ -7,7 +7,6 @@ import com.g3d.texture.Image;
 import com.g3d.texture.Texture;
 import g3dtools.converters.ImageToAwt;
 import g3dtools.converters.MipMapGenerator;
-import g3dtools.converters.palette.PaletteTextureConverter;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -435,17 +434,13 @@ public class NVCompress extends javax.swing.JFrame {
         if (mips && !image.hasMipmaps()){
             MipMapGenerator.generateMipMaps(image);
         }
-        if (format.startsWith("P")){
-            image = PaletteTextureConverter.encodePaletteTexture(image);
-            tex.setImage(image);
-        }
         if (output == null){
             output = new File(input.getParent(), input.getName() + ".j3i");
         }
 
         try{
             BinaryExporter.getInstance().save(image, output);
-            BufferedImage preview = ImageToAwt.convert(image, false, 0);
+            BufferedImage preview = ImageToAwt.convert(image, false, true, 0);
             ImageIO.write(preview, "png", new File(output + ".png"));
         }catch (IOException ex){
         }

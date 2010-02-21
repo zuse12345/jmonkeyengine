@@ -149,4 +149,7 @@ public class BasicShadowRenderer implements SceneProcessor {
     public void cleanup() {
     }
 
+    public void reshape(ViewPort vp, int w, int h) {
+    }
+
 }

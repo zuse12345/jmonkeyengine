@@ -40,7 +40,7 @@ public class TestOgreConvert extends SimpleApplication {
             fos.close();
 
             FileInputStream fis = new FileInputStream("C:\\mymodel.j3o");
-            BinaryImporter imp = new BinaryImporter(manager);
+            BinaryImporter imp = new BinaryImporter();
             Model ogreModelReloaded = (Model) imp.load(fis, null, null);
             ogreModelReloaded.setAnimation("push");
             fis.close();

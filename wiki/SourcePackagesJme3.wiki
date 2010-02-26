@@ -30,6 +30,7 @@ In order to support both Desktop and Android Java platforms, it is necessary to 
  * jme3_pack - J3P (jME3 package) format. Contains j3p locators for file system and http, as well as generators.
  * jme3_ogre - The Ogre3D model and scene loader. Currently the best supported model loader for jme3. Supports skeletal and vertex animation, scene loading, and materials.
  * jme3_jogg - OGG/Vorbis loader. Required to read .ogg sound files. Jars in /lib/jogg/ must be included in the classpath to use it.
+ * jme3_jbullet - physics implementation for jme3 based on bullet. Libraries: /lib/jbullet/*
 
 = Tests, Games and Tools =
 

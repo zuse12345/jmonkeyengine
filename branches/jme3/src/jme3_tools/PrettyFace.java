@@ -1,10 +1,10 @@
 
-import com.g3d.math.FastMath;
-import com.g3d.math.Triangle;
-import com.g3d.math.Triangle;
-import com.g3d.math.Vector2f;
-import com.g3d.math.Vector3f;
-import com.g3d.scene.Mesh;
+import com.jme3.math.FastMath;
+import com.jme3.math.Triangle;
+import com.jme3.math.Triangle;
+import com.jme3.math.Vector2f;
+import com.jme3.math.Vector3f;
+import com.jme3.scene.Mesh;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import static com.g3d.math.FastMath.*;
+import static com.jme3.math.FastMath.*;
 
 public class PrettyFace {
 

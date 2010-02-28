@@ -96,8 +96,18 @@ public class PhysicsNode extends CollisionObject{
     }
 
     /**
+     * creates a new PhysicsNode with the supplied collision shape
+     * @param child
+     * @param shape
+     */
+    public PhysicsNode(CollisionShape shape){
+        collisionShape=shape;
+        rebuildBody=true;
+    }
+
+    /**
      * creates a new PhysicsNode with the supplied child node or geometry and
-     * uses the supplied collision shape for that PhysicsNode<br>
+     * sets the supplied collision shape to the PhysicsNode
      * @param child
      * @param shape
      */
@@ -149,11 +159,11 @@ public class PhysicsNode extends CollisionObject{
 //            rBody.setAngularVelocity(vec);
             PhysicsSpace.getPhysicsSpace().add(this);
         }
+        applyProperties=true;
         rebuildBody=false;
     }
 
     protected void preRebuild(){
-//        motionState.setWorldTransform(getWorldTranslation(), getWorldRotation());
         collisionShape.calculateLocalInertia(mass, localInertia);
         if(constructionInfo==null)
             constructionInfo=new RigidBodyConstructionInfo(mass, motionState, collisionShape.getCShape(), localInertia);
@@ -179,67 +189,6 @@ public class PhysicsNode extends CollisionObject{
             rBody.setCollisionFlags( rBody.getCollisionFlags() & ~CollisionFlags.STATIC_OBJECT );
         }
     }
-
-//    /**
-//     * sets the local translation of this node
-//     * @param arg0
-//     */
-//    @Override
-//    public void setLocalTranslation(Vector3f arg0) {
-//        super.setLocalTranslation(arg0);
-//        applyTranslation();
-//    }
-//
-//    /**
-//     * sets the local translation of this node
-//     */
-//    @Override
-//    public void setLocalTranslation(float x, float y, float z) {
-//        super.setLocalTranslation(x, y, z);
-//        applyTranslation();
-//    }
-//
-//    private void applyTranslation() {
-//        setDirty(true);
-//    }
-//
-//    /**
-//     * sets the local rotation of this node, the physics object will be updated accordingly
-//     * in the next global physics update tick
-//     * @param arg0
-//     */
-//    @Override
-//    public void setLocalRotation(Matrix3f arg0) {
-//        super.setLocalRotation(arg0);
-//        applyRotation();
-//    }
-//
-//    /**
-//     * sets the local rotation of this node, the physics object will be updated accordingly
-//     * in the next global physics update tick
-//     * @param arg0
-//     */
-//    @Override
-//    public void setLocalRotation(Quaternion arg0) {
-//        super.setLocalRotation(arg0);
-//        applyRotation();
-//    }
-//
-//    @Override
-//    public void lookAt(Vector3f position, Vector3f upVector) {
-//        super.lookAt(position, upVector);
-//        applyRotation();
-//    }
-//
-//    @Override
-//    public void rotateUpTo(Vector3f newUp) {
-//        super.rotateUpTo(newUp);
-//        applyRotation();
-//    }
-//
-//    private void applyRotation() {
-//        dirty=true;
-//    }
 
     @Override
     public void setLocalScale(float localScale) {
@@ -342,7 +291,6 @@ public class PhysicsNode extends CollisionObject{
         gravity.set(this.gravity);
         //TODO: gravity
         applyProperties=true;
-        applyProperties();
     }
 
     /**
@@ -352,7 +300,6 @@ public class PhysicsNode extends CollisionObject{
     public void setGravity(Vector3f gravity){
         this.gravity.set(gravity);
         applyProperties=true;
-        applyProperties();
     }
 
     public synchronized float getFriction() {
@@ -366,14 +313,12 @@ public class PhysicsNode extends CollisionObject{
     public void setFriction(float friction){
         this.friction=friction;
         applyProperties=true;
-        applyProperties();
     }
 
     public void setDamping(float linearDamping,float angularDamping){
         this.linearDamping = linearDamping;
         this.angularDamping = angularDamping;
         applyProperties=true;
-        applyProperties();
     }
 
     public float getRestitution() {
@@ -388,7 +333,6 @@ public class PhysicsNode extends CollisionObject{
     public void setRestitution(float restitution) {
         this.restitution=restitution;
         applyProperties=true;
-        applyProperties();
     }
 
     /**
@@ -694,8 +638,6 @@ public class PhysicsNode extends CollisionObject{
         this.linearSleepingThreshold=linear;
         this.angularSleepingThreshold=angular;
         applyProperties=true;
-        applyProperties();
-//        rBody.setSleepingThresholds(linear, angular);
     }
 
     /**

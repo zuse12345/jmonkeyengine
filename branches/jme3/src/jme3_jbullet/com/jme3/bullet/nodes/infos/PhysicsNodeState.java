@@ -124,13 +124,6 @@ public class PhysicsNodeState implements MotionState{
         Converter.convert(worldLocation,motionStateTrans.origin);
         Converter.convert(worldRotation,motionStateTrans.basis);
         setJmeLocationDirty(true);
-        //TODO: move to physics update
-        PhysicsSpace.enqueueUpdate(new Callable(){
-            public Object call() throws Exception {
-                pNode.updatePhysicsState();
-                return null;
-            }
-        });
     }
 
     public synchronized boolean isJmeLocationDirty() {

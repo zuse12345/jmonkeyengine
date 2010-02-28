@@ -67,6 +67,11 @@ public class WheelInfo {
     private float engineForce=0;
     private float brakeForce=0;
 
+    private Vector3f wheelWorldLocation=new Vector3f();
+    private Quaternion wheelWorldRotation=new Quaternion();
+
+    private boolean applyInfo=false;
+
     private com.jme3.math.Vector3f tempLocation=new com.jme3.math.Vector3f();
     private com.jme3.math.Quaternion tempRotation=new com.jme3.math.Quaternion();
     private com.jme3.math.Quaternion tempRotation2=new com.jme3.math.Quaternion();
@@ -114,7 +119,7 @@ public class WheelInfo {
 
     public void setFrontWheel(boolean frontWheel) {
         this.frontWheel = frontWheel;
-        applyInfo();
+        applyInfo=true;
     }
 
     public Vector3f getLocation() {
@@ -123,7 +128,7 @@ public class WheelInfo {
 
     public void setLocation(Vector3f location) {
         this.location = location;
-        applyInfo();
+        applyInfo=true;
     }
 
     public Vector3f getDirection() {
@@ -132,7 +137,7 @@ public class WheelInfo {
 
     public void setDirection(Vector3f direction) {
         this.direction = direction;
-        applyInfo();
+        applyInfo=true;
     }
 
     public Vector3f getAxle() {
@@ -141,7 +146,7 @@ public class WheelInfo {
 
     public void setAxle(Vector3f axle) {
         this.axle = axle;
-        applyInfo();
+        applyInfo=true;
     }
 
     public float getSuspensionStiffness() {
@@ -154,7 +159,7 @@ public class WheelInfo {
      */
     public void setSuspensionStiffness(float suspensionStiffness) {
         this.suspensionStiffness = suspensionStiffness;
-        applyInfo();
+        applyInfo=true;
     }
 
     public float getWheelsDampingRelaxation() {
@@ -168,7 +173,7 @@ public class WheelInfo {
      */
     public void setWheelsDampingRelaxation(float wheelsDampingRelaxation) {
         this.wheelsDampingRelaxation = wheelsDampingRelaxation;
-        applyInfo();
+        applyInfo=true;
     }
 
     public float getWheelsDampingCompression() {
@@ -184,7 +189,7 @@ public class WheelInfo {
      */
     public void setWheelsDampingCompression(float wheelsDampingCompression) {
         this.wheelsDampingCompression = wheelsDampingCompression;
-        applyInfo();
+        applyInfo=true;
     }
 
     public float getFrictionSlip() {
@@ -199,7 +204,7 @@ public class WheelInfo {
      */
     public void setFrictionSlip(float frictionSlip) {
         this.frictionSlip = frictionSlip;
-        applyInfo();
+        applyInfo=true;
     }
 
     public float getRollInfluence() {
@@ -215,7 +220,7 @@ public class WheelInfo {
      */
     public void setRollInfluence(float rollInfluence) {
         this.rollInfluence = rollInfluence;
-        applyInfo();
+        applyInfo=true;
     }
 
     public float getMaxSuspensionTravelCm() {
@@ -228,9 +233,30 @@ public class WheelInfo {
      */
     public void setMaxSuspensionTravelCm(float maxSuspensionTravelCm) {
         this.maxSuspensionTravelCm = maxSuspensionTravelCm;
-        applyInfo();
+        applyInfo=true;
+    }
+
+    public void updateGeometricState(){
+        spatial.getLocalTranslation().set( wheelWorldLocation ).subtractLocal( parent.getWorldTranslation() );
+        spatial.getLocalTranslation().divideLocal( parent.getWorldScale() );
+        tempRotation.set( parent.getWorldRotation()).inverseLocal().multLocal( spatial.getLocalTranslation() );
+
+        Quaternion myRot=spatial.getLocalRotation();
+        myRot.set(wheelWorldRotation);
+        tempRotation.set(parent.getWorldRotation()).inverseLocal().mult(myRot,myRot);
+
+        //notify spatial of change
+        spatial.setLocalTranslation(spatial.getLocalTranslation());
     }
     
+    public void updatePhysicsState(){
+        if(applyInfo) applyInfo();
+        Converter.convert(wheelInfo.worldTransform.origin,tempLocation);
+        Converter.convert(wheelInfo.worldTransform.basis,tempMatrix);
+        wheelWorldLocation.set( tempLocation ).subtractLocal( parent.getWorldTranslation() );
+        wheelWorldRotation.fromRotationMatrix(tempMatrix);
+    }
+
     public void applyInfo(){
         wheelInfo.suspensionStiffness = suspensionStiffness;
         wheelInfo.wheelsDampingRelaxation = wheelsDampingRelaxation;
@@ -243,29 +269,13 @@ public class WheelInfo {
         wheelInfo.suspensionRestLength1=restLength;
     }
 
-    public void syncPhysics(){
-//        parent.getVehicle().updateWheelTransformsWS(wheelInfo,true);
-//        parent.getVehicle().getWheelTransformWS(wheelIndex, tempTrans);
-        Converter.convert(wheelInfo.worldTransform.origin,tempLocation);
-        Converter.convert(wheelInfo.worldTransform.basis,tempMatrix);
-        //SET LOCATION
-        spatial.getLocalTranslation().set( tempLocation ).subtractLocal( parent.getWorldTranslation() );
-        spatial.getLocalTranslation().divideLocal( parent.getWorldScale() );
-        tempRotation.set( parent.getWorldRotation()).inverseLocal().multLocal( spatial.getLocalTranslation() );
-
-        //SET ROTATION
-        Quaternion myRot=spatial.getLocalRotation();
-        myRot.fromRotationMatrix(tempMatrix);
-        tempRotation.set(parent.getWorldRotation()).inverseLocal().mult(myRot,myRot);
-    }
-
     public float getRadius() {
         return radius;
     }
 
     public void setRadius(float radius) {
         this.radius = radius;
-        applyInfo();
+        applyInfo=true;
     }
 
     public float getRestLength() {
@@ -274,7 +284,7 @@ public class WheelInfo {
 
     public void setRestLength(float restLength) {
         this.restLength = restLength;
-        applyInfo();
+        applyInfo=true;
     }
 
     public float getSteerValue() {
@@ -283,7 +293,7 @@ public class WheelInfo {
 
     public void setSteerValue(float steerValue) {
         this.steerValue = steerValue;
-        applyInfo();
+        applyInfo=true;
     }
 
     public float getEngineForce() {
@@ -292,7 +302,7 @@ public class WheelInfo {
 
     public void setEngineForce(float engineForce) {
         this.engineForce = engineForce;
-        applyInfo();
+        applyInfo=true;
     }
 
     public float getBrakeForce() {
@@ -301,7 +311,7 @@ public class WheelInfo {
 
     public void setBrakeForce(float brakeForce) {
         this.brakeForce = brakeForce;
-        applyInfo();
+        applyInfo=true;
     }
 
     /**

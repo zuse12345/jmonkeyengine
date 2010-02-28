@@ -126,61 +126,15 @@ public class PhysicsSpace {
     private Vector3f worldMax = new Vector3f(10000f,10000f,10000f);
     private float accuracy=1f/60f;
 
-//    /**
-//     * Get the current PhysicsSpace or create a new standard PhysicsSpace
-//     * @return the exising or created PhysicsSpace
-//     */
+    /**
+     * Get the current PhysicsSpace <b>running on this thread</b>
+     * or creates a new PhysicsSpace
+     * @return the exising or created PhysicsSpace
+     */
     public static PhysicsSpace getPhysicsSpace(){
         return physicsSpaceTL.get();
-//        pSpace=new PhysicsSpace(){};
-//        return pSpace;
     }
-//
-//    /**
-//     * Get the current PhysicsSpace or create a new PhysicsSpace with
-//     * the given Broadphase type.
-//     * @param broadphaseType The PhysicsSpace.BroadphaseTypes.TYPE of the Boradphase to use
-//     * @return the exising or created PhysicsSpace
-//     */
-//    public static PhysicsSpace getPhysicsSpace(int broadphaseType){
-//        if(pSpace!=null){
-//            return pSpace;
-//        }
-//        pSpace=new PhysicsSpace(broadphaseType){};
-//        return pSpace;
-//    }
-//
-//    /**
-//     * Get the current PhysicsSpace or create a new PhysicsSpace with
-//     * the AxisSweep3 Broadphase type and given world size.
-//     * @param worldMin the worldMin vector (e.g. -1000,-1000,-1000)
-//     * @param worldMax the worldMax vector (e.g. -1000,-1000,-1000)
-//     * @return the exising or created PhysicsSpace
-//     */
-//    public static PhysicsSpace getPhysicsSpace(Vector3f worldMin, Vector3f worldMax){
-//        if(pSpace!=null){
-//            return pSpace;
-//        }
-//        pSpace=new PhysicsSpace(worldMin, worldMax){};
-//        return pSpace;
-//    }
-//
-//    /**
-//     * Get the current PhysicsSpace or create a new PhysicsSpace with
-//     * the given Broadphase type and given world size.
-//     * @param worldMin the worldMin vector (e.g. -1000,-1000,-1000)
-//     * @param worldMax the worldMax vector (e.g. -1000,-1000,-1000)
-//     * @param broadphaseType The PhysicsSpace.BroadphaseTypes.TYPE of the Boradphase to use
-//     * @return the exising or created PhysicsSpace
-//     */
-//    public static PhysicsSpace getPhysicsSpace(Vector3f worldMin, Vector3f worldMax, int broadphaseType){
-//        if(pSpace!=null){
-//            return pSpace;
-//        }
-//        pSpace=new PhysicsSpace(worldMin, worldMax, broadphaseType){};
-//        return pSpace;
-//    }
-//
+
     public PhysicsSpace(){
         this(new Vector3f(-10000f,-10000f,-10000f),new Vector3f(10000f,10000f,10000f),BroadphaseTypes.SIMPLE);
     }
@@ -197,13 +151,6 @@ public class PhysicsSpace {
         this.worldMin.set(worldMin);
         this.worldMax.set(worldMax);
         this.broadphaseType=broadphaseType;
-//        GameTaskQueueManager.getManager().addQueue("jbullet_requeue", new GameTaskQueue());
-//        rQueue=GameTaskQueueManager.getManager().getQueue("jbullet_requeue");
-//        rQueue.setExecuteAll(true);
-
-//        GameTaskQueueManager.getManager().addQueue("jbullet_update", new GameTaskQueue());
-//        pQueue=GameTaskQueueManager.getManager().getQueue("jbullet_update");
-//        pQueue.setExecuteAll(true);
 
         collisionConfiguration = new DefaultCollisionConfiguration();
         dispatcher = new CollisionDispatcher( collisionConfiguration );
@@ -299,34 +246,35 @@ public class PhysicsSpace {
      */
     public void update(float time, int maxSteps){
         if(getDynamicsWorld()==null) return;
-//        for (PhysicsNode physicsNode : physicsNodes.values()) {
-//            physicsNode.updatePhysicsState();
-//        }
         //add recurring events
-        AppTask task = rQueue/*TL.get()*/.poll();
+        AppTask task = rQueue.poll();
         while(task!=null){
             while (task.isCancelled()) {
-                task = rQueue/*TL.get()*/.poll();
+                task = rQueue.poll();
             }
             try {
                 task.invoke();
             } catch (Exception ex) {
                 Logger.getLogger(PhysicsSpace.class.getName()).log(Level.SEVERE, null, ex);
             }
-            task=rQueue/*TL.get()*/.poll();
+            task=rQueue.poll();
         }
         //execute task list
-        task = pQueue/*TL.get()*/.poll();
+        task = pQueue.poll();
         while(task!=null){
             while (task.isCancelled()) {
-                task = rQueue/*TL.get()*/.poll();
+                task = rQueue.poll();
             }
             try {
                 task.invoke();
             } catch (Exception ex) {
                 Logger.getLogger(PhysicsSpace.class.getName()).log(Level.SEVERE, null, ex);
             }
-            task = pQueue/*TL.get()*/.poll();
+            task = pQueue.poll();
+        }
+        
+        for (PhysicsNode physicsNode : physicsNodes.values()) {
+            physicsNode.updatePhysicsState();
         }
         
         //step simulation
@@ -366,24 +314,15 @@ public class PhysicsSpace {
 
     public static <V> Future<V> enqueueUpdate(Callable<V> callable) {
         AppTask<V> task = new AppTask<V>(callable);
-        pQueue/*TL.get()*/.add(task);
+        pQueue.add(task);
         return task;
     }
 
     private static <V> Future<V> requeueUpdate(Callable<V> callable) {
         AppTask<V> task = new AppTask<V>(callable);
-        rQueue/*TL.get()*/.add(task);
+        rQueue.add(task);
         return task;
     }
-
-    /**
-     * enqueues a Callable in the update queue of the physics thread
-     * @param callable the Callable to add
-     * @return the created Future for the Callable
-     */
-//    public static void enqueueUpdate(Callable callable){
-//        pQueueTL.get().add(callable);
-//    }
 
     /**
      * enqueues a Callable in the update queue in the next update call

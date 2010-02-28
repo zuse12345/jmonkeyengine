@@ -71,17 +71,9 @@ public class PhysicsVehicleNode extends PhysicsNode{
     private VehicleRaycaster rayCaster;
     private List<WheelInfo> wheels=new LinkedList<WheelInfo>();
 
-//    public PhysicsVehicleNode(Spatial child){
-//        super(child, ShapeTypes.BOX);
-//    }
-//
-//    public PhysicsVehicleNode(Spatial child, int collisionShapeType){
-//        super(child, collisionShapeType);
-//    }
-//
-//    public PhysicsVehicleNode(Spatial child, int collisionShapeType, float mass){
-//        super(child, collisionShapeType, mass);
-//    }
+    public PhysicsVehicleNode(CollisionShape shape){
+        super(shape);
+    }
 
     public PhysicsVehicleNode(Spatial child, CollisionShape shape){
         super(child, shape);
@@ -94,52 +86,22 @@ public class PhysicsVehicleNode extends PhysicsNode{
     @Override
     public synchronized void updateGeometricState() {
         super.updateGeometricState();
-        syncWheels();
+        if(wheels!=null)
+        for (int i = 0; i < wheels.size(); i++) {
+            wheels.get(i).updateGeometricState();
+        }
     }
 
     @Override
     public synchronized void updatePhysicsState() {
         super.updatePhysicsState();
+        if(wheels!=null)
+        for (int i = 0; i < wheels.size(); i++) {
+            wheels.get(i).updatePhysicsState();
+        }
     }
 
-//    @Override
-//    protected MotionState createMotionState(){
-//        return new MotionState(){
-//
-//            public Transform getWorldTransform(Transform out) {
-//                if(out==null)
-//                    out=new Transform();
-//
-//                tempRotation.set(getWorldRotation());
-//                Converter.convert(tempRotation, tempRot);
-//
-//                out.basis.set(tempRot);
-//                out.origin.set(Converter.convert(getWorldTranslation()));
-//                return out;
-//            }
-//
-//            public void setWorldTransform(Transform worldTrans) {
-//                motionStateTrans.set(worldTrans);
-//                applyMotionState();
-//            }
-//
-//        };
-//    }
-//
-//    private void applyMotionState() {
-//        Converter.convert(motionStateTrans.origin,tempLocation);
-//        setWorldTranslation(tempLocation);
-//
-//        Converter.convert(motionStateTrans.basis,tempMatrix);
-//        tempRotation.fromRotationMatrix(tempMatrix);
-//        setWorldRotation(tempRotation);
-//
-//        //to set wheel locations
-//        syncWheels();
-//    }
-
-
-    @Override
+   @Override
     protected void postRebuild(){
         super.postRebuild();
         createVehicleConstraint();
@@ -156,7 +118,6 @@ public class PhysicsVehicleNode extends PhysicsNode{
             wheel.setWheelInfo(vehicle.addWheel(Converter.convert(wheel.getLocation()), Converter.convert(wheel.getDirection()), Converter.convert(wheel.getAxle()),
                     wheel.getRestLength(), wheel.getRadius(), tuning, wheel.isFrontWheel()));
             wheel.applyInfo();
-            wheel.syncPhysics();
         }
     }
 
@@ -183,9 +144,6 @@ public class PhysicsVehicleNode extends PhysicsNode{
         info.setWheelsDampingRelaxation(tuning.suspensionDamping);
         info.applyInfo();
         wheels.add(info);
-        for (int i = 0; i < wheels.size(); i++) {
-            wheels.get(i).syncPhysics();
-        }
     }
 
     /**
@@ -447,14 +405,6 @@ public class PhysicsVehicleNode extends PhysicsNode{
     @Override
     public void destroy() {
         super.destroy();
-    }
-
-    private void syncWheels() {
-        if(wheels!=null)
-        for (int i = 0; i < wheels.size(); i++) {
-            vehicle.updateWheelTransform(i, true);
-            wheels.get(i).syncPhysics();
-        }
     }
 
 }

@@ -366,7 +366,9 @@ public class BIHTree implements Savable {
             if (tMin <= 0)
                 tMin = 0;
             
-            //tMax = min(tMax, farPlane);
+            if (r.getLimit() < Float.POSITIVE_INFINITY){
+                tMax = Math.min(tMax, r.getLimit());
+            }
 
             return root.intersectWhere(r, worldMatrix, this, tMin, tMax, results);
         }

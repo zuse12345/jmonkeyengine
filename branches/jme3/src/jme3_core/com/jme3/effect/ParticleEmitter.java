@@ -83,7 +83,7 @@ public class ParticleEmitter extends Geometry {
      * can exist at the same time with this emitter.
      * Calling this method many times is not recommended.
      */
-    public void setNumParticles(int numParticles){
+    public final void setNumParticles(int numParticles){
         particles = new Particle[numParticles];
         for (int i = 0; i < numParticles; i++){
             particles[i] = new Particle();
@@ -185,33 +185,6 @@ public class ParticleEmitter extends Geometry {
     public void setVariation(float variation) {
         this.variation = variation;
     }
-
-    /*
-    private EmitterShape shape = DEFAULT_SHAPE;
-    private ParticleMesh particleMesh;
-    private ParticleMesh.Type meshType;
-    private Particle[] particles;
-    private int next = 0;
-    private ArrayList<Integer> unusedIndices = new ArrayList<Integer>();
-
-    private Camera cam;
-    private float particlesPerSec = 20;
-    private float emitCarry = 0f;
-    private float lowLife  = 3f;
-    private float highLife = 7f;
-    private float gravity = 0.1f;
-    private float variation = 0.2f;
-    private Vector3f startVel = new Vector3f();
-
-    private int imagesX = 1;
-    private int imagesY = 1;
-
-    private ColorRGBA startColor = new ColorRGBA(0.4f,0.4f,0.4f,0.5f);
-    private ColorRGBA endColor = new ColorRGBA(0.1f,0.1f,0.1f,0.0f);
-    private float startSize = 0.2f;
-    private float endSize = 2f;
-    private boolean worldSpace = false;
-     */
 
     public void write(G3DExporter ex) throws IOException{
         super.write(ex);

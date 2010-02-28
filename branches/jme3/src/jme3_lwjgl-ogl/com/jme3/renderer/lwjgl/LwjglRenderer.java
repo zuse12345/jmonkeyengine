@@ -277,9 +277,6 @@ public class LwjglRenderer implements Renderer {
                 glEnable(ARBMultisample.GL_MULTISAMPLE_ARB);
             }
         }
-
-        // XXX: remove this line
-//        caps.clear();
     }
 
     public void cleanup(){

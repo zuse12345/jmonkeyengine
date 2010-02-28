@@ -252,7 +252,7 @@ public class DeployAppSetting extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void txtHeightActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtHeightActionPerformed
-        // TODO add your handling code here:
+
     }//GEN-LAST:event_txtHeightActionPerformed
 
 

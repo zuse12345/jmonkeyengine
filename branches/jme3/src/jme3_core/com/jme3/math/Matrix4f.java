@@ -161,11 +161,14 @@ public class Matrix4f implements Savable, Cloneable {
     public void fromFrame(Vector3f location, Vector3f direction, Vector3f up, Vector3f left) {
         loadIdentity();
 
-        Vector3f f = new Vector3f(direction);
-        Vector3f s = f.cross(up);
-        Vector3f u = s.cross(f);
-        s.normalizeLocal();
-        u.normalizeLocal();
+        TempVars vars = TempVars.get();
+        assert vars.lock();
+
+        Vector3f f = vars.vect1.set(direction);
+        Vector3f s = vars.vect2.set(f).crossLocal(up);
+        Vector3f u = vars.vect3.set(s).crossLocal(f);
+//        s.normalizeLocal();
+//        u.normalizeLocal();
 
         m00 = s.x;
         m01 = s.y;
@@ -191,14 +194,16 @@ public class Matrix4f implements Savable, Cloneable {
 //        m12 = -direction.y;
 //        m22 = -direction.z;
 //
-        assert TempVars.get().lock();
+
         Matrix4f transMatrix = TempVars.get().tempMat4;
         transMatrix.loadIdentity();
         transMatrix.m03 = -location.x;
         transMatrix.m13 = -location.y;
         transMatrix.m23 = -location.z;
         this.multLocal(transMatrix);
+
         assert TempVars.get().unlock();
+
 //        transMatrix.multLocal(this);
 
 //        set(transMatrix);

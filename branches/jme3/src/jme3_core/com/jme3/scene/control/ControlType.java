@@ -37,4 +37,9 @@ public enum ControlType {
      */
     Pose,
 
+    /**
+     * Handles particle updates
+     */
+    Particle
+
 }

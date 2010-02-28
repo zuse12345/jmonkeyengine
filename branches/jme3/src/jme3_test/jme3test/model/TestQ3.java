@@ -30,7 +30,7 @@ public class TestQ3 extends SimpleApplication {
         MeshLoader.AUTO_INTERLEAVE = false;
 //        this.flyCam.setMoveSpeed(500);
         inputManager.removeTriggerListener(flyCam);
-        FirstPersonCamera fps = new FirstPersonCamera(cam, new Vector3f(0, -100, 0));
+        FirstPersonCamera fps = new FirstPersonCamera(cam, new Vector3f(0, -10, 0));
         fps.registerWithDispatcher(inputManager);
         fps.setMoveSpeed(100);
 
@@ -71,7 +71,7 @@ public class TestQ3 extends SimpleApplication {
         //cam.setRotation(new Quaternion(0.0073885284f, -0.67373353f, 0.006737455f, 0.7389067f));
         cam.setLocation(new Vector3f(340, 264, 453));
         cam.setRotation(new Quaternion(-2.97E-4f, 0.999f, -0.0349f, -0.0085f));
-        MotionAllowedListener motAllow = new SphereMotionAllowedListener(rootNode, new Vector3f(50, 100, 50));
+        MotionAllowedListener motAllow = new SphereMotionAllowedListener(rootNode, new Vector3f(100, 200, 100));
         fps.setMotionAllowedListener(motAllow);
         //flyCam.setMotionAllowedListener();
     }

@@ -122,8 +122,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             mesh.setTriangleCount(numFaces);
             numIndices = numFaces * 3;
         }else{
-            throw new SAXException("Triangle strip or fan not supported (yet)!");
-            // TODO: Support triangle strip/fan in Ogre3D Loader.
+            throw new SAXException("Triangle strip or fan not supported!");
         }
 
         int numVerts;

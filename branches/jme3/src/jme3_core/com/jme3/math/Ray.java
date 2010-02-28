@@ -63,6 +63,8 @@ public class Ray implements Savable, Cloneable, Collidable {
     public Vector3f origin;
     /** The direction of the ray. */
     public Vector3f direction;
+
+    public float limit = Float.POSITIVE_INFINITY;
     
 //    protected static final Vector3f tempVa=new Vector3f();
 //    protected static final Vector3f tempVb=new Vector3f();
@@ -449,6 +451,25 @@ public class Ray implements Savable, Cloneable, Collidable {
      */
     public void setOrigin(Vector3f origin) {
         this.origin.set(origin);
+    }
+
+    /**
+     * <code>getLimit</code> returns the limit or the ray, aka the length.
+     * If the limit is not infinity, then this ray is a line with length <code>
+     * limit</code>.
+     * @return
+     */
+    public float getLimit(){
+        return limit;
+    }
+
+    /**
+     * <code>setLimit</code> sets the limit of the ray.
+     * @param limit the limit of the ray.
+     * @see Ray#getLimit() 
+     */
+    public void setLimit(float limit){
+        this.limit = limit;
     }
 
     /**

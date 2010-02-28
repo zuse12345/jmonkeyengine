@@ -1,6 +1,3 @@
 Move outstanding directories (e.g bump) into another place
-Finish LOD loading for OgreXML
 Finish Model-system based on entity requirements
-Cloning
 Audio system finish?
-Add JBullet physics

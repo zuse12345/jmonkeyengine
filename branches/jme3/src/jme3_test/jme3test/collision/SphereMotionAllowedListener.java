@@ -4,13 +4,14 @@ import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
 import com.jme3.collision.MotionAllowedListener;
 import com.jme3.collision.SweepSphere;
-import com.jme3.math.FastMath;
 import com.jme3.math.Plane;
+import com.jme3.math.Ray;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 
 public class SphereMotionAllowedListener implements MotionAllowedListener {
 
+    private Ray ray = new Ray();
     private SweepSphere ss = new SweepSphere();
     private CollisionResults results = new CollisionResults();
     private Spatial scene;
@@ -18,6 +19,12 @@ public class SphereMotionAllowedListener implements MotionAllowedListener {
 
     private Vector3f newPos = new Vector3f();
     private Vector3f newVel = new Vector3f();
+
+    private float charHeight;
+    private float footHeight;
+    private float footStart;
+    private float sphHeight;
+    private float sphCenter;
 
     final float unitsPerMeter = 100.0f;
     final float unitScale = unitsPerMeter / 100.0f;
@@ -30,21 +37,29 @@ public class SphereMotionAllowedListener implements MotionAllowedListener {
             throw new NullPointerException();
 
         this.scene = scene;
+        
+        charHeight = dimension.getY();
+
+        footHeight = charHeight / 3f;
+        footStart = -(charHeight / 2f) + footHeight;
+        sphHeight = charHeight - footHeight;
+        sphCenter = (charHeight / 2f) - (sphHeight / 2f);
         this.dimension.set(dimension);
+        this.dimension.setY(sphHeight);
     }
 
     private void collideWithWorld(){
-        if (depth > 5){
-            System.out.println("DEPTH LIMIT REACHED!!");
+        if (depth > 3){
+//            System.out.println("DEPTH LIMIT REACHED!!");
             return;
         }
 
         if (newVel.length() < veryCloseDist)
             return;
 
-        Vector3f destination = newPos.add(newVel);
+        Vector3f destination = newPos.add(0, sphCenter, 0).add(newVel);
 
-        ss.setCenter(newPos);
+        ss.setCenter(newPos.add(0, sphCenter, 0));
         ss.setVelocity(newVel);
         ss.setDimension(dimension);
 
@@ -98,10 +113,27 @@ public class SphereMotionAllowedListener implements MotionAllowedListener {
     }
 
     public void checkMotionAllowed(Vector3f position, Vector3f velocity) {
+        if (velocity.getX() == 0 && velocity.getZ() == 0)
+            return;
+
         depth = 0;
         newPos.set(position);
         newVel.set(velocity);
+        velocity.setY(0);
+//        newPos.addLocal(velocity);
         collideWithWorld();
+
+        ray.setOrigin(newPos.add(0, footStart, 0));
+        ray.setDirection(new Vector3f(0, -1, 0));
+//        ray.setLimit(footHeight);
+
+        results.clear();
+        scene.collideWith(ray, results);
+        CollisionResult result = results.getClosestCollision();
+        if (result != null){
+            newPos.y = result.getContactPoint().getY() + charHeight / 2f;
+        }
+            
         position.set(newPos);
     }
 

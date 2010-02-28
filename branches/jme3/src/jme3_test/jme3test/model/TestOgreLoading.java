@@ -20,9 +20,10 @@ public class TestOgreLoading extends SimpleApplication {
         rootNode.addLight(pl);
 
         // create the geometry and attach it
-        OgreMaterialList matList = (OgreMaterialList) manager.loadContent("Scene.material");
-        OgreMeshKey key = new OgreMeshKey("Cube.meshxml", matList);
-        Spatial cube = (Spatial) manager.loadContent(key);
-        rootNode.attachChild(cube);
+        OgreMaterialList matList = (OgreMaterialList) manager.loadContent("cobra.material");
+        OgreMeshKey key = new OgreMeshKey("cobra.meshxml", matList);
+        Spatial cobra = (Spatial) manager.loadContent(key);
+        cobra.setLocalScale(0.2f);
+        rootNode.attachChild(cobra);
     }
 }

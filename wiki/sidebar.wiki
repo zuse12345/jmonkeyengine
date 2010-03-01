@@ -6,4 +6,4 @@
   * DependsJme3
   * BuildJme3
   * SourcePackagesJme3
- * CoreTeam
+ * [http://www.jmonkeyengine.com/wiki/doku.php?id=about_jme About]

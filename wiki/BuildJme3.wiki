@@ -11,7 +11,7 @@
   # Under "Local Folder" specify the folder where you want the jME3 project.
   # Click "Finish"
 
-== Check out jME3 from SVN using NetBeansIDE 6.7 ==
+== Check out jME3 from SVN using NetBeansIDE 6.7+ ==
 
   # Go to Team -> Subversion -> Checkout
   # Enter http://jmonkeyengine.googlecode.com/svn for Repository URL, leave username and password blank.
@@ -21,33 +21,5 @@
   # Under Local Folder specify the folder where you want the jME3 project.
   # Click Finish
   # Open project when it finished transferring.
-  # Right-click on your main project folder and go to Properties
-  # Click Libraries on the left side of the window, then Add JAR/Folder on the right side.
-  # Add the following 5 jar files from the mf_jme3test project's lib folders, where {{{<FP>}}} should be replaced with the full path to the jme3 folder:
-   * FP\jme3\lib\jogl\gluegen-rt.jar
-   * FP\jme3\lib\jogl\jogl.jar
-   * FP\jme3\lib\lwjgl\jME3-natives2.2.jar
-   * FP\jme3t\lib\lwjgl\2.2_jar\jinput.jar
-   * FP\jme3\lib\lwjgl\2.2_jar\lwjgl.jar 
-  # Click ok.
   # Browse to the src/g3dtest folder and run TestDebugShapes?.java
   # If it worked, you're in! Check out some of the other nice test apps...
-
-== Check out jME3 from SVN using NetBeansIDE 6.8 ==
-
-  # Go to Team -> Subversion -> Checkout 
-  # Enter http://jmonkeyengine.googlecode.com/svn for Repository URL, leave username and password blank. 
-  # Click Next 
-  # Click Browse... to the right of "Repository Folder(s). 
-  # In the new window, open branches tree, and select jme3
-  # Under Local Folder specify the folder where you want the jME3 project. 
-  # Click Finish 
-  # Open project when it finished transferring.
-  # Go to http://www.7-zip.org/sdk.html
-  # Download the lzma SDK, extract it in [any]\zma907
-  # In netbeans, file -> new project -> java project with existing sources, click next
-  # Project name "SevenZip" -> next
-  # Source Package Folders: -> add folder, select [any]\zma907\java
-  # In netbeans, Projects Tab, right click on the jme3 project, press "resolve reference problems" and use the "SevenZip" of step 12 project as the missing reference.
-  # Clean and build the JME3 project
-  # Browse to the src/g3dtest folder and run TestDebugShapes.java 

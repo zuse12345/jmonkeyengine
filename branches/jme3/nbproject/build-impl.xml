@@ -19,7 +19,7 @@ is divided into following sections:
   - cleanup
 
         -->
-<project xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:jaxrpc="http://www.netbeans.org/ns/j2se-project/jax-rpc" basedir=".." default="default" name="jME3_ordered-impl">
+<project xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:jaxrpc="http://www.netbeans.org/ns/j2se-project/jax-rpc" basedir=".." default="default" name="jMonkeyEngine3-impl">
     <fail message="Please build using Ant 1.7.1 or higher.">
         <condition>
             <not>
@@ -107,24 +107,24 @@ is divided into following sections:
         <condition property="have.sources">
             <or>
                 <available file="${src.dir}"/>
-                <available file="${jme3_animation.dir}"/>
-                <available file="${jme3_core-data.dir}"/>
                 <available file="${jme3_core_plugins.dir}"/>
+                <available file="${jme3_core-data.dir}"/>
+                <available file="${jme3_animation.dir}"/>
+                <available file="${jme3_xml.dir}"/>
+                <available file="${src.jme3_jbullet.dir}"/>
+                <available file="${jme3_ogre.dir}"/>
+                <available file="${jme3_pack.dir}"/>
                 <available file="${jme3_desktop.dir}"/>
                 <available file="${jme3_desktop-fx.dir}"/>
-                <available file="${jme3_games.dir}"/>
-                <available file="${src.jme3_jbullet.dir}"/>
                 <available file="${jme3_joal.dir}"/>
                 <available file="${jme3_jogg.dir}"/>
                 <available file="${jme3_jogl.dir}"/>
                 <available file="${jme3_lwjgl-oal.dir}"/>
                 <available file="${jme3_lwjgl-ogl.dir}"/>
-                <available file="${jme3_ogre.dir}"/>
-                <available file="${jme3_pack.dir}"/>
                 <available file="${jme3_test.dir}"/>
                 <available file="${jme3_test-data.dir}"/>
                 <available file="${jme3_tools.dir}"/>
-                <available file="${jme3_xml.dir}"/>
+                <available file="${jme3_games.dir}"/>
             </or>
         </condition>
         <condition property="netbeans.home+have.tests">
@@ -179,24 +179,24 @@ is divided into following sections:
     </target>
     <target depends="-pre-init,-init-private,-init-user,-init-project,-do-init" name="-init-check">
         <fail unless="src.dir">Must set src.dir</fail>
-        <fail unless="jme3_animation.dir">Must set jme3_animation.dir</fail>
-        <fail unless="jme3_core-data.dir">Must set jme3_core-data.dir</fail>
         <fail unless="jme3_core_plugins.dir">Must set jme3_core_plugins.dir</fail>
+        <fail unless="jme3_core-data.dir">Must set jme3_core-data.dir</fail>
+        <fail unless="jme3_animation.dir">Must set jme3_animation.dir</fail>
+        <fail unless="jme3_xml.dir">Must set jme3_xml.dir</fail>
+        <fail unless="src.jme3_jbullet.dir">Must set src.jme3_jbullet.dir</fail>
+        <fail unless="jme3_ogre.dir">Must set jme3_ogre.dir</fail>
+        <fail unless="jme3_pack.dir">Must set jme3_pack.dir</fail>
         <fail unless="jme3_desktop.dir">Must set jme3_desktop.dir</fail>
         <fail unless="jme3_desktop-fx.dir">Must set jme3_desktop-fx.dir</fail>
-        <fail unless="jme3_games.dir">Must set jme3_games.dir</fail>
-        <fail unless="src.jme3_jbullet.dir">Must set src.jme3_jbullet.dir</fail>
         <fail unless="jme3_joal.dir">Must set jme3_joal.dir</fail>
         <fail unless="jme3_jogg.dir">Must set jme3_jogg.dir</fail>
         <fail unless="jme3_jogl.dir">Must set jme3_jogl.dir</fail>
         <fail unless="jme3_lwjgl-oal.dir">Must set jme3_lwjgl-oal.dir</fail>
         <fail unless="jme3_lwjgl-ogl.dir">Must set jme3_lwjgl-ogl.dir</fail>
-        <fail unless="jme3_ogre.dir">Must set jme3_ogre.dir</fail>
-        <fail unless="jme3_pack.dir">Must set jme3_pack.dir</fail>
         <fail unless="jme3_test.dir">Must set jme3_test.dir</fail>
         <fail unless="jme3_test-data.dir">Must set jme3_test-data.dir</fail>
         <fail unless="jme3_tools.dir">Must set jme3_tools.dir</fail>
-        <fail unless="jme3_xml.dir">Must set jme3_xml.dir</fail>
+        <fail unless="jme3_games.dir">Must set jme3_games.dir</fail>
         <fail unless="build.dir">Must set build.dir</fail>
         <fail unless="dist.dir">Must set dist.dir</fail>
         <fail unless="build.classes.dir">Must set build.classes.dir</fail>
@@ -217,7 +217,7 @@ is divided into following sections:
     </target>
     <target depends="-init-ap-cmdline-properties" if="ap.supported.internal" name="-init-macrodef-javac-with-processors">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.dir}:${jme3_animation.dir}:${jme3_core-data.dir}:${jme3_core_plugins.dir}:${jme3_desktop.dir}:${jme3_desktop-fx.dir}:${jme3_games.dir}:${src.jme3_jbullet.dir}:${jme3_joal.dir}:${jme3_jogg.dir}:${jme3_jogl.dir}:${jme3_lwjgl-oal.dir}:${jme3_lwjgl-ogl.dir}:${jme3_ogre.dir}:${jme3_pack.dir}:${jme3_test.dir}:${jme3_test-data.dir}:${jme3_tools.dir}:${jme3_xml.dir}" name="srcdir"/>
+            <attribute default="${src.dir}:${jme3_core_plugins.dir}:${jme3_core-data.dir}:${jme3_animation.dir}:${jme3_xml.dir}:${src.jme3_jbullet.dir}:${jme3_ogre.dir}:${jme3_pack.dir}:${jme3_desktop.dir}:${jme3_desktop-fx.dir}:${jme3_joal.dir}:${jme3_jogg.dir}:${jme3_jogl.dir}:${jme3_lwjgl-oal.dir}:${jme3_lwjgl-ogl.dir}:${jme3_test.dir}:${jme3_test-data.dir}:${jme3_tools.dir}:${jme3_games.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <attribute default="${javac.processorpath}" name="processorpath"/>
@@ -256,7 +256,7 @@ is divided into following sections:
     </target>
     <target depends="-init-ap-cmdline-properties" name="-init-macrodef-javac-without-processors" unless="ap.supported.internal">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.dir}:${jme3_animation.dir}:${jme3_core-data.dir}:${jme3_core_plugins.dir}:${jme3_desktop.dir}:${jme3_desktop-fx.dir}:${jme3_games.dir}:${src.jme3_jbullet.dir}:${jme3_joal.dir}:${jme3_jogg.dir}:${jme3_jogl.dir}:${jme3_lwjgl-oal.dir}:${jme3_lwjgl-ogl.dir}:${jme3_ogre.dir}:${jme3_pack.dir}:${jme3_test.dir}:${jme3_test-data.dir}:${jme3_tools.dir}:${jme3_xml.dir}" name="srcdir"/>
+            <attribute default="${src.dir}:${jme3_core_plugins.dir}:${jme3_core-data.dir}:${jme3_animation.dir}:${jme3_xml.dir}:${src.jme3_jbullet.dir}:${jme3_ogre.dir}:${jme3_pack.dir}:${jme3_desktop.dir}:${jme3_desktop-fx.dir}:${jme3_joal.dir}:${jme3_jogg.dir}:${jme3_jogl.dir}:${jme3_lwjgl-oal.dir}:${jme3_lwjgl-ogl.dir}:${jme3_test.dir}:${jme3_test-data.dir}:${jme3_tools.dir}:${jme3_games.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <attribute default="${javac.processorpath}" name="processorpath"/>
@@ -288,7 +288,7 @@ is divided into following sections:
     </target>
     <target depends="-init-macrodef-javac-with-processors,-init-macrodef-javac-without-processors" name="-init-macrodef-javac">
         <macrodef name="depend" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.dir}:${jme3_animation.dir}:${jme3_core-data.dir}:${jme3_core_plugins.dir}:${jme3_desktop.dir}:${jme3_desktop-fx.dir}:${jme3_games.dir}:${src.jme3_jbullet.dir}:${jme3_joal.dir}:${jme3_jogg.dir}:${jme3_jogl.dir}:${jme3_lwjgl-oal.dir}:${jme3_lwjgl-ogl.dir}:${jme3_ogre.dir}:${jme3_pack.dir}:${jme3_test.dir}:${jme3_test-data.dir}:${jme3_tools.dir}:${jme3_xml.dir}" name="srcdir"/>
+            <attribute default="${src.dir}:${jme3_core_plugins.dir}:${jme3_core-data.dir}:${jme3_animation.dir}:${jme3_xml.dir}:${src.jme3_jbullet.dir}:${jme3_ogre.dir}:${jme3_pack.dir}:${jme3_desktop.dir}:${jme3_desktop-fx.dir}:${jme3_joal.dir}:${jme3_jogg.dir}:${jme3_jogl.dir}:${jme3_lwjgl-oal.dir}:${jme3_lwjgl-ogl.dir}:${jme3_test.dir}:${jme3_test-data.dir}:${jme3_tools.dir}:${jme3_games.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <sequential>
@@ -471,7 +471,7 @@ is divided into following sections:
         <delete file="${built-jar.properties}" quiet="true"/>
     </target>
     <target if="already.built.jar.${basedir}" name="-warn-already-built-jar">
-        <echo level="warn" message="Cycle detected: jME3_ordered was already built"/>
+        <echo level="warn" message="Cycle detected: jMonkeyEngine3 was already built"/>
     </target>
     <target depends="init,-deps-jar-init" name="deps-jar" unless="no.deps">
         <mkdir dir="${build.dir}"/>
@@ -502,30 +502,30 @@ is divided into following sections:
                 <include name="*"/>
             </dirset>
         </pathconvert>
-        <j2seproject3:depend srcdir="${src.dir}:${jme3_animation.dir}:${jme3_core-data.dir}:${jme3_core_plugins.dir}:${jme3_desktop.dir}:${jme3_desktop-fx.dir}:${jme3_games.dir}:${src.jme3_jbullet.dir}:${jme3_joal.dir}:${jme3_jogg.dir}:${jme3_jogl.dir}:${jme3_lwjgl-oal.dir}:${jme3_lwjgl-ogl.dir}:${jme3_ogre.dir}:${jme3_pack.dir}:${jme3_test.dir}:${jme3_test-data.dir}:${jme3_tools.dir}:${jme3_xml.dir}:${build.generated.subdirs}"/>
+        <j2seproject3:depend srcdir="${src.dir}:${jme3_core_plugins.dir}:${jme3_core-data.dir}:${jme3_animation.dir}:${jme3_xml.dir}:${src.jme3_jbullet.dir}:${jme3_ogre.dir}:${jme3_pack.dir}:${jme3_desktop.dir}:${jme3_desktop-fx.dir}:${jme3_joal.dir}:${jme3_jogg.dir}:${jme3_jogl.dir}:${jme3_lwjgl-oal.dir}:${jme3_lwjgl-ogl.dir}:${jme3_test.dir}:${jme3_test-data.dir}:${jme3_tools.dir}:${jme3_games.dir}:${build.generated.subdirs}"/>
     </target>
     <target depends="init,deps-jar,-pre-pre-compile,-pre-compile,-compile-depend" if="have.sources" name="-do-compile">
         <j2seproject3:javac gensrcdir="${build.generated.sources.dir}"/>
         <copy todir="${build.classes.dir}">
             <fileset dir="${src.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${jme3_animation.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${jme3_core-data.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${jme3_core_plugins.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${jme3_core-data.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${jme3_animation.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${jme3_xml.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${src.jme3_jbullet.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${jme3_ogre.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${jme3_pack.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${jme3_desktop.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${jme3_desktop-fx.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${jme3_games.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${src.jme3_jbullet.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${jme3_joal.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${jme3_jogg.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${jme3_jogl.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${jme3_lwjgl-oal.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${jme3_lwjgl-ogl.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${jme3_ogre.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${jme3_pack.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${jme3_test.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${jme3_test-data.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${jme3_tools.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${jme3_xml.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${jme3_games.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
         </copy>
     </target>
     <target name="-post-compile">
@@ -540,7 +540,7 @@ is divided into following sections:
     <target depends="init,deps-jar,-pre-pre-compile" name="-do-compile-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <j2seproject3:force-recompile/>
-        <j2seproject3:javac excludes="" gensrcdir="${build.generated.sources.dir}" includes="${javac.includes}" sourcepath="${src.dir}:${jme3_animation.dir}:${jme3_core-data.dir}:${jme3_core_plugins.dir}:${jme3_desktop.dir}:${jme3_desktop-fx.dir}:${jme3_games.dir}:${src.jme3_jbullet.dir}:${jme3_joal.dir}:${jme3_jogg.dir}:${jme3_jogl.dir}:${jme3_lwjgl-oal.dir}:${jme3_lwjgl-ogl.dir}:${jme3_ogre.dir}:${jme3_pack.dir}:${jme3_test.dir}:${jme3_test-data.dir}:${jme3_tools.dir}:${jme3_xml.dir}"/>
+        <j2seproject3:javac excludes="" gensrcdir="${build.generated.sources.dir}" includes="${javac.includes}" sourcepath="${src.dir}:${jme3_core_plugins.dir}:${jme3_core-data.dir}:${jme3_animation.dir}:${jme3_xml.dir}:${src.jme3_jbullet.dir}:${jme3_ogre.dir}:${jme3_pack.dir}:${jme3_desktop.dir}:${jme3_desktop-fx.dir}:${jme3_joal.dir}:${jme3_jogg.dir}:${jme3_jogl.dir}:${jme3_lwjgl-oal.dir}:${jme3_lwjgl-ogl.dir}:${jme3_test.dir}:${jme3_test-data.dir}:${jme3_tools.dir}:${jme3_games.dir}"/>
     </target>
     <target name="-post-compile-single">
         <!-- Empty placeholder for easier customization. -->
@@ -731,25 +731,31 @@ is divided into following sections:
             <fileset dir="${src.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${jme3_animation.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${jme3_core_plugins.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
             <fileset dir="${jme3_core-data.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${jme3_core_plugins.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${jme3_animation.dir}" excludes="${excludes}" includes="${includes}">
+                <filename name="**/*.java"/>
+            </fileset>
+            <fileset dir="${jme3_xml.dir}" excludes="${excludes}" includes="${includes}">
+                <filename name="**/*.java"/>
+            </fileset>
+            <fileset dir="${src.jme3_jbullet.dir}" excludes="${excludes}" includes="${includes}">
+                <filename name="**/*.java"/>
+            </fileset>
+            <fileset dir="${jme3_ogre.dir}" excludes="${excludes}" includes="${includes}">
+                <filename name="**/*.java"/>
+            </fileset>
+            <fileset dir="${jme3_pack.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
             <fileset dir="${jme3_desktop.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
             <fileset dir="${jme3_desktop-fx.dir}" excludes="${excludes}" includes="${includes}">
-                <filename name="**/*.java"/>
-            </fileset>
-            <fileset dir="${jme3_games.dir}" excludes="${excludes}" includes="${includes}">
-                <filename name="**/*.java"/>
-            </fileset>
-            <fileset dir="${src.jme3_jbullet.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
             <fileset dir="${jme3_joal.dir}" excludes="${excludes}" includes="${includes}">
@@ -767,12 +773,6 @@ is divided into following sections:
             <fileset dir="${jme3_lwjgl-ogl.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${jme3_ogre.dir}" excludes="${excludes}" includes="${includes}">
-                <filename name="**/*.java"/>
-            </fileset>
-            <fileset dir="${jme3_pack.dir}" excludes="${excludes}" includes="${includes}">
-                <filename name="**/*.java"/>
-            </fileset>
             <fileset dir="${jme3_test.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
@@ -782,7 +782,7 @@ is divided into following sections:
             <fileset dir="${jme3_tools.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${jme3_xml.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${jme3_games.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
             <fileset dir="${build.generated.sources.dir}" erroronmissingdir="false">
@@ -929,7 +929,7 @@ is divided into following sections:
         <delete file="${built-clean.properties}" quiet="true"/>
     </target>
     <target if="already.built.clean.${basedir}" name="-warn-already-built-clean">
-        <echo level="warn" message="Cycle detected: jME3_ordered was already built"/>
+        <echo level="warn" message="Cycle detected: jMonkeyEngine3 was already built"/>
     </target>
     <target depends="init,-deps-clean-init" name="deps-clean" unless="no.deps">
         <mkdir dir="${build.dir}"/>

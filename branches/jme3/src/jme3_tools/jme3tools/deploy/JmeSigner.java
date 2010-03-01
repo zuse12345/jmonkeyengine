@@ -5,7 +5,7 @@ import java.io.FileOutputStream;
 import java.security.KeyStore;
 import sun.security.tools.KeyTool;
 
-public class JmeSigner2 {
+public class JmeSigner {
 
     public static class AppInfo {
         String project;
@@ -33,15 +33,7 @@ public class JmeSigner2 {
 
     public static void main(String[] args) throws Throwable {
         AppInfo info = new AppInfo();
-        info.project = "jMETest";
-        info.password = "xxxxxx".toCharArray();
-        info.ownerName = "Danny V.";
-        info.orgUnit = "jMonkey Engine";
-        info.organization = "jMonkey Engine";
-        info.locality = "Paris";
-        info.state = "empty";
-        info.country = "France";
-        info.email = "dannycool@gmail.com";
+        //..
 
         File storefile = new File(".jmekeystore").getAbsoluteFile();
 

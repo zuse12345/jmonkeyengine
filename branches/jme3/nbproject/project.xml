@@ -3,28 +3,28 @@
     <type>org.netbeans.modules.java.j2seproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
-            <name>jME3_ordered</name>
+            <name>jMonkeyEngine3</name>
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <source-roots>
-                <root id="src.dir" name="jme3_core"/>
-                <root id="jme3_animation.dir"/>
-                <root id="jme3_core-data.dir"/>
-                <root id="jme3_core_plugins.dir"/>
-                <root id="jme3_desktop.dir"/>
-                <root id="jme3_desktop-fx.dir"/>
-                <root id="jme3_games.dir"/>
-                <root id="src.jme3_jbullet.dir"/>
-                <root id="jme3_joal.dir"/>
-                <root id="jme3_jogg.dir"/>
-                <root id="jme3_jogl.dir"/>
-                <root id="jme3_lwjgl-oal.dir"/>
-                <root id="jme3_lwjgl-ogl.dir"/>
-                <root id="jme3_ogre.dir"/>
-                <root id="jme3_pack.dir"/>
-                <root id="jme3_test.dir"/>
-                <root id="jme3_test-data.dir"/>
-                <root id="jme3_tools.dir"/>
-                <root id="jme3_xml.dir"/>
+                <root id="src.dir" name="Core"/>
+                <root id="jme3_core_plugins.dir" name="Core Plugins"/>
+                <root id="jme3_core-data.dir" name="Core Data"/>
+                <root id="jme3_animation.dir" name="Animation"/>
+                <root id="jme3_xml.dir" name="XML"/>
+                <root id="src.jme3_jbullet.dir" name="JBullet"/>
+                <root id="jme3_ogre.dir" name="Ogre3D"/>
+                <root id="jme3_pack.dir" name="Pack"/>
+                <root id="jme3_desktop.dir" name="Desktop"/>
+                <root id="jme3_desktop-fx.dir" name="Desktop Effects"/>
+                <root id="jme3_joal.dir" name="Joal"/>
+                <root id="jme3_jogg.dir" name="JOgg"/>
+                <root id="jme3_jogl.dir" name="Jogl"/>
+                <root id="jme3_lwjgl-oal.dir" name="LWJGL-OpenAL"/>
+                <root id="jme3_lwjgl-ogl.dir" name="LWJGL-OpenGL"/>
+                <root id="jme3_test.dir" name="Test"/>
+                <root id="jme3_test-data.dir" name="Test Data"/>
+                <root id="jme3_tools.dir" name="Tools"/>
+                <root id="jme3_games.dir" name="Games"/>
             </source-roots>
             <test-roots/>
         </data>

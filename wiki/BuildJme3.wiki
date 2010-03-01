@@ -36,5 +36,6 @@ ant run
 == Compile JME3 in other IDEs ==
 
  # Download jme3 from svn (see command line hints)
- # add all folders from the src/ folder to your sources path
- # add all jar libraries from the /lib folder to your classpath
+ # Create a new project
+ # Add all folders from the src/ folder to the projects sources path
+ # Add all jar libraries from the /lib folder to the projects classpath

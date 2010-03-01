@@ -1,6 +1,15 @@
 #summary How to download and build jME3
 #labels Featured
 
+== Check out jME3 from SVN using command line ==
+You will need a JDK > 1.5 and Ant installed on your computer.
+{{{
+svn co http://jmonkeyengine.googlecode.com/svn/branches/jme3 jme3
+cd jme3
+ant dist
+ant run
+}}}
+
 == Check out jME3 from SVN using _NetBeans IDE 6.5_ ==
 
   # Go to "Versioning" -> "Check out.."
@@ -17,9 +26,15 @@
   # Enter http://jmonkeyengine.googlecode.com/svn for Repository URL, leave username and password blank.
   # Click Next
   # Click Browse... to the right of "Repository Folder(s).
-  # In the new window, open branches tree, and select jme3
+  # In the new window, open "branches" tree, and select "jme3"
   # Under Local Folder specify the folder where you want the jME3 project.
   # Click Finish
   # Open project when it finished transferring.
   # Browse to the src/g3dtest folder and run TestDebugShapes?.java
   # If it worked, you're in! Check out some of the other nice test apps...
+
+== Compile JME3 in other IDEs ==
+
+ # Download jme3 from svn (see command line hints)
+ # add all folders from the src/ folder to your sources path
+ # add all jar libraries from the /lib folder to your classpath

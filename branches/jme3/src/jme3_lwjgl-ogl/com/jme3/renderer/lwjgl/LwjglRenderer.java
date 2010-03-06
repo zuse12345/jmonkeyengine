@@ -1469,11 +1469,6 @@ public class LwjglRenderer implements Renderer {
     }
 
     public void drawTriangleArray(Mesh.Mode mode, int count, int vertCount){
-        if (vertCount > maxVertCount){
-            logger.warning("Mesh may be rendered with reduced performance. \n" +
-                           "vertex count > max vertex count.");
-        }
-
         if (count > 1){
             ARBDrawInstanced.glDrawArraysInstancedARB(convertElementMode(mode), 0,
                                                       vertCount, count);

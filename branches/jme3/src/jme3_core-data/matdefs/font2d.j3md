@@ -17,4 +17,10 @@ MaterialDef Font 2D {
         }
     }
 
+    Technique FixedFunc {
+        RenderState {
+            Blend Alpha
+        }
+    }
+
 }

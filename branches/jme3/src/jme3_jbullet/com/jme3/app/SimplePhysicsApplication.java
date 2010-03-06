@@ -46,8 +46,8 @@ import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial.CullHint;
 import com.jme3.system.AppSettings;
-import com.jme3.system.G3DContext.Type;
-import com.jme3.system.G3DSystem;
+import com.jme3.system.JmeContext.Type;
+import com.jme3.system.JmeSystem;
 import com.jme3.util.BufferUtils;
 import java.net.URL;
 
@@ -79,7 +79,7 @@ public abstract class SimplePhysicsApplication extends PhysicsApplication {
     public void start(){
         // show settings dialog
         if (showSettings){
-            if (!G3DSystem.showSettingsDialog(settings))
+            if (!JmeSystem.showSettingsDialog(settings))
                 return;
         }
 

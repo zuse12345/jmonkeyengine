@@ -16,6 +16,8 @@ void main(){
         newNorm.b = sqrt(1.0 - (newNorm.x * newNorm.x) - (newNorm.y * newNorm.y));
         newNorm = Common_PackNormal(newNorm);
         gl_FragColor = vec4(newNorm, 1.0);
+    #elif defined(SHOW_ALPHA)
+        gl_FragColor = vec4(texture2D(m_ColorMap, texCoord).a);
     #else
         gl_FragColor = Texture_GetColor(m_ColorMap, texCoord);
     #endif

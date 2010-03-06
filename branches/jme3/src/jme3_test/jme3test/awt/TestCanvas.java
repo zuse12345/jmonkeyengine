@@ -1,9 +1,9 @@
 package jme3test.awt;
 
 import com.jme3.system.AppSettings;
-import com.jme3.system.G3DCanvasContext;
-import com.jme3.system.G3DContext.Type;
-import com.jme3.system.G3DSystem;
+import com.jme3.system.JmeCanvasContext;
+import com.jme3.system.JmeContext.Type;
+import com.jme3.system.JmeSystem;
 import com.jme3.system.SystemListener;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -16,7 +16,8 @@ public class TestCanvas extends JFrame implements SystemListener {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
         AppSettings settings = new AppSettings(true);
-        G3DCanvasContext ctx = (G3DCanvasContext) G3DSystem.newContext(settings, Type.Canvas);
+        settings.setRenderer("JOGL");
+        JmeCanvasContext ctx = (JmeCanvasContext) JmeSystem.newContext(settings, Type.Canvas);
         getContentPane().add(ctx.getCanvas());
 
         // SET IT VISIBLE

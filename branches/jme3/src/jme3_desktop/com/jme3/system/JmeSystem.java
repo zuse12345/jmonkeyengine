@@ -1,13 +1,12 @@
 package com.jme3.system;
 
 import com.jme3.system.AppSettings;
-import com.jme3.system.G3DContext;
+import com.jme3.system.JmeContext;
 import com.jme3.app.SettingsDialog;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.DesktopAssetManager;
 import com.jme3.util.G3DFormatter;
 import com.jme3.audio.AudioRenderer;
-import com.jme3.util.Natives;
 import java.io.IOException;
 import java.net.URL;
 import java.util.logging.ConsoleHandler;
@@ -16,15 +15,64 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class G3DSystem {
+public class JmeSystem {
 
-    private static final Logger logger = Logger.getLogger(G3DSystem.class.getName());
+    public static enum Platform {
+
+        /**
+         * Microsoft Windows 32 bit
+         */
+        Windows32,
+
+        /**
+         * Microsoft Windows 64 bit
+         */
+        Windows64,
+
+        /**
+         * Linux 32 bit
+         */
+        Linux32,
+
+
+        /**
+         * Linux 64 bit
+         */
+        Linux64,
+
+        /**
+         * Apple Mac OS X 32 bit
+         */
+        MacOSX32,
+
+        /**
+         * Apple Mac OS X 64 bit
+         */
+        MacOSX64,
+
+        /**
+         * Apple Mac OS X 32 bit PowerPC
+         */
+        MacOSX_PPC32,
+
+        /**
+         * Apple Mac OS X 64 bit PowerPC
+         */
+        MacOSX_PPC64,
+
+        /**
+         * Google Android Smartphone OS
+         */
+        Android
+    }
+
+    private static final Logger logger = Logger.getLogger(JmeSystem.class.getName());
 
     private static boolean initialized = false;
     private static boolean lowPermissions = false;
     
     public static boolean trackDirectMemory(){
-        return true;
+        return false;
     }
 
     public static void setLowPermissions(boolean lowPerm){
@@ -40,37 +88,60 @@ public class G3DSystem {
     }
 
     public static boolean showSettingsDialog(AppSettings settings){
-        URL iconUrl = G3DSystem.class.getResource("com/g3d/app/Monkey.png");
+        URL iconUrl = JmeSystem.class.getResource("com/g3d/app/Monkey.png");
         SettingsDialog dialog = new SettingsDialog(settings, iconUrl);
         dialog.showDialog();
         return dialog.waitForSelection() != SettingsDialog.CANCEL_SELECTION;
     }
 
-    public static String getPlatformID(){
+    private static boolean is64Bit(String arch){
+        if (arch.equals("x86"))
+            return false;
+        else if (arch.equals("amd64"))
+            return true;
+        else if (arch.equals("x86_64"))
+            return true;
+        else if (arch.equals("ppc") || arch.equals("PowerPC"))
+            return false;
+        else if (arch.equals("ppc64"))
+            return true;
+        else if (arch.equals("i386") || arch.equals("i686"))
+            return false;
+        else
+            throw new UnsupportedOperationException("Unsupported architecture: "+arch);
+    }
+
+    public static Platform getPlatform(){
         String os = System.getProperty("os.name").toLowerCase();
+        String arch = System.getProperty("os.arch").toLowerCase();
+        boolean is64 = is64Bit(arch);
         if (os.contains("windows")){
-            return "windows";
+            return is64 ? Platform.Windows64 : Platform.Windows32;
         }else if (os.contains("linux") || os.contains("freebsd") || os.contains("sunos")){
-            return "linux";
+            return is64 ? Platform.Linux64 : Platform.Linux32;
         }else if (os.contains("mac os x")){
-            return "macosx";
+            if (arch.startsWith("ppc")){
+                return is64 ? Platform.MacOSX_PPC64 : Platform.MacOSX_PPC32;
+            }else{
+                return is64 ? Platform.MacOSX64 : Platform.MacOSX32;
+            }
         }else{
             throw new UnsupportedOperationException("The specified platform: "+os+" is not supported.");
         }
     }
 
-    private static G3DContext newContextLwjgl(AppSettings settings, G3DContext.Type type){
+    private static JmeContext newContextLwjgl(AppSettings settings, JmeContext.Type type){
         try{
-            Class<? extends G3DContext> ctxClazz = null;
+            Class<? extends JmeContext> ctxClazz = null;
             switch (type){
                 case Canvas:
-                    ctxClazz = (Class<? extends G3DContext>) Class.forName("com.jme3.system.lwjgl.LwjglCanvas");
+                    ctxClazz = (Class<? extends JmeContext>) Class.forName("com.jme3.system.lwjgl.LwjglCanvas");
                     break;
                 case Display:
-                    ctxClazz = (Class<? extends G3DContext>) Class.forName("com.jme3.system.lwjgl.LwjglDisplay");
+                    ctxClazz = (Class<? extends JmeContext>) Class.forName("com.jme3.system.lwjgl.LwjglDisplay");
                     break;
                 case OffscreenSurface:
-                    ctxClazz = (Class<? extends G3DContext>) Class.forName("com.jme3.system.lwjgl.LwjglOffscreenBuffer");
+                    ctxClazz = (Class<? extends JmeContext>) Class.forName("com.jme3.system.lwjgl.LwjglOffscreenBuffer");
                     break;
                 default:
                     throw new IllegalArgumentException("Unsupported context type " + type);
@@ -89,12 +160,15 @@ public class G3DSystem {
         return null;
     }
 
-    public static G3DContext newContextJogl(AppSettings settings, G3DContext.Type type){
+    public static JmeContext newContextJogl(AppSettings settings, JmeContext.Type type){
         try{
-            Class<? extends G3DContext> ctxClazz = null;
+            Class<? extends JmeContext> ctxClazz = null;
             switch (type){
                 case Display:
-                    ctxClazz = (Class<? extends G3DContext>) Class.forName("com.jme3.system.jogl.JoglDisplay");
+                    ctxClazz = (Class<? extends JmeContext>) Class.forName("com.jme3.system.jogl.JoglDisplay");
+                    break;
+                case Canvas:
+                    ctxClazz = (Class<? extends JmeContext>) Class.forName("com.jme3.system.jogl.JoglCanvas");
                     break;
                 default:
                     throw new IllegalArgumentException("Unsupported context type " + type);
@@ -113,9 +187,9 @@ public class G3DSystem {
         return null;
     }
 
-    public static G3DContext newContext(AppSettings settings, G3DContext.Type contextType) {
+    public static JmeContext newContext(AppSettings settings, JmeContext.Type contextType) {
         initialize(settings);
-        G3DContext ctx;
+        JmeContext ctx;
         if (settings.getRenderer().startsWith("LWJGL")){
             ctx = newContextLwjgl(settings, contextType);
             ctx.setSettings(settings);
@@ -183,30 +257,20 @@ public class G3DSystem {
         } catch (SecurityException ex){
             logger.log(Level.SEVERE, "Security error in creating log file", ex);
         }
-        logger.info("Running on "+getFullName());
+        logger.log(Level.INFO, "Running on {0}", getFullName());
 
         
         if (!lowPermissions){
             try {
-                Natives.extractNativeLibs(getPlatformID(), settings);
+                Natives.extractNativeLibs(getPlatform(), settings);
             } catch (IOException ex) {
                 logger.log(Level.SEVERE, "Error while copying native libraries", ex);
             }
         }
     }
 
-//    public static void destroy() {
-//        if (!initialized)
-//            return;
-//
-//        initialized = false;
-//        logger.finer(getFullName() + " closing.");
-//    }
-
     public static String getFullName(){
-        return "jMonkey Engine 3 ALPHA 0.30";
+        return "jMonkey Engine 3 ALPHA 0.50";
     }
-
-
-
+    
 }

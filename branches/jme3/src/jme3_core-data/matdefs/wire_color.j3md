@@ -20,4 +20,12 @@ MaterialDef Wire Color {
         }
     }
 
+    Technique FixedFunc {
+        RenderState {
+            FaceCull Off
+            Blend Alpha
+            AlphaTestFalloff 0.01
+        }
+    }
+
 }

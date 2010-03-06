@@ -35,7 +35,7 @@ public class Application implements SystemListener {
     protected ViewPort viewPort;
     protected ViewPort guiViewPort;
 
-    protected G3DContext context;
+    protected JmeContext context;
     protected AppSettings settings;
     protected Timer timer;
     protected Camera cam;
@@ -143,7 +143,7 @@ public class Application implements SystemListener {
      * Initializes the content manager.
      */
     private void initContentManager(){
-        manager = G3DSystem.newAssetManager();
+        manager = JmeSystem.newAssetManager();
     }
 
     /**
@@ -171,7 +171,7 @@ public class Application implements SystemListener {
      * @return The display context for the application, or null if was not
      * started yet.
      */
-    public G3DContext getContext(){
+    public JmeContext getContext(){
         return context;
     }
 
@@ -183,13 +183,13 @@ public class Application implements SystemListener {
     }
     
     public void start(){
-        start(G3DContext.Type.Display);
+        start(JmeContext.Type.Display);
     }
 
     /**
      * Starts the application. Creating a display and running the main loop.
      */
-    public void start(G3DContext.Type contextType){
+    public void start(JmeContext.Type contextType){
         if (context != null && context.isCreated()){
             logger.warning("start() called when application already created!");
             return;
@@ -200,7 +200,7 @@ public class Application implements SystemListener {
         }
         
         logger.fine("Starting application: "+getClass().getName());
-        context = G3DSystem.newContext(settings, contextType);
+        context = JmeSystem.newContext(settings, contextType);
         context.setSystemListener(this);
         context.create();
     }
@@ -216,7 +216,7 @@ public class Application implements SystemListener {
         }
 
         logger.fine("Starting application: "+getClass().getName());
-        context = G3DSystem.newContext(settings, G3DContext.Type.Canvas);
+        context = JmeSystem.newContext(settings, JmeContext.Type.Canvas);
     }
 
     public void startCanvas(){

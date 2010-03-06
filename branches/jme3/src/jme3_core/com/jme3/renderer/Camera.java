@@ -46,6 +46,7 @@ import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.util.TempVars;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -69,7 +70,7 @@ import java.util.logging.Logger;
  * @author Mark Powell
  * @author Joshua Slack
  */
-public class Camera implements Savable {
+public class Camera implements Savable, Cloneable {
 
     private static final Logger logger = Logger.getLogger(Camera.class
             .getName());
@@ -272,6 +273,31 @@ public class Camera implements Savable {
         onFrameChange();
 
         logger.info("Camera created (W: "+width+", H: "+height+")");
+    }
+
+    @Override
+    public Camera clone(){
+        try {
+            Camera cam = (Camera) super.clone();
+            cam.viewportChanged = true;
+            cam.planeState = 0;
+
+            for (int i = 0; i < worldPlane.length; i++){
+                cam.worldPlane[i] = worldPlane[i].clone();
+            }
+
+            cam.coeffLeft = new float[2];
+            cam.coeffRight = new float[2];
+            cam.coeffBottom = new float[2];
+            cam.coeffTop = new float[2];
+
+            cam.location = location.clone();
+            cam.rotation = rotation.clone();
+
+            return cam;
+        } catch (CloneNotSupportedException ex) {
+        }
+        return null;
     }
 
     /**

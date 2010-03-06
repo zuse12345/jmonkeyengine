@@ -106,20 +106,21 @@ public class BitmapFontLoader implements AssetLoader {
             }else if (tokens[0].equals("kerning")){
                 // Build kerning list
                 int index = 0;
-                Kerning k = new Kerning();
+                int second = 0;
+                int amount = 0;
 
                 for (int i = 1; i < tokens.length; i++){
                     if (tokens[i].equals("first")){
                         index = Integer.parseInt(tokens[i + 1]);
                     }else if (tokens[i].equals("second")){
-                        k.setSecond(Integer.parseInt(tokens[i + 1]));
+                        second = Integer.parseInt(tokens[i + 1]);
                     }else if (tokens[i].equals("amount")){
-                        k.setAmount(Integer.parseInt(tokens[i + 1]));
+                        amount = Integer.parseInt(tokens[i + 1]);
                     }
                 }
 
                 BitmapCharacter ch = charSet.getCharacter(index);
-                ch.getKerningList().add(k);
+                ch.addKerning(second, amount);
             }
         }
         reader.close();

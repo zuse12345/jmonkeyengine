@@ -364,13 +364,13 @@ public class RenderManager {
              cam.clearViewportChanged();
              prevCam = cam;
 
+             float translateX = viewWidth  == viewX ? 0 : -(viewWidth  + viewX) / (viewWidth  - viewX);
+             float translateY = viewHeight == viewY ? 0 : -(viewHeight + viewY) / (viewHeight - viewY);
+             float scaleX     = viewWidth  == viewX ? 1f : 2f / (viewWidth  - viewX);
+             float scaleY     = viewHeight == viewY ? 1f : 2f / (viewHeight - viewY);
              orthoMatrix.loadIdentity();
-             orthoMatrix.setTranslation(-(viewWidth  + viewX) / (viewWidth  - viewX),
-                                        -(viewHeight + viewY) / (viewHeight - viewY),
-                                        0);
-             orthoMatrix.setScale( 2f / (viewWidth  - viewX),
-                                   2f / (viewHeight - viewY),
-                                  -1f);
+             orthoMatrix.setTranslation(translateX, translateY, 0);
+             orthoMatrix.setScale(scaleX, scaleY, -1f);
          }
     }
 

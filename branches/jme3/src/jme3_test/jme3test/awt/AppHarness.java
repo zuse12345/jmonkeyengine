@@ -7,9 +7,9 @@ package jme3test.awt;
 
 import com.jme3.app.Application;
 import com.jme3.system.AppSettings;
-import com.jme3.system.G3DCanvasContext;
-import com.jme3.system.G3DContext.Type;
-import com.jme3.system.G3DSystem;
+import com.jme3.system.JmeCanvasContext;
+import com.jme3.system.JmeContext.Type;
+import com.jme3.system.JmeSystem;
 import java.applet.Applet;
 import java.awt.Canvas;
 import java.awt.Graphics;
@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  */
 public class AppHarness extends Applet {
 
-    private G3DCanvasContext context;
+    private JmeCanvasContext context;
     private Canvas canvas;
     private Application app;
     private String appClass;
@@ -32,7 +32,7 @@ public class AppHarness extends Applet {
         settings.setWidth(getWidth());
         settings.setHeight(getHeight());
 
-        G3DSystem.setLowPermissions(true);
+        JmeSystem.setLowPermissions(true);
 
         try{
             Class<? extends Application> clazz = (Class<? extends Application>) Class.forName(appClass);
@@ -47,7 +47,7 @@ public class AppHarness extends Applet {
 
         app.setSettings(settings);
         app.createCanvas();
-        context = (G3DCanvasContext) app.getContext();
+        context = (JmeCanvasContext) app.getContext();
         canvas = context.getCanvas();
         canvas.setSize(getWidth(), getHeight());
         add(canvas);

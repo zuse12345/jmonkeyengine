@@ -19,9 +19,9 @@ import com.jme3.audio.AudioSource;
 import com.jme3.audio.AudioSource.Status;
 import com.jme3.audio.Listener;
 import com.jme3.audio.QueuedAudioRenderer;
-import com.jme3.audio.plugins.JOGGLoader;
+import com.jme3.audio.plugins.OGGLoader;
 import com.jme3.system.AppSettings;
-import com.jme3.system.G3DSystem;
+import com.jme3.system.JmeSystem;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -48,7 +48,7 @@ public class TestMusicPlayer extends javax.swing.JFrame {
         AppSettings settings = new AppSettings(true);
         settings.setRenderer(null); // force dummy renderer (?)
         settings.setAudioRenderer("JOAL");
-        ar = G3DSystem.newAudioRenderer(settings);
+        ar = JmeSystem.newAudioRenderer(settings);
         ar = new QueuedAudioRenderer(ar);
         ar.initialize();
         ar.setListener(listener);
@@ -160,7 +160,7 @@ public class TestMusicPlayer extends javax.swing.JFrame {
             btnStopActionPerformed(null);
             
             final File selected = chooser.getSelectedFile();
-            JOGGLoader loader = new JOGGLoader();
+            OGGLoader loader = new OGGLoader();
             AudioKey key = new AudioKey(selected.getName(), true);
             try{
                 musicData = (AudioData) loader.load(new AssetInfo(null, key) {

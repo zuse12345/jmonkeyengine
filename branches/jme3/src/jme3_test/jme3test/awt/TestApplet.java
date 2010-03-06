@@ -1,9 +1,9 @@
 package jme3test.awt;
 
 import com.jme3.system.AppSettings;
-import com.jme3.system.G3DCanvasContext;
-import com.jme3.system.G3DContext.Type;
-import com.jme3.system.G3DSystem;
+import com.jme3.system.JmeCanvasContext;
+import com.jme3.system.JmeContext.Type;
+import com.jme3.system.JmeSystem;
 import com.jme3.system.SystemListener;
 import java.applet.Applet;
 import java.awt.Canvas;
@@ -11,7 +11,7 @@ import java.awt.Graphics;
 
 public class TestApplet extends Applet {
 
-    private G3DCanvasContext context;
+    private JmeCanvasContext context;
     private Canvas canvas;
 
     public TestApplet(){
@@ -55,8 +55,9 @@ public class TestApplet extends Applet {
 
     private void createCanvas(){
         AppSettings settings = new AppSettings(true);
-        G3DSystem.setLowPermissions(true);
-        context = (G3DCanvasContext) G3DSystem.newContext(settings, Type.Canvas);
+        settings.setRenderer("JOGL");
+        JmeSystem.setLowPermissions(true);
+        context = (JmeCanvasContext) JmeSystem.newContext(settings, Type.Canvas);
         canvas = context.getCanvas();
         canvas.setSize(getWidth(), getHeight());
         add(canvas);

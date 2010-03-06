@@ -5,6 +5,7 @@ MaterialDef Plain Texture {
         Boolean m_YCoCg
         Boolean m_LATC
         Boolean m_Normalize
+        Boolean m_ShowAlpha
     }
 
     Technique {
@@ -19,7 +20,11 @@ MaterialDef Plain Texture {
             DXT_YCOCG : m_YCoCg
             NORMAL_LATC : m_LATC
             NORMALIZE : m_Normalize
+            SHOW_ALPHA : m_ShowAlpha
         }
+    }
+
+    Technique FixedFunc {
     }
 
 }

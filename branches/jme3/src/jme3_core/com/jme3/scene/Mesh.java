@@ -130,6 +130,10 @@ public class Mesh implements Savable, Cloneable {
         this.lodLevels = lodLevels;
     }
 
+    /**
+     * @return The number of LOD levels set on this mesh, including the main
+     * index buffer, returns zero if there are no lod levels.
+     */
     public int getNumLodLevels(){
         return lodLevels != null ? lodLevels.length : 0;
     }

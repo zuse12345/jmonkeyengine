@@ -27,6 +27,7 @@ public class TestDdsLoading extends SimpleApplication {
 
         Material mat = new Material(manager, "plain_texture.j3md");
         mat.setTexture("m_ColorMap", tex);
+        mat.setBoolean("m_ShowAlpha", true);
         quad.setMaterial(mat);
 
         float aspect = tex.getImage().getWidth() / (float) tex.getImage().getHeight();

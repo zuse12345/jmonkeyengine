@@ -2,7 +2,7 @@ package jme3test.app;
 
 import com.jme3.app.Application;
 import com.jme3.system.AppSettings;
-import com.jme3.system.G3DContext.Type;
+import com.jme3.system.JmeContext.Type;
 
 /**
  * Test Application functionality, such as create, restart, destroy, etc.

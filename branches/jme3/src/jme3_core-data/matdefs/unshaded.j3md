@@ -19,6 +19,12 @@ MaterialDef Unshaded {
         }
     }
 
+    Technique FixedFunc {
+        // Object color as diffuse
+        // Optional alpha blend ?
+
+    }
+
     Technique AlphaBlended {
         VertexShader GLSL100: unshaded.vert
         FragmentShader GLSL100: unshaded.frag

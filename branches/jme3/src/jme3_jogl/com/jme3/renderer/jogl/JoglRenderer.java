@@ -9,23 +9,30 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Matrix4f;
 import com.jme3.renderer.Caps;
 import com.jme3.renderer.GLObjectManager;
+import com.jme3.renderer.IDList;
 import com.jme3.renderer.RenderContext;
 import com.jme3.renderer.Renderer;
 import com.jme3.scene.Mesh;
+import com.jme3.scene.Mesh.Mode;
 import com.jme3.scene.VertexBuffer;
 import com.jme3.scene.VertexBuffer.Type;
+import com.jme3.scene.VertexBuffer.Usage;
 import com.jme3.shader.Shader;
 import com.jme3.shader.Shader.ShaderSource;
 import com.jme3.texture.FrameBuffer;
+import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
+import com.jme3.texture.Texture.WrapAxis;
 import com.jme3.util.BufferUtils;
 import com.jme3.util.IntMap;
 import com.jme3.util.IntMap.Entry;
-import com.jme3.util.TempVars;
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.media.opengl.GL;
 
@@ -37,10 +44,16 @@ public class JoglRenderer implements Renderer {
     protected Matrix4f viewMatrix = new Matrix4f();
     protected Matrix4f projMatrix = new Matrix4f();
     protected FloatBuffer fb16 = BufferUtils.createFloatBuffer(16);
+    protected IntBuffer ib1 = BufferUtils.createIntBuffer(1);
     protected GL gl;
 
     private RenderContext context = new RenderContext();
     private GLObjectManager objManager = new GLObjectManager();
+
+    private EnumSet<Caps> caps = EnumSet.noneOf(Caps.class);
+    private boolean powerOf2 = false;
+    private boolean hardwareMips = false;
+    private boolean vbo = false;
 
     public JoglRenderer(GL gl){
         this.gl = gl;
@@ -51,11 +64,19 @@ public class JoglRenderer implements Renderer {
     }
 
     public void initialize(){
-        logger.info("Vendor: "+gl.glGetString(gl.GL_VENDOR));
-        logger.info("Renderer: "+gl.glGetString(gl.GL_RENDERER));
-        logger.info("Version: "+gl.glGetString(gl.GL_VERSION));
+        logger.log(Level.INFO, "Vendor: {0}", gl.glGetString(gl.GL_VENDOR));
+        logger.log(Level.INFO, "Renderer: {0}", gl.glGetString(gl.GL_RENDERER));
+        logger.log(Level.INFO, "Version: {0}", gl.glGetString(gl.GL_VERSION));
         
         applyRenderState(RenderState.DEFAULT);
+
+        powerOf2 = gl.isExtensionAvailable("GL_ARB_texture_non_power_of_two");
+        hardwareMips = gl.isExtensionAvailable("GL_SGIS_generate_mipmap");
+        vbo = gl.isExtensionAvailable("GL_ARB_vertex_buffer_object");
+    }
+
+    public Collection<Caps> getCaps() {
+        return caps;
     }
 
     public void setBackgroundColor(ColorRGBA color) {
@@ -175,6 +196,9 @@ public class JoglRenderer implements Renderer {
                 case Additive:
                     gl.glBlendFunc(gl.GL_ONE, gl.GL_ONE);
                     break;
+                case AlphaAdditive:
+                    gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE);
+                    break;
                 case Alpha:
                     gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA);
                     break;
@@ -215,43 +239,28 @@ public class JoglRenderer implements Renderer {
         return store;
     }
 
-    private void updateModelView(){
-        assert TempVars.get().lock();
-        FloatBuffer store = TempVars.get().floatBuffer16;
+    public void setViewProjectionMatrices(Matrix4f viewMatrix, Matrix4f projMatrix){
+        this.viewMatrix.set(viewMatrix);
+        this.projMatrix.set(projMatrix);
 
-        //update modelview
-        if (context.matrixMode != gl.GL_MODELVIEW){
-            gl.glMatrixMode(gl.GL_MODELVIEW);
-            context.matrixMode = gl.GL_MODELVIEW;
-        }
-
-        gl.glLoadMatrixf(storeMatrix(viewMatrix,store));
-        gl.glMultMatrixf(storeMatrix(worldMatrix,store));
-        assert TempVars.get().unlock();
-    }
-
-    private void updateProjection(){
-        assert TempVars.get().lock();
-        FloatBuffer store = TempVars.get().floatBuffer16;
-
-        //update projection
         if (context.matrixMode != gl.GL_PROJECTION){
             gl.glMatrixMode(gl.GL_PROJECTION);
             context.matrixMode = gl.GL_PROJECTION;
         }
 
-        gl.glLoadMatrixf(storeMatrix(projMatrix,store));
-        assert TempVars.get().unlock();
-    }
-
-    public void setViewProjectionMatrices(Matrix4f viewMatrix, Matrix4f projMatrix) {
-        this.viewMatrix.set(viewMatrix);
-        this.projMatrix.set(projMatrix);
+        gl.glLoadMatrixf(storeMatrix(projMatrix,fb16));
     }
 
     public void setWorldMatrix(Matrix4f worldMatrix) {
         this.worldMatrix.set(worldMatrix);
-        updateModelView();
+
+        if (context.matrixMode != gl.GL_MODELVIEW){
+            gl.glMatrixMode(gl.GL_MODELVIEW);
+            context.matrixMode = gl.GL_MODELVIEW;
+        }
+
+        gl.glLoadMatrixf(storeMatrix(viewMatrix,fb16));
+        gl.glMultMatrixf(storeMatrix(worldMatrix,fb16));
     }
 
     public void setLighting(LightList list) {
@@ -404,21 +413,192 @@ public class JoglRenderer implements Renderer {
     }
 
     public void updateTextureData(Texture tex) {
+        int texId = tex.getId();
+        if (texId == -1){
+            // create texture
+            gl.glGenTextures(1, ib1);
+            texId = ib1.get(0);
+            tex.setId(texId);
+            objManager.registerForCleanup(tex);
+        }
+
+        // bind texture
+        int target = convertTextureType(tex.getType());
+        if (context.boundTextures[0] != tex){
+            if (context.boundTextureUnit != 0){
+                gl.glActiveTexture(gl.GL_TEXTURE0);
+                context.boundTextureUnit = 0;
+            }
+
+            gl.glBindTexture(target, texId);
+            context.boundTextures[0] = tex;
+        }
+
+        // filter things
+        int minFilter = convertMinFilter(tex.getMinFilter());
+        int magFilter = convertMagFilter(tex.getMagFilter());
+        gl.glTexParameteri(target, gl.GL_TEXTURE_MIN_FILTER, minFilter);
+        gl.glTexParameteri(target, gl.GL_TEXTURE_MAG_FILTER, magFilter);
+
+        // repeat modes
+        switch (tex.getType()){
+            case ThreeDimensional:
+            case CubeMap:
+                gl.glTexParameteri(target, gl.GL_TEXTURE_WRAP_R, convertWrapMode(tex.getWrap(WrapAxis.R)));
+            case TwoDimensional:
+                gl.glTexParameteri(target, gl.GL_TEXTURE_WRAP_T, convertWrapMode(tex.getWrap(WrapAxis.T)));
+                // fall down here is intentional..
+//            case OneDimensional:
+                gl.glTexParameteri(target, gl.GL_TEXTURE_WRAP_S, convertWrapMode(tex.getWrap(WrapAxis.S)));
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown texture type: "+tex.getType());
+        }
+
+        Image img = tex.getImage();
+        if (img != null){
+            boolean generateMips = false;
+            if (!img.hasMipmaps() && tex.getMinFilter().usesMipMapLevels()){
+                // No pregenerated mips available,
+                // generate from base level if required
+                if (hardwareMips){
+                    gl.glTexParameteri(target, GL.GL_GENERATE_MIPMAP, gl.GL_TRUE);
+                }else{
+                    generateMips = true;
+                }
+            }
+
+            TextureUtil.uploadTexture(gl, img, tex.getImageDataIndex(), generateMips, powerOf2);
+        }
+
+        tex.clearUpdateNeeded();
+    }
+
+    private void checkTexturingUsed(){
+        IDList textureList = context.textureIndexList;
+        // old mesh used texturing, new mesh doesn't use it
+        // should actually go through entire oldLen and
+        // disable texturing for each unit.. but that's for later.
+        if (textureList.oldLen > 0 && textureList.newLen == 0){
+            gl.glDisable(gl.GL_TEXTURE_2D);
+        }
     }
 
     public void setTexture(int unit, Texture tex) {
+        if (tex.isUpdateNeeded())
+            updateTextureData(tex);
+
+         int texId = tex.getId();
+         assert texId != -1;
+
+         Texture[] textures = context.boundTextures;
+
+         int type = convertTextureType(tex.getType());
+         if (!context.textureIndexList.moveToNew(unit)){
+             if (context.boundTextureUnit != unit){
+                gl.glActiveTexture(gl.GL_TEXTURE0 + unit);
+                context.boundTextureUnit = unit;
+             }
+
+             gl.glEnable(type);
+         }
+
+         if (textures[unit] != tex){
+             if (context.boundTextureUnit != unit){
+                gl.glActiveTexture(gl.GL_TEXTURE0 + unit);
+                context.boundTextureUnit = unit;
+             }
+
+             gl.glBindTexture(type, texId);
+             textures[unit] = tex;
+         }
     }
 
     public void clearTextureUnits() {
+        IDList textureList = context.textureIndexList;
+        Texture[] textures = context.boundTextures;
+        for (int i = 0; i < textureList.oldLen; i++){
+            int idx = textureList.oldList[i];
+
+            if (context.boundTextureUnit != idx){
+                gl.glActiveTexture(gl.GL_TEXTURE0 + idx);
+                context.boundTextureUnit = idx;
+            }
+            gl.glDisable(convertTextureType(textures[idx].getType()));
+            textures[idx] = null;
+        }
+        context.textureIndexList.copyNewToOld();
     }
 
     public void deleteTexture(Texture tex) {
+        int texId = tex.getId();
+        if (texId != -1){
+            ib1.put(0, texId);
+            ib1.position(0).limit(1);
+            gl.glDeleteTextures(1, ib1);
+            tex.resetObject();
+        }
+    }
+
+    private int convertUsage(Usage usage){
+        switch (usage){
+            case Static:
+                return gl.GL_STATIC_DRAW;
+            case Dynamic:
+                return gl.GL_DYNAMIC_DRAW;
+            case Stream:
+                return gl.GL_STREAM_DRAW;
+            default:
+                throw new RuntimeException("Unknown usage type: "+usage);
+        }
     }
 
     public void updateBufferData(VertexBuffer vb) {
+        int bufId = vb.getId();
+        if (bufId == -1){
+            // create buffer
+            gl.glGenBuffers(1, ib1);
+            bufId = ib1.get(0);
+            vb.setId(bufId);
+            objManager.registerForCleanup(vb);
+        }
+
+        int target;
+        if (vb.getBufferType() == VertexBuffer.Type.Index){
+            target = gl.GL_ELEMENT_ARRAY_BUFFER;
+            if (context.boundElementArrayVBO != bufId){
+                gl.glBindBuffer(target, bufId);
+                context.boundElementArrayVBO = bufId;
+            }
+        }else{
+            target = gl.GL_ARRAY_BUFFER;
+            if (context.boundArrayVBO != bufId){
+                gl.glBindBuffer(target, bufId);
+                context.boundArrayVBO = bufId;
+            }
+        }
+
+        int usage = convertUsage(vb.getUsage());
+        Buffer data = vb.getData();
+        data.rewind();
+
+        gl.glBufferData(target,
+                        data.capacity() * vb.getFormat().getComponentSize(),
+                        data,
+                        usage);
+
+        vb.clearUpdateNeeded();
     }
 
     public void deleteBuffer(VertexBuffer vb) {
+        int bufId = vb.getId();
+        if (bufId != -1){
+            // delete buffer
+            ib1.put(0, bufId);
+            ib1.position(0).limit(1);
+            gl.glDeleteBuffers(1, ib1);
+            vb.resetObject();
+        }
     }
 
     private int convertArrayType(VertexBuffer.Type type){
@@ -461,7 +641,122 @@ public class JoglRenderer implements Renderer {
         }
     }
 
-    public void setVertexAttrib(VertexBuffer vb) {
+    private int convertElementMode(Mesh.Mode mode){
+        switch (mode){
+            case Points:
+                return gl.GL_POINTS;
+            case Lines:
+                return gl.GL_LINES;
+            case LineLoop:
+                return gl.GL_LINE_LOOP;
+            case LineStrip:
+                return gl.GL_LINE_STRIP;
+            case Triangles:
+                return gl.GL_TRIANGLES;
+            case TriangleFan:
+                return gl.GL_TRIANGLE_FAN;
+            case TriangleStrip:
+                return gl.GL_TRIANGLE_STRIP;
+            default:
+                throw new UnsupportedOperationException("Unrecognized mesh mode: "+mode);
+        }
+    }
+
+    private void setVertexAttribVBO(VertexBuffer vb, VertexBuffer idb){
+        int arrayType = convertArrayType(vb.getBufferType());
+        if (arrayType == -1)
+            return; // unsupported
+
+        if (vb.isUpdateNeeded() && idb == null)
+            updateBufferData(vb);
+
+        int bufId = idb != null ? idb.getId() : vb.getId();
+        if (context.boundArrayVBO != bufId){
+            gl.glBindBuffer(gl.GL_ARRAY_BUFFER, bufId);
+            context.boundArrayVBO = bufId;
+        }
+
+        gl.glEnableClientState(arrayType);
+        context.boundAttribs[vb.getBufferType().ordinal()] = vb;
+
+        if (vb.getBufferType() == Type.Normal){
+            // normalize if requested
+            if (vb.isNormalized() && !context.normalizeEnabled){
+                gl.glEnable(gl.GL_NORMALIZE);
+                context.normalizeEnabled = true;
+            }else if (!vb.isNormalized() && context.normalizeEnabled){
+                gl.glDisable(gl.GL_NORMALIZE);
+                context.normalizeEnabled = false;
+            }
+        }
+
+        int comps = vb.getNumComponents();
+        int type = convertVertexFormat(vb.getFormat());
+
+        switch (vb.getBufferType()){
+            case Position:
+                gl.glVertexPointer(comps, type, vb.getStride(), vb.getOffset());
+                break;
+            case Normal:
+                gl.glNormalPointer(type, vb.getStride(), vb.getOffset());
+                break;
+            case Color:
+                gl.glColorPointer(comps, type, vb.getStride(), vb.getOffset());
+                break;
+            case TexCoord:
+                gl.glTexCoordPointer(comps, type, vb.getStride(), vb.getOffset());
+                break;
+        }
+    }
+
+    private void drawTriangleListVBO(VertexBuffer indexBuf, Mesh mesh, int count){
+        if (indexBuf.getBufferType() != VertexBuffer.Type.Index)
+            throw new IllegalArgumentException("Only index buffers are allowed as triangle lists.");
+
+        if (indexBuf.isUpdateNeeded())
+            updateBufferData(indexBuf);
+
+        int bufId = indexBuf.getId();
+        assert bufId != -1;
+
+        if (context.boundElementArrayVBO != bufId){
+            gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, bufId);
+            context.boundElementArrayVBO = bufId;
+        }
+
+        if (mesh.getMode() == Mode.Hybrid){
+            int[] modeStart      = mesh.getModeStart();
+            int[] elementLengths = mesh.getElementLengths();
+
+            int elMode = convertElementMode(Mode.Triangles);
+            int fmt    = convertVertexFormat(indexBuf.getFormat());
+            int elSize = indexBuf.getFormat().getComponentSize();
+//            int listStart = modeStart[0];
+            int stripStart = modeStart[1];
+            int fanStart = modeStart[2];
+            int curOffset = 0;
+            for (int i = 0; i < elementLengths.length; i++){
+                if (i == stripStart){
+                    elMode = convertElementMode(Mode.TriangleStrip);
+                }else if (i == fanStart){
+                    elMode = convertElementMode(Mode.TriangleStrip);
+                }
+                int elementLength = elementLengths[i];
+                gl.glDrawElements(elMode,
+                                    elementLength,
+                                    fmt,
+                                    curOffset);
+                curOffset += elementLength * elSize;
+            }
+        }else{
+            gl.glDrawElements(convertElementMode(mesh.getMode()),
+                                indexBuf.getData().capacity(),
+                                convertVertexFormat(indexBuf.getFormat()),
+                                0);
+        }
+    }
+
+    public void setVertexAttrib(VertexBuffer vb, VertexBuffer idb) {
         int arrayType = convertArrayType(vb.getBufferType());
         if (arrayType == -1)
             return; // unsupported
@@ -469,25 +764,42 @@ public class JoglRenderer implements Renderer {
         gl.glEnableClientState(arrayType);
         context.boundAttribs[vb.getBufferType().ordinal()] = vb;
 
-        Buffer data = vb.getData();
+        if (vb.getBufferType() == Type.Normal){
+            // normalize if requested
+            if (vb.isNormalized() && !context.normalizeEnabled){
+                gl.glEnable(gl.GL_NORMALIZE);
+                context.normalizeEnabled = true;
+            }else if (!vb.isNormalized() && context.normalizeEnabled){
+                gl.glDisable(gl.GL_NORMALIZE);
+                context.normalizeEnabled = false;
+            }
+        }
+
+        // NOTE: Use data from interleaved buffer if specified
+        Buffer data = idb != null ? idb.getData() : vb.getData();
         int comps = vb.getNumComponents();
         int type = convertVertexFormat(vb.getFormat());
-        data.rewind();
+        data.clear();
+        data.position(vb.getOffset());
 
         switch (vb.getBufferType()){
             case Position:
-                gl.glVertexPointer(comps, type, 0, data);
+                gl.glVertexPointer(comps, type, vb.getStride(), data);
                 break;
             case Normal:
-                gl.glNormalPointer(type, 0, data);
+                gl.glNormalPointer(type, vb.getStride(), data);
                 break;
             case Color:
-                gl.glColorPointer(comps, type, 0, data);
+                gl.glColorPointer(comps, type, vb.getStride(), data);
                 break;
             case TexCoord:
-                gl.glTexCoordPointer(comps, type, 0, data);
+                gl.glTexCoordPointer(comps, type, vb.getStride(), data);
                 break;
         }
+    }
+
+    public void setVertexAttrib(VertexBuffer vb){
+        setVertexAttrib(vb, null);
     }
 
     public void clearVertexAttribs() {
@@ -501,19 +813,113 @@ public class JoglRenderer implements Renderer {
         }
     }
 
-    public void renderMeshDefault(Mesh mesh, int count) {
+    public void drawTriangleList(VertexBuffer indexBuf, Mesh mesh, int count) {
+        Mesh.Mode mode = mesh.getMode();
+
+        Buffer indexData = indexBuf.getData();
+        indexData.clear();
+        if (mesh.getMode() == Mode.Hybrid){
+            int[] modeStart      = mesh.getModeStart();
+            int[] elementLengths = mesh.getElementLengths();
+
+            int elMode = convertElementMode(Mode.Triangles);
+            int fmt    = convertVertexFormat(indexBuf.getFormat());
+//            int elSize = indexBuf.getFormat().getComponentSize();
+//            int listStart = modeStart[0];
+            int stripStart = modeStart[1];
+            int fanStart = modeStart[2];
+            int curOffset = 0;
+            for (int i = 0; i < elementLengths.length; i++){
+                if (i == stripStart){
+                    elMode = convertElementMode(Mode.TriangleStrip);
+                }else if (i == fanStart){
+                    elMode = convertElementMode(Mode.TriangleStrip);
+                }
+                int elementLength = elementLengths[i];
+                indexData.position(curOffset);
+                gl.glDrawElements(elMode,
+                                  elementLength,
+                                  fmt,
+                                  indexData);
+                curOffset += elementLength;
+            }
+        }else{
+            gl.glDrawElements(convertElementMode(mode),
+                              indexData.capacity(),
+                              convertVertexFormat(indexBuf.getFormat()),
+                              indexData);
+        }
+    }
+
+    private void renderMeshDefault(Mesh mesh, int lod, int count) {
         VertexBuffer indices = null;
-        IntMap<VertexBuffer> bufs = mesh.getBuffers();
-        for (Entry<VertexBuffer> entry : bufs){
+        VertexBuffer interleavedData = mesh.getBuffer(Type.InterleavedData);
+        IntMap<VertexBuffer> buffers = mesh.getBuffers();
+        if (mesh.getNumLodLevels() > 0){
+            indices = mesh.getLodLevel(lod);
+        }else{
+            indices = buffers.get(Type.Index.ordinal());
+        }
+        for (Entry<VertexBuffer> entry : buffers){
             VertexBuffer vb = entry.getValue();
+
+            if (vb.getBufferType() == Type.InterleavedData
+             || vb.getUsage() == Usage.CpuOnly) // ignore cpu-only buffers
+                continue;
+
             if (vb.getBufferType() == Type.Index){
                 indices = vb;
             }else{
-                setVertexAttrib(vb);
+                if (vb.getStride() == 0){
+                    // not interleaved
+                    setVertexAttrib(vb);
+                }else{
+                    // interleaved
+                    setVertexAttrib(vb, interleavedData);
+                }
             }
         }
+
         if (indices != null){
-            drawTriangleList(indices, mesh, 1);
+            drawTriangleList(indices, mesh, count);
+        }else{
+            gl.glDrawArrays(convertElementMode(mesh.getMode()), 0, mesh.getVertexCount());
+        }
+        clearVertexAttribs();
+        clearTextureUnits();
+    }
+
+    private void renderMeshVBO(Mesh mesh, int lod, int count){
+        VertexBuffer indices = null;
+        VertexBuffer interleavedData = mesh.getBuffer(Type.InterleavedData);
+        if (interleavedData != null && interleavedData.isUpdateNeeded()){
+            updateBufferData(interleavedData);
+        }
+        IntMap<VertexBuffer> buffers = mesh.getBuffers();
+        if (mesh.getNumLodLevels() > 0){
+            indices = mesh.getLodLevel(lod);
+        }else{
+            indices = buffers.get(Type.Index.ordinal());
+        }
+        for (Entry<VertexBuffer> entry : buffers){
+            VertexBuffer vb = entry.getValue();
+
+            if (vb.getBufferType() == Type.InterleavedData
+             || vb.getUsage() == Usage.CpuOnly // ignore cpu-only buffers
+             || vb.getBufferType() == Type.Index)
+                continue;
+
+            if (vb.getStride() == 0){
+                // not interleaved
+                setVertexAttribVBO(vb, null);
+            }else{
+                // interleaved
+                setVertexAttribVBO(vb, interleavedData);
+            }
+        }
+
+        if (indices != null){
+            drawTriangleListVBO(indices, mesh, count);
         }else{
             gl.glDrawArrays(convertElementMode(mesh.getMode()), 0, mesh.getVertexCount());
         }
@@ -538,38 +944,8 @@ public class JoglRenderer implements Renderer {
         int id = gl.glGenLists(1);
         mesh.setId(id);
         gl.glNewList(id, gl.GL_COMPILE);
-        renderMeshDefault(mesh, 1);
+        renderMeshDefault(mesh, 0, 1);
         gl.glEndList();
-    }
-
-    private int convertElementMode(Mesh.Mode mode){
-        switch (mode){
-            case Points:
-                return gl.GL_POINTS;
-            case Lines:
-                return gl.GL_LINES;
-            case LineLoop:
-                return gl.GL_LINE_LOOP;
-            case LineStrip:
-                return gl.GL_LINE_STRIP;
-            case Triangles:
-                return gl.GL_TRIANGLES;
-            case TriangleFan:
-                return gl.GL_TRIANGLE_FAN;
-            case TriangleStrip:
-                return gl.GL_TRIANGLE_STRIP;
-            default:
-                throw new UnsupportedOperationException("Unrecognized mesh mode: "+mode);
-        }
-    }
-
-    public void drawTriangleList(VertexBuffer indexBuf, Mesh mesh, int count) {
-        Mesh.Mode mode = mesh.getMode();
-        indexBuf.getData().rewind();
-        gl.glDrawElements(convertElementMode(mode),
-                          indexBuf.getData().capacity(),
-                          convertVertexFormat(indexBuf.getFormat()),
-                          indexBuf.getData());
     }
 
     private void renderMeshDisplayList(Mesh mesh){
@@ -580,34 +956,29 @@ public class JoglRenderer implements Renderer {
     }
 
     public void renderMesh(Mesh mesh, int lod, int count){
-//        if (!geom.getLocalScale().equals(Vector3f.UNIT_XYZ)){
-//            // enable normalize option
-//            gl.glEnable(gl.GL_NORMALIZE);
-//        }else{
-//            gl.glDisable(gl.GL_NORMALIZE);
-//        }
-        updateProjection();
-        
-        boolean dynamic = false;
-        IntMap<VertexBuffer> bufs = mesh.getBuffers();
-        for (Entry<VertexBuffer> entry : bufs){
-            if (entry.getValue().getUsage() != VertexBuffer.Usage.Static){
+        if (vbo){
+            renderMeshVBO(mesh, lod, count);
+        }else{
+            boolean dynamic = false;
+            if (mesh.getNumLodLevels() == 0){
+                IntMap<VertexBuffer> bufs = mesh.getBuffers();
+                for (Entry<VertexBuffer> entry : bufs){
+                    if (entry.getValue().getUsage() != VertexBuffer.Usage.Static){
+                        dynamic = true;
+                        break;
+                    }
+                }
+            }else{
                 dynamic = true;
             }
-        }
 
-        if (!dynamic){
-            // dealing with a static object, generate display list
-            renderMeshDisplayList(mesh);
-        }else{
-            renderMeshDefault(mesh, count);
+            if (!dynamic){
+                // dealing with a static object, generate display list
+                renderMeshDisplayList(mesh);
+            }else{
+                renderMeshDefault(mesh, lod, count);
+            }
         }
     }
-
-    public Collection<Caps> getCaps() {
-        return new ArrayList<Caps>();
-    }
-
-    
 
 }

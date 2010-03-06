@@ -5,9 +5,9 @@ import com.jme3.export.G3DImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
+import com.jme3.util.IntMap;
+import com.jme3.util.IntMap.Entry;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Represents a single bitmap character.
@@ -21,7 +21,7 @@ public class BitmapCharacter implements Savable {
     private int xOffset;
     private int yOffset;
     private int xAdvance;
-    private ArrayList<Kerning> kerningList = new ArrayList<Kerning>();
+    private IntMap<Integer> kerning = new IntMap<Integer>();
 
     // / <summary>Clones the BitmapCharacter</summary>
     // / <returns>Cloned BitmapCharacter</returns>
@@ -34,7 +34,7 @@ public class BitmapCharacter implements Savable {
         result.xOffset = xOffset;
         result.yOffset = yOffset;
         result.xAdvance = xAdvance;
-        result.kerningList.addAll(kerningList);
+        result.kerning = kerning.clone();
         return result;
     }
 
@@ -94,12 +94,16 @@ public class BitmapCharacter implements Savable {
         xAdvance = advance;
     }
 
-    public List<Kerning> getKerningList() {
-        return kerningList;
+    public void addKerning(int second, int amount){
+        kerning.put(second, amount);
     }
 
-    public void setKerningList(ArrayList<Kerning> kerningList) {
-        this.kerningList = kerningList;
+    public int getKerning(int second){
+        Integer i = kerning.get(second);
+        if (i == null)
+            return -1;
+        else
+            return i.intValue();
     }
 
     public void write(G3DExporter ex) throws IOException {
@@ -111,7 +115,19 @@ public class BitmapCharacter implements Savable {
         oc.write(xOffset, "xOffset", 0);
         oc.write(yOffset, "yOffset", 0);
         oc.write(xAdvance, "xAdvance", 0);
-        oc.writeSavableArrayList(kerningList, "kerningList", null);
+
+        int[] seconds = new int[kerning.size()];
+        int[] amounts = new int[seconds.length];
+
+        int i = 0;
+        for (Entry<Integer> entry : kerning){
+            seconds[i] = entry.getKey();
+            amounts[i] = entry.getValue();
+            i++;
+        }
+
+        oc.write(seconds, "seconds", null);
+        oc.write(amounts, "amounts", null);
     }
 
     public void read(G3DImporter im) throws IOException {
@@ -123,6 +139,12 @@ public class BitmapCharacter implements Savable {
         xOffset = ic.readInt("xOffset", 0);
         yOffset = ic.readInt("yOffset", 0);
         xAdvance = ic.readInt("xAdvance", 0);
-        kerningList = (ArrayList<Kerning>) ic.readSavableArrayList("kerningList", null);
+
+        int[] seconds = ic.readIntArray("seconds", null);
+        int[] amounts = ic.readIntArray("amounts", null);
+
+        for (int i = 0; i < seconds.length; i++){
+            kerning.put(seconds[i], amounts[i]);
+        }
     }
 }

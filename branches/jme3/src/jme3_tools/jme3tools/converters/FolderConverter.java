@@ -1,7 +1,7 @@
 package g3dtools.converters;
 
 import com.jme3.asset.AssetManager;
-import com.jme3.system.G3DSystem;
+import com.jme3.system.JmeSystem;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -37,7 +37,7 @@ public class FolderConverter {
         FileOutputStream out = new FileOutputStream(jarFile);
         jarOut = new JarOutputStream(out);
 
-        assetManager = G3DSystem.newAssetManager();
+        assetManager = JmeSystem.newAssetManager();
         assetManager.registerLocator(sourceRoot.toString(), 
                                      "com.jme3.asset.plugins.FileSystemLocator",
                                      "*");

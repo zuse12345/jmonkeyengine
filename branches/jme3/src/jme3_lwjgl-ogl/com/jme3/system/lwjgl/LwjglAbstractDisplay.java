@@ -7,9 +7,10 @@ import com.jme3.input.lwjgl.LwjglJoyInput;
 import com.jme3.input.lwjgl.LwjglKeyInput;
 import com.jme3.input.lwjgl.LwjglMouseInput;
 import com.jme3.system.AppSettings;
-import com.jme3.system.G3DContext.Type;
-import com.jme3.system.G3DSystem;
+import com.jme3.system.JmeContext.Type;
+import com.jme3.system.JmeSystem;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
@@ -67,9 +68,9 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
             Display.create(pf);
 
             logger.info("Display created.");
-            logger.fine("Running on thread: "+Thread.currentThread().getName());
+            logger.log(Level.FINE, "Running on thread: {0}", Thread.currentThread().getName());
 
-            if (!G3DSystem.isLowPermissions()){
+            if (!JmeSystem.isLowPermissions()){
                 Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                     public void uncaughtException(Thread thread, Throwable thrown) {
                         listener.handleError("Uncaught exception thrown in "+thread.toString(), thrown);

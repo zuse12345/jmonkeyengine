@@ -8,7 +8,7 @@ import com.jme3.renderer.Renderer;
 /**
  * Represents a rendering context within the engine.
  */
-public interface G3DContext {
+public interface JmeContext {
 
     /**
      * The type of context.

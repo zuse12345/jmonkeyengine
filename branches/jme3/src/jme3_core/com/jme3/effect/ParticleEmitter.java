@@ -9,14 +9,19 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
+import com.jme3.renderer.RenderManager;
+import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Spatial;
+import com.jme3.scene.control.Control;
+import com.jme3.scene.control.ControlType;
 import com.jme3.util.TempVars;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class ParticleEmitter extends Geometry {
+public class ParticleEmitter extends Geometry implements Control {
 
     private static final EmitterShape DEFAULT_SHAPE = new EmitterPointShape(Vector3f.ZERO);
 
@@ -27,7 +32,6 @@ public class ParticleEmitter extends Geometry {
     private int next = 0;
     private ArrayList<Integer> unusedIndices = new ArrayList<Integer>();
 
-    private Camera cam;
     private float particlesPerSec = 20;
     private float emitCarry = 0f;
     private float lowLife  = 3f;
@@ -39,6 +43,7 @@ public class ParticleEmitter extends Geometry {
     private int imagesX = 1;
     private int imagesY = 1;
 
+    private boolean enabled = true;
     private ColorRGBA startColor = new ColorRGBA(0.4f,0.4f,0.4f,0.5f);
     private ColorRGBA endColor = new ColorRGBA(0.1f,0.1f,0.1f,0.0f);
     private float startSize = 0.2f;
@@ -57,6 +62,8 @@ public class ParticleEmitter extends Geometry {
         meshType = type;
 
         setNumParticles(numParticles);
+
+        controls.put(ControlType.Particle.ordinal(), this);
     }
 
     public ParticleEmitter(){
@@ -65,13 +72,6 @@ public class ParticleEmitter extends Geometry {
 
     public void setShape(EmitterShape shape) {
         this.shape = shape;
-    }
-
-    // TODO: Remove dependency on a camera.
-    // This should be in some updateRender() method
-    // called by RenderManager
-    public void setCamera(Camera cam){
-        this.cam = cam;
     }
 
     public int getNumVisibleParticles(){
@@ -191,6 +191,7 @@ public class ParticleEmitter extends Geometry {
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(shape, "shape", DEFAULT_SHAPE);
         oc.write(meshType, "meshType", ParticleMesh.Type.Triangle);
+        oc.write(enabled, "enabled", true);
         oc.write(particles.length, "numParticles", 0);
         oc.write(particlesPerSec, "particlesPerSec", 0);
         oc.write(lowLife, "lowLife", 0);
@@ -216,6 +217,7 @@ public class ParticleEmitter extends Geometry {
         int numParticles = ic.readInt("numParticles", 0);
         setNumParticles(numParticles);
 
+        enabled = ic.readBoolean("enabled", true);
         particlesPerSec = ic.readFloat("particlesPerSec", 0);
         lowLife = ic.readFloat("lowLife", 0);
         highLife = ic.readFloat("highLife", 0);
@@ -320,8 +322,25 @@ public class ParticleEmitter extends Geometry {
         }
     }
 
-    @Override
-    public void updateLogicalState(float tpf){
+    public ControlType getType() {
+        return ControlType.Particle;
+    }
+
+    public void setSpatial(Spatial spatial) {
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void update(float tpf) {
+        if (!enabled)
+            return;
+
         if (particleMesh == null){
             switch (meshType){
                 case Point:
@@ -340,9 +359,11 @@ public class ParticleEmitter extends Geometry {
         }
 
         updateParticleState(tpf);
+    }
+
+    public void render(RenderManager rm, ViewPort vp) {
+        Camera cam = vp.getCamera();
         particleMesh.updateParticleData(particles, cam);
-        
-        // update the bounding volume to contain new positions;
         updateModelBound();
     }
 

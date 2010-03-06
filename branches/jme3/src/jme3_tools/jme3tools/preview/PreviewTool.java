@@ -9,7 +9,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.plugins.ogre.MeshLoader;
 import com.jme3.system.AppSettings;
-import com.jme3.system.G3DCanvasContext;
+import com.jme3.system.JmeCanvasContext;
 import jme3tools.converters.model.ModelConverter;
 import java.awt.Canvas;
 import java.io.File;
@@ -19,7 +19,7 @@ import javax.swing.JOptionPane;
 
 public class PreviewTool extends javax.swing.JFrame {
 
-    private G3DCanvasContext cx;
+    private JmeCanvasContext cx;
     private Canvas glCanvas;
 //    private AssetManager assetManager;
     private PreviewDisplay display;
@@ -52,7 +52,7 @@ public class PreviewTool extends javax.swing.JFrame {
         display = new PreviewDisplay();
         display.setSettings(settings);
         display.createCanvas();
-        cx = (G3DCanvasContext) display.getContext();
+        cx = (JmeCanvasContext) display.getContext();
         glCanvas = cx.getCanvas();
 
         // set canvas on component

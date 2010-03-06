@@ -5,7 +5,7 @@ import com.jme3.renderer.Camera;
 import com.jme3.asset.AssetManager;
 import com.jme3.audio.Listener;
 import com.jme3.system.AppSettings;
-import com.jme3.system.G3DSystem;
+import com.jme3.system.JmeSystem;
 
 public class AudioApp {
 
@@ -18,10 +18,10 @@ public class AudioApp {
     public AudioApp(){
         AppSettings settings = new AppSettings(true);
         settings.setRenderer(null); // force dummy renderer (?)
-        settings.setAudioRenderer("LWJGL");
-        ar = G3DSystem.newAudioRenderer(settings);
+        settings.setAudioRenderer("JOAL");
+        ar = JmeSystem.newAudioRenderer(settings);
         ar.initialize();
-        manager = G3DSystem.newAssetManager();
+        manager = JmeSystem.newAssetManager();
 
         listener = new Listener();
         ar.setListener(listener);

@@ -72,15 +72,9 @@ public class BitmapFont implements Savable {
         return charSet.getLineHeight() * (sb.getSize() / charSet.getRenderedSize());
     }
 
-    private Kerning findKerningNode(int newLineLastChar, int nextChar) {
+    private int findKerningAmount(int newLineLastChar, int nextChar) {
         BitmapCharacter c = charSet.getCharacter(newLineLastChar);
-        for (Kerning k : c.getKerningList()){
-            if (k.getSecond() == nextChar){
-                return k;
-            }
-        }
-
-        return null;
+        return c.getKerning(nextChar);
     }
 
     public float updateText(StringBlock block, QuadList target, boolean rightToLeft) {
@@ -119,9 +113,16 @@ public class BitmapFont implements Savable {
                 // Adjust for kerning
                 float kernAmount = 0f;
                 if (!firstCharOfLine && useKerning){
-                    Kerning kern = findKerningNode(lastChar, theChar);
-                    if (kern != null){
-                        kernAmount = kern.getAmount() * sizeScale;
+                    int amount = findKerningAmount(lastChar, theChar);
+//                    Kerning kern = findKerningNode(lastChar, theChar);
+//                    if (kern != null){
+//                        kernAmount = kern.getAmount() * sizeScale;
+//                        x += kernAmount * incrScale;
+//                        lineWidth += kernAmount;
+//                        wordWidth += kernAmount;
+//                    }
+                    if (amount != -1){
+                        kernAmount = amount * sizeScale;
                         x += kernAmount * incrScale;
                         lineWidth += kernAmount;
                         wordWidth += kernAmount;
@@ -272,10 +273,10 @@ public class BitmapFont implements Savable {
                                 x += localxAdvance;
                                 lastLineWidth -= localxAdvance;
                                 lineWidth += localxAdvance;
-                                Kerning kern = findKerningNode(newLineLastChar, q.getCharacter());
-                                if (kern != null && useKerning){
-                                    x += kern.getAmount() * sizeScale;
-                                    lineWidth += kern.getAmount() * sizeScale;
+                                int amount = findKerningAmount(newLineLastChar, q.getCharacter());
+                                if (amount != -1 && useKerning){
+                                    x += amount * sizeScale;
+                                    lineWidth += amount * sizeScale;
                                 }
                             }
 
@@ -326,9 +327,9 @@ public class BitmapFont implements Savable {
                 // Adjust for kerning
                 float kernAmount = 0f;
                 if (!firstCharOfLine && useKerning){
-                    Kerning kern = findKerningNode(lastChar, (char) text.charAt(i));
-                    if (kern != null){
-                        kernAmount = kern.getAmount() * sizeScale;
+                    int amount = findKerningAmount(lastChar, (char) text.charAt(i));
+                    if (amount != -1){
+                        kernAmount = amount * sizeScale;
                         x += kernAmount;
                         lineWidth += kernAmount;
                         wordWidth += kernAmount;

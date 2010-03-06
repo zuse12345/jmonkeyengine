@@ -24,4 +24,12 @@ MaterialDef Point Sprite {
         }
     }
 
+    Technique FixedFunc {
+        RenderState {
+            Blend AlphaAdditive
+            DepthWrite Off
+            AlphaTestFalloff 0.01
+        }
+    }
+
 }

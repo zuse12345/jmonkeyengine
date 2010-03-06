@@ -262,7 +262,7 @@ public class Material implements Cloneable, Savable {
             // create technique instance
             TechniqueDef techDef = def.getTechniqueDef(name);
             if (techDef == null)
-                throw new IllegalArgumentException("Technique not found: "+name);
+                throw new IllegalArgumentException("For material "+def.getName()+", technique not found: "+name);
             tech = new Technique(this, techDef);
             techniques.put(name, tech);
         }else if (technique == tech){

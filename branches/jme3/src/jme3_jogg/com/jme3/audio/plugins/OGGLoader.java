@@ -18,7 +18,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 
-public class JOGGLoader implements AssetLoader {
+public class OGGLoader implements AssetLoader {
 
 //    private static int BLOCK_SIZE = 4096*64;
 

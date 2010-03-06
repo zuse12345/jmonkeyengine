@@ -1,55 +1,34 @@
 package com.jme3.system.jogl;
 
-import com.jme3.input.KeyInput;
-import com.jme3.input.MouseInput;
-import com.jme3.input.awt.AwtKeyInput;
-import com.jme3.input.awt.AwtMouseInput;
-import com.jme3.renderer.jogl.JoglRenderer;
 import com.jme3.system.AppSettings;
-import com.jme3.system.G3DContext.Type;
-import com.sun.opengl.util.Animator;
-import com.sun.opengl.util.FPSAnimator;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.DisplayMode;
 import java.awt.Frame;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.media.opengl.DebugGL;
-import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLCanvas;
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLEventListener;
-import javax.media.opengl.TraceGL;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
-public class JoglDisplay extends JoglContext implements GLEventListener {
+public class JoglDisplay extends JoglAbstractDisplay {
 
     private static final Logger logger = Logger.getLogger(JoglDisplay.class.getName());
 
-    protected GraphicsDevice device;
-    protected GLCanvas canvas;
-    protected Frame frame;
-    protected Animator animator;
-    protected AtomicBoolean active = new AtomicBoolean(false);
     protected AtomicBoolean windowCloseRequest = new AtomicBoolean(false);
     protected AtomicBoolean needClose = new AtomicBoolean(false);
-    protected boolean wasActive = false;
-    protected int frameRate;
-    protected boolean useAwt = true;
+    protected Frame frame;
 
     public Type getType() {
         return Type.Display;
     }
-    
+
     protected DisplayMode getFullscreenDisplayMode(DisplayMode[] modes, int width, int height, int bpp, int freq){
         for (DisplayMode mode : modes){
             if (mode.getWidth() == width
@@ -61,7 +40,7 @@ public class JoglDisplay extends JoglContext implements GLEventListener {
         }
         return null;
     }
-    
+
     protected void applySettings(AppSettings settings){
         DisplayMode displayMode;
         if (settings.getWidth() <= 0 || settings.getHeight() <= 0){
@@ -116,27 +95,8 @@ public class JoglDisplay extends JoglContext implements GLEventListener {
         }
     }
 
-    @Override
-    public void create(){
-        device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-
-        GLCapabilities caps = new GLCapabilities();
-        caps.setHardwareAccelerated(true);
-        caps.setDoubleBuffered(true);
-        caps.setStencilBits(settings.getStencilBits());
-        caps.setDepthBits(settings.getDepthBits());
-
-        if (settings.getSamples() > 0){
-            caps.setSampleBuffers(true);
-            caps.setNumSamples(settings.getSamples());
-        }
-
-        canvas = new GLCanvas(caps);
-        if (settings.isVSync()){
-            canvas.getGL().setSwapInterval(1);
-        }
-        canvas.setIgnoreRepaint(true);
-        canvas.addGLEventListener(this);
+    private void initInEDT(){
+        initGLCanvas();
 
         Container contentPane;
         if (useAwt){
@@ -146,12 +106,13 @@ public class JoglDisplay extends JoglContext implements GLEventListener {
             frame = new JFrame(settings.getTitle());
             contentPane = ((JFrame)frame).getContentPane();
         }
+        
+        contentPane.setLayout(new BorderLayout());
+
+        applySettings(settings);
+
         frame.setResizable(false);
         frame.setFocusable(true);
-
-        contentPane.setLayout(new BorderLayout());
-        
-        applySettings(settings);
 
         // only add canvas after frame is visible
         contentPane.add(canvas, BorderLayout.CENTER);
@@ -160,7 +121,7 @@ public class JoglDisplay extends JoglContext implements GLEventListener {
             // now that canvas is attached,
             // determine optimal size to contain it
             frame.setSize(contentPane.getPreferredSize());
-            
+
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
             frame.setLocation((screenSize.width - frame.getWidth()) / 2,
                               (screenSize.height - frame.getHeight()) / 2);
@@ -186,42 +147,22 @@ public class JoglDisplay extends JoglContext implements GLEventListener {
             }
         });
 
-        GL gl = canvas.getGL();
-        if (false){
-            // trace mode
-            // jME already uses err stream, use out instead
-            gl = new TraceGL(gl, System.out);
-        }else if (false){
-            // debug mode
-            gl = new DebugGL(gl);
-        }else{
-            // production mode
-        }
-        renderer = new JoglRenderer(gl);
-        super.create();
-
-        if (frameRate > 0){
-            animator = new FPSAnimator(canvas, frameRate);
-            animator.setRunAsFastAsPossible(true);
-        }else{
-            animator = new Animator(canvas);
-            animator.setRunAsFastAsPossible(true);
-        }
-
-        canvas.requestFocus();
-        animator.start();
-
-        logger.info("Display created.");
+        startGLCanvas();
     }
 
     @Override
-    public KeyInput getKeyInput(){
-        return new AwtKeyInput(canvas);
-    }
-
-    @Override
-    public MouseInput getMouseInput(){
-        return new AwtMouseInput(canvas);
+    public void create(){
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    initInEDT();
+                }
+            });
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        } catch (InvocationTargetException ex) {
+            ex.printStackTrace();
+        }
     }
 
     public void destroy(){
@@ -234,24 +175,6 @@ public class JoglDisplay extends JoglContext implements GLEventListener {
     public void setTitle(String title){
         if (frame != null)
             frame.setTitle(title);
-    }
-
-    /**
-     * Callback.
-     */
-    public void init(GLAutoDrawable drawable) {
-        //((JoglRenderer)renderer).setGL(drawable.getGL());
-        renderer.initialize();
-        listener.initialize();
-    }
-
-    public void setAutoFlushFrames(boolean enabled){
-        if (animator.isAnimating() != enabled){
-            if (enabled)
-                animator.stop();
-            else
-                animator.start();
-        }
     }
 
     /**
@@ -275,6 +198,13 @@ public class JoglDisplay extends JoglContext implements GLEventListener {
             windowCloseRequest.set(false);
         }
 
+        if (animator.isAnimating() != autoFlush){
+            if (autoFlush)
+                animator.stop();
+            else
+                animator.start();
+        }
+
         if (wasActive != active.get()){
             if (!wasActive){
                 listener.gainFocus();
@@ -288,17 +218,4 @@ public class JoglDisplay extends JoglContext implements GLEventListener {
         listener.update();
         renderer.onFrame();
     }
-
-    /**
-     * Callback.
-     */
-    public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-    }
-
-    /**
-     * Callback.
-     */
-    public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {
-    }
-
 }

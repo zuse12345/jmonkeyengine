@@ -1,14 +1,14 @@
 package com.jme3.system.lwjgl;
 
 import com.jme3.system.AppSettings;
-import com.jme3.system.G3DCanvasContext;
-import com.jme3.system.G3DContext.Type;
+import com.jme3.system.JmeCanvasContext;
+import com.jme3.system.JmeContext.Type;
 import java.awt.Canvas;
 import java.util.logging.Logger;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 
-public class LwjglCanvas extends LwjglAbstractDisplay implements G3DCanvasContext {
+public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContext {
 
     private static final Logger logger = Logger.getLogger(LwjglDisplay.class.getName());
     private Canvas canvas;

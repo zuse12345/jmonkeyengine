@@ -2,7 +2,7 @@ package jme3tools.nvtex;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.export.binary.BinaryExporter;
-import com.jme3.system.G3DSystem;
+import com.jme3.system.JmeSystem;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 import g3dtools.converters.ImageToAwt;
@@ -422,7 +422,7 @@ public class NVCompress extends javax.swing.JFrame {
     private void runJ3(File input, File output, String statusStr) throws InterruptedException{
         updateWork(statusStr, 0);
         if (manager == null)
-            manager = G3DSystem.newAssetManager();
+            manager = JmeSystem.newAssetManager();
 
         manager.registerLocator(input.getParent().toString(),
                                 "com.jme3.asset.plugins.FileSystemLocator",

@@ -2,7 +2,7 @@ package g3dtools.converters;
 
 import com.jme3.texture.Image;
 import com.jme3.texture.Image.Format;
-import com.jme3.texture.plugins.AWTLoader;
+import com.jme3.texture.plugins.AwtLoader;
 import com.jme3.util.BufferUtils;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
@@ -299,7 +299,7 @@ public class ImageToAwt {
         }else if ( (rgb && alpha) || (luminance && alpha) ){
             if (do16bit){
                 if (fullalpha){
-                    ColorModel model = AWTLoader.AWT_RGBA4444;
+                    ColorModel model = AwtLoader.AWT_RGBA4444;
                     WritableRaster raster = model.createCompatibleWritableRaster(width, width);
                     out = new BufferedImage(model, raster, false, null);
                 }else{

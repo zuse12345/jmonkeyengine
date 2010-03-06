@@ -9,7 +9,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-public class FileSystemLocator implements AssetLocator {
+public class FileLocator implements AssetLocator {
 
     private File root;
 

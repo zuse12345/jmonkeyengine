@@ -17,7 +17,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import javax.imageio.ImageIO;
 
-public class AWTLoader implements AssetLoader {
+public class AwtLoader implements AssetLoader {
 
     public static final ColorModel AWT_RGBA4444 = new DirectColorModel(16,
                                                                        0xf000,

@@ -523,7 +523,6 @@ public class DDSLoader implements AssetLoader {
         int mipWidth = width;
         int mipHeight = height;
 
-        flip = true;
         int offset = 0;
         for (int mip = 0; mip < mipMapCount; mip++) {
             if (flip){
@@ -570,8 +569,6 @@ public class DDSLoader implements AssetLoader {
             totalSize += sizes[i];
         }
 
-        flip = false; // hack
-        
         ArrayList<ByteBuffer> allMaps = new ArrayList<ByteBuffer>();
         if (depth > 1){
             for (int i = 0; i < depth; i++){

@@ -4,7 +4,7 @@ import com.jme3.math.FastMath;
 import com.jme3.texture.Image.Format;
 import com.jme3.util.BufferUtils;
 import java.nio.ByteBuffer;
-import java.nio.LongBuffer;
+import java.nio.ByteOrder;
 
 /**
  *
@@ -13,43 +13,67 @@ import java.nio.LongBuffer;
 public class DXTFlipper {
 
     private static final ByteBuffer bb = ByteBuffer.allocate(8);
-    private static final LongBuffer lb = bb.asLongBuffer();
+
+    static {
+        bb.order(ByteOrder.LITTLE_ENDIAN);
+    }
 
     private static long readCode5(long data, int x, int y){
-        long shift = (4 * y + x) * 3;
-        long mask = 0x3 << shift;
-        return (int) ((data >>> shift) & mask);
+        long shift =   (4 * y + x) * 3;
+        long mask = 0x7;
+        mask <<= shift;
+        long code = data & mask;
+        code >>= shift;
+        return code;
     }
 
     private static long writeCode5(long data, int x, int y, long code){
-        long shift = (4 * y + x) * 3;
-        long mask = 0x3 << shift;
-        code = (code & 0x3) << shift;
-        data &= ~0x3;
-//        data &= ~mask; // remove prev code
-//        data |= code; // write new code
+        long shift =  (4 * y + x) * 3;
+        long mask = 0x7;
+        code = (code & mask) << shift;
+        mask <<= shift;
+        mask = ~mask;
+        data &= mask;
+        data |= code; // write new code
         return data;
     }
 
     public static void flipDXT5Block(byte[] block, int h){
+        byte c0 = block[0];
+        byte c1 = block[1];
+
         bb.clear();
         bb.put(block, 2, 6).flip();
-        lb.clear();
-        long l = lb.get(0);
-        lb.clear();
+        bb.clear();
+        long l = bb.getLong();
+        long n = l;
+        
+        n = writeCode5(n, 0, 0, readCode5(l, 0, 3));
+        n = writeCode5(n, 1, 0, readCode5(l, 1, 3));
+        n = writeCode5(n, 2, 0, readCode5(l, 2, 3));
+        n = writeCode5(n, 3, 0, readCode5(l, 3, 3));
 
-        for (int y = 0; y < 4; y++){
-            for (int x = 0; x < 4; x++){
-                int y2 = 4 - y - 1;
-                long code = readCode5(l, x, y);
-                l = writeCode5(l, x, y, code);
-            }
-        }
+        n = writeCode5(n, 0, 1, readCode5(l, 0, 2));
+        n = writeCode5(n, 1, 1, readCode5(l, 1, 2));
+        n = writeCode5(n, 2, 1, readCode5(l, 2, 2));
+        n = writeCode5(n, 3, 1, readCode5(l, 3, 2));
 
-        lb.clear();
-        lb.put(0, l).flip();
+        n = writeCode5(n, 0, 2, readCode5(l, 0, 1));
+        n = writeCode5(n, 1, 2, readCode5(l, 1, 1));
+        n = writeCode5(n, 2, 2, readCode5(l, 2, 1));
+        n = writeCode5(n, 3, 2, readCode5(l, 3, 1));
+
+        n = writeCode5(n, 0, 3, readCode5(l, 0, 0));
+        n = writeCode5(n, 1, 3, readCode5(l, 1, 0));
+        n = writeCode5(n, 2, 3, readCode5(l, 2, 0));
+        n = writeCode5(n, 3, 3, readCode5(l, 3, 0));
+            
+        bb.clear();
+        bb.putLong(n);
         bb.clear();
         bb.get(block, 2, 6).flip();
+
+        assert c0 == block[0] && c1 == block[1];
     }
 
     public static void flipDXT3Block(byte[] block, int h){
@@ -130,12 +154,15 @@ public class DXTFlipper {
             case DXT5:
                 type = 3;
                 break;
+            case LATC:
+                type = 4;
+                break;
             default:
                 throw new IllegalArgumentException();
         }
 
         // DXT1 uses 8 bytes per block,
-        // DXT3 & DXT5 use 16 bytes per block
+        // DXT3, DXT5, LATC use 16 bytes per block
         int bpb = type == 1 ? 8 : 16;
 
         ByteBuffer retImg = BufferUtils.createByteBuffer(blocksX * blocksY * bpb);
@@ -154,7 +181,10 @@ public class DXTFlipper {
                 img.limit(blockByteOffset + bpb);
 
                 img.get(colorBlock);
-                flipDXT1Block(colorBlock, h);
+                if (type == 4)
+                    flipDXT5Block(colorBlock, h);
+                else
+                    flipDXT1Block(colorBlock, h);
 
                 // write block (no need to flip block indexes, only pixels
                 // inside block
@@ -163,8 +193,12 @@ public class DXTFlipper {
                 if (alphaBlock != null){
                     img.get(alphaBlock);
                     switch (type){
-                        case 2: flipDXT3Block(alphaBlock, h); break;
-                        case 3: flipDXT5Block(alphaBlock, h); break;
+                        case 2:
+                            flipDXT3Block(alphaBlock, h); break;
+                        case 3:
+                        case 4: 
+                            flipDXT5Block(alphaBlock, h);
+                            break;
                     }
                     retImg.put(alphaBlock);
                 }
@@ -192,14 +226,23 @@ public class DXTFlipper {
                     if (alphaBlock != null){
                         img.get(alphaBlock);
                         switch (type){
-                            case 2: flipDXT3Block(alphaBlock, h); break;
-                            case 3: flipDXT5Block(alphaBlock, h); break;
+                            case 2:
+                                flipDXT3Block(alphaBlock, h);
+                                break;
+                            case 3:
+                            case 4:
+                                flipDXT5Block(alphaBlock, h);
+                                break;
                         }
                         retImg.put(alphaBlock);
                     }
 
                     img.get(colorBlock);
-                    flipDXT1Block(colorBlock, h);
+                    if (type == 4)
+                        flipDXT5Block(colorBlock, h);
+                    else
+                        flipDXT1Block(colorBlock, h);
+                    
                     retImg.put(colorBlock);
                 }
             }

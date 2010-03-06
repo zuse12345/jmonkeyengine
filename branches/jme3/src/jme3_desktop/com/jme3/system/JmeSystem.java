@@ -88,7 +88,7 @@ public class JmeSystem {
     }
 
     public static boolean showSettingsDialog(AppSettings settings){
-        URL iconUrl = JmeSystem.class.getResource("com/g3d/app/Monkey.png");
+        URL iconUrl = JmeSystem.class.getResource("com/jme3/app/Monkey.png");
         SettingsDialog dialog = new SettingsDialog(settings, iconUrl);
         dialog.showDialog();
         return dialog.waitForSelection() != SettingsDialog.CANCEL_SELECTION;

@@ -1,0 +1,5 @@
+Material My Material : solid_color.j3md {
+     MaterialParameters {
+         m_Color : 1 1 1 1
+     }
+}

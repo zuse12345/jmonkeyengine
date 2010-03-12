@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+OpenIDE-Module: com.jme3.gde.core.libraries/3
+OpenIDE-Module-Implementation-Version: 4835
+OpenIDE-Module-Layer: com/jme3/gde/core/libraries/layer.xml
+OpenIDE-Module-Localizing-Bundle: com/jme3/gde/core/libraries/Bundle.properties
+OpenIDE-Module-Specification-Version: 3.0.0
+

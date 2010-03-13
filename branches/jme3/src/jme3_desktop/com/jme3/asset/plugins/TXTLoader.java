@@ -5,7 +5,7 @@ import com.jme3.asset.AssetLoader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class TxtLoader implements AssetLoader {
+public class TXTLoader implements AssetLoader {
 
     public Object load(AssetInfo info) throws IOException {
         StringBuilder sb = new StringBuilder();

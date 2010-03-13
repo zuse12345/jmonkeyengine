@@ -7,7 +7,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
-import g3dtools.converters.MipMapGenerator;
+import jme3tools.converters.MipMapGenerator;
 
 public class TestMipMapGen extends SimpleApplication {
 

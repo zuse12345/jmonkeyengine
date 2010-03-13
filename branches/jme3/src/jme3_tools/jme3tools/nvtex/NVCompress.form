@@ -81,7 +81,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="btnRemoveFiles" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="sclFileList" pref="202" max="32767" attributes="0"/>
+                  <Component id="sclFileList" pref="263" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -99,7 +99,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="pnlExportOpt" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="sclFileList" pref="328" max="32767" attributes="0"/>
+                  <Component id="sclFileList" pref="379" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -212,7 +212,7 @@
                           <Component id="cmbCompressType" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace pref="54" max="32767" attributes="0"/>
+                  <EmptySpace pref="76" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -328,7 +328,7 @@
                       <Group type="102" attributes="0">
                           <Component id="lblTargetDir" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="txtTargetDir" pref="135" max="32767" attributes="0"/>
+                          <Component id="txtTargetDir" pref="176" max="32767" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="btnBrowse" min="-2" max="-2" attributes="0"/>
                       </Group>

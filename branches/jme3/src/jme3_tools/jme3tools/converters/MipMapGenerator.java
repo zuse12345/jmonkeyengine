@@ -1,8 +1,8 @@
-package g3dtools.converters;
+package jme3tools.converters;
 
 import com.jme3.texture.Image;
 import com.jme3.texture.Image.Format;
-import com.jme3.texture.plugins.AwtLoader;
+import com.jme3.texture.plugins.AWTLoader;
 import com.jme3.util.BufferUtils;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -33,7 +33,7 @@ public class MipMapGenerator {
         int level = 0;
 
         BufferedImage current = original;
-        AwtLoader loader = new AwtLoader();
+        AWTLoader loader = new AWTLoader();
         ArrayList<ByteBuffer> output = new ArrayList<ByteBuffer>();
         int totalSize = 0;
         Format format = null;

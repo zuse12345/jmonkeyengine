@@ -8,7 +8,6 @@ import com.jme3.asset.AssetLoader;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState.BlendMode;
-import com.jme3.material.RenderState.FaceCullMode;
 import com.jme3.math.ColorRGBA;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
@@ -95,6 +94,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     public void startDocument() {
         geoms.clear();
         usesSharedGeom.clear();
+        lodLevels.clear();
     }
 
     @Override

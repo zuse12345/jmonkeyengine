@@ -3,17 +3,23 @@ package com.jme3.system;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeContext;
 import com.jme3.app.SettingsDialog;
+import com.jme3.app.SettingsDialog.SelectionListener;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.DesktopAssetManager;
 import com.jme3.util.G3DFormatter;
 import com.jme3.audio.AudioRenderer;
+import java.awt.EventQueue;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 
 public class JmeSystem {
 
@@ -87,11 +93,48 @@ public class JmeSystem {
         return new DesktopAssetManager(true);
     }
 
-    public static boolean showSettingsDialog(AppSettings settings){
-        URL iconUrl = JmeSystem.class.getResource("com/jme3/app/Monkey.png");
-        SettingsDialog dialog = new SettingsDialog(settings, iconUrl);
-        dialog.showDialog();
-        return dialog.waitForSelection() != SettingsDialog.CANCEL_SELECTION;
+    public static boolean showSettingsDialog(AppSettings sourceSettings){
+        if (SwingUtilities.isEventDispatchThread())
+            throw new IllegalStateException("Cannot run from EDT");
+
+        final URL iconUrl = JmeSystem.class.getResource("/com/jme3/app/Monkey.png");
+        final AppSettings settings = new AppSettings(false);
+        settings.copyFrom(sourceSettings);
+
+        final AtomicBoolean done = new AtomicBoolean();
+        final AtomicInteger result = new AtomicInteger();
+        final Object lock = new Object();
+
+        final SelectionListener selectionListener = new SelectionListener(){
+            public void onSelection(int selection){
+                synchronized (lock){
+                    done.set(true);
+                    result.set(selection);
+                    lock.notifyAll();
+                }
+            }
+        };
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                synchronized (lock) {
+                    SettingsDialog dialog = new SettingsDialog(settings, iconUrl);
+                    dialog.setSelectionListener(selectionListener);
+                    dialog.showDialog();
+                }
+            }
+        });
+     
+        synchronized (lock){
+            while (!done.get())
+                try {
+                    lock.wait();
+                } catch (InterruptedException ex) {
+                }
+        }
+
+        sourceSettings.copyFrom(settings);
+
+        return result.get() == SettingsDialog.APPROVE_SELECTION;
     }
 
     private static boolean is64Bit(String arch){

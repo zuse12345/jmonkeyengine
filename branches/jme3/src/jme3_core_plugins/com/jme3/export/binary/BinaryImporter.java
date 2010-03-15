@@ -93,6 +93,10 @@ public final class BinaryImporter implements G3DImporter {
         return new BinaryImporter();
     }
 
+    public void setAssetManager(AssetManager manager){
+        this.assetManager = manager;
+    }
+
     public AssetManager getAssetManager(){
         return assetManager;
     }

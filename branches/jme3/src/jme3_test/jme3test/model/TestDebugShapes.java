@@ -1,4 +1,4 @@
-package jme3test;
+package jme3test.model;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.material.Material;

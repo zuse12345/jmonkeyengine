@@ -871,7 +871,6 @@ final class BinaryOutputCapsule implements OutputCapsule {
         int length = value.limit();
         write(length);
         for (int x = 0; x < length; x++) {
-//            write(value.get());
             writeForBuffer(value.get());
         }
         value.rewind();
@@ -889,7 +888,6 @@ final class BinaryOutputCapsule implements OutputCapsule {
         write(length);
 
         for (int x = 0; x < length; x++) {
-//            write(value.get());
             writeForBuffer(value.get());
         }
         value.rewind();

@@ -12,6 +12,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.shader.Shader;
 import com.jme3.shader.ShaderKey;
 import com.jme3.texture.Texture;
+import com.jme3.texture.plugins.AwtLoader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -43,7 +44,7 @@ public class DesktopAssetManager implements AssetManager {
     public DesktopAssetManager(boolean loadDefaults){
         if (loadDefaults){
             AssetConfig cfg = new AssetConfig(this);
-            InputStream stream = AssetManager.class.getResourceAsStream("Desktop.cfg");
+            InputStream stream = DesktopAssetManager.class.getResourceAsStream("Desktop.cfg");
             try{
                 cfg.loadText(stream);
             }catch (IOException ex){
@@ -64,6 +65,7 @@ public class DesktopAssetManager implements AssetManager {
         try{
             clazz = (Class<? extends AssetLoader>) Class.forName(clsName);
         }catch (ClassNotFoundException ex){
+            logger.log(Level.WARNING, "Failed to find loader: "+clsName, ex);
         }
         if (clazz != null){
             registerLoader(clazz, extensions);
@@ -75,6 +77,7 @@ public class DesktopAssetManager implements AssetManager {
         try{
             clazz = (Class<? extends AssetLoader>) Class.forName(clsName);
         }catch (ClassNotFoundException ex){
+            logger.log(Level.WARNING, "Failed to find locator: "+clsName, ex);
         }
         if (clazz != null){
             registerLocator(rootPath, clazz, extensions);

@@ -5,6 +5,9 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.asset.AssetKey;
 import com.jme3.export.binary.BinaryExporter;
 import com.jme3.export.binary.BinaryImporter;
+import com.jme3.light.DirectionalLight;
+import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector3f;
 import com.jme3.scene.plugins.ogre.OgreMaterialList;
 import com.jme3.scene.plugins.ogre.OgreMeshKey;
 import java.io.FileInputStream;
@@ -24,7 +27,12 @@ public class TestOgreConvert extends SimpleApplication {
         Model ogreModel = (Model) manager.loadContent(new OgreMeshKey("OTO.meshxml", materials));
         ogreModel.setLocalScale(0.1f);
 
-        try {
+        DirectionalLight dl = new DirectionalLight();
+        dl.setColor(ColorRGBA.White);
+        dl.setDirection(new Vector3f(-1,-1,-1).normalizeLocal());
+        rootNode.addLight(dl);
+
+//        try {
 //            ByteArrayOutputStream baos = new ByteArrayOutputStream();
 //            BinaryExporter exp = new BinaryExporter();
 //            exp.save(ogreModel, baos);
@@ -34,20 +42,21 @@ public class TestOgreConvert extends SimpleApplication {
 //            Model ogreModelReloaded = (Model) imp.load(bais, null, null);
 //            ogreModelReloaded.setAnimation("push");
 
-            FileOutputStream fos = new FileOutputStream("C:\\mymodel.j3o");
-            BinaryExporter exp = new BinaryExporter();
-            exp.save(ogreModel, fos);
-            fos.close();
+//            FileOutputStream fos = new FileOutputStream("C:\\mymodel.j3o");
+//            BinaryExporter exp = new BinaryExporter();
+//            exp.save(ogreModel, fos);
+//            fos.close();
+//
+//            FileInputStream fis = new FileInputStream("C:\\mymodel.j3o");
+//            BinaryImporter imp = new BinaryImporter();
+//            imp.setAssetManager(manager);
+//            Model ogreModelReloaded = (Model) imp.load(fis, null, null);
+            ogreModel.setAnimation("push");
+//            fis.close();
 
-            FileInputStream fis = new FileInputStream("C:\\mymodel.j3o");
-            BinaryImporter imp = new BinaryImporter();
-            Model ogreModelReloaded = (Model) imp.load(fis, null, null);
-            ogreModelReloaded.setAnimation("push");
-            fis.close();
-
-            rootNode.attachChild(ogreModelReloaded);
-        } catch (IOException ex){
-            ex.printStackTrace();
-        }
+            rootNode.attachChild(ogreModel);
+//        } catch (IOException ex){
+//            ex.printStackTrace();
+//        }
     }
 }

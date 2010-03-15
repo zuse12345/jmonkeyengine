@@ -17,9 +17,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
+import java.util.Stack;
 import java.util.logging.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -33,7 +32,7 @@ public class SkeletonLoader extends DefaultHandler implements AssetLoader {
     private static final Logger logger = Logger.getLogger(SceneLoader.class.getName());
 
     private AssetManager assetManager;
-    private Queue<String> elementStack = new LinkedList<String>();
+    private Stack<String> elementStack = new Stack<String>();
 
     private HashMap<Integer, Bone> indexToBone = new HashMap<Integer, Bone>();
     private HashMap<String, Bone> nameToBone = new HashMap<String, Bone>();
@@ -99,7 +98,7 @@ public class SkeletonLoader extends DefaultHandler implements AssetLoader {
             parent.addChild(bone);
         }else if (qName.equals("bone")){
             assert elementStack.peek().equals("bones");
-
+           
             // insert bone into indexed map
             bone = new Bone(attribs.getValue("name"));
             int id = SAXUtil.parseInt(attribs.getValue("id"));
@@ -190,7 +189,7 @@ public class SkeletonLoader extends DefaultHandler implements AssetLoader {
             nameToBone.clear();
         }
         assert elementStack.peek().equals(qName);
-        elementStack.remove();
+        elementStack.pop();
     }
 
     /**

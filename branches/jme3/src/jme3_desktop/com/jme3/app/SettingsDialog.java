@@ -34,6 +34,7 @@ package com.jme3.app;
 
 import com.jme3.system.*;
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.DisplayMode;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -77,6 +78,10 @@ import javax.swing.UIManager;
  */
 public final class SettingsDialog extends JDialog {
 
+    public static interface SelectionListener {
+        public void onSelection(int selection);
+    }
+
     private static final Logger logger = Logger.getLogger(SettingsDialog.class.getName());
 
     private static final long serialVersionUID = 1L;
@@ -117,7 +122,7 @@ public final class SettingsDialog extends JDialog {
     
     private int selection = 0;
     
-    private final Object selectionLock = new Object();
+    private SelectionListener selectionListener = null;
 
     /**
      * Constructor for the <code>PropertiesDialog</code>. Creates a
@@ -157,6 +162,8 @@ public final class SettingsDialog extends JDialog {
         this.source = source;
         this.imageFile = imageFile;
 
+        setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+
         GraphicsDevice device = GraphicsEnvironment
                                     .getLocalGraphicsEnvironment()
                                     .getDefaultScreenDevice();
@@ -167,28 +174,17 @@ public final class SettingsDialog extends JDialog {
         createUI();
     }
 
-    /**
-     * Waits until the user has either approved or canceled/closed the dialog.
-     * @return either SettingsDialog.APPROVE_SELECTION or
-     * SettingsDialog.CANCEL_SELECTION
-     */
-    public int waitForSelection(){
-        synchronized (selectionLock){
-            while (selection == NO_SELECTION){
-                try{
-                    selectionLock.wait();
-                } catch (InterruptedException ex){
-                }
-            }
-            return selection;
-        }
+    public void setSelectionListener(SelectionListener sl){
+        this.selectionListener = sl;
+    }
+
+    public int getUserSelection(){
+        return selection;
     }
 
     private void setUserSelection(int selection){
-        synchronized (selectionLock){
-            this.selection = selection;
-            selectionLock.notifyAll();
-        }
+        this.selection = selection;
+        selectionListener.onSelection(selection);
     }
 
     /**

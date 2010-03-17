@@ -6,25 +6,25 @@
             <name>jMonkeyEngine3</name>
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <source-roots>
-                <root id="jme3_animation.dir" name="Animation"/>
-                <root id="src.dir" name="Core"/>
-                <root id="jme3_core-data.dir" name="Core-Data"/>
-                <root id="jme3_core_plugins.dir" name="Core-Plugins"/>
-                <root id="jme3_desktop.dir" name="Desktop"/>
-                <root id="jme3_desktop-fx.dir" name="Desktop-FX"/>
-                <root id="jme3_games.dir" name="Game"/>
-                <root id="src.jme3_jbullet.dir" name="Bullet Physics"/>
-                <root id="jme3_joal.dir" name="OpenAL"/>
-                <root id="jme3_jogg.dir" name="JOgg"/>
-                <root id="jme3_jogl.dir" name="JOGL"/>
-                <root id="jme3_lwjgl-oal.dir" name="LWJGL OpenAL"/>
-                <root id="jme3_lwjgl-ogl.dir" name="LWJGL OpenGL"/>
-                <root id="jme3_ogre.dir" name="OgreXML"/>
-                <root id="jme3_pack.dir" name="Pack"/>
-                <root id="jme3_test.dir" name="Tests"/>
-                <root id="jme3_test-data.dir" name="Tests-Data"/>
-                <root id="jme3_tools.dir" name="Tools"/>
-                <root id="jme3_xml.dir" name="XML"/>
+                <root id="src.animation.dir" name="Animation"/>
+                <root id="src.core.dir" name="Core"/>
+                <root id="src.core-data.dir" name="Core-Data"/>
+                <root id="src.core-plugins.dir" name="Core-Plugins"/>
+                <root id="src.desktop.dir" name="Desktop"/>
+                <root id="src.desktop-fx.dir" name="Desktop-FX"/>
+                <root id="src.games.dir" name="Games"/>
+                <root id="src.jbullet.dir" name="JBullet"/>
+                <root id="src.joal.dir" name="JOAL"/>
+                <root id="src.jogg.dir" name="JOGG"/>
+                <root id="src.jogl.dir" name="JOGL"/>
+                <root id="src.lwjgl-oal.dir" name="LWJGL-OAL"/>
+                <root id="src.lwjgl-ogl.dir" name="LWJGL-OGL"/>
+                <root id="src.ogre.dir" name="Ogre"/>
+                <root id="src.pack.dir" name="Pack"/>
+                <root id="src.test.dir" name="Test"/>
+                <root id="src.test-data.dir" name="Test-Data"/>
+                <root id="src.tools.dir" name="Tools"/>
+                <root id="src.xml.dir" name="XML"/>
             </source-roots>
             <test-roots/>
         </data>

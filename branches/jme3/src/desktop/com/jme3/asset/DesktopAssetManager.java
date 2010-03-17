@@ -12,7 +12,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.shader.Shader;
 import com.jme3.shader.ShaderKey;
 import com.jme3.texture.Texture;
-import com.jme3.texture.plugins.AwtLoader;
+import com.jme3.texture.plugins.AWTLoader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;

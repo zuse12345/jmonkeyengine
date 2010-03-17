@@ -162,7 +162,8 @@ public final class SettingsDialog extends JDialog {
         this.source = source;
         this.imageFile = imageFile;
 
-        setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+//        setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+        setModal(true);
 
         GraphicsDevice device = GraphicsEnvironment
                                     .getLocalGraphicsEnvironment()

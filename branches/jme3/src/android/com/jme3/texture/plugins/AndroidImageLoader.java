@@ -1,14 +1,12 @@
-package com.g3d.texture.plugins;
+package com.jme3.texture.plugins;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import com.g3d.asset.AssetInfo;
-import com.g3d.asset.AssetLoader;
-import com.g3d.asset.TextureKey;
-import com.g3d.texture.Image;
-import com.g3d.texture.Image.Format;
-import com.g3d.util.BufferUtils;
+import com.jme3.asset.AssetInfo;
+import com.jme3.asset.AssetLoader;
+import com.jme3.texture.Image;
+import com.jme3.texture.Image.Format;
+import com.jme3.util.BufferUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;

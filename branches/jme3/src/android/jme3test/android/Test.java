@@ -1,13 +1,13 @@
-package g3dtest.android;
+package jme3test.android;
 
-import com.g3d.app.SimpleApplication;
-import com.g3d.asset.TextureKey;
-import com.g3d.material.Material;
-import com.g3d.math.Transform;
-import com.g3d.scene.Geometry;
-import com.g3d.scene.shape.Sphere;
-import com.g3d.texture.Texture;
-import g3dtools.converters.model.ModelConverter;
+import com.jme3.app.SimpleApplication;
+import com.jme3.asset.TextureKey;
+import com.jme3.material.Material;
+import com.jme3.math.Transform;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.shape.Sphere;
+import com.jme3.texture.Texture;
+import jme3tools.converters.model.ModelConverter;
 
 public class Test extends SimpleApplication {
 

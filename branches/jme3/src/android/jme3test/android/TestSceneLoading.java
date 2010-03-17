@@ -1,11 +1,12 @@
-package g3dtest.android;
+package jme3test.android;
 
-import com.g3d.app.SimpleApplication;
-import com.g3d.math.Quaternion;
-import com.g3d.math.Vector3f;
-import com.g3d.scene.Node;
-import com.g3d.scene.Spatial;
-import com.g3d.scene.Spatial.CullHint;
+import com.jme3.app.SimpleApplication;
+import com.jme3.math.Quaternion;
+import com.jme3.math.Vector3f;
+import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
+import com.jme3.scene.Spatial.CullHint;
+
 
 public class TestSceneLoading extends SimpleApplication {
 

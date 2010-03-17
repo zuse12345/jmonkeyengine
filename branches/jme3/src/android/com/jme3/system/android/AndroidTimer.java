@@ -30,9 +30,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.g3d.system.android;
+package com.jme3.system.android;
 
-import com.g3d.system.*;
+import com.jme3.system.Timer;
 
 /**
  * <code>NanoTimer</code> is a System.nanoTime implementation of <code>Timer</code>.

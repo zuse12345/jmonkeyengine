@@ -1,10 +1,10 @@
-package com.g3d.renderer.android;
+package com.jme3.renderer.android;
 
 import android.graphics.Bitmap;
 import android.opengl.GLUtils;
-import com.g3d.math.FastMath;
-import com.g3d.texture.Image;
-import com.g3d.texture.Image.Format;
+import com.jme3.math.FastMath;
+import com.jme3.texture.Image;
+import com.jme3.texture.Image.Format;
 import java.nio.ByteBuffer;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -172,16 +172,6 @@ public class TextureUtil {
             case RGBA8:
                 format = gl.GL_RGBA;
                 dataType = gl.GL_UNSIGNED_BYTE;
-                break;
-            case Pal4_RGB565:
-                format = gl.GL_PALETTE4_R5_G6_B5_OES;
-                dataType = gl.GL_UNSIGNED_BYTE;
-                compress = true;
-                break;
-            case Pal8_RGB565:
-                format = gl.GL_PALETTE8_R5_G6_B5_OES;
-                dataType = gl.GL_UNSIGNED_BYTE;
-                compress = true;
                 break;
             default:
                 throw new UnsupportedOperationException("Unrecognized format: "+fmt);

@@ -1,17 +1,16 @@
-package com.g3d.input.android;
+package com.jme3.input.android;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import com.g3d.input.KeyInput;
-import com.g3d.input.MouseInput;
-import com.g3d.input.RawInputListener;
-import com.g3d.input.event.KeyInputEvent;
-import com.g3d.input.event.MouseButtonEvent;
-import com.g3d.input.event.MouseMotionEvent;
+import com.jme3.input.KeyInput;
+import com.jme3.input.MouseInput;
+import com.jme3.input.RawInputListener;
+import com.jme3.input.event.KeyInputEvent;
+import com.jme3.input.event.MouseButtonEvent;
+import com.jme3.input.event.MouseMotionEvent;
 
 public class AndroidInput extends GLSurfaceView implements KeyInput, MouseInput {
     

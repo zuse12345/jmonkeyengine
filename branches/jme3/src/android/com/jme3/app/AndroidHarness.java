@@ -1,13 +1,14 @@
 package com.jme3.app;
 
 import android.app.Activity;
+import android.content.res.Resources;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
-import com.g3d.system.AppSettings;
-import com.g3d.system.G3DSystem;
-import com.g3d.system.android.OGLESContext;
+import com.jme3.system.AppSettings;
+import com.jme3.system.JmeSystem;
+import com.jme3.system.android.OGLESContext;
 
 /**
  *
@@ -22,7 +23,7 @@ public class AndroidHarness extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        G3DSystem.setResources(getResources());
+        JmeSystem.setResources(getResources());
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -30,7 +31,7 @@ public class AndroidHarness extends Activity {
 
         AppSettings settings = new AppSettings(true);
 
-        String appClass = "g3dtest.android.TestSceneLoading";
+        String appClass = getResources().getString(R.string.jme3_appclass);
         Application app = null;
         try{
             Class<? extends Application> clazz = (Class<? extends Application>) Class.forName(appClass);

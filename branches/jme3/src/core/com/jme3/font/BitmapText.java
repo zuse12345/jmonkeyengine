@@ -27,6 +27,9 @@ public class BitmapText extends Geometry {
     public BitmapText(BitmapFont font, boolean rightToLeft, boolean arrayBased){
         super("BitmapFont", new Mesh());
 
+        if (font == null)
+            throw new NullPointerException("'font' cannot be null.");
+
         setQueueBucket(Bucket.Gui);
         setCullHint(CullHint.Never);
 

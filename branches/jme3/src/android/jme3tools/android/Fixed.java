@@ -1,4 +1,4 @@
-package g3dtools.android;
+package jme3tools.android;
 
 import java.util.Random;
 

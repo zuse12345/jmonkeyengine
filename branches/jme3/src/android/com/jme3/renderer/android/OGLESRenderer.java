@@ -1,29 +1,31 @@
-package com.g3d.renderer.android;
+package com.jme3.renderer.android;
 
-import com.g3d.light.DirectionalLight;
-import com.g3d.light.Light;
-import com.g3d.light.LightList;
-import com.g3d.light.PointLight;
-import com.g3d.material.RenderState;
-import com.g3d.math.ColorRGBA;
-import com.g3d.math.Matrix4f;
-import com.g3d.renderer.Caps;
-import com.g3d.renderer.GLObjectManager;
-import com.g3d.renderer.IDList;
-import com.g3d.renderer.RenderContext;
-import com.g3d.renderer.Renderer;
-import com.g3d.scene.Mesh;
-import com.g3d.scene.Mesh.Mode;
-import com.g3d.scene.VertexBuffer;
-import com.g3d.scene.VertexBuffer.Type;
-import com.g3d.scene.VertexBuffer.Usage;
-import com.g3d.shader.Shader;
-import com.g3d.shader.Shader.ShaderSource;
-import com.g3d.texture.FrameBuffer;
-import com.g3d.texture.Image;
-import com.g3d.texture.Texture;
-import com.g3d.texture.Texture.WrapAxis;
-import com.g3d.util.BufferUtils;
+import com.jme3.light.DirectionalLight;
+import com.jme3.light.Light;
+import com.jme3.light.LightList;
+import com.jme3.light.PointLight;
+import com.jme3.material.RenderState;
+import com.jme3.math.ColorRGBA;
+import com.jme3.math.Matrix4f;
+import com.jme3.renderer.Caps;
+import com.jme3.renderer.GLObjectManager;
+import com.jme3.renderer.IDList;
+import com.jme3.renderer.RenderContext;
+import com.jme3.renderer.Renderer;
+import com.jme3.scene.Mesh;
+import com.jme3.scene.Mesh.Mode;
+import com.jme3.scene.VertexBuffer;
+import com.jme3.scene.VertexBuffer.Type;
+import com.jme3.scene.VertexBuffer.Usage;
+import com.jme3.shader.Shader;
+import com.jme3.shader.Shader.ShaderSource;
+import com.jme3.texture.FrameBuffer;
+import com.jme3.texture.Image;
+import com.jme3.texture.Texture;
+import com.jme3.texture.Texture.WrapAxis;
+import com.jme3.util.BufferUtils;
+import com.jme3.util.IntMap;
+import com.jme3.util.IntMap.Entry;
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -861,16 +863,18 @@ public final class OGLESRenderer implements Renderer {
         }
     }
 
-    private void renderMeshDefault(Mesh mesh, int count) {
+    private void renderMeshDefault(Mesh mesh, int lod, int count) {
         VertexBuffer indices = null;
-
         VertexBuffer interleavedData = mesh.getBuffer(Type.InterleavedData);
-        VertexBuffer[] buffers = mesh.getBuffers();
-        for (int i = buffers.length - 1; i >= 0; i--){
-            VertexBuffer vb = buffers[i];
-            if (vb == null)
-                continue;
-            
+        IntMap<VertexBuffer> buffers = mesh.getBuffers();
+        if (mesh.getNumLodLevels() > 0){
+            indices = mesh.getLodLevel(lod);
+        }else{
+            indices = buffers.get(Type.Index.ordinal());
+        }
+        for (Entry<VertexBuffer> entry : buffers){
+            VertexBuffer vb = entry.getValue();
+
             if (vb.getBufferType() == Type.InterleavedData
              || vb.getUsage() == Usage.CpuOnly) // ignore cpu-only buffers
                 continue;
@@ -897,32 +901,32 @@ public final class OGLESRenderer implements Renderer {
         clearTextureUnits();
     }
 
-    private void renderMeshVBO(Mesh mesh, int count){
+    private void renderMeshVBO(Mesh mesh, int lod, int count){
         VertexBuffer indices = null;
         VertexBuffer interleavedData = mesh.getBuffer(Type.InterleavedData);
         if (interleavedData != null && interleavedData.isUpdateNeeded()){
             updateBufferData(interleavedData);
         }
-        VertexBuffer[] buffers = mesh.getBuffers();
-        for (int i = buffers.length - 1; i >= 0; i--){
-            VertexBuffer vb = buffers[i];
-            if (vb == null)
-                continue;
-//        for (VertexBuffer vb : mesh.getBuffers()){
+        IntMap<VertexBuffer> buffers = mesh.getBuffers();
+        if (mesh.getNumLodLevels() > 0){
+            indices = mesh.getLodLevel(lod);
+        }else{
+            indices = buffers.get(Type.Index.ordinal());
+        }
+        for (Entry<VertexBuffer> entry : buffers){
+            VertexBuffer vb = entry.getValue();
+
             if (vb.getBufferType() == Type.InterleavedData
-             || vb.getUsage() == Usage.CpuOnly) // ignore cpu-only buffers
+             || vb.getUsage() == Usage.CpuOnly // ignore cpu-only buffers
+             || vb.getBufferType() == Type.Index)
                 continue;
 
-            if (vb.getBufferType() == Type.Index){
-                indices = vb;
+            if (vb.getStride() == 0){
+                // not interleaved
+                setVertexAttribVBO(vb, null);
             }else{
-                if (vb.getStride() == 0){
-                    // not interleaved
-                    setVertexAttribVBO(vb, null);
-                }else{
-                    // interleaved
-                    setVertexAttribVBO(vb, interleavedData);
-                }
+                // interleaved
+                setVertexAttribVBO(vb, interleavedData);
             }
         }
 
@@ -935,16 +939,16 @@ public final class OGLESRenderer implements Renderer {
         clearTextureUnits();
     }
 
-    public void renderMesh(Mesh mesh, int count){
+    public void renderMesh(Mesh mesh, int lod, int count){
         // check if texturing is used for new model, if not
         // disable texturing entirely.
         checkTexturingUsed();
         if (gl11 != null){
             // use vbo
-            renderMeshVBO(mesh, count);
+            renderMeshVBO(mesh, lod, count);
         }else{
             // use vertex arrays
-            renderMeshDefault(mesh, count);
+            renderMeshDefault(mesh, lod, count);
         }
     }
 }

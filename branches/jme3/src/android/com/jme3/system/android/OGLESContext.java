@@ -1,23 +1,23 @@
-package com.g3d.system.android;
+package com.jme3.system.android;
 
 import android.app.Activity;
 import android.opengl.GLSurfaceView;
 import android.view.SurfaceHolder;
-import com.g3d.input.JoyInput;
-import com.g3d.input.KeyInput;
-import com.g3d.input.MouseInput;
-import com.g3d.input.android.AndroidInput;
-import com.g3d.renderer.android.OGLESRenderer;
-import com.g3d.system.AppSettings;
-import com.g3d.system.G3DContext;
-import com.g3d.system.SystemListener;
-import com.g3d.system.Timer;
+import com.jme3.input.JoyInput;
+import com.jme3.input.KeyInput;
+import com.jme3.input.MouseInput;
+import com.jme3.input.android.AndroidInput;
+import com.jme3.renderer.android.OGLESRenderer;
+import com.jme3.system.AppSettings;
+import com.jme3.system.JmeContext;
+import com.jme3.system.SystemListener;
+import com.jme3.system.Timer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class OGLESContext implements G3DContext, GLSurfaceView.Renderer {
+public class OGLESContext implements JmeContext, GLSurfaceView.Renderer {
 
     private static final Logger logger = Logger.getLogger(OGLESContext.class.getName());
 
@@ -102,7 +102,7 @@ public class OGLESContext implements G3DContext, GLSurfaceView.Renderer {
         return settings;
     }
 
-    public com.g3d.renderer.Renderer getRenderer() {
+    public com.jme3.renderer.Renderer getRenderer() {
         return renderer;
     }
 
@@ -142,7 +142,7 @@ public class OGLESContext implements G3DContext, GLSurfaceView.Renderer {
     // SystemListener:reshape
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         settings.setResolution(width, height);
-		listener.reshape(width, height);
+        listener.reshape(width, height);
     }
 
     // SystemListener:update

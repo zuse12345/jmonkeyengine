@@ -190,6 +190,10 @@ public class PhysicsNode extends CollisionObject{
         setDirty(true);
     }
 
+    public void superSetTransformRefresh() {
+        super.setTransformRefresh();
+    }
+
     @Override
     public void updateLogicalState(float tpf) {
         super.updateLogicalState(tpf);
@@ -210,8 +214,6 @@ public class PhysicsNode extends CollisionObject{
         }
     }
 
-    //TODO: bwaah.. remove, but right now its done in such a way that its ridiculously complicated..
-    private Transform tempTrans=new Transform();
     /**
      * only to be called from physics thread!!
      */

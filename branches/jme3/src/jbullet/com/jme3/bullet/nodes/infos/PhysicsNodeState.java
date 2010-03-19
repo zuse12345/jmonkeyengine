@@ -88,7 +88,7 @@ public class PhysicsNodeState implements MotionState{
         jmeLocationDirty=false;
     }
 
-    public synchronized void applyTransform(Spatial spatial){
+    public synchronized void applyTransform(PhysicsNode spatial){
         if(!physicsLocationDirty) return;
         if(spatial.getParent()!=null){
             Spatial parent=spatial.getParent();
@@ -107,8 +107,7 @@ public class PhysicsNodeState implements MotionState{
             location.set(worldLocation);
             rotation.set(worldRotationQuat);
         }
-        spatial.setLocalTranslation(spatial.getLocalTranslation());
-        spatial.setLocalRotation(spatial.getLocalRotation());
+        spatial.superSetTransformRefresh();
         physicsLocationDirty=false;
         return;
     }

@@ -137,6 +137,7 @@ public class PhysicsVehicleNode extends PhysicsNode{
         info.setWheelInfo(
                 vehicle.addWheel(Converter.convert(connectionPoint), Converter.convert(direction), Converter.convert(axle), suspensionRestLength, wheelRadius, tuning, isFrontWheel)
                 );
+        //TODO: info.applyTuningInfo(Tuning tuning)
         info.setFrictionSlip(tuning.frictionSlip);
         info.setMaxSuspensionTravelCm(tuning.maxSuspensionTravelCm);
         info.setSuspensionStiffness(tuning.suspensionStiffness);
@@ -312,58 +313,37 @@ public class PhysicsVehicleNode extends PhysicsNode{
      * @param force the force
      */
     public void accelerate(float force){
-        for(WheelInfo wheel:wheels){
-            wheel.setEngineForce(force);
+        for (int i = 0; i < wheels.size(); i++) {
+            vehicle.applyEngineForce(force, i);
         }
-        applyEngineForce();
     }
 
     /**
      * apply the given engine force, works continuously
-     * @param wheelNumber the wheel to apply the force on
+     * @param wheel the wheel to apply the force on
      * @param force the force
      */
-    public void accelerate(int wheelNumber, float force){
-        WheelInfo wheelInfo=wheels.get(wheelNumber);
-        wheelInfo.setEngineForce(force);
-        applyEngineForce();
+    public void accelerate(int wheel, float force){
+        vehicle.applyEngineForce(force, wheel);
     }
-
-    private void applyEngineForce(){
-        for (int i = 0; i < wheels.size(); i++) {
-            WheelInfo wheel=wheels.get(i);
-            vehicle.applyEngineForce(wheel.getEngineForce(), i);
-        }
-    }
-
 
     /**
      * set the given steering value to all front wheels (0 = forward)
      * @param value the steering angle of the front wheels (Pi = 360deg)
      */
     public void steer(float value){
-        for(WheelInfo wheel:wheels){
-            if(wheel.isFrontWheel())
-                wheel.setSteerValue(value);
+        for (int i = 0; i < wheels.size(); i++) {
+            vehicle.setSteeringValue(value, i);
         }
-        applySteer();
     }
 
     /**
      * set the given steering value to the given wheel (0 = forward)
-     * @param wheelNumber the wheel to set the steering on
+     * @param wheel the wheel to set the steering on
      * @param value the steering angle of the front wheels (Pi = 360deg)
      */
-    public void steer(int wheelNumber, float value){
-        wheels.get(wheelNumber).setSteerValue(value);
-        applySteer();
-    }
-
-    private void applySteer() {
-        for (int i = 0; i < wheels.size(); i++) {
-            WheelInfo wheelInfo = wheels.get(i);
-            vehicle.setSteeringValue(wheelInfo.getSteerValue(), i);
-        }
+    public void steer(int wheel, float value){
+        vehicle.setSteeringValue(value, wheel);
     }
 
     /**
@@ -371,28 +351,18 @@ public class PhysicsVehicleNode extends PhysicsNode{
      * @param force the force
      */
     public void brake(float force){
-        for(WheelInfo wheel:wheels){
-            wheel.setBrakeForce(force);
+        for (int i = 0; i < wheels.size(); i++) {
+            vehicle.setBrake(force, i);
         }
-        applyBrake();
     }
 
     /**
      * apply the given brake force, works continuously
-     * @param wheelNumber the wheel to apply the force on
+     * @param wheel the wheel to apply the force on
      * @param force the force
      */
-    public void brake(int wheelNumber, float force){
-        WheelInfo wheelInfo=wheels.get(wheelNumber);
-        wheelInfo.setBrakeForce(force);
-        applyBrake();
-    }
-
-    private void applyBrake() {
-        for (int i = 0; i < wheels.size(); i++) {
-            WheelInfo wheelInfo = wheels.get(i);
-            vehicle.setBrake(wheelInfo.getBrakeForce(), i);
-        }
+    public void brake(int wheel, float force){
+        vehicle.setBrake(force, wheel);
     }
 
     /**

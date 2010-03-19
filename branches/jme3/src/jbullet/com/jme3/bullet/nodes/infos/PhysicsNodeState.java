@@ -58,13 +58,9 @@ public class PhysicsNodeState implements MotionState{
     //keep track of transform changes
     private boolean physicsLocationDirty=false;
     private boolean jmeLocationDirty=true;
-    private boolean jmeVelocityDirty=false;
 
     //temp variable for conversion
     private Quaternion tmp_inverseWorldRotation=new Quaternion();
-
-    private Vector3f linearVelocity=new Vector3f();
-    private Vector3f angularVelocity=new Vector3f();
 
     private PhysicsNode pNode;
 
@@ -132,24 +128,6 @@ public class PhysicsNodeState implements MotionState{
 
     public synchronized void setJmeLocationDirty(boolean jmeDirty) {
         this.jmeLocationDirty = jmeDirty;
-    }
-
-    public synchronized Vector3f getLinearVelocity() {
-        return linearVelocity;
-    }
-
-    public synchronized void setLinearVelocity(Vector3f linearVelocity) {
-        jmeVelocityDirty=true;
-        this.linearVelocity = linearVelocity;
-    }
-
-    public synchronized Vector3f getAngularVelocity() {
-        return angularVelocity;
-    }
-
-    public synchronized void setAngularVelocity(Vector3f angularVelocity) {
-        jmeVelocityDirty=true;
-        this.angularVelocity = angularVelocity;
     }
 
 }

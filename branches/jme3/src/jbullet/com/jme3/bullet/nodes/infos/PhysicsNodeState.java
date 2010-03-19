@@ -31,16 +31,15 @@
  */
 package com.jme3.bullet.nodes.infos;
 
+import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.linearmath.MotionState;
 import com.bulletphysics.linearmath.Transform;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
-import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.util.Converter;
-import java.util.concurrent.Callable;
 
 /**
  * stores all info about a bullet physics object in a thread-safe manner to
@@ -68,66 +67,59 @@ public class PhysicsNodeState implements MotionState{
         this.pNode = pNode;
     }
 
-    public synchronized Transform getWorldTransform(Transform out) {
-        //TODO: check if really needed
-        if(!isJmeLocationDirty()) return out;
-        if(out==null)
-            out=new Transform();
-        out.set(motionStateTrans);
-//        System.out.println("get worldtransform from physics");
-        setJmeLocationDirty(false);
-        return out;
+    public synchronized Transform getWorldTransform(Transform t) {
+        t.set(motionStateTrans);
+        return t;
     }
 
     public synchronized void setWorldTransform(Transform worldTrans) {
         if(jmeLocationDirty) return;
-//        System.out.println("set worldtransform from physics");
         motionStateTrans.set(worldTrans);
         Converter.convert(worldTrans.origin, worldLocation);
         Converter.convert(worldTrans.basis, worldRotation);
         worldRotationQuat.fromRotationMatrix(worldRotation);
         physicsLocationDirty=true;
-//        pNode.dirt();
     }
 
-    public synchronized boolean getWorldTransform(Vector3f location, Quaternion rot){
-        if(!physicsLocationDirty) return false;
-//        System.out.println("get worldtransform from jme");
-        location.set(worldLocation);
-        rot.set(worldRotationQuat);
-        physicsLocationDirty=false;
-        return true;
+    public synchronized void applyTransform(RigidBody rBody) {
+        if(!jmeLocationDirty) return;
+        assert(rBody!=null);
+        rBody.setWorldTransform(motionStateTrans);
+        jmeLocationDirty=false;
     }
 
-    public synchronized boolean getLocalTransform(Spatial parent, Vector3f location, Quaternion rotation){
-        if(!physicsLocationDirty) return false;
-//        System.out.println("get worldtransform from jme");
-        location.set(worldLocation);
-        rotation.set(worldRotationQuat);
-        location.subtractLocal(parent.getWorldTranslation());
-        location.divideLocal( parent.getWorldScale() );
-        tmp_inverseWorldRotation.set( parent.getWorldRotation()).inverseLocal().multLocal( location );
-        tmp_inverseWorldRotation.set( parent.getWorldRotation()).inverseLocal().mult( worldRotationQuat, rotation );
+    public synchronized void applyTransform(Spatial spatial){
+        if(!physicsLocationDirty) return;
+        if(spatial.getParent()!=null){
+            Spatial parent=spatial.getParent();
+            Vector3f location=spatial.getLocalTranslation();
+            Quaternion rotation=spatial.getLocalRotation();
+            location.set(worldLocation);
+            rotation.set(worldRotationQuat);
+            location.subtractLocal(parent.getWorldTranslation());
+            location.divideLocal( parent.getWorldScale() );
+            tmp_inverseWorldRotation.set( parent.getWorldRotation()).inverseLocal().multLocal( location );
+            tmp_inverseWorldRotation.set( parent.getWorldRotation()).inverseLocal().mult( worldRotationQuat, rotation );
+        }
+        else{
+            Vector3f location=spatial.getLocalTranslation();
+            Quaternion rotation=spatial.getLocalRotation();
+            location.set(worldLocation);
+            rotation.set(worldRotationQuat);
+        }
+        spatial.setLocalTranslation(spatial.getLocalTranslation());
+        spatial.setLocalRotation(spatial.getLocalRotation());
         physicsLocationDirty=false;
-        return true;
+        return;
     }
 
     public synchronized void setWorldTransform(Vector3f location, Quaternion rotation){
-        System.out.println("set worldtransform from jme");
         worldLocation.set(location);
         worldRotationQuat.set(rotation);
         worldRotation.set(rotation.toRotationMatrix());
         Converter.convert(worldLocation,motionStateTrans.origin);
         Converter.convert(worldRotation,motionStateTrans.basis);
-        setJmeLocationDirty(true);
-    }
-
-    public synchronized boolean isJmeLocationDirty() {
-        return jmeLocationDirty;
-    }
-
-    public synchronized void setJmeLocationDirty(boolean jmeDirty) {
-        this.jmeLocationDirty = jmeDirty;
+        jmeLocationDirty=true;
     }
 
 }

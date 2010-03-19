@@ -38,6 +38,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.util.Converter;
+import com.jme3.math.Quaternion;
 
 /**
  *
@@ -55,6 +56,11 @@ public class PhysicsCharacterNode extends PhysicsGhostNode{
         super(spat, shape);
         this.stepHeight=stepHeight;
         character=new KinematicCharacterController(gObject, (ConvexShape)cShape.getCShape(), stepHeight);
+    }
+
+    @Override //to avoid setting zero rotation from bullet
+    protected Quaternion setWorldRotation( Quaternion rot ) {
+        return rot;
     }
 
     @Override

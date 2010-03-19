@@ -135,7 +135,7 @@ public class PhysicsNode extends CollisionObject{
             rBody.destroy();
         }
         else{
-            System.out.println("build body");
+//            System.out.println("build body");
         }
         preRebuild();
         rBody=new RigidBody(constructionInfo);
@@ -205,18 +205,7 @@ public class PhysicsNode extends CollisionObject{
         }
         //apply physics input, nothing is done if physics did not change
         else {
-            if(parent!=null){
-                if(motionState.getLocalTransform(getParent(), getLocalTranslation(), getLocalRotation())){
-                    super.setTransformRefresh();
-                    setDirty(false);
-                }
-            }
-            else{
-                if(motionState.getWorldTransform(getLocalTranslation(), getLocalRotation())){
-                    super.setTransformRefresh();
-                    setDirty(false);
-                }
-            }
+            motionState.applyTransform(this);
             super.updateGeometricState();
         }
     }
@@ -230,15 +219,10 @@ public class PhysicsNode extends CollisionObject{
         if(rebuildBody){
             rebuildRigidBody();
         }
-        if(motionState.isJmeLocationDirty()){
-            rBody.getWorldTransform(tempTrans);
-            motionState.getWorldTransform(tempTrans);
-            rBody.setWorldTransform(tempTrans);
-            rBody.activate();
-        }
+        motionState.applyTransform(rBody);
     }
 
-    public synchronized float getMass() {
+    public float getMass() {
         return mass;
     }
 
@@ -265,7 +249,7 @@ public class PhysicsNode extends CollisionObject{
         Converter.convert(tempVec,gravity);
     }
 
-    public synchronized float getFriction() {
+    public float getFriction() {
         return rBody.getFriction();
     }
 
@@ -602,6 +586,7 @@ public class PhysicsNode extends CollisionObject{
     public void setSleepingThresholds(float linear, float angular){
         constructionInfo.linearSleepingThreshold=linear;
         constructionInfo.angularSleepingThreshold=angular;
+        rBody.setSleepingThresholds(linear, angular);
     }
 
     /**
@@ -621,14 +606,14 @@ public class PhysicsNode extends CollisionObject{
     /**
      * @return the dirty
      */
-    public synchronized boolean isDirty() {
+    public boolean isDirty() {
         return dirty;
     }
 
     /**
      * @param dirty the dirty to set
      */
-    public synchronized void setDirty(boolean dirty) {
+    public void setDirty(boolean dirty) {
         this.dirty = dirty;
     }
 

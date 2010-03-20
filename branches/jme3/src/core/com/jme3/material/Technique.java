@@ -13,6 +13,7 @@ import com.jme3.export.G3DImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
+import com.jme3.material.Material.MatParamValue;
 import com.jme3.shader.DefineList;
 import com.jme3.shader.Shader;
 import com.jme3.shader.ShaderKey;
@@ -140,7 +141,24 @@ public class Technique implements Savable {
             for (MatParam param : params){
                 String defineName = def.getShaderParamDefine(param.getName());
                 if (defineName != null){
-                    newDefines.set(defineName, "1");
+                    if (param instanceof MatParamValue){
+                        MatParamValue paramVal = (MatParamValue) param;
+                        switch (paramVal.getType()){
+                            case Boolean:
+                                if ( ((Boolean) paramVal.getValue()).booleanValue() )
+                                    newDefines.set(defineName, "1");
+                                break;
+                            case Float:
+                            case Int:
+                                newDefines.set(defineName, paramVal.getValue().toString());
+                                break;
+                            default:
+                                newDefines.set(defineName, "1");
+                                break;
+                        }
+                    }else{
+                        newDefines.set(defineName, "1");
+                    }
                 }
             }
 

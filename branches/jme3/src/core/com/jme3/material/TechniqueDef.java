@@ -40,8 +40,8 @@ public class TechniqueDef implements Savable {
     private LightMode lightMode   = LightMode.Disable;
     private ShadowMode shadowMode = ShadowMode.Disable;
 
-    private Map<String, String> defineParams;
-    private List<UniformBinding> worldBinds;
+    private HashMap<String, String> defineParams;
+    private ArrayList<UniformBinding> worldBinds;
 //    private final Map<String, Attribute> attribs = new HashMap<String, Attribute>();
 
     public TechniqueDef(String name){
@@ -66,7 +66,7 @@ public class TechniqueDef implements Savable {
         oc.write(renderState, "renderState", null);
         oc.write(usesShaders, "usesShaders", false);
         // TODO: Finish this when Map<String, String> export is available
-//        oc.writeS(defineParams, "defineParams", null);
+//        oc.write(defineParams, "defineParams", null);
         // TODO: Finish this when List<Enum> export is available
 //        oc.write(worldBinds, "worldBinds", null);
     }

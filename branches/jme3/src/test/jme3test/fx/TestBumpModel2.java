@@ -33,13 +33,13 @@ public class TestBumpModel2 extends SimpleApplication {
         OgreMeshKey key = new OgreMeshKey("/bump/Conn.meshxml", null);
         Spatial conn = (Spatial) manager.loadContent(key);
         Material mat = manager.loadMaterial("/bump/Conn.j3m");
-//        mat.selectTechnique("OldGpu");
+        mat.selectTechnique("OldGpu");
         conn.setMaterial(mat);
         
          key = new OgreMeshKey("/bump/ShinyBall.meshxml", null);
         Spatial ball = (Spatial) manager.loadContent(key);
          mat = manager.loadMaterial("/bump/ShinyBall.j3m");
-//        mat.selectTechnique("OldGpu");
+        mat.selectTechnique("OldGpu");
         ball.setMaterial(mat);
 
         rootNode.attachChild(ball);

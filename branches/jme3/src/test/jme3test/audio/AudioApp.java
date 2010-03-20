@@ -1,7 +1,6 @@
 package jme3test.audio;
 
 import com.jme3.audio.AudioRenderer;
-import com.jme3.renderer.Camera;
 import com.jme3.asset.AssetManager;
 import com.jme3.audio.Listener;
 import com.jme3.system.AppSettings;
@@ -18,7 +17,7 @@ public class AudioApp {
     public AudioApp(){
         AppSettings settings = new AppSettings(true);
         settings.setRenderer(null); // force dummy renderer (?)
-        settings.setAudioRenderer("JOAL");
+        settings.setAudioRenderer("LWJGL-OAL");
         ar = JmeSystem.newAudioRenderer(settings);
         ar.initialize();
         manager = JmeSystem.newAssetManager();

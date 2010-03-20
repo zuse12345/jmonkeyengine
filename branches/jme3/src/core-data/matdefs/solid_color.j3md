@@ -13,4 +13,7 @@ MaterialDef Solid Color {
         }
     }
 
+    Technique FixedFunc {
+    }
+
 }

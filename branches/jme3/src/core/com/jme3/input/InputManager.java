@@ -186,6 +186,8 @@ public class InputManager implements RawInputListener {
         lastKeyEvent = null;
         frameTPF = tpf;
 
+        notifyListeners("UPDATE", tpf);
+
         // query current keyboard state for all bindings
         for (Entry<String> entry : keyBindings){
             if (entry.getKey() >= keyboard.length)
@@ -208,8 +210,6 @@ public class InputManager implements RawInputListener {
             }
         }
 
-        notifyListeners("UPDATE", tpf);
-        
         if (joyInput != null){
             for (Entry<String> entry : joyAxisBindings){
                 int axisId = entry.getKey();

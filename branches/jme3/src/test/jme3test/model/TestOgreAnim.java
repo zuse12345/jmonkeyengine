@@ -1,11 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package jme3test.model;
 
-import com.jme3.animation.Model;
 import com.jme3.app.SimpleApplication;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
@@ -35,14 +29,14 @@ public class TestOgreAnim extends SimpleApplication {
 
         OgreMaterialList matList = (OgreMaterialList) manager.loadContent("OTO.material");
         OgreMeshKey key = new OgreMeshKey("OTO.meshxml", matList);
-        Model model = (Model) manager.loadContent(key);
+//        Model model = (Model) manager.loadContent(key);
         float scale = 1.00f;
 //        Model model = (Model) manager.loadOgreModel("ninja.meshxml", "ninja.material");
 //        float scale = 0.05f;
-        model.scale(scale,scale,scale);
-        rootNode.attachChild(model);
+//        model.scale(scale,scale,scale);
+//        rootNode.attachChild(model);
 
-        model.setAnimation("Walk");
+//        model.setAnimation("Walk");
     }
 
 }

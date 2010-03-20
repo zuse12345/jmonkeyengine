@@ -38,8 +38,9 @@ public class JoglCanvas extends JoglAbstractDisplay implements JmeCanvasContext 
                 listener.reshape(width, height);
         }
 
-        if (animator.isAnimating() != autoFlush){
-            if (autoFlush)
+        boolean flush = autoFlush.get();
+        if (animator.isAnimating() != flush){
+            if (flush)
                 animator.stop();
             else
                 animator.start();

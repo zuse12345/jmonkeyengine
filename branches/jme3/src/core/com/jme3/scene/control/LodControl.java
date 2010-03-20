@@ -1,12 +1,18 @@
 package com.jme3.scene.control;
 
 import com.jme3.bounding.BoundingVolume;
+import com.jme3.export.G3DExporter;
+import com.jme3.export.G3DImporter;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.OutputCapsule;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
+import com.jme3.scene.Spatial;
+import java.io.IOException;
 
-public class LodControl extends AbstractControl {
+public class LodControl extends AbstractControl implements Cloneable {
 
     private float trisPerPixel = 1f;
     private float distTolerance = 1f;
@@ -23,6 +29,21 @@ public class LodControl extends AbstractControl {
         for (int i = numLevels - 1; i >= 0; i--)
             numTris[i] = mesh.getTriangleCount(i);
 
+    }
+
+    public LodControl(){
+    }
+
+    public Control cloneForSpatial(Spatial spatial) {
+        try {
+            LodControl clone = (LodControl) super.clone();
+            clone.lastDistance = 0;
+            clone.lastLevel = 0;
+            clone.numTris = numTris != null ? numTris.clone() : null;
+            return clone;
+        } catch (CloneNotSupportedException ex) {
+            throw new AssertionError();
+        }
     }
 
     @Override
@@ -62,4 +83,25 @@ public class LodControl extends AbstractControl {
     public ControlType getType() {
         return ControlType.LevelOfDetail;
     }
+
+    @Override
+    public void write(G3DExporter ex) throws IOException{
+        super.write(ex);
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(trisPerPixel, "trisPerPixel", 1f);
+        oc.write(distTolerance, "distTolerance", 1f);
+        oc.write(numLevels, "numLevels", 0);
+        oc.write(numTris, "numTris", null);
+    }
+
+    @Override
+    public void read(G3DImporter im) throws IOException{
+        super.read(im);
+        InputCapsule ic = im.getCapsule(this);
+        trisPerPixel = ic.readFloat("trisPerPixel", 1f);
+        distTolerance = ic.readFloat("distTolerance", 1f);
+        numLevels = ic.readInt("numLevels", 0);
+        numTris = ic.readIntArray("numTris", null);
+    }
+
 }

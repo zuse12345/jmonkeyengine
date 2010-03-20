@@ -24,6 +24,9 @@ public abstract class AbstractControl implements Control {
         this.spatial = spatial;
     }
 
+    public AbstractControl(){
+    }
+
     public void setSpatial(Spatial spatial) {
         this.spatial = spatial;
     }

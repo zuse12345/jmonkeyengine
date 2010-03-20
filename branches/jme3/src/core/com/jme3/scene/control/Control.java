@@ -13,6 +13,14 @@ import com.jme3.scene.Spatial;
 public interface Control extends Savable {
 
     /**
+     * Creates a clone of the Control, the given Spatial is the cloned
+     * version of the spatial to which this control is attached to.
+     * @param spatial
+     * @return
+     */
+    public Control cloneForSpatial(Spatial spatial);
+
+    /**
      * @return The type of this control. Constant for a given implementation.
      */
     public ControlType getType();

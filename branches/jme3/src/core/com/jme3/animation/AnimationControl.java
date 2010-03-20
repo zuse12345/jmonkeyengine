@@ -7,74 +7,53 @@ import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
 import com.jme3.math.FastMath;
 import com.jme3.math.Matrix4f;
+import com.jme3.renderer.RenderManager;
+import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.scene.VertexBuffer;
 import com.jme3.scene.VertexBuffer.Type;
+import com.jme3.scene.control.AbstractControl;
+import com.jme3.scene.control.Control;
+import com.jme3.scene.control.ControlType;
 import com.jme3.util.TempVars;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 
-public class Model extends Node {
+public class AnimationControl extends AbstractControl implements Savable, Cloneable {
 
     /**
      * List of targets which this controller effects.
      */
-    private Mesh[] targets;
+    Mesh[] targets;
 
     /**
      * Skeleton object must contain corresponding data for the targets' weight buffers.
      */
-    private Skeleton skeleton;
+    Skeleton skeleton;
 
     /**
      * List of animations, bone or vertex based.
      */
-    private HashMap<String, BoneAnimation> animationMap;
+    HashMap<String, BoneAnimation> animationMap;
 
     /**
-     * The currently playing animation.
+     * Animation channels
      */
-    private BoneAnimation animation;
-    private float time = 0f;
-    private float speed = 1f;
+    transient ArrayList<AnimationChannel> channels
+            = new ArrayList<AnimationChannel>();
 
-     public Model(String name,
-                  Mesh[] meshes,
-                  Skeleton skeleton,
-                  HashMap<String, BoneAnimation> anims) {
-        super(name);
+    public AnimationControl(Node model, Mesh[] meshes, Skeleton skeleton){
+        super(model);
         this.skeleton = skeleton;
-        this.animationMap = anims;
         this.targets = meshes;
         reset();
-    }
-
-    /**
-     * Copy constructor. The mesh data has to be unique, and copied through OgreMesh.cloneFromMesh.
-     * The rest is handled automatically by this call.
-     */
-    public Model(Mesh[] meshes, Model sourceControl){
-        this.skeleton = new Skeleton(sourceControl.skeleton);
-        this.animationMap = sourceControl.animationMap;
-        this.targets = meshes;
-        reset();
-    }
-
-    public Model clone(){
-        Model clone = (Model) super.clone();
-        clone.skeleton = new Skeleton(skeleton);
-        Mesh[] meshes = new Mesh[targets.length];
-        for (int i = 0; i < meshes.length; i++){
-            meshes[i] = ((Geometry) clone.getChild(i)).getMesh();
-        }
-        clone.targets = meshes;
-        return clone;
     }
 
     /**
@@ -82,71 +61,50 @@ public class Model extends Node {
      * constructor are restored from the saved model, but the object must be
      * constructed beforehand)
      */
-    public Model() {
+    public AnimationControl() {
     }
 
-    /**
-     * Sets the currently active animation.
-     * Use the animation name "<bind>" to set the model into bind pose.
-     *
-     * @returns true if the animation has been successfuly set. False if no such animation exists.
-     */
-    public boolean setAnimation(String name){
-        if (animation != null && animation.getName().equals(name))
-            return true;
-
-        if (name.equals("<bind>")){
-            reset();
-            return true;
+    public Control cloneForSpatial(Spatial spatial){
+        try {
+            Node clonedNode = (Node) spatial;
+            AnimationControl clone = (AnimationControl) super.clone();
+            clone.skeleton = new Skeleton(skeleton);
+            Mesh[] meshes = new Mesh[targets.length];
+            for (int i = 0; i < meshes.length; i++) {
+                meshes[i] = ((Geometry) clonedNode.getChild(i)).getMesh();
+            }
+            clone.targets = meshes;
+            return clone;
+        } catch (CloneNotSupportedException ex) {
+            throw new AssertionError();
         }
-
-        animation = animationMap.get(name);
-
-        if (animation == null)
-            return false;
-
-        resetToBind();
-        time = 0;
-
-        return true;
     }
 
-    public float getSpeed() {
-        return speed;
+    public void setAnimations(HashMap<String, BoneAnimation> animations){
+        animationMap = animations;
     }
 
-    public void setSpeed(float speed) {
-        this.speed = speed;
+    public AnimationChannel createChannel(){
+        AnimationChannel channel = new AnimationChannel(this);
+        channels.add(channel);
+        return channel;
     }
 
-    
-
-    public Collection<String> getAnimationNames(){
-        return animationMap.keySet();
+    public AnimationChannel getChannel(int index){
+        return channels.get(index);
     }
 
-    public float getAnimationLength(String name){
-        BoneAnimation a = animationMap.get(name);
-        if (a == null)
-            return -1;
-
-        return a.getLength();
+    public void clearChannels(){
+        channels.clear();
     }
-
-    public String getCurrentAnimation(){
-        return animation.getName();
-    }
-
 
     void reset(){
         resetToBind();
         if (skeleton != null){
             skeleton.resetAndUpdate();
         }
-        animation = null;
-        time = 0;
     }
-    
+
     void resetToBind(){
         for (int i = 0; i < targets.length; i++){
             if (targets[i].getBuffer(Type.BindPosePosition) != null){
@@ -168,28 +126,45 @@ public class Model extends Node {
         }
     }
 
-    public float clampWrapTime(float t, float max, LoopMode loopMode){
-        if (t < 0f){
-            switch (loopMode){
-                case DontLoop:
-                    return 0;
-                case Cycle:
-                    return 0;
-                case Loop:
-                    return max - t;
-            }
-        }else if (t > max){
-            switch (loopMode){
-                case DontLoop:
-                    return max;
-                case Cycle:
-                    return max;
-                case Loop:
-                    return t - max;
-            }
+    public Collection<String> getAnimationNames(){
+        return animationMap.keySet();
+    }
+
+    public float getAnimationLength(String name){
+        BoneAnimation a = animationMap.get(name);
+        if (a == null)
+            return -1;
+
+        return a.getLength();
+    }
+
+    @Override
+    protected void controlUpdate(float tpf) {
+        resetToBind(); // reset morph meshes to bind pose
+        skeleton.reset(); // reset skeleton to bind pose
+
+        for (int i = 0; i < channels.size(); i++){
+            channels.get(i).update(tpf);
         }
 
-        return t;
+        skeleton.updateWorldVectors();
+        // here update the targets verticles if no hardware skinning supported
+
+        Matrix4f[] offsetMatrices = skeleton.computeSkinningMatrices();
+
+        // if hardware skinning is supported, the matrices and weight buffer
+        // will be sent by the SkinningShaderLogic object assigned to the shader
+        for (int i = 0; i < targets.length; i++){
+            softwareSkinUpdate(targets[i], offsetMatrices);
+        }
+    }
+
+    @Override
+    protected void controlRender(RenderManager rm, ViewPort vp) {
+    }
+
+    public ControlType getType() {
+        return ControlType.BoneAnimation;
     }
 
     private void softwareSkinUpdate(Mesh mesh, Matrix4f[] offsetMatrices){
@@ -209,7 +184,7 @@ public class Model extends Node {
         // get boneIndexes and weights for mesh
         ByteBuffer ib = (ByteBuffer) mesh.getBuffer(Type.BoneIndex).getData();
         FloatBuffer wb = (FloatBuffer) mesh.getBuffer(Type.BoneWeight).getData();
-        
+
         ib.rewind();
         wb.rewind();
 
@@ -283,7 +258,7 @@ public class Model extends Node {
     //            fnb.put(rnx).put(rny).put(rnz);
             }
 
-        
+
             fvb.position(fvb.position()-bufLength);
             fvb.put(posBuf, 0, bufLength);
             fnb.position(fnb.position()-bufLength);
@@ -296,34 +271,18 @@ public class Model extends Node {
 //        mesh.updateBound();
     }
 
-    public void updateLogicalState(float tpf) {
-        super.updateLogicalState(tpf);
-        if (animation == null)
-            return;
-
-        // do clamping/wrapping of time
-        time = clampWrapTime(time, animation.getLength(), LoopMode.Loop);
-        resetToBind(); // reset morph meshes to bind pose
-        skeleton.reset(); // reset skeleton to bind pose
-        animation.setTime(time, skeleton, 1f);
-        skeleton.updateWorldVectors();
-        // here update the targets verticles if no hardware skinning supported
-
-        Matrix4f[] offsetMatrices = skeleton.computeSkinningMatrices();
-
-        // if hardware skinning is supported, the matrices and weight buffer
-        // will be sent by the SkinningShaderLogic object assigned to the shader
-        for (int i = 0; i < targets.length; i++){
-            softwareSkinUpdate(targets[i], offsetMatrices);
-        }
-
-        time += tpf * speed;
+    @Override
+    public void write(G3DExporter ex) throws IOException{
+        super.write(ex);
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(targets, "targets", null);
+        oc.write(skeleton, "skeleton", null);
+        oc.writeStringSavableMap(animationMap, "animations", null);
     }
 
     @Override
     public void read(G3DImporter im) throws IOException{
         super.read(im);
-
         InputCapsule in = im.getCapsule(this);
         Savable[] sav = in.readSavableArray("targets", null);
         if (sav != null){
@@ -334,13 +293,4 @@ public class Model extends Node {
         animationMap = (HashMap<String, BoneAnimation>) in.readStringSavableMap("animations", null);
     }
 
-    @Override
-    public void write(G3DExporter ex) throws IOException{
-        super.write(ex);
-
-        OutputCapsule out = ex.getCapsule(this);
-        out.write(targets, "targets", null);
-        out.write(skeleton, "skeleton", null);
-        out.writeStringSavableMap(animationMap, "animations", null);
-    }
 }

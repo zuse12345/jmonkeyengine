@@ -70,6 +70,10 @@ public class ParticleEmitter extends Geometry implements Control {
         super();
     }
 
+    public Control cloneForSpatial(Spatial spatial){
+        return (Control) spatial;
+    }
+
     public void setShape(EmitterShape shape) {
         this.shape = shape;
     }

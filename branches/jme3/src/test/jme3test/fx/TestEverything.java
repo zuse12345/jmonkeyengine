@@ -1,6 +1,5 @@
 package jme3test.fx;
 
-import com.jme3.animation.Model;
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.plugins.ClasspathLocator;
 import com.jme3.light.DirectionalLight;
@@ -15,6 +14,7 @@ import com.jme3.renderer.Caps;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
 import com.jme3.scene.plugins.ogre.MeshLoader;
@@ -155,11 +155,11 @@ public class TestEverything extends SimpleApplication {
 //    }
 
     public void setupRobotGuy(){
-        Model model = (Model) MeshLoader.loadModel(manager, "OTO.meshxml", null);
+        Node model = (Node) MeshLoader.loadModel(manager, "OTO.meshxml", null);
         Material mat = manager.loadMaterial("oto_lit.j3m");
         mat.selectTechnique("OldGpu");
         model.getChild(0).setMaterial(mat);
-        model.setAnimation("Walk");
+//        model.setAnimation("Walk");
         model.setLocalTranslation(30, 10.5f, 30);
         model.setLocalScale(2);
         model.setShadowMode(ShadowMode.CastAndRecieve);

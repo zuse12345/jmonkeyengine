@@ -1,7 +1,7 @@
 package com.jme3.scene.plugins.ogre;
 
+import com.jme3.animation.AnimationControl;
 import com.jme3.animation.BoneAnimation;
-import com.jme3.animation.Model;
 import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetLoader;
@@ -628,7 +628,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
         else
             nodeName = meshName+"-ogremesh";
 
-        Node model;
+        Node model = new Node(nodeName);
         if (animData != null){
             ArrayList<Mesh> newMeshes = new ArrayList<Mesh>(geoms.size());
 
@@ -673,9 +673,11 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
                 anims.put(anim.getName(), anim);
             }
 
-            model = new Model(nodeName, meshes, animData.skeleton, anims);
-        }else{
-            model = new Node(nodeName);
+            AnimationControl ctrl = new AnimationControl(model,
+                                                         meshes,
+                                                         animData.skeleton);
+            ctrl.setAnimations(anims);
+            model.setControl(ctrl);
         }
 
         for (int i = 0; i < geoms.size(); i++){

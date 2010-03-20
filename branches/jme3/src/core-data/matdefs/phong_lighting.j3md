@@ -7,6 +7,7 @@ MaterialDef Phong Lighting {
 
         Boolean m_UseAlpha // mp impl need
         Boolean m_UseMaterialColors // sp impl need  -v-
+        Boolean m_UseVertexColor // sp/mp impl needed
         Color m_Ambient
         Color m_Diffuse
         Color m_Specular

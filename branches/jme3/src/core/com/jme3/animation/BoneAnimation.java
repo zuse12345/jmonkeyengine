@@ -38,13 +38,12 @@ import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
 import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * Bone animation updates each of it's tracks with the skeleton and time
  * to apply the animation.
  */
-public final class BoneAnimation implements Serializable, Savable {
+public final class BoneAnimation implements Savable {
 
     private static final long serialVersionUID = 1L;
 

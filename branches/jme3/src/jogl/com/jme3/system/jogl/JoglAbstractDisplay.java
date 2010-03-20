@@ -31,7 +31,7 @@ public abstract class JoglAbstractDisplay extends JoglContext implements GLEvent
     protected boolean wasActive = false;
     protected int frameRate;
     protected boolean useAwt = true;
-    protected boolean autoFlush = true;
+    protected AtomicBoolean autoFlush = new AtomicBoolean(true);
 
     protected void initGLCanvas(){
         device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
@@ -105,7 +105,7 @@ public abstract class JoglAbstractDisplay extends JoglContext implements GLEvent
     }
 
     public void setAutoFlushFrames(boolean enabled){
-        autoFlush = enabled;
+        autoFlush.set(enabled);
     }
 
     /**

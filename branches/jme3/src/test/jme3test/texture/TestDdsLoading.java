@@ -18,16 +18,14 @@ public class TestDdsLoading extends SimpleApplication {
     public void simpleInitApp() {
         // create a simple plane/quad
         Quad quadMesh = new Quad(1, 1);
-        quadMesh.updateGeometry(1, 1, true);
 
         Geometry quad = new Geometry("Textured Quad", quadMesh);
         quad.updateModelBound();
         
-        Texture tex = manager.loadTexture("dot3_latc.dds");
+        Texture tex = manager.loadTexture("TestDXT1.dds");
 
         Material mat = new Material(manager, "plain_texture.j3md");
         mat.setTexture("m_ColorMap", tex);
-        mat.setBoolean("m_LATC", true);
         quad.setMaterial(mat);
 
         float aspect = tex.getImage().getWidth() / (float) tex.getImage().getHeight();

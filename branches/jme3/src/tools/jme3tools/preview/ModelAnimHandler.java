@@ -1,7 +1,10 @@
 package jme3tools.preview;
 
-import com.jme3.animation.Model;
+import com.jme3.animation.AnimationChannel;
+import com.jme3.animation.AnimationControl;
 import com.jme3.app.Application;
+import com.jme3.scene.Spatial;
+import com.jme3.scene.control.ControlType;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -10,22 +13,26 @@ import java.util.logging.Logger;
 
 public class ModelAnimHandler implements IAnimationHandler {
 
-    private Model model;
+    private Spatial model;
+    private AnimationControl control;
+    private AnimationChannel channel;
     private Application app;
 
     public void setApp(Application app){
         this.app = app;
     }
 
-    public ModelAnimHandler(Model model){
+    public ModelAnimHandler(Spatial model){
         this.model = model;
+        control = (AnimationControl) model.getControl(ControlType.BoneAnimation);
+        channel = control.createChannel();
     }
 
     public Collection<String> list() {
         try{
             Collection<String> anims = (Collection<String>) app.enqueue(new Callable<Collection<String>>(){
             public Collection<String> call() throws Exception {
-                return model.getAnimationNames();
+                return control.getAnimationNames();
             }
         }).get();
             return anims;
@@ -41,7 +48,7 @@ public class ModelAnimHandler implements IAnimationHandler {
         try{
             float len = app.enqueue(new Callable<Float>() {
                 public Float call() throws Exception {
-                    return model.getAnimationLength(name);
+                    return control.getAnimationLength(name);
                 }
             }).get();
             return len;
@@ -56,7 +63,7 @@ public class ModelAnimHandler implements IAnimationHandler {
     public void play(final String name) {
         app.enqueue(new Callable<Void>() {
             public Void call() throws Exception {
-                model.setAnimation(name);
+                channel.play(name);
                 return null;
             }
         });
@@ -69,7 +76,7 @@ public class ModelAnimHandler implements IAnimationHandler {
     public void setSpeed(final float speed) {
         app.enqueue(new Callable<Void>() {
             public Void call() throws Exception {
-                model.setSpeed(speed);
+                channel.setSpeed(speed);
                 return null;
             }
         });
@@ -83,7 +90,7 @@ public class ModelAnimHandler implements IAnimationHandler {
         try{
             return app.enqueue(new Callable<String>() {
                 public String call() throws Exception {
-                    return model.getCurrentAnimation();
+                    return channel.getAnimationName();
                 }
             }).get();
         }catch (InterruptedException ex){

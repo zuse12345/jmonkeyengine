@@ -1,12 +1,12 @@
 package jme3tools.preview;
 
-import com.jme3.animation.Model;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bounding.BoundingVolume;
 import com.jme3.export.binary.BinaryExporter;
 import com.jme3.export.xml.XMLExporter;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.control.ControlType;
 import com.jme3.scene.plugins.ogre.MeshLoader;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeCanvasContext;
@@ -368,9 +368,8 @@ public class PreviewTool extends javax.swing.JFrame {
         DefaultListModel listModel = (DefaultListModel)(lstAnims.getModel());
         listModel.clear();
 
-        if (model instanceof Model){
-            Model mdl = (Model) model;
-            animHandler = new ModelAnimHandler(mdl);
+        if (model.getControl(ControlType.BoneAnimation) != null){
+            animHandler = new ModelAnimHandler(model);
             animHandler.setApp(display);
 
             listModel.addElement("<bind>");

@@ -114,7 +114,7 @@ public final class BoneTrack implements Savable {
                     endFrame   = i + 1;
                 }
             }
-            float blend =       (time - times[startFrame])
+            float blend =  (time - times[startFrame])
                          / (times[endFrame] - times[startFrame]);
 
             tempQ.slerp(rotations[startFrame], rotations[endFrame], blend);

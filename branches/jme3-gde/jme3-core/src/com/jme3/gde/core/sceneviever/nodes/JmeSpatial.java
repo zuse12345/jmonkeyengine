@@ -32,9 +32,20 @@
 
 package com.jme3.gde.core.sceneviever.nodes;
 
+import com.jme3.bounding.BoundingVolume;
+import com.jme3.light.LightList;
+import com.jme3.math.Quaternion;
+import com.jme3.math.Transform;
+import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.Spatial.CullHint;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -50,4 +61,47 @@ public class JmeSpatial extends AbstractNode{
         setName(spatial.getName());
     }
 
+    @Override
+    protected Sheet createSheet() {
+        //TODO: multithreading..
+        Sheet sheet = Sheet.createDefault();
+        Sheet.Set set = Sheet.createPropertiesSet();
+        Spatial obj = getLookup().lookup(Spatial.class);
+        if(obj==null) return sheet;
+
+        set.put(makeProperty(obj, Integer.class,"getVertexCount","vertexes"));
+        set.put(makeProperty(obj, Integer.class,"getTriangleCount","triangles"));
+
+        set.put(makeProperty(obj, Transform.class,"getWorldTransform","world transform"));
+        set.put(makeProperty(obj, Vector3f.class,"getWorldTranslation","triangles"));
+        set.put(makeProperty(obj, Quaternion.class,"getWorldRotation","world rotation"));
+        set.put(makeProperty(obj, Vector3f.class,"getWorldScale","world scale"));
+
+        set.put(makeProperty(obj, Vector3f.class,"getLocalTranslation","local translation"));
+        set.put(makeProperty(obj, Quaternion.class,"getLocalRotation","local rotation"));
+        set.put(makeProperty(obj, Vector3f.class,"getLocalScale","local scale"));
+
+        set.put(makeProperty(obj, BoundingVolume.class,"getWorldBound","world bound"));
+
+        set.put(makeProperty(obj, CullHint.class,"getCullHint","cull hint"));
+        set.put(makeProperty(obj, CullHint.class,"getLocalCullHint","local cull hint"));
+        set.put(makeProperty(obj, ShadowMode.class,"getShadowMode","shadow mode"));
+        set.put(makeProperty(obj, ShadowMode.class,"getLocalShadowMode","local shadow mode"));
+        set.put(makeProperty(obj, LightList.class,"getWorldLightList","world light list"));
+
+        sheet.put(set);
+        return sheet;
+
+    }
+
+    private Property makeProperty(Spatial obj, Class returntype, String method, String name){
+        Property prop=null;
+        try {
+            prop = new PropertySupport.Reflection(obj, returntype, method, null);
+            prop.setName(name);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return prop;
+    }
 }

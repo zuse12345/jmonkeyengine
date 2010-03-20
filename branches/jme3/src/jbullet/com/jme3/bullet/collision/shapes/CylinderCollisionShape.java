@@ -38,7 +38,6 @@ import com.jme3.bounding.BoundingBox;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.bullet.collision.shapes.CollisionShape.ShapeTypes;
 import com.jme3.bullet.util.Converter;
 import java.util.List;
 
@@ -71,7 +70,6 @@ public class CylinderCollisionShape extends CollisionShape{
     public CylinderCollisionShape(Vector3f halfExtents) {
         CylinderShape capShape=new CylinderShapeZ(Converter.convert(halfExtents));
         cShape=capShape;
-        type=ShapeTypes.CYLINDER;
     }
 
     /**
@@ -91,7 +89,6 @@ public class CylinderCollisionShape extends CollisionShape{
                 cShape=new CylinderShapeZ(Converter.convert(halfExtents));
             break;
         }
-        type=ShapeTypes.CYLINDER;
     }
 
     private void createCollisionCylinder(Node node){
@@ -114,7 +111,6 @@ public class CylinderCollisionShape extends CollisionShape{
                 volume.getZExtent() - volume.getCenter().z);
         CylinderShapeZ capShape=new CylinderShapeZ(halfExtents);
         cShape=capShape;
-        type=ShapeTypes.CYLINDER;
     }
 
 }

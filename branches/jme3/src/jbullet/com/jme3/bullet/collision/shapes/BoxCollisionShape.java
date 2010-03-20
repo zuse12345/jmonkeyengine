@@ -45,22 +45,6 @@ import java.util.List;
  */
 public class BoxCollisionShape extends CollisionShape{
 
-//    /**
-//     * creates a collision shape from the bounding volume of the given node
-//     * @param node the node to get the BoundingVolume from
-//     */
-//    public BoxCollisionShape(Node node) {
-//        createCollisionBox(node);
-//    }
-//
-//    /**
-//     * creates a collision shape from the given bounding volume
-//     * @param volume the BoundingVolume to use
-//     */
-//    public BoxCollisionShape(BoundingBox volume) {
-//        createCollisionBox(volume);
-//    }
-
     /**
      * creates a collision box from the given halfExtents
      * @param halfExtents the halfExtents of the CollisionBox
@@ -68,7 +52,6 @@ public class BoxCollisionShape extends CollisionShape{
     public BoxCollisionShape(Vector3f halfExtents) {
         BoxShape sphere=new BoxShape(Converter.convert(halfExtents));
         cShape=sphere;
-        type=ShapeTypes.BOX;
     }
 
     /**
@@ -96,7 +79,6 @@ public class BoxCollisionShape extends CollisionShape{
                 volume.getZExtent() - volume.getCenter().z);
         BoxShape sphere=new BoxShape(halfExtents);
         cShape=sphere;
-        type=ShapeTypes.BOX;
     }
 
 }

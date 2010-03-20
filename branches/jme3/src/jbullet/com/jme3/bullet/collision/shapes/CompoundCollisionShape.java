@@ -46,7 +46,6 @@ public class CompoundCollisionShape extends CollisionShape{
 
     public CompoundCollisionShape() {
         cShape=new CompoundShape();
-        this.type=CollisionShape.ShapeTypes.COMPOUND;
     }
 
     /**

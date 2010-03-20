@@ -35,7 +35,6 @@ import com.bulletphysics.collision.shapes.SphereShape;
 import com.jme3.bounding.BoundingSphere;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.bullet.collision.shapes.CollisionShape.ShapeTypes;
 import java.util.List;
 
 /**
@@ -67,7 +66,6 @@ public class SphereCollisionShape extends CollisionShape{
     public SphereCollisionShape(float radius) {
         SphereShape sphere=new SphereShape(radius);
         cShape=sphere;
-        type=ShapeTypes.SPHERE;
     }
 
     /**
@@ -91,7 +89,6 @@ public class SphereCollisionShape extends CollisionShape{
     private void createCollisionSphere(BoundingSphere volume) {
         SphereShape sphere=new SphereShape(volume.getRadius());
         cShape=sphere;
-        type=ShapeTypes.SPHERE;
     }
 
 }

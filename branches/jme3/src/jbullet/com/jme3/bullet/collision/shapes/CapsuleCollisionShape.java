@@ -34,12 +34,6 @@ package com.jme3.bullet.collision.shapes;
 import com.bulletphysics.collision.shapes.CapsuleShape;
 import com.bulletphysics.collision.shapes.CapsuleShapeX;
 import com.bulletphysics.collision.shapes.CapsuleShapeZ;
-//import com.jme3.bounding.BoundingCapsule;
-import com.jme3.math.FastMath;
-import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
-import com.jme3.bullet.collision.shapes.CollisionShape.ShapeTypes;
-import java.util.List;
 
 /**
  * Basic capsule collision shape
@@ -71,7 +65,6 @@ public class CapsuleCollisionShape extends CollisionShape{
     public CapsuleCollisionShape(float radius, float height) {
         CapsuleShape capShape=new CapsuleShape(radius,height);
         cShape=capShape;
-        type=ShapeTypes.CAPSULE;
     }
 
     /**
@@ -92,7 +85,6 @@ public class CapsuleCollisionShape extends CollisionShape{
                 cShape=new CapsuleShapeZ(radius,height);
             break;
         }
-        type=ShapeTypes.CAPSULE;
     }
 
 //    private void createCollisionCapsule(Node node) {

@@ -41,14 +41,9 @@ import com.jme3.bullet.util.Converter;
  * @author normenhansen
  */
 public abstract class CollisionShape {
-    protected int type=0;
     protected com.bulletphysics.collision.shapes.CollisionShape cShape;
 
     public CollisionShape() {
-    }
-
-    public int getType() {
-        return type;
     }
 
     /**
@@ -56,10 +51,10 @@ public abstract class CollisionShape {
      */
     public void calculateLocalInertia(float mass, javax.vecmath.Vector3f vector){
         if(cShape==null) return;
-        if(type!=ShapeTypes.MESH)
-            cShape.calculateLocalInertia(mass, vector);
-        else
+        if(this instanceof MeshCollisionShape)
             vector.set(0,0,0);
+        else
+            cShape.calculateLocalInertia(mass, vector);
     }
 
     /**
@@ -78,19 +73,6 @@ public abstract class CollisionShape {
 
     public void setScale(Vector3f scale){
         cShape.setLocalScaling(Converter.convert(scale));
-    }
-
-    /**
-     * interface that contains all jbullet-jme collision shape types.
-     */
-    public interface ShapeTypes{
-        public static final int SPHERE=0;
-        public static final int BOX=1;
-        public static final int CAPSULE=2;
-        public static final int CYLINDER=3;
-        public static final int MESH=4;
-        public static final int GIMPACT=5;
-        public static final int COMPOUND=10;
     }
 
 }

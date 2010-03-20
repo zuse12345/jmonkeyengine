@@ -37,7 +37,6 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.Mesh;
-import com.jme3.bullet.collision.shapes.CollisionShape.ShapeTypes;
 import com.jme3.bullet.util.Converter;
 import java.util.List;
 
@@ -90,7 +89,6 @@ public class GImpactCollisionShape extends CollisionShape{
         cShape.setLocalScaling(Converter.convert(worldScale));
         ((GImpactMeshShape)cShape).updateBound();
         ((GImpactMeshShape)cShape).lockChildShapes();
-        type=ShapeTypes.GIMPACT;
     }
 
 }

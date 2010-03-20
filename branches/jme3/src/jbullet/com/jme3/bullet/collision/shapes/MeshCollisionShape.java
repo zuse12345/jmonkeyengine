@@ -37,7 +37,6 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.Mesh;
-import com.jme3.bullet.collision.shapes.CollisionShape.ShapeTypes;
 import com.jme3.bullet.util.Converter;
 import java.util.List;
 
@@ -88,7 +87,6 @@ public class MeshCollisionShape extends CollisionShape{
     private void createCollisionMesh(Mesh mesh, Vector3f worldScale){
         cShape=new BvhTriangleMeshShape(Converter.convert(mesh),true);
         cShape.setLocalScaling(Converter.convert(worldScale));
-        type=ShapeTypes.MESH;
     }
 
 }

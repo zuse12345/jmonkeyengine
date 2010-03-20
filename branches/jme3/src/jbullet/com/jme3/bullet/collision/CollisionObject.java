@@ -39,4 +39,7 @@ import com.jme3.scene.Node;
  */
 public abstract class CollisionObject extends Node{
 
+    public void updatePhysicsState(){
+        
+    }
 }

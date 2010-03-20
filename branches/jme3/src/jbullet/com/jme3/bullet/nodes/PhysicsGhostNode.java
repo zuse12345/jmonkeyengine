@@ -52,30 +52,22 @@ import com.jme3.bullet.util.Converter;
  * @author normenhansen
  */
 public class PhysicsGhostNode extends CollisionObject{
-	protected PairCachingGhostObject gObject;
+    protected PairCachingGhostObject gObject;
     protected CollisionShape cShape;
 
-    private boolean physicsEnabled=true;
+    private boolean physicsDirty=false;
+    private boolean jmeDirty=false;
 
     //TEMP VARIABLES
     private final Quaternion tmp_inverseWorldRotation = new Quaternion();
-    private Transform tempTrans=new Transform();
+    private Transform tempTrans=new Transform(Converter.convert(new Matrix3f()));
+    private com.jme3.math.Transform jmeTrans=new com.jme3.math.Transform();
     private javax.vecmath.Quat4f tempRot=new javax.vecmath.Quat4f();
-    protected com.jme3.math.Vector3f tempLocation=new com.jme3.math.Vector3f();
-    protected com.jme3.math.Quaternion tempRotation=new com.jme3.math.Quaternion();
-    protected com.jme3.math.Quaternion tempRotation2=new com.jme3.math.Quaternion();
-    protected com.jme3.math.Matrix3f tempMatrix=new com.jme3.math.Matrix3f();
 
     public PhysicsGhostNode() {
         cShape=new SphereCollisionShape(0.5f);
         buildObject();
     }
-
-//    public PhysicsGhostNode(Spatial child, int shapeType) {
-//        this.attachChild(child);
-//        buildCollisionShape(shapeType);
-//        buildObject();
-//    }
 
     public PhysicsGhostNode(Spatial child, CollisionShape shape){
         this.attachChild(child);
@@ -89,128 +81,54 @@ public class PhysicsGhostNode extends CollisionObject{
         gObject.setCollisionShape(cShape.getCShape());
     }
 
-//    /**
-//     * creates a collisionShape from the BoundingVolume of this node.
-//     * If no BoundingVolume of the give type exists yet, it will be created.
-//     * Otherwise a new BoundingVolume will be created.
-//     * @param type
-//     */
-//    private void buildCollisionShape(int type){
-//        switch(type){
-//            case CollisionShape.ShapeTypes.BOX:
-//                cShape=new BoxCollisionShape(this);
-//            break;
-//            case CollisionShape.ShapeTypes.SPHERE:
-//                cShape=new SphereCollisionShape(this);
-//            break;
-////            case CollisionShape.ShapeTypes.CAPSULE:
-////                cShape=new CapsuleCollisionShape(this);
-////            break;
-//            case CollisionShape.ShapeTypes.CYLINDER:
-//                cShape=new CylinderCollisionShape(this);
-//            break;
-//            case CollisionShape.ShapeTypes.MESH:
-//                cShape=new MeshCollisionShape(this);
-//            break;
-//            case CollisionShape.ShapeTypes.GIMPACT:
-//                cShape=new GImpactCollisionShape(this);
-//            break;
-//        }
-//    }
-
-    /**
-     * note that getLocalTranslation().set() will not update the physics object position.
-     * Use setLocalTranslation() instead!
-     */
     @Override
-    public Vector3f getLocalTranslation() {
-        return super.getLocalTranslation();
-    }
-
-    /**
-     * sets the local translation of this node. The physics object will be updated accordingly
-     * in the next global physics update tick.
-     * @param arg0
-     */
-    @Override
-    public void setLocalTranslation(Vector3f arg0) {
-        super.setLocalTranslation(arg0);
-    }
-
-    /**
-     * sets the local translation of this node. The physics object will be updated accordingly
-     * in the next global physics update tick.
-     */
-    @Override
-    public void setLocalTranslation(float x, float y, float z) {
-        super.setLocalTranslation(x, y, z);
-        applyTranslation();
-    }
-
-    private void applyTranslation() {
-        super.updateGeometricState();
-        tempLocation.set(getWorldTranslation());
-        gObject.getWorldTransform(tempTrans);
-        Converter.convert(tempLocation,tempTrans.origin);
-        gObject.setWorldTransform(tempTrans);
-    }
-
-    /**
-     * note that getLocalRotation().set() will not update the physics object position.
-     * Use setLocalRotation() instead!
-     */
-    @Override
-    public Quaternion getLocalRotation() {
-        return super.getLocalRotation();
-    }
-
-    /**
-     * sets the local rotation of this node. The physics object will be updated accordingly
-     * in the next global physics update tick.
-     * @param arg0
-     */
-    @Override
-    public void setLocalRotation(Matrix3f arg0) {
-        super.setLocalRotation(arg0);
-        applyRotation();
-    }
-
-    /**
-     * sets the local rotation of this node. The physics object will be updated accordingly
-     * in the next global physics update tick.
-     * @param arg0
-     */
-    @Override
-    public void setLocalRotation(Quaternion arg0) {
-        super.setLocalRotation(arg0);
-        applyRotation();
+    protected void setTransformRefresh() {
+        super.setTransformRefresh();
+        jmeDirty=true;
     }
 
     @Override
-    public void lookAt(Vector3f position, Vector3f upVector) {
-        super.lookAt(position, upVector);
-        applyRotation();
+    public void setLocalScale(float localScale) {
+        super.setLocalScale(localScale);
+        jmeDirty=true;
     }
-
-//    @Override
-//    public void lookAt(Vector3f position, Vector3f upVector, boolean takeParentInAccount) {
-//        super.lookAt(position, upVector, takeParentInAccount);
-//        applyRotation();
-//    }
 
     @Override
-    public void rotateUpTo(Vector3f newUp) {
-        super.rotateUpTo(newUp);
-        applyRotation();
+    public void setLocalScale(Vector3f localScale) {
+        super.setLocalScale(localScale);
+        jmeDirty=true;
     }
 
-    private void applyRotation() {
-        super.updateGeometricState();
-        tempRotation=getWorldRotation();
-        Converter.convert(tempRotation, tempRot);
-        gObject.getWorldTransform(tempTrans);
-        tempTrans.setRotation(tempRot);
-        gObject.setWorldTransform(tempTrans);
+    @Override
+    public synchronized void updateGeometricState() {
+        if(jmeDirty){
+            super.updateGeometricState();
+            jmeTrans.set(getTransform());
+            jmeDirty=false;
+            physicsDirty=true;
+        }
+        else{
+            setWorldTranslation(jmeTrans.getTranslation());
+            setWorldRotation(jmeTrans.getRotation());
+            super.setTransformRefresh();
+            super.updateGeometricState();
+        }
+    }
+
+    @Override
+    public synchronized void updatePhysicsState() {
+        if(physicsDirty){
+            Converter.convert(jmeTrans.getTranslation(),tempTrans.origin);
+            tempTrans.setRotation(Converter.convert(jmeTrans.getRotation()));
+            gObject.setWorldTransform(tempTrans);
+            cShape.setScale(getWorldScale());
+            physicsDirty=false;
+        }
+        else{
+            gObject.getWorldTransform(tempTrans);
+            Converter.convert(tempTrans.origin,jmeTrans.getTranslation());
+            Converter.convert(tempTrans.getRotation(tempRot),jmeTrans.getRotation());
+        }
     }
 
     /**
@@ -252,30 +170,6 @@ public class PhysicsGhostNode extends CollisionObject{
     }
 
     /**
-     * note that the physics body and collision shape get
-     * rebuilt when scaling this PhysicsNode
-     */
-    @Override
-    public void setLocalScale(float localScale) {
-        super.setLocalScale(localScale);
-        updateGeometricState();
-        updateWorldBound();
-        cShape.setScale(getWorldScale());
-    }
-
-    /**
-     * note that the physics body and collision shape get
-     * rebuilt when scaling this PhysicsNode
-     */
-    @Override
-    public void setLocalScale(Vector3f localScale) {
-        super.setLocalScale(localScale);
-        updateGeometricState();
-        updateWorldBound();
-        cShape.setScale(getWorldScale());
-    }
-    
-    /**
      * used internally
      */
     public GhostObject getGhostObject(){
@@ -286,19 +180,6 @@ public class PhysicsGhostNode extends CollisionObject{
      * destroys this PhysicsGhostNode and removes it from memory
      */
     public void destroy(){
-    }
-
-    public void syncPhysics(){
-        if(gObject==null) return;
-
-        gObject.getWorldTransform(tempTrans);
-
-        Converter.convert(tempTrans.origin,tempLocation);
-        setWorldTranslation(tempLocation);
-
-        Converter.convert(tempTrans.basis,tempMatrix);
-        tempRotation.fromRotationMatrix(tempMatrix);
-        setWorldRotation(tempRotation);
     }
 
 }

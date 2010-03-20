@@ -272,16 +272,17 @@ public class PhysicsSpace {
             }
             task = pQueue.poll();
         }
-        
+
+        //sync physicsNodes
         for (PhysicsNode physicsNode : physicsNodes.values()) {
             physicsNode.updatePhysicsState();
         }
-        
         //step simulation
         getDynamicsWorld().stepSimulation(time,maxSteps,accuracy);
+
         //sync ghostnodes TODO!
         for ( PhysicsGhostNode node : physicsGhostNodes.values() ){
-            node.syncPhysics();
+            node.updatePhysicsState();
         }
         //distribute events
         distributeEvents();

@@ -57,6 +57,7 @@ public class PhysicsNode extends CollisionObject{
 
     private boolean rebuildBody=true;
     private float mass=1.0f;
+    private Vector3f scale=new Vector3f(1,1,1);
 
     protected javax.vecmath.Vector3f tempVec=new javax.vecmath.Vector3f();
 
@@ -171,17 +172,15 @@ public class PhysicsNode extends CollisionObject{
     }
 
     //TODO:scale
-//    @Override
-//    public void setLocalScale(float localScale) {
-//        super.setLocalScale(localScale);
-//        collisionShape.getCShape().setLocalScaling(new javax.vecmath.Vector3f(localScale,localScale,localScale));
-//    }
-//
-//    @Override
-//    public void setLocalScale(Vector3f localScale) {
-//        super.setLocalScale(localScale);
-//        collisionShape.getCShape().setLocalScaling(Converter.convert(localScale));
-//    }
+    @Override
+    public void setLocalScale(float localScale) {
+        super.setLocalScale(localScale);
+    }
+
+    @Override
+    public void setLocalScale(Vector3f localScale) {
+        super.setLocalScale(localScale);
+    }
 
     @Override
     protected void setTransformRefresh() {
@@ -216,6 +215,7 @@ public class PhysicsNode extends CollisionObject{
     /**
      * only to be called from physics thread!!
      */
+    @Override
     public synchronized void updatePhysicsState(){
         if(rebuildBody){
             rebuildRigidBody();

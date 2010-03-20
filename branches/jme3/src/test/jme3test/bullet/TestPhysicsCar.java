@@ -18,12 +18,8 @@ import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 
 public class TestPhysicsCar extends SimplePhysicsApplication implements BindingListener {
-    //the new player object
     private PhysicsVehicleNode player;
 
-    /**
-     * Main entry point of the application
-     */
     public static void main(String[] args) {
         TestPhysicsCar app = new TestPhysicsCar();
         app.start();
@@ -51,10 +47,11 @@ public class TestPhysicsCar extends SimplePhysicsApplication implements BindingL
             player.accelerate(1);
         }
         else if(binding.equals("Downs")){
-            player.accelerate(0);
+            player.brake(1);
         }
-        else if(binding.equals("Space")){
+        else if(binding.equals("UPDATE")){
             player.accelerate(0);
+            player.brake(0);
             player.steer(0);
         }
     }

@@ -48,19 +48,19 @@ public class TestPhysicsCharacter extends SimplePhysicsApplication implements Bi
 
     public void onBinding(String binding, float value) {
         if(binding.equals("Lefts")){
-            physicsCharacter.setWalkDirection(new Vector3f(-.1f,0,0));
+            walkDirection.addLocal(new Vector3f(-.1f,0,0));
         }
         else if(binding.equals("Rights")){
-            physicsCharacter.setWalkDirection(new Vector3f(.1f,0,0));
+            walkDirection.addLocal(new Vector3f(.1f,0,0));
         }
         else if(binding.equals("Ups")){
-            physicsCharacter.setWalkDirection(new Vector3f(0,0,-.1f));
+            walkDirection.addLocal(new Vector3f(0,0,-.1f));
         }
         else if(binding.equals("Downs")){
-            physicsCharacter.setWalkDirection(new Vector3f(0,0,.1f));
+            walkDirection.addLocal(new Vector3f(0,0,.1f));
         }
-        else if(binding.equals("Space")){
-            physicsCharacter.setWalkDirection(new Vector3f(0,0,0));
+        else if(binding.equals("UPDATE")){
+            walkDirection.set(0,0,0);
         }
     }
 
@@ -123,6 +123,11 @@ public class TestPhysicsCharacter extends SimplePhysicsApplication implements Bi
     public void simpleUpdate(float tpf) {
         //TODO: add update code
     }
+
+    @Override
+    public void simplePhysicsUpdate(float tpf) {
+        physicsCharacter.setWalkDirection(walkDirection);
+   }
 
     @Override
     public void simpleRender(RenderManager rm) {

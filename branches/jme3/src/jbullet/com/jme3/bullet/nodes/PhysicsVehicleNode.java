@@ -36,13 +36,11 @@ import com.bulletphysics.dynamics.vehicle.DefaultVehicleRaycaster;
 import com.bulletphysics.dynamics.vehicle.RaycastVehicle;
 import com.bulletphysics.dynamics.vehicle.VehicleRaycaster;
 import com.bulletphysics.dynamics.vehicle.VehicleTuning;
-import com.bulletphysics.linearmath.MotionState;
-import com.bulletphysics.linearmath.Transform;
+import com.bulletphysics.dynamics.vehicle.WheelInfo;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.CollisionShape;
-import com.jme3.bullet.nodes.infos.WheelInfo;
 import com.jme3.bullet.util.Converter;
 import java.util.LinkedList;
 import java.util.List;
@@ -68,7 +66,7 @@ public class PhysicsVehicleNode extends PhysicsNode{
     private RaycastVehicle vehicle;
     private VehicleTuning tuning;
     private VehicleRaycaster rayCaster;
-    private List<WheelInfo> wheels=new LinkedList<WheelInfo>();
+    private List<PhysicsVehicleWheel> wheels=new LinkedList<PhysicsVehicleWheel>();
 
     public PhysicsVehicleNode(CollisionShape shape){
         super(shape);
@@ -84,11 +82,11 @@ public class PhysicsVehicleNode extends PhysicsNode{
 
     @Override
     public synchronized void updateGeometricState() {
-        super.updateGeometricState();
         if(wheels!=null)
         for (int i = 0; i < wheels.size(); i++) {
             wheels.get(i).updateGeometricState();
         }
+        super.updateGeometricState();
     }
 
     @Override
@@ -96,6 +94,7 @@ public class PhysicsVehicleNode extends PhysicsNode{
         super.updatePhysicsState();
         if(wheels!=null)
         for (int i = 0; i < wheels.size(); i++) {
+            vehicle.updateWheelTransform(i);
             wheels.get(i).updatePhysicsState();
         }
     }
@@ -113,7 +112,7 @@ public class PhysicsVehicleNode extends PhysicsNode{
         rayCaster=new DefaultVehicleRaycaster(PhysicsSpace.getPhysicsSpace().getDynamicsWorld());
         vehicle=new RaycastVehicle(tuning, rBody, rayCaster);
         if(wheels!=null)
-        for(WheelInfo wheel:wheels){
+        for(PhysicsVehicleWheel wheel:wheels){
             wheel.setWheelInfo(vehicle.addWheel(Converter.convert(wheel.getLocation()), Converter.convert(wheel.getDirection()), Converter.convert(wheel.getAxle()),
                     wheel.getRestLength(), wheel.getRadius(), tuning, wheel.isFrontWheel()));
             wheel.applyInfo();
@@ -129,21 +128,23 @@ public class PhysicsVehicleNode extends PhysicsNode{
      * @param suspensionRestLength The current length of the suspension (metres)
      * @param wheelRadius the wheel radius
      * @param isFrontWheel sets if this wheel is a front wheel (steering)
+     * @return the PhysicsVehicleWheel object to get/set infos on the wheel
      */
-    public void addWheel(Spatial spat, Vector3f connectionPoint, Vector3f direction, Vector3f axle, float suspensionRestLength, float wheelRadius, boolean isFrontWheel){
+    public PhysicsVehicleWheel addWheel(Spatial spat, Vector3f connectionPoint, Vector3f direction, Vector3f axle, float suspensionRestLength, float wheelRadius, boolean isFrontWheel){
         this.attachChild(spat);
-        WheelInfo info=new WheelInfo(this,spat,connectionPoint,direction,axle,suspensionRestLength,wheelRadius,isFrontWheel);
-        info.setWheelInfo(
-                vehicle.addWheel(Converter.convert(connectionPoint), Converter.convert(direction), Converter.convert(axle), suspensionRestLength, wheelRadius, tuning, isFrontWheel)
-                );
+        PhysicsVehicleWheel wheel=new PhysicsVehicleWheel(this,spat,connectionPoint,direction,axle,suspensionRestLength,wheelRadius,isFrontWheel);
+        WheelInfo info=vehicle.addWheel(Converter.convert(connectionPoint), Converter.convert(direction), Converter.convert(axle),
+                                        suspensionRestLength, wheelRadius, tuning, isFrontWheel);
+        wheel.setWheelInfo(info);
         //TODO: info.applyTuningInfo(Tuning tuning)
-        info.setFrictionSlip(tuning.frictionSlip);
-        info.setMaxSuspensionTravelCm(tuning.maxSuspensionTravelCm);
-        info.setSuspensionStiffness(tuning.suspensionStiffness);
-        info.setWheelsDampingCompression(tuning.suspensionCompression);
-        info.setWheelsDampingRelaxation(tuning.suspensionDamping);
-        info.applyInfo();
-        wheels.add(info);
+        wheel.setFrictionSlip(tuning.frictionSlip);
+        wheel.setMaxSuspensionTravelCm(tuning.maxSuspensionTravelCm);
+        wheel.setSuspensionStiffness(tuning.suspensionStiffness);
+        wheel.setWheelsDampingCompression(tuning.suspensionCompression);
+        wheel.setWheelsDampingRelaxation(tuning.suspensionDamping);
+        wheel.applyInfo();
+        wheels.add(wheel);
+        return wheel;
     }
 
     /**
@@ -151,7 +152,7 @@ public class PhysicsVehicleNode extends PhysicsNode{
      * @param wheel the wheel index
      * @return the WheelInfo of the selected wheel
      */
-    public WheelInfo getWheelInfo(int wheel){
+    public PhysicsVehicleWheel getWheel(int wheel){
         return wheels.get(wheel);
     }
 
@@ -332,7 +333,8 @@ public class PhysicsVehicleNode extends PhysicsNode{
      */
     public void steer(float value){
         for (int i = 0; i < wheels.size(); i++) {
-            vehicle.setSteeringValue(value, i);
+            if(getWheel(i).isFrontWheel())
+                vehicle.setSteeringValue(value, i);
         }
     }
 

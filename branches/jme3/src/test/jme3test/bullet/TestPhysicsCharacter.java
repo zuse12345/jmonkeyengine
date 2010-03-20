@@ -105,7 +105,7 @@ public class TestPhysicsCharacter extends SimplePhysicsApplication implements Bi
         PhysicsNode node2=new PhysicsNode(geom4,new MeshCollisionShape(geom4.getMesh()),0);
         node2.setLocalTranslation(new Vector3f(2.5f,-4,0f));
         rootNode.attachChild(node2);
-        getPhysicsSpace().addQueued(node2);
+        getPhysicsSpace().add(node2);
 
         // the floor, does not move (mass=0)
         Geometry geom5=new Geometry("box2",new Box(Vector3f.ZERO,100f,0.2f,100f));
@@ -116,7 +116,7 @@ public class TestPhysicsCharacter extends SimplePhysicsApplication implements Bi
         rootNode.attachChild(node3);
         node3.updateModelBound();
         node3.updateGeometricState();
-        getPhysicsSpace().addQueued(node3);
+        getPhysicsSpace().add(node3);
     }
 
     @Override

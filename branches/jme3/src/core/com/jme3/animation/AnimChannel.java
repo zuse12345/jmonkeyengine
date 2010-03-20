@@ -1,8 +1,8 @@
 package com.jme3.animation;
 
-public class AnimationChannel {
+public class AnimChannel {
 
-    private AnimationControl control;
+    private AnimControl control;
 
     private BoneAnimation animation;
     private BoneAnimation blendFrom;
@@ -41,7 +41,7 @@ public class AnimationChannel {
         return t;
     }
 
-    AnimationChannel(AnimationControl control){
+    AnimChannel(AnimControl control){
         this.control = control;
     }
 
@@ -78,7 +78,7 @@ public class AnimationChannel {
         if (anim == null)
             throw new IllegalArgumentException("Cannot find animation named: '"+name+"'");
 
-        if (animation != null){
+        if (animation != null && blendTime > 0f){
             // activate blending
             blendFrom = animation;
             timeBlendFrom = time;

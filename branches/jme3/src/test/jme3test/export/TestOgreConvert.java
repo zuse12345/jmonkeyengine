@@ -1,7 +1,7 @@
 package jme3test.export;
 
-import com.jme3.animation.AnimationChannel;
-import com.jme3.animation.AnimationControl;
+import com.jme3.animation.AnimChannel;
+import com.jme3.animation.AnimControl;
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.AssetKey;
 import com.jme3.light.DirectionalLight;
@@ -50,8 +50,8 @@ public class TestOgreConvert extends SimpleApplication {
 //            imp.setAssetManager(manager);
 //            Model ogreModelReloaded = (Model) imp.load(fis, null, null);
 
-        AnimationControl control = (AnimationControl) ogreModel.getControl(ControlType.BoneAnimation);
-        AnimationChannel chan = control.createChannel();
+        AnimControl control = (AnimControl) ogreModel.getControl(ControlType.BoneAnimation);
+        AnimChannel chan = control.createChannel();
         chan.play("push");
 //            fis.close();
 

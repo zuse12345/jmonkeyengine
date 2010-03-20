@@ -1,6 +1,6 @@
 package com.jme3.scene.plugins.ogre;
 
-import com.jme3.animation.AnimationControl;
+import com.jme3.animation.AnimControl;
 import com.jme3.animation.BoneAnimation;
 import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetKey;
@@ -673,9 +673,9 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
                 anims.put(anim.getName(), anim);
             }
 
-            AnimationControl ctrl = new AnimationControl(model,
-                                                         meshes,
-                                                         animData.skeleton);
+            AnimControl ctrl = new AnimControl(model,
+                                               meshes,
+                                               animData.skeleton);
             ctrl.setAnimations(anims);
             model.setControl(ctrl);
         }

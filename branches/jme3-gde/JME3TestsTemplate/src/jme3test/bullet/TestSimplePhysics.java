@@ -57,7 +57,6 @@ public class TestSimplePhysics extends SimplePhysicsApplication{
 
     public static void main(String[] args){
         TestSimplePhysics app = new TestSimplePhysics();
-        app.setMultithreaded(false);
         app.start();
     }
 
@@ -152,11 +151,6 @@ public class TestSimplePhysics extends SimplePhysicsApplication{
     @Override
     public void simpleRender(RenderManager rm) {
         //TODO: add render code
-    }
-
-    @Override
-    public void simplePhysicsUpdate(float tpf) {
-        //TODO: add physics update code
     }
 
 }

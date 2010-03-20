@@ -53,6 +53,7 @@ import com.jme3.scene.Spatial.CullHint;
 import com.jme3.system.AppSettings;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
@@ -208,6 +209,14 @@ public class SceneViewerApplication extends Application implements LookupProvide
         }
 //        scaleAndCenter(model, 1.0f);
         rootNode.attachChild(model);
+        notifySceneListeners();
+    }
+
+    private void notifySceneListeners(){
+        for (Iterator<SceneViewerListener> it = listeners.iterator(); it.hasNext();) {
+            SceneViewerListener sceneViewerListener = it.next();
+            sceneViewerListener.rootNodeChanged(rootNode);
+        }
     }
 
     private static Spatial scaleAndCenter(Spatial model, float size) {
@@ -345,5 +354,15 @@ public class SceneViewerApplication extends Application implements LookupProvide
         } else if (binding.equals("MOUSE_W-")) {
             deltaWheel = -value;
         }
+    }
+
+    private LinkedList<SceneViewerListener> listeners=new LinkedList<SceneViewerListener>();
+
+    public void addSceneListener(SceneViewerListener listener){
+        listeners.add(listener);
+    }
+
+    public void removeSceneListener(SceneViewerListener listener){
+        listeners.remove(listener);
     }
 }

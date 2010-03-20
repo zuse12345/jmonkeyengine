@@ -30,22 +30,21 @@ public class TestBumpModel2 extends SimpleApplication {
 
         manager.registerLocator("/bump/", "com.jme3.asset.plugins.ClasspathLocator", "dds", "jpg", "png");
 
-        OgreMeshKey key = new OgreMeshKey("/bump/ShinyBall.meshxml", null);
-        Spatial ball = (Spatial) manager.loadContent(key);
-        Material mat = manager.loadMaterial("/bump/ShinyBall.j3m");
-        mat.selectTechnique("OldGpu");
-        ball.setMaterial(mat);
-      
-
-        rootNode.attachChild(ball);
-
-        key = new OgreMeshKey("/bump/Conn.meshxml", null);
+        OgreMeshKey key = new OgreMeshKey("/bump/Conn.meshxml", null);
         Spatial conn = (Spatial) manager.loadContent(key);
-        mat = manager.loadMaterial("/bump/Conn.j3m");
-        mat.selectTechnique("OldGpu");
+        Material mat = manager.loadMaterial("/bump/Conn.j3m");
+//        mat.selectTechnique("OldGpu");
         conn.setMaterial(mat);
         
+         key = new OgreMeshKey("/bump/ShinyBall.meshxml", null);
+        Spatial ball = (Spatial) manager.loadContent(key);
+         mat = manager.loadMaterial("/bump/ShinyBall.j3m");
+//        mat.selectTechnique("OldGpu");
+        ball.setMaterial(mat);
+
+        rootNode.attachChild(ball);
         rootNode.attachChild(conn);
+        
         conn.setLocalScale(10);
         conn.setLocalTranslation(60, 0, 0);
 

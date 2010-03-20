@@ -1,4 +1,4 @@
-package jme3test;
+package jme3test.app;
 
 import com.jme3.renderer.IDList;
 import java.util.ArrayList;

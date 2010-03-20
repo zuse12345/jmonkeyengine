@@ -32,7 +32,11 @@
 package com.jme3.gde.core.sceneviever;
 
 import com.jme3.gde.core.sceneviever.app.SceneViewerApplication;
-import com.jme3.system.G3DCanvasContext;
+import com.jme3.gde.core.sceneviever.app.SceneViewerListener;
+import com.jme3.gde.core.sceneviever.nodes.JmeSpatial;
+import com.jme3.gde.core.sceneviever.nodes.JmeSpatialChildFactory;
+import com.jme3.scene.Spatial;
+import com.jme3.system.JmeCanvasContext;
 import com.jme3.system.SystemListener;
 import java.util.logging.Logger;
 import org.openide.util.NbBundle;
@@ -40,20 +44,24 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
+import org.openide.explorer.view.BeanTreeView;
+import org.openide.nodes.Children;
 
 /**
  * Top component which displays something.
  */
 @ConvertAsProperties(dtd = "-//com.jme3.gde.core.sceneviever//SceneViewer//EN",
 autostore = false)
-public final class SceneViewerTopComponent extends TopComponent implements SystemListener{
+public final class SceneViewerTopComponent extends TopComponent implements SystemListener, ExplorerManager.Provider, SceneViewerListener{
 
     private static SceneViewerTopComponent instance;
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "com/jme3/gde/core/sceneviever/jme-logo.png";
     private static final String PREFERRED_ID = "SceneViewerTopComponent";
 
-    private G3DCanvasContext ctx;
+    private JmeCanvasContext ctx;
     private SceneViewerApplication app;
     private boolean started=false;
     private boolean created=false;
@@ -66,7 +74,11 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 //        putClientProperty(TopComponent.PROP_CLOSING_DISABLED, Boolean.TRUE);
 //        putClientProperty(TopComponent.PROP_SLIDING_DISABLED, Boolean.TRUE);
         app=SceneViewerApplication.getApplication();
+        app.addSceneListener(this);
 //        app=Lookup.getDefault().lookup(SceneViewerApplication.class);
+
+        associateLookup(ExplorerUtils.createLookup(explorerManager, getActionMap()));
+
     }
 
     /** This method is called from within the constructor to
@@ -80,8 +92,7 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
         jSplitPane1 = new javax.swing.JSplitPane();
         oGLPanel = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        rootNodeTree = new javax.swing.JTree();
+        jScrollPane1 = new BeanTreeView();
 
         jSplitPane1.setDividerLocation(500);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
@@ -90,9 +101,6 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
         jSplitPane1.setTopComponent(oGLPanel);
 
         jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.LINE_AXIS));
-
-        jScrollPane1.setViewportView(rootNodeTree);
-
         jPanel2.add(jScrollPane1);
 
         jSplitPane1.setRightComponent(jPanel2);
@@ -114,7 +122,6 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JPanel oGLPanel;
-    private javax.swing.JTree rootNodeTree;
     // End of variables declaration//GEN-END:variables
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
@@ -158,7 +165,7 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 //        if(!created){
             started=false;
             app.createCanvas();
-            ctx = (G3DCanvasContext) app.getContext();
+            ctx = (JmeCanvasContext) app.getContext();
             ctx.setAutoFlushFrames(true);
             ctx.setSystemListener(this);
             oGLPanel.add(ctx.getCanvas());
@@ -262,5 +269,16 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 
     public void destroy() {
 //        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    private transient ExplorerManager explorerManager = new ExplorerManager();
+    public ExplorerManager getExplorerManager() {
+        return explorerManager;
+    }
+
+    public void rootNodeChanged(Spatial spatial) {
+        JmeSpatialChildFactory factory=new JmeSpatialChildFactory(spatial,app);
+        explorerManager.setRootContext(new JmeSpatial(spatial,Children.create(factory, false)));
+        explorerManager.getRootContext().setDisplayName(spatial.getName());
     }
 }

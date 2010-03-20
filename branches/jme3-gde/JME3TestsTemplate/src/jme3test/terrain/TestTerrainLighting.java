@@ -1,4 +1,4 @@
-package jme3test;
+package jme3test.terrain;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.light.DirectionalLight;

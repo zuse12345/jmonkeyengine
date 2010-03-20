@@ -33,7 +33,6 @@ package com.jme3.gde.core.assets.nodes;
 
 import java.awt.Image;
 import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileChangeListener;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.FilterNode;

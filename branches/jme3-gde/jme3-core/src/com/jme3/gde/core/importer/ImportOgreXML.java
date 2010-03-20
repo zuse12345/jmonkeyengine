@@ -74,7 +74,7 @@ public final class ImportOgreXML implements ActionListener {
                     ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Importing OgreXML");
                     progressHandle.start();
                     manager.getManager().registerLocator(dialog.getModelPath().getParent().getPath(),
-                                                              "com.jme3.asset.plugins.FileSystemLocator",
+                                                              "com.jme3.asset.plugins.FileLocator",
                                                               "*");
                     Spatial model=MeshLoader.loadModel(manager.getManager(), dialog.getModelPath().getNameExt(), dialog.getMaterialPath().getNameExt());
 
@@ -88,7 +88,7 @@ public final class ImportOgreXML implements ActionListener {
                     }
                     progressHandle.finish();
                     //try make NetBeans update the tree.. :/
-                    context.getProjectDirectory().getFileObject("assets/models").getChildren();
+                    context.getProjectDirectory().getFileObject("assets/models").refresh();
                 }
             };
             new Thread(run).start();

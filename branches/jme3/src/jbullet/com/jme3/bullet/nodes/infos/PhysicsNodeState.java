@@ -42,8 +42,8 @@ import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.util.Converter;
 
 /**
- * stores all info about a bullet physics object in a thread-safe manner to
- * allow access from the jme scenegraph and the bullet physicsspace<br>
+ * stores transform info of a PhysicsNode in a threadsafe manner to
+ * allow multithreaded access from the jme scenegraph and the bullet physicsspace
  * @author normenhansen
  */
 public class PhysicsNodeState implements MotionState{
@@ -61,17 +61,23 @@ public class PhysicsNodeState implements MotionState{
     //temp variable for conversion
     private Quaternion tmp_inverseWorldRotation=new Quaternion();
 
-    private PhysicsNode pNode;
-
-    public PhysicsNodeState(PhysicsNode pNode) {
-        this.pNode = pNode;
+    public PhysicsNodeState() {
     }
 
+    /**
+     * called from bullet when creating the rigidbody
+     * @param t
+     * @return
+     */
     public synchronized Transform getWorldTransform(Transform t) {
         t.set(motionStateTrans);
         return t;
     }
 
+    /**
+     * called from bullet when the transform of the rigidbody changes
+     * @param worldTrans
+     */
     public synchronized void setWorldTransform(Transform worldTrans) {
         if(jmeLocationDirty) return;
         motionStateTrans.set(worldTrans);
@@ -81,6 +87,24 @@ public class PhysicsNodeState implements MotionState{
         physicsLocationDirty=true;
     }
 
+    /**
+     * called from jme when the location of the jme Node changes
+     * @param location
+     * @param rotation
+     */
+    public synchronized void setWorldTransform(Vector3f location, Quaternion rotation){
+        worldLocation.set(location);
+        worldRotationQuat.set(rotation);
+        worldRotation.set(rotation.toRotationMatrix());
+        Converter.convert(worldLocation,motionStateTrans.origin);
+        Converter.convert(worldRotation,motionStateTrans.basis);
+        jmeLocationDirty=true;
+    }
+
+    /**
+     * applies the current transform to the given RigidBody if the value has been changed on the jme side
+     * @param rBody
+     */
     public synchronized void applyTransform(RigidBody rBody) {
         if(!jmeLocationDirty) return;
         assert(rBody!=null);
@@ -88,6 +112,10 @@ public class PhysicsNodeState implements MotionState{
         jmeLocationDirty=false;
     }
 
+    /**
+     * applies the current transform to the given jme Node if the location has been updated on the physics side
+     * @param spatial
+     */
     public synchronized void applyTransform(PhysicsNode spatial){
         if(!physicsLocationDirty) return;
         if(spatial.getParent()!=null){
@@ -110,15 +138,6 @@ public class PhysicsNodeState implements MotionState{
         spatial.superSetTransformRefresh();
         physicsLocationDirty=false;
         return;
-    }
-
-    public synchronized void setWorldTransform(Vector3f location, Quaternion rotation){
-        worldLocation.set(location);
-        worldRotationQuat.set(rotation);
-        worldRotation.set(rotation.toRotationMatrix());
-        Converter.convert(worldLocation,motionStateTrans.origin);
-        Converter.convert(worldRotation,motionStateTrans.basis);
-        jmeLocationDirty=true;
     }
 
 }

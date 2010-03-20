@@ -34,7 +34,6 @@ package com.jme3.bullet.nodes;
 import com.bulletphysics.collision.dispatch.CollisionFlags;
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
-import com.bulletphysics.linearmath.Transform;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import com.jme3.bullet.PhysicsSpace;
@@ -54,7 +53,7 @@ public class PhysicsNode extends CollisionObject{
     private RigidBodyConstructionInfo constructionInfo;
     protected RigidBody rBody;
     private CollisionShape collisionShape;
-    private PhysicsNodeState motionState=new PhysicsNodeState(this);
+    private PhysicsNodeState motionState=new PhysicsNodeState();
 
     private boolean rebuildBody=true;
     private float mass=1.0f;

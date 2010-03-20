@@ -120,33 +120,19 @@ public class PhysicsNode extends CollisionObject{
      */
     protected void rebuildRigidBody(){
         boolean removed=false;
-
-//        Transform trans=new Transform();
-//        javax.vecmath.Vector3f vec=new javax.vecmath.Vector3f();
-
         if(rBody!=null){
-            System.out.println("rebuild body");
-//            rBody.getWorldTransform(trans);
-//            rBody.getAngularVelocity(vec);
             if(rBody.isInWorld()){
                 PhysicsSpace.getPhysicsSpace().remove(this);
                 removed=true;
             }
             rBody.destroy();
         }
-        else{
-//            System.out.println("build body");
-        }
         preRebuild();
         rBody=new RigidBody(constructionInfo);
         postRebuild();
-
         if(removed){
-//            rBody.setWorldTransform(trans);
-//            rBody.setAngularVelocity(vec);
             PhysicsSpace.getPhysicsSpace().add(this);
         }
-//        applyProperties=true;
         rebuildBody=false;
     }
 

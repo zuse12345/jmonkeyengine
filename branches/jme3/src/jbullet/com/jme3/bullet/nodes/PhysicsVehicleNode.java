@@ -309,6 +309,13 @@ public class PhysicsVehicleNode extends PhysicsNode{
     }
 
     /**
+     * reset the suspension
+     */
+    public void resetSuspension(){
+        vehicle.resetSuspension();
+    }
+
+    /**
      * apply the given engine force to all wheels, works continuously
      * @param force the force
      */

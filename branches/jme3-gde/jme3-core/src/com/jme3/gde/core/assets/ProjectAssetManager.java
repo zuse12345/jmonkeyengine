@@ -32,7 +32,7 @@
 package com.jme3.gde.core.assets;
 
 import com.jme3.asset.AssetManager;
-import com.jme3.system.G3DSystem;
+import com.jme3.system.JmeSystem;
 import org.netbeans.api.project.Project;
 import org.openide.awt.StatusDisplayer;
 
@@ -55,7 +55,7 @@ public class ProjectAssetManager {
 //        manager.registerLocator(prj.getProjectDirectory()+"/assets/materials/",
 //                "com.jme3.asset.plugins.FileSystemLocator", "j3m");
         manager.registerLocator(prj.getProjectDirectory()+"/assets/models/",
-                "com.jme3.asset.plugins.FileSystemLocator", "j3o");
+                "com.jme3.asset.plugins.FileLocator", "j3o");
 //        manager.registerLocator(prj.getProjectDirectory()+"/assets/ogremodels/",
 //                "com.jme3.asset.plugins.FileSystemLocator", "meshxml, material");
 //        manager.registerLocator(prj.getProjectDirectory()+"/assets/shaderlib/",
@@ -77,7 +77,7 @@ public class ProjectAssetManager {
     }
 
     public static AssetManager getManager() {
-        if(manager==null) manager=G3DSystem.newAssetManager();//new DesktopAssetManager(true);
+        if(manager==null) manager=JmeSystem.newAssetManager();//new DesktopAssetManager(true);
         return manager;
     }
 

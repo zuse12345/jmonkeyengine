@@ -1,15 +1,15 @@
 package jme3test.audio;
 
-import com.jme3.audio.AudioSource;
+import com.jme3.audio.AudioNode;
 import com.jme3.audio.Environment;
-import com.jme3.audio.PointAudioSource;
+//import com.jme3.audio.PointAudioSource;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 
 public class TestAmbient extends AudioApp {
 
-    private AudioSource river, nature;
-    private PointAudioSource waves;
+    private AudioNode river, nature, waves;
+//    private PointAudioSource waves;
     private float time = 0;
     private float nextTime = 1;
 
@@ -20,8 +20,10 @@ public class TestAmbient extends AudioApp {
 
     @Override
     public void initAudioApp(){
-        waves  = new PointAudioSource(manager, "ocean_waves.ogg", true);
-        nature = new AudioSource(manager, "nature.ogg", true);
+        waves  = new AudioNode(manager, "ocean_waves.ogg", true);
+
+        nature = new AudioNode(manager, "nature.ogg", true);
+        nature.setPositional(true);
         
 //        river  = new AudioSource(manager, "river.ogg");
 
@@ -32,7 +34,7 @@ public class TestAmbient extends AudioApp {
 //        Environment env = new Environment(eax);
 //        ar.setEnvironment(env);
 
-        waves.setPosition(new Vector3f(4, -1, 30));
+        waves.setLocalTranslation(new Vector3f(4, -1, 30));
 //        waves.setReverbEnabled(true);
         waves.setMaxDistance(10);
         waves.setRefDistance(5);

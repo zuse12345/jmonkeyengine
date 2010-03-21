@@ -1,6 +1,6 @@
 package jme3test.audio;
 
-import com.jme3.audio.AudioSource;
+import com.jme3.audio.AudioNode;
 
 public class TestWav extends AudioApp {
     
@@ -18,7 +18,7 @@ public class TestWav extends AudioApp {
 
     @Override
     public void initAudioApp(){
-        AudioSource src = new AudioSource(manager, "gun.wav", false);
+        AudioNode src = new AudioNode(manager, "gun.wav", false);
         src.setLooping(true);
 
         ar.playSource(src);

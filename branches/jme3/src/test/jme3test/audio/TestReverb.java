@@ -1,14 +1,14 @@
 package jme3test.audio;
 
-import com.jme3.audio.AudioSource;
+import com.jme3.audio.AudioNode;
 import com.jme3.audio.Environment;
-import com.jme3.audio.PointAudioSource;
+//import com.jme3.audio.PointAudioSource;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 
 public class TestReverb extends AudioApp {
 
-    private PointAudioSource src;
+    private AudioNode src;
     private float time = 0;
     private float nextTime = 1;
 
@@ -19,7 +19,7 @@ public class TestReverb extends AudioApp {
 
     @Override
     public void initAudioApp(){
-        src = new PointAudioSource(manager, "bang.wav");
+        src = new AudioNode(manager, "bang.wav");
 //        src.setLowPassHf(0.1f);
 
         float[] eax = new float[]
@@ -42,7 +42,7 @@ public class TestReverb extends AudioApp {
             v.multLocal(40, 2, 40);
             v.subtractLocal(20, 1, 20);
 
-            src.setPosition(v);
+            src.setLocalTranslation(v);
             ar.playSourceInstance(src);
             time = 0;
             nextTime = FastMath.nextRandomFloat() * 2 + 0.5f;

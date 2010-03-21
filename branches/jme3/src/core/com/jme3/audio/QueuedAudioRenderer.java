@@ -104,13 +104,13 @@ public class QueuedAudioRenderer implements AudioRenderer, Runnable {
                 wrapped.setListener( (Listener) cmd.args[0]);
                 break;
             case PlaySource:
-                wrapped.playSource( (AudioSource) cmd.args[0] );
+                wrapped.playSource( (AudioNode) cmd.args[0] );
                 break;
             case PauseSource:
-                wrapped.pauseSource( (AudioSource) cmd.args[0] );
+                wrapped.pauseSource( (AudioNode) cmd.args[0] );
                 break;
             case StopSource:
-                wrapped.stopSource( (AudioSource) cmd.args[0] );
+                wrapped.stopSource( (AudioNode) cmd.args[0] );
                 break;
         }
     }
@@ -123,19 +123,19 @@ public class QueuedAudioRenderer implements AudioRenderer, Runnable {
         enqueueCommand(new Command(CmdType.SetEnvParams, new Environment(env)));
     }
 
-    public void playSourceInstance(AudioSource src){
+    public void playSourceInstance(AudioNode src){
         enqueueCommand(new Command(CmdType.PlaySourceInstance, src));
     }
 
-    public void playSource(AudioSource src){
+    public void playSource(AudioNode src){
         enqueueCommand(new Command(CmdType.PlaySource, src));
     }
     
-    public void pauseSource(AudioSource src){
+    public void pauseSource(AudioNode src){
         enqueueCommand(new Command(CmdType.PauseSource, src));
     }
 
-    public void stopSource(AudioSource src){
+    public void stopSource(AudioNode src){
         enqueueCommand(new Command(CmdType.StopSource, src));
     }
 

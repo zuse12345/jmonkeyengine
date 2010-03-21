@@ -3,13 +3,11 @@ package com.jme3.audio.lwjgl;
 import com.jme3.audio.AudioBuffer;
 import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioRenderer;
-import com.jme3.audio.AudioSource;
-import com.jme3.audio.AudioSource.Status;
+import com.jme3.audio.AudioNode;
+import com.jme3.audio.AudioNode.Status;
 import com.jme3.audio.AudioStream;
-import com.jme3.audio.DirectionalAudioSource;
 import com.jme3.audio.Environment;
 import com.jme3.audio.Listener;
-import com.jme3.audio.PointAudioSource;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.util.BufferUtils;
@@ -40,7 +38,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
     private final byte[] arrayBuf = new byte[BUFFER_SIZE];
 
     private int[] channels = new int[16];
-    private AudioSource[] chanSrcs = new AudioSource[16];
+    private AudioNode[] chanSrcs = new AudioNode[16];
     private int nextChan = 0;
     private ArrayList<Integer> freeChans = new ArrayList<Integer>();
 
@@ -90,10 +88,10 @@ public class LwjglAudioRenderer implements AudioRenderer {
         alListener(AL_ORIENTATION, fb);
     }
 
-    private void setSourceParams(int id, AudioSource src, boolean forceNonLoop){
-        if (src instanceof PointAudioSource){
-            PointAudioSource pointSrc = (PointAudioSource) src;
-            Vector3f pos = pointSrc.getPosition();
+    private void setSourceParams(int id, AudioNode src, boolean forceNonLoop){
+        if (src.isPositional()){
+            AudioNode pointSrc = src;
+            Vector3f pos = pointSrc.getWorldTranslation();
             Vector3f vel = pointSrc.getVelocity();
             alSource3f(id, AL_POSITION, pos.x, pos.y, pos.z);
             alSource3f(id, AL_VELOCITY, vel.x, vel.y, vel.z);
@@ -115,8 +113,8 @@ public class LwjglAudioRenderer implements AudioRenderer {
         alSourcef(id,  AL_PITCH, src.getPitch());
         alSourcef(id,  AL11.AL_SEC_OFFSET, src.getTimeOffset());
 
-        if (src instanceof DirectionalAudioSource){
-            DirectionalAudioSource das = (DirectionalAudioSource) src;
+        if (src.isDirectional()){
+            AudioNode das = src;
             Vector3f dir = das.getDirection();
             alSource3f(id, AL_DIRECTION, dir.x, dir.y, dir.z);
             alSourcef(id, AL_CONE_INNER_ANGLE, das.getInnerAngle());
@@ -231,7 +229,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
     private void clearChannel(int index){
         // make room at this channel
         if (chanSrcs[index] != null){
-            AudioSource src = chanSrcs[index];
+            AudioNode src = chanSrcs[index];
 
             int sourceId = channels[index];
             alSourceStop(sourceId);
@@ -251,7 +249,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
 
     public void update(float tpf){
         for (int i = 0; i < channels.length; i++){
-            AudioSource src = chanSrcs[i];
+            AudioNode src = chanSrcs[i];
             if (src == null)
                 continue;
 
@@ -319,7 +317,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
         this.listener = listener;
     }
 
-    public void playSourceInstance(AudioSource src){
+    public void playSourceInstance(AudioNode src){
         if (src.getAudioData() instanceof AudioStream)
             throw new UnsupportedOperationException(
                     "Cannot play instances " +
@@ -347,7 +345,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
     }
 
     
-    public void playSource(AudioSource src) {
+    public void playSource(AudioNode src) {
         assert src.getStatus() == Status.Stopped || src.getChannel() == -1;
 
         if (src.getStatus() == Status.Playing){
@@ -373,7 +371,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
     }
 
     
-    public void pauseSource(AudioSource src) {
+    public void pauseSource(AudioNode src) {
         if (src.getStatus() == Status.Playing){
             assert src.getChannel() != -1;
 
@@ -383,7 +381,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
     }
 
     
-    public void stopSource(AudioSource src) {
+    public void stopSource(AudioNode src) {
         if (src.getStatus() != Status.Stopped){
             int chan = src.getChannel();
             assert chan != -1; // if it's not stopped, must have id

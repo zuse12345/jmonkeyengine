@@ -20,10 +20,10 @@ public interface AudioRenderer {
      */
     public void setEnvironment(Environment env);
 
-    public void playSourceInstance(AudioSource src);
-    public void playSource(AudioSource src);
-    public void pauseSource(AudioSource src);
-    public void stopSource(AudioSource src);
+    public void playSourceInstance(AudioNode src);
+    public void playSource(AudioNode src);
+    public void pauseSource(AudioNode src);
+    public void stopSource(AudioNode src);
 
     public void deleteAudioData(AudioData ad);
 

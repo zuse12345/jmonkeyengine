@@ -3,15 +3,15 @@ package com.jme3.audio.joal;
 import com.jme3.audio.AudioBuffer;
 import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioRenderer;
-import com.jme3.audio.AudioSource;
-import com.jme3.audio.AudioSource.Status;
+import com.jme3.audio.AudioNode;
+import com.jme3.audio.AudioNode.Status;
 import com.jme3.audio.AudioStream;
-import com.jme3.audio.DirectionalAudioSource;
+//import com.jme3.audio.DirectionalAudioSource;
 import com.jme3.audio.Environment;
 import com.jme3.audio.Filter;
 import com.jme3.audio.Listener;
 import com.jme3.audio.LowPassFilter;
-import com.jme3.audio.PointAudioSource;
+//import com.jme3.audio.PointAudioSource;
 import com.jme3.math.Vector3f;
 import com.jme3.util.BufferUtils;
 import java.nio.ByteBuffer;
@@ -64,7 +64,7 @@ public class JoalAudioRenderer implements AudioRenderer {
     /**
      * Mapping of channels to the sources currently attached to them.
      */
-    private AudioSource[] chanSrcs = new AudioSource[16];
+    private AudioNode[] chanSrcs = new AudioNode[16];
 
     /**
      * The next (free) channel. This variable is incremented
@@ -257,10 +257,10 @@ public class JoalAudioRenderer implements AudioRenderer {
     }
 
 
-    private void setSourceParams(int id, AudioSource src, boolean forceNonLoop){
-        if (src instanceof PointAudioSource){
-            PointAudioSource pointSrc = (PointAudioSource) src;
-            Vector3f pos = pointSrc.getPosition();
+    private void setSourceParams(int id, AudioNode src, boolean forceNonLoop){
+        if (src.isPositional()){
+            AudioNode pointSrc = src;
+            Vector3f pos = pointSrc.getWorldTranslation();
             Vector3f vel = pointSrc.getVelocity();
             al.alSource3f(id, AL.AL_POSITION, pos.x, pos.y, pos.z);
             al.alSource3f(id, AL.AL_VELOCITY, vel.x, vel.y, vel.z);
@@ -307,8 +307,8 @@ public class JoalAudioRenderer implements AudioRenderer {
         al.alSourcef(id,  AL.AL_PITCH, src.getPitch());
         al.alSourcef(id,  AL.AL_SEC_OFFSET, src.getTimeOffset());
 
-        if (src instanceof DirectionalAudioSource){
-            DirectionalAudioSource das = (DirectionalAudioSource) src;
+        if (src instanceof AudioNode){
+            AudioNode das = (AudioNode) src;
             Vector3f dir = das.getDirection();
             al.alSource3f(id, AL.AL_DIRECTION, dir.x, dir.y, dir.z);
             al.alSourcef(id, AL.AL_CONE_INNER_ANGLE, das.getInnerAngle());
@@ -445,7 +445,7 @@ public class JoalAudioRenderer implements AudioRenderer {
     private void clearChannel(int index){
         // make room at this channel
         if (chanSrcs[index] != null){
-            AudioSource src = chanSrcs[index];
+            AudioNode src = chanSrcs[index];
 
             int sourceId = channels[index];
             al.alSourceStop(sourceId);
@@ -463,8 +463,8 @@ public class JoalAudioRenderer implements AudioRenderer {
                 // detach filter
                 al.alSourcei(sourceId, AL.AL_DIRECT_FILTER, AL.AL_FILTER_NULL);
             }
-            if (src instanceof PointAudioSource){
-                PointAudioSource pas = (PointAudioSource) src;
+            if (src.isPositional()){
+                AudioNode pas = (AudioNode) src;
                 if (pas.getReverbFilter() != null){
                     al.alSource3i(sourceId, AL.AL_AUXILIARY_SEND_FILTER, 0, 0, AL.AL_FILTER_NULL);
                 }
@@ -478,7 +478,7 @@ public class JoalAudioRenderer implements AudioRenderer {
 
     public void update(float tpf){
         for (int i = 0; i < channels.length; i++){
-            AudioSource src = chanSrcs[i];
+            AudioNode src = chanSrcs[i];
             if (src == null)
                 continue;
 
@@ -548,7 +548,7 @@ public class JoalAudioRenderer implements AudioRenderer {
         this.listener = listener;
     }
 
-    public void playSourceInstance(AudioSource src){
+    public void playSourceInstance(AudioNode src){
         if (src.getAudioData() instanceof AudioStream)
             throw new UnsupportedOperationException(
                     "Cannot play instances " +
@@ -575,7 +575,7 @@ public class JoalAudioRenderer implements AudioRenderer {
         System.out.println("Playing on "+index);
     }
 
-    public void playSource(AudioSource src) {
+    public void playSource(AudioNode src) {
 //        assert src.getStatus() == Status.Stopped || src.getChannel() == -1;
 
         if (src.getStatus() == Status.Playing){
@@ -599,7 +599,7 @@ public class JoalAudioRenderer implements AudioRenderer {
         src.setStatus(Status.Playing);
     }
 
-    public void pauseSource(AudioSource src) {
+    public void pauseSource(AudioNode src) {
         if (src.getStatus() == Status.Playing){
             assert src.getChannel() != -1;
 
@@ -608,7 +608,7 @@ public class JoalAudioRenderer implements AudioRenderer {
         }
     }
 
-    public void stopSource(AudioSource src) {
+    public void stopSource(AudioNode src) {
         if (src.getStatus() != Status.Stopped){
             int chan = src.getChannel();
             assert chan != -1; // if it's not stopped, must have id
@@ -678,7 +678,7 @@ public class JoalAudioRenderer implements AudioRenderer {
         }
     }
 
-    public void deleteSource(AudioSource src){
+    public void deleteSource(AudioNode src){
         AudioData data = src.getAudioData();
         
     }

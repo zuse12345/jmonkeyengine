@@ -182,7 +182,7 @@ public class Transform implements Savable, Cloneable {
      */
     public Transform combineWithParent(Transform parent) {
         scale.multLocal(parent.scale);
-        rot.multLocal(parent.rot);
+//        rot.multLocal(parent.rot);
         parent.rot.mult(rot, rot);
         
         parent

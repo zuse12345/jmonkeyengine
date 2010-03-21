@@ -84,13 +84,11 @@ public class PhysicsVehicleWheel {
         spatial.getLocalTranslation().divideLocal( parent.getWorldScale() );
         tempRotation.set( parent.getWorldRotation()).inverseLocal().multLocal( spatial.getLocalTranslation() );
 
-        Quaternion myRot=spatial.getLocalRotation();
-        myRot.set(wheelWorldRotation);
-        tempRotation.set(parent.getWorldRotation()).inverseLocal().mult(myRot,myRot);
+        tempRotation.set(parent.getWorldRotation()).inverseLocal().mult(wheelWorldRotation,spatial.getLocalRotation());
 
         //notify spatial of change
         spatial.setLocalTranslation(spatial.getLocalTranslation());
-        spatial.setLocalRotation(myRot);
+        spatial.setLocalRotation(spatial.getLocalRotation());
     }
 
     public void updatePhysicsState(){

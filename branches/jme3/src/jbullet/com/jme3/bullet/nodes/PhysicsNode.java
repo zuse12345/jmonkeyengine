@@ -174,15 +174,6 @@ public class PhysicsNode extends CollisionObject{
         setDirty(true);
     }
 
-    public void superSetTransformRefresh() {
-        super.setTransformRefresh();
-    }
-
-    @Override
-    public void updateLogicalState(float tpf) {
-        super.updateLogicalState(tpf);
-    }
-
     @Override
     public synchronized void updateGeometricState() {
         //apply user input, dirty flag for physics is set in motionstate

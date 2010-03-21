@@ -33,8 +33,8 @@
 package com.jme3.scene.shape;
 
 import com.jme3.scene.*;
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.math.FastMath;
@@ -405,7 +405,7 @@ public class Sphere extends Mesh {
         setIndexData();
     }
 
-    public void read(G3DImporter e) throws IOException {
+    public void read(JmeImporter e) throws IOException {
         super.read(e);
         InputCapsule capsule = e.getCapsule(this);
         zSamples = capsule.readInt("zSamples", 0);
@@ -416,7 +416,7 @@ public class Sphere extends Mesh {
         interior = capsule.readBoolean("interior", false);
     }
 
-    public void write(G3DExporter e) throws IOException {
+    public void write(JmeExporter e) throws IOException {
         super.write(e);
         OutputCapsule capsule = e.getCapsule(this);
         capsule.write(zSamples, "zSamples", 0);

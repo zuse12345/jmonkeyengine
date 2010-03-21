@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2009 jMonkeyEngine
+ * Copyright (c) 2003-2008 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,24 +30,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jme3.export.xml;
+package com.jme3.export;
 
-import java.io.OutputStream;
-import org.w3c.dom.Document;
+import com.jme3.asset.AssetLoader;
+import com.jme3.asset.AssetManager;
 
-/**
- * Part of the jME XML IO system as introduced in the google code jmexml project.
- * 
- * @author Kai Rabien (hevee) - original author of the code.google.com jmexml project
- * @author Doug Daniels (dougnukem) - adjustments for jME 2.0 and Java 1.5
- * @deprecated This class will be removed in a future release.
- */
-@Deprecated
-public class DOM_PrettyPrint {
-    public static void serialize(Document doc, OutputStream out) throws Exception {
-    	DOMSerializer serializer = new DOMSerializer();
-        serializer.setIndent(2);
-        serializer.serialize(doc, out);
-    }
+public interface JmeImporter extends AssetLoader {
+    public InputCapsule getCapsule(Savable id);
+    public AssetManager getAssetManager();
 }
-

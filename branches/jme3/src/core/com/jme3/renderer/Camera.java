@@ -33,8 +33,8 @@
 package com.jme3.renderer;
 
 import com.jme3.bounding.BoundingVolume;
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
@@ -1210,7 +1210,7 @@ public class Camera implements Savable, Cloneable {
         return height;
     }
     
-    public void write(G3DExporter e) throws IOException {
+    public void write(JmeExporter e) throws IOException {
         OutputCapsule capsule = e.getCapsule(this);
         capsule.write(location, "location", Vector3f.ZERO);
         capsule.write(rotation, "rotation", Quaternion.DIRECTION_Z);
@@ -1232,7 +1232,7 @@ public class Camera implements Savable, Cloneable {
         capsule.write(height, "height", 0);
     }
 
-    public void read(G3DImporter e) throws IOException {
+    public void read(JmeImporter e) throws IOException {
         InputCapsule capsule = e.getCapsule(this);
         location = (Vector3f)capsule.readSavable("location", Vector3f.ZERO.clone());
         rotation = (Quaternion) capsule.readSavable("rotation", Quaternion.DIRECTION_Z);

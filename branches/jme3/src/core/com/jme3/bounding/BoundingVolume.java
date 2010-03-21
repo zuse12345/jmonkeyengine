@@ -33,8 +33,8 @@
 package com.jme3.bounding;
 
 import com.jme3.collision.Collidable;
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.Savable;
 import com.jme3.math.Matrix4f;
 import java.io.IOException;
@@ -290,11 +290,11 @@ public abstract class BoundingVolume implements Savable, Cloneable, Collidable {
         }
     }
 
-    public void write(G3DExporter e) throws IOException {
+    public void write(JmeExporter e) throws IOException {
         e.getCapsule(this).write(center, "center", Vector3f.ZERO);
     }
 
-    public void read(G3DImporter e) throws IOException {
+    public void read(JmeImporter e) throws IOException {
         center = (Vector3f) e.getCapsule(this).readSavable("center", Vector3f.ZERO.clone());
     }
  

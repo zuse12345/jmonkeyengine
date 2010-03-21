@@ -32,8 +32,8 @@
 
 package com.jme3.animation;
 
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
@@ -129,7 +129,7 @@ public final class BoneTrack implements Savable {
         target.setAnimTransforms(tempV, tempQ);
     }
 
-    public void write(G3DExporter ex) throws IOException {
+    public void write(JmeExporter ex) throws IOException {
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(targetBoneIndex, "boneIndex", 0);
         oc.write(translations, "translations", null);
@@ -137,7 +137,7 @@ public final class BoneTrack implements Savable {
         oc.write(times, "times", null);
     }
 
-    public void read(G3DImporter im) throws IOException {
+    public void read(JmeImporter im) throws IOException {
         InputCapsule ic = im.getCapsule(this);
         targetBoneIndex = ic.readInt("boneIndex", 0);
 

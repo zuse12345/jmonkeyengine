@@ -8,8 +8,8 @@ import com.jme3.math.Matrix4f;
 import com.jme3.math.Vector2f;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.TextureKey;
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
@@ -75,7 +75,7 @@ public class Material implements Cloneable, Savable {
             return (MatParamValue) super.clone();
         }
 
-        public void write(G3DExporter ex) throws IOException{
+        public void write(JmeExporter ex) throws IOException{
             super.write(ex);
             OutputCapsule oc = ex.getCapsule(this);
             if (value instanceof Savable){
@@ -93,7 +93,7 @@ public class Material implements Cloneable, Savable {
             }
         }
 
-        public void read(G3DImporter im) throws IOException{
+        public void read(JmeImporter im) throws IOException{
             super.read(im);
             InputCapsule ic = im.getCapsule(this);
             switch (getType()){
@@ -140,14 +140,14 @@ public class Material implements Cloneable, Savable {
             return unit;
         }
 
-        public void write(G3DExporter ex) throws IOException{
+        public void write(JmeExporter ex) throws IOException{
             super.write(ex);
             OutputCapsule oc = ex.getCapsule(this);
             oc.write(unit, "texture_unit", -1);
             oc.write(value, "texture", null);
         }
 
-        public void read(G3DImporter im) throws IOException{
+        public void read(JmeImporter im) throws IOException{
             super.read(im);
             InputCapsule ic = im.getCapsule(this);
             unit = ic.readInt("texture_unit", -1);
@@ -173,7 +173,7 @@ public class Material implements Cloneable, Savable {
     public Material(){
     }
 
-    public void write(G3DExporter ex) throws IOException{
+    public void write(JmeExporter ex) throws IOException{
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(def.getAssetName(), "material_def", null);
         oc.write(additionalState, "render_state", null);
@@ -181,7 +181,7 @@ public class Material implements Cloneable, Savable {
         oc.writeStringSavableMap(paramValues, "parameters", null);
     }
 
-    public void read(G3DImporter im) throws IOException{
+    public void read(JmeImporter im) throws IOException{
         InputCapsule ic = im.getCapsule(this);
         String defName = ic.readString("material_def", null);
         def = (MaterialDef) im.getAssetManager().loadContent(new AssetKey(defName));

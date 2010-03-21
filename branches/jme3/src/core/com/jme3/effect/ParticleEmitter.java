@@ -1,8 +1,8 @@
 package com.jme3.effect;
 
 import com.jme3.effect.ParticleMesh.Type;
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.math.ColorRGBA;
@@ -190,7 +190,7 @@ public class ParticleEmitter extends Geometry implements Control {
         this.variation = variation;
     }
 
-    public void write(G3DExporter ex) throws IOException{
+    public void write(JmeExporter ex) throws IOException{
         super.write(ex);
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(shape, "shape", DEFAULT_SHAPE);
@@ -213,7 +213,7 @@ public class ParticleEmitter extends Geometry implements Control {
         oc.write(worldSpace, "worldSpace", false);
     }
 
-    public void read(G3DImporter im) throws IOException{
+    public void read(JmeImporter im) throws IOException{
         super.read(im);
         InputCapsule ic = im.getCapsule(this);
         shape = (EmitterShape) ic.readSavable("shape", DEFAULT_SHAPE);

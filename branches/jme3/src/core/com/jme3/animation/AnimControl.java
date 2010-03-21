@@ -1,7 +1,7 @@
 package com.jme3.animation;
 
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
@@ -39,7 +39,7 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
     Skeleton skeleton;
 
     /**
-     * List of animations, bone or vertex based.
+     * List of animations
      */
     HashMap<String, BoneAnimation> animationMap;
 
@@ -272,7 +272,7 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
     }
 
     @Override
-    public void write(G3DExporter ex) throws IOException{
+    public void write(JmeExporter ex) throws IOException{
         super.write(ex);
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(targets, "targets", null);
@@ -281,7 +281,7 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
     }
 
     @Override
-    public void read(G3DImporter im) throws IOException{
+    public void read(JmeImporter im) throws IOException{
         super.read(im);
         InputCapsule in = im.getCapsule(this);
         Savable[] sav = in.readSavableArray("targets", null);

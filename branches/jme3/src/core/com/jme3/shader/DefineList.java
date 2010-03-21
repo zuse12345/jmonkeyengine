@@ -1,7 +1,7 @@
 package com.jme3.shader;
 
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
@@ -15,14 +15,14 @@ public class DefineList implements Savable {
     private final SortedMap<String, String> defines = new TreeMap<String, String>();
     private String compiled = null;
 
-    public void write(G3DExporter ex) throws IOException{
+    public void write(JmeExporter ex) throws IOException{
         OutputCapsule oc = ex.getCapsule(this);
         // TODO: Fix exporting of defines
         getCompiled();
         oc.write(compiled, "compiled", null);
     }
 
-    public void read(G3DImporter im) throws IOException{
+    public void read(JmeImporter im) throws IOException{
         InputCapsule ic = im.getCapsule(this);
         compiled = ic.readString(compiled, null);
     }

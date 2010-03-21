@@ -37,8 +37,8 @@ import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
 import com.jme3.collision.UnsupportedCollisionException;
 import com.jme3.export.InputCapsule;
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
 import java.io.IOException;
 import java.nio.FloatBuffer;
@@ -920,7 +920,7 @@ public class BoundingBox extends BoundingVolume {
     }
     
     @Override
-    public void write(G3DExporter e) throws IOException {
+    public void write(JmeExporter e) throws IOException {
         super.write(e);
         OutputCapsule capsule = e.getCapsule(this);
         capsule.write(xExtent, "xExtent", 0);
@@ -929,7 +929,7 @@ public class BoundingBox extends BoundingVolume {
     }
 
     @Override
-    public void read(G3DImporter e) throws IOException {
+    public void read(JmeImporter e) throws IOException {
         super.read(e);
         InputCapsule capsule = e.getCapsule(this);
         xExtent = capsule.readFloat("xExtent", 0);

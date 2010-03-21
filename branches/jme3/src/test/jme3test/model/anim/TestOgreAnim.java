@@ -1,4 +1,4 @@
-package jme3test.model;
+package jme3test.model.anim;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.light.DirectionalLight;

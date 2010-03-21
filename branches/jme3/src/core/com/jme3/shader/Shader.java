@@ -1,7 +1,7 @@
 package com.jme3.shader;
 
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
@@ -91,7 +91,7 @@ public class Shader extends GLObject implements Savable {
             super(Type.ShaderSource);
         }
 
-        public void write(G3DExporter ex) throws IOException{
+        public void write(JmeExporter ex) throws IOException{
             OutputCapsule oc = ex.getCapsule(this);
             oc.write(shaderType, "shaderType", null);
             oc.write(name, "name", null);
@@ -99,7 +99,7 @@ public class Shader extends GLObject implements Savable {
             oc.write(defines, "defines", null);
         }
 
-        public void read(G3DImporter im) throws IOException{
+        public void read(JmeImporter im) throws IOException{
             InputCapsule ic = im.getCapsule(this);
             shaderType = ic.readEnum("shaderType", ShaderType.class, null);
             name = ic.readString("name", null);
@@ -207,7 +207,7 @@ public class Shader extends GLObject implements Savable {
         }
     }
 
-    public void write(G3DExporter ex) throws IOException{
+    public void write(JmeExporter ex) throws IOException{
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(language, "language", null);
         oc.writeSavableArrayList(shaderList, "shaderList", null);
@@ -215,7 +215,7 @@ public class Shader extends GLObject implements Savable {
         oc.writeStringSavableMap(uniforms, "uniforms", null);
     }
 
-    public void read(G3DImporter im) throws IOException{
+    public void read(JmeImporter im) throws IOException{
         InputCapsule ic = im.getCapsule(this);
         language = ic.readString("language", null);
         shaderList = ic.readSavableArrayList("shaderList", null);

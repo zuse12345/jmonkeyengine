@@ -1,8 +1,12 @@
 package com.jme3.animation;
 
+import java.util.ArrayList;
+
 public class AnimChannel {
 
     private AnimControl control;
+
+    private ArrayList<Integer> effectedBones = new ArrayList<Integer>();
 
     private BoneAnimation animation;
     private BoneAnimation blendFrom;
@@ -73,7 +77,13 @@ public class AnimChannel {
         this.time = time;
     }
 
-    public void play(String name, float blendTime){
+    public void setAnim(String name, float blendTime){
+        if (name == null)
+            throw new NullPointerException();
+
+        if (blendTime < 0f)
+            throw new IllegalArgumentException("blendTime cannot be less than zero");
+
         BoneAnimation anim = control.animationMap.get(name);
         if (anim == null)
             throw new IllegalArgumentException("Cannot find animation named: '"+name+"'");
@@ -94,8 +104,8 @@ public class AnimChannel {
         loopMode = LoopMode.Loop;
     }
 
-    public void play(String name){
-        play(name, defaultBlendTime);
+    public void setAnim(String name){
+        setAnim(name, defaultBlendTime);
     }
 
     void reset(){

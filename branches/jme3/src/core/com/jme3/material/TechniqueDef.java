@@ -1,7 +1,7 @@
 package com.jme3.material;
 
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
@@ -54,7 +54,7 @@ public class TechniqueDef implements Savable {
     public TechniqueDef(){
     }
 
-    public void write(G3DExporter ex) throws IOException{
+    public void write(JmeExporter ex) throws IOException{
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(name, "name", null);
         oc.write(vertName, "vertName", null);
@@ -71,7 +71,7 @@ public class TechniqueDef implements Savable {
 //        oc.write(worldBinds, "worldBinds", null);
     }
 
-    public void read(G3DImporter im) throws IOException{
+    public void read(JmeImporter im) throws IOException{
         InputCapsule ic = im.getCapsule(this);
         name = ic.readString("name", null);
         vertName = ic.readString("vertName", null);

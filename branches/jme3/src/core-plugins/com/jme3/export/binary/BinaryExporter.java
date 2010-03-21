@@ -32,7 +32,7 @@
 
 package com.jme3.export.binary;
 
-import com.jme3.export.G3DExporter;
+import com.jme3.export.JmeExporter;
 import com.jme3.export.Savable;
 import com.jme3.math.FastMath;
 import java.io.ByteArrayOutputStream;
@@ -141,7 +141,7 @@ import java.util.logging.Logger;
  * @author Joshua Slack
  */
 
-public class BinaryExporter implements G3DExporter {
+public class BinaryExporter implements JmeExporter {
     private static final Logger logger = Logger.getLogger(BinaryExporter.class
             .getName());
 

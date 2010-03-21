@@ -34,9 +34,9 @@ package com.jme3.scene.shape;
 
 
 import com.jme3.scene.*;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
-import com.jme3.export.G3DExporter;
+import com.jme3.export.JmeExporter;
 import com.jme3.export.OutputCapsule;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
@@ -296,7 +296,7 @@ public class Dome extends Mesh {
         }
     }
 
-    public void read(G3DImporter e) throws IOException {
+    public void read(JmeImporter e) throws IOException {
         super.read(e);
         InputCapsule capsule = e.getCapsule(this);
         planes = capsule.readInt("planes", 0);
@@ -308,7 +308,7 @@ public class Dome extends Mesh {
     /**
      * Generates the connections
      */
-    public void write(G3DExporter e) throws IOException {
+    public void write(JmeExporter e) throws IOException {
         super.write(e);
         OutputCapsule capsule = e.getCapsule(this);
         capsule.write(planes, "planes", 0);

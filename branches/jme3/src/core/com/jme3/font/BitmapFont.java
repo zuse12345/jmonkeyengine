@@ -1,7 +1,7 @@
 package com.jme3.font;
 
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
@@ -16,13 +16,13 @@ import java.io.IOException;
  */
 public class BitmapFont implements Savable {
 
-    public void write(G3DExporter ex) throws IOException {
+    public void write(JmeExporter ex) throws IOException {
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(charSet, "charSet", null);
         oc.write(pages, "pages", null);
     }
 
-    public void read(G3DImporter im) throws IOException {
+    public void read(JmeImporter im) throws IOException {
         InputCapsule ic = im.getCapsule(this);
         charSet = (BitmapCharacterSet) ic.readSavable("charSet", null);
         Savable[] pagesSavable = ic.readSavableArray("pages", null);

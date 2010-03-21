@@ -34,7 +34,7 @@ package com.jme3.export.binary;
 
 import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetManager;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.ReadListener;
 import com.jme3.export.Savable;
 import com.jme3.math.FastMath;
@@ -55,7 +55,7 @@ import java.util.logging.Logger;
 /**
  * @author Joshua Slack
  */
-public final class BinaryImporter implements G3DImporter {
+public final class BinaryImporter implements JmeImporter {
     private static final Logger logger = Logger.getLogger(BinaryImporter.class
             .getName());
 

@@ -33,8 +33,8 @@
 package com.jme3.math;
 
 import com.jme3.export.InputCapsule;
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
 import com.jme3.util.BufferUtils;
@@ -1103,7 +1103,7 @@ public class Matrix3f implements Savable, Cloneable {
         return true;
     }
 
-    public void write(G3DExporter e) throws IOException {
+    public void write(JmeExporter e) throws IOException {
         OutputCapsule cap = e.getCapsule(this);
         cap.write(m00, "m00", 1);
         cap.write(m01, "m01", 0);
@@ -1116,7 +1116,7 @@ public class Matrix3f implements Savable, Cloneable {
         cap.write(m22, "m22", 1);
     }
 
-    public void read(G3DImporter e) throws IOException {
+    public void read(JmeImporter e) throws IOException {
         InputCapsule cap = e.getCapsule(this);
         m00 = cap.readFloat("m00", 1);
         m01 = cap.readFloat("m01", 0);

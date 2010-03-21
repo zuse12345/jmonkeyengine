@@ -32,7 +32,7 @@
 
 package com.jme3.export.xml;
 
-import com.jme3.export.G3DExporter;
+import com.jme3.export.JmeExporter;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
 import com.jme3.export.Savable;
@@ -65,10 +65,10 @@ public class DOMOutputCapsule implements OutputCapsule {
     private static final String dataAttributeName = "data";
     private Document doc;
     private Element currentElement;
-    private G3DExporter exporter;
+    private JmeExporter exporter;
     private Map<Savable, Element> writtenSavables = new IdentityHashMap<Savable, Element>();
 
-    public DOMOutputCapsule(Document doc, G3DExporter exporter) {
+    public DOMOutputCapsule(Document doc, JmeExporter exporter) {
         this.doc = doc;
         this.exporter = exporter;
         currentElement = null;

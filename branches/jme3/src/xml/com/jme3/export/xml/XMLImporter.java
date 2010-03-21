@@ -34,7 +34,7 @@ package com.jme3.export.xml;
 
 import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetManager;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.Savable;
 import java.io.IOException;
@@ -48,7 +48,7 @@ import org.xml.sax.SAXException;
  * @author Kai Rabien (hevee) - original author of the code.google.com jmexml project
  * @author Doug Daniels (dougnukem) - adjustments for jME 2.0 and Java 1.5
  */
-public class XMLImporter implements G3DImporter {
+public class XMLImporter implements JmeImporter {
 
     private AssetManager assetManager;
     private DOMInputCapsule domIn;

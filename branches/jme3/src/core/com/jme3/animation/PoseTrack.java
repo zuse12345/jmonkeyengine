@@ -32,8 +32,8 @@
 
 package com.jme3.animation;
 
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
@@ -66,13 +66,13 @@ public final class PoseTrack extends Track implements Serializable{
             this.weights = weights;
         }
 
-        public void write(G3DExporter e) throws IOException {
+        public void write(JmeExporter e) throws IOException {
             OutputCapsule out = e.getCapsule(this);
             out.write(poses, "poses", null);
             out.write(weights, "weights", null);
         }
 
-        public void read(G3DImporter i) throws IOException {
+        public void read(JmeImporter i) throws IOException {
             InputCapsule in = i.getCapsule(this);
             poses = (Pose[]) in.readSavableArray("poses", null);
             weights = in.readFloatArray("weights", null);
@@ -125,14 +125,14 @@ public final class PoseTrack extends Track implements Serializable{
     }
 
     @Override
-    public void write(G3DExporter e) throws IOException {
+    public void write(JmeExporter e) throws IOException {
         OutputCapsule out = e.getCapsule(this);
         out.write(frames, "frames", null);
         out.write(times, "times", null);
     }
 
     @Override
-    public void read(G3DImporter i) throws IOException {
+    public void read(JmeImporter i) throws IOException {
         InputCapsule in = i.getCapsule(this);
         frames = (PoseFrame[]) in.readSavableArray("frames", null);
         times = in.readFloatArray("times", null);

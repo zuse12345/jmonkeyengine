@@ -25,6 +25,8 @@ public class TestOgreConvert extends SimpleApplication {
         Spatial ogreModel = (Spatial) manager.loadContent(new OgreMeshKey("OTO.meshxml", materials));
         ogreModel.setLocalScale(0.1f);
 
+        ogreModel = ogreModel.clone();
+
         DirectionalLight dl = new DirectionalLight();
         dl.setColor(ColorRGBA.White);
         dl.setDirection(new Vector3f(-1,-1,-1).normalizeLocal());
@@ -52,7 +54,7 @@ public class TestOgreConvert extends SimpleApplication {
 
         AnimControl control = (AnimControl) ogreModel.getControl(ControlType.BoneAnimation);
         AnimChannel chan = control.createChannel();
-        chan.play("push");
+        chan.setAnim("push");
 //            fis.close();
 
             rootNode.attachChild(ogreModel);

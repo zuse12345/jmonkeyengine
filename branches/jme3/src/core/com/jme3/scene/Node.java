@@ -35,8 +35,8 @@ package com.jme3.scene;
 import com.jme3.bounding.BoundingVolume;
 import com.jme3.collision.Collidable;
 import com.jme3.collision.CollisionResults;
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.Savable;
 import com.jme3.material.Material;
 import java.io.IOException;
@@ -569,13 +569,13 @@ public class Node extends Spatial implements Savable {
     }
 
     @Override
-    public void write(G3DExporter e) throws IOException {
+    public void write(JmeExporter e) throws IOException {
         super.write(e);
         e.getCapsule(this).writeSavableArrayList(children, "children", null);
     }
 
     @Override
-    public void read(G3DImporter e) throws IOException {
+    public void read(JmeImporter e) throws IOException {
         super.read(e);
         children = e.getCapsule(this).readSavableArrayList("children", null);
 

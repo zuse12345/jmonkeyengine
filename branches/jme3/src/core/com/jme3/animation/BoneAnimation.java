@@ -32,8 +32,8 @@
 
 package com.jme3.animation;
 
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
@@ -89,14 +89,14 @@ public final class BoneAnimation implements Savable {
         return "BoneAnim[name="+name+", length="+length+"]";
     }
 
-    public void write(G3DExporter e) throws IOException {
+    public void write(JmeExporter e) throws IOException {
         OutputCapsule out = e.getCapsule(this);
         out.write(name, "name", null);
         out.write(length, "length", 0f);
         out.write(tracks, "tracks", null);
     }
 
-    public void read(G3DImporter i) throws IOException {
+    public void read(JmeImporter i) throws IOException {
         InputCapsule in = i.getCapsule(this);
         name = in.readString("name", null);
         length = in.readFloat("length", 0f);

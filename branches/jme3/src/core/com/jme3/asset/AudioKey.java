@@ -1,7 +1,7 @@
 package com.jme3.asset;
 
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import java.io.IOException;
@@ -44,14 +44,14 @@ public class AudioKey extends AssetKey {
     }
 
     @Override
-    public void write(G3DExporter ex) throws IOException{
+    public void write(JmeExporter ex) throws IOException{
         super.write(ex);
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(stream, "do_stream", false);
     }
 
     @Override
-    public void read(G3DImporter im) throws IOException{
+    public void read(JmeImporter im) throws IOException{
         super.read(im);
         InputCapsule ic = im.getCapsule(this);
         stream = ic.readBoolean("do_stream", false);

@@ -1,7 +1,7 @@
 package com.jme3.font;
 
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
@@ -19,7 +19,7 @@ public class BitmapCharacterSet implements Savable {
     private int height;
     private IntMap<BitmapCharacter> characters;
 
-    public void write(G3DExporter ex) throws IOException {
+    public void write(JmeExporter ex) throws IOException {
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(lineHeight, "lineHeight", 0);
         oc.write(base, "base", 0);
@@ -41,7 +41,7 @@ public class BitmapCharacterSet implements Savable {
         oc.write(chars,   "chars",   null);
     }
 
-    public void read(G3DImporter im) throws IOException {
+    public void read(JmeImporter im) throws IOException {
         InputCapsule ic = im.getCapsule(this);
         lineHeight = ic.readInt("lineHeight", 0);
         base = ic.readInt("base", 0);

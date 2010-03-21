@@ -7,8 +7,8 @@ package com.jme3.scene;
 
 import com.jme3.bounding.BoundingVolume;
 import com.jme3.collision.Collidable;
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
@@ -756,19 +756,22 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
     @Override
     public Spatial clone(){
         try{
-            Spatial s = (Spatial) super.clone();
+            Spatial clone = (Spatial) super.clone();
             if (worldBound != null)
-                s.worldBound = worldBound.clone();
-            s.worldLights = worldLights.clone();
-            s.localLights = localLights.clone();
-            s.worldTransform = worldTransform.clone();
-            s.localTransform = localTransform.clone();
-            s.controls = controls.clone();
-            s.parent = null;
-            s.setBoundRefresh();
-            s.setTransformRefresh();
-            s.setLightListRefresh();
-            return s;
+                clone.worldBound = worldBound.clone();
+            clone.worldLights = worldLights.clone();
+            clone.localLights = localLights.clone();
+            clone.worldTransform = worldTransform.clone();
+            clone.localTransform = localTransform.clone();
+            clone.controls = new IntMap<Control>();
+            for (Entry<Control> c : controls){
+                clone.controls.put( c.getKey(), c.getValue().cloneForSpatial(clone) );
+            }
+            clone.parent = null;
+            clone.setBoundRefresh();
+            clone.setTransformRefresh();
+            clone.setLightListRefresh();
+            return clone;
         }catch (CloneNotSupportedException ex){
             throw new AssertionError();
         }
@@ -780,7 +783,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      */
     public abstract Spatial deepClone();
 
-    public void write(G3DExporter ex) throws IOException {
+    public void write(JmeExporter ex) throws IOException {
         OutputCapsule capsule = ex.getCapsule(this);
         capsule.write(name, "name", null);
         capsule.write(worldBound, "world_bound", null);
@@ -796,7 +799,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
     }
 
 //    @SuppressWarnings("unchecked")
-    public void read(G3DImporter im) throws IOException {
+    public void read(JmeImporter im) throws IOException {
         InputCapsule ic = im.getCapsule(this);
         name = ic.readString("name", null);
         worldBound = (BoundingVolume) ic.readSavable("world_bound", null);

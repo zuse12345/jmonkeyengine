@@ -31,9 +31,13 @@
  */
 package com.jme3.bullet.util;
 
+import com.bulletphysics.collision.shapes.IndexedMesh;
+import com.bulletphysics.collision.shapes.TriangleIndexVertexArray;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.IndexBuffer;
+import com.jme3.scene.Mesh;
 import com.jme3.scene.VertexBuffer;
+import com.jme3.scene.VertexBuffer.Type;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
@@ -136,19 +140,15 @@ public class Converter {
         convert(in.getRotation().toRotationMatrix(),out.basis);
     }
 
-    public static com.bulletphysics.collision.shapes.TriangleIndexVertexArray convert( com.jme3.scene.Mesh mesh ) {
-        com.bulletphysics.collision.shapes.TriangleIndexVertexArray jBulletMeshData
-                = new com.bulletphysics.collision.shapes.TriangleIndexVertexArray();
+    public static TriangleIndexVertexArray convert(Mesh mesh) {
+        TriangleIndexVertexArray jBulletMeshData = new TriangleIndexVertexArray();
 
-        com.bulletphysics.collision.shapes.IndexedMesh jBulletIndexedMesh
-                = new com.bulletphysics.collision.shapes.IndexedMesh();
+        IndexedMesh jBulletIndexedMesh = new IndexedMesh();
         jBulletIndexedMesh.triangleIndexBase = ByteBuffer.allocate( mesh.getTriangleCount() * 3 * 4 );
         jBulletIndexedMesh.vertexBase = ByteBuffer.allocate( mesh.getVertexCount() * 3 * 4 );
 
         IndexBuffer indices = mesh.getIndexBuffer();
-//        indices.rewind();
-
-        FloatBuffer vertices = mesh.getFloatBuffer(VertexBuffer.Type.Position);
+        FloatBuffer vertices = mesh.getFloatBuffer(Type.Position);
         vertices.rewind();
 
         int verticesLength = mesh.getVertexCount() * 3;
@@ -167,7 +167,6 @@ public class Converter {
         }
 
         jBulletMeshData.addIndexedMesh( jBulletIndexedMesh );
-
         return jBulletMeshData;
     }
 }

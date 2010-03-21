@@ -35,7 +35,7 @@ package com.jme3.export;
 import java.io.IOException;
 
 public interface Savable {
-    void write(G3DExporter ex) throws IOException;
-    void read(G3DImporter im) throws IOException;
+    void write(JmeExporter ex) throws IOException;
+    void read(JmeImporter im) throws IOException;
     //Class getClassTag();
 }

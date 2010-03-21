@@ -67,7 +67,7 @@ public class ModelAnimHandler implements IAnimationHandler {
     public void blendTo(final String name, final float time) {
         app.enqueue(new Callable<Void>() {
             public Void call() throws Exception {
-                channel.play(name, time);
+                channel.setAnim(name, time);
                 return null;
             }
         });

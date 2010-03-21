@@ -33,8 +33,8 @@
 package com.jme3.texture;
 
 import com.jme3.asset.TextureKey;
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
@@ -615,7 +615,7 @@ public abstract class Texture extends GLObject implements Savable, Cloneable {
 
     public abstract Texture createSimpleClone();
 
-    public void write(G3DExporter e) throws IOException {
+    public void write(JmeExporter e) throws IOException {
         OutputCapsule capsule = e.getCapsule(this);
         capsule.write(name, "name", null);
         capsule.write(key, "key", null);
@@ -626,7 +626,7 @@ public abstract class Texture extends GLObject implements Savable, Cloneable {
                 MagFilter.Bilinear);
     }
 
-    public void read(G3DImporter e) throws IOException {
+    public void read(JmeImporter e) throws IOException {
         InputCapsule capsule = e.getCapsule(this);
         name = capsule.readString("name", null);
         key = (TextureKey) capsule.readSavable("key", null);

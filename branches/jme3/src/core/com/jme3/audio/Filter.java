@@ -1,7 +1,7 @@
 package com.jme3.audio;
 
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.Savable;
 import java.io.IOException;
 
@@ -26,11 +26,11 @@ public class Filter implements Savable {
         return updateNeeded;
     }
 
-    public void write(G3DExporter ex) throws IOException {
+    public void write(JmeExporter ex) throws IOException {
         // nothing to save
     }
 
-    public void read(G3DImporter im) throws IOException {
+    public void read(JmeImporter im) throws IOException {
         // nothing to read
     }
 

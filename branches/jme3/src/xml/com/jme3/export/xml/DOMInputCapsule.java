@@ -35,8 +35,6 @@ package com.jme3.export.xml;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.Savable;
 import com.jme3.export.binary.BinaryClassLoader;
-import com.jme3.export.xml.XMLExporter;
-import com.jme3.export.xml.XMLImporter;
 import com.jme3.util.BufferUtils;
 import com.jme3.util.IntMap;
 import java.io.IOException;
@@ -49,7 +47,6 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.w3c.dom.DOMException;

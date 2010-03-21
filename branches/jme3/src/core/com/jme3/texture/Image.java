@@ -32,8 +32,8 @@
 
 package com.jme3.texture;
 
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import java.io.IOException;
@@ -497,7 +497,7 @@ public class Image implements Savable, Cloneable {
         return true;
     }
 
-    public void write(G3DExporter e) throws IOException {
+    public void write(JmeExporter e) throws IOException {
         OutputCapsule capsule = e.getCapsule(this);
         capsule.write(format, "format", Format.RGBA8);
         capsule.write(width, "width", 0);
@@ -507,7 +507,7 @@ public class Image implements Savable, Cloneable {
         capsule.writeByteBufferArrayList(data, "data", null);
     }
 
-    public void read(G3DImporter e) throws IOException {
+    public void read(JmeImporter e) throws IOException {
         InputCapsule capsule = e.getCapsule(this);
         format = capsule.readEnum("format", Format.class, Format.RGBA8);
         width = capsule.readInt("width", 0);

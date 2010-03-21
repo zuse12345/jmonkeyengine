@@ -31,9 +31,7 @@
  */
 package com.jme3.app;
 
-import com.jme3.app.Application;
 import com.jme3.bullet.PhysicsSpace;
-import java.util.Timer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

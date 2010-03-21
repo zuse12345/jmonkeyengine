@@ -117,21 +117,6 @@ public class DOMSerializer {
     }
 
     /**
-     * Serialize {@code doc} to {@code writer}
-     * 
-     * @param doc the document to serialize.
-     * @param writer the writer to serialize to.
-     * @throws IOException
-     * 
-     * @deprecated this method does not set the encoding correctly.
-     */
-    @Deprecated
-    public void serialize(Document doc, Writer writer) throws IOException {
-        write(doc, writer, 0);
-        writer.flush();
-    }
-
-    /**
      * Set the encoding used by this serializer.
      * 
      * @param encoding the encoding to use, passing in {@code null} results in the

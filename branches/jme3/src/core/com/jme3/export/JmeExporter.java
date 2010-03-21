@@ -36,7 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public interface G3DExporter {
+public interface JmeExporter {
     
     public boolean save(Savable object, OutputStream f) throws IOException;
     public boolean save(Savable object, File f) throws IOException;

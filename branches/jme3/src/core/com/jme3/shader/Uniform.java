@@ -1,7 +1,7 @@
 package com.jme3.shader;
 
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
@@ -57,7 +57,7 @@ public class Uniform extends ShaderVariable {
      */
     protected UniformBinding binding;
 
-    public void write(G3DExporter ex) throws IOException{
+    public void write(JmeExporter ex) throws IOException{
         super.write(ex);
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(dataType, "dataType", null);
@@ -103,7 +103,7 @@ public class Uniform extends ShaderVariable {
         }
     }
 
-    public void read(G3DImporter im) throws IOException{
+    public void read(JmeImporter im) throws IOException{
         super.read(im);
         InputCapsule ic = im.getCapsule(this);
         dataType = ic.readEnum("dataType", Type.class, null);

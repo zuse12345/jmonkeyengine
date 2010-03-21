@@ -36,8 +36,8 @@ import com.jme3.collision.Collidable;
 import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
 import com.jme3.collision.UnsupportedCollisionException;
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.util.logging.Level;
@@ -824,7 +824,7 @@ public class BoundingSphere extends BoundingVolume {
     }
     
     @Override
-    public void write(G3DExporter e) throws IOException {
+    public void write(JmeExporter e) throws IOException {
         super.write(e);
         try {
             e.getCapsule(this).write(radius, "radius", 0);
@@ -834,7 +834,7 @@ public class BoundingSphere extends BoundingVolume {
     }
 
     @Override
-    public void read(G3DImporter e) throws IOException {
+    public void read(JmeImporter e) throws IOException {
         super.read(e);
         try {
             radius = e.getCapsule(this).readFloat("radius", 0);

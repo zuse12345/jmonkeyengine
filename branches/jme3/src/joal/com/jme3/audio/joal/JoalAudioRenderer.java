@@ -13,7 +13,6 @@ import com.jme3.audio.Listener;
 import com.jme3.audio.LowPassFilter;
 import com.jme3.audio.PointAudioSource;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.Camera;
 import com.jme3.util.BufferUtils;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;

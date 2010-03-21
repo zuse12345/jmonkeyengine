@@ -32,8 +32,8 @@
 package com.jme3.math;
 
 import com.jme3.export.InputCapsule;
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
 import com.jme3.util.TempVars;
@@ -581,14 +581,14 @@ public class LineSegment implements Cloneable, Savable {
 		return origin.subtract((direction.mult(extent, store)), store);
 	}
 
-    public void write(G3DExporter e) throws IOException {
+    public void write(JmeExporter e) throws IOException {
         OutputCapsule capsule = e.getCapsule(this);
         capsule.write(origin, "origin", Vector3f.ZERO);
         capsule.write(direction, "direction", Vector3f.ZERO);
         capsule.write(extent, "extent", 0);
     }
 
-    public void read(G3DImporter e) throws IOException {
+    public void read(JmeImporter e) throws IOException {
         InputCapsule capsule = e.getCapsule(this);
         origin = (Vector3f)capsule.readSavable("origin", Vector3f.ZERO.clone());
         direction = (Vector3f)capsule.readSavable("direction", Vector3f.ZERO.clone());

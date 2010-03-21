@@ -3,8 +3,8 @@ package com.jme3.scene;
 import com.jme3.bounding.BoundingVolume;
 import com.jme3.collision.Collidable;
 import com.jme3.collision.CollisionResults;
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.material.Material;
@@ -205,7 +205,7 @@ public class Geometry extends Spatial {
     }
 
     @Override
-    public void write(G3DExporter ex) throws IOException {
+    public void write(JmeExporter ex) throws IOException {
         super.write(ex);
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(mesh, "mesh", null);
@@ -213,7 +213,7 @@ public class Geometry extends Spatial {
     }
 
     @Override
-    public void read(G3DImporter im) throws IOException {
+    public void read(JmeImporter im) throws IOException {
         super.read(im);
         InputCapsule ic = im.getCapsule(this);
         mesh = (Mesh) ic.readSavable("mesh", null);

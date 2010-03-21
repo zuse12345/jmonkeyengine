@@ -1,8 +1,8 @@
 package com.jme3.scene.control;
 
 import com.jme3.bounding.BoundingVolume;
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.renderer.RenderManager;
@@ -85,7 +85,7 @@ public class LodControl extends AbstractControl implements Cloneable {
     }
 
     @Override
-    public void write(G3DExporter ex) throws IOException{
+    public void write(JmeExporter ex) throws IOException{
         super.write(ex);
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(trisPerPixel, "trisPerPixel", 1f);
@@ -95,7 +95,7 @@ public class LodControl extends AbstractControl implements Cloneable {
     }
 
     @Override
-    public void read(G3DImporter im) throws IOException{
+    public void read(JmeImporter im) throws IOException{
         super.read(im);
         InputCapsule ic = im.getCapsule(this);
         trisPerPixel = ic.readFloat("trisPerPixel", 1f);

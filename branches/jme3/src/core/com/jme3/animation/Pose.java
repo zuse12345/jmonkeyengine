@@ -32,8 +32,8 @@
 
 package com.jme3.animation;
 
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
@@ -95,7 +95,7 @@ public final class Pose implements Serializable, Savable {
         }
     }
 
-    public void write(G3DExporter e) throws IOException {
+    public void write(JmeExporter e) throws IOException {
         OutputCapsule out = e.getCapsule(this);
         out.write(name, "name", "");
         out.write(targetMeshIndex, "meshIndex", -1);
@@ -103,7 +103,7 @@ public final class Pose implements Serializable, Savable {
         out.write(indices, "indices", null);
     }
 
-    public void read(G3DImporter i) throws IOException {
+    public void read(JmeImporter i) throws IOException {
         InputCapsule in = i.getCapsule(this);
         name = in.readString("name", "");
         targetMeshIndex = in.readInt("meshIndex", -1);

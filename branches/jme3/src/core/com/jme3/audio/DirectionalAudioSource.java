@@ -1,7 +1,7 @@
 package com.jme3.audio;
 
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.math.Vector3f;
@@ -42,14 +42,14 @@ public class DirectionalAudioSource extends PointAudioSource {
         this.outerAngle = outerAngle;
     }
 
-    public void write(G3DExporter ex) throws IOException {
+    public void write(JmeExporter ex) throws IOException {
         super.write(ex);
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(direction, "direction", null);
         oc.write(innerAngle, "inner_angle", 360);
         oc.write(outerAngle, "outer_angle", 360);
     }
-    public void read(G3DImporter im) throws IOException {
+    public void read(JmeImporter im) throws IOException {
         super.read(im);
         InputCapsule ic = im.getCapsule(this);
         direction = (Vector3f) ic.readSavable("direction", null);

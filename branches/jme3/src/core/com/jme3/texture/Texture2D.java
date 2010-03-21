@@ -32,8 +32,8 @@
 
 package com.jme3.texture;
 
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.renderer.GLObject;
@@ -181,7 +181,7 @@ public class Texture2D extends Texture {
     }
 
     @Override
-    public void write(G3DExporter e) throws IOException {
+    public void write(JmeExporter e) throws IOException {
         super.write(e);
         OutputCapsule capsule = e.getCapsule(this);
         capsule.write(wrapS, "wrapS", WrapMode.EdgeClamp);
@@ -189,7 +189,7 @@ public class Texture2D extends Texture {
     }
 
     @Override
-    public void read(G3DImporter e) throws IOException {
+    public void read(JmeImporter e) throws IOException {
         super.read(e);
         InputCapsule capsule = e.getCapsule(this);
         wrapS = capsule.readEnum("wrapS", WrapMode.class, WrapMode.EdgeClamp);

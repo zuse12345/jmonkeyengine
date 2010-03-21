@@ -33,8 +33,8 @@
 package com.jme3.math;
 
 import com.jme3.export.InputCapsule;
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
 import com.jme3.util.TempVars;
@@ -1239,7 +1239,7 @@ public class Quaternion implements Savable, Cloneable {
         assert vars.unlock();
     }
 
-    public void write(G3DExporter e) throws IOException {
+    public void write(JmeExporter e) throws IOException {
         OutputCapsule cap = e.getCapsule(this);
         cap.write(x, "x", 0);
         cap.write(y, "y", 0);
@@ -1247,7 +1247,7 @@ public class Quaternion implements Savable, Cloneable {
         cap.write(w, "w", 1);
     }
 
-    public void read(G3DImporter e) throws IOException {
+    public void read(JmeImporter e) throws IOException {
         InputCapsule cap = e.getCapsule(this);
         x = cap.readFloat("x", 0);
         y = cap.readFloat("y", 0);

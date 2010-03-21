@@ -5,8 +5,8 @@ import com.jme3.bounding.BoundingVolume;
 import com.jme3.collision.Collidable;
 import com.jme3.collision.CollisionResults;
 import com.jme3.collision.bih.BIHTree;
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
@@ -539,7 +539,7 @@ public class Mesh implements Savable, Cloneable {
         return buffers;
     }
 
-    public void write(G3DExporter ex) throws IOException {
+    public void write(JmeExporter ex) throws IOException {
         OutputCapsule out = ex.getCapsule(this);
 
 //        HashMap<String, VertexBuffer> map = new HashMap<String, VertexBuffer>();
@@ -561,7 +561,7 @@ public class Mesh implements Savable, Cloneable {
         out.writeIntSavableMap(buffers, "buffers", null);
     }
 
-    public void read(G3DImporter im) throws IOException {
+    public void read(JmeImporter im) throws IOException {
         InputCapsule in = im.getCapsule(this);
         meshBound = (BoundingVolume) in.readSavable("modelBound", null);
         vertCount = in.readInt("vertCount", -1);

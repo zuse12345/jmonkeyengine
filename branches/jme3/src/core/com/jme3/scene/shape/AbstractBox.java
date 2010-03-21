@@ -3,8 +3,8 @@
 // $Id: AbstractBox.java 4131 2009-03-19 20:15:28Z blaine.dev $
 package com.jme3.scene.shape;
 
-import com.jme3.export.G3DExporter;
-import com.jme3.export.G3DImporter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.math.Vector3f;
@@ -151,7 +151,7 @@ public abstract class AbstractBox extends Mesh {
         updateGeometry(center, x, y, z);
     }
 
-    public void read(G3DImporter e) throws IOException {
+    public void read(JmeImporter e) throws IOException {
         super.read(e);
         InputCapsule capsule = e.getCapsule(this);
         xExtent = capsule.readFloat("xExtent", 0);
@@ -160,7 +160,7 @@ public abstract class AbstractBox extends Mesh {
         center.set((Vector3f) capsule.readSavable("center", Vector3f.ZERO.clone()));
     }
 
-    public void write(G3DExporter e) throws IOException {
+    public void write(JmeExporter e) throws IOException {
         super.write(e);
         OutputCapsule capsule = e.getCapsule(this);
         capsule.write(xExtent, "xExtent", 0);

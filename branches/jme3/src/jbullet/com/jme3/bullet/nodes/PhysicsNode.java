@@ -355,7 +355,7 @@ public class PhysicsNode extends CollisionObject{
         if(force!=null) continuousForce.set(force);
         continuousForceLocation.set(0,0,0);
         if(!applyForce&&apply)
-            PhysicsSpace.enqueueUpdate(doApplyContinuousForce);
+            PhysicsSpace.enqueueOnThisThread(doApplyContinuousForce);
         applyForce=apply;
 
     }
@@ -371,7 +371,7 @@ public class PhysicsNode extends CollisionObject{
         if(force!=null) continuousForce.set(force);
         if(location!=null) continuousForceLocation.set(location);
         if(!applyForce&&apply)
-            PhysicsSpace.enqueueUpdate(doApplyContinuousForce);
+            PhysicsSpace.enqueueOnThisThread(doApplyContinuousForce);
         applyForce=apply;
 
     }
@@ -382,7 +382,7 @@ public class PhysicsNode extends CollisionObject{
      */
     public void applyContinuousForce(boolean apply){
         if(!applyForce&&apply)
-            PhysicsSpace.enqueueUpdate(doApplyContinuousForce);
+            PhysicsSpace.enqueueOnThisThread(doApplyContinuousForce);
         applyForce=apply;
     }
 
@@ -393,7 +393,7 @@ public class PhysicsNode extends CollisionObject{
                     ,Converter.convert(continuousForceLocation));
             rBody.activate();
             if(applyForce){
-                PhysicsSpace.reQueue(doApplyContinuousForce);
+                PhysicsSpace.requeueOnThisThread(doApplyContinuousForce);
             }
             return null;
         }
@@ -433,7 +433,7 @@ public class PhysicsNode extends CollisionObject{
     public void applyContinuousTorque(boolean apply, Vector3f vec){
         if(vec!=null) continuousTorque.set(vec);
         if(!applyTorque&&apply){
-            PhysicsSpace.enqueueUpdate(doApplyContinuousTorque);
+            PhysicsSpace.enqueueOnThisThread(doApplyContinuousTorque);
         }
         applyTorque=apply;
     }
@@ -444,7 +444,7 @@ public class PhysicsNode extends CollisionObject{
      */
     public void applyContinuousTorque(boolean apply){
         if(!applyTorque&&apply){
-            PhysicsSpace.enqueueUpdate(doApplyContinuousTorque);
+            PhysicsSpace.enqueueOnThisThread(doApplyContinuousTorque);
         }
         applyTorque=apply;
     }
@@ -455,7 +455,7 @@ public class PhysicsNode extends CollisionObject{
             rBody.applyTorque(Converter.convert(continuousTorque));
             rBody.activate();
             if(applyTorque){
-                PhysicsSpace.reQueue(doApplyContinuousTorque);
+                PhysicsSpace.requeueOnThisThread(doApplyContinuousTorque);
             }
             return null;
         }

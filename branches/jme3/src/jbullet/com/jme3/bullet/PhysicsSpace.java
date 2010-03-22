@@ -75,34 +75,28 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * JME3-physics TODO:
- * - vehicle wheel update (threadsafe!)
- * 
- */
-
-/**
  * <p>PhysicsSpace - The central jbullet-jme physics space</p>
  * @see com.jmex.jbullet.nodes.PhysicsNode
  * @author normenhansen
  */
 public class PhysicsSpace {
-//    public static ThreadLocal<ConcurrentLinkedQueue<AppTask<?>>> rQueueTL  =
-//            new ThreadLocal<ConcurrentLinkedQueue<AppTask<?>>>() {
-//                @Override
-//                protected ConcurrentLinkedQueue<AppTask<?>> initialValue() {
-//                        return new ConcurrentLinkedQueue<AppTask<?>>();
-//                }
-//            };
-//    public static ThreadLocal<ConcurrentLinkedQueue<AppTask<?>>> pQueueTL =
-//            new ThreadLocal<ConcurrentLinkedQueue<AppTask<?>>>() {
-//                @Override
-//                protected ConcurrentLinkedQueue<AppTask<?>> initialValue() {
-//                        return new ConcurrentLinkedQueue<AppTask<?>>();
-//                }
-//            };
+    public static ThreadLocal<ConcurrentLinkedQueue<AppTask<?>>> rQueueTL  =
+            new ThreadLocal<ConcurrentLinkedQueue<AppTask<?>>>() {
+                @Override
+                protected ConcurrentLinkedQueue<AppTask<?>> initialValue() {
+                        return new ConcurrentLinkedQueue<AppTask<?>>();
+                }
+            };
+    public static ThreadLocal<ConcurrentLinkedQueue<AppTask<?>>> pQueueTL =
+            new ThreadLocal<ConcurrentLinkedQueue<AppTask<?>>>() {
+                @Override
+                protected ConcurrentLinkedQueue<AppTask<?>> initialValue() {
+                        return new ConcurrentLinkedQueue<AppTask<?>>();
+                }
+            };
 
-    private static ConcurrentLinkedQueue<AppTask<?>> rQueue=new ConcurrentLinkedQueue<AppTask<?>>();
-    private static ConcurrentLinkedQueue<AppTask<?>> pQueue=new ConcurrentLinkedQueue<AppTask<?>>();
+    private ConcurrentLinkedQueue<AppTask<?>> rQueue=new ConcurrentLinkedQueue<AppTask<?>>();
+    private ConcurrentLinkedQueue<AppTask<?>> pQueue=new ConcurrentLinkedQueue<AppTask<?>>();
 
     private static ThreadLocal<PhysicsSpace> physicsSpaceTL = new ThreadLocal<PhysicsSpace>();
     
@@ -119,8 +113,6 @@ public class PhysicsSpace {
 
     private List<CollisionListener> collisionListeners=new LinkedList<CollisionListener>();
     private List<CollisionEvent> collisionEvents=new LinkedList<CollisionEvent>();
-
-    private PhysicsSpace pSpace;
 
     private Vector3f worldMin = new Vector3f(-10000f,-10000f,-10000f);
     private Vector3f worldMax = new Vector3f(10000f,10000f,10000f);
@@ -151,7 +143,16 @@ public class PhysicsSpace {
         this.worldMin.set(worldMin);
         this.worldMax.set(worldMax);
         this.broadphaseType=broadphaseType;
+        create();
+    }
 
+    /**
+     * has to be called from the (designated) physics thread
+     */
+    public void create(){
+        rQueueTL.set(rQueue);
+        pQueueTL.set(pQueue);
+        
         collisionConfiguration = new DefaultCollisionConfiguration();
         dispatcher = new CollisionDispatcher( collisionConfiguration );
         switch(broadphaseType){
@@ -176,8 +177,7 @@ public class PhysicsSpace {
 
 		broadphase.getOverlappingPairCache().setInternalGhostPairCallback(new GhostPairCallback());
         GImpactCollisionAlgorithm.registerAlgorithm(dispatcher);
-        
-        pSpace=this;
+
         physicsSpaceTL.set(this);
         setContactCallbacks();
     }
@@ -249,21 +249,14 @@ public class PhysicsSpace {
         //add recurring events
         AppTask task = rQueue.poll();
         while(task!=null){
-            while (task.isCancelled()) {
-                task = rQueue.poll();
-            }
-            try {
-                task.invoke();
-            } catch (Exception ex) {
-                Logger.getLogger(PhysicsSpace.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            pQueue.add(task);
             task=rQueue.poll();
         }
         //execute task list
         task = pQueue.poll();
         while(task!=null){
             while (task.isCancelled()) {
-                task = rQueue.poll();
+                task = pQueue.poll();
             }
             try {
                 task.invoke();
@@ -288,22 +281,6 @@ public class PhysicsSpace {
         distributeEvents();
     }
 
-    /**
-     * get the current accuracy of the physics computation
-     * @return the current accuracy
-     */
-    public float getAccuracy() {
-        return accuracy;
-    }
-
-    /**
-     * sets the accuracy of the physics computation, default=1/60s<br>
-     * @param accuracy
-     */
-    public void setAccuracy(float accuracy) {
-        this.accuracy = accuracy;
-    }
-
     private void distributeEvents() {
         //add collision callbacks
         for(CollisionListener listener:collisionListeners){
@@ -313,31 +290,29 @@ public class PhysicsSpace {
         collisionEvents.clear();
     }
 
-    public static <V> Future<V> enqueueUpdate(Callable<V> callable) {
+    public static <V> Future<V> enqueueOnThisThread(Callable<V> callable) {
+        AppTask<V> task = new AppTask<V>(callable);
+        System.out.println("created apptask");
+        pQueueTL.get().add(task);
+        return task;
+    }
+
+    public static <V> Future<V> requeueOnThisThread(Callable<V> callable) {
+        AppTask<V> task = new AppTask<V>(callable);
+        rQueueTL.get().add(task);
+        return task;
+    }
+
+    public <V> Future<V> enqueue(Callable<V> callable) {
         AppTask<V> task = new AppTask<V>(callable);
         pQueue.add(task);
         return task;
     }
 
-    private static <V> Future<V> requeueUpdate(Callable<V> callable) {
+    public <V> Future<V> requeue(Callable<V> callable) {
         AppTask<V> task = new AppTask<V>(callable);
         rQueue.add(task);
         return task;
-    }
-
-    /**
-     * enqueues a Callable in the update queue in the next update call
-     * (added to avoid loops in update queue)
-     * @param callable
-     * @return the created Future for the requeue Callable
-     */
-    public static void reQueue(final Callable callable){
-        requeueUpdate(new Callable(){
-            public Object call() throws Exception {
-                enqueueUpdate(callable);
-                return null;
-            }
-        });
     }
 
     /**
@@ -345,7 +320,7 @@ public class PhysicsSpace {
      * @param obj the PhyiscsNode, PhysicsGhostNode or PhysicsJoint to add
      */
     public void addQueued(final Object obj){
-        enqueueUpdate(new Callable() {
+        enqueue(new Callable() {
             public Object call() throws Exception {
                 if(obj instanceof PhysicsGhostNode){
                     addGhostNode((PhysicsGhostNode)obj);
@@ -369,7 +344,7 @@ public class PhysicsSpace {
      * @param obj the PhyiscsNode, PhysicsGhostNode or PhysicsJoint to remove
      */
     public void removeQueued(final Object obj){
-        enqueueUpdate(new Callable() {
+        enqueue(new Callable() {
             public Object call() throws Exception {
                 if(obj instanceof PhysicsGhostNode){
                     removeGhostNode((PhysicsGhostNode)obj);
@@ -500,7 +475,6 @@ public class PhysicsSpace {
     public void destroy(){
         dynamicsWorld.destroy();
         dynamicsWorld=null;
-        pSpace=null;
     }
 
     /**
@@ -509,6 +483,46 @@ public class PhysicsSpace {
      */
     public DynamicsWorld getDynamicsWorld() {
         return dynamicsWorld;
+    }
+
+    public int getBroadphaseType() {
+        return broadphaseType;
+    }
+
+    public void setBroadphaseType(int broadphaseType) {
+        this.broadphaseType = broadphaseType;
+    }
+
+    /**
+     * get the current accuracy of the physics computation
+     * @return the current accuracy
+     */
+    public float getAccuracy() {
+        return accuracy;
+    }
+
+    /**
+     * sets the accuracy of the physics computation, default=1/60s<br>
+     * @param accuracy
+     */
+    public void setAccuracy(float accuracy) {
+        this.accuracy = accuracy;
+    }
+
+    public Vector3f getWorldMin() {
+        return worldMin;
+    }
+
+    public void setWorldMin(Vector3f worldMin) {
+        this.worldMin.set(worldMin);
+    }
+
+    public Vector3f getWorldMax() {
+        return worldMax;
+    }
+
+    public void setWorldMax(Vector3f worldMax) {
+        this.worldMax.set(worldMax);
     }
 
     /**

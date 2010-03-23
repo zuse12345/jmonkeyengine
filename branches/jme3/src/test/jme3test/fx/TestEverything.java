@@ -85,7 +85,6 @@ public class TestEverything extends SimpleApplication {
         
         Spatial ball = MeshLoader.loadModel(manager, "/bump/ShinyBall.meshxml", null);
         Material mat = manager.loadMaterial("/bump/ShinyBall.j3m");
-        mat.selectTechnique("OldGpu");
         ball.setMaterial(mat);
         
         ball.setShadowMode(ShadowMode.CastAndRecieve);
@@ -119,7 +118,6 @@ public class TestEverything extends SimpleApplication {
 
     public void setupFloor(){
         Material mat = manager.loadMaterial("rockwall.j3m");
-        mat.selectTechnique("OldGpu");
         mat.getTextureParam("m_DiffuseMap").getValue().setWrap(WrapMode.Repeat);
         mat.getTextureParam("m_NormalMap").getValue().setWrap(WrapMode.Repeat);
         mat.getTextureParam("m_ParallaxMap").getValue().setWrap(WrapMode.Repeat);
@@ -134,7 +132,6 @@ public class TestEverything extends SimpleApplication {
 
 //    public void setupTerrain(){
 //        Material mat = manager.loadMaterial("rock.j3m");
-//        mat.selectTechnique("OldGpu");
 //        mat.getTextureParam("m_DiffuseMap").getValue().setWrap(WrapMode.Repeat);
 //        mat.getTextureParam("m_NormalMap").getValue().setWrap(WrapMode.Repeat);
 //        try{
@@ -157,7 +154,6 @@ public class TestEverything extends SimpleApplication {
     public void setupRobotGuy(){
         Node model = (Node) MeshLoader.loadModel(manager, "OTO.meshxml", null);
         Material mat = manager.loadMaterial("oto_lit.j3m");
-        mat.selectTechnique("OldGpu");
         model.getChild(0).setMaterial(mat);
 //        model.setAnimation("Walk");
         model.setLocalTranslation(30, 10.5f, 30);
@@ -169,7 +165,6 @@ public class TestEverything extends SimpleApplication {
     public void setupSignpost(){
         Spatial signpost = MeshLoader.loadModel(manager, "signpost.meshxml", null);
         Material mat = manager.loadMaterial("signpost.j3m");
-        mat.selectTechnique("OldGpu");
         signpost.setMaterial(mat);
         signpost.rotate(0, FastMath.HALF_PI, 0);
         signpost.setLocalTranslation(12, 3.5f, 30);

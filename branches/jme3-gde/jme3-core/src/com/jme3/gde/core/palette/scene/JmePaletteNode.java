@@ -30,14 +30,34 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jme3.gde.core.sceneviever.app;
-
-import com.jme3.scene.Spatial;
+package com.jme3.gde.core.palette.scene;
+import com.jme3.gde.core.palette.JmePaletteUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+import org.openide.text.ActiveEditorDrop;
 
 /**
- * To be replaced with Lookup functionality
+ *
  * @author normenhansen
  */
-public interface SceneViewerListener {
-    public void rootNodeChanged(Spatial spatial);
+public class JmePaletteNode implements ActiveEditorDrop {
+
+    public JmePaletteNode() {
+    }
+
+    private String createBody() {
+        String body = "Node node=new Node();";
+        return body;
+    }
+
+    public boolean handleTransfer(JTextComponent targetComponent) {
+        String body = createBody();
+        try {
+            JmePaletteUtilities.insert(body, targetComponent);
+        } catch (BadLocationException ble) {
+            return false;
+        }
+        return true;
+    }
+
 }

@@ -161,31 +161,22 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 
     @Override
     public void componentOpened() {
-        //start opengl canvas and app
-//        if(!created){
-            started=false;
-            app.createCanvas();
-            ctx = (JmeCanvasContext) app.getContext();
-            ctx.setAutoFlushFrames(true);
-            ctx.setSystemListener(this);
-            oGLPanel.add(ctx.getCanvas());
-//        }
+        super.componentOpened();
+        app.createCanvas();
+        ctx = (JmeCanvasContext) app.getContext();
+        ctx.setAutoFlushFrames(true);
+        ctx.setSystemListener(this);
+        oGLPanel.add(ctx.getCanvas());
     }
 
     @Override
     protected void componentShowing() {
+        super.componentShowing();
         if(started) return;
         started=true;
-        super.componentShowing();
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-//                if(!started){
-                    app.startCanvas();
-                    started=false;
-//                }
-//                else{
-//                    app.reshape(oGLPanel.getHeight(), oGLPanel.getWidth());
-//                }
+                app.startCanvas();
             }
         });
     }
@@ -193,21 +184,12 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     @Override
     protected void componentHidden() {
         super.componentHidden();
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-//                app.
-            }
-        });
     }
 
 
     @Override
     public void componentClosed() {
-        oGLPanel.removeAll();
         super.componentClosed();
-        //destroy app
-//        app.
-//        app.destroy();
     }
 
     void writeProperties(java.util.Properties p) {

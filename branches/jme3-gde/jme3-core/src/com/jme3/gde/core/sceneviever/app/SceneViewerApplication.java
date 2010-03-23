@@ -99,6 +99,7 @@ public class SceneViewerApplication extends Application implements LookupProvide
         manager = ProjectAssetManager.getManager();
         AppSettings settings = new AppSettings(true);
 //        settings.setVSync(true);
+//        settings.setRenderer("JOGL");
         setSettings(settings);
 
         Logger.getLogger("com.jme3").addHandler(logHandler);
@@ -172,33 +173,12 @@ public class SceneViewerApplication extends Application implements LookupProvide
             secondCounter = 0.0f;
         }
 
-//        simpleUpdate(tpf);
         rootNode.updateLogicalState(tpf);
         guiNode.updateLogicalState(tpf);
         rootNode.updateGeometricState();
         guiNode.updateGeometricState();
 
         renderManager.render(tpf);
-//        simpleRender(renderManager);
-    }
-
-    //TODO: Nodes!
-    private DefaultMutableTreeNode updateTree(Spatial spat, DefaultMutableTreeNode parentTree) {
-        DefaultMutableTreeNode tNode = new DefaultMutableTreeNode();
-        tNode.setUserObject(spat.getName());
-        if (parentTree != null) {
-            parentTree.add(tNode);
-        }
-        if (spat instanceof Node) {
-            List<Spatial> list = ((Node) spat).getChildren();
-            if (list != null) {
-                for (Iterator<Spatial> it = list.iterator(); it.hasNext();) {
-                    Spatial spatial = it.next();
-                    updateTree(spatial, tNode);
-                }
-            }
-        }
-        return tNode;
     }
 
     public void showModel(String name) {
@@ -251,8 +231,8 @@ public class SceneViewerApplication extends Application implements LookupProvide
         }
         return model;
     }
-    //Lookup for NetBeans platform
 
+    //TODO: Lookup for Application
     public Lookup createAdditionalLookup(Lookup baseContext) {
         return Lookups.fixed(getApplication());
     }
@@ -279,6 +259,7 @@ public class SceneViewerApplication extends Application implements LookupProvide
             }
         }
     }
+    
     private Quaternion rot = new Quaternion();
     private Vector3f vector = new Vector3f();
     private Vector3f focus = new Vector3f();
@@ -356,6 +337,7 @@ public class SceneViewerApplication extends Application implements LookupProvide
         }
     }
 
+    //TODO: replace with Lookup functionality
     private LinkedList<SceneViewerListener> listeners=new LinkedList<SceneViewerListener>();
 
     public void addSceneListener(SceneViewerListener listener){

@@ -122,12 +122,12 @@
                 <package>jme3test.light</package>
                 <package>jme3test.math</package>
                 <package>jme3test.model</package>
+                <package>jme3test.model.anim</package>
                 <package>jme3test.post</package>
                 <package>jme3test.texture</package>
+                <package>jme3tools.converters</package>
                 <package>jme3tools.converters.model</package>
                 <package>jme3tools.converters.model.strip</package>
-                <package>jme3tools.deploy</package>
-                <package>jme3tools.deploy.conv</package>
                 <package>jme3tools.nvtex</package>
                 <package>jme3tools.optimize</package>
                 <package>jme3tools.preview</package>

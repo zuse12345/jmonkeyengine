@@ -2,7 +2,6 @@ package jme3test.bullet;
 
 import com.jme3.app.SimplePhysicsApplication;
 import com.jme3.asset.TextureKey;
-import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.nodes.PhysicsNode;
@@ -13,8 +12,9 @@ import com.jme3.material.Material;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
-import com.jme3.scene.shape.Sphere;
+import com.jme3.scene.shape.Cylinder;
 import com.jme3.texture.Texture;
 
 public class TestPhysicsCar extends SimplePhysicsApplication implements BindingListener {
@@ -33,21 +33,21 @@ public class TestPhysicsCar extends SimplePhysicsApplication implements BindingL
         inputManager.registerKeyBinding("Space", KeyInput.KEY_SPACE);
         //used with method onBinding in BindingListener interface
         //in order to add function to keys
-        inputManager.addTriggerListener(this);
+        inputManager.addBindingListener(this);
     }
 
     public void onBinding(String binding, float value) {
         if(binding.equals("Lefts")){
-            player.steer(.2f);
+            player.steer(.5f);
         }
         else if(binding.equals("Rights")){
-            player.steer(-.2f);
+            player.steer(-.5f);
         }
         else if(binding.equals("Ups")){
-            player.accelerate(1);
+            player.accelerate(300f * value);
         }
         else if(binding.equals("Downs")){
-            player.brake(1);
+            player.brake(60f * value);
         }
         else if(binding.equals("UPDATE")){
             player.accelerate(0);
@@ -95,19 +95,16 @@ public class TestPhysicsCar extends SimplePhysicsApplication implements BindingL
         TextureKey keyBox = new TextureKey("signpost_color.jpg", true);
         keyBox.setGenerateMips(true);
         Texture texBox = manager.loadTexture(keyBox);
-        texBox.setMinFilter(Texture.MinFilter.Trilinear);
         matBox.setTexture("m_ColorMap", texBox);
         Material mat = new Material(manager, "plain_texture.j3md");
         TextureKey key = new TextureKey("Monkey.jpg", true);
         key.setGenerateMips(true);
         Texture tex = manager.loadTexture(key);
-        tex.setMinFilter(Texture.MinFilter.Trilinear);
         mat.setTexture("m_ColorMap", tex);
         //box stand in
         Box b = new Box(new Vector3f(0,0,0),0.5f,0.5f,2f);
         Geometry g= new Geometry("Box",b);
         g.setMaterial(matBox);
-        g.getMesh().setBound(new BoundingBox());
         player = new PhysicsVehicleNode(g, new BoxCollisionShape(new Vector3f(0.5f,0.5f,2f)),1);
 
         //setting default values for wheels
@@ -116,35 +113,41 @@ public class TestPhysicsCar extends SimplePhysicsApplication implements BindingL
         player.setSuspensionStiffness(stiffness);
 
         //Create four wheels and add them at their locations
-        Vector3f wheelDirection=new Vector3f(0,-1,0);
-        Vector3f wheelAxle=new Vector3f(-1,0,0);
-        Sphere wheelSphere=new Sphere(8,8,r);
-        Geometry wheels1=new Geometry("wheel 1",wheelSphere);
+        Vector3f wheelDirection=new Vector3f(0,-1,0); // was 0, -1, 0
+        Vector3f wheelAxle=new Vector3f(-1,0,0); // was -1, 0, 0
+
+        Cylinder wheelMesh = new Cylinder(16, 16, r, r * 0.6f, true);
+
+        Node node1 = new Node("wheel 1 node");
+        Geometry wheels1=new Geometry("wheel 1",wheelMesh);
+        node1.attachChild(wheels1);
+        wheels1.rotate(0, FastMath.HALF_PI, 0);
         wheels1.setMaterial(mat);
-        wheels1.setModelBound(new BoundingBox());
-        wheels1.updateModelBound();
-        player.addWheel(wheels1, new Vector3f(-1f,-0.5f,2f),
+        player.addWheel(node1, new Vector3f(-1f,-0.5f,2f),
                         wheelDirection, wheelAxle, 0.2f, r, true);
 
-        Geometry wheels2=new Geometry("wheel 2",wheelSphere);
+        Node node2 = new Node("wheel 2 node");
+        Geometry wheels2=new Geometry("wheel 2",wheelMesh);
+        node2.attachChild(wheels2);
+        wheels2.rotate(0, FastMath.HALF_PI, 0);
         wheels2.setMaterial(mat);
-        wheels2.setModelBound(new BoundingBox());
-        wheels2.updateModelBound();
-        player.addWheel(wheels2, new Vector3f(1f,-0.5f,2f),
+        player.addWheel(node2, new Vector3f(1f,-0.5f,2f),
                         wheelDirection, wheelAxle, 0.2f, r, true);
 
-        Geometry wheels3=new Geometry("wheel 3",wheelSphere);
+        Node node3 = new Node("wheel 3 node");
+        Geometry wheels3=new Geometry("wheel 3",wheelMesh);
+        node3.attachChild(wheels3);
+        wheels3.rotate(0, FastMath.HALF_PI, 0);
         wheels3.setMaterial(matBox);
-        wheels3.setModelBound(new BoundingBox());
-        wheels3.updateModelBound();
-        player.addWheel(wheels3, new Vector3f(-1f,-0.5f,-2f),
+        player.addWheel(node3, new Vector3f(-1f,-0.5f,-2f),
                         wheelDirection, wheelAxle, 0.2f, r, false);
 
-        Geometry wheels4=new Geometry("wheel 4",wheelSphere);
+        Node node4 = new Node("wheel 4 node");
+        Geometry wheels4=new Geometry("wheel 4",wheelMesh);
+        node4.attachChild(wheels4);
+        wheels4.rotate(0, FastMath.HALF_PI, 0);
         wheels4.setMaterial(matBox);
-        wheels4.setModelBound(new BoundingBox());
-        wheels4.updateModelBound();
-        player.addWheel(wheels4, new Vector3f(1f,-0.5f,-2f),
+        player.addWheel(node4, new Vector3f(1f,-0.5f,-2f),
                         wheelDirection, wheelAxle, 0.2f, r, false);
 
         player.updateModelBound();

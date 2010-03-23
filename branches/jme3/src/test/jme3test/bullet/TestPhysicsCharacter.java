@@ -43,7 +43,7 @@ public class TestPhysicsCharacter extends SimplePhysicsApplication implements Bi
         inputManager.registerKeyBinding("Space", KeyInput.KEY_SPACE);
         //used with method onBinding in BindingListener interface
         //in order to add function to keys
-        inputManager.addTriggerListener(this);
+        inputManager.addBindingListener(this);
     }
 
     public void onBinding(String binding, float value) {

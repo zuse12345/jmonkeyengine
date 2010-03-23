@@ -55,7 +55,7 @@ public class SoftwareCursor extends Geometry implements BindingListener {
         dispacher.registerMouseAxisBinding("MOUSE_Up", 1, false);
         dispacher.registerMouseAxisBinding("MOUSE_Down", 1, true);
 
-        dispacher.addTriggerListener(this);
+        dispacher.addBindingListener(this);
     }
 
     public void onBinding(String binding, float value) {

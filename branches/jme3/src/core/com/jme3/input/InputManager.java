@@ -286,7 +286,7 @@ public class InputManager implements RawInputListener {
      *
      * @param listener
      */
-    public void addTriggerListener(BindingListener listener){
+    public void addBindingListener(BindingListener listener){
         listeners.add(listener);
     }
 
@@ -294,14 +294,14 @@ public class InputManager implements RawInputListener {
      * Remove a previously added trigger listener.
      * @param listener
      */
-    public void removeTriggerListener(BindingListener listener){
+    public void removeBindingListener(BindingListener listener){
         listeners.remove(listener);
     }
 
     /**
      * Removes all trigger listeners from the list of registered listnerers.
      */
-    public void clearTriggerListeners(){
+    public void clearBindingListeners(){
         listeners.clear();
     }
 

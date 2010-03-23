@@ -461,58 +461,12 @@ public class Node extends Spatial implements Savable {
         return false;
     }
 
-//    @Override
-//    public void findCollisions(Spatial scene, CollisionResults results) {
-//        if (getWorldBound() != null && isCollidable && scene.isCollidable()) {
-//            if (getWorldBound().intersects(scene.getWorldBound())) {
-//                // further checking needed.
-//                for (int i = 0; i < getQuantity(); i++) {
-//                    getChild(i).findCollisions(scene, results);
-//                }
-//            }
-//        }
-//    }
-//
-//    @Override
-//    public boolean hasCollision(Spatial scene, boolean checkTriangles) {
-//        if (getWorldBound() != null && isCollidable && scene.isCollidable()) {
-//            if (getWorldBound().intersects(scene.getWorldBound())) {
-//                if(children == null && !checkTriangles) {
-//                    return true;
-//                }
-//                // further checking needed.
-//                for (int i = 0; i < getQuantity(); i++) {
-//                    if (getChild(i).hasCollision(scene, checkTriangles)) {
-//                        return true;
-//                    }
-//                }
-//            }
-//        }
-//
-//        return false;
-//    }
-//
-//    @Override
-//    public void findPick(Ray toTest, PickResults results) {
-//        if(children == null) {
-//            return;
-//        }
-//        if (getWorldBound() != null && isCollidable) {
-//            if (getWorldBound().intersects(toTest)) {
-//                // further checking needed.
-//                for (int i = 0; i < getQuantity(); i++) {
-//                    ( children.get(i)).findPick(toTest, results);
-//                }
-//            }
-//        }
-//    }
-
-	/**
-	 * Returns all children to this node.
-	 *
-	 * @return a list containing all children to this node
-	 */
-	public List<Spatial> getChildren() {
+    /**
+     * Returns all children to this node.
+     *
+     * @return a list containing all children to this node
+     */
+    public List<Spatial> getChildren() {
         return children;
     }
 

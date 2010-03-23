@@ -128,7 +128,7 @@ public abstract class SimplePhysicsApplication extends PhysicsApplication {
 
             inputManager.registerKeyBinding("SIMPLEAPP_CameraPos", KeyInput.KEY_C);
             inputManager.registerKeyBinding("SIMPLEAPP_Memory",    KeyInput.KEY_M);
-            inputManager.addTriggerListener(new BindingListener() {
+            inputManager.addBindingListener(new BindingListener() {
                 public void onBinding(String binding, float value) {
                     if (binding.equals("SIMPLEAPP_Exit")){
                         stop();

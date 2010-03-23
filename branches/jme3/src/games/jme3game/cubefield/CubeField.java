@@ -272,7 +272,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
         inputManager.registerKeyBinding("Right", KeyInput.KEY_RIGHT);
         //used with method onBinding in BindingListener interface
         //in order to add function to keys
-        inputManager.addTriggerListener(this);
+        inputManager.addBindingListener(this);
     }
 
     public void onBinding(String binding, float value) {

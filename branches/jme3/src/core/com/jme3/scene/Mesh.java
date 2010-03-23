@@ -11,6 +11,7 @@ import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
 import com.jme3.math.Matrix4f;
+import com.jme3.math.Transform;
 import com.jme3.math.Triangle;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
@@ -482,7 +483,19 @@ public class Mesh implements Savable, Cloneable {
     }
 
     public FloatBuffer getFloatBuffer(Type type) {
-        return (FloatBuffer) getBuffer(type).getData();
+        VertexBuffer vb = getBuffer(type);
+        if (vb == null)
+            return null;
+
+        return (FloatBuffer) vb.getData();
+    }
+    
+    public ShortBuffer getShortBuffer(Type type) {
+        VertexBuffer vb = getBuffer(type);
+        if (vb == null)
+            return null;
+
+        return (ShortBuffer) vb.getData();
     }
 
     public IndexBuffer getIndexBuffer() {
@@ -518,6 +531,10 @@ public class Mesh implements Savable, Cloneable {
             fb.put(x).put(y);
         }
         fb.clear();
+    }
+
+    public void applyTransform(Transform t){
+        VertexBuffer pvb = getBuffer(Type.Position);
     }
 
     public void updateBound(){

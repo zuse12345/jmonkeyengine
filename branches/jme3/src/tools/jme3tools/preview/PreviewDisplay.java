@@ -77,7 +77,7 @@ public class PreviewDisplay extends Application implements BindingListener {
         rootNode.addLight(camLight);
 
         renderer.applyRenderState(RenderState.DEFAULT);
-        inputManager.addTriggerListener(this);
+        inputManager.addBindingListener(this);
         inputManager.registerMouseAxisBinding("MOUSE_X+", 0, false);
         inputManager.registerMouseAxisBinding("MOUSE_X-", 0, true);
         inputManager.registerMouseAxisBinding("MOUSE_Y+", 1, false);

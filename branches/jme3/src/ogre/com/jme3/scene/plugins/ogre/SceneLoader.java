@@ -11,8 +11,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.util.xml.SAXUtil;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Stack;
 import java.util.logging.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -27,7 +26,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
 
     private static final Logger logger = Logger.getLogger(SceneLoader.class.getName());
 
-    private Queue<String> elementStack = new LinkedList<String>();
+    private Stack<String> elementStack = new Stack<String>();
     private String sceneName;
     private AssetManager assetManager;
     private OgreMaterialList materialList;
@@ -153,7 +152,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             entityNode = null;
         }
         assert elementStack.peek().equals(qName);
-        elementStack.remove();
+        elementStack.pop();
     }
 
     @Override
@@ -168,7 +167,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             sceneName = sceneName.substring(0, sceneName.length() - ext.length() - 1);
 
             materialList = (OgreMaterialList) 
-                    assetManager.loadContent(new AssetKey("Scene.material"));
+                    assetManager.loadContent(new AssetKey(sceneName+".material"));
 
             XMLReader xr = XMLReaderFactory.createXMLReader();
             xr.setContentHandler(this);

@@ -85,7 +85,7 @@ public class FirstPersonCamera implements BindingListener {
         dispacher.registerKeyBinding("FPSCAM_Forward", KeyInput.KEY_W);
         dispacher.registerKeyBinding("FPSCAM_Backward", KeyInput.KEY_S);
 
-        dispacher.addTriggerListener(this);
+        dispacher.addBindingListener(this);
     }
 
     private void rotateCamera(float value, Vector3f axis){

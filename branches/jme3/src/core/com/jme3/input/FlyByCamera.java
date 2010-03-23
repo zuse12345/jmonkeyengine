@@ -111,7 +111,7 @@ public class FlyByCamera implements BindingListener {
         dispacher.registerKeyBinding("FLYCAM_Rise", KeyInput.KEY_Q);
         dispacher.registerKeyBinding("FLYCAM_Lower", KeyInput.KEY_Z);
 
-        dispacher.addTriggerListener(this);
+        dispacher.addBindingListener(this);
     }
 
     private void rotateCamera(float value, Vector3f axis){

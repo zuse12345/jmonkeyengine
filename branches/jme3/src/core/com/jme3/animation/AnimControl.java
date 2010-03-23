@@ -98,6 +98,14 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
         channels.clear();
     }
 
+    public Skeleton getSkeleton() {
+        return skeleton;
+    }
+
+    public Mesh[] getTargets() {
+        return targets;
+    }
+
     void reset(){
         resetToBind();
         if (skeleton != null){

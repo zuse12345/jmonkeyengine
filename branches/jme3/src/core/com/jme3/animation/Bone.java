@@ -144,6 +144,22 @@ public final class Bone implements Savable {
         return children;
     }
 
+    public Vector3f getLocalPosition() {
+        return localPos;
+    }
+
+    public Quaternion getLocalRotation() {
+        return localRot;
+    }
+
+    public Vector3f getWorldPosition() {
+        return worldPos;
+    }
+
+    public Quaternion getWorldRotation() {
+        return worldRot;
+    }
+
     /**
      * If enabled, user can control bone transform with setUserTransforms.
      * Animation transforms are not applied to this bone when enabled.
@@ -258,6 +274,18 @@ public final class Bone implements Savable {
         localRot = localRot.mult(rotation);
     }
 
+    /**
+     * Must update all bones in skeleton for this to work.
+     * @param translation
+     * @param rotation
+     */
+    public void setUserTransformsWorld(Vector3f translation, Quaternion rotation){
+        if (!userControl)
+            throw new IllegalStateException("User control must be on bone to allow user transforms");
+
+        worldPos.set(translation);
+        worldRot.set(rotation);
+    }
 
     /**
      * Returns the attachment node.

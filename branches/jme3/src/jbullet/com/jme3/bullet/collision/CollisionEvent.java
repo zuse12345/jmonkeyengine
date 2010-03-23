@@ -37,7 +37,7 @@ import com.jme3.bullet.util.Converter;
 import java.util.EventObject;
 
 /**
- * A CollisionEvent stores all information about a collision in the PhysicsSorld
+ * A CollisionEvent stores all information about a collision in the PhysicsWorld
  * @author normenhansen
  */
 public class CollisionEvent extends EventObject{

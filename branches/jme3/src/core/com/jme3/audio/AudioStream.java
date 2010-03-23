@@ -41,7 +41,7 @@ public class AudioStream extends AudioData implements Closeable{
      * @param buf Buffer where to read the samples
      * @param offset The offset in the buffer where to read samples
      * @param length The length inside the buffer where to read samples
-     * @return number of samples read.
+     * @return number of bytes read.
      */
     public int readSamples(byte[] buf, int offset, int length){
         if (!open)
@@ -59,7 +59,7 @@ public class AudioStream extends AudioData implements Closeable{
      *
      * @see AudioStream#readSamples(byte[], int, int)
      * @param buf Buffer where to read the samples
-     * @return number of samples read.
+     * @return number of bytes read.
      */
     public int readSamples(byte[] buf){
         return readSamples(buf, 0, buf.length);

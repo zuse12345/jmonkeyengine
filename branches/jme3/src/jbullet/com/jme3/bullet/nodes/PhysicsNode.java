@@ -109,7 +109,8 @@ public class PhysicsNode extends CollisionObject{
      * @param shape
      */
     public PhysicsNode(Spatial child, CollisionShape shape, float mass){
-        this.attachChild(child);
+        if (child != null)
+            this.attachChild(child);
         this.mass=mass;
         this.collisionShape=shape;
         rebuildRigidBody();

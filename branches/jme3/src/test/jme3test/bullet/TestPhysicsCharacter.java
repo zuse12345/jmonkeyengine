@@ -108,7 +108,7 @@ public class TestPhysicsCharacter extends SimplePhysicsApplication implements Bi
         getPhysicsSpace().add(node2);
 
         // the floor, does not move (mass=0)
-        Geometry geom5=new Geometry("box2",new Box(Vector3f.ZERO,100f,0.2f,100f));
+        Geometry geom5=new Geometry("box2",new Box(Vector3f.ZERO,100f,1f,100f));
         geom5.setMaterial(mat);
         geom5.updateGeometricState();
         PhysicsNode node3=new PhysicsNode(geom5,new BoxCollisionShape(new Vector3f(100,1,100)),0);

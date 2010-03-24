@@ -94,15 +94,39 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jToolBar1 = new javax.swing.JToolBar();
+        enableCamLight = new javax.swing.JToggleButton();
         oGLPanel = new javax.swing.JPanel();
 
-        setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.LINE_AXIS));
+        setLayout(new java.awt.BorderLayout());
 
+        jToolBar1.setRollover(true);
+
+        org.openide.awt.Mnemonics.setLocalizedText(enableCamLight, org.openide.util.NbBundle.getMessage(SceneViewerTopComponent.class, "SceneViewerTopComponent.enableCamLight.text")); // NOI18N
+        enableCamLight.setFocusable(false);
+        enableCamLight.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        enableCamLight.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(enableCamLight);
+
+        add(jToolBar1, java.awt.BorderLayout.NORTH);
+
+        oGLPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                updateOpenGLCanavas(evt);
+            }
+        });
         oGLPanel.setLayout(new javax.swing.BoxLayout(oGLPanel, javax.swing.BoxLayout.LINE_AXIS));
-        add(oGLPanel);
+        add(oGLPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void updateOpenGLCanavas(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_updateOpenGLCanavas
+
+        ctx.getCanvas().setSize(oGLPanel.getWidth(), oGLPanel.getHeight());
+    }//GEN-LAST:event_updateOpenGLCanavas
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JToggleButton enableCamLight;
+    private javax.swing.JToolBar jToolBar1;
     private javax.swing.JPanel oGLPanel;
     // End of variables declaration//GEN-END:variables
     /**

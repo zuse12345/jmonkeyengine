@@ -54,7 +54,7 @@ import org.openide.nodes.Children;
  */
 @ConvertAsProperties(dtd = "-//com.jme3.gde.core.sceneviever//SceneViewer//EN",
 autostore = false)
-public final class SceneViewerTopComponent extends TopComponent implements SystemListener, ExplorerManager.Provider, SceneViewerListener{
+public final class SceneViewerTopComponent extends TopComponent implements SystemListener{
 
     private static SceneViewerTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -74,10 +74,23 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 //        putClientProperty(TopComponent.PROP_CLOSING_DISABLED, Boolean.TRUE);
 //        putClientProperty(TopComponent.PROP_SLIDING_DISABLED, Boolean.TRUE);
         app=SceneViewerApplication.getApplication();
-        app.addSceneListener(this);
 //        app=Lookup.getDefault().lookup(SceneViewerApplication.class);
 
-        associateLookup(ExplorerUtils.createLookup(explorerManager, getActionMap()));
+
+    }
+
+    @Override
+    public void repaint() {
+        checkOGLCanvas();
+        super.repaint();
+    }
+
+    private void checkOGLCanvas(){
+        if(ctx==null) return;
+        if(oGLPanel==null) return;
+        if(oGLPanel.getComponents().length==0){
+                oGLPanel.add(ctx.getCanvas());
+        }
 
     }
 
@@ -89,38 +102,15 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jSplitPane1 = new javax.swing.JSplitPane();
         oGLPanel = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        jScrollPane1 = new BeanTreeView();
 
-        jSplitPane1.setDividerLocation(500);
-        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.LINE_AXIS));
 
         oGLPanel.setLayout(new javax.swing.BoxLayout(oGLPanel, javax.swing.BoxLayout.LINE_AXIS));
-        jSplitPane1.setTopComponent(oGLPanel);
-
-        jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.LINE_AXIS));
-        jPanel2.add(jScrollPane1);
-
-        jSplitPane1.setRightComponent(jPanel2);
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 548, Short.MAX_VALUE)
-        );
+        add(oGLPanel);
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JPanel oGLPanel;
     // End of variables declaration//GEN-END:variables
     /**
@@ -253,14 +243,4 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 //        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    private transient ExplorerManager explorerManager = new ExplorerManager();
-    public ExplorerManager getExplorerManager() {
-        return explorerManager;
-    }
-
-    public void rootNodeChanged(Spatial spatial) {
-        JmeSpatialChildFactory factory=new JmeSpatialChildFactory(spatial,app);
-        explorerManager.setRootContext(new JmeSpatial(spatial,Children.create(factory, false)));
-        explorerManager.getRootContext().setDisplayName(spatial.getName());
-    }
 }

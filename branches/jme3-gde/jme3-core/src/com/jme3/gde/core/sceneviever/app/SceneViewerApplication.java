@@ -139,7 +139,7 @@ public class SceneViewerApplication extends Application implements LookupProvide
         guiViewPort.attachScene(guiNode);
         cam.setLocation(new Vector3f(0, 0, 10));
 
-        inputManager.addTriggerListener(this);
+        inputManager.addBindingListener(this);
         inputManager.registerMouseAxisBinding("MOUSE_X+", 0, false);
         inputManager.registerMouseAxisBinding("MOUSE_X-", 0, true);
         inputManager.registerMouseAxisBinding("MOUSE_Y+", 1, false);

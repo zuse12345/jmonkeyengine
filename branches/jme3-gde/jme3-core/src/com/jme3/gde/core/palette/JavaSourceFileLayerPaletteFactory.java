@@ -16,8 +16,6 @@ import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup;
-import org.openide.util.Lookup;
 
 /**
  *

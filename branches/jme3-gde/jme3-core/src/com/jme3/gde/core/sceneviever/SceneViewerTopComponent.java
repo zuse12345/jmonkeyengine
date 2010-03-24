@@ -32,10 +32,6 @@
 package com.jme3.gde.core.sceneviever;
 
 import com.jme3.gde.core.sceneviever.app.SceneViewerApplication;
-import com.jme3.gde.core.sceneviever.app.SceneViewerListener;
-import com.jme3.gde.core.sceneviever.nodes.JmeSpatial;
-import com.jme3.gde.core.sceneviever.nodes.JmeSpatialChildFactory;
-import com.jme3.scene.Spatial;
 import com.jme3.system.JmeCanvasContext;
 import com.jme3.system.SystemListener;
 import java.util.logging.Logger;
@@ -44,10 +40,6 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerUtils;
-import org.openide.explorer.view.BeanTreeView;
-import org.openide.nodes.Children;
 
 /**
  * Top component which displays something.
@@ -79,20 +71,20 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 
     }
 
-    @Override
-    public void repaint() {
-        checkOGLCanvas();
-        super.repaint();
-    }
-
-    private void checkOGLCanvas(){
-        if(ctx==null) return;
-        if(oGLPanel==null) return;
-        if(oGLPanel.getComponents().length==0){
-                oGLPanel.add(ctx.getCanvas());
-        }
-
-    }
+//    @Override
+//    public void repaint() {
+//        checkOGLCanvas();
+//        super.repaint();
+//    }
+//
+//    private void checkOGLCanvas(){
+//        if(ctx==null) return;
+//        if(oGLPanel==null) return;
+//        if(oGLPanel.getComponents().length==0){
+//                oGLPanel.add(ctx.getCanvas());
+//        }
+//
+//    }
 
     /** This method is called from within the constructor to
      * initialize the form.

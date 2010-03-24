@@ -13,7 +13,7 @@
  # Under Local Folder specify the folder where you want the jMonkeyPlatform project.
  # Click Finish
  # Open project when it finished transferring.
- # Copy all jme3 jars from the jme3/dist and jme3/dist/lib to folders:
+ # Copy all jme3 jars from jme3/dist and jme3/dist/lib to folders:
   * jme3-gde/jme3-core-libraries/release/modules/ext/
   * jme3-gde/jme3-project-libraries/release/lib/
  # Run the project

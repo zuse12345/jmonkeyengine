@@ -111,7 +111,7 @@ public class TestPhysicsCharacter extends SimplePhysicsApplication implements Bi
         Geometry geom5=new Geometry("box2",new Box(Vector3f.ZERO,100f,0.2f,100f));
         geom5.setMaterial(mat);
         geom5.updateGeometricState();
-        PhysicsNode node3=new PhysicsNode(geom5,new MeshCollisionShape(geom5.getMesh()),0);
+        PhysicsNode node3=new PhysicsNode(geom5,new BoxCollisionShape(new Vector3f(100,1,100)),0);
         node3.setLocalTranslation(new Vector3f(0f,-6,0f));
         rootNode.attachChild(node3);
         node3.updateModelBound();

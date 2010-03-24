@@ -1,7 +1,7 @@
 #summary Wiki Sidebar
 *Menu*
  * [Introduction]
- * JME3
+ * jMonkeyEngine3
   * RoadMap
   * DependsJme3
   * BuildJme3

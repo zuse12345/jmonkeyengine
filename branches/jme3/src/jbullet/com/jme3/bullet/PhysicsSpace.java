@@ -234,7 +234,7 @@ public class PhysicsSpace {
     public void update(float time){
         int subSteps=1;
         if(time>accuracy){
-            subSteps=(int)(time/accuracy+1);
+            subSteps=Math.round(time/accuracy);
         }
         update(time,subSteps);
     }

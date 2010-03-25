@@ -15,5 +15,5 @@
  # Open project when it finished transferring.
  # Copy all jme3 jars from jme3/dist and jme3/dist/lib to folders:
   * jme3-gde/jme3-core-libraries/release/modules/ext/
-  * jme3-gde/jme3-project-libraries/release/lib/
+  * jme3-gde/jme3-project-libraries/release/libs/
  # Run the project

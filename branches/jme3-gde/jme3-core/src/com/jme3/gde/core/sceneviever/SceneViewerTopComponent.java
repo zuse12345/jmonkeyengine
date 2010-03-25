@@ -110,6 +110,8 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 
         add(jToolBar1, java.awt.BorderLayout.NORTH);
 
+        oGLPanel.setMinimumSize(new java.awt.Dimension(10, 10));
+        oGLPanel.setPreferredSize(new java.awt.Dimension(100, 100));
         oGLPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
                 updateOpenGLCanavas(evt);

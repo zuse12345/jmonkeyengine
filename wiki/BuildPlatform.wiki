@@ -6,14 +6,20 @@
 
 == Downloading/Building in NetBeans ==
  # Go to Team -> Subversion -> Checkout
- # Enter http://jmonkeyengine.googlecode.com/svn for Repository URL, leave username and password blank.
+ # Enter `http://jmonkeyengine.googlecode.com/svn` for Repository URL, leave username and password blank.
  # Click Next
  # Click Browse... to the right of "Repository Folder(s).
- # In the new window, open "branches" tree, and select "jme3-gde"
+ # In the new window, open `branches` tree, and select `jme3-gde`
  # Under Local Folder specify the folder where you want the jMonkeyPlatform project.
  # Click Finish
  # Open project when it finished transferring.
- # Copy all jme3 jars from jme3/dist and jme3/dist/lib to folders (you have to create these):
-  * jme3-gde/jme3-core-libraries/release/modules/ext/
-  * jme3-gde/jme3-project-libraries/release/libs/
+ # Create library folders in the downloaded jme3-gde project folder:
+  * create folder(s) `jme3-gde/jme3-core-libraries/release/modules/ext/`
+  * create folder(s) `jme3-gde/jme3-project-libraries/release/libs/`
+ # Copy all jme3 jars to the created core library folder:
+  * copy jMonkeyEngine3.jar from `jme3/dist` to `jme3-gde/jme3-core-libraries/release/modules/ext/`
+  * copy all jars from `jme3/dist/lib` to `jme3-gde/jme3-core-libraries/release/modules/ext/`
+ # Copy all jme3 jars to the created project library folder:
+  * copy jMonkeyEngine3.jar from `jme3/dist` to `jme3-gde/jme3-project-libraries/release/libs/`
+  * copy all jars from `jme3/dist/lib` to `jme3-gde/jme3-project-libraries/release/libs/`
  # Run the project

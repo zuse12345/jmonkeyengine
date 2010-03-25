@@ -232,11 +232,11 @@ public class PhysicsSpace {
      * @param time the current time value
      */
     public void update(float time){
-//        int subSteps=1;
-//        if(time>accuracy){
-//            subSteps=(int)(time/accuracy+1);
-//        }
-        update(time,1);
+        int subSteps=1;
+        if(time>accuracy){
+            subSteps=(int)(time/accuracy+1);
+        }
+        update(time,subSteps);
     }
 
     /**
@@ -541,6 +541,9 @@ public class PhysicsSpace {
          * better Broadphase, needs worldBounds , max Object number = 65536
          */
         public static final int AXIS_SWEEP_3_32=2;
+        /**
+         * Broadphase allowing quicker adding/removing of physics objects
+         */
         public static final int DBVT=3;
     }
 

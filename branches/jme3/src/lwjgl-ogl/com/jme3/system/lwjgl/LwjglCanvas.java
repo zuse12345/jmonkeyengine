@@ -89,7 +89,7 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
             } catch (LWJGLException ex) {
                 listener.handleError("Failed to freeze display", ex);
             }
-            Display.destroy();
+//            Display.destroy();
 
             reinitReq.set(false);
             synchronized (reinitReqLock){
@@ -151,36 +151,37 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
      * Called if canvas was removed and then restored unexpectedly
      */
     private void reinitialize(){
-        PixelFormat pf = new PixelFormat(settings.getBitsPerPixel(),
-                                         0,
-                                         settings.getDepthBits(),
-                                         settings.getStencilBits(),
-                                         settings.getSamples());
-
-        applySettings(settings);
-        try {
-            Display.create(pf);
-
-            if (!Mouse.isCreated())
-                Mouse.create();
-
-            if (!Keyboard.isCreated())
-                Keyboard.create();
-
-            Keyboard.poll();
-            Mouse.poll();
-        } catch (LWJGLException ex) {
-            listener.handleError("Failed to re-init display", ex);
-        }
-
-        renderer.resetGLObjects();
-
-//        try{
-//            Display.setParent(null);
-//            Display.setParent(canvas);
-//        }catch (LWJGLException ex){
-//            listener.handleError("Failed to parent canvas to display", ex);
+//        PixelFormat pf = new PixelFormat(settings.getBitsPerPixel(),
+//                                         0,
+//                                         settings.getDepthBits(),
+//                                         settings.getStencilBits(),
+//                                         settings.getSamples());
+//
+//        applySettings(settings);
+//        try {
+//            Display.create(pf);
+//
+//            if (!Mouse.isCreated()){
+//                Mouse.create();
+//                Mouse.poll();
+//            }
+//
+//            if (!Keyboard.isCreated()){
+//                Keyboard.create();
+//                Keyboard.poll();
+//            }
+//        } catch (LWJGLException ex) {
+//            listener.handleError("Failed to re-init display", ex);
 //        }
+//
+//        renderer.resetGLObjects();
+
+        try{
+//            Display.setParent(null);
+            Display.setParent(canvas);
+        }catch (LWJGLException ex){
+            listener.handleError("Failed to parent canvas to display", ex);
+        }
 
         listener.gainFocus();
     }

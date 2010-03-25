@@ -115,13 +115,13 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
                 updateOpenGLCanavas(evt);
             }
         });
-        oGLPanel.setLayout(new javax.swing.BoxLayout(oGLPanel, javax.swing.BoxLayout.LINE_AXIS));
+        oGLPanel.setLayout(new java.awt.GridLayout());
         add(oGLPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
     private void updateOpenGLCanavas(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_updateOpenGLCanavas
 
-        ctx.getCanvas().setSize(oGLPanel.getWidth(), oGLPanel.getHeight());
+//        ctx.getCanvas().setSize(oGLPanel.getWidth(), oGLPanel.getHeight());
     }//GEN-LAST:event_updateOpenGLCanavas
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

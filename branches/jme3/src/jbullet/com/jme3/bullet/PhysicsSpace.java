@@ -102,7 +102,7 @@ public class PhysicsSpace {
     
     private DynamicsWorld dynamicsWorld = null;
     private BroadphaseInterface broadphase;
-    private int broadphaseType=0;
+    private int broadphaseType = BroadphaseTypes.DBVT;
     private CollisionDispatcher dispatcher;
     private ConstraintSolver solver;
     private DefaultCollisionConfiguration collisionConfiguration;

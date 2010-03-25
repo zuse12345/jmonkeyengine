@@ -4,7 +4,6 @@ import com.jme3.app.SimplePhysicsApplication;
 import com.jme3.asset.TextureKey;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.nodes.PhysicsNode;
-import com.jme3.bullet.nodes.PhysicsRagdollNode;
 import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
@@ -42,8 +41,9 @@ public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
         getPhysicsSpace().addQueued(node3);
         
         Spatial model = MeshLoader.loadModel(manager, "OTO.meshxml", "OTO.material");
-        PhysicsRagdollNode ragdoll = new PhysicsRagdollNode(model);
-        rootNode.attachChild(ragdoll);
+        model.setLocalScale(10);
+//        PhysicsRagdollNode ragdoll = new PhysicsRagdollNode(model);
+//        rootNode.attachChild(ragdoll);
         rootNode.attachChild(model);
     }
 

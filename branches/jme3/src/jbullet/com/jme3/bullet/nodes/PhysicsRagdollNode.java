@@ -63,18 +63,18 @@ public class PhysicsRagdollNode extends PhysicsNode {
         }
 
         // connect the bone shapes with joints
-        for (PhysicsBoneLink link : boneLinks.values()){
-            PhysicsBoneLink parentLink = boneLinks.get(link.bone.getParent());
-            if (parentLink == null)
-                continue;
-
-            PhysicsPoint2PointJoint joint = new PhysicsPoint2PointJoint(link.shapeNode,
-                                                                        parentLink.shapeNode,
-                                                                        link.bone.getWorldPosition(),
-                                                                        parentLink.bone.getWorldPosition());
-            joint.setCollisionBetweenLinkedBodys(false);
-            PhysicsSpace.getPhysicsSpace().add(joint);
-        }
+//        for (PhysicsBoneLink link : boneLinks.values()){
+//            PhysicsBoneLink parentLink = boneLinks.get(link.bone.getParent());
+//            if (parentLink == null)
+//                continue;
+//
+//            PhysicsPoint2PointJoint joint = new PhysicsPoint2PointJoint(link.shapeNode,
+//                                                                        parentLink.shapeNode,
+//                                                                        link.bone.getWorldPosition(),
+//                                                                        parentLink.bone.getWorldPosition());
+//            joint.setCollisionBetweenLinkedBodys(false);
+//            PhysicsSpace.getPhysicsSpace().add(joint);
+//        }
     }
 
     @Override

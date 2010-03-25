@@ -1,5 +1,7 @@
 package com.jme3.renderer;
 
+import java.util.Arrays;
+
 /**
  * A specialized data-structure used to optimize state changes of "slot"
  * based state. 
@@ -10,6 +12,13 @@ public class IDList {
     public int[] oldList = new int[16];
     public int newLen = 0;
     public int oldLen = 0;
+
+    public void reset(){
+        newLen = 0;
+        oldLen = 0;
+        Arrays.fill(newList, 0);
+        Arrays.fill(oldList, 0);
+    }
 
     public boolean moveToNew(int idx){
 //        if (newLen == 0 || newList[newLen-1] != idx)

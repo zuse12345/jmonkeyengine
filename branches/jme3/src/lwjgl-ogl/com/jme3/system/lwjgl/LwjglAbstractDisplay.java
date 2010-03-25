@@ -174,16 +174,6 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
         deinitInThread();
     }
 
-    @Override
-    public void create(){
-        if (created.get()){
-            logger.warning("create() called when display is already created!");
-            return;
-        }
-
-        new Thread(this, "LWJGL Renderer Thread").start();
-    }
-
     public JoyInput getJoyInput() {
         return new LwjglJoyInput();
     }

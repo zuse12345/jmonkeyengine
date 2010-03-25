@@ -191,6 +191,10 @@ public interface Renderer {
      */
     public void renderMesh(Mesh mesh, int lod, int count);
 
+    /**
+     * Called on restart() to reset all GL objects
+     */
+    public void resetGLObjects();
 
     /**
      * Called when the display is restarted to delete

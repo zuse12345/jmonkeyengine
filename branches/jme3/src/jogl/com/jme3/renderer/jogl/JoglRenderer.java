@@ -87,6 +87,10 @@ public class JoglRenderer implements Renderer {
         objManager.deleteAllObjects(this);
     }
 
+    public void resetGLObjects(){
+        objManager.resetObjects();
+    }
+
     public void clearBuffers(boolean color, boolean depth, boolean stencil) {
         int bits = 0;
         if (color) bits = gl.GL_COLOR_BUFFER_BIT;

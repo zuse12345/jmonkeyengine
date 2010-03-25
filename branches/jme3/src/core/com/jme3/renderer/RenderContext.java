@@ -96,4 +96,36 @@ public class RenderContext {
     public VertexBuffer[] boundAttribs = new VertexBuffer[16];
 
     public IDList attribIndexList = new IDList();
+
+    public void reset(){
+        cullMode = RenderState.FaceCullMode.Off;
+        depthTestEnabled = false;
+        alphaTestEnabled = false;
+        depthWriteEnabled = false;
+        colorWriteEnabled = false;
+        polyOffsetEnabled = false;
+        polyOffsetFactor = 0;
+        polyOffsetUnits = 0;
+        normalizeEnabled = false;
+        matrixMode = -1;
+        blendMode = RenderState.BlendMode.Off;
+        wireframe = false;
+        boundShaderProgram = 0;
+        boundFBO = 0;
+        boundRB = 0;
+        boundDrawBuf = -1;
+        boundElementArrayVBO = 0;
+        boundVertexArray = 0;
+        boundArrayVBO = 0;
+        numTexturesSet = 0;
+        for (int i = 0; i < boundTextures.length; i++)
+            boundTextures[i] = null;
+
+        textureIndexList.reset();
+        boundTextureUnit = 0;
+        for (int i = 0; i < boundAttribs.length; i++)
+            boundAttribs[i] = null;
+
+        attribIndexList.reset();
+    }
 }

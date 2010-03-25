@@ -2,8 +2,8 @@ package com.jme3.renderer;
 
 import java.lang.ref.PhantomReference;
 import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,7 +28,8 @@ public class GLObjectManager {
     /**
      * List of currently active GLObjects.
      */
-    private List<GLObject> objectList = new ArrayList<GLObject>();
+    private ArrayList<WeakReference<GLObject>> objectList
+            = new ArrayList<WeakReference<GLObject>>();
 
     private class GLObjectRef extends PhantomReference<Object>{
         
@@ -47,7 +48,7 @@ public class GLObjectManager {
     public void registerForCleanup(GLObject obj){
         GLObject objClone = obj.createDestructableClone();
         GLObjectRef ref = new GLObjectRef(objClone, obj.handleRef);
-        objectList.add(objClone);
+        objectList.add(new WeakReference<GLObject>(obj));
         if (logger.isLoggable(Level.FINEST))
             logger.log(Level.FINEST, "Registered: {0}", new String[]{obj.toString()});
     }
@@ -58,7 +59,7 @@ public class GLObjectManager {
     public void deleteUnused(Renderer r){
         for (GLObjectRef ref = (GLObjectRef) refQueue.poll(); ref != null;){
             ref.obj.deleteObject(r);
-            objectList.remove(ref.obj);
+//            objectList.remove(ref.obj);
             if (logger.isLoggable(Level.FINEST))
                 logger.log(Level.FINEST, "Deleted: {0}", ref.obj);
         }
@@ -68,8 +69,12 @@ public class GLObjectManager {
      * Deletes all objects. Must only be called when display is destroyed.
      */
     public void deleteAllObjects(Renderer r){
-        for (GLObject obj : objectList){
-            obj.deleteObject(r);
+//        for (GLObject obj : objectList){
+//            obj.deleteObject(r);
+//        }
+        for (WeakReference<GLObject> ref : objectList){
+            if (ref.get() != null)
+                ref.get().deleteObject(r);
         }
         objectList.clear();
     }
@@ -78,7 +83,16 @@ public class GLObjectManager {
      * Resets all GLObjects.
      */
     public void resetObjects(){
-        for (GLObject obj : objectList){
+//        for (GLObject obj : objectList){
+//            obj.resetObject();
+//            if (logger.isLoggable(Level.FINEST))
+//                logger.log(Level.FINEST, "Reset: {0}", obj);
+//        }
+        for (WeakReference<GLObject> ref : objectList){
+            if (ref.get() == null)
+                continue;
+
+            GLObject obj = ref.get();
             obj.resetObject();
             if (logger.isLoggable(Level.FINEST))
                 logger.log(Level.FINEST, "Reset: {0}", obj);
@@ -86,11 +100,11 @@ public class GLObjectManager {
         objectList.clear();
     }
 
-    public void printObjects(){
-        System.out.println(" ------------------- ");
-        System.out.println(" GL Object count: "+ objectList.size());
-        for (GLObject obj : objectList){
-            System.out.println(obj);
-        }
-    }
+//    public void printObjects(){
+//        System.out.println(" ------------------- ");
+//        System.out.println(" GL Object count: "+ objectList.size());
+//        for (GLObject obj : objectList){
+//            System.out.println(obj);
+//        }
+//    }
 }

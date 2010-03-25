@@ -74,9 +74,11 @@ public class TestFancyCar extends SimplePhysicsApplication implements BindingLis
 
     @Override
     public void simpleInitApp() {
-        BasicShadowRenderer bsr = new BasicShadowRenderer(manager, 512);
-        bsr.setDirection(new Vector3f(-0.5f, -0.3f, -0.3f).normalizeLocal());
-        viewPort.addProcessor(bsr);
+        if (settings.getRenderer().startsWith("LWJGL")){
+            BasicShadowRenderer bsr = new BasicShadowRenderer(manager, 512);
+            bsr.setDirection(new Vector3f(-0.5f, -0.3f, -0.3f).normalizeLocal());
+            viewPort.addProcessor(bsr);
+        }
         cam.setFrustumFar(50f);
 
         setupKeys();

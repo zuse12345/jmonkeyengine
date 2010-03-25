@@ -102,8 +102,6 @@ public class LwjglRenderer implements Renderer {
     private boolean tdc;
     private FrameBuffer lastFb = null;
 
-    private int lastWidth, lastHeight;
-
     public LwjglRenderer(){
     }
 
@@ -277,6 +275,13 @@ public class LwjglRenderer implements Renderer {
                 glEnable(ARBMultisample.GL_MULTISAMPLE_ARB);
             }
         }
+    }
+
+    public void resetGLObjects(){
+        objManager.resetObjects();
+        boundShader = null;
+        lastFb = null;
+        context.reset();
     }
 
     public void cleanup(){
@@ -560,7 +565,7 @@ public class LwjglRenderer implements Renderer {
 
     protected void resetUniformLocations(Shader shader){
         for (Uniform uniform : shader.getUniforms()){
-            uniform.setLocation(-2); // e.g check location again
+            uniform.reset(); // e.g check location again
         }
     }
 
@@ -742,6 +747,7 @@ public class LwjglRenderer implements Renderer {
         } else {
             if (shader.isUpdateNeeded())
                 updateShaderData(shader);
+            
             // NOTE: might want to check if any of the 
             // sources need an update?
             
@@ -1493,15 +1499,15 @@ public class LwjglRenderer implements Renderer {
         }
 
         int vertCount = mesh.getVertexCount();
-        if (vertCount > maxVertCount){
-            logger.warning("Mesh may be rendered with reduced performance. \n" +
-                           "vertex count > max vertex count.");
-        }
-
-        if (indexBuf.getData().capacity() > maxTriCount){
-            logger.warning("Mesh may be rendered with reduced performance. \n" +
-                           "triangle count > max triangle count.");
-        }
+//        if (vertCount > maxVertCount){
+//            logger.warning("Mesh may be rendered with reduced performance. \n" +
+//                           "vertex count > max vertex count.");
+//        }
+//
+//        if (indexBuf.getData().capacity() > maxTriCount){
+//            logger.warning("Mesh may be rendered with reduced performance. \n" +
+//                           "triangle count > max triangle count.");
+//        }
 
         if (count > 1 && caps.contains(Caps.MeshInstancing)){
             ARBDrawInstanced.

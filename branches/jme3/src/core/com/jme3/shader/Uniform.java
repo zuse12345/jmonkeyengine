@@ -376,4 +376,9 @@ public class Uniform extends ShaderVariable {
         updateNeeded = false;
     }
 
+    public void reset(){
+        location = -2;
+        updateNeeded = true;
+    }
+
 }

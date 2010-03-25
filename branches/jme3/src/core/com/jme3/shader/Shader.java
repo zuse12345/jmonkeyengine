@@ -11,8 +11,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class Shader extends GLObject implements Savable {
 
@@ -355,9 +353,7 @@ public class Shader extends GLObject implements Savable {
     public void resetLocations(){
         // NOTE: Shader sources will be reset seperately from the shader itself.
         for (Uniform uniform : uniforms.values()){
-            // fixed mistake: was -1 which was incorrect
-            // would cause shader to not work after reset
-            uniform.location = -2;
+            uniform.reset(); // fixes issue with re-initialization
         }
         for (Attribute attrib : attribs.values()){
             attrib.location = -2;

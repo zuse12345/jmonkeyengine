@@ -38,6 +38,6 @@ import com.jme3.scene.Spatial;
  * To be replaced with Lookup functionality
  * @author normenhansen
  */
-public interface SceneViewerListener {
+public interface SceneListener {
     public void rootNodeChanged(Spatial spatial);
 }

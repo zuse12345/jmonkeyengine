@@ -203,8 +203,8 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     }
 
     private void notifySceneListeners(){
-        for (Iterator<SceneViewerListener> it = listeners.iterator(); it.hasNext();) {
-            SceneViewerListener sceneViewerListener = it.next();
+        for (Iterator<SceneListener> it = listeners.iterator(); it.hasNext();) {
+            SceneListener sceneViewerListener = it.next();
             sceneViewerListener.rootNodeChanged(rootNode);
         }
     }
@@ -348,13 +348,13 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     }
 
     //TODO: replace with Lookup functionality
-    private LinkedList<SceneViewerListener> listeners=new LinkedList<SceneViewerListener>();
+    private LinkedList<SceneListener> listeners=new LinkedList<SceneListener>();
 
-    public void addSceneListener(SceneViewerListener listener){
+    public void addSceneListener(SceneListener listener){
         listeners.add(listener);
     }
 
-    public void removeSceneListener(SceneViewerListener listener){
+    public void removeSceneListener(SceneListener listener){
         listeners.remove(listener);
     }
 }

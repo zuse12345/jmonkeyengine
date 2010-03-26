@@ -32,7 +32,7 @@
 package com.jme3.gde.core.sceneexplorer;
 
 import com.jme3.gde.core.scene.SceneApplication;
-import com.jme3.gde.core.scene.SceneViewerListener;
+import com.jme3.gde.core.scene.SceneListener;
 import com.jme3.gde.core.sceneviever.nodes.JmeSpatial;
 import com.jme3.gde.core.sceneviever.nodes.JmeSpatialChildFactory;
 import com.jme3.scene.Spatial;
@@ -52,7 +52,7 @@ import org.openide.nodes.Children;
  */
 @ConvertAsProperties(dtd = "-//com.jme3.gde.core.sceneexplorer//SceneExplorer//EN",
 autostore = false)
-public final class SceneExplorerTopComponent extends TopComponent implements ExplorerManager.Provider, SceneViewerListener{
+public final class SceneExplorerTopComponent extends TopComponent implements ExplorerManager.Provider, SceneListener{
 
     private static SceneExplorerTopComponent instance;
     /** path to the icon used by the component and its open action */

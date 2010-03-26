@@ -31,8 +31,10 @@
  */
 package com.jme3.gde.core.logging;
 
+import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
+import java.util.logging.SimpleFormatter;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -41,7 +43,8 @@ import org.openide.windows.InputOutput;
  * @author normenhansen
  */
 public class JmeLogHandler extends Handler{
-    InputOutput io = IOProvider.getDefault().getIO ("SceneViewer", true);
+    InputOutput io = IOProvider.getDefault().getIO ("Application", true);
+    Formatter formatter=new SimpleFormatter();
 
     public JmeLogHandler() {
 
@@ -51,7 +54,7 @@ public class JmeLogHandler extends Handler{
 
     @Override
     public void publish(LogRecord record) {
-        io.getOut().println (record.getMessage());
+        io.getOut().println (formatter.formatMessage(record));
     }
 
     @Override

@@ -72,6 +72,7 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
         if (reinitReq.get()){
             logger.log(Level.INFO, "OGL: Re-init request recieved!");
             listener.loseFocus();
+            logger.log(Level.INFO, "OGL: listener.loseFocus()");
 
 //            boolean mouseActive = Mouse.isCreated();
 //            boolean keyboardActive = Keyboard.isCreated();
@@ -85,12 +86,15 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
 //                Controllers.destroy();
 
             try {
+                logger.log(Level.INFO, "OGL: Display.setParent(null)");
                 Display.setParent(null);
+                logger.log(Level.INFO, "OGL: Display.setParent(null) OK");
             } catch (LWJGLException ex) {
                 listener.handleError("Failed to freeze display", ex);
             }
 //            Display.destroy();
 
+            logger.log(Level.INFO, "OGL: reinitReq = false");
             reinitReq.set(false);
             synchronized (reinitReqLock){
                 reinitReqLock.notifyAll();

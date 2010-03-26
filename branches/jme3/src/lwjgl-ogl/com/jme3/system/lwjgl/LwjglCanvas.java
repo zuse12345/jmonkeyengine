@@ -9,6 +9,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.lwjgl.LWJGLException;
+import org.lwjgl.input.Controllers;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.Pbuffer;
@@ -93,16 +95,16 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
             listener.loseFocus();
             logger.log(Level.INFO, "OGL: listener.loseFocus()");
 
-//            boolean mouseActive = Mouse.isCreated();
-//            boolean keyboardActive = Keyboard.isCreated();
-//            boolean joyActive = Controllers.isCreated();
-//
-//            if (mouseActive)
-//                Mouse.destroy();
-//            if (keyboardActive)
-//                Keyboard.destroy();
-//            if (joyActive)
-//                Controllers.destroy();
+            boolean mouseActive = Mouse.isCreated();
+            boolean keyboardActive = Keyboard.isCreated();
+            boolean joyActive = Controllers.isCreated();
+
+            if (mouseActive)
+                Mouse.destroy();
+            if (keyboardActive)
+                Keyboard.destroy();
+            if (joyActive)
+                Controllers.destroy();
 
             pauseCanvas();
 
@@ -126,19 +128,19 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
             logger.log(Level.INFO, "OGL: Re-init authorization recieved. Re-initializing..");
             restoreCanvas();
 
-//            try {
-//                if (mouseActive){
-//                    Mouse.create();
-//                }
-//                if (keyboardActive){
-//                    Keyboard.create();
-//                }
-//                if (joyActive){
-//                    Controllers.create();
-//                }
-//            } catch (LWJGLException ex){
-//                listener.handleError("Failed to re-init input", ex);
-//            }
+            try {
+                if (mouseActive){
+                    Mouse.create();
+                }
+                if (keyboardActive){
+                    Keyboard.create();
+                }
+                if (joyActive){
+                    Controllers.create();
+                }
+            } catch (LWJGLException ex){
+                listener.handleError("Failed to re-init input", ex);
+            }
         }
         if (width != canvas.getWidth() || height != canvas.getHeight()){
             width = canvas.getWidth();
@@ -165,17 +167,16 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
     }
 
     private void pauseCanvas(){
-        try {
+//        try {
             if (Mouse.isCreated() && Mouse.isGrabbed()){
                 Mouse.setGrabbed(false);
                 mouseWasGrabbed = true;
             }
             
-            Display.releaseContext();
-            Display.setParent(null);
-        } catch (LWJGLException ex) {
-            logger.log(Level.SEVERE, "in pauseCanvas()", ex);
-        }
+            Display.destroy();
+//        } catch (LWJGLException ex) {
+//            logger.log(Level.SEVERE, "in pauseCanvas()", ex);
+//        }
     }
 
     /**
@@ -205,18 +206,18 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
 //            listener.handleError("Failed to re-init display", ex);
 //        }
 //
-//        renderer.resetGLObjects();
+        renderer.resetGLObjects();
 //        try{
 //            Display.setParent(null);
 //            Display.setParent(canvas);
 //        }catch (LWJGLException ex){
 //            listener.handleError("Failed to parent canvas to display", ex);
 //        }
-//        createContext(settings);
+        createContext(settings);
 
         try {
-            Display.setParent(canvas);
-            Display.makeCurrent();
+//            Display.setParent(canvas);
+//            Display.makeCurrent();
 
             if (mouseWasGrabbed){
                 Mouse.create();
@@ -251,7 +252,6 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
 
         try{
             Display.setParent(canvas);
-
             PixelFormat pf = new PixelFormat(settings.getBitsPerPixel(),
                                              0,
                                              settings.getDepthBits(),

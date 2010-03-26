@@ -93,7 +93,6 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
         if (reinitReq.get()){
             logger.log(Level.INFO, "OGL: Re-init request recieved!");
             listener.loseFocus();
-            logger.log(Level.INFO, "OGL: listener.loseFocus()");
 
             boolean mouseActive = Mouse.isCreated();
             boolean keyboardActive = Keyboard.isCreated();
@@ -108,7 +107,6 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
 
             pauseCanvas();
 
-            logger.log(Level.INFO, "OGL: reinitReq = false");
             reinitReq.set(false);
             synchronized (reinitReqLock){
                 reinitReqLock.notifyAll();
@@ -172,7 +170,8 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
                 Mouse.setGrabbed(false);
                 mouseWasGrabbed = true;
             }
-            
+
+            logger.log(Level.INFO, "OGL: Destroying display (temporarily)");
             Display.destroy();
 //        } catch (LWJGLException ex) {
 //            logger.log(Level.SEVERE, "in pauseCanvas()", ex);
@@ -183,42 +182,29 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
      * Called if canvas was removed and then restored unexpectedly
      */
     private void restoreCanvas(){
-//        PixelFormat pf = new PixelFormat(settings.getBitsPerPixel(),
-//                                         0,
-//                                         settings.getDepthBits(),
-//                                         settings.getStencilBits(),
-//                                         settings.getSamples());
-//
-//        applySettings(settings);
-//        try {
-//            Display.create(pf);
-//
-//            if (!Mouse.isCreated()){
-//                Mouse.create();
-//                Mouse.poll();
-//            }
-//
-//            if (!Keyboard.isCreated()){
-//                Keyboard.create();
-//                Keyboard.poll();
-//            }
-//        } catch (LWJGLException ex) {
-//            listener.handleError("Failed to re-init display", ex);
-//        }
-//
+        logger.log(Level.INFO, "OGL: Waiting for canvas to become displayable..");
+        while (!canvas.isDisplayable()){
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException ex) {
+                logger.log(Level.SEVERE, "OGL: Interrupted! ", ex);
+            }
+        }
         renderer.resetGLObjects();
-//        try{
-//            Display.setParent(null);
-//            Display.setParent(canvas);
-//        }catch (LWJGLException ex){
-//            listener.handleError("Failed to parent canvas to display", ex);
-//        }
+        logger.log(Level.INFO, "OGL: Creating display..");
         createContext(settings);
 
-        try {
-//            Display.setParent(canvas);
-//            Display.makeCurrent();
+        logger.log(Level.INFO, "OGL: Waiting for display to become active..");
+        while (!Display.isCreated()){
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException ex) {
+                logger.log(Level.SEVERE, "OGL: Interrupted! ", ex);
+            }
+        }
+        logger.log(Level.INFO, "OGL: Display is active!");
 
+        try {
             if (mouseWasGrabbed){
                 Mouse.create();
                 Mouse.setGrabbed(true);

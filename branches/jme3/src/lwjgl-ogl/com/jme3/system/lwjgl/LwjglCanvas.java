@@ -7,11 +7,11 @@ import java.awt.Canvas;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.lwjgl.LWJGLException;
-import org.lwjgl.input.Controllers;
-import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.Pbuffer;
 import org.lwjgl.opengl.PixelFormat;
 
 public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContext {
@@ -27,14 +27,19 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
     private AtomicBoolean reinitAuth = new AtomicBoolean(false);
     private final Object reinitAuthLock = new Object();
 
+    private Thread renderThread;
+    private boolean mouseWasGrabbed = false;
+//    private Pbuffer dummyCtx;
+
     public LwjglCanvas(){
         super();
         canvas = new Canvas(){
             @Override
             public void addNotify(){
                 super.addNotify();
-                if (!created.get()){
-                    new Thread(LwjglCanvas.this, "LWJGL Renderer Thread").start();
+                if (renderThread == null || renderThread.getState() == Thread.State.TERMINATED){
+                    renderThread = new Thread(LwjglCanvas.this, "LWJGL Renderer Thread");
+                    renderThread.start();
                 }else{
                     logger.log(Level.INFO, "EDT: Sending re-init authorization..");
                     // reinitializing
@@ -56,6 +61,7 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
                         try {
                             reinitReqLock.wait();
                         } catch (InterruptedException ex) {
+                            logger.log(Level.SEVERE, "EDT: Interrupted! ", ex);
                         }
                     }
                 }
@@ -65,6 +71,19 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
         };
         canvas.setFocusable(true);
         canvas.setIgnoreRepaint(true);
+    }
+
+    @Override
+    public void run(){
+//        try {
+//            PixelFormat pf = new PixelFormat(0, 0, 0, 0, 0);
+//            dummyCtx = new Pbuffer(1, 1, pf, null);
+//            dummyCtx.makeCurrent();
+//        } catch (LWJGLException ex) {
+//            logger.log(Level.SEVERE, "Failed to create dummy context", ex);
+//        }
+
+        super.run();
     }
 
     @Override
@@ -85,14 +104,7 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
 //            if (joyActive)
 //                Controllers.destroy();
 
-            try {
-                logger.log(Level.INFO, "OGL: Display.setParent(null)");
-                Display.setParent(null);
-                logger.log(Level.INFO, "OGL: Display.setParent(null) OK");
-            } catch (LWJGLException ex) {
-                listener.handleError("Failed to freeze display", ex);
-            }
-//            Display.destroy();
+            pauseCanvas();
 
             logger.log(Level.INFO, "OGL: reinitReq = false");
             reinitReq.set(false);
@@ -107,11 +119,12 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
                     try {
                         reinitAuthLock.wait();
                     } catch (InterruptedException ex) {
+                        logger.log(Level.SEVERE, "OGL: Interrupted! ", ex);
                     }
                 }
             }
             logger.log(Level.INFO, "OGL: Re-init authorization recieved. Re-initializing..");
-            reinitialize();
+            restoreCanvas();
 
 //            try {
 //                if (mouseActive){
@@ -151,10 +164,24 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
     public void setTitle(String title) {
     }
 
+    private void pauseCanvas(){
+        try {
+            if (Mouse.isCreated() && Mouse.isGrabbed()){
+                Mouse.setGrabbed(false);
+                mouseWasGrabbed = true;
+            }
+            
+            Display.releaseContext();
+            Display.setParent(null);
+        } catch (LWJGLException ex) {
+            logger.log(Level.SEVERE, "in pauseCanvas()", ex);
+        }
+    }
+
     /**
      * Called if canvas was removed and then restored unexpectedly
      */
-    private void reinitialize(){
+    private void restoreCanvas(){
 //        PixelFormat pf = new PixelFormat(settings.getBitsPerPixel(),
 //                                         0,
 //                                         settings.getDepthBits(),
@@ -179,12 +206,31 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
 //        }
 //
 //        renderer.resetGLObjects();
-
-        try{
+//        try{
 //            Display.setParent(null);
+//            Display.setParent(canvas);
+//        }catch (LWJGLException ex){
+//            listener.handleError("Failed to parent canvas to display", ex);
+//        }
+//        createContext(settings);
+
+        try {
             Display.setParent(canvas);
-        }catch (LWJGLException ex){
-            listener.handleError("Failed to parent canvas to display", ex);
+            Display.makeCurrent();
+
+            if (mouseWasGrabbed){
+                Mouse.create();
+                Mouse.setGrabbed(true);
+                mouseWasGrabbed = false;
+            }
+
+            SwingUtilities.invokeLater(new Runnable(){
+                public void run(){
+                    canvas.requestFocus();
+                }
+            });
+        } catch (LWJGLException ex) {
+            logger.log(Level.SEVERE, "restoreCanvas()", ex);
         }
 
         listener.gainFocus();
@@ -199,12 +245,20 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
     }
 
     @Override
-    protected void applySettings(AppSettings settings) {
+    protected void createContext(AppSettings settings) {
         frameRate = settings.getFrameRate();
         Display.setVSyncEnabled(settings.isVSync());
 
         try{
             Display.setParent(canvas);
+
+            PixelFormat pf = new PixelFormat(settings.getBitsPerPixel(),
+                                             0,
+                                             settings.getDepthBits(),
+                                             settings.getStencilBits(),
+                                             settings.getSamples());
+            Display.create(pf);
+            Display.makeCurrent();
         }catch (LWJGLException ex){
             listener.handleError("Failed to parent canvas to display", ex);
         }

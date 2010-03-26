@@ -7,6 +7,7 @@ import org.lwjgl.opengl.DisplayMode;
 import com.jme3.system.AppSettings;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.lwjgl.opengl.PixelFormat;
 
 public class LwjglDisplay extends LwjglAbstractDisplay {
 
@@ -27,7 +28,7 @@ public class LwjglDisplay extends LwjglAbstractDisplay {
         return null;
     }
 
-    protected void applySettings(AppSettings settings) throws LWJGLException{
+    protected void createContext(AppSettings settings) throws LWJGLException{
         DisplayMode displayMode = null;
         if (settings.getWidth() <= 0 || settings.getHeight() <= 0){
 //            displayMode = org.lwjgl.opengl.Display.getDesktopDisplayMode();
@@ -50,6 +51,13 @@ public class LwjglDisplay extends LwjglAbstractDisplay {
 
         Display.setFullscreen(settings.isFullscreen());
         Display.setVSyncEnabled(settings.isVSync());
+
+        PixelFormat pf = new PixelFormat(settings.getBitsPerPixel(),
+                                         0,
+                                         settings.getDepthBits(),
+                                         settings.getStencilBits(),
+                                         settings.getSamples());
+        Display.create(pf);
     }
 
     @Override
@@ -64,17 +72,17 @@ public class LwjglDisplay extends LwjglAbstractDisplay {
 
     @Override
     public void restart() {
-        if (created.get()){
-            try{
-                applySettings(settings);
-            }catch (LWJGLException ex){
-                logger.log(Level.SEVERE, "Failed to set display settings!", ex);
-            }
-            listener.reshape(settings.getWidth(), settings.getHeight());
-            logger.info("Display restarted.");
-        }else{
-            logger.warning("Display is not created, cannot restart window.");
-        }
+//        if (created.get()){
+//            try{
+//                createContext(settings);
+//            }catch (LWJGLException ex){
+//                logger.log(Level.SEVERE, "Failed to set display settings!", ex);
+//            }
+//            listener.reshape(settings.getWidth(), settings.getHeight());
+//            logger.info("Display restarted.");
+//        }else{
+//            logger.warning("Display is not created, cannot restart window.");
+//        }
     }
 
     public Type getType() {

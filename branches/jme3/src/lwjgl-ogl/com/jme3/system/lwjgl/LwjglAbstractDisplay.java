@@ -50,22 +50,17 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
      * Apply the settings, changing resolution, etc.
      * @param settings
      */
-    protected abstract void applySettings(AppSettings settings) throws LWJGLException;
+    protected abstract void createContext(AppSettings settings) throws LWJGLException;
 
     /**
      * Does LWJGL display initialization in the OpenGL thread
      */
     protected void initInThread(){
-        PixelFormat pf = new PixelFormat(settings.getBitsPerPixel(),
-                                         0,
-                                         settings.getDepthBits(),
-                                         settings.getStencilBits(),
-                                         settings.getSamples());
+        
 
         try{
-            applySettings(settings);
+            createContext(settings);
 //            String rendererStr = settings.getString("Renderer");
-            Display.create(pf);
 
             logger.info("Display created.");
             logger.log(Level.FINE, "Running on thread: {0}", Thread.currentThread().getName());

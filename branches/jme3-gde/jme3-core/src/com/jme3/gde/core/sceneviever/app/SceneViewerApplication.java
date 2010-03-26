@@ -109,6 +109,16 @@ public class SceneViewerApplication extends Application implements LookupProvide
         //add listener for project selection
         result = Utilities.actionsGlobalContext().lookupResult(Project.class);
         result.addLookupListener(this);
+
+        createCanvas();
+//        ctx = (JmeCanvasContext) app.getContext();
+        getContext().setAutoFlushFrames(true);
+        getContext().setSystemListener(this);
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                startCanvas();
+            }
+        });
     }
 
     private void loadFPSText() {

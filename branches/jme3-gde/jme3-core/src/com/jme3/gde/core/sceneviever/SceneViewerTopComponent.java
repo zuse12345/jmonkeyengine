@@ -34,6 +34,7 @@ package com.jme3.gde.core.sceneviever;
 import com.jme3.gde.core.sceneviever.app.SceneViewerApplication;
 import com.jme3.system.JmeCanvasContext;
 import com.jme3.system.SystemListener;
+import java.awt.Canvas;
 import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -55,8 +56,6 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 
     private JmeCanvasContext ctx;
     private SceneViewerApplication app;
-    private boolean started=false;
-    private boolean created=false;
 
     public SceneViewerTopComponent() {
         initComponents();
@@ -65,26 +64,9 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
 //        putClientProperty(TopComponent.PROP_CLOSING_DISABLED, Boolean.TRUE);
 //        putClientProperty(TopComponent.PROP_SLIDING_DISABLED, Boolean.TRUE);
-        app=SceneViewerApplication.getApplication();
 //        app=Lookup.getDefault().lookup(SceneViewerApplication.class);
-
-
+        app=SceneViewerApplication.getApplication();
     }
-
-//    @Override
-//    public void repaint() {
-//        checkOGLCanvas();
-//        super.repaint();
-//    }
-//
-//    private void checkOGLCanvas(){
-//        if(ctx==null) return;
-//        if(oGLPanel==null) return;
-//        if(oGLPanel.getComponents().length==0){
-//                oGLPanel.add(ctx.getCanvas());
-//        }
-//
-//    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -112,19 +94,9 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 
         oGLPanel.setMinimumSize(new java.awt.Dimension(10, 10));
         oGLPanel.setPreferredSize(new java.awt.Dimension(100, 100));
-        oGLPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                updateOpenGLCanavas(evt);
-            }
-        });
         oGLPanel.setLayout(new java.awt.GridLayout());
         add(oGLPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void updateOpenGLCanavas(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_updateOpenGLCanavas
-
-//        ctx.getCanvas().setSize(oGLPanel.getWidth(), oGLPanel.getHeight());
-    }//GEN-LAST:event_updateOpenGLCanavas
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton enableCamLight;
@@ -170,23 +142,12 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     @Override
     public void componentOpened() {
         super.componentOpened();
-        app.createCanvas();
-        ctx = (JmeCanvasContext) app.getContext();
-        ctx.setAutoFlushFrames(true);
-        ctx.setSystemListener(this);
-        oGLPanel.add(ctx.getCanvas());
+        oGLPanel.add(((JmeCanvasContext)app.getContext()).getCanvas());
     }
 
     @Override
     protected void componentShowing() {
         super.componentShowing();
-        if(started) return;
-        started=true;
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                app.startCanvas();
-            }
-        });
     }
 
     @Override
@@ -198,6 +159,7 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     @Override
     public void componentClosed() {
         super.componentClosed();
+        oGLPanel.removeAll();
     }
 
     void writeProperties(java.util.Properties p) {

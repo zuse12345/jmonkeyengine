@@ -29,7 +29,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.gde.core.sceneviever.app;
+package com.jme3.gde.core.scene;
 
 import com.jme3.app.Application;
 import com.jme3.bounding.BoundingBox;
@@ -73,16 +73,16 @@ import org.openide.util.lookup.Lookups;
  * - Node tree creation from scenegraph
  * @author normenhansen
  */
-public class SceneViewerApplication extends Application implements LookupProvider, LookupListener, BindingListener {
+public class SceneApplication extends Application implements LookupProvider, LookupListener, BindingListener {
 
     private boolean leftMouse, rightMouse, middleMouse;
     private float deltaX, deltaY, deltaWheel;
     private PointLight camLight;
-    private static SceneViewerApplication application;
+    private static SceneApplication application;
 
-    public static SceneViewerApplication getApplication() {
+    public static SceneApplication getApplication() {
         if (application == null) {
-            application = new SceneViewerApplication();
+            application = new SceneApplication();
         }
         return application;
     }
@@ -95,7 +95,7 @@ public class SceneViewerApplication extends Application implements LookupProvide
     private Lookup.Result result;
     private JmeLogHandler logHandler = new JmeLogHandler();
 
-    public SceneViewerApplication() {
+    public SceneApplication() {
         manager = ProjectAssetManager.getManager();
         AppSettings settings = new AppSettings(true);
 //        settings.setVSync(true);
@@ -171,10 +171,10 @@ public class SceneViewerApplication extends Application implements LookupProvide
         super.update();
         float tpf = timer.getTimePerFrame();
 
-        Vector3f temp = camLight.getPosition();
-        temp.set(cam.getLeft()).multLocal(5.0f);
-        temp.addLocal(cam.getLocation());
-        camLight.setPosition(temp);
+//        Vector3f temp = camLight.getPosition();
+//        temp.set(cam.getLeft()).multLocal(5.0f);
+//        temp.addLocal(cam.getLocation());
+        camLight.setPosition(cam.getLocation());
 
         secondCounter += tpf;
         int fps = (int) timer.getFrameRate();

@@ -29,15 +29,27 @@
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package com.jme3.gde.core;
 
-package com.jme3.gde.core.sceneviever.app;
-
-import com.jme3.scene.Spatial;
+import com.jme3.gde.core.scene.SceneApplication;
+import org.openide.modules.ModuleInstall;
 
 /**
- * To be replaced with Lookup functionality
- * @author normenhansen
+ * Manages a module's lifecycle. Remember that an installer is optional and
+ * often not needed at all.
  */
-public interface SceneViewerListener {
-    public void rootNodeChanged(Spatial spatial);
+public class Installer extends ModuleInstall {
+
+    @Override
+    public boolean closing() {
+        SceneApplication.getApplication().stop();
+        SceneApplication.getApplication().destroy();
+        return true;
+    }
+
+    @Override
+    public void restored() {
+        // By default, do nothing.
+        // Put your startup code here.
+    }
 }

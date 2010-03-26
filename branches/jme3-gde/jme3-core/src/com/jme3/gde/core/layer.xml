@@ -504,7 +504,7 @@
             <folder name="editor">
                 <file name="SceneViewerTopComponent.wstcref" url="SceneViewerTopComponentWstcref.xml"/>
             </folder>
-            <folder name="explorer">
+            <folder name="commonpalette">
                 <file name="SceneExplorerTopComponent.wstcref" url="SceneExplorerTopComponentWstcref.xml"/>
             </folder>
         </folder>

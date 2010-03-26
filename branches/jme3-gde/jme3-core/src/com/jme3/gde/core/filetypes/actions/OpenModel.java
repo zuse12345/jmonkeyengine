@@ -31,7 +31,7 @@
  */
 package com.jme3.gde.core.filetypes.actions;
 
-import com.jme3.gde.core.sceneviever.app.SceneViewerApplication;
+import com.jme3.gde.core.scene.SceneApplication;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Iterator;
@@ -53,9 +53,9 @@ public final class OpenModel implements ActionListener {
         for (Iterator<FileObject> it = files.iterator(); it.hasNext();) {
             FileObject fileObject = it.next();
             final String name=fileObject.getNameExt();
-            SceneViewerApplication.getApplication().enqueue(new Callable<Object>() {
+            SceneApplication.getApplication().enqueue(new Callable<Object>() {
                 public Object call() throws Exception {
-                    SceneViewerApplication.getApplication().showModel(name);
+                    SceneApplication.getApplication().showModel(name);
                     return null;
                 }
             });

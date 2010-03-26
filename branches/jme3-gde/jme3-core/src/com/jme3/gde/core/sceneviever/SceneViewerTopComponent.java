@@ -31,7 +31,7 @@
  */
 package com.jme3.gde.core.sceneviever;
 
-import com.jme3.gde.core.sceneviever.app.SceneViewerApplication;
+import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.system.JmeCanvasContext;
 import com.jme3.system.SystemListener;
 import java.awt.Canvas;
@@ -55,7 +55,7 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     private static final String PREFERRED_ID = "SceneViewerTopComponent";
 
     private JmeCanvasContext ctx;
-    private SceneViewerApplication app;
+    private SceneApplication app;
 
     public SceneViewerTopComponent() {
         initComponents();
@@ -65,7 +65,7 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 //        putClientProperty(TopComponent.PROP_CLOSING_DISABLED, Boolean.TRUE);
 //        putClientProperty(TopComponent.PROP_SLIDING_DISABLED, Boolean.TRUE);
 //        app=Lookup.getDefault().lookup(SceneViewerApplication.class);
-        app=SceneViewerApplication.getApplication();
+        app=SceneApplication.getApplication();
     }
 
     /** This method is called from within the constructor to

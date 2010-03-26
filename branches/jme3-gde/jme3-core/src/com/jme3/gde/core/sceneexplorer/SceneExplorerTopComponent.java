@@ -31,8 +31,8 @@
  */
 package com.jme3.gde.core.sceneexplorer;
 
-import com.jme3.gde.core.sceneviever.app.SceneViewerApplication;
-import com.jme3.gde.core.sceneviever.app.SceneViewerListener;
+import com.jme3.gde.core.scene.SceneApplication;
+import com.jme3.gde.core.scene.SceneViewerListener;
 import com.jme3.gde.core.sceneviever.nodes.JmeSpatial;
 import com.jme3.gde.core.sceneviever.nodes.JmeSpatialChildFactory;
 import com.jme3.scene.Spatial;
@@ -131,13 +131,13 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
 
     @Override
     public void componentOpened() {
-        SceneViewerApplication.getApplication().addSceneListener(this);
+        SceneApplication.getApplication().addSceneListener(this);
         // TODO add custom code on component opening
     }
 
     @Override
     public void componentClosed() {
-        SceneViewerApplication.getApplication().addSceneListener(this);
+        SceneApplication.getApplication().addSceneListener(this);
         // TODO add custom code on component closing
     }
 
@@ -172,7 +172,7 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
     }
 
     public void rootNodeChanged(Spatial spatial) {
-        JmeSpatialChildFactory factory=new JmeSpatialChildFactory(spatial,SceneViewerApplication.getApplication());
+        JmeSpatialChildFactory factory=new JmeSpatialChildFactory(spatial,SceneApplication.getApplication());
         explorerManager.setRootContext(new JmeSpatial(spatial,Children.create(factory, false)));
         explorerManager.getRootContext().setDisplayName(spatial.getName());
     }

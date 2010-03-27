@@ -138,8 +138,10 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
      */
     protected void deinitInThread(){
         listener.destroy();
-        renderer.cleanup();
-        Display.destroy();
+        if (Display.isCreated()){
+            renderer.cleanup();
+            Display.destroy();
+        }
         logger.info("Display destroyed.");
         super.destroy();
     }
@@ -150,9 +152,6 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
         while (true){
             if (Display.isCloseRequested())
                 listener.requestClose(false);
-
-            if (needClose.get())
-                break;
 
             if (wasActive != Display.isActive()){
                 if (!wasActive){
@@ -165,6 +164,9 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
             }
 
             runLoop();
+
+            if (needClose.get())
+                break;
         }
         deinitInThread();
     }

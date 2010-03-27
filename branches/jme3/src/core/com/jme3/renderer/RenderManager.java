@@ -24,6 +24,7 @@ public class RenderManager {
 
     private static final Logger logger = Logger.getLogger(RenderManager.class.getName());
 
+    private Statistics statistics = new Statistics();
     private Renderer renderer;
     private Timer timer;
     private ArrayList<ViewPort> preViewPorts = new ArrayList<ViewPort>();

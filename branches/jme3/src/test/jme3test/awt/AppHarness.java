@@ -60,6 +60,9 @@ public class AppHarness extends Applet {
 
     public void init(){
         appClass = getParameter("AppClass");
+        appClass = "jme3test.model.TestBox";
+        if (appClass == null)
+            throw new RuntimeException("The required parameter AppClass isnt specified!");
         
         createCanvas();
         System.out.println("applet:init");
@@ -76,8 +79,12 @@ public class AppHarness extends Applet {
     }
 
     public void destroy(){
+        app.stop();
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException ex) {
+        }
         removeAll();
-        app.destroy();
         System.out.println("applet:destroy");
     }
 

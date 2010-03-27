@@ -5,7 +5,7 @@
   </head>
   <body>
 
-  <applet code="org.lwjgl.util.applet.AppletLoader" archive="lwjgl_util_applet.jar, lzma.jar" codebase="file://E:/jME3/applet/" width="640" height="480">
+  <applet code="org.lwjgl.util.applet.AppletLoader" archive="lwjgl_util_applet.jar, lzma.jar" codebase="." width="640" height="480">
   
     <!-- The following tags are mandatory -->
     
@@ -13,7 +13,7 @@
     <param name="al_title" value="jME3_AppletTest">
     
     <!-- Main Applet Class -->
-    <param name="al_main" value="g3dtest.awt.AppHarness">
+    <param name="al_main" value="jme3test.awt.AppHarness">
     
     <!-- logo to paint while loading, will be centered -->
     <param name="al_logo" value="appletlogo.png">
@@ -22,7 +22,7 @@
     <param name="al_progressbar" value="appletprogress.gif">
     
     <!-- List of Jars to add to classpath -->
-    <param name="al_jars" value="lwjgl_applet.jar.pack.lzma, lwjgl.jar.pack.lzma, jinput.jar.pack.lzma, lwjgl_util.jar.pack.lzma, jME3.jar.pack">
+    <param name="al_jars" value="lwjgl_applet.jar.pack.lzma, lwjgl.jar.pack.lzma, jinput.jar.pack.lzma, lwjgl_util.jar.pack.lzma, jme.jar.pack.lzma">
     
     <!-- signed windows natives jar in a jar --> 
     <param name="al_windows" value="windows_natives.jar.lzma">
@@ -57,7 +57,7 @@
     <param name="al_prepend_host" value="false">
     
     <!-- main applet specific params -->
-    <param name="AppClass" value="g3dtest.model.TestQ3">
+    <param name="AppClass" value="jme3test.bullet.TestFancyCar">
   
   </applet>
 

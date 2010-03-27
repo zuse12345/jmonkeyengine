@@ -28,17 +28,18 @@ public class GLObjectManager {
     /**
      * List of currently active GLObjects.
      */
-    private ArrayList<WeakReference<GLObject>> objectList
-            = new ArrayList<WeakReference<GLObject>>();
+    private ArrayList<GLObjectRef> refList
+            = new ArrayList<GLObjectRef>();
 
     private class GLObjectRef extends PhantomReference<Object>{
         
-        private GLObject obj;
+        private GLObject objClone;
+        private WeakReference<GLObject> realObj;
 
-        public GLObjectRef(GLObject obj, Object handleRef){
-            super(handleRef, refQueue);
-            assert handleRef != null;
-            this.obj = obj;
+        public GLObjectRef(GLObject obj){
+            super(obj.handleRef, refQueue);
+            this.realObj = new WeakReference<GLObject>(obj);
+            this.objClone = obj.createDestructableClone();
         }
     }
 
@@ -46,9 +47,8 @@ public class GLObjectManager {
      * Register a GLObject with the manager.
      */
     public void registerForCleanup(GLObject obj){
-        GLObject objClone = obj.createDestructableClone();
-        GLObjectRef ref = new GLObjectRef(objClone, obj.handleRef);
-        objectList.add(new WeakReference<GLObject>(obj));
+        GLObjectRef ref = new GLObjectRef(obj);
+        refList.add(ref);
         if (logger.isLoggable(Level.FINEST))
             logger.log(Level.FINEST, "Registered: {0}", new String[]{obj.toString()});
     }
@@ -57,11 +57,15 @@ public class GLObjectManager {
      * Deletes unused GLObjects
      */
     public void deleteUnused(Renderer r){
-        for (GLObjectRef ref = (GLObjectRef) refQueue.poll(); ref != null;){
-            ref.obj.deleteObject(r);
-//            objectList.remove(ref.obj);
+        while (true){
+            GLObjectRef ref = (GLObjectRef) refQueue.poll();
+            if (ref == null)
+                return;
+
+            refList.remove(ref);
+            ref.objClone.deleteObject(r);
             if (logger.isLoggable(Level.FINEST))
-                logger.log(Level.FINEST, "Deleted: {0}", ref.obj);
+                logger.log(Level.FINEST, "Deleted: {0}", ref.objClone);
         }
     }
 
@@ -69,35 +73,28 @@ public class GLObjectManager {
      * Deletes all objects. Must only be called when display is destroyed.
      */
     public void deleteAllObjects(Renderer r){
-//        for (GLObject obj : objectList){
-//            obj.deleteObject(r);
-//        }
-        for (WeakReference<GLObject> ref : objectList){
-            if (ref.get() != null)
-                ref.get().deleteObject(r);
+        deleteUnused(r);
+        for (GLObjectRef ref : refList){
+            ref.objClone.deleteObject(r);
         }
-        objectList.clear();
+        refList.clear();
     }
 
     /**
      * Resets all GLObjects.
      */
     public void resetObjects(){
-//        for (GLObject obj : objectList){
-//            obj.resetObject();
-//            if (logger.isLoggable(Level.FINEST))
-//                logger.log(Level.FINEST, "Reset: {0}", obj);
-//        }
-        for (WeakReference<GLObject> ref : objectList){
-            if (ref.get() == null)
+        for (GLObjectRef ref : refList){
+            // here we use the actual obj not the clone,
+            // otherwise its useless
+            GLObject realObj = ref.realObj.get();
+            if (realObj == null)
                 continue;
-
-            GLObject obj = ref.get();
-            obj.resetObject();
+            
+            realObj.resetObject();
             if (logger.isLoggable(Level.FINEST))
-                logger.log(Level.FINEST, "Reset: {0}", obj);
+                logger.log(Level.FINEST, "Reset: {0}", realObj);
         }
-        objectList.clear();
     }
 
 //    public void printObjects(){

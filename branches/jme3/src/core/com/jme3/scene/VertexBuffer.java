@@ -161,9 +161,9 @@ public class VertexBuffer extends GLObject implements Savable, Cloneable {
      */
     protected transient int componentsLength = 0;
     protected Buffer data = null;
-    protected Usage usage = Usage.Dynamic;
-    protected Type bufType = Type.Position;
-    protected Format format = Format.Float;
+    protected Usage usage;
+    protected Type bufType;
+    protected Format format;
     protected boolean normalized = false;
 
     /**
@@ -415,7 +415,9 @@ public class VertexBuffer extends GLObject implements Savable, Cloneable {
         // NOTE: Superclass GLObject automatically creates shallow clone
         // e.g re-use ID.
         VertexBuffer vb = (VertexBuffer) super.clone();
-        vb.updateData(BufferUtils.clone(data));
+        if (data != null)
+            vb.updateData(BufferUtils.clone(data));
+        
         return vb;
     }
 

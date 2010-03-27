@@ -372,12 +372,18 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
     }
 
     private void runControlUpdate(float tpf){
+        if (controls.size() == 0)
+            return;
+        
         for (Entry<Control> entry : controls){
             entry.getValue().update(tpf);
         }
     }
 
     public void runControlRender(RenderManager rm, ViewPort vp){
+        if (controls.size() == 0)
+            return;
+
         for (Entry<Control> entry : controls){
             entry.getValue().render(rm, vp);
         }

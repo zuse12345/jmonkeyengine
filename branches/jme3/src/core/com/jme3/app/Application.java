@@ -349,7 +349,6 @@ public class Application implements SystemListener {
     public void destroy(){
         destroyInput();
         timer.reset();
-        renderer.cleanup();
     }
 
 }

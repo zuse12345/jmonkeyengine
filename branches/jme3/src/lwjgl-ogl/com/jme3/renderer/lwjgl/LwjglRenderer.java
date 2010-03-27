@@ -181,6 +181,18 @@ public class LwjglRenderer implements Renderer {
         fragUniforms = intBuf16.get(0);
         logger.log(Level.FINER, "Fragment Uniforms: {0}", fragUniforms);
         
+        glGetInteger(GL_MAX_VERTEX_ATTRIBS, intBuf16);
+        vertexAttribs = intBuf16.get(0);
+        logger.log(Level.FINER, "Vertex Attributes: {0}", vertexAttribs);
+
+        glGetInteger(GL_MAX_VARYING_FLOATS, intBuf16);
+        int varyingFloats = intBuf16.get(0);
+        logger.log(Level.FINER, "Varying Floats: {0}", varyingFloats);
+
+        glGetInteger(GL_SUBPIXEL_BITS, intBuf16);
+        int subpixelBits  = intBuf16.get(0);
+        logger.log(Level.FINER, "Subpixel Bits: {0}", subpixelBits);
+
         glGetInteger(GL_MAX_ELEMENTS_VERTICES, intBuf16);
         maxVertCount = intBuf16.get(0);
         logger.log(Level.FINER, "Preferred Batch Vertex Count: {0}", maxVertCount);
@@ -270,6 +282,7 @@ public class LwjglRenderer implements Renderer {
             boolean available = intBuf16.get(0) != 0;
             glGetInteger(ARBMultisample.GL_SAMPLES_ARB, intBuf16);
             int samples = intBuf16.get(0);
+            logger.log(Level.FINER, "Samples: {0}", samples);
             boolean enabled = glIsEnabled(ARBMultisample.GL_MULTISAMPLE_ARB);
             if (samples > 0 && available && !enabled){
                 glEnable(ARBMultisample.GL_MULTISAMPLE_ARB);

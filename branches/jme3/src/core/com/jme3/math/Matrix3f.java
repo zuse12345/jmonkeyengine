@@ -51,7 +51,7 @@ import java.util.logging.Logger;
  * @author Mark Powell
  * @author Joshua Slack
  */
-public class Matrix3f implements Savable, Cloneable {
+public final class Matrix3f implements Savable, Cloneable {
 
     private static final Logger logger = Logger.getLogger(Matrix3f.class.getName());
 

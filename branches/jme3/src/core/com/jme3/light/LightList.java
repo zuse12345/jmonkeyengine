@@ -21,7 +21,7 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
     int listSize;
     Spatial owner;
 
-    private static final int DEFAULT_SIZE = 32;
+    private static final int DEFAULT_SIZE = 1;
 
     private static final Comparator<Light> c = new Comparator<Light>() {
         /**
@@ -51,6 +51,15 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
         this.owner = owner;
     }
 
+    private void doubleSize(){
+        Light[] temp = new Light[list.length * 2];
+        float[] temp2 = new float[list.length * 2];
+        System.arraycopy(list, 0, temp, 0, list.length);
+        System.arraycopy(distToOwner, 0, temp2, 0, list.length);
+        list = temp;
+        distToOwner = temp2;
+    }
+
     /**
      * Adds a light to the list. List size is doubled if there is no room.
      *
@@ -59,15 +68,10 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
      */
     public void add(Light l) {
         if (listSize == list.length) {
-            Light[] temp = new Light[listSize * 2];
-            float[] temp2 = new float[listSize * 2];
-            System.arraycopy(list, 0, temp, 0, listSize);
-            System.arraycopy(distToOwner, 0, temp2, 0, listSize);
-            list = temp;
-            distToOwner = temp2;
+            doubleSize();
         }
-        list[listSize++] = l;
-        distToOwner[listSize] = Float.NEGATIVE_INFINITY;
+        list[listSize] = l;
+        distToOwner[listSize++] = Float.NEGATIVE_INFINITY;
     }
 
     /**
@@ -148,6 +152,10 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
         // using the arguments
         clear();
 
+        while (list.length <= local.listSize){
+            doubleSize();
+        }
+
         // add the lights from the local list
         for (int i = 0; i < local.listSize; i++){
             list[i] = local.list[i];
@@ -159,6 +167,9 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
         if (parent != null){
             for (int i = 0; i < parent.listSize; i++){
                 int p = i + local.listSize;
+                if (list.length <= p)
+                    doubleSize();
+                
                 list[p] = parent.list[i];
                 distToOwner[p] = Float.NEGATIVE_INFINITY;
             }

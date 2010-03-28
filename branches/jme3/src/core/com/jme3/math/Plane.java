@@ -49,7 +49,7 @@ import java.util.logging.Logger;
  * @author Mark Powell
  * @author Joshua Slack
  */
-public class Plane implements Savable, Cloneable {
+public final class Plane implements Savable, Cloneable {
 
     private static final Logger logger = Logger
             .getLogger(Plane.class.getName());

@@ -54,7 +54,7 @@ import java.io.IOException;
  * @author Mark Powell
  * @author Joshua Slack
  */
-public class Ray implements Savable, Cloneable, Collidable {
+public final class Ray implements Savable, Cloneable, Collidable {
 
     //todo: merge with Line?
     private static final long serialVersionUID = 1L;

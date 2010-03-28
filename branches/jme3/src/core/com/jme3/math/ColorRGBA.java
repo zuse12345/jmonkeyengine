@@ -37,10 +37,7 @@ import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
-import java.io.Externalizable;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 
 
 /**
@@ -57,7 +54,7 @@ import java.io.ObjectOutput;
  * @author Mark Powell
  * @version $Id: ColorRGBA.java,v 1.29 2007/09/09 18:25:14 irrisor Exp $
  */
-public class ColorRGBA implements Savable, Cloneable {
+public final class ColorRGBA implements Savable, Cloneable {
 
     private static final long serialVersionUID = 1L;
     /**

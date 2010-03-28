@@ -50,7 +50,7 @@ import java.io.Serializable;
  * @author Joshua Slack
  */
 
-public class Ring implements Serializable, Savable, Cloneable {
+public final class Ring implements Serializable, Savable, Cloneable {
     private static final long serialVersionUID = 1L;
     
     private Vector3f center, up;

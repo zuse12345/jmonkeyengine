@@ -58,12 +58,11 @@ float lightComputeSpecular(vec3 norm, vec3 viewdir, vec3 lightdir, float shiny){
     #endif
 }
 
-vec2 computeLighting(in vec3 wvPos, in vec3 wvNorm, in vec3 vDir, in vec3 lightDir){
-   float diffuseFactor = lightComputeDiffuse(wvNorm, lightDir.xyz);
+vec2 computeLighting(in vec3 wvPos, in vec3 wvNorm, in vec3 wvViewDir, in vec3 wvLightDir){
+   float diffuseFactor = lightComputeDiffuse(wvNorm, wvLightDir);
    float specularFactor = 1.0;
-   //if (diffuseFactor > 0.0){   
-         specularFactor = lightComputeSpecular(wvNorm, vDir, lightDir.xyz, m_Shininess);
-   //}
+   specularFactor = step(0.01, diffuseFactor)
+                  * lightComputeSpecular(wvNorm, wvViewDir, wvLightDir, m_Shininess);
    return vec2(diffuseFactor, specularFactor);
 }
 #endif
@@ -96,6 +95,9 @@ void main(){
       normal.y = -normal.y;
     #elif !defined(VERTEX_LIGHTING)
       vec3 normal = vNormal;
+      #ifndef LOW_QUALITY
+         normal = normalize(normal);
+      #endif
     #endif
 
     #ifdef DIFFUSEMAP
@@ -111,11 +113,15 @@ void main(){
     #endif
 
     #ifdef VERTEX_LIGHTING
-       gl_FragColor = (AmbientSum + DiffuseSum + SpecularSum) * diffuseColor ;
-                     //+ SpecularSum * specularColor;
+       gl_FragColor = (AmbientSum + DiffuseSum + SpecularSum) * diffuseColor
+                     + SpecularSum * specularColor;
     #else
-       vec2 light = computeLighting(vPosition, normal, vViewDir.xyz, vLightDir.xyz);
-       gl_FragColor = (AmbientSum + DiffuseSum * light.x) * diffuseColor
-                     + SpecularSum * light.y * specularColor;
+       vec4 lightDir = vLightDir;
+       lightDir.xyz = normalize(lightDir.xyz);
+
+       vec2 light = computeLighting(vPosition, normal, vViewDir.xyz, lightDir.xyz);
+       gl_FragColor = (AmbientSum + DiffuseSum * light.x) * diffuseColor;
+                   //  + SpecularSum * light.y * specularColor;
     #endif
+
 }

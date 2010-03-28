@@ -23,13 +23,14 @@ public class TestOgreConvert extends SimpleApplication {
     public void simpleInitApp() {
         OgreMaterialList materials = (OgreMaterialList) manager.loadContent(new AssetKey("OTO.material"));
         Spatial ogreModel = (Spatial) manager.loadContent(new OgreMeshKey("OTO.meshxml", materials));
-        ogreModel.setLocalScale(0.1f);
+//        ogreModel.setLocalScale(0.1f);
 
         ogreModel = ogreModel.clone();
 
         DirectionalLight dl = new DirectionalLight();
         dl.setColor(ColorRGBA.White);
-        dl.setDirection(new Vector3f(-1,-1,-1).normalizeLocal());
+        dl.setDirection(new Vector3f(0,-1,0).normalizeLocal());
+        System.out.println(dl.getDirection());
         rootNode.addLight(dl);
 
 //        try {

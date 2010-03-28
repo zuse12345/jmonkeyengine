@@ -51,7 +51,7 @@ import java.io.Serializable;
  * @author Joshua Slack
  */
 
-public class Rectangle implements Serializable, Savable, Cloneable {
+public final class Rectangle implements Serializable, Savable, Cloneable {
     private static final long serialVersionUID = 1L;
 
     private Vector3f a, b, c;

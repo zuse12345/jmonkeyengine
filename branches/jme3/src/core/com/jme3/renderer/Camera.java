@@ -46,7 +46,6 @@ import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.util.TempVars;
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -231,9 +230,9 @@ public class Camera implements Savable, Cloneable {
     private boolean parallelProjection;
 
     protected Matrix4f projectionMatrixOverride;
-    protected final Matrix4f viewMatrix = new Matrix4f();
-    protected final Matrix4f projectionMatrix = new Matrix4f();
-    protected final Matrix4f viewProjectionMatrix = new Matrix4f();
+    protected Matrix4f viewMatrix = new Matrix4f();
+    protected Matrix4f projectionMatrix = new Matrix4f();
+    protected Matrix4f viewProjectionMatrix = new Matrix4f();
 
     /**
      * Constructor instantiates a new <code>Camera</code> object. All
@@ -293,6 +292,13 @@ public class Camera implements Savable, Cloneable {
 
             cam.location = location.clone();
             cam.rotation = rotation.clone();
+
+            if (projectionMatrixOverride != null)
+                cam.projectionMatrixOverride = projectionMatrixOverride.clone();
+
+            cam.viewMatrix = viewMatrix.clone();
+            cam.projectionMatrix = projectionMatrix.clone();
+            cam.viewProjectionMatrix = cam.viewProjectionMatrix.clone();
 
             return cam;
         } catch (CloneNotSupportedException ex) {

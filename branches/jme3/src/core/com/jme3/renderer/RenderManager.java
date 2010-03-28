@@ -426,7 +426,7 @@ public class RenderManager {
                 proc.preFrame(tpf);
             }
         }
-
+        
         renderer.setFrameBuffer(vp.getOutputFrameBuffer());
         if (vp.isClearEnabled()){
 //            renderer.setBackgroundColor(vp.getBackgroundColor());

@@ -32,6 +32,7 @@ public class ParticleEmitter extends Geometry implements Control {
     private int next = 0;
     private ArrayList<Integer> unusedIndices = new ArrayList<Integer>();
 
+    private boolean followVelocity = false;
     private float particlesPerSec = 20;
     private float emitCarry = 0f;
     private float lowLife  = 3f;
@@ -190,54 +191,6 @@ public class ParticleEmitter extends Geometry implements Control {
         this.variation = variation;
     }
 
-    public void write(JmeExporter ex) throws IOException{
-        super.write(ex);
-        OutputCapsule oc = ex.getCapsule(this);
-        oc.write(shape, "shape", DEFAULT_SHAPE);
-        oc.write(meshType, "meshType", ParticleMesh.Type.Triangle);
-        oc.write(enabled, "enabled", true);
-        oc.write(particles.length, "numParticles", 0);
-        oc.write(particlesPerSec, "particlesPerSec", 0);
-        oc.write(lowLife, "lowLife", 0);
-        oc.write(highLife, "highLife", 0);
-        oc.write(gravity, "gravity", 0);
-        oc.write(variation, "variation", 0);
-        oc.write(imagesX, "imagesX", 1);
-        oc.write(imagesY, "imagesY", 1);
-
-        oc.write(startVel, "startVel", null);
-        oc.write(startColor, "startColor", null);
-        oc.write(endColor, "endColor", null);
-        oc.write(startSize, "startSize", 0);
-        oc.write(endSize, "endSize", 0);
-        oc.write(worldSpace, "worldSpace", false);
-    }
-
-    public void read(JmeImporter im) throws IOException{
-        super.read(im);
-        InputCapsule ic = im.getCapsule(this);
-        shape = (EmitterShape) ic.readSavable("shape", DEFAULT_SHAPE);
-        meshType = ic.readEnum("meshType", ParticleMesh.Type.class, ParticleMesh.Type.Triangle);
-        int numParticles = ic.readInt("numParticles", 0);
-        setNumParticles(numParticles);
-
-        enabled = ic.readBoolean("enabled", true);
-        particlesPerSec = ic.readFloat("particlesPerSec", 0);
-        lowLife = ic.readFloat("lowLife", 0);
-        highLife = ic.readFloat("highLife", 0);
-        gravity = ic.readFloat("gravity", 0);
-        variation = ic.readFloat("variation", 0);
-        imagesX = ic.readInt("imagesX", 1);
-        imagesY = ic.readInt("imagesY", 1);
-
-        startVel = (Vector3f) ic.readSavable("startVel", null);
-        startColor = (ColorRGBA) ic.readSavable("startColor", null);
-        endColor = (ColorRGBA) ic.readSavable("endColor", null);
-        startSize = ic.readFloat("startSiz", 0);
-        endSize = ic.readFloat("endSize", 0);
-        worldSpace = ic.readBoolean("worldSpace", false);
-    }
-
     private int newIndex(){
         if (unusedIndices.size() > 0)
             return unusedIndices.remove(0);
@@ -252,10 +205,10 @@ public class ParticleEmitter extends Geometry implements Control {
             unusedIndices.add(index);
     }
 
-    private void emitParticle(){
+    private boolean emitParticle(){
         int idx = newIndex();
         if (idx >= particles.length)
-            return;
+            return false;
 
         Particle p = particles[idx];
 //        p.imageIndex = (FastMath.nextRandomInt(0, imagesY-1) * imagesX) + FastMath.nextRandomInt(0, imagesX-1);
@@ -273,6 +226,13 @@ public class ParticleEmitter extends Geometry implements Control {
         temp.subtractLocal(1f,1f,1f);
         p.velocity.interpolate(temp, variation);
         assert TempVars.get().unlock();
+
+        return true;
+    }
+
+    @SuppressWarnings("empty-statement")
+    public void emitAllParticles(){
+        while (emitParticle());
     }
 
     private void freeParticle(int idx){
@@ -369,6 +329,58 @@ public class ParticleEmitter extends Geometry implements Control {
         Camera cam = vp.getCamera();
         particleMesh.updateParticleData(particles, cam);
         updateModelBound();
+    }
+
+    @Override
+    public void write(JmeExporter ex) throws IOException{
+        super.write(ex);
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(shape, "shape", DEFAULT_SHAPE);
+        oc.write(meshType, "meshType", ParticleMesh.Type.Triangle);
+        oc.write(enabled, "enabled", true);
+        oc.write(particles.length, "numParticles", 0);
+        oc.write(particlesPerSec, "particlesPerSec", 0);
+        oc.write(lowLife, "lowLife", 0);
+        oc.write(highLife, "highLife", 0);
+        oc.write(gravity, "gravity", 0);
+        oc.write(variation, "variation", 0);
+        oc.write(imagesX, "imagesX", 1);
+        oc.write(imagesY, "imagesY", 1);
+
+        oc.write(startVel, "startVel", null);
+        oc.write(startColor, "startColor", null);
+        oc.write(endColor, "endColor", null);
+        oc.write(startSize, "startSize", 0);
+        oc.write(endSize, "endSize", 0);
+        oc.write(worldSpace, "worldSpace", false);
+        oc.write(followVelocity, "followVelocity", false);
+    }
+
+    @Override
+    public void read(JmeImporter im) throws IOException{
+        super.read(im);
+        InputCapsule ic = im.getCapsule(this);
+        shape = (EmitterShape) ic.readSavable("shape", DEFAULT_SHAPE);
+        meshType = ic.readEnum("meshType", ParticleMesh.Type.class, ParticleMesh.Type.Triangle);
+        int numParticles = ic.readInt("numParticles", 0);
+        setNumParticles(numParticles);
+
+        enabled = ic.readBoolean("enabled", true);
+        particlesPerSec = ic.readFloat("particlesPerSec", 0);
+        lowLife = ic.readFloat("lowLife", 0);
+        highLife = ic.readFloat("highLife", 0);
+        gravity = ic.readFloat("gravity", 0);
+        variation = ic.readFloat("variation", 0);
+        imagesX = ic.readInt("imagesX", 1);
+        imagesY = ic.readInt("imagesY", 1);
+
+        startVel = (Vector3f) ic.readSavable("startVel", null);
+        startColor = (ColorRGBA) ic.readSavable("startColor", null);
+        endColor = (ColorRGBA) ic.readSavable("endColor", null);
+        startSize = ic.readFloat("startSiz", 0);
+        endSize = ic.readFloat("endSize", 0);
+        worldSpace = ic.readBoolean("worldSpace", false);
+        followVelocity = ic.readBoolean("followVelocity", false);
     }
 
 }

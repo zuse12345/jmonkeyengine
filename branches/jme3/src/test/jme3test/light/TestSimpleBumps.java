@@ -27,7 +27,6 @@ public class TestSimpleBumps extends SimpleApplication {
     @Override
     public void simpleInitApp() {
         Quad quadMesh = new Quad(1, 1);
-        quadMesh.updateGeometry(1, 1);
 
         Geometry sphere = new Geometry("Rock Ball", quadMesh);
         Material mat = manager.loadMaterial("simple_bump.j3m");
@@ -43,10 +42,10 @@ public class TestSimpleBumps extends SimpleApplication {
         pl.setPosition(new Vector3f(0f, 0f, 4f));
         rootNode.addLight(pl);
 
-        DirectionalLight dl = new DirectionalLight();
-        dl.setDirection(new Vector3f(1, -1, -1).normalizeLocal());
-        dl.setColor(new ColorRGBA(0.22f, 0.15f, 0.1f, 1.0f));
-        rootNode.addLight(dl);
+//        DirectionalLight dl = new DirectionalLight();
+//        dl.setDirection(new Vector3f(1, -1, -1).normalizeLocal());
+//        dl.setColor(new ColorRGBA(0.22f, 0.15f, 0.1f, 1.0f));
+//        rootNode.addLight(dl);
     }
 
     @Override

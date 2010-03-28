@@ -85,7 +85,10 @@ void main(){
    vec3 wvPosition = (g_WorldViewMatrix * pos).xyz;
    vec3 wvNormal  = normalize(g_NormalMatrix * inNormal);
    vec3 viewDir = normalize(-wvPosition);
-   
+
+   vec4 wvLightPos = (g_ViewMatrix * vec4(g_LightPosition.xyz, g_LightColor.w));
+   wvLightPos.w = g_LightPosition.w;
+
    #if defined(NORMALMAP) && !defined(VERTEX_LIGHTING)
      vec3 wvTangent = normalize(g_NormalMatrix * inTangent);
      vec3 wvBinormal = cross(wvNormal, wvTangent);
@@ -93,17 +96,15 @@ void main(){
 
      vPosition = wvPosition * tbnMat;
      vViewDir  = viewDir * tbnMat;
-     
-     vec4 wvLightPos = (g_ViewMatrix * vec4(g_LightPosition.xyz, g_LightColor.w));
-     wvLightPos.w = g_LightPosition.w;
      lightComputeDir(wvPosition, g_LightColor, wvLightPos, vLightDir);
      vLightDir.xyz = (vLightDir.xyz * tbnMat).xyz;
    #elif !defined(VERTEX_LIGHTING)
-     // still need WV normal
-     vNormal = normalize(g_NormalMatrix * inNormal);
+     vNormal = wvNormal;
+
      vPosition = wvPosition;
      vViewDir = viewDir;
-     lightComputeDir(vec3(1.0), g_LightColor, g_LightPosition, vLightDir);
+
+     lightComputeDir(wvPosition, g_LightColor, wvLightPos, vLightDir);
    #endif
 
    #ifdef MATERIAL_COLORS

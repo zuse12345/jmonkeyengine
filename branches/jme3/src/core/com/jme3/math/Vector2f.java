@@ -49,7 +49,7 @@ import java.util.logging.Logger;
  * @author Mark Powell
  * @author Joshua Slack
  */
-public class Vector2f implements Savable, Cloneable {
+public final class Vector2f implements Savable, Cloneable {
     private static final Logger logger = Logger.getLogger(Vector2f.class.getName());
 
     private static final long serialVersionUID = 1L;

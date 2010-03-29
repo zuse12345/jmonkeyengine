@@ -30,14 +30,43 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jme3.gde.core.scene;
-
-import com.jme3.gde.core.scene.nodes.JmeSpatial;
+package com.jme3.gde.core.palette.scene;
+import com.jme3.gde.core.assets.ProjectAssetManager;
+import com.jme3.gde.core.palette.JmePaletteUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.openide.text.ActiveEditorDrop;
 
 /**
- * To be replaced with Lookup functionality
+ *
  * @author normenhansen
  */
-public interface SceneListener {
-    public void rootNodeChanged(JmeSpatial spatial);
+public class JmePaletteModel implements ActiveEditorDrop {
+
+    public JmePaletteModel() {
+    }
+
+    private String createBody() {
+        //TODO: project list
+        ProjectAssetManager manager;
+        Project project = OpenProjects.getDefault().getMainProject();//Lookup.getDefault().lookup(Project.class);
+        if(project!=null)
+            manager = project.getLookup().lookup(ProjectAssetManager.class);
+
+        String body = "Spatial model=manager.loadModel(\"modelname.j3o\");";
+        return body;
+    }
+
+    public boolean handleTransfer(JTextComponent targetComponent) {
+        String body = createBody();
+        try {
+            JmePaletteUtilities.insert(body, targetComponent);
+        } catch (BadLocationException ble) {
+            return false;
+        }
+        return true;
+    }
+
 }

@@ -3,17 +3,23 @@
 <filesystem>
    <folder name="Editors">
       <folder name="text">
-          <folder name="x-java">
-              <file name="PaletteFactory.instance">
+            <folder name="x-java">
+              <folder name="CodeGenerators">
+                    <file name="com-jme3-gde-core-assets-generators-ModelCodeGenerator$Factory.instance"/>
+                </folder>
+                <file name="PaletteFactory.instance">
                  <attr name="instanceOf" stringvalue="org.netbeans.spi.palette.PaletteController"/>
                  <attr name="instanceCreate" methodvalue="com.jme3.gde.core.palette.JavaSourceFileLayerPaletteFactory.createPalette"/>
               </file>
           </folder>
-      </folder>
+        </folder>
    </folder>
     <folder name="JavaPalette">
         <folder name="JME">
             <file name="Node.xml" url="nbresloc:/com/jme3/gde/core/palette/scene/Node.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="Model.xml" url="nbresloc:/com/jme3/gde/core/palette/scene/Model.xml">
                 <attr name="position" intvalue="150"/>
             </file>
         </folder>

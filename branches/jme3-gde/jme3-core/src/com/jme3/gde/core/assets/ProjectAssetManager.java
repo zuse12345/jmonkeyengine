@@ -33,8 +33,11 @@ package com.jme3.gde.core.assets;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.system.JmeSystem;
+import java.util.LinkedList;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -70,6 +73,19 @@ public class ProjectAssetManager {
 
     public Project getProject() {
         return project;
+    }
+
+    public List<String> modelNames(){
+        LinkedList<String> list=new LinkedList<String>();
+        FileObject fileObj=project.getProjectDirectory().getFileObject("/assets/models/");
+        if(fileObj==null)
+            return list;
+        FileObject[] children=fileObj.getChildren();
+        for (int i = 0; i < children.length; i++) {
+            FileObject fileObject = children[i];
+            list.add(fileObject.getNameExt());
+        }
+        return list;
     }
 
     public static void setManager(AssetManager _manager) {

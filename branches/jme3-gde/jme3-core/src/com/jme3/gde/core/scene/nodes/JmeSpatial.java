@@ -33,11 +33,11 @@
 package com.jme3.gde.core.scene.nodes;
 
 import com.jme3.bounding.BoundingVolume;
+import com.jme3.gde.core.scene.nodes.properties.JmeProperty;
 import com.jme3.light.LightList;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
@@ -78,14 +78,15 @@ public class JmeSpatial extends AbstractNode{
         set.put(makeProperty(obj, Vector3f.class,"getWorldScale","world scale"));
 
         set.put(makeProperty(obj, Vector3f.class,"getLocalTranslation","local translation"));
+        set.put(makeProperty(obj, Vector3f.class,"getLocalTranslation","local translation"));
         set.put(makeProperty(obj, Quaternion.class,"getLocalRotation","local rotation"));
         set.put(makeProperty(obj, Vector3f.class,"getLocalScale","local scale"));
 
         set.put(makeProperty(obj, BoundingVolume.class,"getWorldBound","world bound"));
 
-        set.put(makeProperty(obj, CullHint.class,"getCullHint","cull hint"));
+        set.put(makeProperty(obj, CullHint.class,"getCullHint","setCullHint","cull hint"));
         set.put(makeProperty(obj, CullHint.class,"getLocalCullHint","local cull hint"));
-        set.put(makeProperty(obj, ShadowMode.class,"getShadowMode","shadow mode"));
+        set.put(makeProperty(obj, ShadowMode.class,"getShadowMode","setShadowMode","shadow mode"));
         set.put(makeProperty(obj, ShadowMode.class,"getLocalShadowMode","local shadow mode"));
         set.put(makeProperty(obj, LightList.class,"getWorldLightList","world light list"));
 
@@ -97,7 +98,18 @@ public class JmeSpatial extends AbstractNode{
     private Property makeProperty(Spatial obj, Class returntype, String method, String name){
         Property prop=null;
         try {
-            prop = new PropertySupport.Reflection(obj, returntype, method, null);
+            prop = new JmeProperty(obj, returntype, method, null);
+            prop.setName(name);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return prop;
+    }
+
+    private Property makeProperty(Spatial obj, Class returntype, String method, String setter, String name){
+        Property prop=null;
+        try {
+            prop = new JmeProperty(obj, returntype, method, setter);
             prop.setName(name);
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);

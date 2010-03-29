@@ -172,7 +172,7 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
     }
 
     public void rootNodeChanged(Spatial spatial) {
-        JmeSpatialChildFactory factory=new JmeSpatialChildFactory(spatial,SceneApplication.getApplication());
+        JmeSpatialChildFactory factory=new JmeSpatialChildFactory(spatial);
         explorerManager.setRootContext(new JmeSpatial(spatial,Children.create(factory, false)));
         explorerManager.getRootContext().setDisplayName(spatial.getName());
     }

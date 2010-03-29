@@ -30,39 +30,31 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jme3.gde.core.scene.nodes;
+package com.jme3.gde.core.scene.nodes.properties;
 
 import com.jme3.gde.core.scene.SceneApplication;
-import com.jme3.scene.Spatial;
-import java.util.List;
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import org.openide.nodes.ChildFactory;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author normenhansen
  */
-public class JmeSpatialChildFactory extends ChildFactory<Spatial>{
-    private com.jme3.scene.Spatial spatial;
+public class JmeProperty<T> extends PropertySupport.Reflection<T>{
 
-    public JmeSpatialChildFactory(com.jme3.scene.Spatial spatial) {
-        this.spatial = spatial;
+    public JmeProperty(Object instance, Class valueType, String getter, String setter) throws NoSuchMethodException{
+        super(instance, valueType, getter, setter);
     }
 
     @Override
-    protected boolean createKeys(final List<Spatial> toPopulate) {
+    public T getValue() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         try {
-            return SceneApplication.getApplication().enqueue(new Callable<Boolean>() {
-                public Boolean call() throws Exception {
-                    if (spatial != null && spatial instanceof com.jme3.scene.Node) {
-                        toPopulate.addAll(((com.jme3.scene.Node) spatial).getChildren());
-                        return true;
-                    }
-                    return true;
+            return SceneApplication.getApplication().enqueue(new Callable<T>() {
+                public T call() throws Exception {
+                    return getSuperValue();
                 }
             }).get();
         } catch (InterruptedException ex) {
@@ -70,21 +62,49 @@ public class JmeSpatialChildFactory extends ChildFactory<Spatial>{
         } catch (ExecutionException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return true;
+        return null;
+    }
+
+    private T getSuperValue(){
+        try {
+            return super.getValue();
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 
     @Override
-    protected Node createNodeForKey(Spatial key) {
-        JmeSpatialChildFactory factory=new JmeSpatialChildFactory(key);
-        return new JmeSpatial(key, Children.create(factory, false));
+    public void setValue(final T val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        try {
+            SceneApplication.getApplication().enqueue(new Callable<T>() {
+                public T call() throws Exception {
+                    setSuperValue(val);
+                    return getSuperValue();
+                }
+            }).get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
-    @Override
-    protected Node[] createNodesForKey(Spatial key) {
-        JmeSpatialChildFactory factory=new JmeSpatialChildFactory(key);
-        Node[] nodes = new Node[1];
-        nodes[0]=new JmeSpatial(key, Children.create(factory, false));
-        return nodes;
+    private void setSuperValue(T val){
+        try {
+            super.setValue(val);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
+
 
 }

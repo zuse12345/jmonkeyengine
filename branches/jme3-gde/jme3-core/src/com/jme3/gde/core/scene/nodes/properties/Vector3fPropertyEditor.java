@@ -58,7 +58,6 @@ public class Vector3fPropertyEditor implements PropertyEditor{
 
     public boolean isPaintable() {
         return false;
-//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void paintValue(Graphics gfx, Rectangle box) {
@@ -66,19 +65,30 @@ public class Vector3fPropertyEditor implements PropertyEditor{
     }
 
     public String getJavaInitializationString() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     public String getAsText() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return "["+vector.x+", "+vector.y+", "+vector.z+"]";
     }
 
     public void setAsText(String text) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        text=text.replace('[', ' ');
+        text=text.replace(']', ' ');
+        String[] values=text.split(",");
+        if(values.length!=3){
+            throw(new IllegalArgumentException("String not correct"));
+        }
+        float[] floats=new float[3];
+        for (int i = 0; i < values.length; i++) {
+            String string = values[i];
+            floats[i]=Float.parseFloat(string);
+        }
+        vector.set(floats[0],floats[1],floats[2]);
     }
 
     public String[] getTags() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     public Component getCustomEditor() {
@@ -90,11 +100,11 @@ public class Vector3fPropertyEditor implements PropertyEditor{
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        throw new UnsupportedOperationException("Not supported yet.");
+//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        throw new UnsupportedOperationException("Not supported yet.");
+//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

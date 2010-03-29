@@ -49,6 +49,7 @@ public class Installer extends ModuleInstall {
 
     @Override
     public void restored() {
+        SceneApplication.getApplication();
         // By default, do nothing.
         // Put your startup code here.
     }

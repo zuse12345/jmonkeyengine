@@ -33,6 +33,7 @@
 package com.jme3.gde.core.scene.nodes.properties;
 
 import com.jme3.gde.core.scene.SceneApplication;
+import com.jme3.math.Vector3f;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -47,6 +48,9 @@ public class JmeProperty<T> extends PropertySupport.Reflection<T>{
 
     public JmeProperty(Object instance, Class valueType, String getter, String setter) throws NoSuchMethodException{
         super(instance, valueType, getter, setter);
+        if(valueType == Vector3f.class){
+            setPropertyEditorClass(Vector3fPropertyEditor.class);
+        }
     }
 
     @Override

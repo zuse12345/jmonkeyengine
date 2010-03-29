@@ -33,8 +33,8 @@ package com.jme3.gde.core.sceneexplorer;
 
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
-import com.jme3.gde.core.sceneviever.nodes.JmeSpatial;
-import com.jme3.gde.core.sceneviever.nodes.JmeSpatialChildFactory;
+import com.jme3.gde.core.scene.nodes.JmeSpatial;
+import com.jme3.gde.core.scene.nodes.JmeSpatialChildFactory;
 import com.jme3.scene.Spatial;
 import java.util.logging.Logger;
 import org.openide.util.NbBundle;

@@ -30,7 +30,7 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jme3.gde.core.sceneviever.nodes;
+package com.jme3.gde.core.scene.nodes;
 
 import com.jme3.bounding.BoundingVolume;
 import com.jme3.light.LightList;

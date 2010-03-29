@@ -127,7 +127,7 @@ public abstract class SimpleApplication extends Application {
             return;
         
         super.update();
-        float tpf = timer.getTimePerFrame();
+        float tpf = timer.getTimePerFrame() * speed;
 
         secondCounter += tpf;
         int fps = (int) timer.getFrameRate();

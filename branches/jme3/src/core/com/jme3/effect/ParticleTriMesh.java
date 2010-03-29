@@ -1,5 +1,7 @@
 package com.jme3.effect;
 
+import com.jme3.math.FastMath;
+import com.jme3.math.Matrix4f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.VertexBuffer;
@@ -16,13 +18,15 @@ public class ParticleTriMesh extends ParticleMesh {
     private int imagesX;
     private int imagesY;
     private boolean uniqueTexCoords = false;
+    private ParticleEmitter emitter;
 
     @Override
-    public void initParticleData(int numParticles, int imagesX, int imagesY) {
+    public void initParticleData(ParticleEmitter emitter, int numParticles, int imagesX, int imagesY) {
         setMode(Mode.Triangles);
         setVertexCount(numParticles * 4);
         setTriangleCount(numParticles * 2);
 
+        this.emitter = emitter;
         this.imagesX = imagesX;
         this.imagesY = imagesY;
 
@@ -91,29 +95,80 @@ public class ParticleTriMesh extends ParticleMesh {
         VertexBuffer tvb = getBuffer(VertexBuffer.Type.TexCoord);
         FloatBuffer texcoords = (FloatBuffer) tvb.getData();
 
-        Vector3f up = cam.getUp();
-        Vector3f left = cam.getLeft();
+        Vector3f camUp   = cam.getUp();
+        Vector3f camLeft = cam.getLeft();
+        Vector3f camDir  = cam.getDirection();
+
+        boolean facingVelocity = emitter.isFacingVelocity();
+
+        Vector3f up = new Vector3f(),
+                 left = new Vector3f();
+
+        if (!facingVelocity){
+            up.set(camUp);
+            left.set(camLeft);
+        }
+
 
         // update data in vertex buffers
         positions.rewind();
         colors.rewind();
         texcoords.rewind();
+        Vector3f faceNormal = emitter.getFaceNormal();
         for (Particle p : particles){
-            positions.put(p.position.x + left.x * p.size + up.x * p.size)
-                     .put(p.position.y + left.y * p.size + up.y * p.size)
-                     .put(p.position.z + left.z * p.size + up.z * p.size);
+            boolean dead = p.life == 0;
+            if (dead){
+                positions.position(positions.position() + 12);
+                colors.putLong(0);
+                colors.putLong(0);
+                if (uniqueTexCoords){
+                    texcoords.position(texcoords.position() + 8);
+                }
+                continue;
+            }
 
-            positions.put(p.position.x - left.x * p.size + up.x * p.size)
-                     .put(p.position.y - left.y * p.size + up.y * p.size)
-                     .put(p.position.z - left.z * p.size + up.z * p.size);
+            if (facingVelocity){
+                left.set(p.velocity).normalizeLocal().multLocal(p.size);
+                camDir.cross(left, up);
+                up.multLocal(p.size);
+            }else if (faceNormal != null){
+                up.set(faceNormal).crossLocal(Vector3f.UNIT_X);
+                faceNormal.cross(up, left);
+                up.multLocal(p.size);
+                left.multLocal(p.size);
+            }else if (p.angle != 0){
+                float cos = FastMath.cos(p.angle) * p.size;
+                float sin = FastMath.sin(p.angle) * p.size;
 
-            positions.put(p.position.x + left.x * p.size - up.x * p.size)
-                     .put(p.position.y + left.y * p.size - up.y * p.size)
-                     .put(p.position.z + left.z * p.size - up.z * p.size);
-            
-            positions.put(p.position.x - left.x * p.size - up.x * p.size)
-                     .put(p.position.y - left.y * p.size - up.y * p.size)
-                     .put(p.position.z - left.z * p.size - up.z * p.size);
+                left.x = camLeft.x * cos + camUp.x * sin;
+                left.y = camLeft.y * cos + camUp.y * sin;
+                left.z = camLeft.z * cos + camUp.z * sin;
+
+                up.x = camLeft.x * -sin + camUp.x * cos;
+                up.y = camLeft.y * -sin + camUp.y * cos;
+                up.z = camLeft.z * -sin + camUp.z * cos;
+            }else{
+                up.set(camUp);
+                left.set(camLeft);
+                up.multLocal(p.size);
+                left.multLocal(p.size);
+            }
+
+            positions.put(p.position.x + left.x + up.x)
+                     .put(p.position.y + left.y + up.y)
+                     .put(p.position.z + left.z + up.z);
+
+            positions.put(p.position.x - left.x + up.x)
+                     .put(p.position.y - left.y + up.y)
+                     .put(p.position.z - left.z + up.z);
+
+            positions.put(p.position.x + left.x - up.x)
+                     .put(p.position.y + left.y - up.y)
+                     .put(p.position.z + left.z - up.z);
+
+            positions.put(p.position.x - left.x - up.x)
+                     .put(p.position.y - left.y - up.y)
+                     .put(p.position.z - left.z - up.z);
 
             if (uniqueTexCoords){
                 int imgX = p.imageIndex % imagesX;
@@ -124,14 +179,15 @@ public class ParticleTriMesh extends ParticleMesh {
                 float endX   = startX + (1f / imagesX);
                 float endY   = startY + (1f / imagesY);
 
+
                 texcoords.put(startX).put(endY);
                 texcoords.put(endX).put(endY);
                 texcoords.put(startX).put(startY);
                 texcoords.put(endX).put(startY);
             }
 
-            int rgba = p.color.asIntRGBA();
             colors.order(ByteOrder.BIG_ENDIAN);
+            int rgba = p.color.asIntRGBA();
             colors.putInt(rgba);
             colors.putInt(rgba);
             colors.putInt(rgba);

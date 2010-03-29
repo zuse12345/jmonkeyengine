@@ -12,6 +12,7 @@ public class Particle {
     float life;
     float startlife;
     float angle;
+    float rotateSpeed;
     int imageIndex = 0;
 
 }

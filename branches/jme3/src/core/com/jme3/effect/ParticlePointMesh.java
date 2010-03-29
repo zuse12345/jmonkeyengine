@@ -11,11 +11,15 @@ import java.nio.ShortBuffer;
 
 public class ParticlePointMesh extends ParticleMesh {
 
+    private ParticleEmitter emitter;
+
     @Override
-    public void initParticleData(int numParticles, int imagesX, int imagesY) {
+    public void initParticleData(ParticleEmitter emitter, int numParticles, int imagesX, int imagesY) {
         setMode(Mode.Points);
         setVertexCount(numParticles);
         setTriangleCount(numParticles);
+
+        this.emitter = emitter;
 
         // set positions
         FloatBuffer pb = BufferUtils.createVector3Buffer(numParticles);

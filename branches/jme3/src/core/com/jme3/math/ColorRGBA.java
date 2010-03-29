@@ -115,6 +115,11 @@ public final class ColorRGBA implements Savable, Cloneable {
     public static final ColorRGBA Pink = new ColorRGBA(1f, 0.68f, 0.68f, 1f);
 
     /**
+     * the black color with no alpha (0, 0, 0, 0);
+     */
+    public static final ColorRGBA BlackNoAlpha = new ColorRGBA(0f, 0f, 0f, 0f);
+
+    /**
      * The red component of the color.
      */
     public float r;

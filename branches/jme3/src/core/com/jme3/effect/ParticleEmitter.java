@@ -32,14 +32,18 @@ public class ParticleEmitter extends Geometry implements Control {
     private int next = 0;
     private ArrayList<Integer> unusedIndices = new ArrayList<Integer>();
 
-    private boolean followVelocity = false;
+    private boolean randomAngle = false;
+    private boolean selectRandomImage = false;
+    private boolean facingVelocity = false;
     private float particlesPerSec = 20;
     private float emitCarry = 0f;
     private float lowLife  = 3f;
     private float highLife = 7f;
     private float gravity = 0.1f;
     private float variation = 0.2f;
+    private float rotateSpeed = 0;
     private Vector3f startVel = new Vector3f();
+    private Vector3f faceNormal = new Vector3f(Vector3f.NAN);
 
     private int imagesX = 1;
     private int imagesY = 1;
@@ -93,6 +97,52 @@ public class ParticleEmitter extends Geometry implements Control {
         for (int i = 0; i < numParticles; i++){
             particles[i] = new Particle();
         }
+    }
+
+    public Vector3f getFaceNormal() {
+        if (Vector3f.isValidVector(faceNormal))
+            return faceNormal;
+        else
+            return null;
+    }
+
+    public void setFaceNormal(Vector3f faceNormal) {
+        if (faceNormal == null || !Vector3f.isValidVector(faceNormal))
+            faceNormal.set(Vector3f.NAN);
+        else
+            this.faceNormal = faceNormal;
+    }
+
+    public float getRotateSpeed() {
+        return rotateSpeed;
+    }
+
+    public void setRotateSpeed(float rotateSpeed) {
+        this.rotateSpeed = rotateSpeed;
+    }
+
+    public boolean isRandomAngle() {
+        return randomAngle;
+    }
+
+    public void setRandomAngle(boolean randomAngle) {
+        this.randomAngle = randomAngle;
+    }
+
+    public boolean isSelectRandomImage() {
+        return selectRandomImage;
+    }
+
+    public void setSelectRandomImage(boolean selectRandomImage) {
+        this.selectRandomImage = selectRandomImage;
+    }
+
+    public boolean isFacingVelocity() {
+        return facingVelocity;
+    }
+
+    public void setFacingVelocity(boolean followVelocity) {
+        this.facingVelocity = followVelocity;
     }
 
     public ColorRGBA getEndColor() {
@@ -211,19 +261,26 @@ public class ParticleEmitter extends Geometry implements Control {
             return false;
 
         Particle p = particles[idx];
-//        p.imageIndex = (FastMath.nextRandomInt(0, imagesY-1) * imagesX) + FastMath.nextRandomInt(0, imagesX-1);
+        if (selectRandomImage)
+            p.imageIndex = (FastMath.nextRandomInt(0, imagesY-1) * imagesX) + FastMath.nextRandomInt(0, imagesX-1);
+
         p.startlife = lowLife + FastMath.nextRandomFloat() * (highLife - lowLife);
         p.life = p.startlife;
         p.color.set(startColor);
         p.size = startSize;
         shape.getRandomPoint(p.position);
         p.velocity.set(startVel);
+        if (randomAngle)
+            p.angle = FastMath.nextRandomFloat() * FastMath.TWO_PI;
+        if (rotateSpeed != 0)
+            p.rotateSpeed = rotateSpeed * (0.2f + (FastMath.nextRandomFloat() * 2f - 1f) * .8f);
 
         assert TempVars.get().lock();
         Vector3f temp = TempVars.get().vect1;
         temp.set(FastMath.nextRandomFloat(),FastMath.nextRandomFloat(),FastMath.nextRandomFloat());
         temp.multLocal(2f);
         temp.subtractLocal(1f,1f,1f);
+        temp.multLocal(startVel.length());
         p.velocity.interpolate(temp, variation);
         assert TempVars.get().unlock();
 
@@ -235,12 +292,21 @@ public class ParticleEmitter extends Geometry implements Control {
         while (emitParticle());
     }
 
+    public void killAllParticles(){
+        for (int i = 0; i < particles.length; i++){
+            if (particles[i].life > 0)
+                freeParticle(i);
+        }
+    }
+
     private void freeParticle(int idx){
         Particle p = particles[idx];
         p.life = 0;
         p.size = 0f;
         p.color.set(0,0,0,0);
         p.imageIndex = 0;
+        p.angle = 0;
+        p.rotateSpeed = 0;
         freeIndex(idx);
     }
 
@@ -250,8 +316,10 @@ public class ParticleEmitter extends Geometry implements Control {
 
         for (int i = 0; i < particles.length; i++){
             Particle p = particles[i];
-            if (p.life == 0) // particle is dead
+            if (p.life == 0){ // particle is dead
+                p.color.set(0,0,0,0);
                 continue;
+            }
 
             p.life -= tpf;
             if (p.life <= 0)
@@ -266,8 +334,10 @@ public class ParticleEmitter extends Geometry implements Control {
             float b = (p.startlife - p.life) / p.startlife;
             p.color.interpolate(startColor, endColor, b);
             p.size = FastMath.interpolateLinear(b, startSize, endSize);
+            p.angle += p.rotateSpeed * tpf;
 
-            p.imageIndex = (int) (b * imagesX * imagesY);
+            if (!selectRandomImage) // use animated effect
+                p.imageIndex = (int) (b * imagesX * imagesY);
         }
 
         assert TempVars.get().unlock();
@@ -319,7 +389,7 @@ public class ParticleEmitter extends Geometry implements Control {
                     throw new IllegalStateException("Unrecognized particle type: "+meshType);
             }
             // create it
-            particleMesh.initParticleData(particles.length, imagesX, imagesY);
+            particleMesh.initParticleData(this, particles.length, imagesX, imagesY);
         }
 
         updateParticleState(tpf);
@@ -353,7 +423,10 @@ public class ParticleEmitter extends Geometry implements Control {
         oc.write(startSize, "startSize", 0);
         oc.write(endSize, "endSize", 0);
         oc.write(worldSpace, "worldSpace", false);
-        oc.write(followVelocity, "followVelocity", false);
+        oc.write(facingVelocity, "facingVelocity", false);
+        oc.write(selectRandomImage, "selectRandomImage", false);
+        oc.write(randomAngle, "randomAngle", false);
+        oc.write(rotateSpeed, "rotateSpeed", 0);
     }
 
     @Override
@@ -380,7 +453,10 @@ public class ParticleEmitter extends Geometry implements Control {
         startSize = ic.readFloat("startSiz", 0);
         endSize = ic.readFloat("endSize", 0);
         worldSpace = ic.readBoolean("worldSpace", false);
-        followVelocity = ic.readBoolean("followVelocity", false);
+        facingVelocity = ic.readBoolean("facingVelocity", false);
+        selectRandomImage = ic.readBoolean("selectRandomImage", false);
+        randomAngle = ic.readBoolean("randomAngle", false);
+        rotateSpeed = ic.readFloat("rotateSpeed", 0);
     }
 
 }

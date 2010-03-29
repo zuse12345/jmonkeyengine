@@ -63,7 +63,7 @@ public final class Vector3f implements Savable, Cloneable {
     private static final long serialVersionUID = 1L;
 
 	public final static Vector3f ZERO = new Vector3f(0, 0, 0);
-
+        public final static Vector3f NAN  = new Vector3f(Float.NaN, Float.NaN, Float.NaN);
 	public final static Vector3f UNIT_X = new Vector3f(1, 0, 0);
 	public final static Vector3f UNIT_Y = new Vector3f(0, 1, 0);
     public final static Vector3f UNIT_Z = new Vector3f(0, 0, 1);

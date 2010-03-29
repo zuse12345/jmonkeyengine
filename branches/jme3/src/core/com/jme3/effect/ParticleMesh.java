@@ -11,7 +11,7 @@ public abstract class ParticleMesh extends Mesh {
         Triangle
     }
 
-    public abstract void initParticleData(int numParticles, int imagesX, int imagesY);
+    public abstract void initParticleData(ParticleEmitter emitter, int numParticles, int imagesX, int imagesY);
     public abstract void updateParticleData(Particle[] particles, Camera cam);
 
 }

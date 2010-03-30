@@ -1,6 +1,7 @@
 #summary Wiki Sidebar
 *Menu*
  * [Introduction]
+ * [IssueFrontpage Filtered issues]
  * jMonkeyEngine3
   * RoadMap
   * DependsJme3

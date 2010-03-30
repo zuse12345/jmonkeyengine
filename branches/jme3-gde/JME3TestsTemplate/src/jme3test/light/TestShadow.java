@@ -64,6 +64,7 @@ public class TestShadow extends SimpleApplication {
 //        rootNode.attachChild(lightMdl);
 
         bsr = new BasicShadowRenderer(manager, 512);
+        bsr.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
         viewPort.addProcessor(bsr);
 
         frustum = new WireFrustum(bsr.getPoints());

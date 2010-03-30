@@ -15,8 +15,8 @@ import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AudioKey;
 import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioRenderer;
-import com.jme3.audio.AudioSource;
-import com.jme3.audio.AudioSource.Status;
+import com.jme3.audio.AudioNode;
+import com.jme3.audio.AudioNode.Status;
 import com.jme3.audio.Listener;
 import com.jme3.audio.QueuedAudioRenderer;
 import com.jme3.audio.plugins.OGGLoader;
@@ -33,7 +33,7 @@ public class TestMusicPlayer extends javax.swing.JFrame {
 
     private AudioRenderer ar;
     private AudioData musicData;
-    private AudioSource musicSource;
+    private AudioNode musicSource;
     private float musicLength = 0;
     private float curTime = 0;
     private Listener listener = new Listener();
@@ -176,7 +176,7 @@ public class TestMusicPlayer extends javax.swing.JFrame {
             }catch (IOException ex){
             }
 
-            musicSource = new AudioSource(musicData, key);
+            musicSource = new AudioNode(musicData, key);
             musicLength = musicData.getDuration();
             updateTime();
         }

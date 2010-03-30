@@ -99,6 +99,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     public SceneApplication() {
         manager = ProjectAssetManager.getManager();
         AppSettings settings = new AppSettings(true);
+        settings.setFrameRate(30);
 //        settings.setVSync(true);
 //        settings.setRenderer("JOGL");
         setSettings(settings);

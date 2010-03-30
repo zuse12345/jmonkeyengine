@@ -29,7 +29,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.gde.core.sceneviever;
+package com.jme3.gde.core.sceneviewer;
 
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.system.JmeCanvasContext;
@@ -45,13 +45,13 @@ import org.netbeans.api.settings.ConvertAsProperties;
 /**
  * Top component which displays something.
  */
-@ConvertAsProperties(dtd = "-//com.jme3.gde.core.sceneviever//SceneViewer//EN",
+@ConvertAsProperties(dtd = "-//com.jme3.gde.core.sceneviewer//SceneViewer//EN",
 autostore = false)
 public final class SceneViewerTopComponent extends TopComponent implements SystemListener{
 
     private static SceneViewerTopComponent instance;
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "com/jme3/gde/core/sceneviever/jme-logo.png";
+    static final String ICON_PATH = "com/jme3/gde/core/sceneviewer/jme-logo.png";
     private static final String PREFERRED_ID = "SceneViewerTopComponent";
 
     private JmeCanvasContext ctx;
@@ -92,9 +92,8 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 
         add(jToolBar1, java.awt.BorderLayout.NORTH);
 
-        oGLPanel.setMinimumSize(new java.awt.Dimension(10, 10));
         oGLPanel.setPreferredSize(new java.awt.Dimension(100, 100));
-        oGLPanel.setLayout(new java.awt.GridLayout());
+        oGLPanel.setLayout(new java.awt.GridLayout(1, 0));
         add(oGLPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 

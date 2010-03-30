@@ -54,10 +54,10 @@
                 <attr name="iconBase" stringvalue="com/jme3/gde/core/sceneexplorer/jme-logo.png"/>
                 <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
             </file>
-            <file name="com-jme3-gde-core-sceneviever-SceneViewerAction.instance">
-                <attr name="component" methodvalue="com.jme3.gde.core.sceneviever.SceneViewerTopComponent.findInstance"/>
-                <attr name="displayName" bundlevalue="com.jme3.gde.core.sceneviever.Bundle#CTL_SceneViewerAction"/>
-                <attr name="iconBase" stringvalue="com/jme3/gde/core/sceneviever/jme-logo.png"/>
+            <file name="com-jme3-gde-core-sceneviewer-SceneViewerAction.instance">
+                <attr name="component" methodvalue="com.jme3.gde.core.sceneviewer.SceneViewerTopComponent.findInstance"/>
+                <attr name="displayName" bundlevalue="com.jme3.gde.core.sceneviewer.Bundle#CTL_SceneViewerAction"/>
+                <attr name="iconBase" stringvalue="com/jme3/gde/core/sceneviewer/jme-logo.png"/>
                 <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
             </file>
         </folder>
@@ -74,7 +74,7 @@
                 <attr name="originalFile" stringvalue="Actions/Window/com-jme3-gde-core-sceneexplorer-SceneExplorerAction.instance"/>
             </file>
             <file name="SceneViewerAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/com-jme3-gde-core-sceneviever-SceneViewerAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/com-jme3-gde-core-sceneviewer-SceneViewerAction.instance"/>
             </file>
         </folder>
     </folder>

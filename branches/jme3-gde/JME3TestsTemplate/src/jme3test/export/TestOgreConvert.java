@@ -1,18 +1,16 @@
 package jme3test.export;
 
-import com.jme3.animation.Model;
+import com.jme3.animation.AnimChannel;
+import com.jme3.animation.AnimControl;
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.AssetKey;
-import com.jme3.export.binary.BinaryExporter;
-import com.jme3.export.binary.BinaryImporter;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Spatial;
+import com.jme3.scene.control.ControlType;
 import com.jme3.scene.plugins.ogre.OgreMaterialList;
 import com.jme3.scene.plugins.ogre.OgreMeshKey;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 public class TestOgreConvert extends SimpleApplication {
 
@@ -24,12 +22,15 @@ public class TestOgreConvert extends SimpleApplication {
     @Override
     public void simpleInitApp() {
         OgreMaterialList materials = (OgreMaterialList) manager.loadContent(new AssetKey("OTO.material"));
-        Model ogreModel = (Model) manager.loadContent(new OgreMeshKey("OTO.meshxml", materials));
-        ogreModel.setLocalScale(0.1f);
+        Spatial ogreModel = (Spatial) manager.loadContent(new OgreMeshKey("OTO.meshxml", materials));
+//        ogreModel.setLocalScale(0.1f);
+
+        ogreModel = ogreModel.clone();
 
         DirectionalLight dl = new DirectionalLight();
         dl.setColor(ColorRGBA.White);
-        dl.setDirection(new Vector3f(-1,-1,-1).normalizeLocal());
+        dl.setDirection(new Vector3f(0,-1,0).normalizeLocal());
+        System.out.println(dl.getDirection());
         rootNode.addLight(dl);
 
 //        try {
@@ -51,7 +52,10 @@ public class TestOgreConvert extends SimpleApplication {
 //            BinaryImporter imp = new BinaryImporter();
 //            imp.setAssetManager(manager);
 //            Model ogreModelReloaded = (Model) imp.load(fis, null, null);
-            ogreModel.setAnimation("push");
+
+        AnimControl control = (AnimControl) ogreModel.getControl(ControlType.BoneAnimation);
+        AnimChannel chan = control.createChannel();
+        chan.setAnim("push");
 //            fis.close();
 
             rootNode.attachChild(ogreModel);

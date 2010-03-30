@@ -206,7 +206,7 @@
                 <package>com.jme3.gde.core.scene.nodes</package>
                 <package>com.jme3.gde.core.scene.nodes.properties</package>
                 <package>com.jme3.gde.core.sceneexplorer</package>
-                <package>com.jme3.gde.core.sceneviever</package>
+                <package>com.jme3.gde.core.sceneviewer</package>
             </public-packages>
         </data>
     </configuration>

@@ -32,9 +32,12 @@
 package com.jme3.gde.core.importer.panels;
 
 import java.io.File;
+import java.util.prefs.Preferences;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -50,41 +53,29 @@ public class ImportOgreXMLDialog extends javax.swing.JDialog {
         initComponents();
     }
 
-    private void importModel(){
-        this.setVisible(false);
-    }
-
-    private File getUserFile(String title){
-        try{
-            java.awt.FileDialog dialog=new java.awt.FileDialog(this,title);
-//            dialog.setDirectory(prefs.get("MODEL_EDITOR_PATH_"+title,""));
-            dialog.setMode(dialog.LOAD);
-            dialog.setVisible(true);
-            if(dialog.getFile()==null) return null;
-//            prefs.put("MODEL_EDITOR_PATH_"+title, dialog.getDirectory());
-            String projectPath=dialog.getDirectory()+dialog.getFile();
-            File loadFile=new File(projectPath);
-            return loadFile;//.toURL();
+    private File getUserFile(String title, String button) {
+        //use AWT FileDialog on mac, creates native file window with apple java
+        //TODO: maybe move to some helper class
+        if(Utilities.isMac()){
+            try{
+                Preferences prefs=Preferences.userNodeForPackage(ImportOgreXMLDialog.class);
+                java.awt.FileDialog dialog=new java.awt.FileDialog(this,title);
+                dialog.setDirectory(prefs.get("PATH",""));
+                dialog.setMode(dialog.LOAD);
+                dialog.setVisible(true);
+                if(dialog.getFile()==null) return null;
+                prefs.put("PATH", dialog.getDirectory());
+                String projectPath=dialog.getDirectory()+dialog.getFile();
+                File loadFile=new File(projectPath);
+                prefs.flush();
+                return loadFile;//.toURL();
+            }
+            catch(Exception e){
+                return null;
+            }
         }
-        catch(Exception e){
-            return null;
-        }
-    }
-
-    private File getUserSaveFile(String title){
-        try{
-            java.awt.FileDialog dialog=new java.awt.FileDialog(this,title);
-//            dialog.setDirectory(prefs.get("MODEL_EDITOR_SAVE_PATH_"+title,""));
-            dialog.setMode(dialog.SAVE);
-            dialog.setVisible(true);
-            if(dialog.getFile()==null) return null;
-//            prefs.put("MODEL_EDITOR_SAVE_PATH_"+title, dialog.getDirectory());
-            String projectPath=dialog.getDirectory()+dialog.getFile();
-            File loadFile=new File(projectPath);
-            return loadFile;
-        }
-        catch(Exception e){
-            return null;
+        else{
+            return new FileChooserBuilder(ImportOgreXMLDialog.class).setTitle(title).setApproveText(button).showOpenDialog();
         }
     }
 
@@ -193,7 +184,7 @@ public class ImportOgreXMLDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void findModelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findModelButtonActionPerformed
-        File file=getUserFile("Select OgreXML file");
+        File file=getUserFile("Select OgreXML file","load");
         if(file==null) return;
         modelPath=FileUtil.toFileObject(file);
         modelPathTextField.setText(modelPath.getPath());
@@ -207,7 +198,7 @@ public class ImportOgreXMLDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_findModelButtonActionPerformed
 
     private void findMaterialButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findMaterialButtonActionPerformed
-        File file=getUserFile("Select OgreXML file");
+        File file=getUserFile("Select Ogre Material file", "load");
         if(file==null) return;
         materialPath=FileUtil.toFileObject(file);
         materialPathTextField.setText(materialPath.getPath());

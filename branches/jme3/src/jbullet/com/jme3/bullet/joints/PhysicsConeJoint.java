@@ -80,4 +80,8 @@ public class PhysicsConeJoint extends PhysicsJoint{
         ((ConeTwistConstraint)constraint).setLimit(swingSpan1, swingSpan2, twistSpan);
     }
 
+    public void setAngularOnly(boolean value){
+        ((ConeTwistConstraint)constraint).setAngularOnly(value);
+    }
+
 }

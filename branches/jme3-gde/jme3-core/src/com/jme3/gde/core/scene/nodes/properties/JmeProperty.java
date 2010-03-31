@@ -29,7 +29,6 @@
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.gde.core.scene.nodes.properties;
 
 import com.jme3.gde.core.scene.SceneApplication;
@@ -44,11 +43,11 @@ import org.openide.util.Exceptions;
  *
  * @author normenhansen
  */
-public class JmeProperty<T> extends PropertySupport.Reflection<T>{
+public class JmeProperty<T> extends PropertySupport.Reflection<T> {
 
-    public JmeProperty(Object instance, Class valueType, String getter, String setter) throws NoSuchMethodException{
+    public JmeProperty(Object instance, Class valueType, String getter, String setter) throws NoSuchMethodException {
         super(instance, valueType, getter, setter);
-        if(valueType == Vector3f.class){
+        if (valueType == Vector3f.class) {
             setPropertyEditorClass(Vector3fPropertyEditor.class);
         }
     }
@@ -57,6 +56,7 @@ public class JmeProperty<T> extends PropertySupport.Reflection<T>{
     public T getValue() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         try {
             return SceneApplication.getApplication().enqueue(new Callable<T>() {
+
                 public T call() throws Exception {
                     return getSuperValue();
                 }
@@ -69,7 +69,7 @@ public class JmeProperty<T> extends PropertySupport.Reflection<T>{
         return null;
     }
 
-    private T getSuperValue(){
+    private T getSuperValue() {
         try {
             return super.getValue();
         } catch (IllegalAccessException ex) {
@@ -85,10 +85,11 @@ public class JmeProperty<T> extends PropertySupport.Reflection<T>{
     @Override
     public void setValue(final T val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         try {
-            SceneApplication.getApplication().enqueue(new Callable<T>() {
-                public T call() throws Exception {
+            SceneApplication.getApplication().enqueue(new Callable<Void>() {
+
+                public Void call() throws Exception {
                     setSuperValue(val);
-                    return getSuperValue();
+                    return null;
                 }
             }).get();
         } catch (InterruptedException ex) {
@@ -98,7 +99,7 @@ public class JmeProperty<T> extends PropertySupport.Reflection<T>{
         }
     }
 
-    private void setSuperValue(T val){
+    private void setSuperValue(T val) {
         try {
             super.setValue(val);
         } catch (IllegalAccessException ex) {
@@ -109,6 +110,4 @@ public class JmeProperty<T> extends PropertySupport.Reflection<T>{
             Exceptions.printStackTrace(ex);
         }
     }
-
-
 }

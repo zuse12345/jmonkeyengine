@@ -29,26 +29,30 @@
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.gde.core.scene.nodes.properties;
 
 import com.jme3.math.Vector3f;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  *
  * @author normenhansen
  */
-public class Vector3fPropertyEditor implements PropertyEditor{
-    private Vector3f vector=new Vector3f();
+public class Vector3fPropertyEditor implements PropertyEditor {
+
+    private LinkedList<PropertyChangeListener> listeners = new LinkedList<PropertyChangeListener>();
+    private Vector3f vector = new Vector3f();
 
     public void setValue(Object value) {
-        if(value instanceof Vector3f){
-            vector.set((Vector3f)value);
+        if (value instanceof Vector3f) {
+            vector.set((Vector3f) value);
         }
     }
 
@@ -69,22 +73,22 @@ public class Vector3fPropertyEditor implements PropertyEditor{
     }
 
     public String getAsText() {
-        return "["+vector.x+", "+vector.y+", "+vector.z+"]";
+        return "[" + vector.x + ", " + vector.y + ", " + vector.z + "]";
     }
 
     public void setAsText(String text) throws IllegalArgumentException {
-        text=text.replace('[', ' ');
-        text=text.replace(']', ' ');
-        String[] values=text.split(",");
-        if(values.length!=3){
-            throw(new IllegalArgumentException("String not correct"));
+        text = text.replace('[', ' ');
+        text = text.replace(']', ' ');
+        String[] values = text.split(",");
+        if (values.length != 3) {
+            throw (new IllegalArgumentException("String not correct"));
         }
-        float[] floats=new float[3];
+        float[] floats = new float[3];
         for (int i = 0; i < values.length; i++) {
             String string = values[i];
-            floats[i]=Float.parseFloat(string);
+            floats[i] = Float.parseFloat(string);
         }
-        vector.set(floats[0],floats[1],floats[2]);
+        vector.set(floats[0], floats[1], floats[2]);
     }
 
     public String[] getTags() {
@@ -100,11 +104,18 @@ public class Vector3fPropertyEditor implements PropertyEditor{
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-//        throw new UnsupportedOperationException("Not supported yet.");
+        listeners.add(listener);
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-//        throw new UnsupportedOperationException("Not supported yet.");
+        listeners.remove(listener);
     }
 
+    private void notifyListeners(Vector3f before, Vector3f after) {
+        for (Iterator<PropertyChangeListener> it = listeners.iterator(); it.hasNext();) {
+            PropertyChangeListener propertyChangeListener = it.next();
+            //TODO: check what the "programmatic name" is supposed to be here.. for now its Vector3f
+            propertyChangeListener.propertyChange(new PropertyChangeEvent(this, "Vector3f", before, after));
+        }
+    }
 }

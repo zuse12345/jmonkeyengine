@@ -103,7 +103,7 @@ public class PhysicsGhostNode extends CollisionObject{
     public synchronized void updateGeometricState() {
         if(jmeDirty){
             super.updateGeometricState();
-            jmeTrans.set(getTransform());
+            jmeTrans.set(getWorldTransform());
             jmeDirty=false;
             physicsDirty=true;
         }

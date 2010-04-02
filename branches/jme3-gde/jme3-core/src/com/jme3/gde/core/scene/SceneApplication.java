@@ -193,31 +193,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         renderManager.render(tpf);
     }
 
-    public void showModel(String name) {
-        rootNode.detachAllChildren();
-        Spatial model = manager.loadModel(name);
-        if (model == null) {
-            StatusDisplayer.getDefault().setStatusText("could not load model " + name);
-        }
-//        scaleAndCenter(model, 1.0f);
-        rootNode.attachChild(model);
-        notifySceneListeners();
-    }
-
-    public void showTree(JmeSpatial tree) {
-
-    }
-
-    private void notifySceneListeners(){
-        JmeSpatialChildFactory factory=new JmeSpatialChildFactory(rootNode);
-        JmeSpatial jmeSpatial=new JmeSpatial(rootNode,Children.create(factory, false));
-
-        for (Iterator<SceneListener> it = listeners.iterator(); it.hasNext();) {
-            SceneListener sceneViewerListener = it.next();
-            sceneViewerListener.rootNodeChanged(jmeSpatial);
-        }
-    }
-
     private static Spatial scaleAndCenter(Spatial model, float size) {
         if (model != null) {
             model.updateGeometricState();
@@ -366,4 +341,45 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     public void removeSceneListener(SceneListener listener){
         listeners.remove(listener);
     }
+
+    private void notifySceneListeners(){
+        JmeSpatialChildFactory factory=new JmeSpatialChildFactory(rootNode);
+        JmeSpatial jmeSpatial=new JmeSpatial(rootNode,Children.create(factory, false));
+
+        for (Iterator<SceneListener> it = listeners.iterator(); it.hasNext();) {
+            SceneListener sceneViewerListener = it.next();
+            sceneViewerListener.rootNodeChanged(jmeSpatial);
+        }
+    }
+
+    public void showModel(String name) {
+        rootNode.detachAllChildren();
+        Spatial model = manager.loadModel(name);
+        if (model == null) {
+            StatusDisplayer.getDefault().setStatusText("could not load model " + name);
+        }
+//        scaleAndCenter(model, 1.0f);
+        rootNode.attachChild(model);
+        notifySceneListeners();
+    }
+
+    public void showTree(JmeSpatial tree) {
+
+    }
+
+    public void enableCamLight(final boolean enabled){
+        enqueue(new Callable() {
+            public Object call() throws Exception {
+                //TODO: how to remove lights?? no removeLight in node?
+                if(enabled){
+                    camLight.setColor(ColorRGBA.Gray);
+                }
+                else{
+                    camLight.setColor(ColorRGBA.Black);
+                }
+                return null;
+            }
+        });
+    }
+
 }

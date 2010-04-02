@@ -34,7 +34,6 @@ package com.jme3.gde.core.sceneviewer;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.system.JmeCanvasContext;
 import com.jme3.system.SystemListener;
-import java.awt.Canvas;
 import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -84,19 +83,30 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 
         jToolBar1.setRollover(true);
 
+        enableCamLight.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/core/sceneviewer/icons/lightbulb.gif"))); // NOI18N
+        enableCamLight.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(enableCamLight, org.openide.util.NbBundle.getMessage(SceneViewerTopComponent.class, "SceneViewerTopComponent.enableCamLight.text")); // NOI18N
+        enableCamLight.setToolTipText(org.openide.util.NbBundle.getMessage(SceneViewerTopComponent.class, "SceneViewerTopComponent.enableCamLight.toolTipText")); // NOI18N
         enableCamLight.setFocusable(false);
         enableCamLight.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         enableCamLight.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        enableCamLight.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                enableCamLightActionPerformed(evt);
+            }
+        });
         jToolBar1.add(enableCamLight);
 
         add(jToolBar1, java.awt.BorderLayout.NORTH);
 
-        oGLPanel.setMinimumSize(new java.awt.Dimension(10, 10));
         oGLPanel.setPreferredSize(new java.awt.Dimension(100, 100));
         oGLPanel.setLayout(new java.awt.GridLayout(1, 0));
         add(oGLPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void enableCamLightActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableCamLightActionPerformed
+        app.enableCamLight(enableCamLight.isSelected());
+    }//GEN-LAST:event_enableCamLightActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton enableCamLight;

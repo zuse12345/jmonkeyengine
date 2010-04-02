@@ -39,10 +39,12 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node.Property;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
@@ -51,12 +53,12 @@ import org.openide.util.lookup.Lookups;
  *
  * @author normenhansen
  */
-public class JmeSpatial extends AbstractNode{
-    private Spatial spatial;
+public class JmeGeometry extends AbstractNode{
+    private Geometry geom;
 
-    public JmeSpatial(Spatial spatial, Children children) {
+    public JmeGeometry(Geometry spatial, Children children) {
         super(children, Lookups.singleton(spatial));
-        this.spatial=spatial;
+        this.geom=spatial;
         setName(spatial.getName());
     }
 
@@ -89,7 +91,7 @@ public class JmeSpatial extends AbstractNode{
         set.put(makeProperty(obj, LightList.class,"getWorldLightList","world light list"));
 
         set.put(makeProperty(obj, RenderQueue.Bucket.class,"getQueueBucket","setQueueBucket","queue bucket"));
-
+        
         sheet.put(set);
         return sheet;
 
@@ -116,4 +118,5 @@ public class JmeSpatial extends AbstractNode{
         }
         return prop;
     }
+
 }

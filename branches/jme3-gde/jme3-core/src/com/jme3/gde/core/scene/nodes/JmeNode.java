@@ -39,6 +39,7 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
 import org.openide.nodes.AbstractNode;
@@ -51,12 +52,12 @@ import org.openide.util.lookup.Lookups;
  *
  * @author normenhansen
  */
-public class JmeSpatial extends AbstractNode{
-    private Spatial spatial;
+public class JmeNode extends AbstractNode{
+    private Node node;
 
-    public JmeSpatial(Spatial spatial, Children children) {
+    public JmeNode(Node spatial, Children children) {
         super(children, Lookups.singleton(spatial));
-        this.spatial=spatial;
+        this.node=spatial;
         setName(spatial.getName());
     }
 
@@ -116,4 +117,5 @@ public class JmeSpatial extends AbstractNode{
         }
         return prop;
     }
+
 }

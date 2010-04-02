@@ -33,6 +33,7 @@
 package com.jme3.gde.core.scene.nodes;
 
 import com.jme3.gde.core.scene.SceneApplication;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -76,6 +77,12 @@ public class JmeSpatialChildFactory extends ChildFactory<Spatial>{
     @Override
     protected Node createNodeForKey(Spatial key) {
         JmeSpatialChildFactory factory=new JmeSpatialChildFactory(key);
+        if(key instanceof com.jme3.scene.Node){
+            return new JmeNode((com.jme3.scene.Node)key, Children.create(factory, false));
+        }
+        if(key instanceof com.jme3.scene.Geometry){
+            return new JmeGeometry((Geometry)key, Children.create(factory, false));
+        }
         return new JmeSpatial(key, Children.create(factory, false));
     }
 

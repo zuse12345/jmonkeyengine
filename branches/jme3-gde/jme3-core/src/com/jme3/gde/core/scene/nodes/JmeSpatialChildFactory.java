@@ -29,7 +29,6 @@
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.gde.core.scene.nodes;
 
 import com.jme3.gde.core.scene.SceneApplication;
@@ -47,7 +46,8 @@ import org.openide.util.Exceptions;
  *
  * @author normenhansen
  */
-public class JmeSpatialChildFactory extends ChildFactory<Spatial>{
+public class JmeSpatialChildFactory extends ChildFactory<Spatial> {
+
     private com.jme3.scene.Spatial spatial;
 
     public JmeSpatialChildFactory(com.jme3.scene.Spatial spatial) {
@@ -58,6 +58,7 @@ public class JmeSpatialChildFactory extends ChildFactory<Spatial>{
     protected boolean createKeys(final List<Spatial> toPopulate) {
         try {
             return SceneApplication.getApplication().enqueue(new Callable<Boolean>() {
+
                 public Boolean call() throws Exception {
                     if (spatial != null && spatial instanceof com.jme3.scene.Node) {
                         toPopulate.addAll(((com.jme3.scene.Node) spatial).getChildren());
@@ -76,22 +77,29 @@ public class JmeSpatialChildFactory extends ChildFactory<Spatial>{
 
     @Override
     protected Node createNodeForKey(Spatial key) {
-        JmeSpatialChildFactory factory=new JmeSpatialChildFactory(key);
-        if(key instanceof com.jme3.scene.Node){
-            return new JmeNode((com.jme3.scene.Node)key, Children.create(factory, false));
+        JmeSpatialChildFactory factory = new JmeSpatialChildFactory(key);
+        if (key instanceof com.jme3.scene.Node) {
+            return new JmeNode((com.jme3.scene.Node) key, Children.create(factory, false));
         }
-        if(key instanceof com.jme3.scene.Geometry){
-            return new JmeGeometry((Geometry)key, Children.create(factory, false));
+        if (key instanceof com.jme3.scene.Geometry) {
+            return new JmeGeometry((Geometry) key, Children.create(factory, false));
         }
         return new JmeSpatial(key, Children.create(factory, false));
     }
 
     @Override
     protected Node[] createNodesForKey(Spatial key) {
-        JmeSpatialChildFactory factory=new JmeSpatialChildFactory(key);
+        JmeSpatialChildFactory factory = new JmeSpatialChildFactory(key);
         Node[] nodes = new Node[1];
-        nodes[0]=new JmeSpatial(key, Children.create(factory, false));
+        if (key instanceof com.jme3.scene.Node) {
+            nodes[0] = new JmeNode((com.jme3.scene.Node) key, Children.create(factory, false));
+        }
+        else if (key instanceof com.jme3.scene.Geometry) {
+            nodes[0] = new JmeGeometry((Geometry) key, Children.create(factory, false));
+        }
+        else {
+            nodes[0] = new JmeSpatial(key, Children.create(factory, false));
+        }
         return nodes;
     }
-
 }

@@ -29,7 +29,6 @@
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.gde.core.scene.nodes;
 
 import com.jme3.bounding.BoundingVolume;
@@ -51,12 +50,13 @@ import org.openide.util.lookup.Lookups;
  *
  * @author normenhansen
  */
-public class JmeSpatial extends AbstractNode{
+public class JmeSpatial extends AbstractNode {
+
     private Spatial spatial;
 
     public JmeSpatial(Spatial spatial, Children children) {
         super(children, Lookups.singleton(spatial));
-        this.spatial=spatial;
+        this.spatial = spatial;
         setName(spatial.getName());
     }
 
@@ -65,38 +65,42 @@ public class JmeSpatial extends AbstractNode{
         //TODO: multithreading..
         Sheet sheet = Sheet.createDefault();
         Sheet.Set set = Sheet.createPropertiesSet();
+        set.setDisplayName("Spatial");
+        set.setName("SPATIAL");
         Spatial obj = getLookup().lookup(Spatial.class);
-        if(obj==null) return sheet;
+        if (obj == null) {
+            return sheet;
+        }
 
-        set.put(makeProperty(obj, Integer.class,"getVertexCount","vertexes"));
-        set.put(makeProperty(obj, Integer.class,"getTriangleCount","triangles"));
+        set.put(makeProperty(obj, Integer.class, "getVertexCount", "vertexes"));
+        set.put(makeProperty(obj, Integer.class, "getTriangleCount", "triangles"));
 
 //        set.put(makeProperty(obj, Transform.class,"getWorldTransform","world transform"));
-        set.put(makeProperty(obj, Vector3f.class,"getWorldTranslation","world translation"));
-        set.put(makeProperty(obj, Quaternion.class,"getWorldRotation","world rotation"));
-        set.put(makeProperty(obj, Vector3f.class,"getWorldScale","world scale"));
+        set.put(makeProperty(obj, Vector3f.class, "getWorldTranslation", "world translation"));
+        set.put(makeProperty(obj, Quaternion.class, "getWorldRotation", "world rotation"));
+        set.put(makeProperty(obj, Vector3f.class, "getWorldScale", "world scale"));
 
-        set.put(makeProperty(obj, Vector3f.class,"getLocalTranslation","setLocalTranslation","local translation"));
-        set.put(makeProperty(obj, Quaternion.class,"getLocalRotation","local rotation"));
-        set.put(makeProperty(obj, Vector3f.class,"getLocalScale","setLocalScale","local scale"));
+        set.put(makeProperty(obj, Vector3f.class, "getLocalTranslation", "setLocalTranslation", "local translation"));
+        set.put(makeProperty(obj, Quaternion.class, "getLocalRotation", "local rotation"));
+        set.put(makeProperty(obj, Vector3f.class, "getLocalScale", "setLocalScale", "local scale"));
 
-        set.put(makeProperty(obj, BoundingVolume.class,"getWorldBound","world bound"));
+        set.put(makeProperty(obj, BoundingVolume.class, "getWorldBound", "world bound"));
 
-        set.put(makeProperty(obj, CullHint.class,"getCullHint","setCullHint","cull hint"));
-        set.put(makeProperty(obj, CullHint.class,"getLocalCullHint","local cull hint"));
-        set.put(makeProperty(obj, ShadowMode.class,"getShadowMode","setShadowMode","shadow mode"));
-        set.put(makeProperty(obj, ShadowMode.class,"getLocalShadowMode","local shadow mode"));
-        set.put(makeProperty(obj, LightList.class,"getWorldLightList","world light list"));
+        set.put(makeProperty(obj, CullHint.class, "getCullHint", "setCullHint", "cull hint"));
+        set.put(makeProperty(obj, CullHint.class, "getLocalCullHint", "local cull hint"));
+        set.put(makeProperty(obj, ShadowMode.class, "getShadowMode", "setShadowMode", "shadow mode"));
+        set.put(makeProperty(obj, ShadowMode.class, "getLocalShadowMode", "local shadow mode"));
+        set.put(makeProperty(obj, LightList.class, "getWorldLightList", "world light list"));
 
-        set.put(makeProperty(obj, RenderQueue.Bucket.class,"getQueueBucket","setQueueBucket","queue bucket"));
+        set.put(makeProperty(obj, RenderQueue.Bucket.class, "getQueueBucket", "setQueueBucket", "queue bucket"));
 
         sheet.put(set);
         return sheet;
 
     }
 
-    private Property makeProperty(Spatial obj, Class returntype, String method, String name){
-        Property prop=null;
+    private Property makeProperty(Spatial obj, Class returntype, String method, String name) {
+        Property prop = null;
         try {
             prop = new JmeProperty(obj, returntype, method, null);
             prop.setName(name);
@@ -106,8 +110,8 @@ public class JmeSpatial extends AbstractNode{
         return prop;
     }
 
-    private Property makeProperty(Spatial obj, Class returntype, String method, String setter, String name){
-        Property prop=null;
+    private Property makeProperty(Spatial obj, Class returntype, String method, String setter, String name) {
+        Property prop = null;
         try {
             prop = new JmeProperty(obj, returntype, method, setter);
             prop.setName(name);

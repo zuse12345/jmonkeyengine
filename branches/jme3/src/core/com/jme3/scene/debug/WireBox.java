@@ -36,6 +36,8 @@ public class WireBox extends Mesh {
                 }
         );
         setMode(Mode.Lines);
+
+        updateCounts();
     }
 
     public void updatePositions(float xExt, float yExt, float zExt){
@@ -63,6 +65,7 @@ public class WireBox extends Mesh {
                 -xExt,  yExt, -zExt,
             }
         );
+        updateBound();
     }
 
     public void fromBoundingBox(BoundingBox bbox){

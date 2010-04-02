@@ -45,13 +45,13 @@ public class TestLeakingGL extends SimpleApplication {
     @Override
     public void simpleUpdate(float tpf){
         rootNode.detachAllChildren();
-        for (int y = -10; y < 10; y++){
-            for (int x = -10; x < 10; x++){
+        for (int y = -15; y < 15; y++){
+            for (int x = -15; x < 15; x++){
                 Mesh sphMesh = original.deepClone();
                 Geometry sphere = new Geometry("sphere", sphMesh);
 
                 sphere.setMaterial(solidColor);
-                sphere.setLocalTranslation(x * 2, 0, y * 2);
+                sphere.setLocalTranslation(x * 1.5f, 0, y * 1.5f);
                 rootNode.attachChild(sphere);
             }
         }

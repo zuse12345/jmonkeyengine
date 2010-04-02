@@ -123,5 +123,7 @@ void main(){
        gl_FragColor = (AmbientSum + DiffuseSum * light.x) * diffuseColor;
                    //  + SpecularSum * light.y * specularColor;
     #endif
-
+    #ifdef USE_ALPHA
+       gl_FragColor.a = diffuseColor.a;
+    #endif
 }

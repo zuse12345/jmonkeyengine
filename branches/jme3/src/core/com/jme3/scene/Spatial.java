@@ -637,33 +637,49 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         setLightListRefresh();
     }
 
-    public void move(float x, float y, float z){
+    public Spatial move(float x, float y, float z){
         this.localTransform.getTranslation().addLocal(x, y, z);
         this.worldTransform.setTranslation(this.localTransform.getTranslation());
         setTransformRefresh();
+
+        return this;
     }
 
-    public void scale(float x, float y, float z){
+    public Spatial move(Vector3f offset){
+        this.localTransform.getTranslation().addLocal(offset);
+        this.worldTransform.setTranslation(this.localTransform.getTranslation());
+        setTransformRefresh();
+
+        return this;
+    }
+
+    public Spatial scale(float x, float y, float z){
         this.localTransform.getScale().multLocal(x,y,z);
         this.worldTransform.setScale(this.localTransform.getScale());
         setTransformRefresh();
+
+        return this;
     }
 
-    public void rotate(Quaternion rot){
+    public Spatial rotate(Quaternion rot){
         this.localTransform.getRotation().multLocal(rot);
         this.worldTransform.setRotation(this.localTransform.getRotation());
         setTransformRefresh();
+
+        return this;
     }
 
-    public void rotate(float yaw, float roll, float pitch){
+    public Spatial rotate(float yaw, float roll, float pitch){
         assert TempVars.get().lock();
         Quaternion q = TempVars.get().quat1;
         q.fromAngles(yaw, roll, pitch);
         rotate(q);
         assert TempVars.get().unlock();
+
+        return this;
     }
 
-    public void center(){
+    public Spatial center(){
         if ((refreshFlags & RF_BOUND) != 0){
             updateWorldBound();
             updateWorldTransforms();
@@ -674,6 +690,8 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
 
         Vector3f absTrans = worldTrans.subtract(worldCenter);
         setLocalTranslation(absTrans);
+
+        return this;
     }
 
     /**

@@ -45,10 +45,10 @@ public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
 //        Spatial model = MeshLoader.loadModel(manager, "ninja.meshxml", "ninja.material");
 
         //Note: PhysicsRagdollControl is still TODO, constructor will change
-//        PhysicsRagdollControl ragdoll = new PhysicsRagdollControl(this,getPhysicsSpace());
-//        ragdoll.setSpatial(model);
-//        model.setControl(ragdoll);
-
+        PhysicsRagdollControl ragdoll = new PhysicsRagdollControl(this,getPhysicsSpace());
+        ragdoll.setSpatial(model);
+        model.setControl(ragdoll);
+        model.setLocalScale(0.2f);
         rootNode.attachChild(model);
     }
 

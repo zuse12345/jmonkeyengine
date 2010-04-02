@@ -34,6 +34,8 @@ MaterialDef Phong Lighting {
         }
 
         Defines {
+            USE_ALPHA : m_UseAlpha
+            VERTEX_COLOR : m_UseVertexColor
             VERTEX_LIGHTING : m_VertexLighting
             ATTENUATION : m_Attenuation
             MATERIAL_COLORS : m_UseMaterialColors

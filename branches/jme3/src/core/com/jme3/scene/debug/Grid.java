@@ -10,7 +10,9 @@ import java.nio.ShortBuffer;
 public class Grid extends Mesh {
 
     public Grid(int xLines, int yLines, float lineDist){
-        int lineCount = xLines + yLines;
+        xLines -= 2;
+        yLines -= 2;
+        int lineCount = xLines + yLines + 4;
 
 
         FloatBuffer fpb = BufferUtils.createFloatBuffer(6 * lineCount);
@@ -21,12 +23,12 @@ public class Grid extends Mesh {
         int curIndex = 0;
 
         // add lines along X
-        for (int i = 0; i < xLines; i++){
-            float y = (i+1) * lineDist;
+        for (int i = 0; i < xLines + 2; i++){
+            float y = (i) * lineDist;
 
             // positions
-            fpb.put(0)       .put(y).put(0);
-            fpb.put(xLineLen).put(y).put(0);
+            fpb.put(0)       .put(0).put(y);
+            fpb.put(xLineLen).put(0).put(y);
 
             // indices
             sib.put( (short) (curIndex++) );
@@ -34,12 +36,12 @@ public class Grid extends Mesh {
         }
 
         // add lines along Y
-        for (int i = 0; i < yLines; i++){
-            float x = (i+1) * lineDist;
+        for (int i = 0; i < yLines + 2; i++){
+            float x = (i) * lineDist;
 
             // positions
-            fpb.put(x).put(0)       .put(0);
-            fpb.put(x).put(yLineLen).put(0);
+            fpb.put(x).put(0).put(0);
+            fpb.put(x).put(0).put(yLineLen);
 
             // indices
             sib.put( (short) (curIndex++) );
@@ -53,5 +55,8 @@ public class Grid extends Mesh {
         setBuffer(Type.Index, 2, sib);
         
         setMode(Mode.Lines);
+
+        updateBound();
+        updateCounts();
     }
 }

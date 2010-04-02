@@ -50,5 +50,8 @@ public class Arrow extends Mesh {
                 }
         );
         setMode(Mode.Lines);
+
+        updateBound();
+        updateCounts();
     }
 }

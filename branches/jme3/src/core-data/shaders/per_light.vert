@@ -29,6 +29,10 @@ attribute vec3 inPosition;
 attribute vec2 inTexCoord;
 attribute vec3 inNormal;
 
+#ifdef VERTEX_COLOR
+  attribute vec4 inColor;
+#endif
+
 #ifndef VERTEX_LIGHTING
   attribute vec3 inTangent;
 
@@ -115,6 +119,10 @@ void main(){
       AmbientSum  = vec4(0.0); //= g_LightColor;
       DiffuseSum  = g_LightColor;
       SpecularSum = g_LightColor;
+    #endif
+
+    #ifdef VERTEX_COLOR
+      DiffuseSum *= inColor;
     #endif
 
     #ifdef VERTEX_LIGHTING

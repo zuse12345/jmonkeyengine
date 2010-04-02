@@ -13,19 +13,78 @@ public class RenderState implements Cloneable, Savable {
     public static final RenderState NULL = new RenderState();
 
     public enum BlendMode {
+
+        /**
+         * No blending mode is used.
+         */
         Off,
+
+        /**
+         * Additive blending. For use with glows and particle emitters.
+         *
+         * Result = Source Color + Destination Color
+         */
         Additive,
+
+        /**
+         * Premultiplied alpha blending, for use with premult alpha textures.
+         *
+         * Result = Source Color + (Dest Color * 1 - Source Alpha)
+         */
         PremultAlpha,
+
+        /**
+         * Additive blending that is multiplied with source alpha.
+         * For use with glows and particle emitters.
+         *
+         * Result = (Source Alpha * Source Color) + Dest Color
+         */
         AlphaAdditive,
+
+        /**
+         * Alpha blending, interpolates to source color from dest color
+         * using source alpha.
+         *
+         * Result = Source Alpha * Source Color +
+         *          (1 - Source Alpha) * Dest Color
+         */
         Alpha,
+
+        /**
+         * Multiplies the source and dest colors.
+         *
+         * Result = Source Color * Dest Color
+         */
         Modulate,
+
+        /**
+         * Multiplies the source and dest colors then doubles the result.
+         *
+         * Result = 2 * Source Color * Dest Color
+         */
         ModulateX2
     }
 
     public enum FaceCullMode {
+
+        /**
+         * Face culling is disabled.
+         */
         Off,
+
+        /**
+         * Cull front faces
+         */
         Front,
+
+        /**
+         * Cull back faces
+         */
         Back,
+
+        /**
+         * Cull both front and back faces. 
+         */
         FrontAndBack
     }
 

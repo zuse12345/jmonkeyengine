@@ -264,6 +264,7 @@ public class MaterialLoader implements AssetLoader {
                 rs.setFaceCullMode(RenderState.FaceCullMode.Off);
 //            rs.setDepthWrite(false);
             mat.setTransparent(true);
+            mat.setBoolean("m_UseAlpha", true);
         }else{
             if (twoSide){
                 RenderState rs = mat.getAdditionalRenderState();

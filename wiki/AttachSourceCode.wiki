@@ -1,8 +1,8 @@
-#summary One-sentence summary of this page.
+#summary Configuring Netbeans to link jME3 source while developing the GDE.
 
 = Introduction =
 
-When working on the JMonkeyPlatfrom from Netbeans you will notice that you can't see the source code is not linked to the JMonkeyEngine 3 source code or javadoc. In order to do so follow these simple instructions.
+When working on the jMonkeyPlatfrom from Netbeans you will notice that you can't see the source code is not linked to the jMonkeyEngine 3 source code or javadoc. In order to do so follow these simple instructions.
 
 = Details =
 

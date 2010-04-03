@@ -8,4 +8,5 @@
   * SourcePackagesJme3
  * jMonkeyPlatform
   * BuildPlatform
+  * AttachSourceCode
  * [http://www.jmonkeyengine.com/wiki/doku.php?id=about_jme About]

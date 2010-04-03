@@ -1,0 +1,18 @@
+#summary One-sentence summary of this page.
+
+= Introduction =
+
+When working on the JMonkeyPlatfrom from Netbeans you will notice that you the source code is not linked to the JMonkeyEngine 3 source code or javadoc. In order to do so follow these simple instructions.
+
+= Details =
+
+  * In Netbeans go to Tools->Libraries to enter the Library Manager
+  * Press button "New Library..." and create a new one of type "Class Libraries" and name it i.e. "jme3-gde"
+  * Make sure your new library is selected in the left pane and go to the "Classpath" tab on the right pane.
+  * Press button "Add JAR/Folder..." and navigate to the folder "jme3-gde/jme3-core-libraries/release/modules/ext" were you placed the required libraries and select "jMonkeyEngine3.jar" and confirm.
+  * Select the "Source" tab on the right pane.
+  * Press button "Add JAR/Folder..." and navigate to the src folder inside the jme3 project "jme3/src". Multi-selection should be enabled, select each and every folder in there and confirm.
+  * Optionally you could select the "Javadoc" tab and add the javadoc although not mandatory since you have the source code.
+  * Click the Ok button in the Library Manager window.
+
+Congratulations you can now see the source and javadoc of jMonkeyEngine while developing the jMonkeyPlatform.

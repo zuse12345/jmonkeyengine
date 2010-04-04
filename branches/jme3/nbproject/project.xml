@@ -13,6 +13,7 @@
                 <root id="src.desktop-fx.dir" name="Desktop-FX"/>
                 <root id="src.games.dir" name="Games"/>
                 <root id="src.jbullet.dir" name="JBullet"/>
+                <root id="src.niftygui.dir" name="NiftyGUI"/>
                 <root id="src.joal.dir" name="JOAL"/>
                 <root id="src.jogg.dir" name="JOGG"/>
                 <root id="src.jogl.dir" name="JOGL"/>

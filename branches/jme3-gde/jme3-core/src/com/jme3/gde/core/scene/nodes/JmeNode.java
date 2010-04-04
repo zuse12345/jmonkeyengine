@@ -57,7 +57,7 @@ public class JmeNode extends JmeSpatial {
         Sheet sheet = super.createSheet();
         Sheet.Set set = Sheet.createPropertiesSet();
         set.setDisplayName("Node");
-        set.setName("NODE");
+        set.setName(Node.class.getName());
         Node obj = node;//getLookup().lookup(Spatial.class);
         if (obj == null) {
             return sheet;

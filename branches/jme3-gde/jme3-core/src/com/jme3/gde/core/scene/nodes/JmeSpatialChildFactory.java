@@ -77,6 +77,8 @@ public class JmeSpatialChildFactory extends ChildFactory<Spatial> {
 
     @Override
     protected Node createNodeForKey(Spatial key) {
+        //TODO: add way for plugins to add their own spatial types, probably
+        //      best via registering some object in the global lookup
         JmeSpatialChildFactory factory = new JmeSpatialChildFactory(key);
         if (key instanceof com.jme3.scene.Node) {
             return new JmeNode((com.jme3.scene.Node) key, Children.create(factory, false));

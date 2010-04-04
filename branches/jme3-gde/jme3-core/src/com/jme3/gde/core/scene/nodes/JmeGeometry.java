@@ -60,7 +60,7 @@ public class JmeGeometry extends JmeSpatial {
         Sheet sheet = super.createSheet();
         Sheet.Set set = Sheet.createPropertiesSet();
         set.setDisplayName("Geometry");
-        set.setName("GEOMETRY");
+        set.setName(Geometry.class.getName());
         Geometry obj = geom;//getLookup().lookup(Spatial.class);
         if (obj == null) {
             return sheet;

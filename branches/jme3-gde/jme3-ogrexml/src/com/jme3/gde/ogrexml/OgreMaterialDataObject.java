@@ -29,7 +29,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.gde.core.filetypes;
+package com.jme3.gde.ogrexml;
 
 import java.io.IOException;
 import org.openide.filesystems.FileObject;
@@ -40,8 +40,8 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
-import org.openide.util.Lookup;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Lookup;
 
 public class OgreMaterialDataObject extends MultiDataObject {
 

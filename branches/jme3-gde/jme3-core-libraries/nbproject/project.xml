@@ -33,6 +33,7 @@
                 <package>com.jme3.bullet</package>
                 <package>com.jme3.bullet.collision</package>
                 <package>com.jme3.bullet.collision.shapes</package>
+                <package>com.jme3.bullet.control</package>
                 <package>com.jme3.bullet.joints</package>
                 <package>com.jme3.bullet.joints.motors</package>
                 <package>com.jme3.bullet.nodes</package>
@@ -56,6 +57,7 @@
                 <package>com.jme3.material</package>
                 <package>com.jme3.material.plugins</package>
                 <package>com.jme3.math</package>
+                <package>com.jme3.niftygui</package>
                 <package>com.jme3.post</package>
                 <package>com.jme3.renderer</package>
                 <package>com.jme3.renderer.jogl</package>
@@ -123,7 +125,9 @@
                 <package>jme3test.math</package>
                 <package>jme3test.model</package>
                 <package>jme3test.model.anim</package>
+                <package>jme3test.niftygui</package>
                 <package>jme3test.post</package>
+                <package>jme3test.stress</package>
                 <package>jme3test.texture</package>
                 <package>jme3tools.converters</package>
                 <package>jme3tools.converters.model</package>

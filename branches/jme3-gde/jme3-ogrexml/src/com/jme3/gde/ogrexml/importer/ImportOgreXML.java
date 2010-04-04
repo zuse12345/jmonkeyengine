@@ -29,11 +29,11 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.gde.core.importer;
+package com.jme3.gde.ogrexml.importer;
 
 import com.jme3.export.binary.BinaryExporter;
 import com.jme3.gde.core.assets.ProjectAssetManager;
-import com.jme3.gde.core.importer.panels.ImportOgreXMLDialog;
+import com.jme3.gde.ogrexml.importer.panels.ImportOgreXMLDialog;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.plugins.ogre.MeshLoader;
 import java.awt.event.ActionListener;

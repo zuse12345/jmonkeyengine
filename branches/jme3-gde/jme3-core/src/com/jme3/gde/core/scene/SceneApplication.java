@@ -37,7 +37,6 @@ import com.jme3.bounding.BoundingVolume;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.gde.core.assets.ProjectAssetManager;
-import com.jme3.gde.core.logging.JmeLogHandler;
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
 import com.jme3.gde.core.scene.nodes.JmeSpatialChildFactory;
 import com.jme3.input.FlyByCamera;

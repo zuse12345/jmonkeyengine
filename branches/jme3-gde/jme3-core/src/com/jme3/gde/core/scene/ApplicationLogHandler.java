@@ -42,11 +42,11 @@ import org.openide.windows.InputOutput;
  *
  * @author normenhansen
  */
-public class JmeLogHandler extends Handler{
+public class ApplicationLogHandler extends Handler{
     InputOutput io = IOProvider.getDefault().getIO ("Application", true);
     Formatter formatter=new SimpleFormatter();
 
-    public JmeLogHandler() {
+    public ApplicationLogHandler() {
 
     }
 

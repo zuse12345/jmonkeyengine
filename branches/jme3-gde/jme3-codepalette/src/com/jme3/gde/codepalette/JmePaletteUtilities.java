@@ -30,43 +30,59 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jme3.gde.core.palette.scene;
-import com.jme3.gde.core.assets.ProjectAssetManager;
-import com.jme3.gde.core.palette.JmePaletteUtilities;
+package com.jme3.gde.codepalette;
+
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.openide.text.ActiveEditorDrop;
+import javax.swing.text.StyledDocument;
+import org.openide.text.NbDocument;
 
-/**
- *
- * @author normenhansen
- */
-public class JmePaletteModel implements ActiveEditorDrop {
+public class JmePaletteUtilities {
 
-    public JmePaletteModel() {
-    }
+    public static void insert(final String s,final JTextComponent target) throws BadLocationException {
 
-    private String createBody() {
-        //TODO: project list
-        ProjectAssetManager manager;
-        Project project = OpenProjects.getDefault().getMainProject();//Lookup.getDefault().lookup(Project.class);
-        if(project!=null)
-            manager = project.getLookup().lookup(ProjectAssetManager.class);
+        final StyledDocument doc = (StyledDocument)target.getDocument();
 
-        String body = "Spatial model=manager.loadModel(\"modelname.j3o\");";
-        return body;
-    }
+        class AtomicChange implements Runnable {
 
-    public boolean handleTransfer(JTextComponent targetComponent) {
-        String body = createBody();
-        try {
-            JmePaletteUtilities.insert(body, targetComponent);
-        } catch (BadLocationException ble) {
-            return false;
+            public void run() {
+                Document value = target.getDocument();
+                if (value == null)
+                    return;
+                try {
+                    insert(s, target, doc);
+                } catch (BadLocationException e) {}
+            }
         }
-        return true;
+
+        try {
+            NbDocument.runAtomicAsUser(doc, new AtomicChange());
+        } catch (BadLocationException ex) {}
+
+    }
+
+    private static int insert(String s, JTextComponent target, Document doc) throws BadLocationException {
+
+        int start = -1;
+
+        try {
+
+            //firstly, find selected text range:
+            Caret caret = target.getCaret();
+            int p0 = Math.min(caret.getDot(), caret.getMark());
+            int p1 = Math.max(caret.getDot(), caret.getMark());
+            doc.remove(p0, p1 - p0);
+
+            //then, replace selected text range with the inserted one:
+            start = caret.getDot();
+            doc.insertString(start, s, null);
+
+        } catch (BadLocationException ble) {}
+
+        return start;
+
     }
 
 }

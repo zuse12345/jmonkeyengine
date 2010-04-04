@@ -116,11 +116,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 //        ctx = (JmeCanvasContext) app.getContext();
         getContext().setAutoFlushFrames(true);
         getContext().setSystemListener(this);
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                startCanvas();
-            }
-        });
     }
 
     private void loadFPSText() {

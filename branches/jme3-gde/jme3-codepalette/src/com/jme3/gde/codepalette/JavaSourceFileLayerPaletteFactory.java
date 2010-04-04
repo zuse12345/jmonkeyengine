@@ -7,7 +7,7 @@
  * and open the template in the editor.
  */
 
-package com.jme3.gde.core.palette;
+package com.jme3.gde.codepalette;
 
 import java.io.IOException;
 import javax.swing.Action;
@@ -16,6 +16,7 @@ import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+
 
 /**
  *

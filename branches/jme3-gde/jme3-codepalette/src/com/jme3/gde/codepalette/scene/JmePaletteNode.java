@@ -30,8 +30,8 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jme3.gde.core.palette.scene;
-import com.jme3.gde.core.palette.JmePaletteUtilities;
+package com.jme3.gde.codepalette.scene;
+import com.jme3.gde.codepalette.JmePaletteUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.openide.text.ActiveEditorDrop;

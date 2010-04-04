@@ -2,7 +2,7 @@
 
 = Introduction =
 
-When working on the jMonkeyPlatfrom from Netbeans you will notice that the source code is not linked to the jMonkeyEngine 3 libraries or javadoc. In order to do so follow these simple instructions.
+When working on the jMonkeyPlatfrom from Netbeans you will notice that the source code is not linked to the jMonkeyEngine 3 source or javadoc. In order to do so follow these simple instructions.
 
 = Details =
 

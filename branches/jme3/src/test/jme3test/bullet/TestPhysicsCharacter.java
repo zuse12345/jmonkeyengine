@@ -59,6 +59,9 @@ public class TestPhysicsCharacter extends SimplePhysicsApplication implements Bi
         else if(binding.equals("Downs")){
             walkDirection.addLocal(new Vector3f(0,0,.1f));
         }
+        else if(binding.equals("Space")){
+            physicsCharacter.jump();
+        }
         else if(binding.equals("UPDATE")){
             walkDirection.set(0,0,0);
         }

@@ -42,10 +42,13 @@ import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 import com.jme3.app.SimplePhysicsApplication;
+import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
+import com.jme3.bullet.collision.shapes.CylinderCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.nodes.PhysicsNode;
+import com.jme3.scene.shape.Cylinder;
 
 /**
  * This is a basic Test of jbullet-jme functions
@@ -104,11 +107,15 @@ public class TestSimplePhysics extends SimplePhysicsApplication{
         rootNode.attachChild(physicsBox);
         getPhysicsSpace().addQueued(physicsBox);
 
-//        Cylinder cylGeom=new Cylinder(16,16,1f,3f);
-//        PhysicsNode physicsCylinder=new PhysicsNode(cylGeom, CollisionShape.ShapeTypes.CYLINDER);
-//        physicsCylinder.setLocalTranslation(new Vector3f(-5,4,0));
-//        rootNode.attachChild(physicsCylinder);
-//        pSpace.add(physicsCylinder);
+        Cylinder cylGeom=new Cylinder(16,16,1f,3f);
+        Geometry geom6=new Geometry("box",cylGeom);
+        geom6.updateModelBound();
+        BoundingBox box=(BoundingBox)geom6.getModelBound();
+        geom6.setMaterial(mat);
+        PhysicsNode physicsCylinder=new PhysicsNode(geom6, new CylinderCollisionShape(box.getExtent(null)));
+        physicsCylinder.setLocalTranslation(new Vector3f(2,2,0));
+        rootNode.attachChild(physicsCylinder);
+        getPhysicsSpace().addQueued(physicsCylinder);
 //
 //        Capsule capGeom=new Capsule(16,16,16,0.5f,2f);
 //        PhysicsNode physicsCapsule=new PhysicsNode(capGeom, CollisionShape.ShapeTypes.CAPSULE);

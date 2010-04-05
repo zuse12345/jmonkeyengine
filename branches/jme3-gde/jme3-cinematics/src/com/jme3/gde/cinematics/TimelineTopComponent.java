@@ -43,7 +43,6 @@ import java.io.File;
 import java.io.IOException;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
-//import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

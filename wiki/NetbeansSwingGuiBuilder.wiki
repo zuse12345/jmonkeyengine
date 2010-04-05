@@ -3,7 +3,7 @@
 
 = Introduction =
 
-The jMonkeyPlatform as well as jMonkeyEngine must compile to Java 5. By default Netbeans GUI builder will generate incompatible code. To be specific it may use javax.swing.GroupLayout which is not present in Java 5. To avoid that the "Swing Layout Extension" must be used instead of regular Swing.
+The jMonkeyPlatform as well as jMonkeyEngine must compile to Java 5. By default Netbeans GUI builder will generate incompatible code when run with Java 6. To be specific it may use javax.swing.GroupLayout which is not present in Java 5. To avoid that the "Swing Layout Extension" must be used instead of regular Swing.
 
 = Details =
 

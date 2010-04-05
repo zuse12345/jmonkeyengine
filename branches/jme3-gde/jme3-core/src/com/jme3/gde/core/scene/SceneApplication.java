@@ -93,7 +93,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     protected FlyByCamera flyCam;
     protected boolean showSettings = true;
     private Lookup.Result result;
-    private JmeLogHandler logHandler = new JmeLogHandler();
+    private ApplicationLogHandler logHandler = new ApplicationLogHandler();
 
     public SceneApplication() {
         manager = ProjectAssetManager.getManager();

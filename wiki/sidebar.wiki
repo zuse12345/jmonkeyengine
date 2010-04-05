@@ -7,7 +7,7 @@
   * BuildJme3
   * SourcePackagesJme3
  * jMonkeyPlatform
-  * BuildPlatform
-  * AttachSourceCode
-  * NetbeansSwingGuiBuilder
+  * [BuildPlatform Build Platform]
+  * [AttachSourceCode Attach Source Code]
+  * [NetbeansSwingGuiBuilder Netbeans Swing GUI Builder]
  * [http://www.jmonkeyengine.com/wiki/doku.php?id=about_jme About]

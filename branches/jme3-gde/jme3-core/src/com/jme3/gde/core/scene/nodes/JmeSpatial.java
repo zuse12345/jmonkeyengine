@@ -81,7 +81,7 @@ public class JmeSpatial extends AbstractNode {
         set.put(makeProperty(obj, Vector3f.class, "getWorldScale", "world scale"));
 
         set.put(makeProperty(obj, Vector3f.class, "getLocalTranslation", "setLocalTranslation", "local translation"));
-        set.put(makeProperty(obj, Quaternion.class, "getLocalRotation", "local rotation"));
+        set.put(makeProperty(obj, Quaternion.class, "getLocalRotation", "setLocalRotation", "local rotation"));
         set.put(makeProperty(obj, Vector3f.class, "getLocalScale", "setLocalScale", "local scale"));
 
         set.put(makeProperty(obj, BoundingVolume.class, "getWorldBound", "world bound"));

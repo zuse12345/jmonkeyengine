@@ -32,6 +32,7 @@
 package com.jme3.gde.core.scene.nodes.properties;
 
 import com.jme3.gde.core.scene.SceneApplication;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
@@ -49,6 +50,9 @@ public class JmeProperty<T> extends PropertySupport.Reflection<T> {
         super(instance, valueType, getter, setter);
         if (valueType == Vector3f.class) {
             setPropertyEditorClass(Vector3fPropertyEditor.class);
+        }
+        else if (valueType == Quaternion.class) {
+            setPropertyEditorClass(QuaternionPropertyEditor.class);
         }
     }
 

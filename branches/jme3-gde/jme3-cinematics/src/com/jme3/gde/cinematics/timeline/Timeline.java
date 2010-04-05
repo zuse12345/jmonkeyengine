@@ -35,21 +35,82 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyEditor;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author tomas
  */
-public class Timeline {
+public abstract class Timeline<T> implements ActionListener {
 
     protected static Color SELECTED_COLOR = new Color(191, 105, 186, 180);
     protected String name;
     protected ArrayList<TimelineProperty> properties = new ArrayList<TimelineProperty>();
     protected boolean selected = false;
     protected ArrayList<TimelinePropertyListener> listeners = new ArrayList<TimelinePropertyListener>();
+    // Data and datatype this Timline represents
+    protected T object;
+    protected PropertySupport.Reflection<T> property;
+
+    public Timeline() {
+        // Hardcore generic reflection stuff just to instantiate the PropertySupport
+        Type type = getClass().getGenericSuperclass();
+        if (type instanceof ParameterizedType) {
+            ParameterizedType paramType = (ParameterizedType) type;
+            @SuppressWarnings("unchecked")
+            Class<T> tClass = (Class<T>) paramType.getActualTypeArguments()[0];
+            try {
+                property = new PropertySupport.Reflection<T>(this, tClass, "object");
+            } catch (NoSuchMethodException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            throw new InstantiationError("Attempt to create parameterless Timeline");
+        }
+    }
+
+    public void triggerEditor() {
+        PropertyEditor propertyEditor = property.getPropertyEditor();
+        try {
+            if (property.getValue() != null) {
+                propertyEditor.setValue(property.getValue());
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(propertyEditor.getCustomEditor(), property.getDisplayName(), true, this);
+        DialogDisplayer.getDefault().notifyLater(dialogDescriptor);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() != DialogDescriptor.CANCEL_OPTION) {
+            try {
+                property.setValue((T) property.getPropertyEditor().getValue());
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    // Had to make these abstract and implement in subclass because of a NoSuchMethodException,
+    // perhaps because it is inside the constructor and the child doesn't have these methods yet?
+    public abstract T getObject();
+
+    public abstract void setObject(T object);
 
     public boolean addTimelinePropertyListener(TimelinePropertyListener listener) {
         return listeners.add(listener);
@@ -122,4 +183,6 @@ public class Timeline {
     List<TimelineProperty> getProperties() {
         return properties;
     }
+
+    abstract void reloadControls();
 }

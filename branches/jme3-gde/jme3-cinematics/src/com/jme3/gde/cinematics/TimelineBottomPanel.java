@@ -161,11 +161,11 @@ public class TimelineBottomPanel extends JPanel implements MouseListener, MouseM
         int treeWidth = manager.getTreeHandler().getTreeWidth();
 
         // Draw current time
-        Handle.BAR.setLocation((int) (treeWidth + manager.getTimePosition(manager.getCurrentTime())), 0);
-        Handle.SELECTION_START.setLocation((int) (treeWidth + manager.getTimePosition(manager.getSelectionStartTime())), ARROWS_SIZE);
-        Handle.SELECTION_END.setLocation((int) (treeWidth + manager.getTimePosition(manager.getSelectionEndTime())), ARROWS_SIZE);
-        Handle.TIMELINE_START.setLocation((int) (treeWidth + manager.getTimePosition(manager.getStartTime())), 0);
-        Handle.TIMELINE_END.setLocation((int) (treeWidth + manager.getTimePosition(manager.getEndTime())), 0);
+        Handle.BAR.setLocation((treeWidth + manager.getTimePosition(manager.getCurrentTime())), 0);
+        Handle.SELECTION_START.setLocation((treeWidth + manager.getTimePosition(manager.getSelectionStartTime())), ARROWS_SIZE);
+        Handle.SELECTION_END.setLocation((treeWidth + manager.getTimePosition(manager.getSelectionEndTime())), ARROWS_SIZE);
+        Handle.TIMELINE_START.setLocation((treeWidth + manager.getTimePosition(manager.getStartTime())), 0);
+        Handle.TIMELINE_END.setLocation((treeWidth + manager.getTimePosition(manager.getEndTime())), 0);
 
         for (int i = 0; i < Handle.values().length; i++) {
             Handle handle = Handle.values()[i];

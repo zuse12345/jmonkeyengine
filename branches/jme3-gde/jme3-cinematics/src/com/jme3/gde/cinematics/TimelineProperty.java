@@ -29,63 +29,33 @@
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.gde.cinematics.timeline;
+package com.jme3.gde.cinematics;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
  * @author tomas
  */
-public class TimelineProperty<T> {
+public class TimelineProperty {
 
     protected String name;
     protected boolean selected;
-    protected ArrayList<KeyFrame<T>> keyframes = new ArrayList<KeyFrame<T>>();
-    protected static Color SELECTED_COLOR = new Color(195, 131, 28, 180);
 
     public TimelineProperty(String name) {
         this.name = name;
     }
 
     public void paintTimelinePanel(Graphics g, Rectangle rect) {
-        Graphics2D g2 = (Graphics2D) g;
         if (selected) {
-            g2.setColor(SELECTED_COLOR);
-            g2.fill(rect);
+            g.setColor(Color.darkGray);
+            g.fillRect((int) rect.getX(), (int) rect.getY(), (int) (rect.getX() + rect.getWidth()), (int) rect.getHeight());
         }
 
-        g2.setColor(Color.black);
-        g2.draw(rect);
-
-        for (KeyFrame<T> keyFrame : keyframes) {
-            keyFrame.setY((int) rect.getCenterY());
-            keyFrame.paint(g);
-        }
-    }
-
-    public KeyFrame<T> getKeyFrameAt(Point point) {
-        for (KeyFrame<T> keyFrame : keyframes) {
-            if (keyFrame.isPointInside(point)) {
-                return keyFrame;
-            }
-        }
-
-        return null;
-    }
-
-    public boolean remove(KeyFrame<T> kf) {
-        return keyframes.remove(kf);
-    }
-
-    public boolean add(KeyFrame<T> kf) {
-        return keyframes.add(kf);
+        g.setColor(Color.red);
+        g.drawLine((int) rect.getX(), (int) rect.getCenterY(), (int) (rect.getX() + rect.getWidth()), (int) rect.getCenterY());
     }
 
     public String getName() {
@@ -102,10 +72,6 @@ public class TimelineProperty<T> {
 
     public void setSelected(boolean selected) {
         this.selected = selected;
-    }
-
-    public List<KeyFrame<T>> getKeyFrames() {
-        return keyframes;
     }
 
     @Override

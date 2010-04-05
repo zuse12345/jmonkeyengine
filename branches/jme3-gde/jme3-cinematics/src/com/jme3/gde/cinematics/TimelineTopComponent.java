@@ -31,9 +31,14 @@
  */
 package com.jme3.gde.cinematics;
 
+import com.jme3.gde.cinematics.properties.FloatPropertyEditor;
+import com.jme3.gde.cinematics.properties.Vector3fPropertyEditor;
 import com.jme3.gde.cinematics.timeline.TimelineManager;
 import com.jme3.gde.cinematics.timeline.TimelineTreeHandler;
+import com.jme3.gde.core.scene.SceneApplication;
+import com.jme3.math.Vector3f;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyEditorManager;
 import java.io.File;
 import java.io.IOException;
 import org.openide.util.NbBundle;
@@ -89,6 +94,11 @@ public final class TimelineTopComponent extends CloneableTopComponent {
         manager.populateRoot();
 
         content = new InstanceContent();
+
+        SceneApplication.getApplication().addSceneListener(manager);
+
+        PropertyEditorManager.registerEditor(Float.class, FloatPropertyEditor.class);
+        PropertyEditorManager.registerEditor(Vector3f.class, Vector3fPropertyEditor.class);
     }
 
     private void enableSaveAction(boolean canSave) {
@@ -136,15 +146,15 @@ public final class TimelineTopComponent extends CloneableTopComponent {
         timelinePanel.setBorder(null);
         timelinePanel.setPreferredSize(new java.awt.Dimension(200, 200));
 
-        javax.swing.GroupLayout timelinePanelLayout = new javax.swing.GroupLayout(timelinePanel);
+        org.jdesktop.layout.GroupLayout timelinePanelLayout = new org.jdesktop.layout.GroupLayout(timelinePanel);
         timelinePanel.setLayout(timelinePanelLayout);
         timelinePanelLayout.setHorizontalGroup(
-            timelinePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 320, Short.MAX_VALUE)
+            timelinePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 358, Short.MAX_VALUE)
         );
         timelinePanelLayout.setVerticalGroup(
-            timelinePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 383, Short.MAX_VALUE)
+            timelinePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 352, Short.MAX_VALUE)
         );
 
         jSplitPane1.setRightComponent(timelinePanel);
@@ -155,30 +165,30 @@ public final class TimelineTopComponent extends CloneableTopComponent {
         timelineBottomPanel.setBorder(null);
         timelineBottomPanel.setPreferredSize(new java.awt.Dimension(576, 70));
 
-        javax.swing.GroupLayout timelineBottomPanelLayout = new javax.swing.GroupLayout(timelineBottomPanel);
+        org.jdesktop.layout.GroupLayout timelineBottomPanelLayout = new org.jdesktop.layout.GroupLayout(timelineBottomPanel);
         timelineBottomPanel.setLayout(timelineBottomPanelLayout);
         timelineBottomPanelLayout.setHorizontalGroup(
-            timelineBottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 576, Short.MAX_VALUE)
+            timelineBottomPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 614, Short.MAX_VALUE)
         );
         timelineBottomPanelLayout.setVerticalGroup(
-            timelineBottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 70, Short.MAX_VALUE)
+            timelineBottomPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 70, Short.MAX_VALUE)
         );
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(timelineBottomPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(timelineBottomPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 614, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 614, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                .addGap(0, 0, 0)
-                .addComponent(timelineBottomPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
+                .add(0, 0, 0)
+                .add(timelineBottomPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -29,87 +29,82 @@
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.gde.cinematics.timeline;
+package com.jme3.gde.cinematics.properties;
 
-import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.List;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyEditor;
+import javax.swing.JTextField;
 
 /**
  *
  * @author tomas
  */
-public class TimelineProperty<T> {
+public class FloatPropertyEditor extends JTextField implements PropertyEditor {
 
-    protected String name;
-    protected boolean selected;
-    protected ArrayList<KeyFrame<T>> keyframes = new ArrayList<KeyFrame<T>>();
-    protected static Color SELECTED_COLOR = new Color(195, 131, 28, 180);
+    private Float value;
 
-    public TimelineProperty(String name) {
-        this.name = name;
-    }
-
-    public void paintTimelinePanel(Graphics g, Rectangle rect) {
-        Graphics2D g2 = (Graphics2D) g;
-        if (selected) {
-            g2.setColor(SELECTED_COLOR);
-            g2.fill(rect);
-        }
-
-        g2.setColor(Color.black);
-        g2.draw(rect);
-
-        for (KeyFrame<T> keyFrame : keyframes) {
-            keyFrame.setY((int) rect.getCenterY());
-            keyFrame.paint(g);
-        }
-    }
-
-    public KeyFrame<T> getKeyFrameAt(Point point) {
-        for (KeyFrame<T> keyFrame : keyframes) {
-            if (keyFrame.isPointInside(point)) {
-                return keyFrame;
-            }
-        }
-
-        return null;
-    }
-
-    public boolean remove(KeyFrame<T> kf) {
-        return keyframes.remove(kf);
-    }
-
-    public boolean add(KeyFrame<T> kf) {
-        return keyframes.add(kf);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public boolean isSelected() {
-        return selected;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
-
-    public List<KeyFrame<T>> getKeyFrames() {
-        return keyframes;
+    @Override
+    public void setValue(Object value) {
+        this.value = (Float) value;
     }
 
     @Override
-    public String toString() {
-        return name;
+    public Object getValue() {
+        return value;
+    }
+
+    @Override
+    public boolean isPaintable() {
+        return true;
+    }
+
+    @Override
+    public void paintValue(Graphics gfx, Rectangle box) {
+        // do nothing
+    }
+
+    @Override
+    public String getJavaInitializationString() {
+        // do nothing
+        return "0";
+    }
+
+    @Override
+        // do nothing
+    public String getAsText() {
+        return value.toString();
+    }
+
+    @Override
+    public void setAsText(String text) throws IllegalArgumentException {
+        value = Float.parseFloat(text);
+    }
+
+    @Override
+    public String[] getTags() {
+        return new String[]{};
+    }
+
+    @Override
+    public Component getCustomEditor() {
+        return this;
+    }
+
+    @Override
+    public boolean supportsCustomEditor() {
+        return true;
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        System.out.println("tried to register listener");
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        System.out.println("tried to remove listener");
     }
 }

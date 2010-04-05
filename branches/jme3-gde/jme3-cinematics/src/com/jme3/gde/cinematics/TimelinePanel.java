@@ -33,7 +33,6 @@ package com.jme3.gde.cinematics;
 
 import com.jme3.gde.cinematics.timeline.KeyFrame;
 import com.jme3.gde.cinematics.timeline.TimelineManager;
-import com.jme3.gde.cinematics.timeline.TimelineTreeHandler;
 import com.jme3.gde.cinematics.timeline.TimelineProperty;
 import com.jme3.gde.cinematics.timeline.Timeline;
 import java.awt.Color;
@@ -42,10 +41,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.List;
 import javax.swing.JPanel;
-import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
  *
@@ -79,13 +76,14 @@ public class TimelinePanel extends JPanel implements MouseListener {
             for (Timeline timeline : manager.getTimelines()) {
                 timeline.paintTimelinePanel(g, rect);
                 rect.translate(0, height);
-                
-                for (TimelineProperty timelineProperty : timeline.getPropertiesList()) {
-                    ArrayList<KeyFrame> keyFrames = timelineProperty.getKeyFrames();
+
+                List<TimelineProperty> properties = timeline.getPropertiesList();
+                for (TimelineProperty timelineProperty : properties) {
+                    List<KeyFrame> keyFrames = timelineProperty.getKeyFrames();
                     for (KeyFrame keyFrame : keyFrames) {
                         keyFrame.setX(manager.getTimePosition(keyFrame.getTime()));
                     }
-                    
+
                     timelineProperty.paintTimelinePanel(g, rect);
                     rect.translate(0, height);
                 }
@@ -98,45 +96,42 @@ public class TimelinePanel extends JPanel implements MouseListener {
         g.drawLine(currentTimeX, 0, currentTimeX, getHeight());
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         // Do nothing
         Point point = e.getPoint();
         // Draw timelines
         if (manager != null) {
-            TimelineTreeHandler treeHandler = manager.getTreeHandler();
+            for (Timeline timeline : manager.getTimelines()) {
+                List<TimelineProperty> properties = timeline.getPropertiesList();
+                for (TimelineProperty timelineProperty : properties) {
+                    KeyFrame keyframe = timelineProperty.getKeyFrameAt(point);
 
-            Enumeration children = treeHandler.getRoot().children();
-            while (children.hasMoreElements()) {
-                DefaultMutableTreeNode timelineNode = (DefaultMutableTreeNode) children.nextElement();
-
-                Timeline timeline = ((Timeline) timelineNode.getUserObject());
-
-                if (treeHandler.isExpanded(timelineNode)) {
-                    for (TimelineProperty timelineProperty : timeline.getPropertiesList()) {
-                        KeyFrame keyframe = timelineProperty.getKeyFrameAt(point);
-
-                        if (keyframe != null) {
-                            keyframe.triggerEditor();
-                            return;
-                        }
+                    if (keyframe != null) {
+                        keyframe.triggerEditor();
+                        return;
                     }
                 }
             }
         }
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         // Do nothing
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         // Do nothing
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
         // Do nothing
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
         // Do nothing
     }

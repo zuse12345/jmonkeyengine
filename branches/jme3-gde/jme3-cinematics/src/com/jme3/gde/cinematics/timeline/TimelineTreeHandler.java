@@ -32,6 +32,7 @@
 package com.jme3.gde.cinematics.timeline;
 
 import java.util.Enumeration;
+import java.util.List;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
@@ -109,7 +110,8 @@ public class TimelineTreeHandler implements TreeModelListener, TreeSelectionList
     public void addTimelineNode(Timeline timeline) {
         DefaultMutableTreeNode node = addObject(getRoot(), timeline, false);
 
-        for (TimelineProperty timelineProperty : timeline.getProperties()) {
+        List<TimelineProperty> timelines = timeline.getProperties();
+        for (TimelineProperty timelineProperty : timelines) {
             addObject(node, timelineProperty, false);
         }
 
@@ -154,38 +156,57 @@ public class TimelineTreeHandler implements TreeModelListener, TreeSelectionList
         return tree;
     }
 
+    @Override
     public void treeNodesChanged(TreeModelEvent e) {
         manager.repaintPanels();
     }
 
+    @Override
     public void treeNodesInserted(TreeModelEvent e) {
         manager.repaintPanels();
     }
 
+    @Override
     public void treeNodesRemoved(TreeModelEvent e) {
         manager.repaintPanels();
     }
 
+    @Override
     public void treeStructureChanged(TreeModelEvent e) {
         manager.repaintPanels();
     }
 
+    @Override
     public void valueChanged(TreeSelectionEvent e) {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
         setSelected(node);
 
         manager.repaintPanels();
+
+//        if (currentTimeline != null && currentTimeline instanceof SpatialTimeline) {
+//            SceneApplication.getApplication().showModel(((SpatialTimeline)currentTimeline).getObject().getName());
+//        }
     }
 
+    @Override
     public void treeExpanded(TreeExpansionEvent event) {
         manager.repaintPanels();
     }
 
+    @Override
     public void treeCollapsed(TreeExpansionEvent event) {
         manager.repaintPanels();
     }
     private Timeline currentTimeline;
     private TimelineProperty currentProperty;
+
+    public TimelineProperty getCurrentProperty() {
+        return currentProperty;
+    }
+
+    public Timeline getCurrentTimeline() {
+        return currentTimeline;
+    }
 
     private void setSelected(DefaultMutableTreeNode node) {
         if (currentTimeline != null) {

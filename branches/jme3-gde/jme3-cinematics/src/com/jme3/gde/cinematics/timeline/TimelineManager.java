@@ -33,6 +33,10 @@ package com.jme3.gde.cinematics.timeline;
 
 import com.jme3.gde.cinematics.TimelineBottomPanel;
 import com.jme3.gde.cinematics.TimelinePanel;
+import com.jme3.gde.cinematics.timeline.keyframes.Vector3fKeyFrame;
+import com.jme3.gde.core.scene.SceneListener;
+import com.jme3.gde.core.scene.nodes.JmeSpatial;
+import com.jme3.math.Vector3f;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
@@ -43,7 +47,7 @@ import java.util.List;
  * 
  * @author tomas
  */
-public class TimelineManager implements TimelinePropertyListener {
+public class TimelineManager implements TimelinePropertyListener, SceneListener {
 
     // A second width in pixels with zoomlevel of 100%
     public static int BAR_SEPARATION = 50;
@@ -85,25 +89,32 @@ public class TimelineManager implements TimelinePropertyListener {
 
     public void populateRoot() {
         Timeline timeline;
-        TimelineProperty prop;
+        TimelineProperty<Vector3f> prop;
 
-        timeline = new Timeline();
-        timeline.setName("Camera");
-        prop = new TimelineProperty("Movement");
-        timeline.add(prop);
-        prop = new TimelineProperty("FOV");
-        ColorKeyFrame keyFrame = new ColorKeyFrame();
-        keyFrame.setTime(5);
-        prop.add(keyFrame);
-        timeline.add(prop);
-
-        add(timeline);
-
-        timeline = new Timeline();
+        timeline = new SpatialTimeline();
         timeline.setName("Spatial");
-        timeline.add(new TimelineProperty("Movement"));
+
+        prop = new SpatialPropertyTimeline("Movement");
+
+        Vector3fKeyFrame keyFrame = new Vector3fKeyFrame();
+        keyFrame.setTime(0);
+        keyFrame.setValue(new Vector3f());
+        prop.add(keyFrame);
+
+        keyFrame = new Vector3fKeyFrame();
+        keyFrame.setTime(100);
+        keyFrame.setValue(new Vector3f(50, 100, 10));
+        prop.add(keyFrame);
+
+        timeline.add(prop);
 
         add(timeline);
+
+//        timeline = new Timeline();
+//        timeline.setName("Spatial");
+//        timeline.add(new TimelineProperty("Movement"));
+//
+//        add(timeline);
     }
 
     public boolean remove(Timeline timeline) {
@@ -336,15 +347,30 @@ public class TimelineManager implements TimelinePropertyListener {
         this.selectionStartTime = selectionStartTime;
     }
 
+    @Override
     public void addedTimelineProperty(Timeline timeline, TimelineProperty property) {
         // TODO Improve cheap reload tactic
         remove(timeline);
         add(timeline);
     }
 
+    @Override
     public void removedTimelineProperty(Timeline timeline, TimelineProperty property) {
         // TODO Improve cheap reload tactic
         remove(timeline);
         add(timeline);
+    }
+
+    @Override
+    public void rootNodeChanged(JmeSpatial spatial) {
+        ((SpatialTimeline)timelines.get(0)).setObject(spatial);
+
+        reloadControls();
+    }
+
+    private void reloadControls() {
+        for (Timeline timeline : timelines) {
+            timeline.reloadControls();
+        }
     }
 }

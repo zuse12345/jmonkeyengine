@@ -116,6 +116,7 @@ public abstract class KeyFrame<T> implements ActionListener {
         DialogDisplayer.getDefault().notifyLater(dialogDescriptor);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() != DialogDescriptor.CANCEL_OPTION) {
             try {
@@ -131,6 +132,11 @@ public abstract class KeyFrame<T> implements ActionListener {
     public abstract T getValue();
 
     public abstract void setValue(T value);
+
+    @Override
+    public String toString() {
+        return "KeyFrame<" + property.getValueType().getName() + ">[" + getValue().toString() + "]";
+    }
 
     public float getTime() {
         return time;

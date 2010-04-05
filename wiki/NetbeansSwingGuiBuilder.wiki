@@ -1,0 +1,35 @@
+#summary Configuring Netbeans GUI Builder for GDE
+#labels Swing,GUI,GroupLayout,Java5,Java1.5,Netbeans
+
+= Introduction =
+
+The jMonkeyPlatform as well as jMonkeyEngine must compile to Java 5. By default Netbeans GUI builder will generate incompatible code. To be specific it may use javax.swing.GroupLayout which is not present in Java 5. To avoid that the "Swing Layout Extension" must be used instead of regular Swing.
+
+= Details =
+
+== Fixing Existing Forms == 
+
+The GUI Builder saves the information in a .form file with the same name as the target file. A simple fix can be done to allow for compatibility.
+
+  * Open the .form file with a plain text editor.
+  * Locate the line {{{<AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>}}}
+  * Change the {{{value="1"}}} to {{{value="2"}}} and save the file.
+  * Open the corresponding class in Netbeans and enter the "Design" mode
+  * Make a minor modification and then revert it to force a regeneration of the code in the java file.
+
+== Preventing Issue for New Forms ==
+
+  * In Netbeans go to Tools->Options->Miscellaneous->GUI Builder
+  * In the field "Layout Generation Style" select Swing Layout Extensions Library
+  * Click Ok to save option.
+
+== Swing Layout Extension packages not found ==
+
+In case Netbeans can't find the packages make sure Swing Layout Extension library is added in your module definition.
+
+  * Right click Module project in Projects windows (Ctrl+1) and select Properties.
+  * Select Libraries in the left pane
+  * If "Swing Layout Extensions integration" is not present click "Add Dependency..." button
+  * Search for "Swing Layout Extensions integration", select it and click "Ok"
+  * Close the Project Properties window by click Ok
+  * Open the java file and do "Fix Imports" (Ctrl+Shift+I or "Source->Fix Imports...")

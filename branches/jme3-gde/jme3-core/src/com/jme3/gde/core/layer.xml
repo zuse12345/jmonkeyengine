@@ -302,13 +302,7 @@
                 <attr name="template" boolvalue="true"/>
             </file>
         </folder>
-        <folder name="Other">
-            <file name="JMEBinaryModelTemplate.j3o" url="JMEBinaryModelTemplate.j3o">
-                <attr name="displayName" bundlevalue="com.jme3.gde.core.Bundle#Templates/Other/JMEBinaryModelTemplate.j3o"/>
-                <attr name="template" boolvalue="true"/>
-            </file>
         </folder>
-    </folder>
     <folder name="Windows2">
         <folder name="Components">
             <file name="SceneExplorerTopComponent.settings" url="SceneExplorerTopComponentSettings.xml"/>

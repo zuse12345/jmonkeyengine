@@ -191,18 +191,6 @@
             </file>
         </folder>
     </folder>
-    <folder name="Templates">
-        <folder name="JME3">
-            <file name="OgreXMLTemplate.xml" url="OgreXMLTemplate.xml">
-                <attr name="displayName" bundlevalue="com.jme3.gde.ogrexml.Bundle#Templates/Other/OgreXMLTemplate.xml"/>
-                <attr name="template" boolvalue="true"/>
-            </file>
-            <file name="OgreMaterialTemplate.material" url="OgreMaterialTemplate.material">
-                <attr name="displayName" bundlevalue="com.jme3.gde.ogrexml.Bundle#Templates/Other/OgreMaterialTemplate.material"/>
-                <attr name="template" boolvalue="true"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Toolbars">
         <folder name="JME3-Import">
             <file name="com-jme3-gde-ogrexml-importer-ImportOgreScene.shadow">

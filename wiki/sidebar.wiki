@@ -9,4 +9,5 @@
  * jMonkeyPlatform
   * BuildPlatform
   * AttachSourceCode
+  * NetbeansSwingGUIBuilder
  * [http://www.jmonkeyengine.com/wiki/doku.php?id=about_jme About]

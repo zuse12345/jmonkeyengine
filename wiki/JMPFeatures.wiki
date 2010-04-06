@@ -16,8 +16,8 @@ The Scene Viewer is the central part of the jMP. It's purpose is displaying stuf
 
 Features to be implemented:
 
-  * Load Model
-  * Load Scene
+  * Load & display model
+  * Display node tree from plugin
   * Select Model
   * Grid
   * Views - Normal, Wire Frame, Lighting

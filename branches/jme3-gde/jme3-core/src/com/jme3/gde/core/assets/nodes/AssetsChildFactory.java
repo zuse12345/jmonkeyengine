@@ -31,12 +31,15 @@
  */
 package com.jme3.gde.core.assets.nodes;
 
-import com.jme3.scene.Node;
+import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
 /**
@@ -54,10 +57,26 @@ public class AssetsChildFactory extends ChildFactory<Node>{
     protected boolean createKeys(List<Node> toPopulate) {
         try {
             //TODO: create managed tree from asset folder
+//            DataObject.find(proj.getProjectDirectory().getFileObject("assets")).getNodeDelegate()
             DataObject assetsFolder=DataObject.find(project.getProjectDirectory().getFileObject("assets"));
+            Node node=assetsFolder.getNodeDelegate();
+            Children children=node.getChildren();
+//            children.
+            Enumeration<Node> nodes=children.nodes();
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
         return true;
     }
+
+    @Override
+    protected Node createNodeForKey(Node key) {
+        return super.createNodeForKey(key);
+    }
+
+    @Override
+    protected Node[] createNodesForKey(Node key) {
+        return super.createNodesForKey(key);
+    }
+
 }

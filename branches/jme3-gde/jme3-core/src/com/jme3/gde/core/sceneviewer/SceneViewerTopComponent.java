@@ -84,12 +84,13 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 
         jToolBar1.setRollover(true);
 
-        enableCamLight.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/core/sceneviewer/icons/lightbulb.gif"))); // NOI18N
+        enableCamLight.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/core/sceneviewer/icons/lightbulb_off.gif"))); // NOI18N
         enableCamLight.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(enableCamLight, org.openide.util.NbBundle.getMessage(SceneViewerTopComponent.class, "SceneViewerTopComponent.enableCamLight.text")); // NOI18N
         enableCamLight.setToolTipText(org.openide.util.NbBundle.getMessage(SceneViewerTopComponent.class, "SceneViewerTopComponent.enableCamLight.toolTipText")); // NOI18N
         enableCamLight.setFocusable(false);
         enableCamLight.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        enableCamLight.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/core/sceneviewer/icons/lightbulb.gif"))); // NOI18N
         enableCamLight.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         enableCamLight.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -98,11 +99,12 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
         });
         jToolBar1.add(enableCamLight);
 
-        enableWireframe.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/core/sceneviewer/icons/wire.gif"))); // NOI18N
+        enableWireframe.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/core/sceneviewer/icons/box_color.gif"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(enableWireframe, org.openide.util.NbBundle.getMessage(SceneViewerTopComponent.class, "SceneViewerTopComponent.enableWireframe.text")); // NOI18N
         enableWireframe.setToolTipText(org.openide.util.NbBundle.getMessage(SceneViewerTopComponent.class, "SceneViewerTopComponent.enableWireframe.toolTipText")); // NOI18N
         enableWireframe.setFocusable(false);
         enableWireframe.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        enableWireframe.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/core/sceneviewer/icons/box_wire.gif"))); // NOI18N
         enableWireframe.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         enableWireframe.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

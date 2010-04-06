@@ -31,10 +31,34 @@
  */
 package com.jme3.gde.core.assets.nodes;
 
+import java.awt.Image;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
+
 /**
  *
  * @author normenhansen
  */
-public class AssetTypeFolderNode {
+public class AssetTypeFolderNode extends FilterNode{
 
+    private Image smallImage;
+    private String name;
+
+    public AssetTypeFolderNode(Node node, String icon, String name) {
+        super(node);
+        smallImage = ImageUtilities.loadImage("/com/jme3/gde/core/assets/nodes/icons/"+icon+".gif");
+    }
+
+    public String getDisplayName() {
+        return name;
+    }
+
+    public Image getIcon(int type) {
+        return smallImage;
+    }
+
+    public Image getOpenedIcon(int type) {
+        return smallImage;
+    }
 }

@@ -391,11 +391,17 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         });
     }
 
-    public void enableWireFrame(boolean selected) {
-        if (selected) {
-            viewPort.addProcessor(wireProcessor);
-        } else {
-            viewPort.removeProcessor(wireProcessor);
-        }
+    public void enableWireFrame(final boolean selected) {
+        enqueue(new Callable() {
+
+            public Object call() throws Exception {
+                if (selected) {
+                    viewPort.addProcessor(wireProcessor);
+                } else {
+                    viewPort.removeProcessor(wireProcessor);
+                }
+                return null;
+            }
+        });
     }
 }

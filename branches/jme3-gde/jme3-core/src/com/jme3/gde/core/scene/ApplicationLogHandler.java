@@ -33,6 +33,7 @@ package com.jme3.gde.core.scene;
 
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import org.openide.windows.IOProvider;
@@ -42,19 +43,25 @@ import org.openide.windows.InputOutput;
  *
  * @author normenhansen
  */
-public class ApplicationLogHandler extends Handler{
-    InputOutput io = IOProvider.getDefault().getIO ("Application", true);
-    Formatter formatter=new SimpleFormatter();
+public class ApplicationLogHandler extends Handler {
+
+    InputOutput io = IOProvider.getDefault().getIO("Application", true);
+    Formatter formatter = new SimpleFormatter();
 
     public ApplicationLogHandler() {
-
     }
-
-    
 
     @Override
     public void publish(LogRecord record) {
-        io.getOut().println (formatter.formatMessage(record));
+        if (record.getLevel().equals(Level.SEVERE)) {
+            io.getErr().println(formatter.formatMessage(record));
+        }
+        else if (record.getLevel().equals(Level.WARNING)) {
+            io.getErr().println(formatter.formatMessage(record));
+        }
+        else {
+            io.getOut().println(formatter.formatMessage(record));
+        }
     }
 
     @Override
@@ -68,6 +75,4 @@ public class ApplicationLogHandler extends Handler{
         io.getErr().close();
 //        throw new UnsupportedOperationException("Not supported yet.");
     }
-
-
 }

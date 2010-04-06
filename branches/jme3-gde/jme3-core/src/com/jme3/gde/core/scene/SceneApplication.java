@@ -37,8 +37,9 @@ import com.jme3.bounding.BoundingVolume;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.gde.core.assets.ProjectAssetManager;
+import com.jme3.gde.core.scene.nodes.JmeNode;
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
-import com.jme3.gde.core.scene.nodes.JmeSpatialChildFactory;
+import com.jme3.gde.core.scene.nodes.NodeUtility;
 import com.jme3.gde.core.scene.processors.WireProcessor;
 import com.jme3.input.FlyByCamera;
 import com.jme3.input.KeyInput;
@@ -62,7 +63,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.awt.StatusDisplayer;
-import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -353,12 +353,10 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     }
 
     private void notifySceneListeners() {
-        JmeSpatialChildFactory factory = new JmeSpatialChildFactory(rootNode);
-        JmeSpatial jmeSpatial = new JmeSpatial(rootNode, Children.create(factory, false));
-
+        JmeNode node=NodeUtility.createTree(rootNode);
         for (Iterator<SceneListener> it = listeners.iterator(); it.hasNext();) {
             SceneListener sceneViewerListener = it.next();
-            sceneViewerListener.rootNodeChanged(jmeSpatial);
+            sceneViewerListener.rootNodeChanged(node);
         }
     }
 

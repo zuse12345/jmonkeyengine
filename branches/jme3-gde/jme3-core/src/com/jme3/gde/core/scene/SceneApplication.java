@@ -98,6 +98,8 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     private ApplicationLogHandler logHandler = new ApplicationLogHandler();
     private WireProcessor wireProcessor;
 
+    private JmeSpatial currentNode;
+
     public SceneApplication() {
         manager = ProjectAssetManager.getManager();
         AppSettings newSetting = new AppSettings(true);
@@ -353,25 +355,63 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     }
 
     private void notifySceneListeners() {
-        JmeNode node=NodeUtility.createTree(rootNode);
         for (Iterator<SceneListener> it = listeners.iterator(); it.hasNext();) {
             SceneListener sceneViewerListener = it.next();
-            sceneViewerListener.rootNodeChanged(node);
+            sceneViewerListener.rootNodeChanged(currentNode);
         }
     }
 
-    public void showModel(String name) {
-        rootNode.detachAllChildren();
-        Spatial model = manager.loadModel(name);
-        if (model == null) {
-            StatusDisplayer.getDefault().setStatusText("could not load model " + name);
-        }
-//        scaleAndCenter(model, 1.0f);
-        rootNode.attachChild(model);
-        notifySceneListeners();
+
+    /**
+     * method to load and show a model via its name (threadsafe)<br>
+     * only to be used to show models in the assetmanager
+     * @param name
+     */
+    public void showModel(final String name) {
+        //TODO: notify listeners about change
+        enqueue(new Callable() {
+
+            public Object call() throws Exception {
+                rootNode.detachAllChildren();
+                Spatial model = manager.loadModel(name);
+                if(model instanceof Node){
+                    currentNode=NodeUtility.createNode((Node)model);
+                }
+                else{
+                    currentNode=NodeUtility.createSpatial(model);
+                }
+                if (model == null) {
+                    StatusDisplayer.getDefault().setStatusText("could not load model " + name);
+                    return null;
+                }
+                rootNode.attachChild(model);
+                notifySceneListeners();
+                return null;
+            }
+        });
     }
 
-    public void showTree(JmeSpatial tree) {
+    /**
+     * method to display the node tree of a plugin (threadsafe)
+     * @param tree
+     */
+    public void showTree(final JmeNode tree) {
+        //TODO: notify listeners about change, set tree to "displayed"
+        enqueue(new Callable() {
+
+            public Object call() throws Exception {
+                rootNode.detachAllChildren();
+                currentNode=tree;
+                Node model = (Node)tree.getLookup().lookup(Spatial.class);
+                if (model == null) {
+                    StatusDisplayer.getDefault().setStatusText("could not load tree " + tree);
+                    return null;
+                }
+                rootNode.attachChild(model);
+                notifySceneListeners();
+                return null;
+            }
+        });
     }
 
     public void enableCamLight(final boolean enabled) {

@@ -33,6 +33,7 @@
 package com.jme3.gde.core.scene.nodes;
 
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import org.openide.nodes.Children;
 
 /**
@@ -41,10 +42,16 @@ import org.openide.nodes.Children;
  */
 public class NodeUtility {
 
-    public static JmeNode createTree(Node node){
+    public static JmeNode createNode(Node node){
         JmeSpatialChildFactory factory = new JmeSpatialChildFactory(node);
         JmeNode jmeNode = new JmeNode(node, Children.create(factory, false));
         return jmeNode;
+    }
+
+    public static JmeSpatial createSpatial(Spatial node){
+        JmeSpatialChildFactory factory = new JmeSpatialChildFactory(node);
+        JmeSpatial jmeSpatial = new JmeSpatial(node, Children.create(factory, false));
+        return jmeSpatial;
     }
 
 }

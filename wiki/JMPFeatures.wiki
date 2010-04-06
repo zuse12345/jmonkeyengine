@@ -5,6 +5,8 @@
 
 This pages is intended to list the features we are working on, in order to help us keep focused. Keep in mind it is a work in progress.
 
+For "official" info about jMonkeyPlatform look at the [http://www.jmonkeyengine.com/wiki/doku.php/jme3:jmonkeyplatform jMonkeyEngine wiki].
+
 
 = Scene Viewer =
 

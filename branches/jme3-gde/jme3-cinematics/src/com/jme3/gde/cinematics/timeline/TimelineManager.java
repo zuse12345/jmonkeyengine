@@ -373,4 +373,8 @@ public class TimelineManager implements TimelinePropertyListener, SceneListener 
             timeline.reloadControls();
         }
     }
+
+    public void nodeSelected(JmeSpatial spatial) {
+       // TODO
+    }
 }

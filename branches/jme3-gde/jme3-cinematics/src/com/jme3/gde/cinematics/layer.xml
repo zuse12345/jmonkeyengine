@@ -14,13 +14,6 @@
                 <attr name="type" stringvalue="org.openide.cookies.SaveCookie"/>
             </file>
         </folder>
-        <folder name="Window">
-            <file name="com-jme3-gde-cinematics-TimelineAction.instance">
-                <attr name="component" methodvalue="com.jme3.gde.cinematics.TimelineTopComponent.findInstance"/>
-                <attr name="displayName" bundlevalue="com.jme3.gde.cinematics.Bundle#CTL_TimelineAction"/>
-                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
-            </file>
-        </folder>
     </folder>
     <folder name="Menu">
         <folder name="File">
@@ -49,7 +42,7 @@
         <folder name="File">
             <file name="SaveAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/File/org-openide-actions-SaveAction.instance"/>
-                <attr name="position" intvalue="100"/>
+                <attr name="position" intvalue="400"/>
             </file>
         </folder>
     </folder>

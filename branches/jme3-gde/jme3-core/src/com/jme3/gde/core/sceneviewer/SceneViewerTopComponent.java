@@ -77,6 +77,7 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 
         jToolBar1 = new javax.swing.JToolBar();
         enableCamLight = new javax.swing.JToggleButton();
+        enableWireframe = new javax.swing.JToggleButton();
         oGLPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.BorderLayout());
@@ -97,9 +98,21 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
         });
         jToolBar1.add(enableCamLight);
 
+        enableWireframe.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/core/sceneviewer/icons/wire.gif"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(enableWireframe, org.openide.util.NbBundle.getMessage(SceneViewerTopComponent.class, "SceneViewerTopComponent.enableWireframe.text")); // NOI18N
+        enableWireframe.setToolTipText(org.openide.util.NbBundle.getMessage(SceneViewerTopComponent.class, "SceneViewerTopComponent.enableWireframe.toolTipText")); // NOI18N
+        enableWireframe.setFocusable(false);
+        enableWireframe.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        enableWireframe.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        enableWireframe.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                enableWireframeActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(enableWireframe);
+
         add(jToolBar1, java.awt.BorderLayout.NORTH);
 
-        oGLPanel.setMinimumSize(new java.awt.Dimension(10, 10));
         oGLPanel.setPreferredSize(new java.awt.Dimension(100, 100));
         oGLPanel.setLayout(new java.awt.GridLayout(1, 0));
         add(oGLPanel, java.awt.BorderLayout.CENTER);
@@ -109,8 +122,13 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
         app.enableCamLight(enableCamLight.isSelected());
     }//GEN-LAST:event_enableCamLightActionPerformed
 
+    private void enableWireframeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableWireframeActionPerformed
+        app.enableWireFrame(enableWireframe.isSelected());
+    }//GEN-LAST:event_enableWireframeActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton enableCamLight;
+    private javax.swing.JToggleButton enableWireframe;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JPanel oGLPanel;
     // End of variables declaration//GEN-END:variables

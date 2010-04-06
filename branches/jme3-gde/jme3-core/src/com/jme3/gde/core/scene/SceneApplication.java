@@ -39,7 +39,9 @@ import com.jme3.font.BitmapText;
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
 import com.jme3.gde.core.scene.nodes.JmeSpatialChildFactory;
+import com.jme3.gde.core.scene.processors.WireProcessor;
 import com.jme3.input.FlyByCamera;
+import com.jme3.input.KeyInput;
 import com.jme3.input.binding.BindingListener;
 import com.jme3.light.PointLight;
 import com.jme3.material.RenderState;
@@ -76,7 +78,7 @@ import org.openide.util.lookup.Lookups;
 public class SceneApplication extends Application implements LookupProvider, LookupListener, BindingListener {
 
     private boolean leftMouse, rightMouse, middleMouse;
-    private float deltaX, deltaY, deltaWheel;
+    private float deltaX, deltaY, deltaZ, deltaWheel;
     private PointLight camLight;
     private static SceneApplication application;
 
@@ -94,14 +96,15 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     protected boolean showSettings = true;
     private Lookup.Result result;
     private ApplicationLogHandler logHandler = new ApplicationLogHandler();
+    private WireProcessor wireProcessor;
 
     public SceneApplication() {
         manager = ProjectAssetManager.getManager();
-        AppSettings settings = new AppSettings(true);
-        settings.setFrameRate(30);
+        AppSettings newSetting = new AppSettings(true);
+        newSetting.setFrameRate(30);
 //        settings.setVSync(true);
 //        settings.setRenderer("JOGL");
-        setSettings(settings);
+        setSettings(newSetting);
 
         Logger.getLogger("com.jme3").addHandler(logHandler);
 
@@ -156,6 +159,11 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         inputManager.registerMouseButtonBinding("MOUSE_LEFT", 0);
         inputManager.registerMouseButtonBinding("MOUSE_RIGHT", 1);
         inputManager.registerMouseButtonBinding("MOUSE_MIDDLE", 2);
+
+        inputManager.registerKeyBinding("Up", KeyInput.KEY_UP);
+        inputManager.registerKeyBinding("Down", KeyInput.KEY_DOWN);
+
+        wireProcessor = new WireProcessor(manager);
     }
 
     @Override
@@ -236,9 +244,9 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                 enqueue(new Callable<Object>() {
 
                     public Object call() throws Exception {
-                        if (manager != pmanager.getManager()) {
+                        if (manager != ProjectAssetManager.getManager()) {
                             rootNode.detachAllChildren();
-                            manager = pmanager.getManager();
+                            manager = ProjectAssetManager.getManager();
                         }
                         return null;
                     }
@@ -247,7 +255,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             }
         }
     }
-    
     private Quaternion rot = new Quaternion();
     private Vector3f vector = new Vector3f();
     private Vector3f focus = new Vector3f();
@@ -275,6 +282,11 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         focus.addLocal(vector);
     }
 
+    private void moveCamera(float forward) {
+        cam.getDirection().mult(forward, vector);
+        cam.setLocation(cam.getLocation().add(vector));
+    }
+
     private void zoomCamera(float amount) {
         float dist = cam.getLocation().distance(focus);
         amount = dist - Math.max(0f, dist - amount);
@@ -296,15 +308,20 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                 panCamera(deltaX * 10, -deltaY * 10);
             }
 
+            moveCamera(deltaZ);
+
             leftMouse = false;
             rightMouse = false;
             middleMouse = false;
             deltaX = 0;
             deltaY = 0;
+            deltaZ = 0;
             deltaWheel = 0;
-        }
-
-        if (binding.equals("MOUSE_LEFT")) {
+        } else if (binding.equals("Up")) {
+            deltaZ = 10;
+        } else if (binding.equals("Down")) {
+            deltaZ = -10;
+        } else if (binding.equals("MOUSE_LEFT")) {
             leftMouse = value > 0f;
         } else if (binding.equals("MOUSE_RIGHT")) {
             rightMouse = value > 0f;
@@ -324,21 +341,20 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             deltaWheel = -value;
         }
     }
-
     //TODO: replace with Lookup functionality
-    private LinkedList<SceneListener> listeners=new LinkedList<SceneListener>();
+    private LinkedList<SceneListener> listeners = new LinkedList<SceneListener>();
 
-    public void addSceneListener(SceneListener listener){
+    public void addSceneListener(SceneListener listener) {
         listeners.add(listener);
     }
 
-    public void removeSceneListener(SceneListener listener){
+    public void removeSceneListener(SceneListener listener) {
         listeners.remove(listener);
     }
 
-    private void notifySceneListeners(){
-        JmeSpatialChildFactory factory=new JmeSpatialChildFactory(rootNode);
-        JmeSpatial jmeSpatial=new JmeSpatial(rootNode,Children.create(factory, false));
+    private void notifySceneListeners() {
+        JmeSpatialChildFactory factory = new JmeSpatialChildFactory(rootNode);
+        JmeSpatial jmeSpatial = new JmeSpatial(rootNode, Children.create(factory, false));
 
         for (Iterator<SceneListener> it = listeners.iterator(); it.hasNext();) {
             SceneListener sceneViewerListener = it.next();
@@ -358,17 +374,16 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     }
 
     public void showTree(JmeSpatial tree) {
-
     }
 
-    public void enableCamLight(final boolean enabled){
+    public void enableCamLight(final boolean enabled) {
         enqueue(new Callable() {
+
             public Object call() throws Exception {
                 //TODO: how to remove lights?? no removeLight in node?
-                if(enabled){
+                if (enabled) {
                     camLight.setColor(ColorRGBA.Gray);
-                }
-                else{
+                } else {
                     camLight.setColor(ColorRGBA.Black);
                 }
                 return null;
@@ -376,4 +391,11 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         });
     }
 
+    public void enableWireFrame(boolean selected) {
+        if (selected) {
+            viewPort.addProcessor(wireProcessor);
+        } else {
+            viewPort.removeProcessor(wireProcessor);
+        }
+    }
 }

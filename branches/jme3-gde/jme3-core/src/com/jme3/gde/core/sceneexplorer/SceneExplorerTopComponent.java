@@ -175,4 +175,8 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
         explorerManager.setRootContext(spatial);
         explorerManager.getRootContext().setDisplayName(spatial.getName());
     }
+
+    public void nodeSelected(JmeSpatial spatial) {
+        // TODO
+    }
 }

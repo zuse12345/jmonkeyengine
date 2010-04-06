@@ -31,6 +31,11 @@ public class ViewPort {
         processors.add(processor);
     }
 
+    public void removeProcessor(SceneProcessor processor){
+        processors.remove(processor);
+        processor.cleanup();
+    }
+
     public boolean isClearEnabled() {
         return clearEnabled;
     }

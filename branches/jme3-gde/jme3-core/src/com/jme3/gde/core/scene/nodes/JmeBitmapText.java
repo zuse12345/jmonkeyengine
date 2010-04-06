@@ -31,10 +31,10 @@
  */
 package com.jme3.gde.core.scene.nodes;
 
+import com.jme3.font.BitmapFont;
+import com.jme3.font.BitmapText;
 import com.jme3.gde.core.scene.nodes.properties.JmeProperty;
-import com.jme3.material.Material;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
+import com.jme3.math.ColorRGBA;
 import java.awt.Image;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node.Property;
@@ -46,13 +46,13 @@ import org.openide.util.ImageUtilities;
  *
  * @author normenhansen
  */
-public class JmeGeometry extends JmeSpatial {
+public class JmeBitmapText extends JmeGeometry {
 
     private static Image smallImage =
-            ImageUtilities.loadImage("com/jme3/gde/core/scene/nodes/icons/geometry.gif");
-    private Geometry geom;
+            ImageUtilities.loadImage("/com/jme3/gde/core/scene/nodes/icons/bitmaptext.gif");
+    private BitmapText geom;
 
-    public JmeGeometry(Geometry spatial, Children children) {
+    public JmeBitmapText(BitmapText spatial, Children children) {
         super(spatial, children);
         this.geom = spatial;
         setName(spatial.getName());
@@ -73,23 +73,23 @@ public class JmeGeometry extends JmeSpatial {
         //TODO: multithreading..
         Sheet sheet = super.createSheet();
         Sheet.Set set = Sheet.createPropertiesSet();
-        set.setDisplayName("Geometry");
-        set.setName(Geometry.class.getName());
-        Geometry obj = geom;//getLookup().lookup(Spatial.class);
+        set.setDisplayName("BitmapText");
+        set.setName(BitmapText.class.getName());
+        BitmapText obj = geom;//getLookup().lookup(Spatial.class);
         if (obj == null) {
             return sheet;
         }
 
-        set.put(makeProperty(obj, int.class, "getLodLevel", "setLodLevel", "lod level"));
-        set.put(makeProperty(obj, Material.class, "getMaterial", "material"));
-        set.put(makeProperty(obj, Mesh.class, "getMesh", "mesh"));
+        set.put(makeProperty(obj, String.class, "getText", "setText", "text"));
+        set.put(makeProperty(obj, ColorRGBA.class, "getColor", "setColor", "color"));
+        set.put(makeProperty(obj, BitmapFont.class, "getFont", "font"));
 
         sheet.put(set);
         return sheet;
 
     }
 
-    private Property makeProperty(Geometry obj, Class returntype, String method, String name) {
+    private Property makeProperty(BitmapText obj, Class returntype, String method, String name) {
         Property prop = null;
         try {
             prop = new JmeProperty(obj, returntype, method, null);
@@ -100,7 +100,7 @@ public class JmeGeometry extends JmeSpatial {
         return prop;
     }
 
-    private Property makeProperty(Geometry obj, Class returntype, String method, String setter, String name) {
+    private Property makeProperty(BitmapText obj, Class returntype, String method, String setter, String name) {
         Property prop = null;
         try {
             prop = new JmeProperty(obj, returntype, method, setter);

@@ -49,7 +49,7 @@ import org.openide.util.ImageUtilities;
  */
 public class JmeAudioNode extends JmeNode{
     private static Image smallImage =
-          ImageUtilities.loadImage("/com/jme3/gde/core/scene/nodes/icons/audionode.gif");
+          ImageUtilities.loadImage("com/jme3/gde/core/scene/nodes/icons/audionode.gif");
 
     private AudioNode node;
 

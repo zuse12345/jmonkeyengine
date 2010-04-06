@@ -45,7 +45,7 @@ import org.openide.util.ImageUtilities;
  */
 public class JmeNode extends JmeSpatial {
     private static Image smallImage =
-          ImageUtilities.loadImage("/com/jme3/gde/core/scene/nodes/icons/node.gif");
+          ImageUtilities.loadImage("com/jme3/gde/core/scene/nodes/icons/node.gif");
 
     private Node node;
 

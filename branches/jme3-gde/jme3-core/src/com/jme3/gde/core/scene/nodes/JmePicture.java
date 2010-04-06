@@ -32,9 +32,7 @@
 package com.jme3.gde.core.scene.nodes;
 
 import com.jme3.gde.core.scene.nodes.properties.JmeProperty;
-import com.jme3.material.Material;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
+import com.jme3.ui.Picture;
 import java.awt.Image;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node.Property;
@@ -46,13 +44,13 @@ import org.openide.util.ImageUtilities;
  *
  * @author normenhansen
  */
-public class JmeGeometry extends JmeSpatial {
+public class JmePicture extends JmeGeometry {
 
     private static Image smallImage =
-            ImageUtilities.loadImage("com/jme3/gde/core/scene/nodes/icons/geometry.gif");
-    private Geometry geom;
+            ImageUtilities.loadImage("com/jme3/gde/core/scene/nodes/icons/picture.gif");
+    private Picture geom;
 
-    public JmeGeometry(Geometry spatial, Children children) {
+    public JmePicture(Picture spatial, Children children) {
         super(spatial, children);
         this.geom = spatial;
         setName(spatial.getName());
@@ -73,23 +71,21 @@ public class JmeGeometry extends JmeSpatial {
         //TODO: multithreading..
         Sheet sheet = super.createSheet();
         Sheet.Set set = Sheet.createPropertiesSet();
-        set.setDisplayName("Geometry");
-        set.setName(Geometry.class.getName());
-        Geometry obj = geom;//getLookup().lookup(Spatial.class);
+        set.setDisplayName("Picture");
+        set.setName(Picture.class.getName());
+        Picture obj = geom;//getLookup().lookup(Spatial.class);
         if (obj == null) {
             return sheet;
         }
 
-        set.put(makeProperty(obj, int.class, "getLodLevel", "setLodLevel", "lod level"));
-        set.put(makeProperty(obj, Material.class, "getMaterial", "material"));
-        set.put(makeProperty(obj, Mesh.class, "getMesh", "mesh"));
+//        set.put(makeProperty(obj, String.class, "getText", "setText", "text"));
 
         sheet.put(set);
         return sheet;
 
     }
 
-    private Property makeProperty(Geometry obj, Class returntype, String method, String name) {
+    private Property makeProperty(Picture obj, Class returntype, String method, String name) {
         Property prop = null;
         try {
             prop = new JmeProperty(obj, returntype, method, null);
@@ -100,7 +96,7 @@ public class JmeGeometry extends JmeSpatial {
         return prop;
     }
 
-    private Property makeProperty(Geometry obj, Class returntype, String method, String setter, String name) {
+    private Property makeProperty(Picture obj, Class returntype, String method, String setter, String name) {
         Property prop = null;
         try {
             prop = new JmeProperty(obj, returntype, method, setter);

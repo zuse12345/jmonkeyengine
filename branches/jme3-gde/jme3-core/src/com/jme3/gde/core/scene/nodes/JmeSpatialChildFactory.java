@@ -32,9 +32,11 @@
 package com.jme3.gde.core.scene.nodes;
 
 import com.jme3.effect.ParticleEmitter;
+import com.jme3.font.BitmapText;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
+import com.jme3.ui.Picture;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -87,6 +89,12 @@ public class JmeSpatialChildFactory extends ChildFactory<Spatial> {
         if (key instanceof com.jme3.scene.Node) {
             return new JmeNode((com.jme3.scene.Node) key, Children.create(factory, false));
         }
+        if (key instanceof BitmapText) {
+            return new JmeBitmapText((BitmapText) key, Children.create(factory, false));
+        }
+        if (key instanceof Picture) {
+            return new JmePicture((Picture) key, Children.create(factory, false));
+        }
         if (key instanceof ParticleEmitter) {
             return new JmeParticleEmitter((ParticleEmitter) key, Children.create(factory, false));
         }
@@ -105,6 +113,12 @@ public class JmeSpatialChildFactory extends ChildFactory<Spatial> {
         }
         else if (key instanceof com.jme3.scene.Node) {
             nodes[0] = new JmeNode((com.jme3.scene.Node) key, Children.create(factory, false));
+        }
+        else if (key instanceof BitmapText) {
+            nodes[0] = new JmeBitmapText((BitmapText) key, Children.create(factory, false));
+        }
+        else if (key instanceof Picture) {
+            nodes[0] = new JmePicture((Picture) key, Children.create(factory, false));
         }
         else if (key instanceof ParticleEmitter) {
             nodes[0] = new JmeParticleEmitter((ParticleEmitter) key, Children.create(factory, false));

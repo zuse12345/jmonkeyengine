@@ -50,7 +50,7 @@ import org.openide.util.ImageUtilities;
  */
 public class JmeParticleEmitter extends JmeGeometry{
     private static Image smallImage =
-            ImageUtilities.loadImage("/com/jme3/gde/core/scene/nodes/icons/particleemitter.gif");
+            ImageUtilities.loadImage("com/jme3/gde/core/scene/nodes/icons/particleemitter.gif");
     private ParticleEmitter geom;
 
     public JmeParticleEmitter(ParticleEmitter spatial, Children children) {

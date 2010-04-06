@@ -31,6 +31,7 @@
  */
 package com.jme3.gde.core.scene.nodes;
 
+import com.jme3.effect.ParticleEmitter;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
@@ -86,6 +87,9 @@ public class JmeSpatialChildFactory extends ChildFactory<Spatial> {
         if (key instanceof com.jme3.scene.Node) {
             return new JmeNode((com.jme3.scene.Node) key, Children.create(factory, false));
         }
+        if (key instanceof ParticleEmitter) {
+            return new JmeParticleEmitter((ParticleEmitter) key, Children.create(factory, false));
+        }
         if (key instanceof com.jme3.scene.Geometry) {
             return new JmeGeometry((Geometry) key, Children.create(factory, false));
         }
@@ -101,6 +105,9 @@ public class JmeSpatialChildFactory extends ChildFactory<Spatial> {
         }
         else if (key instanceof com.jme3.scene.Node) {
             nodes[0] = new JmeNode((com.jme3.scene.Node) key, Children.create(factory, false));
+        }
+        else if (key instanceof ParticleEmitter) {
+            nodes[0] = new JmeParticleEmitter((ParticleEmitter) key, Children.create(factory, false));
         }
         else if (key instanceof com.jme3.scene.Geometry) {
             nodes[0] = new JmeGeometry((Geometry) key, Children.create(factory, false));

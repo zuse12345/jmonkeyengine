@@ -1,4 +1,5 @@
 #summary Wiki Sidebar
+#labels JMP
 *Menu*
  * [Introduction]
  * jMonkeyEngine3
@@ -10,4 +11,5 @@
   * [BuildPlatform Build Platform]
   * [AttachSourceCode Attach Source Code]
   * [NetbeansSwingGuiBuilder Netbeans Swing GUI Builder]
+  * [JMPFeatures Features]
  * [http://www.jmonkeyengine.com/wiki/doku.php?id=about_jme About]

@@ -32,6 +32,7 @@
 package com.jme3.gde.core.scene.nodes.properties;
 
 import com.jme3.gde.core.scene.SceneApplication;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import java.lang.reflect.InvocationTargetException;
@@ -53,6 +54,9 @@ public class JmeProperty<T> extends PropertySupport.Reflection<T> {
         }
         else if (valueType == Quaternion.class) {
             setPropertyEditorClass(QuaternionPropertyEditor.class);
+        }
+        else if (valueType == ColorRGBA.class) {
+            setPropertyEditorClass(ColorRGBAPropertyEditor.class);
         }
     }
 

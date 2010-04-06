@@ -33,15 +33,19 @@ package com.jme3.gde.core.scene.nodes;
 
 import com.jme3.gde.core.scene.nodes.properties.JmeProperty;
 import com.jme3.scene.Node;
+import java.awt.Image;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author normenhansen
  */
 public class JmeNode extends JmeSpatial {
+    private static Image smallImage =
+          ImageUtilities.loadImage("/com/jme3/gde/core/scene/nodes/icons/node.gif");
 
     private Node node;
 
@@ -49,6 +53,16 @@ public class JmeNode extends JmeSpatial {
         super(spatial, children);
         this.node = spatial;
         setName(spatial.getName());
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        return smallImage;
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return smallImage;
     }
 
     @Override

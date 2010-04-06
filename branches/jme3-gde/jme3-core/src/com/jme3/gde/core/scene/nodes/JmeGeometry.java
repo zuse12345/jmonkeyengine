@@ -35,16 +35,20 @@ import com.jme3.gde.core.scene.nodes.properties.JmeProperty;
 import com.jme3.material.Material;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
+import java.awt.Image;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author normenhansen
  */
 public class JmeGeometry extends JmeSpatial {
+    private static Image smallImage =
+          ImageUtilities.loadImage("/com/jme3/gde/core/scene/nodes/icons/geometry.gif");
 
     private Geometry geom;
 
@@ -52,6 +56,16 @@ public class JmeGeometry extends JmeSpatial {
         super(spatial, children);
         this.geom = spatial;
         setName(spatial.getName());
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        return smallImage;
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return smallImage;
     }
 
     @Override

@@ -977,6 +977,20 @@ public final class BufferUtils {
         return buffer;
     }
 
+    public static ByteBuffer ensureLargeEnough( ByteBuffer buffer, int required ) {
+        if ( buffer == null || ( buffer.remaining() < required ) ) {
+            int position = ( buffer != null ? buffer.position() : 0 );
+            ByteBuffer newVerts = createByteBuffer( position + required );
+            if ( buffer != null ) {
+                buffer.rewind();
+                newVerts.put( buffer );
+                newVerts.position( position );
+            }
+            buffer = newVerts;
+        }
+        return buffer;
+    }
+
     public static void printCurrentDirectMemory(StringBuilder store) {
         long totalHeld = 0;
         // make a new set to hold the keys to prevent concurrency issues.

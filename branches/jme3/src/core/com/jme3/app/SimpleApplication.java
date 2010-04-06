@@ -9,9 +9,7 @@ import com.jme3.input.binding.BindingListener;
 import com.jme3.material.RenderState;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
-import com.jme3.renderer.Renderer;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial.CullHint;
@@ -19,7 +17,6 @@ import com.jme3.system.AppSettings;
 import com.jme3.system.JmeContext.Type;
 import com.jme3.system.JmeSystem;
 import com.jme3.util.BufferUtils;
-import java.net.URL;
 
 /**
  * <code>SimpleApplication</code> extends the <code>Application</code> class
@@ -40,14 +37,15 @@ public abstract class SimpleApplication extends Application {
 
     public SimpleApplication(){
         super();
-        
-        // set some default settings in-case
-        // settings dialog is not shown
-        setSettings(new AppSettings(true));
     }
 
     @Override
     public void start(){
+        // set some default settings in-case
+        // settings dialog is not shown
+        if (settings == null)
+            setSettings(new AppSettings(true));
+
         // show settings dialog
         if (showSettings){
             if (!JmeSystem.showSettingsDialog(settings))

@@ -8,6 +8,8 @@ import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.Renderer;
 import com.jme3.asset.AssetManager;
+import com.jme3.audio.AudioRenderer;
+import com.jme3.audio.Listener;
 import com.jme3.input.InputManager;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
@@ -30,6 +32,7 @@ public class Application implements SystemListener {
      */
     protected AssetManager manager;
 
+    protected AudioRenderer audioRenderer;
     protected Renderer renderer;
     protected RenderManager renderManager;
     protected ViewPort viewPort;
@@ -39,6 +42,7 @@ public class Application implements SystemListener {
     protected AppSettings settings;
     protected Timer timer;
     protected Camera cam;
+    protected Listener listener;
 
     protected boolean inputEnabled = true;
     protected boolean pauseOnFocus = true;
@@ -96,6 +100,16 @@ public class Application implements SystemListener {
         settings = context.getSettings();
         timer = context.getTimer();
         renderer = context.getRenderer();
+    }
+
+    private void initAudio(){
+        if (settings.getAudioRenderer() != null){
+            audioRenderer = JmeSystem.newAudioRenderer(settings);
+            audioRenderer.initialize();
+
+            listener = new Listener();
+            audioRenderer.setListener(listener);
+        }
     }
 
     /**
@@ -165,6 +179,20 @@ public class Application implements SystemListener {
      */
     public Renderer getRenderer(){
         return renderer;
+    }
+
+    /**
+     * @return The audio renderer for the application, or null if was not started yet.
+     */
+    public AudioRenderer getAudioRenderer() {
+        return audioRenderer;
+    }
+
+    /**
+     * @return The listener object for audio
+     */
+    public Listener getListener() {
+        return listener;
     }
 
     /**
@@ -257,6 +285,7 @@ public class Application implements SystemListener {
         if (inputEnabled){
             initInput();
         }
+        initAudio();
 
         // update timer so that the next delta is not too large
         timer.update();
@@ -326,6 +355,10 @@ public class Application implements SystemListener {
             inputManager.update(timer.getTimePerFrame());
         }
 
+        if (audioRenderer != null){
+            audioRenderer.update(timer.getTimePerFrame());
+        }
+
         // user code here..
     }
 
@@ -348,6 +381,9 @@ public class Application implements SystemListener {
      */
     public void destroy(){
         destroyInput();
+        if (audioRenderer != null)
+            audioRenderer.cleanup();
+        
         timer.reset();
     }
 

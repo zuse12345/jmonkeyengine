@@ -69,7 +69,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
 
     public void cleanup(){
         // delete channel-based sources
-        ib.rewind();
+        ib.clear();
         ib.put(channels);
         ib.flip();
         alDeleteSources(ib);
@@ -169,7 +169,6 @@ public class LwjglAudioRenderer implements AudioRenderer {
         nativeBuf.put(arrayBuf, 0, size);
         nativeBuf.flip();
 
-        System.out.println("Filled buffer "+id+" with "+size+" bytes");
         alBufferData(id, convertFormat(stream), nativeBuf, stream.getSampleRate());
 
         return true;
@@ -421,6 +420,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
             ab.setId(id);
         }
 
+        ab.getData().clear();
         alBufferData(id, convertFormat(ab), ab.getData(), ab.getSampleRate());
         ab.clearUpdateNeeded();
     }

@@ -1,6 +1,7 @@
 package com.jme3.font;
 
 import com.jme3.math.ColorRGBA;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
@@ -23,7 +24,8 @@ public class FontQuad {
     private float quadTexWidth;
     private float quadTexHeight;
     
-    private ColorRGBA color;
+    private final ColorRGBA color = new ColorRGBA();
+    private int colorInt = 0xFFFFFFFF;
 
     public FontQuad() {
     }
@@ -64,6 +66,20 @@ public class FontQuad {
         fb.put(u1).put(v1);
         // upper right
         fb.put(u1).put(v0);
+    }
+
+    public void appendColors(ByteBuffer bb){
+        if (color != null){
+            bb.putInt(colorInt);
+            bb.putInt(colorInt);
+            bb.putInt(colorInt);
+            bb.putInt(colorInt);
+        }else{
+            bb.putInt(0xFFFFFFFF);
+            bb.putInt(0xFFFFFFFF);
+            bb.putInt(0xFFFFFFFF);
+            bb.putInt(0xFFFFFFFF);
+        }
     }
 
     public void appendIndices(ShortBuffer sb, int quadIndex){
@@ -143,9 +159,14 @@ public class FontQuad {
     }
 
     public void setColor(ColorRGBA color){
-        this.color = color;
+        this.color.set(color);
+        colorInt = color.asIntABGR();
     }
 
+    public ColorRGBA getColor() {
+        return color;
+    }
+    
     public int getLineNumber() {
         return lineNumber;
     }

@@ -17,7 +17,7 @@ public class AudioApp {
     public AudioApp(){
         AppSettings settings = new AppSettings(true);
         settings.setRenderer(null); // force dummy renderer (?)
-        settings.setAudioRenderer("LWJGL-OAL");
+        settings.setAudioRenderer("LWJGL");
         ar = JmeSystem.newAudioRenderer(settings);
         ar.initialize();
         manager = JmeSystem.newAssetManager();

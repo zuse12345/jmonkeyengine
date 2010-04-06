@@ -67,7 +67,7 @@ class Natives {
             if (audioRenderer.equals("LWJGL")){
                 needLWJGL = true;
                 needOAL = true;
-            }else if (audioRenderer.startsWith("JOAL")){
+            }else if (audioRenderer.equals("JOAL")){
                 needJOAL = true;
                 needGG = true;
                 needOAL = true;

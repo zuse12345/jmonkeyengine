@@ -15,7 +15,7 @@ public class StringBlock {
     private Rectangle textBox;
     private BitmapFont.Align alignment;
     private float size;
-    private ColorRGBA color;
+    private ColorRGBA color = new ColorRGBA(ColorRGBA.White);
     private boolean kerning;
 
     /**
@@ -33,7 +33,7 @@ public class StringBlock {
         this.textBox = textBox;
         this.alignment = alignment;
         this.size = size;
-        this.color = color;
+        this.color.set(color);
         this.kerning = kerning;
     }
 
@@ -42,7 +42,7 @@ public class StringBlock {
         this.textBox = null;
         this.alignment = Align.Left;
         this.size = 100;
-        this.color = ColorRGBA.White;
+        this.color.set(ColorRGBA.White);
         this.kerning = true;
     }
 
@@ -83,7 +83,7 @@ public class StringBlock {
     }
 
     public void setColor(ColorRGBA color) {
-        this.color = color;
+        this.color.set(color);
     }
 
     public boolean isKerning() {

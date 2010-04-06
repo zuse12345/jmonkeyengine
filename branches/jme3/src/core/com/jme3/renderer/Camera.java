@@ -1049,7 +1049,10 @@ public class Camera implements Savable, Cloneable {
 
         projectionMatrix.fromFrustum(frustumNear, frustumFar, frustumLeft, frustumRight, frustumTop, frustumBottom, parallelProjection);
 //        projectionMatrix.transposeLocal();
-        updateViewProjection();
+
+        // The frame is effected by the frustum values
+        // update it as well
+        onFrameChange();
     }
 
     /**

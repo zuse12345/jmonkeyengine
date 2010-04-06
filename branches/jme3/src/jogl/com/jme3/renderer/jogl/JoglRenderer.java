@@ -236,6 +236,21 @@ public class JoglRenderer implements Renderer {
         gl.glViewport(x, y, width, height);
     }
 
+    public void setClipRect(int x, int y, int width, int height){
+        if (!context.clipRectEnabled){
+            gl.glEnable(gl.GL_SCISSOR_TEST);
+            context.clipRectEnabled = true;
+        }
+        gl.glScissor(x, y, width, height);
+    }
+
+    public void clearClipRect(){
+        if (context.clipRectEnabled){
+            gl.glDisable(gl.GL_SCISSOR_TEST);
+            context.clipRectEnabled = false;
+        }
+    }
+
     private FloatBuffer storeMatrix(Matrix4f matrix, FloatBuffer store){
         store.rewind();
         matrix.fillFloatBuffer(store,true);

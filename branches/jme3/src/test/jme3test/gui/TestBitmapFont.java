@@ -4,10 +4,6 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.font.Rectangle;
-import com.jme3.math.Vector3f;
-import com.jme3.renderer.Renderer;
-import com.jme3.scene.Node;
-import com.jme3.scene.Spatial.CullHint;
 
 public class TestBitmapFont extends SimpleApplication {
 

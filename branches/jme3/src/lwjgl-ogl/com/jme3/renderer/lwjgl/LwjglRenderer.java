@@ -456,7 +456,22 @@ public class LwjglRenderer implements Renderer {
     public void setViewPort(int x, int y, int w, int h){
         glViewport(x, y, w, h);
     }
-    
+
+    public void setClipRect(int x, int y, int width, int height){
+        if (!context.clipRectEnabled){
+            glEnable(GL_SCISSOR_TEST);
+            context.clipRectEnabled = true;
+        }
+        glScissor(x, y, width, height);
+    }
+
+    public void clearClipRect(){
+        if (context.clipRectEnabled){
+            glDisable(GL_SCISSOR_TEST);
+            context.clipRectEnabled = false;
+        }
+    }
+
     public void onFrame(){
         objManager.deleteUnused(this);
     }

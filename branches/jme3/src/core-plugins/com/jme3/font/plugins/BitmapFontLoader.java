@@ -7,6 +7,8 @@ import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetLoader;
 import com.jme3.asset.TextureKey;
+import com.jme3.material.RenderState.BlendMode;
+import com.jme3.math.ColorRGBA;
 import com.jme3.texture.Texture;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,7 +18,8 @@ public class BitmapFontLoader implements AssetLoader {
 
     public Object load(AssetInfo info) throws IOException {
         MaterialDef spriteMat = 
-                (MaterialDef) info.getManager().loadContent(new AssetKey("font2d.j3md"));
+                (MaterialDef) info.getManager().loadContent(new AssetKey("default_gui.j3md"));
+
 
         BitmapCharacterSet charSet = new BitmapCharacterSet();
         Material[] matPages = null;
@@ -76,6 +79,9 @@ public class BitmapFontLoader implements AssetLoader {
                 if (index >= 0 && tex != null){
                     Material mat = new Material(spriteMat);
                     mat.setTexture("m_Texture", tex);
+                    mat.setColor("m_Color", ColorRGBA.White);
+                    mat.setBoolean("m_VertexColor", true);
+                    mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
                     matPages[index] = mat;
                 }
             }else if (tokens[0].equals("char")){

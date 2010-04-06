@@ -63,6 +63,10 @@ public interface Renderer {
 
     public void setViewPort(int x, int y, int width, int height);
 
+    public void setClipRect(int x, int y, int width, int height);
+
+    public void clearClipRect();
+
     public void setLighting(LightList lights);
 
     /**

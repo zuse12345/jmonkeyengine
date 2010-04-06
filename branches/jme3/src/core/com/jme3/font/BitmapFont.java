@@ -6,6 +6,7 @@ import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
 import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
 import java.io.IOException;
 
 /**
@@ -16,26 +17,13 @@ import java.io.IOException;
  */
 public class BitmapFont implements Savable {
 
-    public void write(JmeExporter ex) throws IOException {
-        OutputCapsule oc = ex.getCapsule(this);
-        oc.write(charSet, "charSet", null);
-        oc.write(pages, "pages", null);
-    }
-
-    public void read(JmeImporter im) throws IOException {
-        InputCapsule ic = im.getCapsule(this);
-        charSet = (BitmapCharacterSet) ic.readSavable("charSet", null);
-        Savable[] pagesSavable = ic.readSavableArray("pages", null);
-        pages = new Material[pagesSavable.length];
-        System.arraycopy(pagesSavable, 0, pages, 0, pages.length);
-    }
-
     public enum Align {
         Left, Center, Right
     }
 
     private BitmapCharacterSet charSet;
     private Material[] pages;
+    private ColorRGBA textColor = new ColorRGBA(ColorRGBA.White);
 
     public BitmapFont() {
     }
@@ -45,6 +33,10 @@ public class BitmapFont implements Savable {
         label.setSize(getCharSet().getRenderedSize());
         label.setText(content);
         return label;
+    }
+
+    public float getPreferredSize(){
+        return getCharSet().getRenderedSize();
     }
 
     public void setCharSet(BitmapCharacterSet charSet) {
@@ -77,6 +69,43 @@ public class BitmapFont implements Savable {
         return c.getKerning(nextChar);
     }
 
+    public void write(JmeExporter ex) throws IOException {
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(charSet, "charSet", null);
+        oc.write(pages, "pages", null);
+    }
+
+    public void read(JmeImporter im) throws IOException {
+        InputCapsule ic = im.getCapsule(this);
+        charSet = (BitmapCharacterSet) ic.readSavable("charSet", null);
+        Savable[] pagesSavable = ic.readSavableArray("pages", null);
+        pages = new Material[pagesSavable.length];
+        System.arraycopy(pagesSavable, 0, pages, 0, pages.length);
+    }
+
+    public float getLineWidth(String text){
+        float lineWidth = 0f;
+        char lastChar = 0;
+        boolean firstCharOfLine = true;
+//        float sizeScale = (float) block.getSize() / charSet.getRenderedSize();
+        float sizeScale = 1f;
+        for (int i = 0; i < text.length(); i++){
+            char theChar = text.charAt(i);
+            BitmapCharacter c = charSet.getCharacter((int) theChar);
+            if (c != null){
+                if (!firstCharOfLine){
+                    int amount = findKerningAmount(lastChar, theChar);
+                    if (amount != -1){
+                        lineWidth += amount * sizeScale;
+                    }
+                }
+                float xAdvance = c.getXAdvance() * sizeScale;
+                lineWidth += xAdvance;
+            }
+        }
+        return lineWidth;
+    }
+
     public float updateText(StringBlock block, QuadList target, boolean rightToLeft) {
 
         String text = block.getText();
@@ -84,22 +113,31 @@ public class BitmapFont implements Savable {
         float y = 0;
         float lineWidth = 0f;
         float sizeScale = (float) block.getSize() / charSet.getRenderedSize();
-        char lastChar = 0;
+        BitmapCharacter lastChar = null;
         int lineNumber = 1;
         int wordNumber = 1;
         int quadIndex = -1;
         float wordWidth = 0f;
-        boolean firstCharOfLine = true;
         boolean useKerning = block.isKerning();
         target.setActualSize(text.length());
 
         float incrScale = rightToLeft ? -1f : 1f;
+        textColor.set(block.getColor());
 
         for (int i = 0; i < text.length(); i++){
             char theChar = text.charAt(i);
             BitmapCharacter c = charSet.getCharacter((int) theChar);
             if (c == null){
-//                logger.warning("Character '" + text.charAt(i) + "' is not in alphabet, skipping it.");
+                // NOTE: Here we accept in-text commands..
+                // make sure we have at least 3 more chars in input
+                if ( theChar == '\1' && text.length() - i - 1 >= 3 ){
+                    // change text color for following chars
+                    float r = ((int) text.charAt(++i)) / 255f;
+                    float g = ((int) text.charAt(++i)) / 255f;
+                    float b = ((int) text.charAt(++i)) / 255f;
+                    textColor.set(r, g, b, 1f);
+                    continue;
+                }
             }else if (theChar == '\n' || theChar == '\r' || theChar == '\t'){
                 // dont print these characters
                 continue;
@@ -112,15 +150,8 @@ public class BitmapFont implements Savable {
 
                 // Adjust for kerning
                 float kernAmount = 0f;
-                if (!firstCharOfLine && useKerning){
-                    int amount = findKerningAmount(lastChar, theChar);
-//                    Kerning kern = findKerningNode(lastChar, theChar);
-//                    if (kern != null){
-//                        kernAmount = kern.getAmount() * sizeScale;
-//                        x += kernAmount * incrScale;
-//                        lineWidth += kernAmount;
-//                        wordWidth += kernAmount;
-//                    }
+                if (lastChar != null && useKerning){
+                    int amount = lastChar.getKerning(theChar);
                     if (amount != -1){
                         kernAmount = amount * sizeScale;
                         x += kernAmount * incrScale;
@@ -128,7 +159,6 @@ public class BitmapFont implements Savable {
                         wordWidth += kernAmount;
                     }
                 }
-                firstCharOfLine = false;
 
                 // Create the quad
                 quadIndex++;
@@ -150,7 +180,7 @@ public class BitmapFont implements Savable {
                 float h = (float) c.getHeight() / charSet.getHeight();
                 q.setUV(u0, v0, w, h);
 
-                q.setColor(block.getColor());
+                q.setColor(textColor);
                 q.setLineNumber(lineNumber);
 
                 if (theChar == ' '){
@@ -172,7 +202,7 @@ public class BitmapFont implements Savable {
                 wordWidth += xAdvance;
                 lineWidth += xAdvance;
 
-                lastChar = theChar;
+                lastChar = c;
             }
         }
 
@@ -390,10 +420,5 @@ public class BitmapFont implements Savable {
             }
         }
     }
-
-
-
-
-
 
 }

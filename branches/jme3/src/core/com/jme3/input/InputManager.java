@@ -32,6 +32,7 @@ public class InputManager implements RawInputListener {
     private IntMap<String> joyButtonBindings = new IntMap<String>();
 
     private ArrayList<BindingListener> listeners = new ArrayList<BindingListener>();
+    private ArrayList<RawInputListener> rawListeners = new ArrayList<RawInputListener>();
 
     private MouseButtonEvent lastButtonEvent = null;
     private KeyInputEvent lastKeyEvent = null;
@@ -91,6 +92,10 @@ public class InputManager implements RawInputListener {
     }
 
     public void onMouseMotionEvent(MouseMotionEvent evt) {
+        for (int i = 0; i < rawListeners.size(); i++){
+            rawListeners.get(i).onMouseMotionEvent(evt);
+        }
+
         if (evt.getDX() > 0){
             // positive X axis
             String name = mouseAxisBindings.get(1);
@@ -122,6 +127,9 @@ public class InputManager implements RawInputListener {
     }
 
     public void onMouseButtonEvent(MouseButtonEvent evt) {
+        for (int i = 0; i < rawListeners.size(); i++){
+            rawListeners.get(i).onMouseButtonEvent(evt);
+        }
         mouse[evt.getButtonIndex()] = evt.isPressed();
         
         String name = mouseBtnBindings.get(evt.getButtonIndex());
@@ -142,6 +150,10 @@ public class InputManager implements RawInputListener {
     }
 
     public void onKeyEvent(KeyInputEvent evt) {
+        for (int i = 0; i < rawListeners.size(); i++){
+            rawListeners.get(i).onKeyEvent(evt);
+        }
+
         if (evt.isDown())
             return; // repeat events not used for bindings
 
@@ -169,10 +181,17 @@ public class InputManager implements RawInputListener {
     }
 
     public void onJoyAxisEvent(JoyAxisEvent evt) {
+        for (int i = 0; i < rawListeners.size(); i++){
+            rawListeners.get(i).onJoyAxisEvent(evt);
+        }
+
         joyAxes[evt.getJoyIndex()][evt.getAxisIndex()] = evt.getValue();
     }
 
     public void onJoyButtonEvent(JoyButtonEvent evt) {
+        for (int i = 0; i < rawListeners.size(); i++){
+            rawListeners.get(i).onJoyButtonEvent(evt);
+        }
     }
 
     /**
@@ -303,6 +322,18 @@ public class InputManager implements RawInputListener {
      */
     public void clearBindingListeners(){
         listeners.clear();
+    }
+
+    public void addRawInputListener(RawInputListener listener){
+        rawListeners.add(listener);
+    }
+
+    public void removeRawInputListener(RawInputListener listener){
+        rawListeners.remove(listener);
+    }
+
+    public void clearRawInputListeners(){
+        rawListeners.clear();
     }
 
 }

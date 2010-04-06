@@ -26,6 +26,8 @@ public class RenderContext {
 
     public boolean colorWriteEnabled = true;
 
+    public boolean clipRectEnabled = false;
+
     public boolean polyOffsetEnabled = false;
     public float polyOffsetFactor = 0;
     public float polyOffsetUnits = 0;
@@ -103,6 +105,7 @@ public class RenderContext {
         alphaTestEnabled = false;
         depthWriteEnabled = false;
         colorWriteEnabled = false;
+        clipRectEnabled = false;
         polyOffsetEnabled = false;
         polyOffsetFactor = 0;
         polyOffsetUnits = 0;

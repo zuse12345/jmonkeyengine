@@ -88,6 +88,10 @@ public class BitmapText extends Geometry {
         needRefresh = true;
     }
 
+    public String getText(){
+        return block.getText();
+    }
+
     public ColorRGBA getColor() {
         return block.getColor();
     }

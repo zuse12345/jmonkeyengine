@@ -80,6 +80,9 @@ public class JmeSpatialChildFactory extends ChildFactory<Spatial> {
         //TODO: add way for plugins to add their own spatial types, probably
         //      best via registering some object in the global lookup
         JmeSpatialChildFactory factory = new JmeSpatialChildFactory(key);
+        if (key instanceof com.jme3.audio.AudioNode) {
+            return new JmeAudioNode((com.jme3.audio.AudioNode) key, Children.create(factory, false));
+        }
         if (key instanceof com.jme3.scene.Node) {
             return new JmeNode((com.jme3.scene.Node) key, Children.create(factory, false));
         }
@@ -93,7 +96,10 @@ public class JmeSpatialChildFactory extends ChildFactory<Spatial> {
     protected Node[] createNodesForKey(Spatial key) {
         JmeSpatialChildFactory factory = new JmeSpatialChildFactory(key);
         Node[] nodes = new Node[1];
-        if (key instanceof com.jme3.scene.Node) {
+        if (key instanceof com.jme3.audio.AudioNode) {
+            nodes[0] = new JmeAudioNode((com.jme3.audio.AudioNode) key, Children.create(factory, false));
+        }
+        else if (key instanceof com.jme3.scene.Node) {
             nodes[0] = new JmeNode((com.jme3.scene.Node) key, Children.create(factory, false));
         }
         else if (key instanceof com.jme3.scene.Geometry) {

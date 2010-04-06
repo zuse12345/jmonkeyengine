@@ -46,7 +46,7 @@ import org.openide.util.Exceptions;
  */
 public class JmeProperty<T> extends PropertySupport.Reflection<T> {
 
-    public JmeProperty(Object instance, Class valueType, String getter, String setter) throws NoSuchMethodException {
+    public JmeProperty(T instance, Class valueType, String getter, String setter) throws NoSuchMethodException {
         super(instance, valueType, getter, setter);
         if (valueType == Vector3f.class) {
             setPropertyEditorClass(Vector3fPropertyEditor.class);

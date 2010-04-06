@@ -72,8 +72,8 @@ public class JmeSpatial extends AbstractNode {
             return sheet;
         }
 
-        set.put(makeProperty(obj, Integer.class, "getVertexCount", "vertexes"));
-        set.put(makeProperty(obj, Integer.class, "getTriangleCount", "triangles"));
+        set.put(makeProperty(obj, int.class, "getVertexCount", "vertexes"));
+        set.put(makeProperty(obj, int.class, "getTriangleCount", "triangles"));
 
 //        set.put(makeProperty(obj, Transform.class,"getWorldTransform","world transform"));
         set.put(makeProperty(obj, Vector3f.class, "getWorldTranslation", "world translation"));

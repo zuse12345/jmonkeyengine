@@ -32,11 +32,8 @@
 package com.jme3.gde.core.scene;
 
 import com.jme3.app.Application;
-import com.jme3.audio.AudioNode;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bounding.BoundingVolume;
-import com.jme3.effect.ParticleEmitter;
-import com.jme3.effect.ParticleMesh;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.gde.core.assets.ProjectAssetManager;
@@ -48,7 +45,6 @@ import com.jme3.input.FlyByCamera;
 import com.jme3.input.KeyInput;
 import com.jme3.input.binding.BindingListener;
 import com.jme3.light.PointLight;
-import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -61,7 +57,6 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
-import com.jme3.scene.shape.Box;
 import com.jme3.system.AppSettings;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image.Format;
@@ -394,13 +389,13 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         offView.setOutputFrameBuffer(offBuffer);
 
         // setup framebuffer's scene
-        Box boxMesh = new Box(Vector3f.ZERO, 1,1,1);
-        Material material = (Material) manager.loadContent("jme_logo.j3m");
-        offBox = new Geometry("sphere", boxMesh);
-        offBox.setMaterial(material);
+//        Box boxMesh = new Box(Vector3f.ZERO, 1,1,1);
+//        Material material = (Material) manager.loadContent("jme_logo.j3m");
+//        offBox = new Geometry("sphere", boxMesh);
+//        offBox.setMaterial(material);
+//        previewNode.attachChild(offBox);
 
         // attach the scene to the viewport to be rendered
-        previewNode.attachChild(offBox);
         offView.attachScene(previewNode);
 
         return offTex;

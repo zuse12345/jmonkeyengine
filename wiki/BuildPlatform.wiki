@@ -1,10 +1,19 @@
 #summary How to build jMonkeyPlatform
 
-== Requirements ==
+= Requirements =
  * [http://netbeans.org/ NetBeans 6.8]
  * [BuildJme3 compiled version of jme3]
 
-== Downloading/Building in NetBeans ==
+= Checking out Project =
+
+== Command line == 
+{{{svn co http://jmonkeyengine.googlecode.com/svn/branches/jme3-gde jme3-gde}}}
+
+or
+
+{{{svn co https://jmonkeyengine.googlecode.com/svn/branches/jme3-gde jme3-gde --username user --password pass}}}
+
+== Downloading from NetBeans ==
  # Go to Team -> Subversion -> Checkout
  # Enter `http://jmonkeyengine.googlecode.com/svn` for Repository URL, leave username and password blank.
  # Click Next
@@ -12,7 +21,11 @@
  # In the new window, open `branches` tree, and select `jme3-gde`
  # Under Local Folder specify the folder where you want the jMonkeyPlatform project.
  # Click Finish
- # Open project when it finished transferring.
+ # Wait until finishing the transfer
+
+= Preparing Libraries =
+
+== Manually ==
  # Create library folders in the downloaded jme3-gde project folder:
   * create folder(s) `jme3-gde/jme3-core-libraries/release/modules/ext/`
   * create folder(s) `jme3-gde/jme3-project-libraries/release/libs/`
@@ -22,4 +35,33 @@
  # Copy all jme3 jars to the created project library folder:
   * copy jMonkeyEngine3.jar from `jme3/dist` to `jme3-gde/jme3-project-libraries/release/libs/`
   * copy all jars from `jme3/dist/lib` to `jme3-gde/jme3-project-libraries/release/libs/`
+
+== Semi automatically ==
+
+=== Unix ===
+
+Here is a sample shell script to do it for you. Pay attention to the first 4 variables, PROJECTS_HOME, GDE_EXT, GDE_LIB, LWJGL_LIB and make sure they make sense in your setup.
+
+{{{
+#!/bin/sh
+PROJECTS_HOME="/home/user/NetBeansProjects"
+
+GDE_EXT="$PROJECTS_HOME"/jme3-gde/jme3-core-libraries/release/modules/ext/
+GDE_LIB="$PROJECTS_HOME"/jme3-gde/jme3-project-libraries/release/libs/
+LWJGL_LIB="$PROJECTS_HOME"/jme3/lib/lwjgl/2.3_jar/lwjgl-debug.jar
+
+mkdir -p $GDE_EXT
+mkdir -p $GDE_LIB
+
+cp "$PROJECTS_HOME"/jme3/dist/jMonkeyEngine3.jar $GDE_EXT
+cp "$PROJECTS_HOME"/jme3/dist/lib/*.jar $GDE_EXT
+cp "$LWJGL_LIB" $GDE_EXT
+
+cp "$PROJECTS_HOME"/jme3/dist/jMonkeyEngine3.jar $GDE_LIB
+cp "$PROJECTS_HOME"/jme3/dist/lib/*.jar $GDE_LIB
+cp "$LWJGL_LIB" $GDE_LIB
+}}}
+
+= Building in NetBeans =
+ # Open project
  # Run the project

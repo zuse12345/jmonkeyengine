@@ -20,6 +20,7 @@ class Natives {
 
     private static final Logger logger = Logger.getLogger(Natives.class.getName());
     private static final byte[] buf = new byte[1024];
+    private static final File workingDir = new File("").getAbsoluteFile();
 
     public static void extractNativeLib(String sysName, String name, boolean load) throws IOException{
         String fullname = System.mapLibraryName(name);
@@ -30,7 +31,7 @@ class Natives {
                     new String[]{ sysName, fullname} );
             return;
         }
-        File targetFile = new File(fullname);
+        File targetFile = new File(workingDir, fullname);
         OutputStream out = new FileOutputStream(targetFile);
         int len;
         while ((len = in.read(buf)) > 0) {
@@ -74,6 +75,14 @@ class Natives {
             }
         }
         needJInput = settings.useJoysticks();
+
+        if (needLWJGL){
+            // LWJGL supports this feature where
+            // it can load libraries from this path.
+            // This is a fallback method in case the OS doesn't load
+            // native libraries from the working directory (e.g Linux).
+            System.setProperty("org.lwjgl.librarypath", workingDir.toString());
+        }
 
         switch (platform){
             case Windows64:
@@ -243,8 +252,6 @@ class Natives {
             
                 
         }
-
-//            System.setProperty("org.lwjgl.librarypath", workingDir.toString());
     }
 
 }

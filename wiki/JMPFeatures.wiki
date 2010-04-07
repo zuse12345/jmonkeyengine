@@ -30,10 +30,16 @@ Displays the list of Nodes currently displayed in the SceneViewer providing acce
 
 Features to be implemented:
 
-  * Add model to scene
+  * Load scene and add to SceneViewer
+  * Add models to scene
   * Basic models interactions - Translate, Rotate and Scale widgets
   * Add Lights
+  * Save scene
 
 = Cinematics Editor =
 
 Creates sequences that will affect the scene content in time. Sequences are bound to a scene, multiple sequences can be defined per scene and must be triggered by code.
+
+  * Load scene and add to SceneViewer
+  * Create scene movement script or controllers
+  * Save script/scene

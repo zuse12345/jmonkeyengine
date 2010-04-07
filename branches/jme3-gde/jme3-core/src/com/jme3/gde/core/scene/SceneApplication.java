@@ -438,14 +438,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                 rootNode.detachAllChildren();
                 Spatial model = manager.loadModel(name);
                 if(model instanceof Node){
-                    Material mat = new Material(manager, "point_sprite.j3md");
-                    mat.setTexture("m_Texture", manager.loadTexture("zsmoke.png"));
-                    ParticleEmitter emit=new ParticleEmitter("emitter",ParticleMesh.Type.Point,10);
-                    emit.setMaterial(mat);
-
                     currentNode=NodeUtility.createNode((Node)model);
-                    ((Node)model).attachChild(new AudioNode(manager,"hack"));
-                    ((Node)model).attachChild(emit);
                 }
                 else{
                     currentNode=NodeUtility.createSpatial(model);

@@ -75,8 +75,25 @@ public class ProjectAssetManager {
 //                "com.jme3.asset.plugins.FileSystemLocator", "glsl, vert, frag");
 //        manager.registerLocator(prj.getProjectDirectory()+"/assets/sounds/",
 //                "com.jme3.asset.plugins.FileSystemLocator", "wav, ogg, spx");
+        //dds, hdr, pfm, tga, bmp, png, jpg, jpeg, gif
         manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
-                "com.jme3.asset.plugins.FileLocator", "dds, hdr, pfm, tga, bmp, png, jpg, jpeg, gif");
+                "com.jme3.asset.plugins.FileLocator", "dds");
+        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
+                "com.jme3.asset.plugins.FileLocator", "hdr");
+        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
+                "com.jme3.asset.plugins.FileLocator", "pfm");
+        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
+                "com.jme3.asset.plugins.FileLocator", "tga");
+        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
+                "com.jme3.asset.plugins.FileLocator", "bmp");
+//        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
+//                "com.jme3.asset.plugins.FileLocator", "png");
+        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
+                "com.jme3.asset.plugins.FileLocator", "jpg");
+        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
+                "com.jme3.asset.plugins.FileLocator", "jpeg");
+        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
+                "com.jme3.asset.plugins.FileLocator", "gif");
     }
 
     public Project getProject() {

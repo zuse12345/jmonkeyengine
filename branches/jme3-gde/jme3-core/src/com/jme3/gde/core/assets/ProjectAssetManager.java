@@ -57,8 +57,16 @@ public class ProjectAssetManager {
 //                "com.jme3.asset.plugins.FileSystemLocator", "fnt");
 //        manager.registerLocator(prj.getProjectDirectory()+"/assets/materials/",
 //                "com.jme3.asset.plugins.FileSystemLocator", "j3m");
+
+        //model loader paths
         manager.registerLocator(prj.getProjectDirectory()+"/assets/models/",
                 "com.jme3.asset.plugins.FileLocator", "j3o");
+
+        //scene loader paths
+        manager.registerLoader("com.jme3.export.binary.BinaryImporter", "j3s");
+        manager.registerLocator(prj.getProjectDirectory()+"/assets/scenes/",
+                "com.jme3.asset.plugins.FileLocator", "j3s");
+        
 //        manager.registerLocator(prj.getProjectDirectory()+"/assets/ogremodels/",
 //                "com.jme3.asset.plugins.FileSystemLocator", "meshxml, material");
 //        manager.registerLocator(prj.getProjectDirectory()+"/assets/shaderlib/",

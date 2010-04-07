@@ -53,8 +53,8 @@ public final class ImportOgreScene implements ActionListener {
 
                     Spatial model=MeshLoader.loadModel(manager.getManager(), dialog.getModelPath().getNameExt(), dialog.getMaterialPath().getNameExt());
 
-                    String name=dialog.getModelPath().getName()+".j3o";
-                    File outputDir=FileUtil.toFile(context.getProjectDirectory().getFileObject("assets/models"));
+                    String name=dialog.getModelPath().getName()+".j3s";
+                    File outputDir=FileUtil.toFile(context.getProjectDirectory().getFileObject("assets/scenes"));
                     BinaryExporter exp = BinaryExporter.getInstance();
                     try {
                         exp.save(model, new File(outputDir.getCanonicalPath()+File.separator+name));
@@ -63,7 +63,7 @@ public final class ImportOgreScene implements ActionListener {
                     }
                     progressHandle.finish();
                     //try make NetBeans update the tree.. :/
-                    context.getProjectDirectory().getFileObject("assets/models").refresh();
+                    context.getProjectDirectory().getFileObject("assets/scenes").refresh();
                 }
             };
             new Thread(run).start();

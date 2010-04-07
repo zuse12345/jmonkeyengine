@@ -113,7 +113,7 @@ public class ColorRGBAPropertyEditor implements PropertyEditor {
         listeners.remove(listener);
     }
 
-    private void notifyListeners(ColorRGBA before, ColorRGBA after) {
+    public void notifyListeners(ColorRGBA before, ColorRGBA after) {
         for (Iterator<PropertyChangeListener> it = listeners.iterator(); it.hasNext();) {
             PropertyChangeListener propertyChangeListener = it.next();
             //TODO: check what the "programmatic name" is supposed to be here.. for now its ColorRGBA

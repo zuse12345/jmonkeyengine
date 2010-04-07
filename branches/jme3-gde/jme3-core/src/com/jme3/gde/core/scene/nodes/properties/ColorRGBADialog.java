@@ -60,8 +60,10 @@ public class ColorRGBADialog extends javax.swing.JDialog {
         ColorRGBA color = new ColorRGBA();
         float[] floats = new float[4];
         cColor.getComponents(floats);
-        color.set(floats[0]/255.0f, floats[1]/255.0f, floats[2]/255.0f, floats[3]/255.0f);
+        color.set(floats[0], floats[1], floats[2], floats[3]);
+        ColorRGBA color2 = new ColorRGBA((ColorRGBA) editor.getValue());
         editor.setValue(color);
+        editor.notifyListeners(color2, color);
         return color;
     }
 

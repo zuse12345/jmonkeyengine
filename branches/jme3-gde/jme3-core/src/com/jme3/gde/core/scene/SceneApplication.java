@@ -32,8 +32,11 @@
 package com.jme3.gde.core.scene;
 
 import com.jme3.app.Application;
+import com.jme3.audio.AudioNode;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bounding.BoundingVolume;
+import com.jme3.effect.ParticleEmitter;
+import com.jme3.effect.ParticleMesh;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.gde.core.assets.ProjectAssetManager;
@@ -45,16 +48,25 @@ import com.jme3.input.FlyByCamera;
 import com.jme3.input.KeyInput;
 import com.jme3.input.binding.BindingListener;
 import com.jme3.light.PointLight;
+import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.Camera;
+import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
+import com.jme3.scene.shape.Box;
 import com.jme3.system.AppSettings;
+import com.jme3.texture.FrameBuffer;
+import com.jme3.texture.Image.Format;
+import com.jme3.texture.Texture;
+import com.jme3.texture.Texture2D;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -88,8 +100,11 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         }
         return application;
     }
-    protected static Node rootNode = new Node("Root Node");
-    protected static Node guiNode = new Node("Gui Node");
+    protected Node rootNode = new Node("Root Node");
+    protected Node guiNode = new Node("Gui Node");
+
+    protected Node previewNode = new Node("Preview Node");
+
     protected float secondCounter = 0.0f;
     protected BitmapText fpsText;
     protected FlyByCamera flyCam;
@@ -99,6 +114,8 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     private WireProcessor wireProcessor;
 
     private JmeSpatial currentNode;
+
+    private Texture previewTexture;
 
     public SceneApplication() {
         manager = ProjectAssetManager.getManager();
@@ -136,6 +153,8 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     public void initialize() {
         super.initialize();
 
+        previewTexture=setupPreviewView();
+        
         // enable depth test and back-face culling for performance
         renderer.applyRenderState(RenderState.DEFAULT);
 
@@ -193,6 +212,9 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         guiNode.updateLogicalState(tpf);
         rootNode.updateGeometricState();
         guiNode.updateGeometricState();
+
+        previewNode.updateLogicalState(tpf);
+        previewNode.updateGeometricState();
 
         renderManager.render(tpf);
     }
@@ -343,6 +365,47 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             deltaWheel = -value;
         }
     }
+
+    private Texture setupPreviewView(){
+        Camera offCamera = new Camera(512, 512);
+        Geometry offBox;
+
+        // create a pre-view. a view that is rendered before the main view
+        ViewPort offView = renderManager.createPreView("Offscreen View", offCamera);
+        offView.setBackgroundColor(ColorRGBA.DarkGray);
+
+        // create offscreen framebuffer
+        FrameBuffer offBuffer = new FrameBuffer(512, 512, 0);
+
+        //setup framebuffer's cam
+        offCamera.setFrustumPerspective(45f, 1f, 1f, 1000f);
+        offCamera.setLocation(new Vector3f(0f, 0f, -5f));
+        offCamera.lookAt(new Vector3f(0f, 0f, 0f), Vector3f.UNIT_Y);
+
+        //setup framebuffer's texture
+        Texture2D offTex = new Texture2D(512, 512, Format.RGB8);
+        offTex.setAnisotropicFilter(4);
+
+        //setup framebuffer to use texture
+        offBuffer.setDepthBuffer(Format.Depth);
+        offBuffer.setColorTexture(offTex);
+
+        //set viewport to render to offscreen framebuffer
+        offView.setOutputFrameBuffer(offBuffer);
+
+        // setup framebuffer's scene
+        Box boxMesh = new Box(Vector3f.ZERO, 1,1,1);
+        Material material = (Material) manager.loadContent("jme_logo.j3m");
+        offBox = new Geometry("sphere", boxMesh);
+        offBox.setMaterial(material);
+
+        // attach the scene to the viewport to be rendered
+        previewNode.attachChild(offBox);
+        offView.attachScene(previewNode);
+
+        return offTex;
+    }
+
     //TODO: replace with Lookup functionality
     private LinkedList<SceneListener> listeners = new LinkedList<SceneListener>();
 
@@ -375,7 +438,14 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                 rootNode.detachAllChildren();
                 Spatial model = manager.loadModel(name);
                 if(model instanceof Node){
+                    Material mat = new Material(manager, "point_sprite.j3md");
+                    mat.setTexture("m_Texture", manager.loadTexture("zsmoke.png"));
+                    ParticleEmitter emit=new ParticleEmitter("emitter",ParticleMesh.Type.Point,10);
+                    emit.setMaterial(mat);
+
                     currentNode=NodeUtility.createNode((Node)model);
+                    ((Node)model).attachChild(new AudioNode(manager,"hack"));
+                    ((Node)model).attachChild(emit);
                 }
                 else{
                     currentNode=NodeUtility.createSpatial(model);

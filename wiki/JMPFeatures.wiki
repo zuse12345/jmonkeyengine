@@ -24,7 +24,7 @@ Features to be implemented:
 
 = Scene Explorer =
 
-Displays the list of Nodes currently displayed in the SceneViewer providing access to it's properties.
+Displays the list of Nodes currently displayed in the SceneViewer providing access to it's properties. This is available all the time in addition to the editing possibilities of the plugin that loaded the scene.
 
 = Scene Editor =
 

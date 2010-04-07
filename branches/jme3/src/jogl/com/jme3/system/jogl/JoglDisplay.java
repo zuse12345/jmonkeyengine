@@ -198,13 +198,13 @@ public class JoglDisplay extends JoglAbstractDisplay {
             windowCloseRequest.set(false);
         }
 
-        boolean flush = autoFlush.get();
-        if (animator.isAnimating() != flush){
-            if (flush)
-                animator.stop();
-            else
-                animator.start();
-        }
+//        boolean flush = autoFlush.get();
+//        if (animator.isAnimating() != flush){
+//            if (flush)
+//                animator.stop();
+//            else
+//                animator.start();
+//        }
 
         if (wasActive != active.get()){
             if (!wasActive){

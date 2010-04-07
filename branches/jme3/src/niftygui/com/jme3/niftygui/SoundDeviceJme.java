@@ -34,7 +34,6 @@ public class SoundDeviceJme implements SoundDevice {
     }
 
     public void update(int delta) {
-        ar.update(delta / 1000f);
     }
     
 }

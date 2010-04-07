@@ -395,11 +395,11 @@ public class RenderManager {
         }
     }
 
-    private void setOrtho(){
+    public void setOrtho(){
         renderer.setViewProjectionMatrices(Matrix4f.IDENTITY, orthoMatrix);
     }
 
-    private void unsetOrtho(){
+    public void unsetOrtho(){
         renderer.setViewProjectionMatrices(viewMatrix, projMatrix);
     }
 

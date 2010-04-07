@@ -137,17 +137,18 @@ public class RenderDeviceJme implements RenderDevice {
     }
 
     void renderText(String str, int x, int y, Color color, float size, BitmapText text){
+        if (str.length() == 0)
+            return;
 //        textNode.detachAllChildren();
 //        textNode.attachChild(text);
 
 //        text.setColor(convertColor(color));
         text.getMaterial().setColor("m_Color", convertColor(color));
         text.setText(str);
-//        text.updateLogicalState(0);
-//
+        text.updateLogicalState(0);
+
         float width = text.getLineWidth();
         float height = text.getLineHeight();
-//
 
         float x0 = x + 0.5f * width  * (1f - size);
         float y0 = y + 0.5f * height * (1f - size);

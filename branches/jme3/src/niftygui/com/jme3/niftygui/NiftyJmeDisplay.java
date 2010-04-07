@@ -14,7 +14,7 @@ import de.lessvoid.nifty.render.NiftyRenderEngineImpl;
 import de.lessvoid.nifty.sound.SoundSystem;
 import de.lessvoid.nifty.tools.TimeProvider;
 
-public class NiftyJmeDisplay implements SceneProcessor {
+public class NiftyJmeDisplay extends TimeProvider implements SceneProcessor {
 
     private boolean inited = false;
     private Nifty nifty;
@@ -92,7 +92,9 @@ public class NiftyJmeDisplay implements SceneProcessor {
 
     public void postQueue(RenderQueue rq) {
         // render nifty before anything else
+        renderManager.setOrtho();
         nifty.render(false);
+        renderManager.unsetOrtho();
 
         if (RenderDeviceJme.GUI_DEBUG)
             System.exit(1);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2009 jMonkeyEngine
+ * Copyright (c) 2003-2010 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * <code>GameTask</code> is used in <code>GameTaskQueue</code> to manage tasks that have
+ * <code>AppTask</code> is used in <code>AppTaskQueue</code> to manage tasks that have
  * yet to be accomplished.
  *
  * @author Matthew D. Hicks, lazloh

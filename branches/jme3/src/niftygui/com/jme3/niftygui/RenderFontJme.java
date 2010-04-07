@@ -53,10 +53,15 @@ public class RenderFontJme implements RenderFont {
      * @return width of the given text for the current font
      */
     public int getWidth(final String str) {
-//        return (int) font.getLineWidth(str);
-        text.setText(str);
-        text.updateLogicalState(0);
-        return (int) text.getLineWidth();
+        if (str.length() == 0)
+            return 0;
+        
+        int result = (int) font.getLineWidth(str);
+//        text.setText(str);
+//        text.updateLogicalState(0);
+//        int result = (int) text.getLineWidth();
+
+        return result;
     }
 
     /**

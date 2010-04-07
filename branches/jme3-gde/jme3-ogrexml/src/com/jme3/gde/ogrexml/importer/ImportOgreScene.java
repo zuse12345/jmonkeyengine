@@ -48,8 +48,7 @@ public final class ImportOgreScene implements ActionListener {
                     progressHandle.start();
                     manager.getManager().registerLocator(dialog.getModelPath().getParent().getPath(),
                                             "com.jme3.asset.plugins.FileLocator",
-                                            "scene", "meshxml",
-                                            "material", "jpg", "png");
+                                            "*");
 
                     Spatial model=MeshLoader.loadModel(manager.getManager(), dialog.getModelPath().getNameExt(), dialog.getMaterialPath().getNameExt());
 

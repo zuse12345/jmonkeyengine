@@ -67,10 +67,11 @@ public class JmeSpatial extends AbstractNode {
         Sheet.Set set = Sheet.createPropertiesSet();
         set.setDisplayName("Spatial");
         set.setName(Spatial.class.getName());
-        Spatial obj = getLookup().lookup(Spatial.class);
+        Spatial obj = spatial;//getLookup().lookup(Spatial.class);
         if (obj == null) {
             return sheet;
         }
+        set.put(makeProperty(obj, String.class, "getName", "setName", "name"));
 
         set.put(makeProperty(obj, int.class, "getVertexCount", "vertexes"));
         set.put(makeProperty(obj, int.class, "getTriangleCount", "triangles"));

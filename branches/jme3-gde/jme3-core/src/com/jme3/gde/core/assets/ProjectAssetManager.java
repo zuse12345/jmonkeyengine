@@ -67,8 +67,8 @@ public class ProjectAssetManager {
 //                "com.jme3.asset.plugins.FileSystemLocator", "glsl, vert, frag");
 //        manager.registerLocator(prj.getProjectDirectory()+"/assets/sounds/",
 //                "com.jme3.asset.plugins.FileSystemLocator", "wav, ogg, spx");
-//        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
-//                "com.jme3.asset.plugins.FileSystemLocator", "dds, hdr, pfm, tga, bmp, png, jpg, jpeg, gif");
+        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
+                "com.jme3.asset.plugins.FileLocator", "dds, hdr, pfm, tga, bmp, png, jpg, jpeg, gif");
     }
 
     public Project getProject() {

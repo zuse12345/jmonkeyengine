@@ -158,6 +158,10 @@
                 <binary-origin>release/modules/ext/jMonkeyEngine3.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
+                <runtime-relative-path>ext/nifty-style-black-1.1-sources.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/nifty-style-black-1.1-sources.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
                 <runtime-relative-path>ext/jbullet.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/jbullet.jar</binary-origin>
             </class-path-extension>
@@ -170,12 +174,20 @@
                 <binary-origin>release/modules/ext/lwjgl.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
+                <runtime-relative-path>ext/jME3-natives-joal.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/jME3-natives-joal.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/nifty-examples-1.1.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/nifty-examples-1.1.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
                 <runtime-relative-path>ext/jME3-lwjgl-natives.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/jME3-lwjgl-natives.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/lwjgl-debug.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/lwjgl-debug.jar</binary-origin>
+                <runtime-relative-path>ext/xmlpull-xpp3-1.1.4c.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/xmlpull-xpp3-1.1.4c.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jME3-jogl-natives.jar</runtime-relative-path>
@@ -194,12 +206,20 @@
                 <binary-origin>release/modules/ext/vecmath.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
+                <runtime-relative-path>ext/nifty-default-controls-1.1.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/nifty-default-controls-1.1.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
                 <runtime-relative-path>ext/joal.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/joal.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/j-ogg-vorbisd.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/j-ogg-vorbisd.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/nifty-1.1.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/nifty-1.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/j-ogg-oggd.jar</runtime-relative-path>

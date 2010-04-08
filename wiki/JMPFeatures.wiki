@@ -10,7 +10,7 @@ For "official" info about jMonkeyPlatform and its features look at the [http://w
 
 = Scene Viewer =
 
-The Scene Viewer is the central part of the jMP. It's purpose is displaying stuff. It is not and editor. The rest of the plugins should request jME nodes to be rendered. It should just provide general features and simplify interactions with jME.
+The Scene Viewer is the central part of the jMP. It's purpose is displaying stuff. It is not and editor. The rest of the plugins should add jME nodes to be rendered. It should just provide general features and simplify interactions with the jME scenegraph.
 
 == Features ==
 
@@ -18,7 +18,7 @@ Features to be implemented:
 
   * Load & display model
   * Display node tree from plugin
-  * Select Model
+  * Select object callbacks
   * Grid
   * Views - Normal, Wire Frame, Lighting
 

@@ -102,6 +102,8 @@ public class LwjglRenderer implements Renderer {
     private boolean tdc;
     private FrameBuffer lastFb = null;
 
+    private int vpX, vpY, vpW, vpH;
+
     public LwjglRenderer(){
     }
 
@@ -455,6 +457,10 @@ public class LwjglRenderer implements Renderer {
     \*********************************************************************/
     public void setViewPort(int x, int y, int w, int h){
         glViewport(x, y, w, h);
+        vpX = x;
+        vpY = y;
+        vpW = w;
+        vpH = h;
     }
 
     public void setClipRect(int x, int y, int width, int height){
@@ -1035,8 +1041,11 @@ public class LwjglRenderer implements Renderer {
             // select back buffer
             if (context.boundDrawBuf != -1){
                 glDrawBuffer(GL_BACK);
-                glReadBuffer(GL_BACK);
                 context.boundDrawBuf = -1;
+            }
+            if (context.boundReadBuf != -1){
+                glReadBuffer(GL_BACK);
+                context.boundReadBuf = -1;
             }
 
             lastFb = null;
@@ -1056,9 +1065,12 @@ public class LwjglRenderer implements Renderer {
                 // make sure to select NONE as draw buf
                 // no color buffer attached. select NONE
                 if (context.boundDrawBuf != -2){
-                    glReadBuffer(GL_NONE);
                     glDrawBuffer(GL_NONE);
                     context.boundDrawBuf = -2;
+                }
+                if (context.boundReadBuf != -2){
+                    glReadBuffer(GL_NONE);
+                    context.boundReadBuf = -2;
                 }
             }else{
                 RenderBuffer rb = fb.getColorBuffer();
@@ -1075,6 +1087,35 @@ public class LwjglRenderer implements Renderer {
         }
         
         checkFrameBufferError();
+    }
+
+    public void readFrameBuffer(FrameBuffer fb, ByteBuffer byteBuf){
+        if (fb != null){
+            RenderBuffer rb = fb.getColorBuffer();
+            if (rb == null)
+                throw new IllegalArgumentException("Specified framebuffer" +
+                                                   " does not have a colorbuffer");
+
+//            Texture tex = rb.getTexture();
+//            if (tex != null){
+//                // read directly from texture
+//                setTexture(0, tex);
+//                int type = convertTextureType(tex.getType());
+//                glGetTexImage(type, 0, GL_BGRA, GL_UNSIGNED_BYTE, byteBuf);
+//
+//                return;
+//            }else{
+                setFrameBuffer(fb);
+                if (context.boundReadBuf != rb.getSlot()){
+                    glReadBuffer(GL_COLOR_ATTACHMENT0_EXT + rb.getSlot());
+                    context.boundReadBuf = rb.getSlot();
+                }
+//            }
+        }else{
+            setFrameBuffer(null);
+        }
+
+        glReadPixels(vpX, vpY, vpW, vpH, /*GL_RGBA*/ GL_BGRA, GL_UNSIGNED_BYTE, byteBuf);
     }
 
     private void deleteRenderBuffer(FrameBuffer fb, RenderBuffer rb){

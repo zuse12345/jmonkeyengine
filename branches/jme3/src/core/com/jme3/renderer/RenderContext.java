@@ -69,6 +69,13 @@ public class RenderContext {
     public int boundDrawBuf = -1;
 
     /**
+     * Currently bound read buffer
+     *
+     * @see RenderContext#boundDrawBuf
+     */
+    public int boundReadBuf = -1;
+
+    /**
      * Currently bound element array vertex buffer.
      */
     public int boundElementArrayVBO;

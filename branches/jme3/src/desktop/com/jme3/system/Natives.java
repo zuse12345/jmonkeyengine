@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.JarURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.logging.Level;
@@ -47,6 +48,24 @@ class Natives {
         logger.log(Level.FINE, "Copied {0} to {1}", new Object[]{fullname, targetFile});
     }
 
+    private static String getExtractionDir(){
+        URL temp = Natives.class.getResource("");
+        if (temp != null) {
+            StringBuilder sb = new StringBuilder(temp.toString());
+            if (sb.indexOf("jar:") == 0) {
+                sb.delete(0, 4);
+                sb.delete(sb.indexOf("!"), sb.length());
+                sb.delete(sb.lastIndexOf("/") + 1, sb.length());
+            }
+            try {
+                return new URL(sb.toString()).toString();
+            } catch (MalformedURLException ex) {
+                return null;
+            }
+        }
+        return null;
+    }
+
     public static void extractNativeLibs(Platform platform, AppSettings settings) throws IOException{
         String renderer = settings.getRenderer();
         String audioRenderer = settings.getAudioRenderer();
@@ -77,6 +96,9 @@ class Natives {
         needJInput = settings.useJoysticks();
 
         if (needLWJGL){
+            logger.log(Level.INFO, "Extraction Directory #1: {0}", getExtractionDir());
+            logger.log(Level.INFO, "Extraction Directory #2: {0}", workingDir.toString());
+            logger.log(Level.INFO, "Extraction Directory #3: {0}", System.getProperty("user.dir"));
             // LWJGL supports this feature where
             // it can load libraries from this path.
             // This is a fallback method in case the OS doesn't load

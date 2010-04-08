@@ -6,6 +6,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.TextureKey;
+import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture2D;
@@ -43,7 +44,8 @@ public class Picture extends Geometry {
 
     public void setImage(AssetManager manager, String imgName, boolean useAlpha){
         if (getMaterial() == null){
-            Material mat = new Material(manager, "sprite2d.j3md");
+            Material mat = new Material(manager, "default_gui.j3md");
+            mat.setColor("m_Color", ColorRGBA.White);
             setMaterial(mat);
         }
         TextureKey key = new TextureKey(imgName, true);
@@ -52,7 +54,8 @@ public class Picture extends Geometry {
 
     public void setTexture(AssetManager manager, Texture2D tex, boolean useAlpha){
         if (getMaterial() == null){
-            Material mat = new Material(manager, "sprite2d.j3md");
+            Material mat = new Material(manager, "default_gui.j3md");
+            mat.setColor("m_Color", ColorRGBA.White);
             setMaterial(mat);
         }
         material.setTexture("m_Texture", tex);

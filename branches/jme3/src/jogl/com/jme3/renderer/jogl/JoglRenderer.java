@@ -27,6 +27,7 @@ import com.jme3.util.BufferUtils;
 import com.jme3.util.IntMap;
 import com.jme3.util.IntMap.Entry;
 import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Collection;
@@ -53,6 +54,8 @@ public class JoglRenderer implements Renderer {
     private boolean powerOf2 = false;
     private boolean hardwareMips = false;
     private boolean vbo = false;
+
+    private int vpX, vpY, vpW, vpH;
 
     public JoglRenderer(GL gl){
         this.gl = gl;
@@ -233,6 +236,10 @@ public class JoglRenderer implements Renderer {
 
     public void setViewPort(int x, int y, int width, int height){
         gl.glViewport(x, y, width, height);
+        vpX = x;
+        vpY = y;
+        vpW = width;
+        vpH = height;
     }
 
     public void setClipRect(int x, int y, int width, int height){
@@ -366,6 +373,13 @@ public class JoglRenderer implements Renderer {
     }
 
     public void deleteFrameBuffer(FrameBuffer fb) {
+    }
+
+    public void readFrameBuffer(FrameBuffer fb, ByteBuffer byteBuf){
+        if (fb != null)
+            return;
+        
+        gl.glReadPixels(vpX, vpY, vpW, vpH, gl.GL_BGRA, gl.GL_UNSIGNED_BYTE, byteBuf);
     }
 
     private int convertTextureType(Texture.Type type){

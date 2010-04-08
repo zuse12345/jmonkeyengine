@@ -10,6 +10,7 @@ import com.jme3.shader.Shader;
 import com.jme3.shader.Shader.ShaderSource;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Texture;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 
 public interface Renderer {
@@ -115,6 +116,17 @@ public interface Renderer {
      * requested renderbuffers.
      */
     public void updateFrameBuffer(FrameBuffer fb);
+
+    /**
+     * Reads the pixels currently stored in the specified framebuffer
+     * into the given ByteBuffer object. 
+     * Only color pixels are transferred, the format is BGRA with 8 bits 
+     * per component. The given byte buffer should have at least
+     * fb.getWidth() * fb.getHeight() * 4 bytes remaining.
+     * @param fb
+     * @param byteBuf
+     */
+    public void readFrameBuffer(FrameBuffer fb, ByteBuffer byteBuf);
 
     /**
      * Deletes a framebuffer and all attached renderbuffers

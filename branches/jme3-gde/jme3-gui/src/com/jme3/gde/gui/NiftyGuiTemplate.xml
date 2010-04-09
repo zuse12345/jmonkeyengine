@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<nifty>
+<nifty xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="http://nifty-gui.svn.sourceforge.net/svnroot/nifty-gui/nifty/trunk/src/main/resources/nifty.xsd">
   <!-- +++++++++++++++++++++++++++++++++++++++ -->
   <!-- start screen -->
   <!-- +++++++++++++++++++++++++++++++++++++++ -->

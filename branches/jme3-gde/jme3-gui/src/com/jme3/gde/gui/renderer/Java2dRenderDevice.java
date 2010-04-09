@@ -236,16 +236,18 @@ public class Java2dRenderDevice extends JPanel implements RenderDevice, MouseLis
     }
 
     public void mouseClicked(MouseEvent e) {
-        //TODO: crude way to avoid multiple calls (due to repaint?)
+    }
+
+    public void mousePressed(MouseEvent e) {
         MouseInputEvent event = new MouseInputEvent(e.getX(), getHeight() - e.getY(), true);
         mouseEvents.add(event);
         Logger.getLogger(this.getClass().getName()).log(Level.INFO, "mousee:" + mouseEvents.size());
     }
 
-    public void mousePressed(MouseEvent e) {
-    }
-
     public void mouseReleased(MouseEvent e) {
+        MouseInputEvent event = new MouseInputEvent(e.getX(), getHeight() - e.getY(), false);
+        mouseEvents.add(event);
+        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "mousee:" + mouseEvents.size());
     }
 
     public void mouseEntered(MouseEvent e) {

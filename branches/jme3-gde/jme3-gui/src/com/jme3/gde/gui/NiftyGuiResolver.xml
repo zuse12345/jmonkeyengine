@@ -7,7 +7,8 @@ and open the template in the editor.
 <MIME-resolver>
     <file>
         <ext name="xml"/>
-        <resolver mime="text/niftygui+xml">
+        <ext name="niftyxml"/>
+        <resolver mime="text/x-niftygui+xml">
             <xml-rule>
                 <element name="nifty"/>
             </xml-rule>

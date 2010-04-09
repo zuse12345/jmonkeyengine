@@ -3,7 +3,7 @@
 <filesystem>
     <folder name="Loaders">
         <folder name="text">
-            <folder name="niftygui+xml">
+            <folder name="x-niftygui+xml">
                 <folder name="Actions">
                     <file name="org-openide-actions-CopyAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
@@ -67,7 +67,7 @@
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/com/jme3/gde/gui/Computer_File_043.gif"/>
                         <attr name="dataObjectClass" stringvalue="com.jme3.gde.gui.NiftyGuiDataObject"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
-                        <attr name="mimeType" stringvalue="text/niftygui+xml"/>
+                        <attr name="mimeType" stringvalue="text/x-niftygui+xml"/>
                     </file>
                 </folder>
             </folder>

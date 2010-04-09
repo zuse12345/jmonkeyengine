@@ -12,12 +12,12 @@ import de.lessvoid.nifty.spi.render.RenderDevice;
 import de.lessvoid.nifty.spi.render.RenderFont;
 import de.lessvoid.nifty.spi.render.RenderImage;
 import de.lessvoid.nifty.tools.Color;
+import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
@@ -72,7 +72,7 @@ public class Java2dRenderDevice extends JPanel implements RenderDevice, MouseLis
     }
 
     public RenderFont createFont(String filename) {
-        return new Java2dRenderFont(filename, image);
+        return new Java2dRenderFont(filename);
     }
 
     public void beginFrame() {
@@ -173,6 +173,15 @@ public class Java2dRenderDevice extends JPanel implements RenderDevice, MouseLis
             g2d.drawImage(paintImage, x, y, x + w, y + h, srcX, srcY, srcX + srcW, srcY + srcH, null);
         }
     }
+
+    public void renderFont(RenderFont rf, String string, int i, int i1, Color color, float f) {
+        Font font=new Font(((Java2dRenderFont)rf).getFont().getName(),0,Math.round(f*20));
+        Graphics2D g2d=(Graphics2D)image.getGraphics();
+        g2d.setFont(font);
+        g2d.setColor(color(color));
+        g2d.drawString(string, i, i1);
+    }
+
     private boolean clip = false;
     private int clipX, clipY, clipWidth, clipHeight;
 
@@ -244,4 +253,5 @@ public class Java2dRenderDevice extends JPanel implements RenderDevice, MouseLis
 
     public void mouseExited(MouseEvent e) {
     }
+
 }

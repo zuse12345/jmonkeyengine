@@ -18,35 +18,39 @@ import java.awt.image.BufferedImage;
 public class Java2dRenderFont implements RenderFont{
     private String name;
     private Font font;
-    private BufferedImage image;
+//    private BufferedImage image;
 
     //all sizes TODO!
 
-    public Java2dRenderFont(String name, BufferedImage image) {
-        this.image=image;
+    public Java2dRenderFont(String name) {
+//        this.image=image;
         this.name=name;
         font=new Font(name, 0, 10);
     }
 
 
     public int getWidth(String text) {
-        return font.getSize()*text.length();
+        return getFont().getSize()*text.length();
     }
 
     public int getHeight() {
-        return font.getSize();
+        return getFont().getSize();
     }
 
+    /**deprecated**/
     public void render(String text, int x, int y, Color fontColor, float size) {
-        font=new Font(name, 0, Math.round(size*20));
-        Graphics2D g2d=(Graphics2D)image.getGraphics();
-        g2d.setFont(font);
-        g2d.setColor(Java2dRenderDevice.color(fontColor));
-        g2d.drawString(text, x, y);
     }
 
     public Integer getCharacterAdvance(char currentCharacter, char nextCharacter, float size) {
-        return font.getSize();
+        return getFont().getSize();
+    }
+
+    public Font getFont() {
+        return font;
+    }
+
+    public void setFont(Font font) {
+        this.font = font;
     }
 
 }

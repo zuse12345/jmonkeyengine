@@ -16,55 +16,35 @@ import org.openide.nodes.Node;
  * @author normenhansen
  */
 public class PreviewToolbarElement extends ToolBarMultiViewElement {
-
     private NiftyGuiDataObject dObj;
-    private SectionView view;
     private ToolBarDesignEditor comp;
-    private PreviewFactory factory;
+    private NiftyPreviewPanel viewPanel;
 
     public PreviewToolbarElement(NiftyGuiDataObject dObj) {
-
         super(dObj);
         this.dObj = dObj;
         comp = new ToolBarDesignEditor();
-        factory = new PreviewFactory(comp, dObj);
         setVisualEditor(comp);
-
+        viewPanel=new NiftyPreviewPanel(dObj);
+        comp.setRootContext(Node.EMPTY);
+        comp.setContentView(viewPanel);
+        viewPanel.open();
     }
 
     public SectionView getSectionView() {
-
-        return view;
-
+        return null;
     }
 
+    @Override
     public void componentShowing() {
-
         super.componentShowing();
-        view = new TocView(dObj);
-        comp.setContentView(view);
-        view.open();
-
+        viewPanel.start();
     }
 
-    private class TocView extends SectionView {
-
-        TocView(NiftyGuiDataObject dObj) {
-            super(factory);
-            String toc = dObj.getName();
-            Node itemNode = new ItemNode(toc);
-            setRoot(itemNode);
-        }
-
-    }
-
-    private class ItemNode extends org.openide.nodes.AbstractNode {
-
-        ItemNode(String toc) {
-            super(org.openide.nodes.Children.LEAF);
-            setDisplayName(dObj.getPrimaryFile().getNameExt());
-        }
-
+    @Override
+    public void componentClosed() {
+        super.componentClosed();
+        viewPanel.stop();
     }
 
 }

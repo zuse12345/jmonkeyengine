@@ -53,7 +53,7 @@ public class Java2dRenderDevice extends JPanel implements RenderDevice, MouseLis
         long currentTime=System.currentTimeMillis();
         ((Graphics2D) g).drawImage(imageBuffer, 0, 0, null);
         ((Graphics2D) g).setColor(java.awt.Color.WHITE);
-        ((Graphics2D) g).drawString((currentTime-lastTime)/1000.0f + " fps", 100, 100);
+        ((Graphics2D) g).drawString(1000/(currentTime-lastTime) + " fps", 100, 100);
         lastTime=currentTime;
     }
 

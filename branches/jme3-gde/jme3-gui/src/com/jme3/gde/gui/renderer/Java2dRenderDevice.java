@@ -38,16 +38,23 @@ public class Java2dRenderDevice extends JPanel implements RenderDevice, MouseLis
         java.awt.Color color = new java.awt.Color(_color.getRed(), _color.getGreen(), _color.getBlue());
         return color;
     }
+
     private BufferedImage image = new BufferedImage(1024, 768, BufferedImage.TYPE_INT_RGB);
     private BufferedImage imageBuffer = new BufferedImage(1024, 768, BufferedImage.TYPE_INT_RGB);
+    private long lastTime=0;
+
+    public Java2dRenderDevice() {
+        addMouseListener(this);
+    }
 
     @Override
     public synchronized void paint(Graphics g) {
         super.paint(g);
-        addMouseListener(this);
+        long currentTime=System.currentTimeMillis();
         ((Graphics2D) g).drawImage(imageBuffer, 0, 0, null);
         ((Graphics2D) g).setColor(java.awt.Color.WHITE);
-        ((Graphics2D) g).drawString(System.currentTimeMillis() + "", 100, 100);
+        ((Graphics2D) g).drawString((currentTime-lastTime)/1000.0f + " fps", 100, 100);
+        lastTime=currentTime;
     }
 
     private synchronized void setImage(BufferedImage image) {
@@ -227,19 +234,12 @@ public class Java2dRenderDevice extends JPanel implements RenderDevice, MouseLis
     public InputSystem getInputSystem() {
         return inputSystem;
     }
-    int lastX = 0;
-    int lastY = 0;
 
     public void mouseClicked(MouseEvent e) {
         //TODO: crude way to avoid multiple calls (due to repaint?)
-        if (lastX == e.getX() && lastY == e.getY()) {
-            return;
-        }
         MouseInputEvent event = new MouseInputEvent(e.getX(), getHeight() - e.getY(), true);
         mouseEvents.add(event);
         Logger.getLogger(this.getClass().getName()).log(Level.INFO, "mousee:" + mouseEvents.size());
-        lastX = e.getX();
-        lastY = e.getY();
     }
 
     public void mousePressed(MouseEvent e) {

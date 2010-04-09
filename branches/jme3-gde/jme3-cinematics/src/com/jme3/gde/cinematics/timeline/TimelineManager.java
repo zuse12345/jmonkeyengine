@@ -39,6 +39,7 @@ import com.jme3.gde.core.scene.nodes.JmeSpatial;
 import com.jme3.math.Vector3f;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -376,5 +377,8 @@ public class TimelineManager implements TimelinePropertyListener, SceneListener 
 
     public void nodeSelected(JmeSpatial spatial) {
        // TODO
+    }
+
+    public void previewChanged(BufferedImage preview, Object source) {
     }
 }

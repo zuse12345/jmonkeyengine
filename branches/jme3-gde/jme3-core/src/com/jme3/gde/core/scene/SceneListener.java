@@ -32,6 +32,7 @@
 package com.jme3.gde.core.scene;
 
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
+import java.awt.image.BufferedImage;
 
 /**
  * To be replaced with Lookup functionality
@@ -42,4 +43,7 @@ public interface SceneListener {
     public void rootNodeChanged(JmeSpatial spatial);
 
     public void nodeSelected(JmeSpatial spatial);
+
+    public void previewChanged(BufferedImage preview, Object origin);
+
 }

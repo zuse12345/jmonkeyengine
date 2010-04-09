@@ -34,8 +34,7 @@ package com.jme3.gde.core.sceneexplorer;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
-import com.jme3.gde.core.scene.nodes.JmeSpatialChildFactory;
-import com.jme3.scene.Spatial;
+import java.awt.image.BufferedImage;
 import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -45,7 +44,6 @@ import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
-import org.openide.nodes.Children;
 
 /**
  * Top component which displays something.
@@ -86,7 +84,7 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(explorerScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, explorerScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -178,5 +176,10 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
 
     public void nodeSelected(JmeSpatial spatial) {
         // TODO
+    }
+
+    public void previewChanged(BufferedImage preview, Object source) {
+//        final BufferedImage image=new BufferedImage(preview.getWidth(),preview.getHeight(),preview.getType());
+//        image.getGraphics().drawImage(preview, 0, 0, null);
     }
 }

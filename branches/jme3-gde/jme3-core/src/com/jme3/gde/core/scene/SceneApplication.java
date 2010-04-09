@@ -50,8 +50,11 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.post.SceneProcessor;
 import com.jme3.renderer.Camera;
+import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
+import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
@@ -60,8 +63,11 @@ import com.jme3.scene.Spatial.CullHint;
 import com.jme3.system.AppSettings;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image.Format;
-import com.jme3.texture.Texture;
-import com.jme3.texture.Texture2D;
+import com.jme3.util.BufferUtils;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -82,7 +88,7 @@ import org.openide.util.lookup.Lookups;
  * - Node tree creation from scenegraph
  * @author normenhansen
  */
-public class SceneApplication extends Application implements LookupProvider, LookupListener, BindingListener {
+public class SceneApplication extends Application implements LookupProvider, LookupListener, BindingListener, SceneProcessor {
 
     private boolean leftMouse, rightMouse, middleMouse;
     private float deltaX, deltaY, deltaZ, deltaWheel;
@@ -98,7 +104,18 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     protected Node rootNode = new Node("Root Node");
     protected Node guiNode = new Node("Gui Node");
 
+    private Quaternion rot = new Quaternion();
+    private Vector3f vector = new Vector3f();
+    private Vector3f focus = new Vector3f();
+    private boolean doPreview=false;
+    private static final int width = 120, height = 120;
+
+    private final ByteBuffer cpuBuf = BufferUtils.createByteBuffer(width * height * 4);
+    private final byte[] cpuArray = new byte[width * height * 4];
+    private final BufferedImage image = new BufferedImage(width, height,
+                                            BufferedImage.TYPE_4BYTE_ABGR);
     protected Node previewNode = new Node("Preview Node");
+    protected JmeSpatial previewSpat=null;
 
     protected float secondCounter = 0.0f;
     protected BitmapText fpsText;
@@ -108,9 +125,9 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     private ApplicationLogHandler logHandler = new ApplicationLogHandler();
     private WireProcessor wireProcessor;
 
+    private FrameBuffer offBuffer;
+    private ViewPort offView;
     private JmeSpatial currentNode;
-
-    private Texture previewTexture;
 
     public SceneApplication() {
         manager = ProjectAssetManager.getManager();
@@ -148,7 +165,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     public void initialize() {
         super.initialize();
 
-        previewTexture=setupPreviewView();
+        setupPreviewView();
         
         // enable depth test and back-face culling for performance
         renderer.applyRenderState(RenderState.DEFAULT);
@@ -274,9 +291,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             }
         }
     }
-    private Quaternion rot = new Quaternion();
-    private Vector3f vector = new Vector3f();
-    private Vector3f focus = new Vector3f();
 
     private void rotateCamera(Vector3f axis, float amount) {
         if (axis.equals(cam.getLeft())) {
@@ -361,44 +375,100 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         }
     }
 
-    private Texture setupPreviewView(){
-        Camera offCamera = new Camera(512, 512);
+    private void setupPreviewView(){
+        Camera offCamera = new Camera(width, height);
         Geometry offBox;
 
         // create a pre-view. a view that is rendered before the main view
-        ViewPort offView = renderManager.createPreView("Offscreen View", offCamera);
+        offView = renderManager.createPreView("Offscreen View", offCamera);
         offView.setBackgroundColor(ColorRGBA.DarkGray);
+        offView.addProcessor(this);
 
         // create offscreen framebuffer
-        FrameBuffer offBuffer = new FrameBuffer(512, 512, 0);
+        offBuffer = new FrameBuffer(width, height, 0);
 
         //setup framebuffer's cam
         offCamera.setFrustumPerspective(45f, 1f, 1f, 1000f);
-        offCamera.setLocation(new Vector3f(0f, 0f, -5f));
+        offCamera.setLocation(new Vector3f(0f, 1f, 40f));
         offCamera.lookAt(new Vector3f(0f, 0f, 0f), Vector3f.UNIT_Y);
-
-        //setup framebuffer's texture
-        Texture2D offTex = new Texture2D(512, 512, Format.RGB8);
-        offTex.setAnisotropicFilter(4);
 
         //setup framebuffer to use texture
         offBuffer.setDepthBuffer(Format.Depth);
-        offBuffer.setColorTexture(offTex);
+        offBuffer.setColorBuffer(Format.RGBA8);
 
         //set viewport to render to offscreen framebuffer
         offView.setOutputFrameBuffer(offBuffer);
 
         // setup framebuffer's scene
-//        Box boxMesh = new Box(Vector3f.ZERO, 1,1,1);
-//        Material material = (Material) manager.loadContent("jme_logo.j3m");
-//        offBox = new Geometry("sphere", boxMesh);
-//        offBox.setMaterial(material);
-//        previewNode.attachChild(offBox);
-
+        PointLight light=new PointLight();
+        light.setPosition(offCamera.getLocation());
+        light.setColor(ColorRGBA.White);
+        previewNode.addLight(light);
+        
         // attach the scene to the viewport to be rendered
         offView.attachScene(previewNode);
 
-        return offTex;
+    }
+
+    private void updateImageContents(){
+        cpuBuf.clear();
+        renderer.readFrameBuffer(offBuffer, cpuBuf);
+
+        // copy native memory to java memory
+        cpuBuf.clear();
+        cpuBuf.get(cpuArray);
+        cpuBuf.clear();
+
+        // flip the components the way AWT likes them
+        for (int i = 0; i < width * height * 4; i+=4){
+            byte b = cpuArray[i+0];
+            byte g = cpuArray[i+1];
+            byte r = cpuArray[i+2];
+            byte a = cpuArray[i+3];
+
+            cpuArray[i+0] = a;
+            cpuArray[i+1] = b;
+            cpuArray[i+2] = g;
+            cpuArray[i+3] = r;
+        }
+
+        synchronized (image) {
+            WritableRaster wr = image.getRaster();
+            DataBufferByte db = (DataBufferByte) wr.getDataBuffer();
+            System.arraycopy(cpuArray, 0, db.getData(), 0, cpuArray.length);
+        }
+        notifySceneListeners(image);
+    }
+
+    public void initialize(RenderManager rm, ViewPort vp) {
+    }
+
+    public void reshape(ViewPort vp, int i, int i1) {
+    }
+
+    public boolean isInitialized() {
+        return true;
+    }
+
+    public void preFrame(float f) {
+    }
+
+    public void postQueue(RenderQueue rq) {
+    }
+
+    boolean mooPreview=false;
+    public void postFrame(FrameBuffer fb) {
+        if(doPreview){
+            mooPreview=true;
+            doPreview=false;
+        }
+        if(mooPreview){
+            updateImageContents();
+            mooPreview=false;
+        }
+    }
+
+    public void cleanup() {
     }
 
     //TODO: replace with Lookup functionality
@@ -419,6 +489,32 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         }
     }
 
+    private void notifySceneListeners(BufferedImage image) {
+        for (Iterator<SceneListener> it = listeners.iterator(); it.hasNext();) {
+            SceneListener sceneViewerListener = it.next();
+            synchronized(image){
+                sceneViewerListener.previewChanged(image,previewSpat);
+            }
+        }
+    }
+
+    public void createPreview(final JmeSpatial spat) {
+        previewSpat=spat;
+        //TODO: notify listeners about change, set tree to "displayed"
+        enqueue(new Callable() {
+            public Object call() throws Exception {
+                previewNode.detachAllChildren();
+                Spatial model = spat.getLookup().lookup(Spatial.class);
+                if (model == null) {
+                    StatusDisplayer.getDefault().setStatusText("could not load spatial " + spat);
+                    return null;
+                }
+                previewNode.attachChild(model);
+                doPreview=true;
+                return null;
+            }
+        });
+    }
 
     /**
      * method to load and show a model via its name (threadsafe)<br>

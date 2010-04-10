@@ -694,8 +694,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
 
     public Spatial center(){
         if ((refreshFlags & RF_BOUND) != 0){
-            updateWorldBound();
-            updateWorldTransforms();
+            updateGeometricState();
         }
 
         Vector3f worldTrans = getWorldTranslation();

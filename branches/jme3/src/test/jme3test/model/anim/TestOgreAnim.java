@@ -38,6 +38,8 @@ public class TestOgreAnim extends SimpleApplication {
         OgreMeshKey key = new OgreMeshKey("OTO.meshxml", matList);
         Spatial model = (Spatial) manager.loadContent(key);
 
+        model.center();
+
         AnimControl control = (AnimControl) model.getControl(ControlType.BoneAnimation);
         AnimChannel channel = control.createChannel();
         channel.setAnim("Walk");

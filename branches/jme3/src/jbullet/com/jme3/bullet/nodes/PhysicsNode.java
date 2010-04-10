@@ -57,6 +57,7 @@ public class PhysicsNode extends CollisionObject{
 
     private boolean rebuildBody=true;
     private float mass=1.0f;
+    private boolean kinematic=false;
     private Vector3f scale=new Vector3f(1,1,1);
 
     protected javax.vecmath.Vector3f tempVec=new javax.vecmath.Vector3f();
@@ -199,6 +200,33 @@ public class PhysicsNode extends CollisionObject{
             rebuildRigidBody();
         }
         motionState.applyTransform(rBody);
+    }
+
+    //TODO: set physics location directly for multithreaded games
+//    public void setPhysicsLocation(float x,float y,float z){
+//        rBody.getWorldTransform(tempTrans);
+//        Converter.convert(tempLocation,tempTrans.origin);
+//        rBody.setWorldTransform(tempTrans);
+//    }
+//
+//    public void setPhysicsRotation(float x,float y,float z, float w){
+//
+//    }
+
+    public void setKinematic(boolean kinematic){
+        this.kinematic=kinematic;
+        if(kinematic){
+            rBody.setCollisionFlags(rBody.getCollisionFlags() | CollisionFlags.KINEMATIC_OBJECT);
+            rBody.setActivationState(com.bulletphysics.collision.dispatch.CollisionObject.DISABLE_DEACTIVATION);
+        }
+        else{
+            rBody.setCollisionFlags(rBody.getCollisionFlags() & ~CollisionFlags.KINEMATIC_OBJECT);
+            rBody.setActivationState(com.bulletphysics.collision.dispatch.CollisionObject.ACTIVE_TAG);
+        }
+    }
+
+    public boolean isKinematic(){
+        return kinematic;
     }
 
     public float getMass() {

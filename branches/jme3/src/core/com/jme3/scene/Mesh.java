@@ -29,6 +29,7 @@ import java.util.ArrayList;
 
 public class Mesh implements Savable, Cloneable {
 
+    // TODO: Document this enum
     public enum Mode {
         Points,
         Lines,
@@ -55,6 +56,7 @@ public class Mesh implements Savable, Cloneable {
     private IntMap<VertexBuffer> buffers = new IntMap<VertexBuffer>();
     private VertexBuffer[] lodLevels;
     private int lodLevel = 0;
+    private float pointSize = 1;
 
     private transient int vertexArrayID = -1;
 
@@ -175,6 +177,14 @@ public class Mesh implements Savable, Cloneable {
         this.maxNumWeights = maxNumWeights;
     }
 
+    public float getPointSize() {
+        return pointSize;
+    }
+
+    public void setPointSize(float pointSize) {
+        this.pointSize = pointSize;
+    }
+
     /**
      * Locks the mesh so it cannot be modified anymore, thus
      * optimizing its data.
@@ -263,21 +273,21 @@ public class Mesh implements Savable, Cloneable {
         }
     }
 
-    private int computeNumElements(Buffer b){
+    private int computeNumElements(int bufSize){
         switch (mode){
             case Triangles:
-                return b.capacity() / 3;
+                return bufSize / 3;
             case TriangleFan:
             case TriangleStrip:
-                return b.capacity() - 2;
+                return bufSize - 2;
             case Points:
-                return b.capacity();
+                return bufSize;
             case Lines:
-                return b.capacity() / 2;
+                return bufSize / 2;
             case LineLoop:
-                return b.capacity();
+                return bufSize;
             case LineStrip:
-                return b.capacity() - 1;
+                return bufSize - 1;
             default:
                 throw new UnsupportedOperationException();
         }
@@ -290,10 +300,12 @@ public class Mesh implements Savable, Cloneable {
         VertexBuffer pb = getBuffer(Type.Position);
         VertexBuffer ib = getBuffer(Type.Index);
         if (pb != null){
-            vertCount = pb.getData().capacity() / 3;
+            vertCount = pb.getData().capacity() / pb.getNumComponents();
         }
         if (ib != null){
-            elementCount = computeNumElements(ib.getData());
+            elementCount = computeNumElements(ib.getData().capacity());
+        }else{
+            elementCount = computeNumElements(vertCount);
         }
     }
 
@@ -305,7 +317,7 @@ public class Mesh implements Savable, Cloneable {
             if (lod >= lodLevels.length)
                 throw new IllegalArgumentException("LOD level "+lod+" does not exist!");
 
-            return computeNumElements(lodLevels[lod].getData());
+            return computeNumElements(lodLevels[lod].getData().capacity());
         }else if (lod == 0){
             return elementCount;
         }else{
@@ -533,10 +545,6 @@ public class Mesh implements Savable, Cloneable {
         fb.clear();
     }
 
-    public void applyTransform(Transform t){
-        VertexBuffer pvb = getBuffer(Type.Position);
-    }
-
     public void updateBound(){
         VertexBuffer posBuf = getBuffer(VertexBuffer.Type.Position);
         if (meshBound != null && posBuf != null){
@@ -574,6 +582,7 @@ public class Mesh implements Savable, Cloneable {
         out.write(collisionTree, "collisionTree", null);
         out.write(elementLengths, "elementLengths", null);
         out.write(modeStart, "modeStart", null);
+        out.write(pointSize, "pointSize", 1f);
 
         out.writeIntSavableMap(buffers, "buffers", null);
     }
@@ -590,6 +599,7 @@ public class Mesh implements Savable, Cloneable {
         collisionTree = (BIHTree) in.readSavable("collisionTree", null);
         elementLengths = in.readIntArray("elementLengths", null);
         modeStart = in.readIntArray("modeStart", null);
+        pointSize = in.readFloat("pointSize", 1f);
 
 //        in.readStringSavableMap("buffers", null);
         buffers = (IntMap<VertexBuffer>) in.readIntSavableMap("buffers", null);

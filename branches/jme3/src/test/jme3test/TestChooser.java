@@ -44,6 +44,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -250,7 +252,7 @@ public class TestChooser extends JDialog {
         };
     }
 
-    private void startApp(Class<?> appClass){
+    private void startApp(final Class<?> appClass){
         if (appClass == null){
             JOptionPane.showMessageDialog(rootPane,
                                           "Please select a test from the list",
@@ -259,18 +261,29 @@ public class TestChooser extends JDialog {
             return;
         }
 
-        final Application app;
+        final Object app;
         try {
-            app = (Application) appClass.newInstance();
+            app = appClass.newInstance();
+            final Method mainMethod = appClass.getMethod("main", (new String[0]).getClass());
             new Thread(new Runnable(){
                 public void run(){
-                    app.start();
+                    try {
+                        mainMethod.invoke(app, new Object[]{new String[0]});
+                    } catch (IllegalAccessException ex) {
+                        logger.log(Level.SEVERE, "Cannot access constructor: "+appClass.getName(), ex);
+                    } catch (IllegalArgumentException ex) {
+                        logger.log(Level.SEVERE, "main() had illegal argument: "+appClass.getName(), ex);
+                    } catch (InvocationTargetException ex) {
+                        logger.log(Level.SEVERE, "main() method had exception: "+appClass.getName(), ex);
+                    }
                 }
             }).start();
         } catch (InstantiationException ex) {
             logger.log(Level.SEVERE, "Failed to create app: "+appClass.getName(), ex);
         } catch (IllegalAccessException ex) {
             logger.log(Level.SEVERE, "Cannot access constructor: "+appClass.getName(), ex);
+        } catch (NoSuchMethodException ex){
+            logger.log(Level.SEVERE, "Test class doesn't have main method: "+appClass.getName(), ex);
         }
     }
 

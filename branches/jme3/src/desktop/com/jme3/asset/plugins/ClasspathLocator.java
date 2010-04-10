@@ -40,6 +40,8 @@ public class ClasspathLocator implements AssetLocator {
 
     public void setRootPath(String rootPath) {
         this.root = rootPath;
+        if (!root.endsWith("/"))
+            root += "/";
     }
     
     public AssetInfo locate(AssetManager manager, AssetKey key) {

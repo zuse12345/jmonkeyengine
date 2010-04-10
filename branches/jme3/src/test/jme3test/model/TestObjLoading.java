@@ -2,13 +2,7 @@ package jme3test.model;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.material.Material;
-import com.jme3.math.Quaternion;
-import com.jme3.math.Transform;
-import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
-import jme3tools.converters.model.FloatToFixed;
-import jme3tools.converters.model.ModelConverter;
 
 /**
  * Tests OBJ format loading

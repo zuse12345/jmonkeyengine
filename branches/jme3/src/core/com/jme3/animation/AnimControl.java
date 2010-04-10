@@ -74,6 +74,7 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
                 meshes[i] = ((Geometry) clonedNode.getChild(i)).getMesh();
             }
             clone.targets = meshes;
+            clone.channels = new ArrayList<AnimChannel>();
             return clone;
         } catch (CloneNotSupportedException ex) {
             throw new AssertionError();

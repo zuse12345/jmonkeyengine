@@ -1,12 +1,14 @@
 package com.jme3.animation;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 
 public class AnimChannel {
 
     private AnimControl control;
 
-    private ArrayList<Integer> effectedBones = new ArrayList<Integer>();
+//    private ArrayList<Integer> affectedBones;
+    private BitSet affectedBones;
 
     private BoneAnimation animation;
     private BoneAnimation blendFrom;
@@ -27,7 +29,7 @@ public class AnimChannel {
                 case DontLoop:
                     return 0;
                 case Cycle:
-                    return 0;
+                    return /*-0.001f;*/t;
                 case Loop:
                     return max - t;
             }
@@ -36,7 +38,7 @@ public class AnimChannel {
                 case DontLoop:
                     return max;
                 case Cycle:
-                    return max;
+                    return /*-max;*/-(2f * max - t);
                 case Loop:
                     return t - max;
             }
@@ -108,6 +110,78 @@ public class AnimChannel {
         setAnim(name, defaultBlendTime);
     }
 
+    /**
+     * Add all the bones to the animation channel.
+     */
+    public void addAllBones() {
+        affectedBones = null;
+    }
+
+    /**
+     * Add a single Bone to the Channel,
+     * and don't have multiple instances of the same in the list.
+     */
+    public void addBone(String name) {
+        addBone(control.getSkeleton().getBone(name));
+    }
+
+    /**
+     * Add a single Bone to the Channel,
+     * and don't have multiple instances of the same in the list.
+     */
+    public void addBone(Bone bone) {
+        int boneIndex = control.getSkeleton().getBoneIndex(bone);
+//        if(affectedBones == null) {
+//            affectedBones = new ArrayList<Integer>();
+//            affectedBones.add(boneIndex);
+//        } else if(!affectedBones.contains(boneIndex)) {
+//            affectedBones.add(boneIndex);
+//        }
+        if(affectedBones == null) {
+            affectedBones = new BitSet(control.getSkeleton().getBoneCount());
+        }
+        affectedBones.set(boneIndex);
+    }
+
+    /**
+     * Add Bones to the Channel going toward the root bone. (i.e. parents)
+     */
+    public void addToRootBone(String name) {
+        addToRootBone(control.getSkeleton().getBone(name));
+    }
+
+    /**
+     * Add Bones to the Channel going toward the root bone. (i.e. parents)
+     */
+    public void addToRootBone(Bone bone) {
+        addBone(bone);
+        while (bone.getParent() != null) {
+            bone = bone.getParent();
+            addBone(bone);
+        }
+    }
+
+    /**
+     * Add Bones to the Channel going away from the root bone. (i.e. children)
+     */
+    public void addFromRootBone(String name) {
+        addFromRootBone(control.getSkeleton().getBone(name));
+    }
+
+    /**
+     * Add Bones to the Channel going away from the root bone. (i.e. children)
+     */
+    public void addFromRootBone(Bone bone) {
+        addBone(bone);
+        if (bone.getChildren() == null)
+            return;
+        for (Bone childBone : bone.getChildren()) {
+            addBone(childBone);
+            addFromRootBone(childBone);
+        }
+    }
+
+
     void reset(){
         animation = null;
         blendFrom = null;
@@ -117,22 +191,33 @@ public class AnimChannel {
         if (animation == null)
             return;
 
-        time = clampWrapTime(time, animation.getLength(), loopMode);
-        animation.setTime(time, control.skeleton, blendAmount);
-        time += tpf * speed;
-
         if (blendFrom != null){
+            blendFrom.setTime(timeBlendFrom, control.skeleton, 1f - blendAmount, affectedBones);
+            timeBlendFrom += tpf * speedBlendFrom;
             timeBlendFrom = clampWrapTime(timeBlendFrom,
                                           blendFrom.getLength(),
                                           loopModeBlendFrom);
-            blendFrom.setTime(timeBlendFrom, control.skeleton, 1f - blendAmount);
-            timeBlendFrom += tpf * speedBlendFrom;
+            if (timeBlendFrom < 0){
+                timeBlendFrom = -timeBlendFrom;
+                speedBlendFrom = -speedBlendFrom;
+            }
 
             blendAmount += tpf * blendRate;
             if (blendAmount > 1f){
+                blendAmount = 1f;
                 blendFrom = null;
             }
         }
+
+        animation.setTime(time, control.skeleton, blendAmount, affectedBones);
+        time += tpf * speed;
+        time = clampWrapTime(time, animation.getLength(), loopMode);
+        if (time < 0){
+            time = -time;
+            speed = -speed;
+        }
+
+        
     }
 
 }

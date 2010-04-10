@@ -1720,14 +1720,19 @@ public class LwjglRenderer implements Renderer {
         if (indices != null){
             drawTriangleList(indices, mesh, count);
         }else{
-            throw new UnsupportedOperationException("Cannot render without index buffer");
-//            glDrawArrays(convertElementMode(mesh.getMode()), 0, mesh.getVertexCount());
+//            throw new UnsupportedOperationException("Cannot render without index buffer");
+            glDrawArrays(convertElementMode(mesh.getMode()), 0, mesh.getVertexCount());
         }
         clearVertexAttribs();
         clearTextureUnits();
     }
 
     public void renderMesh(Mesh mesh, int lod, int count) {
+        if (context.pointSize != mesh.getPointSize()){
+            glPointSize(mesh.getPointSize());
+            context.pointSize = mesh.getPointSize();
+        }
+        
 //        if (GLContext.getCapabilities().GL_ARB_vertex_array_object){
 //            renderMeshVertexArray(mesh, count);
 //        }else{

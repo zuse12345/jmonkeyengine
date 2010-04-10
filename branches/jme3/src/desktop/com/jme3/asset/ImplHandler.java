@@ -121,7 +121,7 @@ public class ImplHandler {
 
     public int getLocatorCount(){
         synchronized (locators){
-            return locators.size();
+            return locators.size() + genericLocators.size();
         }
     }
 

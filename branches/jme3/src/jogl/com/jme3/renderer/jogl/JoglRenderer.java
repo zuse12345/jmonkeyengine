@@ -988,6 +988,11 @@ public class JoglRenderer implements Renderer {
     }
 
     public void renderMesh(Mesh mesh, int lod, int count){
+        if (context.pointSize != mesh.getPointSize()){
+            gl.glPointSize(mesh.getPointSize());
+            context.pointSize = mesh.getPointSize();
+        }
+        
         if (vbo){
             renderMeshVBO(mesh, lod, count);
         }else{

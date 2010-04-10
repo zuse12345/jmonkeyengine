@@ -72,6 +72,10 @@ public final class BoneTrack implements Savable {
         this.targetBoneIndex = targetBoneIndex;
     }
 
+    public int getTargetBoneIndex() {
+        return targetBoneIndex;
+    }
+
     public void setKeyframes(float[] times, Vector3f[] translations, Quaternion[] rotations){
         if (times.length == 0)
             throw new RuntimeException("BoneTrack with no keyframes!");
@@ -122,11 +126,15 @@ public final class BoneTrack implements Savable {
         }
 
         if (weight != 1f){
-            tempQ.slerp(Quaternion.IDENTITY, 1f - weight);
-            tempV.multLocal(weight);
+//            tempQ.slerp(Quaternion.IDENTITY, 1f - weight);
+//            tempV.multLocal(weight);
+            target.blendAnimTransforms(tempV, tempQ, weight);
+//            target.setAnimTransforms(tempV, tempQ);
+        }else{
+            target.setAnimTransforms(tempV, tempQ);
         }
 
-        target.setAnimTransforms(tempV, tempQ);
+        
     }
 
     public void write(JmeExporter ex) throws IOException {

@@ -36,6 +36,8 @@ public class RenderContext {
 
     public int matrixMode = -1;
 
+    public float pointSize = 1;
+
     public RenderState.BlendMode blendMode = RenderState.BlendMode.Off;
 
     /**
@@ -118,6 +120,7 @@ public class RenderContext {
         polyOffsetUnits = 0;
         normalizeEnabled = false;
         matrixMode = -1;
+        pointSize = 1;
         blendMode = RenderState.BlendMode.Off;
         wireframe = false;
         boundShaderProgram = 0;

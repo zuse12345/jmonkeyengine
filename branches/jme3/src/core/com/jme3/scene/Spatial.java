@@ -31,6 +31,7 @@ import com.jme3.util.IntMap;
 import com.jme3.util.IntMap.Entry;
 import com.jme3.util.TempVars;
 import java.io.IOException;
+import java.util.ArrayList;
 
 
 /**
@@ -799,14 +800,27 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
             clone.localLights = localLights.clone();
             clone.worldTransform = worldTransform.clone();
             clone.localTransform = localTransform.clone();
-            clone.controls = new IntMap<Control>();
-            for (Entry<Control> c : controls){
-                clone.controls.put( c.getKey(), c.getValue().cloneForSpatial(clone) );
+
+            if (clone instanceof Node){
+                Node node = (Node) this;
+                Node nodeClone = (Node) clone;
+                nodeClone.children = new ArrayList<Spatial>();
+                for (Spatial child : node.children){
+                    Spatial childClone = child.clone();
+                    childClone.parent = nodeClone;
+                    nodeClone.children.add(childClone);
+                }
             }
+
             clone.parent = null;
             clone.setBoundRefresh();
             clone.setTransformRefresh();
             clone.setLightListRefresh();
+
+            clone.controls = new IntMap<Control>();
+            for (Entry<Control> c : controls){
+                clone.controls.put( c.getKey(), c.getValue().cloneForSpatial(clone) );
+            }
             return clone;
         }catch (CloneNotSupportedException ex){
             throw new AssertionError();

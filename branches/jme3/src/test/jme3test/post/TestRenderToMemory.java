@@ -23,6 +23,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
@@ -110,6 +112,11 @@ public class TestRenderToMemory extends SimpleApplication implements SceneProces
                 display.setPreferredSize(new Dimension(width, height));
                 frame.getContentPane().add(display);
                 frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                frame.addWindowListener(new WindowAdapter(){
+                    public void windowClosed(WindowEvent e){
+                        stop();
+                    }
+                });
                 frame.pack();
                 frame.setLocationRelativeTo(null);
                 frame.setResizable(false);

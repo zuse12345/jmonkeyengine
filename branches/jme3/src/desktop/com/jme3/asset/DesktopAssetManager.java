@@ -6,6 +6,7 @@ import com.jme3.asset.AssetLoader;
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.AssetConfig;
+import com.jme3.audio.AudioData;
 import com.jme3.font.BitmapFont;
 import com.jme3.material.Material;
 import com.jme3.scene.Spatial;
@@ -256,6 +257,14 @@ public class DesktopAssetManager implements AssetManager {
 
     public Texture loadTexture(String name){
         return loadTexture(name, true);
+    }
+
+    public AudioData loadAudio(AudioKey key){
+        return (AudioData) loadContent(key);
+    }
+
+    public AudioData loadAudio(String name){
+        return loadAudio(new AudioKey(name, false));
     }
 
     /**

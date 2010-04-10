@@ -38,6 +38,9 @@ import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.BitSet;
 
 /**
  * Bone animation updates each of it's tracks with the skeleton and time
@@ -79,11 +82,21 @@ public final class BoneAnimation implements Savable {
         return tracks;
     }
 
-    void setTime(float time, Skeleton skeleton, float weight){
+    void setTime(float time, Skeleton skeleton, float weight, BitSet affectedBones){
         for (int i = 0; i < tracks.length; i++){
-            tracks[i].setTime(time, skeleton, weight);
+            if (affectedBones == null
+             || affectedBones.get(tracks[i].getTargetBoneIndex()))
+                tracks[i].setTime(time, skeleton, weight);
         }
     }
+
+//    void setTime(float time, Skeleton skeleton, float weight, ArrayList<Integer> affectedBones){
+//        for (int i = 0; i < tracks.length; i++){
+//            if (affectedBones == null
+//             || affectedBones.contains(tracks[i].getTargetBoneIndex()))
+//                tracks[i].setTime(time, skeleton, weight);
+//        }
+//    }
 
     public String toString(){
         return "BoneAnim[name="+name+", length="+length+"]";

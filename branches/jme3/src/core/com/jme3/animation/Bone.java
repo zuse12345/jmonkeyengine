@@ -41,6 +41,7 @@ import com.jme3.math.Matrix4f;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
+import com.jme3.util.TempVars;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -307,9 +308,32 @@ public final class Bone implements Savable {
         if (userControl)
             return;
 
-        localPos.addLocal(translation);
-        localRot.multLocal(rotation);
+//        localPos.addLocal(translation);
+//        localRot.multLocal(rotation);
         //localRot = localRot.mult(rotation);
+
+        localPos.set(initialPos).addLocal(translation);
+        localRot.set(initialRot).multLocal(rotation);
+    }
+
+    void blendAnimTransforms(Vector3f translation, Quaternion rotation, float weight){
+        if (userControl)
+            return;
+
+        TempVars vars = TempVars.get();
+        assert vars.lock();
+
+        Vector3f tmpV = vars.vect1;
+        Quaternion tmpQ = vars.quat1;
+
+        tmpV.set(initialPos).addLocal(translation);
+        localPos.interpolate(tmpV, weight);
+
+        tmpQ.set(initialRot).multLocal(rotation);
+        localRot.slerp(tmpQ, weight);
+        //localRot = localRot.mult(rotation);
+
+        assert vars.unlock();
     }
 
     /**

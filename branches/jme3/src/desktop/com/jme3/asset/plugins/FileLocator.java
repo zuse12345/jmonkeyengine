@@ -9,6 +9,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
+/**
+ * <code>FileLocator</code> allows you to specify a folder where to
+ * look for assets. 
+ * @author Kirill Vainer
+ */
 public class FileLocator implements AssetLocator {
 
     private File root;

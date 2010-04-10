@@ -13,10 +13,13 @@ import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
+import com.jme3.system.AppSettings;
+import com.jme3.system.JmeContext.Type;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image.Format;
 import com.jme3.texture.Texture2D;
 import com.jme3.util.BufferUtils;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -52,21 +55,51 @@ public class TestRenderToMemory extends SimpleApplication implements SceneProces
                                             BufferedImage.TYPE_4BYTE_ABGR);
 
     private class ImageDisplay extends JPanel {
+
+        private long t;
+        private long total;
+        private int frames;
+        private int fps;
+
         @Override
         public void paintComponent(Graphics gfx) {
             super.paintComponent(gfx);
             Graphics2D g2d = (Graphics2D) gfx;
 
+            if (t == 0)
+                t = timer.getTime();
+
+            g2d.setBackground(Color.BLACK);
+            g2d.clearRect(0,0,width,height);
+
             synchronized (image){
                 g2d.drawImage(image, null, 0, 0);
             }
+
+            long t2 = timer.getTime();
+            long dt = t2 - t;
+            total += dt;
+            frames ++;
+            t = t2;
+
+            if (total > 1000){
+                fps = frames;
+                total = 0;
+                frames = 0;
+            }
+
+            g2d.setColor(Color.white);
+            g2d.drawString("FPS: "+fps, 0, getHeight() - 100);
         }
     }
 
     public static void main(String[] args){
         TestRenderToMemory app = new TestRenderToMemory();
         app.setPauseOnLostFocus(false);
-        app.start();
+        AppSettings settings = new AppSettings(true);
+        settings.setResolution(1, 1);
+        app.setSettings(settings);
+        app.start(Type.OffscreenSurface);
     }
 
     public void createDisplayFrame(){
@@ -78,6 +111,7 @@ public class TestRenderToMemory extends SimpleApplication implements SceneProces
                 frame.getContentPane().add(display);
                 frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                 frame.pack();
+                frame.setLocationRelativeTo(null);
                 frame.setResizable(false);
                 frame.setVisible(true);
             }
@@ -112,12 +146,12 @@ public class TestRenderToMemory extends SimpleApplication implements SceneProces
             System.arraycopy(cpuArray, 0, db.getData(), 0, cpuArray.length);
         }
 
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
+//        SwingUtilities.invokeLater(new Runnable() {
+//            public void run() {
                 if (display != null)
                     display.repaint();
-            }
-        });
+//            }
+//        });
     }
 
     public void setupOffscreenView(){

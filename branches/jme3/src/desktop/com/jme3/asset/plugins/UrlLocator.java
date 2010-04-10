@@ -9,6 +9,12 @@ import java.net.URLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * <code>UrlLocator</code> is a locator that combines a root url
+ * and the given path in the AssetKey to construct a new url
+ * that allows locating the asset.
+ * @author Kiirill Vainer
+ */
 public class UrlLocator implements AssetLocator {
 
     private static final Logger logger = Logger.getLogger(UrlLocator.class.getName());

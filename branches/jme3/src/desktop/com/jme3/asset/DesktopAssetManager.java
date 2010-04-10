@@ -85,7 +85,7 @@ public class DesktopAssetManager implements AssetManager {
     }
 
     public void registerLoader(Class<?> loader, String ... extensions){
-        handler.registerLoader(loader, extensions);
+        handler.addLoader(loader, extensions);
         if (logger.isLoggable(Level.FINER)){
             logger.finer("Registered loader: "+loader.getSimpleName()+" for extensions "+
                         Arrays.toString(extensions));
@@ -101,14 +101,14 @@ public class DesktopAssetManager implements AssetManager {
     }
 
     public void registerLocator(String rootPath, Class<?> locator, String ... extensions){
-        handler.registerLocator(locator, rootPath, extensions);
+        handler.addLocator(locator, rootPath, extensions);
         if (logger.isLoggable(Level.FINER)){
             logger.finer("Registered locator: "+locator.getSimpleName());
         }
     }
     
     public void unregisterLocator(String rootPath, Class<?> locator, String ... extensions){
-        handler.unregisterLocator(locator, rootPath, extensions);
+        handler.removeLocator(locator, rootPath, extensions);
         if (logger.isLoggable(Level.FINER)){
             logger.finer("Unregistered locator: "+locator.getSimpleName());
         }

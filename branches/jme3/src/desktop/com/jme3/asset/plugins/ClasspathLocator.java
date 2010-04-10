@@ -7,6 +7,10 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.logging.Logger;
 
+/**
+ * The <code>ClasspathLocator</code> looks up an asset in the classpath.
+ * @author Kirill Vainer
+ */
 public class ClasspathLocator implements AssetLocator {
 
     private static final Logger logger = Logger.getLogger(ClasspathLocator.class.getName());

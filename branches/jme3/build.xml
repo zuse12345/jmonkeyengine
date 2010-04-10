@@ -4,7 +4,7 @@
     <description>Builds, tests, and runs the project jME3_ordered.</description>
     <import file="nbproject/build-impl.xml"/>
     <import file="nbproject/profiler-build-impl.xml"/>
-
+    
     <!-- creates the test data jar file -->
     <target name="-pre-jar">
         <mkdir dir="dist"/>
@@ -20,6 +20,34 @@
             <zipfileset dir="dist/javadoc/"/>
         </zip>
         <copy file="dist/jMonkeyEngine3-javadoc.zip" toDir="../jme3-gde/jme3-project-libraries/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
+    </target>
+   
+    <!-- puts jme3 jars, libs and javadoc in a dated zip file -->
+    <target name="dist" depends="clean, jar, javadoc>
+        <!-- create date in the format MM-dd-yyyy -->
+        <tstamp>
+          <format property="date" pattern="MM-dd-yyyy" locale="en,US"/>
+        </tstamp>
+        <property name="jme3zip" value="jME3_${date}.zip"/>
+
+	   <!-- make zip file -->
+        <zip destfile="${jme3zip}">
+		<fileset dir=".">
+		   <include name="dist/jMonkeyEngine3.jar"/>
+		   <include name="dist/jme3testdata.jar"/>
+		</fileset>
+           <zipfileset dir="dist/lib" excludes="jme3testdata.jar" prefix="lib"/>
+		<zipfileset dir="dist/javadoc" prefix="javadoc"/>
+	   </zip>
+    </target>
+
+    <!-- upload jme3 zip to jmonkeyengine.com/nightly -->
+    <target name="deploy" depends="dist">
+        <scp todir="${sshpath}:/var/www/nightly" verbose="yes" trust="yes">
+		<fileset dir=".">
+		   <include name="${jme3zip}"/>
+		</fileset>
+	   </scp>
     </target>
 
 </project>

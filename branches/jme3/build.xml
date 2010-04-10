@@ -32,11 +32,11 @@
 
 	   <!-- make zip file -->
         <zip destfile="${jme3zip}">
-		<fileset dir=".">
-		   <include name="dist/jMonkeyEngine3.jar"/>
-		   <include name="dist/jme3testdata.jar"/>
+		<fileset dir="dist/">
+		   <include name="jMonkeyEngine3.jar"/>
+		   <exclude name="jme3testdata.jar"/>
 		</fileset>
-           <zipfileset dir="dist/lib" excludes="jme3testdata.jar" prefix="lib"/>
+           <zipfileset dir="dist/lib" prefix="lib"/>
 		<zipfileset dir="dist/javadoc" prefix="javadoc"/>
 	   </zip>
     </target>

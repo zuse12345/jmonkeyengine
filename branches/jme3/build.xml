@@ -23,7 +23,7 @@
     </target>
    
     <!-- puts jme3 jars, libs and javadoc in a dated zip file -->
-    <target name="dist" depends="clean, jar, javadoc>
+    <target name="dist" depends="clean, jar, javadoc">
         <!-- create date in the format MM-dd-yyyy -->
         <tstamp>
           <format property="date" pattern="MM-dd-yyyy" locale="en,US"/>

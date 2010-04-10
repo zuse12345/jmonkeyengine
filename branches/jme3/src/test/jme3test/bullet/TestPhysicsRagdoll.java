@@ -16,6 +16,7 @@ import com.jme3.scene.control.ControlType;
 import com.jme3.scene.debug.SkeletonDebugger;
 import com.jme3.scene.plugins.ogre.MeshLoader;
 import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Cylinder;
 import com.jme3.texture.Texture;
 
 public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
@@ -48,13 +49,13 @@ public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
 //        Node model = (Node)MeshLoader.loadModel(manager, "ninja.meshxml", "ninja.material");
 
         //debug view
-//        AnimControl control= (AnimControl) model.getControl(ControlType.BoneAnimation);
-//        SkeletonDebugger skeletonDebug = new SkeletonDebugger("skeleton", control.getSkeleton());
-//        Material mat2 = new Material(manager, "wire_color.j3md");
-//        mat.setColor("m_Color", ColorRGBA.Green);
-//        mat.getAdditionalRenderState().setDepthTest(false);
-//        skeletonDebug.setMaterial(mat2);
-//        model.attachChild(skeletonDebug);
+        AnimControl control= (AnimControl) model.getControl(ControlType.BoneAnimation);
+        SkeletonDebugger skeletonDebug = new SkeletonDebugger("skeleton", control.getSkeleton());
+        Material mat2 = new Material(manager, "wire_color.j3md");
+        mat.setColor("m_Color", ColorRGBA.Green);
+        mat.getAdditionalRenderState().setDepthTest(false);
+        skeletonDebug.setMaterial(mat2);
+        model.attachChild(skeletonDebug);
 
         //Note: PhysicsRagdollControl is still TODO, constructor will change
         PhysicsRagdollControl ragdoll = new PhysicsRagdollControl(this,getPhysicsSpace());
@@ -65,8 +66,8 @@ public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
     }
 
     public Spatial createCylinder(float radius, float height){
-        Box b = new Box(Vector3f.ZERO, radius, height/2.0f,  radius);
-//        Cylinder b=new Cylinder(8,8,radius,height);
+//        Box b = new Box(Vector3f.ZERO, radius, height/2.0f,  radius);
+        Cylinder b=new Cylinder(8,8,radius,height);
         Geometry geom = new Geometry("Box", b);
         geom.updateModelBound();
 

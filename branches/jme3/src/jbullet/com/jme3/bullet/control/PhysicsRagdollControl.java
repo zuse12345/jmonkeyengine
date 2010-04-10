@@ -53,7 +53,8 @@ public class PhysicsRagdollControl implements Control {
             //get location between the two bones (physicscapsule center)
             Vector3f jointCenter = parentPos.add(childPos).multLocal(0.5f);
             Quaternion jointRotation = new Quaternion();
-            jointRotation.lookAt(Vector3f.UNIT_Z, childPos.subtract(parentPos));
+            jointRotation.lookAt(childPos.subtract(parentPos),Vector3f.UNIT_Y );
+//            jointRotation.lookAt(Vector3f.UNIT_Z, childPos.subtract(parentPos));
             // length of the joint
             float height = parentPos.distance(childPos);
 
@@ -87,9 +88,9 @@ public class PhysicsRagdollControl implements Control {
                     parentHeight = bone.getParent().getLocalPosition().distance(parentPos);
                 }
                 //local position from parent
-                link.pivotA = new Vector3f(0, (parentHeight * .5f), 0);
+                link.pivotA = new Vector3f(0,0,  (parentHeight * .5f));
                 //local position from child
-                link.pivotB = new Vector3f(0, -(height * .5f), 0);
+                link.pivotB = new Vector3f(0,0,  -(height * .5f));
 
                 PhysicsConeJoint joint = new PhysicsConeJoint(parent, shapeNode,
                         link.pivotA,
@@ -120,7 +121,6 @@ public class PhysicsRagdollControl implements Control {
             //Looks bad updating here but the shapeNode is not in a display tree
             //maybe introduce new class or handle inside this class w/o PhysicsNodes
 //            link.shapeNode.updateGeometricState();
-//            link.shapeNode.getWorldTranslation()
             
             //TODO: bone location is not shapeNode location but add 0.5*dist in child direction
             //also rotation is different for bones..

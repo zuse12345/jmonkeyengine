@@ -21,7 +21,7 @@ public class IDList {
     }
 
     public boolean moveToNew(int idx){
-//        if (newLen == 0 || newList[newLen-1] != idx)
+        if (newLen == 0 || newList[newLen-1] != idx)
             // add item to newList first
             newList[newLen++] = idx;
 

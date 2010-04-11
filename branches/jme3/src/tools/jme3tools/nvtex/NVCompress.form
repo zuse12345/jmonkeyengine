@@ -136,7 +136,7 @@
                           <Component id="cmbMapType" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace pref="77" max="32767" attributes="0"/>
+                  <EmptySpace pref="118" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -212,7 +212,7 @@
                           <Component id="cmbCompressType" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace pref="76" max="32767" attributes="0"/>
+                  <EmptySpace pref="95" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -237,7 +237,7 @@
         <Component class="javax.swing.JComboBox" name="cmbCompressType">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="12">
+              <StringArray count="13">
                 <StringItem index="0" value="RGBA"/>
                 <StringItem index="1" value="DXT1"/>
                 <StringItem index="2" value="DXT1nm"/>
@@ -250,6 +250,7 @@
                 <StringItem index="9" value="P4RGB565"/>
                 <StringItem index="10" value="P8RGB565"/>
                 <StringItem index="11" value="AWT"/>
+                <StringItem index="12" value="PNG-RGBE"/>
               </StringArray>
             </Property>
           </Properties>

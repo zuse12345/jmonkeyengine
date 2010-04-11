@@ -20,13 +20,13 @@ public class TestBitmapFont extends SimpleApplication {
         BitmapFont fnt = manager.loadFont("cooper.fnt");
         BitmapText txt = new BitmapText(fnt, false);
         txt.setBox(new Rectangle(0, 0, settings.getWidth(), settings.getHeight()));
-        txt.setSize(64);
+        txt.setSize(fnt.getPreferredSize() * 2f);
         txt.setText(txtB);
         txt.setLocalTranslation(0, settings.getHeight(), 0);
         guiNode.attachChild(txt);
 
         BitmapText txt4 = new BitmapText(fnt, false);
-        txt4.setSize(32);
+        txt4.setSize(fnt.getPreferredSize() * 1.2f);
         txt4.setText("Text without restriction. Text without restriction. Text without restriction. Text without restriction");
         txt4.setLocalTranslation(40, txt4.getLineHeight() * 2, 0);
 

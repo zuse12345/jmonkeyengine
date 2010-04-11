@@ -200,7 +200,7 @@ public class TestExplosionEffect extends SimpleApplication {
     @Override
     public void simpleUpdate(float tpf){
         time += tpf / speed;
-        speed = 0.02f;
+//        speed = 0.02f;
         if (time > 1f && state == 0){
             flash.emitAllParticles();
             spark.emitAllParticles();

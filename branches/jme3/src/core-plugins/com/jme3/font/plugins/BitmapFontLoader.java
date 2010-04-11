@@ -73,6 +73,8 @@ public class BitmapFontLoader implements AssetLoader {
                         TextureKey key = new TextureKey(file, true);
                         key.setGenerateMips(false);
                         tex = info.getManager().loadTexture(key);
+                        tex.setMagFilter(Texture.MagFilter.Bilinear);
+                        tex.setMinFilter(Texture.MinFilter.BilinearNoMipMaps);
                     }
                 }
                 // set page

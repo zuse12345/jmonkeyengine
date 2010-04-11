@@ -1345,6 +1345,11 @@ public class LwjglRenderer implements Renderer {
                 glActiveTexture(GL_TEXTURE0 + idx);
                 context.boundTextureUnit = idx;
             }
+
+//            if (textures[idx] == null){
+//                System.out.println("!!!");
+//            }
+
             glDisable(convertTextureType(textures[idx].getType()));
             textures[idx] = null;
         }

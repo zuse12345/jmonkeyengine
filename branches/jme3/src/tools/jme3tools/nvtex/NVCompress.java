@@ -1,10 +1,12 @@
 package jme3tools.nvtex;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.asset.plugins.FileLocator;
 import com.jme3.export.binary.BinaryExporter;
 import com.jme3.system.JmeSystem;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
+import com.jme3.texture.plugins.HDRLoader;
 import jme3tools.converters.ImageToAwt;
 import jme3tools.converters.MipMapGenerator;
 import java.awt.Component;
@@ -14,6 +16,7 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -112,7 +115,7 @@ public class NVCompress extends javax.swing.JFrame {
                         .add(lblMapType)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(cmbMapType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(77, Short.MAX_VALUE))
+                .addContainerGap(118, Short.MAX_VALUE))
         );
         pnlMapTypeLayout.setVerticalGroup(
             pnlMapTypeLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -129,7 +132,7 @@ public class NVCompress extends javax.swing.JFrame {
 
         pnlCompressOpt.setBorder(javax.swing.BorderFactory.createTitledBorder("Compression Options"));
 
-        cmbCompressType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "RGBA", "DXT1", "DXT1nm", "DXT1a", "DXT3", "DXT5", "DXT5nm", "ATI1", "ATI2/3Dc", "P4RGB565", "P8RGB565", "AWT" }));
+        cmbCompressType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "RGBA", "DXT1", "DXT1nm", "DXT1a", "DXT3", "DXT5", "DXT5nm", "ATI1", "ATI2/3Dc", "P4RGB565", "P8RGB565", "AWT", "PNG-RGBE" }));
         cmbCompressType.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmbCompressTypeActionPerformed(evt);
@@ -158,7 +161,7 @@ public class NVCompress extends javax.swing.JFrame {
                         .add(lblCompressType)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(cmbCompressType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(54, Short.MAX_VALUE))
+                .addContainerGap(95, Short.MAX_VALUE))
         );
         pnlCompressOptLayout.setVerticalGroup(
             pnlCompressOptLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -237,7 +240,7 @@ public class NVCompress extends javax.swing.JFrame {
                     .add(pnlExportOptLayout.createSequentialGroup()
                         .add(lblTargetDir)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(txtTargetDir, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
+                        .add(txtTargetDir, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(btnBrowse))
                     .add(chkAsSource)
@@ -309,7 +312,7 @@ public class NVCompress extends javax.swing.JFrame {
                         .add(btnAddFiles)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(btnRemoveFiles))
-                    .add(sclFileList, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE))
+                    .add(sclFileList, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -323,7 +326,7 @@ public class NVCompress extends javax.swing.JFrame {
                         .add(pnlCompressOpt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(pnlExportOpt, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(sclFileList, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE))
+                    .add(sclFileList, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(barProgress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
@@ -425,24 +428,44 @@ public class NVCompress extends javax.swing.JFrame {
             manager = JmeSystem.newAssetManager();
 
         manager.registerLocator(input.getParent().toString(),
-                                "com.jme3.asset.plugins.FileSystemLocator",
+                                FileLocator.class.getName(),
                                 "*");
-        Texture tex = manager.loadTexture(input.getName());
-        Image image = tex.getImage();
-        String format = (String) cmbCompressType.getSelectedItem();
-        boolean mips = chkMips.isSelected();
-        if (mips && !image.hasMipmaps()){
-            MipMapGenerator.generateMipMaps(image);
-        }
-        if (output == null){
-            output = new File(input.getParent(), input.getName() + ".j3i");
-        }
 
-        try{
-            BinaryExporter.getInstance().save(image, output);
-            BufferedImage preview = ImageToAwt.convert(image, false, true, 0);
-            ImageIO.write(preview, "png", new File(output + ".png"));
-        }catch (IOException ex){
+        String format = (String) cmbCompressType.getSelectedItem();
+        if (format.equals("PNG-RGBE")){
+            HDRLoader loader = new HDRLoader(true);
+            try{
+                FileInputStream in = new FileInputStream(input);
+                Image image = loader.load(in, false);
+                in.close();
+
+                BufferedImage rgbeImage = ImageToAwt.convert(image, false, true, 0);
+                if (output == null){
+                    output = new File(input.getParent(), input.getName() + ".png");
+                }
+                ImageIO.write(rgbeImage, "png", output);
+            } catch (IOException ex){
+                ex.printStackTrace();
+            }
+        }else{
+            Texture tex = manager.loadTexture(input.getName());
+            Image image = tex.getImage();
+
+            boolean mips = chkMips.isSelected();
+            if (mips && !image.hasMipmaps()){
+                MipMapGenerator.generateMipMaps(image);
+            }
+            if (output == null){
+                output = new File(input.getParent(), input.getName() + ".j3i");
+            }
+
+            try{
+                BinaryExporter.getInstance().save(image, output);
+                BufferedImage preview = ImageToAwt.convert(image, false, true, 0);
+                ImageIO.write(preview, "png", new File(output + ".png"));
+            }catch (IOException ex){
+                ex.printStackTrace();
+            }
         }
     }
 
@@ -566,7 +589,7 @@ public class NVCompress extends javax.swing.JFrame {
         }
     }
 
-    private void runJ3CompressAll(final File exportDir){
+    private void runJ3CompressAll(final File exportDir, final String ext){
         final Object[] fileList = compileFileList();
         if (fileList != null && fileList.length > 0){
             startWork();
@@ -582,7 +605,7 @@ public class NVCompress extends javax.swing.JFrame {
                             if (extPt > 0)
                                 name = name.substring(0, extPt);
 
-                            outFile = new File(exportDir, name+".j3i");
+                            outFile = new File(exportDir, name+"."+ext);
                         }
                         try{
                             runJ3Compress(inFile, outFile);
@@ -642,9 +665,8 @@ public class NVCompress extends javax.swing.JFrame {
             }
 
             String compression = (String) cmbCompressType.getSelectedItem();
-            if (compression.equals("AWT") || compression.startsWith("P4")
-             || compression.startsWith("P8")){
-                runJ3CompressAll(exportDir);
+            if (compression.equals("AWT") || compression.equals("PNG-RGBE")){
+                runJ3CompressAll(exportDir, compression.equals("AWT") ? "j3i" : "pnge");
             }else{
                 runNVCompressAll(exportDir);
             }

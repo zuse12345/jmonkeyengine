@@ -29,7 +29,7 @@ public class TestOgreConvert extends SimpleApplication {
 
         DirectionalLight dl = new DirectionalLight();
         dl.setColor(ColorRGBA.White);
-        dl.setDirection(new Vector3f(0,-1,0).normalizeLocal());
+        dl.setDirection(new Vector3f(0,-1,-1).normalizeLocal());
         System.out.println(dl.getDirection());
         rootNode.addLight(dl);
 

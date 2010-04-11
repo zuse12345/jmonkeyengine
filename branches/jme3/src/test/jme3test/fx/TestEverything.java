@@ -1,7 +1,6 @@
 package jme3test.fx;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.asset.plugins.ClasspathLocator;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -78,20 +77,6 @@ public class TestEverything extends SimpleApplication {
         skyGeom.setMaterial(skyMat);
 
         rootNode.attachChild(skyGeom);
-    }
-
-    public void setupShinyBall(){
-        manager.registerLocator("/bump/", "com.jme3.asset.plugins.ClasspathLocator", "dds", "jpg", "png");
-        
-        Spatial ball = MeshLoader.loadModel(manager, "/bump/ShinyBall.meshxml", null);
-        Material mat = manager.loadMaterial("/bump/ShinyBall.j3m");
-        ball.setMaterial(mat);
-        
-        ball.setShadowMode(ShadowMode.CastAndRecieve);
-        rootNode.attachChild(ball);
-
-        //XXX: uncomment this when possible
-//        manager.unregisterLocator("/bump/", "com.jme3.asset.plugins.ClasspathLocator", "dds", "jpg", "png");
     }
 
     public void setupLighting(){
@@ -192,9 +177,8 @@ public class TestEverything extends SimpleApplication {
 
 //        setupTerrain();
         setupFloor();
-        setupRobotGuy();
+//        setupRobotGuy();
         setupSignpost();
-        setupShinyBall();
 
         
     }

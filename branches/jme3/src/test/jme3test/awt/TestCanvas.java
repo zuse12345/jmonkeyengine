@@ -62,7 +62,7 @@ public class TestCanvas extends JFrame implements SystemListener {
             timer.update();
             time += timer.getTimePerFrame();
             if (time > 2){
-                System.out.println("BOOM!");
+                System.out.println("Removing canvas from frame!");
                 time = -1;
                 SwingUtilities.invokeLater(new Runnable(){
                     public void run(){
@@ -72,6 +72,7 @@ public class TestCanvas extends JFrame implements SystemListener {
                         } catch (InterruptedException ex) {
                         }
                         getContentPane().add(canvas);
+                        System.out.println("Restored canvas!");
                     }
                 });
             }

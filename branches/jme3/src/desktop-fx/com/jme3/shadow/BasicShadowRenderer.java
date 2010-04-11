@@ -30,6 +30,7 @@ public class BasicShadowRenderer implements SceneProcessor {
     private Material dispMat;
 
     private Picture dispPic = new Picture("Picture");
+    private boolean noOccluders = false;
 
     private Vector3f[] points = new Vector3f[8];
     private Vector3f direction = new Vector3f();
@@ -78,6 +79,16 @@ public class BasicShadowRenderer implements SceneProcessor {
     }
 
     public void postQueue(RenderQueue rq){
+        GeometryList occluders = rq.getShadowQueueContent(ShadowMode.Cast);
+        if (occluders.size() == 0){
+            noOccluders = true;
+            return;
+        }else{
+            noOccluders = false;
+        }
+
+        GeometryList recievers = rq.getShadowQueueContent(ShadowMode.Recieve);
+
         // update frustum points based on current camera
         Camera viewCam = viewPort.getCamera();
         ShadowUtil.updateFrustumPoints(viewCam,
@@ -104,8 +115,6 @@ public class BasicShadowRenderer implements SceneProcessor {
         shadowCam.updateViewProjection();
 
         // render shadow casters to shadow map
-        GeometryList occluders = rq.getShadowQueueContent(ShadowMode.Cast);
-        GeometryList recievers = rq.getShadowQueueContent(ShadowMode.Recieve);
         ShadowUtil.updateShadowCamera(occluders, recievers, shadowCam, points);
 
         Renderer r = renderManager.getRenderer();
@@ -135,10 +144,12 @@ public class BasicShadowRenderer implements SceneProcessor {
     }
 
     public void postFrame(FrameBuffer out){
-        postshadowMat.setMatrix4("m_LightViewProjectionMatrix", shadowCam.getViewProjectionMatrix());
-        renderManager.setForcedMaterial(postshadowMat);
-        viewPort.getQueue().renderShadowQueue(ShadowMode.Recieve, renderManager, viewPort.getCamera());
-        renderManager.setForcedMaterial(null);
+        if (!noOccluders){
+            postshadowMat.setMatrix4("m_LightViewProjectionMatrix", shadowCam.getViewProjectionMatrix());
+            renderManager.setForcedMaterial(postshadowMat);
+            viewPort.getQueue().renderShadowQueue(ShadowMode.Recieve, renderManager, viewPort.getCamera());
+            renderManager.setForcedMaterial(null);
+        }
 
 //        displayShadowMap(renderManager.getRenderer());
     }

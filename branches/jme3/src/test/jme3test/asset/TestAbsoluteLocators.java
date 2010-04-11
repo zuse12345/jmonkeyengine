@@ -25,7 +25,7 @@ public class TestAbsoluteLocators {
         AudioData audio = am.loadAudio("gun.wav");
 
         // find a texture
-        Texture tex = am.loadTexture("pond1.PNG");
+        Texture tex = am.loadTexture("pond.png");
 
 
         if (audio == null)

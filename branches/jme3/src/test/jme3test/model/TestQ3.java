@@ -1,6 +1,7 @@
 package jme3test.model;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.asset.plugins.ZipLocator;
 import com.jme3.collision.MotionAllowedListener;
 import com.jme3.input.FirstPersonCamera;
 import com.jme3.light.DirectionalLight;
@@ -55,7 +56,7 @@ public class TestQ3 extends SimpleApplication {
         dl.setDirection(new Vector3f(1, -1, 1).normalize());
         rootNode.addLight(dl);
         // create the geometry and attach it
-        manager.registerLocator("quake3level.zip", "com.jme3.asset.plugins.JARLocator", "tga", "meshxml", "material");
+        manager.registerLocator("quake3level.zip", ZipLocator.class.getName(), "tga", "meshxml", "material");
 
         // create the geometry and attach it
         OgreMaterialList matList = (OgreMaterialList) manager.loadContent("Scene.material");

@@ -4,6 +4,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.TextureKey;
+import com.jme3.asset.plugins.UrlLocator;
 import com.jme3.material.Material;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
@@ -29,7 +30,7 @@ public class TestUrlLoading extends SimpleApplication {
         quad.updateModelBound();
 
         manager.registerLocator("http://www.jmonkeyengine.com/images/",
-                                "com.jme3.asset.plugins.UrlLocator",
+                                UrlLocator.class.getName(),
                                 "*");
         TextureKey key = new TextureKey("jmeheader.png", false);
         key.setGenerateMips(true);

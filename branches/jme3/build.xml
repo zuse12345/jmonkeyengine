@@ -13,13 +13,26 @@
 
     <!-- convenience target to transfer jme3 libraries to jme3-gde (jMonkeyPlatform) -->
     <target name="update-gde" depends="jar, javadoc">
+        <!--jme base libs-->
         <copy file="${dist.jar}" toDir="../jme3-gde/jme3-core-libraries/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
         <copy file="${dist.jar}" toDir="../jme3-gde/jme3-project-libraries/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
-        <copy file="dist/jme3testdata.jar" toDir="../jme3-gde/jme3-project-libraries/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
+
+        <!--javadoc-->
         <zip destfile="dist/jMonkeyEngine3-javadoc.zip">
             <zipfileset dir="dist/javadoc/"/>
         </zip>
         <copy file="dist/jMonkeyEngine3-javadoc.zip" toDir="../jme3-gde/jme3-project-libraries/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
+
+        <!--libraries-->
+        <copy todir="../jme3-gde/jme3-core-libraries/release/modules/ext/" overwrite="true" failonerror="true" verbose="true">
+            <!--exclude jme3 test data from core-->
+            <fileset dir="dist/lib/">
+                <exclude name="jme3testdata.jar"/>
+            </fileset>
+        </copy>
+        <copy todir="../jme3-gde/jme3-project-libraries/release/libs/" overwrite="true" failonerror="true" verbose="true">
+            <fileset dir="dist/lib/"/>
+        </copy>
     </target>
    
     <!-- puts jme3 jars, libs and javadoc in a dated zip file -->

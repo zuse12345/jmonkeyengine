@@ -121,7 +121,7 @@ public abstract class SimpleApplication extends Application {
 
     @Override
     public void update() {
-        if (speed == 0)
+        if (speed == 0 || paused)
             return;
         
         super.update();

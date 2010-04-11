@@ -108,9 +108,10 @@ class Natives {
 
         switch (platform){
             case Windows64:
-                if (needLWJGL)
+                if (needLWJGL){
                     extractNativeLib("windows", "lwjgl64", true);
-                else if (needJOGL){
+                }
+                if (needJOGL){
                     extractNativeLib("win64", "jogl_awt", false);
                     extractNativeLib("win64", "jogl", true);
                 }
@@ -130,9 +131,10 @@ class Natives {
                 }
                 break;
             case Windows32:
-                if (needLWJGL)
+                if (needLWJGL){
                     extractNativeLib("windows", "lwjgl", true);
-                else if (needJOGL){
+                }
+                if (needJOGL){
                     extractNativeLib("win32", "jogl_awt", false);
                     extractNativeLib("win32", "jogl", true);
                 }
@@ -152,9 +154,10 @@ class Natives {
                 }
                 break;
             case Linux64:
-                if (needLWJGL)
+                if (needLWJGL){
                     extractNativeLib("linux", "lwjgl64", true);
-                else if (needJOGL){
+                }
+                if (needJOGL){
                     extractNativeLib("linux64", "jogl_awt", false);
                     extractNativeLib("linux64", "jogl", true);
                 }
@@ -170,9 +173,10 @@ class Natives {
 
                 break;
             case Linux32:
-                if (needLWJGL)
+                if (needLWJGL){
                     extractNativeLib("linux", "lwjgl", true);
-                else if (needJOGL){
+                }
+                if (needJOGL){
                     extractNativeLib("linux32", "jogl_awt", false);
                     extractNativeLib("linux32", "jogl", true);
                 }
@@ -188,9 +192,10 @@ class Natives {
 
                 break;
             case MacOSX_PPC32:
-                if (needLWJGL)
+                if (needLWJGL){
                     extractNativeLib("macosx", "lwjgl", true);
-                else if (needJOGL){
+                }
+                if (needJOGL){
                     extractNativeLib("macosx_ppc", "jogl_awt", false);
                     extractNativeLib("macosx_ppc", "jogl", true);
                 }
@@ -209,9 +214,10 @@ class Natives {
 
                 break;
             case MacOSX32:
-                if (needLWJGL)
+                if (needLWJGL){
                     extractNativeLib("macosx", "lwjgl", true);
-                else if (needJOGL){
+                }
+                if (needJOGL){
                     extractNativeLib("macosx_universal", "jogl_awt", false);
                     extractNativeLib("macosx_universal", "jogl", true);
                 }
@@ -230,9 +236,10 @@ class Natives {
 
                 break;
             case MacOSX_PPC64:
-                if (needLWJGL)
+                if (needLWJGL){
                     extractNativeLib("macosx", "lwjgl", true);
-                else if (needJOGL){
+                }
+                if (needJOGL){
                     extractNativeLib("macosx_ppc", "jogl_awt", false);
                     extractNativeLib("macosx_ppc", "jogl", true);
                 }
@@ -251,9 +258,10 @@ class Natives {
 
                 break;
             case MacOSX64:
-                if (needLWJGL)
+                if (needLWJGL){
                     extractNativeLib("macosx", "lwjgl", true);
-                else if (needJOGL){
+                }
+                if (needJOGL){
                     extractNativeLib("macosx_universal", "jogl_awt", false);
                     extractNativeLib("macosx_universal", "jogl", true);
                 }

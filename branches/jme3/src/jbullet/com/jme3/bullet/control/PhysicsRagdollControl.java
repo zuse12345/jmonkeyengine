@@ -5,7 +5,6 @@ import com.jme3.animation.Bone;
 import com.jme3.animation.Skeleton;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
-import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.joints.PhysicsConeJoint;
 import com.jme3.bullet.joints.PhysicsJoint;
@@ -19,6 +18,7 @@ import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.Control;
 import com.jme3.scene.control.ControlType;
+import com.jme3.util.TempVars;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -115,33 +115,69 @@ public class PhysicsRagdollControl implements Control {
     }
 
     private Quaternion tempRot = new Quaternion();
+//    public void update(float tpf) {
+//        for (PhysicsBoneLink link : boneLinks) {
+//            //TODO: do updateGeometric here, remove nodes from scenegraph (is for debug now)
+//            //Looks bad updating here but the shapeNode is not in a display tree
+//            //maybe introduce new class or handle inside this class w/o PhysicsNodes
+////            link.shapeNode.updateGeometricState();
+//
+//            //TODO: bone location is not shapeNode location but add 0.5*dist in child direction
+//            //also rotation is different for bones..
+//            Bone superParent = link.parentBone.getParent();
+//            if (superParent != null) {
+//                Vector3f superPosition = superParent.getWorldPosition();
+//                Quaternion superRotation = superParent.getWorldRotation();
+//
+//                Vector3f localPosition = link.shapeNode.getWorldTranslation().subtract(superPosition);
+//                //todo:scale
+//                tempRot.set(superRotation).inverseLocal().multLocal(localPosition);
+//
+//                Quaternion localRotation = new Quaternion();
+//                localRotation.set(link.shapeNode.getWorldRotation());
+//                tempRot.set(superRotation).inverseLocal().mult(localRotation, localRotation);
+//
+//                link.parentBone.setUserTransformsWorld(localPosition, Quaternion.IDENTITY);
+////                link.parentBone.setUserTransforms(localPosition, localRotation, null);
+//            } else {
+//                link.parentBone.setUserTransformsWorld(link.shapeNode.getWorldTranslation(),
+//                                                       Quaternion.IDENTITY);
+////                link.parentBone.setUserTransforms(link.shapeNode.getWorldTranslation(),
+////                link.shapeNode.getWorldRotation(), null);
+//            }
+//        }
+////        skeleton.updateWorldVectors();
+//    }
+
+
     public void update(float tpf) {
+        TempVars vars = TempVars.get();
+        assert vars.lock();
+
+
         for (PhysicsBoneLink link : boneLinks) {
-            //TODO: do updateGeometric here, remove nodes from scenegraph (is for debug now)
-            //Looks bad updating here but the shapeNode is not in a display tree
-            //maybe introduce new class or handle inside this class w/o PhysicsNodes
-//            link.shapeNode.updateGeometricState();
+            Vector3f p   = link.shapeNode.getWorldTranslation();
+            Quaternion q = link.shapeNode.getWorldRotation();
+
+            q.toAxes(vars.tri);
+
+            Vector3f dir = vars.tri[2];
+            float len = link.length;
+
+            Vector3f parentPos = new Vector3f(p).subtractLocal(dir.mult(len/2f));
+            Vector3f childPos  = new Vector3f(p).addLocal(dir.mult(len/2f));
+
+            Quaternion q2 = q.clone();
+            q2.normalize();
             
-            //TODO: bone location is not shapeNode location but add 0.5*dist in child direction
-            //also rotation is different for bones..
-            Bone superParent = link.parentBone.getParent();
-            if (superParent != null) {
-                Vector3f superPosition = superParent.getWorldPosition();
-                Quaternion superRotation = superParent.getWorldRotation();
-
-                Vector3f localPosition = link.shapeNode.getWorldTranslation().subtract(superPosition);
-                //todo:scale
-                tempRot.set(superRotation).inverseLocal().multLocal(localPosition);
-
-                Quaternion localRotation = new Quaternion();
-                localRotation.set(link.shapeNode.getWorldRotation());
-                tempRot.set(superRotation).inverseLocal().mult(localRotation, localRotation);
-                link.parentBone.setUserTransforms(localPosition, localRotation, null);
-            } else {
-                link.parentBone.setUserTransforms(link.shapeNode.getWorldTranslation(),
-                        link.shapeNode.getWorldRotation(), null);
+            link.parentBone.setUserTransformsWorld(parentPos, q2);
+            if (link.childBone.getChildren().size() == 0){
+                link.childBone.setUserTransformsWorld(childPos, q2.clone());
             }
         }
+
+        assert vars.unlock();
+//        skeleton.updateWorldVectors();
     }
 
     public Control cloneForSpatial(Spatial spatial) {

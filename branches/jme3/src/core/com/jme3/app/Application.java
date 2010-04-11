@@ -54,6 +54,7 @@ public class Application implements SystemListener {
     protected boolean inputEnabled = true;
     protected boolean pauseOnFocus = true;
     protected float speed = 1f;
+    protected boolean paused = false;
     protected MouseInput mouseInput;
     protected KeyInput keyInput;
     protected JoyInput joyInput;
@@ -307,14 +308,14 @@ public class Application implements SystemListener {
 
     public void gainFocus(){
         if (pauseOnFocus){
-            speed = 1;
+            paused = false;
             context.setAutoFlushFrames(true);
         }
     }
 
     public void loseFocus(){
         if (pauseOnFocus){
-            speed = 0;
+            paused = true;
             context.setAutoFlushFrames(false);
         }
     }

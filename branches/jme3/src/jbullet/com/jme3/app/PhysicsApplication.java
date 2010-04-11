@@ -102,7 +102,7 @@ public class PhysicsApplication extends Application implements Runnable{
      */
     public void physicsUpdate(float tpf){
         if(pSpace==null) return;
-        pSpace.update(tpf);
+        pSpace.update(tpf * speed);
     }
 
     private void startThread(){

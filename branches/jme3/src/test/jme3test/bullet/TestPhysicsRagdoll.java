@@ -6,6 +6,7 @@ import com.jme3.asset.TextureKey;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.control.PhysicsRagdollControl;
 import com.jme3.bullet.nodes.PhysicsNode;
+import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
@@ -28,6 +29,11 @@ public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
 
     public void simpleInitApp() {
 
+        DirectionalLight dl = new DirectionalLight();
+        dl.setDirection(new Vector3f(-0.1f, -0.7f, -1).normalizeLocal());
+        dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
+        rootNode.addLight(dl);
+
         Material mat = new Material(manager, "plain_texture.j3md");
         TextureKey key = new TextureKey("Monkey.jpg", true);
         key.setGenerateMips(true);
@@ -38,13 +44,11 @@ public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
         // the floor, does not move (mass=0)
         Geometry geom5=new Geometry("box2",new Box(Vector3f.ZERO,100f,1f,100f));
         geom5.setMaterial(mat);
-        geom5.updateGeometricState();
         PhysicsNode node3=new PhysicsNode(geom5,new BoxCollisionShape(new Vector3f(100f,1f,100f)),0);
         node3.setLocalTranslation(new Vector3f(0f,-6,0f));
-        node3.updateModelBound();
         rootNode.attachChild(node3);
         getPhysicsSpace().add(node3);
-        
+
         Node model = (Node)MeshLoader.loadModel(manager, "OTO.meshxml", "OTO.material");
 //        Node model = (Node)MeshLoader.loadModel(manager, "ninja.meshxml", "ninja.material");
 
@@ -52,17 +56,23 @@ public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
         AnimControl control= (AnimControl) model.getControl(ControlType.BoneAnimation);
         SkeletonDebugger skeletonDebug = new SkeletonDebugger("skeleton", control.getSkeleton());
         Material mat2 = new Material(manager, "wire_color.j3md");
-        mat.setColor("m_Color", ColorRGBA.Green);
-        mat.getAdditionalRenderState().setDepthTest(false);
+        mat2.setColor("m_Color", ColorRGBA.Green);
+        mat2.getAdditionalRenderState().setDepthTest(false);
         skeletonDebug.setMaterial(mat2);
-        model.attachChild(skeletonDebug);
+        
 
         //Note: PhysicsRagdollControl is still TODO, constructor will change
         PhysicsRagdollControl ragdoll = new PhysicsRagdollControl(this,getPhysicsSpace());
         ragdoll.setSpatial(model);
         model.setControl(ragdoll);
 //        model.setLocalScale(0.2f);
+
+        speed = 0.05f;
+
+//        model.setCullHint(Spatial.CullHint.Always);
+
         rootNode.attachChild(model);
+        rootNode.attachChild(skeletonDebug);
     }
 
     public Spatial createCylinder(float radius, float height){

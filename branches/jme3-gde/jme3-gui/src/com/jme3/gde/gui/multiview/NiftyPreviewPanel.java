@@ -9,8 +9,8 @@ import com.jme3.gde.gui.NiftyGuiDataObject;
 import com.jme3.gde.gui.renderer.Java2dRenderDevice;
 import com.jme3.gde.gui.renderer.Java2dSoundDevice;
 import de.lessvoid.nifty.Nifty;
-import de.lessvoid.nifty.sound.SoundSystem;
-import de.lessvoid.nifty.tools.TimeProvider;
+//import de.lessvoid.nifty.sound.SoundSystem;
+//import de.lessvoid.nifty.tools.TimeProvider;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
@@ -31,6 +31,7 @@ public class NiftyPreviewPanel extends PanelView{
     private NiftyGuiDataObject niftyObject;
     private FileObject file=null;
     private Thread thread;
+    private String fileName;
 
     public NiftyPreviewPanel(NiftyGuiDataObject niftyObject) {
         super();
@@ -43,43 +44,43 @@ public class NiftyPreviewPanel extends PanelView{
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.LINE_AXIS));
         dev=new Java2dRenderDevice();
         add(dev);
-        String name="tutorial/tutorial.xml";
+        fileName="helloworld/helloworld.xml";
         if(niftyObject!=null){
             Set<FileObject> files = niftyObject.files();
             for (Iterator<FileObject> it = files.iterator(); it.hasNext();) {
                 FileObject fileObject = it.next();
                 file=fileObject;//getNameExt();
             }
-            name=file.getPath();
+            fileName=file.getPath();
             Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Could not find niftyObject");
         }
-        nifty = new Nifty(dev,
-                    new SoundSystem(new Java2dSoundDevice()),
-                    dev.getInputSystem(),
-                    new TimeProvider());
-        nifty.fromXml(name,"start");//
-        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "nify started");
+//        nifty = new Nifty(dev,
+//                    new SoundSystem(new Java2dSoundDevice()),
+//                    dev.getInputSystem(),
+//                    new TimeProvider());
+        Logger.getLogger(this.getClass().getName()).log(Level.FINE, "nify started");
     }
 
     public void start(){
         if(running) stop();
-        thread=new Thread(run);
-        thread.start();
+//        thread=new Thread(run);
+//        thread.start();
     }
 
     public void stop(){
         running=false;
-        try {
-            thread.join();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+//        try {
+//            thread.join();
+//        } catch (InterruptedException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
     }
 
     private boolean running=false;
     private Runnable run=new Runnable() {
         public void run() {
             running=true;
+            nifty.fromXml(fileName,"start");//
             while(running){
                 if(nifty.render(true)){
                     running=false;

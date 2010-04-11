@@ -5,28 +5,114 @@
 <project name="jme-gde" basedir=".">
     <description>Builds the module suite jme-gde.</description>
     <import file="nbproject/build-impl.xml"/>
+    <!--TODO: using the evil for loop from ant-contrib for loops and if, change that..-->
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+      <classpath>
+        <pathelement location="ant-lib/ant-contrib.jar"/>
+      </classpath>
+    </taskdef>
 
-    <target name="build-mac" depends="suite.build-mac" description="Build Mac OS X Application">
-            <property name="nbdist-contents.dir" value="${dist.dir}/${app.name}.app/Contents"/>
-            <property name="nbdist-resources.dir" value="${nbdist-contents.dir}/Resources"/>
-            <!-- Replace the icns file. -->
-            <delete file="${nbdist-resources.dir}/${app.name}.icns"/>
-            <copy tofile="${nbdist-resources.dir}/${app.name}.icns" file="${app.name}.icns" />
+    <target name="dist-gde" depends="suite.clean, zip-templates, -set-impl-version, suite.nbms, -unset-impl-version">
     </target>
-    
+
+    <target name="build-mac" depends="-copy-mac-icon" description="Build Mac OS X Application">
+    </target>
+
+    <!--zips up the templates and adds them to the template project-->
     <target name="zip-templates" description="Updates the template zip files">
-        <!--echo>Creating BasicGame template zip..</echo-->
         <zip basedir="BasicGameTemplate/" destfile="jme3-templates/src/com/jme3/gde/templates/BasicGameProject.zip">
             <exclude name="**/build/"/>
             <exclude name="**/dist/"/>
             <exclude name="**/nbproject/private/"/>
         </zip>
-        <!--echo>Creating JME3Tests template zip..</echo-->
         <zip basedir="JME3TestsTemplate/" destfile="jme3-templates/src/com/jme3/gde/templates/JME3TestsProject.zip">
             <exclude name="**/build/"/>
             <exclude name="**/dist/"/>
             <exclude name="**/nbproject/private/"/>
         </zip>
+    </target>
+
+    <target name="-set-impl-version" depends="-jme3-svn-properties">
+        <property file="nbproject/project.properties"/>
+        <foreach target="-do-set-impl-version" list="${modules}" delimiter=":" param="module_dir"/>
+    </target>
+
+    <target name="-unset-impl-version" depends="-jme3-svn-properties">
+        <property file="nbproject/project.properties"/>
+        <foreach target="-do-unset-impl-version" list="${modules}" delimiter=":" param="module_dir"/>
+    </target>
+
+    <target name="-do-set-impl-version">
+      <exec executable="svn" output="${module_dir}/svn.properties" dir="${module_dir}">
+        <arg value="info" />
+      </exec>
+      <!--load this folders svn properties or jme3 svn properties-->
+      <if>
+          <or>
+              <!--set jme3 svn properties for these projects-->
+              <equals arg1="${module_dir}" arg2="jme3-core-libraries"/>
+              <equals arg1="${module_dir}" arg2="jme3-project-libraries"/>
+              <equals arg1="${module_dir}" arg2="jme3-templates"/>
+          </or>
+          <then>
+            <property prefix="svn" file="build/jme3-svn.properties"/>
+          </then>
+          <else>
+            <property prefix="svn" file="${module_dir}/svn.properties"/>
+          </else>
+      </if>
+      <delete file="${module_dir}/svn.properties" quiet="true"/>
+
+      <echo>Setting implementation version for ${module_dir} to revision: ${svn.Revision}</echo>
+      <replace dir="${module_dir}" token="OpenIDE-Module-Implementation-Version: 0" value="OpenIDE-Module-Implementation-Version: ${svn.Revision}">
+        <include name="**/*.mf"/>
+      </replace>
+    </target>
+
+    <target name="-do-unset-impl-version">
+      <exec executable="svn" output="${module_dir}/svn.properties" dir="${module_dir}">
+        <arg value="info" />
+      </exec>
+      <!--load this folders svn properties or jme3 svn properties-->
+      <if>
+          <or>
+              <!--set jme3 svn properties for these projects-->
+              <equals arg1="${module_dir}" arg2="jme3-core-libraries"/>
+              <equals arg1="${module_dir}" arg2="jme3-project-libraries"/>
+              <equals arg1="${module_dir}" arg2="jme3-templates"/>
+          </or>
+          <then>
+            <property prefix="svn" file="build/jme3-svn.properties"/>
+          </then>
+          <else>
+            <property prefix="svn" file="${module_dir}/svn.properties"/>
+          </else>
+      </if>
+      <delete file="${module_dir}/svn.properties" quiet="true"/>
+      
+      <echo>Removing implementation version for ${module_dir} from revision: ${svn.Revision}</echo>
+      <replace dir="${module_dir}" token="OpenIDE-Module-Implementation-Version: ${svn.Revision}" value="OpenIDE-Module-Implementation-Version: 0">
+        <include name="**/*.mf"/>
+      </replace>
+
+    </target>
+
+    <target name="-jme3-svn-properties">
+      <mkdir dir="build"/>
+      <!--jme3 svn properties-->
+      <exec executable="svn" dir="../jme3/" output="build/jme3-svn.properties">
+        <arg value="info" />
+      </exec>
+      <property prefix="jmesvn" file="build/jme3-svn.properties"/>
+    </target>
+
+    <target name="-copy-mac-icon">
+        <echo>Copy mac icon..</echo>
+        <property name="nbdist-contents.dir" value="${dist.dir}/${app.name}.app/Contents"/>
+        <property name="nbdist-resources.dir" value="${nbdist-contents.dir}/Resources"/>
+        <!-- Replace the icns file. -->
+        <delete file="${nbdist-resources.dir}/${app.name}.icns"/>
+        <copy tofile="${nbdist-resources.dir}/${app.name}.icns" file="${app.name}.icns" />
     </target>
 
 </project>

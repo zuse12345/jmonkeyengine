@@ -25,8 +25,6 @@ import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JPanel;
 
 /**
@@ -35,55 +33,71 @@ import javax.swing.JPanel;
  */
 public class Java2dRenderDevice extends JPanel implements RenderDevice, MouseListener, MouseMotionListener {
 
+    private int sWidth = 640;
+    private int sHeight = 480;
+
     public static java.awt.Color color(Color _color) {
         java.awt.Color color = new java.awt.Color(_color.getRed(), _color.getGreen(), _color.getBlue());
         return color;
     }
 
-    public static boolean sameColor(Color color1, Color color2){
-        if(color1.getRed()==color2.getRed()
-                &&color1.getGreen()==color2.getGreen()
-                &&color1.getBlue()==color2.getBlue()
-                &&color1.getAlpha()==color2.getAlpha())
+    public static boolean sameColor(Color color1, Color color2) {
+        if (color1.getRed() == color2.getRed()
+                && color1.getGreen() == color2.getGreen()
+                && color1.getBlue() == color2.getBlue()
+                && color1.getAlpha() == color2.getAlpha()) {
             return true;
+        }
         return false;
     }
-
-    private BufferedImage image = new BufferedImage(1024, 768, BufferedImage.TYPE_INT_RGB);
-    private BufferedImage imageBuffer = new BufferedImage(1024, 768, BufferedImage.TYPE_INT_RGB);
+    private BufferedImage image = new BufferedImage(sWidth, sHeight, BufferedImage.TYPE_INT_RGB);
+    private BufferedImage imageBuffer = new BufferedImage(sWidth, sHeight, BufferedImage.TYPE_INT_RGB);
     private boolean clip = false;
     private int clipX, clipY, clipWidth, clipHeight;
-
-    private long lastTime=0;
+    private long lastTime = 0;
 
     public Java2dRenderDevice() {
         addMouseListener(this);
         addMouseMotionListener(this);
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                resize();
+            }
+        });
     }
 
     @Override
     public synchronized void paint(Graphics g) {
         super.paint(g);
-        long currentTime=System.currentTimeMillis();
+        long currentTime = System.currentTimeMillis();
         ((Graphics2D) g).drawImage(imageBuffer, 0, 0, null);
         ((Graphics2D) g).setColor(java.awt.Color.WHITE);
-        ((Graphics2D) g).drawString(1000/(currentTime-lastTime) + " fps", 100, 100);
-        lastTime=currentTime;
+        ((Graphics2D) g).drawString(1000 / (currentTime - lastTime) + " fps", 100, 100);
+        lastTime = currentTime;
     }
 
     private synchronized void setImage(BufferedImage image) {
         Graphics2D g2d = (Graphics2D) imageBuffer.getGraphics();
-        g2d.drawImage(image, 0, 0, null);
+        g2d.drawImage(image, 0, 0, imageBuffer.getWidth(), imageBuffer.getHeight(), null);
+    }
+
+    private synchronized void resize() {
+//        imageBuffer = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
     }
 
     @Override
     public int getWidth() {
-        return 1024;
+//        if(super.getWidth()<=0) return 1;
+//        return super.getWidth();
+        return sWidth;
     }
 
     @Override
     public int getHeight() {
-        return 768;
+//        if(super.getHeight()<=0) return 1;
+//        return super.getHeight();
+        return sHeight;
     }
 
     public RenderImage createImage(String filename, boolean filterLinear) {
@@ -124,12 +138,15 @@ public class Java2dRenderDevice extends JPanel implements RenderDevice, MouseLis
     public void renderQuad(int x, int y, int width, int height, Color topLeft, Color topRight, Color bottomRight, Color bottomLeft) {
         //TODO: 4-corner gradient fill
         GradientPaint grad = null;
-        if(sameColor(topLeft,topRight)&&sameColor(bottomLeft,bottomRight))
-            grad= new GradientPaint(new Point(x, y), color(topLeft), new Point(x, y + height), color(bottomRight));
-        if(sameColor(topLeft,bottomLeft)&&sameColor(topRight,bottomRight))
-            grad= new GradientPaint(new Point(x, y), color(topLeft), new Point(x+width, y), color(bottomRight));
-        if(grad==null)
-            grad= new GradientPaint(new Point(x, y), color(topLeft), new Point(x, y + height), color(bottomRight));
+        if (sameColor(topLeft, topRight) && sameColor(bottomLeft, bottomRight)) {
+            grad = new GradientPaint(new Point(x, y), color(topLeft), new Point(x, y + height), color(bottomRight));
+        }
+        if (sameColor(topLeft, bottomLeft) && sameColor(topRight, bottomRight)) {
+            grad = new GradientPaint(new Point(x, y), color(topLeft), new Point(x + width, y), color(bottomRight));
+        }
+        if (grad == null) {
+            grad = new GradientPaint(new Point(x, y), color(topLeft), new Point(x, y + height), color(bottomRight));
+        }
         Graphics2D g2d = (Graphics2D) image.getGraphics();
         if (clip) {
             g2d.setClip(clipX, clipY, clipWidth, clipHeight);
@@ -173,8 +190,8 @@ public class Java2dRenderDevice extends JPanel implements RenderDevice, MouseLis
     }
 
     public void renderFont(RenderFont rf, String string, int i, int i1, Color color, float f) {
-        Font font=new Font(((Java2dRenderFont)rf).getFont().getName(),0,Math.round(f*20.0f));
-        Graphics2D g2d=(Graphics2D)image.getGraphics();
+        Font font = new Font(((Java2dRenderFont) rf).getFont().getName(), 0, Math.round(f * 20.0f));
+        Graphics2D g2d = (Graphics2D) image.getGraphics();
         g2d.setFont(font);
         g2d.setColor(color(color));
         g2d.drawString(string, i, i1);
@@ -195,10 +212,8 @@ public class Java2dRenderDevice extends JPanel implements RenderDevice, MouseLis
     /*
      * INPUT SYSTEM
      */
-
     private ConcurrentLinkedQueue<MouseInputEvent> mouseEvents = new ConcurrentLinkedQueue<MouseInputEvent>();
     private ConcurrentLinkedQueue<KeyboardInputEvent> keyboardEvents = new ConcurrentLinkedQueue<KeyboardInputEvent>();
-
     private InputSystem inputSystem = new InputSystem() {
 
         public List<MouseInputEvent> getMouseEvents() {
@@ -252,5 +267,4 @@ public class Java2dRenderDevice extends JPanel implements RenderDevice, MouseLis
         MouseInputEvent event = new MouseInputEvent(e.getX(), getHeight() - e.getY(), false);
         mouseEvents.add(event);
     }
-
 }

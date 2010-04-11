@@ -33,6 +33,13 @@
         <copy todir="../jme3-gde/jme3-project-libraries/release/libs/" overwrite="true" failonerror="true" verbose="true">
             <fileset dir="dist/lib/"/>
         </copy>
+
+        <!--examples-->
+        <copy todir="../jme3-gde/JME3TestsTemplate/src/">
+            <fileset dir="src/test/">
+                <exclude name=".svn"/>
+            </fileset>
+        </copy>
     </target>
    
     <!-- puts jme3 jars, libs and javadoc in a dated zip file -->

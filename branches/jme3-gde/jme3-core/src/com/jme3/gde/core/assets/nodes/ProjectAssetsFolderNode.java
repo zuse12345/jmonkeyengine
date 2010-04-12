@@ -29,42 +29,47 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.gde.core.assets;
+package com.jme3.gde.core.assets.nodes;
 
-import com.jme3.gde.core.assets.nodes.ProjectAssetsNode;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ui.support.NodeFactory;
-import org.netbeans.spi.project.ui.support.NodeFactorySupport;
-import org.netbeans.spi.project.ui.support.NodeList;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
+import com.jme3.gde.core.assets.ProjectAssetManager;
+import java.awt.Image;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author normenhansen
  */
-public class AssetViewerNodeFactoryImpl implements NodeFactory {
-    private Project proj;
+public class ProjectAssetsFolderNode extends FilterNode {
 
-    public NodeList createNodes(Project project) {
+    private Image smallImage;
+    private String name;
+    private Node node;
+    private ProjectAssetManager manager;
 
-        this.proj = project;
+    public ProjectAssetsFolderNode(ProjectAssetManager manager, Node node, String icon, String name) {
+        //TODO: wrapping disables file node actions.. bug?
+        super(node, /*Children.create(new AssetNodeChildFactory(node, manager), true)*/null, Lookups.fixed(node, manager));
+        this.manager = manager;
+        this.name = name;
+        this.node = node;
+        smallImage = ImageUtilities.loadImage("/com/jme3/gde/core/assets/nodes/icons/" + icon + ".gif");
+    }
 
-        //return a new node for the project view if theres an assets folder:
-        ProjectAssetManager item = project.getLookup().lookup(ProjectAssetManager.class);
-        if (item != null) {
-            try {
-                ProjectAssetsNode nd = new ProjectAssetsNode(proj);
-                return NodeFactorySupport.fixedNodeList(nd);
-            } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
+    public String getDisplayName() {
+        return name;
+    }
 
-        //If our item isn't in the lookup,
-        //then return an empty list of nodes:
-        return NodeFactorySupport.fixedNodeList();
+    public Image getIcon(int type) {
+        Image original = node.getIcon(type);
+        return ImageUtilities.mergeImages(original, smallImage, 5, 5);
+    }
 
+    public Image getOpenedIcon(int type) {
+        Image original = node.getOpenedIcon(type);
+        return ImageUtilities.mergeImages(original, smallImage, 5, 5);
     }
 
 }

@@ -34,6 +34,7 @@ package com.jme3.gde.core.filetypes.actions;
 import com.jme3.gde.core.scene.SceneApplication;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -52,7 +53,7 @@ public final class OpenModel implements ActionListener {
         Set<FileObject> files = context.files();
         for (Iterator<FileObject> it = files.iterator(); it.hasNext();) {
             FileObject fileObject = it.next();
-            final String name=fileObject.getNameExt();
+            final String name=getModelPath(fileObject.getPath());
             SceneApplication.getApplication().enqueue(new Callable<Object>() {
                 public Object call() throws Exception {
                     SceneApplication.getApplication().showModel(name);
@@ -60,5 +61,11 @@ public final class OpenModel implements ActionListener {
                 }
             });
         }
+    }
+
+    private String getModelPath(String input){
+        //TODO: do via Lookup&ProjectAssetManager when it works..
+        int idx=input.lastIndexOf(File.separator+"assets"+File.separator);
+        return input.substring(idx+8);
     }
 }

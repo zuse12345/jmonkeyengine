@@ -31,25 +31,26 @@
  */
 package com.jme3.gde.core.assets.nodes;
 
+import com.jme3.gde.core.assets.ProjectAssetManager;
 import java.awt.Image;
 import org.netbeans.api.project.Project;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.FilterNode;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author normenhansen
  */
-public class ProjectAssetsNode extends FilterNode /*implements FileChangeListener*/{
+public class ProjectAssetsNode extends AbstractNode {
 
     private static Image smallImage =
-          ImageUtilities.loadImage("/com/jme3/gde/core/assets/nodes/icons/assets.gif"); // NOI18N
+            ImageUtilities.loadImage("/com/jme3/gde/core/assets/nodes/icons/assets.gif");
 
-    public ProjectAssetsNode(Project proj) throws DataObjectNotFoundException {
-        super(DataObject.find(proj.getProjectDirectory().getFileObject("assets")).getNodeDelegate());
-//        proj.getProjectDirectory().getFileObject("assets").addFileChangeListener(this);
+    public ProjectAssetsNode(ProjectAssetManager manager, Project proj) throws DataObjectNotFoundException {
+        super(Children.create(new ProjectAssetsChildFactory(proj, manager),true), Lookups.fixed(manager));
     }
 
     public String getDisplayName() {
@@ -57,17 +58,10 @@ public class ProjectAssetsNode extends FilterNode /*implements FileChangeListene
     }
 
     public Image getIcon(int type) {
-//        DataFolder root = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot());
-//        Image original = root.getNodeDelegate().getIcon(type);
-//        return ImageUtilities.mergeImages(original, smallImage, 7, 7);
         return smallImage;
     }
 
     public Image getOpenedIcon(int type) {
-//        DataFolder root = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot());
-//        Image original = root.getNodeDelegate().getIcon(type);
-//        return ImageUtilities.mergeImages(original, smallImage, 7, 7);
         return smallImage;
     }
-
 }

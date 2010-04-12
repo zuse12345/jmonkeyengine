@@ -31,8 +31,8 @@
  */
 package com.jme3.gde.core.assets.nodes;
 
+import com.jme3.gde.core.assets.ProjectAssetManager;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.openide.loaders.DataObject;
@@ -46,23 +46,49 @@ import org.openide.util.Exceptions;
  *
  * @author normenhansen
  */
-public class AssetsChildFactory extends ChildFactory<Node>{
-    private Project project;
+public class ProjectAssetsChildFactory extends ChildFactory<Node> {
 
-    public AssetsChildFactory(Project project) {
+    private Project project;
+    private ProjectAssetManager manager;
+
+    public ProjectAssetsChildFactory(Project project, ProjectAssetManager manager) {
         this.project = project;
+        this.manager = manager;
     }
 
     @Override
     protected boolean createKeys(List<Node> toPopulate) {
         try {
-            //TODO: create managed tree from asset folder
-//            DataObject.find(proj.getProjectDirectory().getFileObject("assets")).getNodeDelegate()
-            DataObject assetsFolder=DataObject.find(project.getProjectDirectory().getFileObject("assets"));
-            Node node=assetsFolder.getNodeDelegate();
-            Children children=node.getChildren();
-//            children.
-            Enumeration<Node> nodes=children.nodes();
+            DataObject assetsFolder = DataObject.find(project.getProjectDirectory().getFileObject("assets"));
+            Node node = assetsFolder.getNodeDelegate();
+            Children children = node.getChildren();
+
+            Enumeration<Node> nodes = children.nodes();
+            while (nodes.hasMoreElements()) {
+                Node child = nodes.nextElement();
+                DataObject data = child.getLookup().lookup(DataObject.class);
+                if (data != null) {
+                    if (data.getPrimaryFile().getName().equals("textures")) {
+                        toPopulate.add(new ProjectAssetsFolderNode(manager, child, "image", "textures"));
+                    } else if (data.getPrimaryFile().getName().equals("models")) {
+                        toPopulate.add(new ProjectAssetsFolderNode(manager, child, "model", "models"));
+                    } else if (data.getPrimaryFile().getName().equals("scenes")) {
+                        toPopulate.add(new ProjectAssetsFolderNode(manager, child, "scene", "scenes"));
+                    } else if (data.getPrimaryFile().getName().equals("sounds")) {
+                        toPopulate.add(new ProjectAssetsFolderNode(manager, child, "sound", "sounds"));
+                    } else if (data.getPrimaryFile().getName().equals("fonts")) {
+                        toPopulate.add(new ProjectAssetsFolderNode(manager, child, "font", "fonts"));
+                    } else if (data.getPrimaryFile().getName().equals("gui")) {
+                        toPopulate.add(new ProjectAssetsFolderNode(manager, child, "gui", "gui"));
+                    } else if (data.getPrimaryFile().getName().equals("materials")) {
+                        toPopulate.add(new ProjectAssetsFolderNode(manager, child, "material", "materials"));
+                    } else {
+                        toPopulate.add(new ProjectAssetsFolderNode(manager, child, "assets", data.getPrimaryFile().getName()));
+                    }
+                } else {
+                    toPopulate.add(child);
+                }
+            }
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -71,12 +97,11 @@ public class AssetsChildFactory extends ChildFactory<Node>{
 
     @Override
     protected Node createNodeForKey(Node key) {
-        return super.createNodeForKey(key);
+        return key;
     }
 
     @Override
     protected Node[] createNodesForKey(Node key) {
-        return super.createNodesForKey(key);
+        return new Node[]{key};
     }
-
 }

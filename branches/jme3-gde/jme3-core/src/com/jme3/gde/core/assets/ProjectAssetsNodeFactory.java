@@ -29,36 +29,44 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.gde.core.assets.nodes;
+package com.jme3.gde.core.assets;
 
-import java.awt.Image;
-import org.openide.nodes.FilterNode;
-import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
+import com.jme3.gde.core.assets.nodes.ProjectAssetsChildFactory;
+import com.jme3.gde.core.assets.nodes.ProjectAssetsNode;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ui.support.NodeFactory;
+import org.netbeans.spi.project.ui.support.NodeFactorySupport;
+import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Children;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author normenhansen
  */
-public class AssetTypeFolderNode extends FilterNode{
+public class ProjectAssetsNodeFactory implements NodeFactory {
 
-    private Image smallImage;
-    private String name;
+    private Project proj;
 
-    public AssetTypeFolderNode(Node node, String icon, String name) {
-        super(node);
-        smallImage = ImageUtilities.loadImage("/com/jme3/gde/core/assets/nodes/icons/"+icon+".gif");
-    }
+    public NodeList createNodes(Project project) {
 
-    public String getDisplayName() {
-        return name;
-    }
+        this.proj = project;
 
-    public Image getIcon(int type) {
-        return smallImage;
-    }
+        //return a new node for the project view if theres an assets folder:
+        ProjectAssetManager item = project.getLookup().lookup(ProjectAssetManager.class);
+        if (item != null) {
+            try {
+                ProjectAssetsNode nd = new ProjectAssetsNode(item, proj);
+                return NodeFactorySupport.fixedNodeList(nd);
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
 
-    public Image getOpenedIcon(int type) {
-        return smallImage;
+        //If our item isn't in the lookup,
+        //then return an empty list of nodes:
+        return NodeFactorySupport.fixedNodeList();
+
     }
 }

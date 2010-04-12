@@ -45,72 +45,34 @@ import org.openide.filesystems.FileObject;
  */
 public class ProjectAssetManager {
     private Project project;
-    //TODO: one assetmanager or multiple?
+    //TODO: one assetmanager per project
     private static AssetManager manager;
 
     public ProjectAssetManager(Project prj) {
         this.project=prj;
         AssetManager manager=getManager();
-        StatusDisplayer.getDefault().setStatusText("adding folders from "+prj.getProjectDirectory()+" to assetmanager");
+        StatusDisplayer.getDefault().setStatusText("adding asset folder from "+prj.getProjectDirectory()+" to assetmanager");
 //        manager =  G3DSystem.newAssetManager();
-//        manager.registerLocator(prj.getProjectDirectory()+"/assets/fonts/",
-//                "com.jme3.asset.plugins.FileSystemLocator", "fnt");
-//        manager.registerLocator(prj.getProjectDirectory()+"/assets/materials/",
-//                "com.jme3.asset.plugins.FileSystemLocator", "j3m");
+        manager.registerLoader("com.jme3.export.binary.BinaryImporter", "j3s");
+        
+        manager.registerLocator(prj.getProjectDirectory()+"/assets/",
+                "com.jme3.asset.plugins.FileLocator", "*");
 
-        //model loader paths
+        //model loader paths TODO: remove
         manager.registerLocator(prj.getProjectDirectory()+"/assets/models/",
                 "com.jme3.asset.plugins.FileLocator", "j3o");
 
-        //scene loader paths
-        manager.registerLoader("com.jme3.export.binary.BinaryImporter", "j3s");
+        //scene loader paths TODO: remove
         manager.registerLocator(prj.getProjectDirectory()+"/assets/scenes/",
                 "com.jme3.asset.plugins.FileLocator", "j3s");
         
-//        manager.registerLocator(prj.getProjectDirectory()+"/assets/ogremodels/",
-//                "com.jme3.asset.plugins.FileSystemLocator", "meshxml, material");
-//        manager.registerLocator(prj.getProjectDirectory()+"/assets/shaderlib/",
-//                "com.jme3.asset.plugins.FileSystemLocator", "glsllib");
-//        manager.registerLocator(prj.getProjectDirectory()+"/assets/shaders/",
-//                "com.jme3.asset.plugins.FileSystemLocator", "glsl, vert, frag");
-//        manager.registerLocator(prj.getProjectDirectory()+"/assets/sounds/",
-//                "com.jme3.asset.plugins.FileSystemLocator", "wav, ogg, spx");
-        //dds, hdr, pfm, tga, bmp, png, jpg, jpeg, gif
+        //dds, hdr, pfm, tga, bmp, png, jpg, jpeg, gif TODO: remove
         manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
-                "com.jme3.asset.plugins.FileLocator", "dds");
-        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
-                "com.jme3.asset.plugins.FileLocator", "hdr");
-        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
-                "com.jme3.asset.plugins.FileLocator", "pfm");
-        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
-                "com.jme3.asset.plugins.FileLocator", "tga");
-        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
-                "com.jme3.asset.plugins.FileLocator", "bmp");
-//        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
-//                "com.jme3.asset.plugins.FileLocator", "png");
-        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
-                "com.jme3.asset.plugins.FileLocator", "jpg");
-        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
-                "com.jme3.asset.plugins.FileLocator", "jpeg");
-        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
-                "com.jme3.asset.plugins.FileLocator", "gif");
+                "com.jme3.asset.plugins.FileLocator", "dds", "hdr", "pfm", "tga", "bmp", "jpg", "jpeg", "gif");
     }
 
     public Project getProject() {
         return project;
-    }
-
-    public List<String> modelNames(){
-        LinkedList<String> list=new LinkedList<String>();
-        FileObject fileObj=project.getProjectDirectory().getFileObject("/assets/models/");
-        if(fileObj==null)
-            return list;
-        FileObject[] children=fileObj.getChildren();
-        for (int i = 0; i < children.length; i++) {
-            FileObject fileObject = children[i];
-            list.add(fileObject.getNameExt());
-        }
-        return list;
     }
 
     public static void setManager(AssetManager _manager) {

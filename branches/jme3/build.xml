@@ -108,4 +108,12 @@
 	   </scp>
     </target>
 
+     <!-- upload jme3 zip to jmonkeyengine.com/nightly -->
+    <target name="deploy-hudson" depends="dist">
+        <copy
+            file="${jme3zip}"
+            toDir="/var/www/nightly" overwrite="true" failonerror="true" verbose="true"
+        />
+    </target>
+
 </project>

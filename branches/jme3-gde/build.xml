@@ -76,6 +76,7 @@
                               <exec executable="svn" output="build/${module_dir}-svn.properties" dir="${module_dir}">
                                 <arg value="info" />
                               </exec>
+                              <replace file="build/${module_dir}-svn.properties" token="Last Changed Rev" value="Lastchange"/>
                               <property prefix="svn" file="build/${module_dir}-svn.properties"/>
                           </else>
                       </if>
@@ -84,8 +85,8 @@
           </else>
       </if>
 
-      <echo>Setting implementation version for ${module_dir} to revision: ${svn.Revision}</echo>
-      <replace dir="${module_dir}" token="OpenIDE-Module-Implementation-Version: 0" value="OpenIDE-Module-Implementation-Version: ${svn.Revision}">
+      <echo>Setting implementation version for ${module_dir} to revision: ${svn.Lastchange}</echo>
+      <replace dir="${module_dir}" token="OpenIDE-Module-Implementation-Version: 0" value="OpenIDE-Module-Implementation-Version: ${svn.Lastchange}">
         <include name="**/*.mf"/>
       </replace>
     </target>
@@ -124,6 +125,7 @@
                               <exec executable="svn" output="build/${module_dir}-svn.properties" dir="${module_dir}">
                                 <arg value="info" />
                               </exec>
+                              <replace file="build/${module_dir}-svn.properties" token="Last Changed Rev" value="Lastchange"/>
                               <property prefix="svn" file="build/${module_dir}-svn.properties"/>
                           </else>
                       </if>
@@ -132,8 +134,8 @@
           </else>
       </if>
       
-      <echo>Removing implementation version for ${module_dir} from revision: ${svn.Revision}</echo>
-      <replace dir="${module_dir}" token="OpenIDE-Module-Implementation-Version: ${svn.Revision}" value="OpenIDE-Module-Implementation-Version: 0">
+      <echo>Removing implementation version for ${module_dir} from revision: ${svn.Lastchange}</echo>
+      <replace dir="${module_dir}" token="OpenIDE-Module-Implementation-Version: ${svn.Lastchange}" value="OpenIDE-Module-Implementation-Version: 0">
         <include name="**/*.mf"/>
       </replace>
 
@@ -145,14 +147,17 @@
       <exec executable="svn" dir="../jme3/" output="build/jme3-svn.properties">
         <arg value="info" />
       </exec>
+      <replace file="build/jme3-svn.properties" token="Last Changed Rev" value="Lastchange"/>
       <!--jme3 test data svn properties-->
       <exec executable="svn" dir="../jme3/src/test-data/" output="build/jme3-testdata-svn.properties">
         <arg value="info" />
       </exec>
+      <replace file="build/jme3-testdata-svn.properties" token="Last Changed Rev" value="Lastchange"/>
       <!--jme3 libraries svn properties-->
       <exec executable="svn" dir="../jme3/lib/" output="build/jme3-lib-svn.properties">
         <arg value="info" />
       </exec>
+      <replace file="build/jme3-lib-svn.properties" token="Last Changed Rev" value="Lastchange"/>
     </target>
 
     <target name="-copy-mac-icon">

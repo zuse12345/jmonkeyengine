@@ -20,68 +20,8 @@
                 <package>com.bulletphysics.linearmath</package>
                 <package>com.bulletphysics.linearmath.convexhull</package>
                 <package>com.bulletphysics.util</package>
-                <package>com.jme3.animation</package>
-                <package>com.jme3.app</package>
-                <package>com.jme3.asset</package>
-                <package>com.jme3.asset.pack</package>
-                <package>com.jme3.asset.plugins</package>
-                <package>com.jme3.audio</package>
-                <package>com.jme3.audio.joal</package>
-                <package>com.jme3.audio.lwjgl</package>
-                <package>com.jme3.audio.plugins</package>
-                <package>com.jme3.bounding</package>
-                <package>com.jme3.bullet</package>
-                <package>com.jme3.bullet.collision</package>
-                <package>com.jme3.bullet.collision.shapes</package>
-                <package>com.jme3.bullet.control</package>
-                <package>com.jme3.bullet.joints</package>
-                <package>com.jme3.bullet.joints.motors</package>
-                <package>com.jme3.bullet.nodes</package>
-                <package>com.jme3.bullet.nodes.infos</package>
-                <package>com.jme3.bullet.util</package>
-                <package>com.jme3.collision</package>
-                <package>com.jme3.collision.bih</package>
-                <package>com.jme3.effect</package>
-                <package>com.jme3.export</package>
-                <package>com.jme3.export.binary</package>
-                <package>com.jme3.export.xml</package>
-                <package>com.jme3.font</package>
-                <package>com.jme3.font.plugins</package>
-                <package>com.jme3.input</package>
-                <package>com.jme3.input.awt</package>
-                <package>com.jme3.input.binding</package>
-                <package>com.jme3.input.dummy</package>
-                <package>com.jme3.input.event</package>
-                <package>com.jme3.input.lwjgl</package>
-                <package>com.jme3.light</package>
-                <package>com.jme3.material</package>
-                <package>com.jme3.material.plugins</package>
-                <package>com.jme3.math</package>
-                <package>com.jme3.niftygui</package>
-                <package>com.jme3.post</package>
-                <package>com.jme3.renderer</package>
-                <package>com.jme3.renderer.jogl</package>
-                <package>com.jme3.renderer.layer</package>
-                <package>com.jme3.renderer.lwjgl</package>
-                <package>com.jme3.renderer.queue</package>
-                <package>com.jme3.scene</package>
-                <package>com.jme3.scene.control</package>
-                <package>com.jme3.scene.debug</package>
-                <package>com.jme3.scene.plugins</package>
-                <package>com.jme3.scene.plugins.ogre</package>
-                <package>com.jme3.scene.shape</package>
-                <package>com.jme3.shader</package>
-                <package>com.jme3.shader.plugins</package>
-                <package>com.jme3.shadow</package>
-                <package>com.jme3.system</package>
-                <package>com.jme3.system.jogl</package>
-                <package>com.jme3.system.lwjgl</package>
-                <package>com.jme3.terrain</package>
-                <package>com.jme3.texture</package>
-                <package>com.jme3.texture.plugins</package>
-                <package>com.jme3.ui</package>
-                <package>com.jme3.util</package>
-                <package>com.jme3.util.xml</package>
+                <package>com.jcraft.jogg</package>
+                <package>com.jcraft.jorbis</package>
                 <package>com.sun.gluegen.runtime</package>
                 <package>com.sun.opengl.cg</package>
                 <package>com.sun.opengl.impl</package>
@@ -104,39 +44,89 @@
                 <package>de.jarnbjo.ogg</package>
                 <package>de.jarnbjo.util.io</package>
                 <package>de.jarnbjo.vorbis</package>
+                <package>de.lessvoid.console</package>
+                <package>de.lessvoid.font</package>
                 <package>de.lessvoid.nifty</package>
+                <package>de.lessvoid.nifty.controls</package>
+                <package>de.lessvoid.nifty.controls.button</package>
+                <package>de.lessvoid.nifty.controls.button.controller</package>
+                <package>de.lessvoid.nifty.controls.checkbox</package>
+                <package>de.lessvoid.nifty.controls.console.controller</package>
+                <package>de.lessvoid.nifty.controls.dropdown</package>
+                <package>de.lessvoid.nifty.controls.dropdown.controller</package>
+                <package>de.lessvoid.nifty.controls.dropdown.inputmapping</package>
+                <package>de.lessvoid.nifty.controls.dynamic</package>
+                <package>de.lessvoid.nifty.controls.dynamic.attributes</package>
+                <package>de.lessvoid.nifty.controls.imageSelect</package>
+                <package>de.lessvoid.nifty.controls.listbox</package>
+                <package>de.lessvoid.nifty.controls.listbox.controller</package>
+                <package>de.lessvoid.nifty.controls.scrollbar</package>
+                <package>de.lessvoid.nifty.controls.scrollbar.controller</package>
+                <package>de.lessvoid.nifty.controls.scrollbar.controller.impl</package>
+                <package>de.lessvoid.nifty.controls.scrollbar.inputmapping</package>
+                <package>de.lessvoid.nifty.controls.scrollpanel</package>
+                <package>de.lessvoid.nifty.controls.textfield</package>
+                <package>de.lessvoid.nifty.controls.textfield.controller</package>
+                <package>de.lessvoid.nifty.controls.textfield.inputmapping</package>
+                <package>de.lessvoid.nifty.effects</package>
                 <package>de.lessvoid.nifty.effects.impl</package>
-                <package>g3dtools.converters</package>
+                <package>de.lessvoid.nifty.elements</package>
+                <package>de.lessvoid.nifty.elements.render</package>
+                <package>de.lessvoid.nifty.elements.tools</package>
+                <package>de.lessvoid.nifty.examples</package>
+                <package>de.lessvoid.nifty.examples.all</package>
+                <package>de.lessvoid.nifty.examples.console</package>
+                <package>de.lessvoid.nifty.examples.controls</package>
+                <package>de.lessvoid.nifty.examples.helloworld</package>
+                <package>de.lessvoid.nifty.examples.multiplayer</package>
+                <package>de.lessvoid.nifty.examples.scroll</package>
+                <package>de.lessvoid.nifty.examples.slick</package>
+                <package>de.lessvoid.nifty.examples.slick.console</package>
+                <package>de.lessvoid.nifty.examples.slick.niftyoverlay</package>
+                <package>de.lessvoid.nifty.examples.style.dynamic</package>
+                <package>de.lessvoid.nifty.examples.style.label</package>
+                <package>de.lessvoid.nifty.examples.test</package>
+                <package>de.lessvoid.nifty.examples.textalign</package>
+                <package>de.lessvoid.nifty.examples.textfield</package>
+                <package>de.lessvoid.nifty.examples.tutorial</package>
+                <package>de.lessvoid.nifty.examples.tutorial.screen</package>
+                <package>de.lessvoid.nifty.input</package>
+                <package>de.lessvoid.nifty.input.keyboard</package>
+                <package>de.lessvoid.nifty.input.mapping</package>
+                <package>de.lessvoid.nifty.input.mouse</package>
+                <package>de.lessvoid.nifty.layout</package>
+                <package>de.lessvoid.nifty.layout.align</package>
+                <package>de.lessvoid.nifty.layout.manager</package>
+                <package>de.lessvoid.nifty.loaderv2</package>
+                <package>de.lessvoid.nifty.loaderv2.types</package>
+                <package>de.lessvoid.nifty.loaderv2.types.apply</package>
+                <package>de.lessvoid.nifty.loaderv2.types.helper</package>
+                <package>de.lessvoid.nifty.loaderv2.types.resolver.parameter</package>
+                <package>de.lessvoid.nifty.loaderv2.types.resolver.style</package>
+                <package>de.lessvoid.nifty.lwjglslick.input</package>
+                <package>de.lessvoid.nifty.lwjglslick.render</package>
+                <package>de.lessvoid.nifty.lwjglslick.sound</package>
+                <package>de.lessvoid.nifty.render</package>
+                <package>de.lessvoid.nifty.screen</package>
+                <package>de.lessvoid.nifty.slick</package>
+                <package>de.lessvoid.nifty.sound</package>
+                <package>de.lessvoid.nifty.spi.input</package>
+                <package>de.lessvoid.nifty.spi.render</package>
+                <package>de.lessvoid.nifty.spi.sound</package>
+                <package>de.lessvoid.nifty.tools</package>
+                <package>de.lessvoid.nifty.tools.pulsate</package>
+                <package>de.lessvoid.nifty.tools.pulsate.provider</package>
+                <package>de.lessvoid.nifty.tools.resourceloader</package>
+                <package>de.lessvoid.nifty.tools.time</package>
+                <package>de.lessvoid.nifty.tools.time.interpolator</package>
+                <package>de.lessvoid.xml.lwxs</package>
+                <package>de.lessvoid.xml.lwxs.elements</package>
+                <package>de.lessvoid.xml.lwxs.processor</package>
+                <package>de.lessvoid.xml.tools</package>
+                <package>de.lessvoid.xml.xpp3</package>
                 <package>javax.media.opengl</package>
                 <package>javax.media.opengl.glu</package>
                 <package>javax.vecmath</package>
-                <package>jme3game.cubefield</package>
-                <package>jme3test</package>
-                <package>jme3test.app</package>
-                <package>jme3test.asset</package>
-                <package>jme3test.audio</package>
-                <package>jme3test.awt</package>
-                <package>jme3test.bounding</package>
-                <package>jme3test.bullet</package>
-                <package>jme3test.collision</package>
-                <package>jme3test.conversion</package>
-                <package>jme3test.export</package>
-                <package>jme3test.fx</package>
-                <package>jme3test.gui</package>
-                <package>jme3test.light</package>
-                <package>jme3test.math</package>
-                <package>jme3test.model</package>
-                <package>jme3test.model.anim</package>
-                <package>jme3test.niftygui</package>
-                <package>jme3test.post</package>
-                <package>jme3test.stress</package>
-                <package>jme3test.texture</package>
-                <package>jme3tools.converters</package>
-                <package>jme3tools.converters.model</package>
-                <package>jme3tools.converters.model.strip</package>
-                <package>jme3tools.nvtex</package>
-                <package>jme3tools.optimize</package>
-                <package>jme3tools.preview</package>
                 <package>net.java.games.input</package>
                 <package>net.java.games.joal</package>
                 <package>net.java.games.joal.eax</package>
@@ -218,10 +208,6 @@
             <class-path-extension>
                 <runtime-relative-path>ext/vecmath.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/vecmath.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jMonkeyEngine3.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/jMonkeyEngine3.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jME3-jogl-natives.jar</runtime-relative-path>

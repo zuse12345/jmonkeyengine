@@ -3,8 +3,7 @@
 <filesystem>
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
-            <file name="jme3-test-data.xml" url="jme3-test-data.xml"/>
-            <file name="jme3.xml" url="jme3.xml"/>
+            <file name="jme3-libraries.xml" url="jme3-libraries.xml"/>
         </folder>
     </folder>
 </filesystem>

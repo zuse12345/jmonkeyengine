@@ -12,7 +12,7 @@
       </classpath>
     </taskdef>
 
-    <target name="dist-gde" depends="suite.clean, zip-templates, -set-impl-version, suite.nbms, -unset-impl-version">
+    <target name="dist-gde" depends="suite.clean, zip-templates, -set-impl-version, suite.nbms, unset-impl-version">
     </target>
 
     <target name="build-mac" depends="-copy-mac-icon" description="Build Mac OS X Application">
@@ -25,7 +25,7 @@
             <exclude name="**/dist/"/>
             <exclude name="**/nbproject/private/"/>
         </zip>
-        <zip basedir="JME3TestsTemplate/" destfile="jme3-templates/src/com/jme3/gde/templates/JME3TestsProject.zip">
+        <zip basedir="JME3TestsTemplate/" destfile="jme3-tests-template/src/com/jme3/gde/templates/tests/JmeTestsProject.zip">
             <exclude name="**/build/"/>
             <exclude name="**/dist/"/>
             <exclude name="**/nbproject/private/"/>
@@ -37,31 +37,52 @@
         <foreach target="-do-set-impl-version" list="${modules}" delimiter=":" param="module_dir"/>
     </target>
 
-    <target name="-unset-impl-version" depends="-jme3-svn-properties">
+    <target name="unset-impl-version" depends="-jme3-svn-properties">
         <property file="nbproject/project.properties"/>
         <foreach target="-do-unset-impl-version" list="${modules}" delimiter=":" param="module_dir"/>
     </target>
 
     <target name="-do-set-impl-version">
-      <exec executable="svn" output="${module_dir}/svn.properties" dir="${module_dir}">
-        <arg value="info" />
-      </exec>
-      <!--load this folders svn properties or jme3 svn properties-->
-      <if>
+       <!--load correct svn properties for project-->
+       <if>
           <or>
-              <!--set jme3 svn properties for these projects-->
               <equals arg1="${module_dir}" arg2="jme3-core-libraries"/>
               <equals arg1="${module_dir}" arg2="jme3-project-libraries"/>
-              <equals arg1="${module_dir}" arg2="jme3-templates"/>
           </or>
           <then>
-            <property prefix="svn" file="build/jme3-svn.properties"/>
+            <!--set jme3 svn revision for these projects-->
+            <property prefix="svn" file="build/jme3-lib-svn.properties"/>
           </then>
           <else>
-            <property prefix="svn" file="${module_dir}/svn.properties"/>
+              <if>
+                  <or>
+                      <equals arg1="${module_dir}" arg2="jme3-core-baselibs"/>
+                      <equals arg1="${module_dir}" arg2="jme3-project-baselibs"/>
+                      <equals arg1="${module_dir}" arg2="jme3-tests-template"/>
+                  </or>
+                  <then>
+                    <!--set jme3-testdata svn revision for this project-->
+                    <property prefix="svn" file="build/jme3-svn.properties"/>
+                  </then>
+                  <else>
+                      <if>
+                          <equals arg1="${module_dir}" arg2="jme3-project-testdata"/>
+                          <then>
+                            <!--set jme3-testdata svn revision for this project-->
+                            <property prefix="svn" file="build/jme3-testdata-svn.properties"/>
+                          </then>
+                          <else>
+                              <!--load and set svn revision of this projects folder for this project-->
+                              <exec executable="svn" output="build/${module_dir}-svn.properties" dir="${module_dir}">
+                                <arg value="info" />
+                              </exec>
+                              <property prefix="svn" file="build/${module_dir}-svn.properties"/>
+                          </else>
+                      </if>
+                  </else>
+              </if>
           </else>
       </if>
-      <delete file="${module_dir}/svn.properties" quiet="true"/>
 
       <echo>Setting implementation version for ${module_dir} to revision: ${svn.Revision}</echo>
       <replace dir="${module_dir}" token="OpenIDE-Module-Implementation-Version: 0" value="OpenIDE-Module-Implementation-Version: ${svn.Revision}">
@@ -70,25 +91,46 @@
     </target>
 
     <target name="-do-unset-impl-version">
-      <exec executable="svn" output="${module_dir}/svn.properties" dir="${module_dir}">
-        <arg value="info" />
-      </exec>
-      <!--load this folders svn properties or jme3 svn properties-->
+      <!--load correct svn properties for project-->
       <if>
           <or>
-              <!--set jme3 svn properties for these projects-->
               <equals arg1="${module_dir}" arg2="jme3-core-libraries"/>
               <equals arg1="${module_dir}" arg2="jme3-project-libraries"/>
-              <equals arg1="${module_dir}" arg2="jme3-templates"/>
           </or>
           <then>
-            <property prefix="svn" file="build/jme3-svn.properties"/>
+            <!--set jme3 svn revision for these projects-->
+            <property prefix="svn" file="build/jme3-lib-svn.properties"/>
           </then>
           <else>
-            <property prefix="svn" file="${module_dir}/svn.properties"/>
+              <if>
+                  <or>
+                      <equals arg1="${module_dir}" arg2="jme3-core-baselibs"/>
+                      <equals arg1="${module_dir}" arg2="jme3-project-baselibs"/>
+                      <equals arg1="${module_dir}" arg2="jme3-tests-template"/>
+                  </or>
+                  <then>
+                    <!--set jme3-testdata svn revision for this project-->
+                    <property prefix="svn" file="build/jme3-svn.properties"/>
+                  </then>
+                  <else>
+                      <if>
+                          <equals arg1="${module_dir}" arg2="jme3-project-testdata"/>
+                          <then>
+                            <!--set jme3-testdata svn revision for this project-->
+                            <property prefix="svn" file="build/jme3-testdata-svn.properties"/>
+                          </then>
+                          <else>
+                              <!--load and set svn revision of this projects folder for this project-->
+                              <exec executable="svn" output="build/${module_dir}-svn.properties" dir="${module_dir}">
+                                <arg value="info" />
+                              </exec>
+                              <property prefix="svn" file="build/${module_dir}-svn.properties"/>
+                          </else>
+                      </if>
+                  </else>
+              </if>
           </else>
       </if>
-      <delete file="${module_dir}/svn.properties" quiet="true"/>
       
       <echo>Removing implementation version for ${module_dir} from revision: ${svn.Revision}</echo>
       <replace dir="${module_dir}" token="OpenIDE-Module-Implementation-Version: ${svn.Revision}" value="OpenIDE-Module-Implementation-Version: 0">
@@ -103,7 +145,14 @@
       <exec executable="svn" dir="../jme3/" output="build/jme3-svn.properties">
         <arg value="info" />
       </exec>
-      <property prefix="jmesvn" file="build/jme3-svn.properties"/>
+      <!--jme3 test data svn properties-->
+      <exec executable="svn" dir="../jme3/src/test-data/" output="build/jme3-testdata-svn.properties">
+        <arg value="info" />
+      </exec>
+      <!--jme3 libraries svn properties-->
+      <exec executable="svn" dir="../jme3/lib/" output="build/jme3-lib-svn.properties">
+        <arg value="info" />
+      </exec>
     </target>
 
     <target name="-copy-mac-icon">

@@ -15,12 +15,12 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
 
-public class JME3TestsPanelVisual extends JPanel implements DocumentListener {
+public class JmeTestsPanelVisual extends JPanel implements DocumentListener {
 
     public static final String PROP_PROJECT_NAME = "projectName";
-    private JME3TestsWizardPanel panel;
+    private JmeTestsWizardPanel panel;
 
-    public JME3TestsPanelVisual(JME3TestsWizardPanel panel) {
+    public JmeTestsPanelVisual(JmeTestsWizardPanel panel) {
         initComponents();
         this.panel = panel;
         // Register listener on the textFields to make the automatic updates
@@ -49,13 +49,13 @@ public class JME3TestsPanelVisual extends JPanel implements DocumentListener {
         createdFolderTextField = new javax.swing.JTextField();
 
         projectNameLabel.setLabelFor(projectNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(JME3TestsPanelVisual.class, "JME3TestsPanelVisual.projectNameLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(JmeTestsPanelVisual.class, "JmeTestsPanelVisual.projectNameLabel.text")); // NOI18N
 
         projectLocationLabel.setLabelFor(projectLocationTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(JME3TestsPanelVisual.class, "JME3TestsPanelVisual.projectLocationLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(JmeTestsPanelVisual.class, "JmeTestsPanelVisual.projectLocationLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(JME3TestsPanelVisual.class, "JME3TestsPanelVisual.browseButton.text")); // NOI18N
-        browseButton.setActionCommand(org.openide.util.NbBundle.getMessage(JME3TestsPanelVisual.class, "JME3TestsPanelVisual.browseButton.actionCommand")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(JmeTestsPanelVisual.class, "JmeTestsPanelVisual.browseButton.text")); // NOI18N
+        browseButton.setActionCommand(org.openide.util.NbBundle.getMessage(JmeTestsPanelVisual.class, "JmeTestsPanelVisual.browseButton.actionCommand")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
@@ -63,7 +63,7 @@ public class JME3TestsPanelVisual extends JPanel implements DocumentListener {
         });
 
         createdFolderLabel.setLabelFor(createdFolderTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, org.openide.util.NbBundle.getMessage(JME3TestsPanelVisual.class, "JME3TestsPanelVisual.createdFolderLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, org.openide.util.NbBundle.getMessage(JmeTestsPanelVisual.class, "JmeTestsPanelVisual.createdFolderLabel.text")); // NOI18N
 
         createdFolderTextField.setEditable(false);
 
@@ -207,7 +207,7 @@ public class JME3TestsPanelVisual extends JPanel implements DocumentListener {
 
         String projectName = (String) settings.getProperty("name");
         if (projectName == null) {
-            projectName = "JME3Tests";
+            projectName = "JmeTests";
         }
         this.projectNameTextField.setText(projectName);
         this.projectNameTextField.selectAll();

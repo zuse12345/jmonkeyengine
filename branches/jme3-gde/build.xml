@@ -15,6 +15,9 @@
     <target name="dist-gde" depends="suite.clean, zip-templates, -set-impl-version, suite.nbms, unset-impl-version">
     </target>
 
+    <target name="dist-gde-hudson" depends="suite.clean, zip-templates, -set-impl-version-hudson, suite.nbms, unset-impl-version-hudson">
+    </target>
+
     <target name="build-mac" depends="suite.build-mac, -copy-mac-icon" description="Build Mac OS X Application">
     </target>
 
@@ -38,6 +41,16 @@
     </target>
 
     <target name="unset-impl-version" depends="-jme3-svn-properties">
+        <property file="nbproject/project.properties"/>
+        <foreach target="-do-unset-impl-version" list="${modules}" delimiter=":" param="module_dir"/>
+    </target>
+
+    <target name="-set-impl-version-hudson" depends="-jme3-svn-properties-hudson">
+        <property file="nbproject/project.properties"/>
+        <foreach target="-do-set-impl-version" list="${modules}" delimiter=":" param="module_dir"/>
+    </target>
+
+    <target name="unset-impl-version-hudson" depends="-jme3-svn-properties-hudson">
         <property file="nbproject/project.properties"/>
         <foreach target="-do-unset-impl-version" list="${modules}" delimiter=":" param="module_dir"/>
     </target>
@@ -155,6 +168,25 @@
       <replace file="build/jme3-testdata-svn.properties" token="Last Changed Rev" value="Lastchange"/>
       <!--jme3 libraries svn properties-->
       <exec executable="svn" dir="../jme3/lib/" output="build/jme3-lib-svn.properties">
+        <arg value="info" />
+      </exec>
+      <replace file="build/jme3-lib-svn.properties" token="Last Changed Rev" value="Lastchange"/>
+    </target>
+
+    <target name="-jme3-svn-properties-hudson">
+      <mkdir dir="build"/>
+      <!--jme3 svn properties-->
+      <exec executable="svn" dir="../../jme3/workspace/" output="build/jme3-svn.properties">
+        <arg value="info" />
+      </exec>
+      <replace file="build/jme3-svn.properties" token="Last Changed Rev" value="Lastchange"/>
+      <!--jme3 test data svn properties-->
+      <exec executable="svn" dir="../../jme3/workspace/src/test-data/" output="build/jme3-testdata-svn.properties">
+        <arg value="info" />
+      </exec>
+      <replace file="build/jme3-testdata-svn.properties" token="Last Changed Rev" value="Lastchange"/>
+      <!--jme3 libraries svn properties-->
+      <exec executable="svn" dir="../../jme3/workspace/lib/" output="build/jme3-lib-svn.properties">
         <arg value="info" />
       </exec>
       <replace file="build/jme3-lib-svn.properties" token="Last Changed Rev" value="Lastchange"/>

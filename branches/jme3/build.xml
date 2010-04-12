@@ -49,8 +49,8 @@
         </copy>
     </target>
 
-    <!-- convenience target to transfer jme3 libraries to jme3-gde (jMonkeyPlatform) -->
-    <target name="update-jmp-hudson" depends="jar, javadoc">
+    <!-- convenience target to transfer jme3 libraries to the jme3-jmp folder on the Hudson build server (jMonkeyPlatform) -->
+    <target name="update-jmp-hudson">
         <!--jme base libs-->
         <copy file="${dist.jar}" toDir="../../jme3-jmp/workspace/jme3-core-libraries/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
         <copy file="${dist.jar}" toDir="../../jme3-jmp/workspace/jme3-project-libraries/release/libs/" overwrite="true" failonerror="true" verbose="true"/>

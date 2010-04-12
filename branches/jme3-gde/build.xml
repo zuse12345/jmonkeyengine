@@ -12,7 +12,7 @@
       </classpath>
     </taskdef>
 
-    <target name="dist-gde" depends="suite.clean, zip-templates, -set-impl-version, suite.build-zip, suite.build-mac, unset-impl-version">
+    <target name="dist-gde" depends="suite.clean, zip-templates, -set-impl-version, suite.build-zip, build-mac, unset-impl-version">
         <zip basedir="dist/" destfile="dist/${app.name}-macosx.zip">
             <include name="${app.name}.app/"/>
         </zip>

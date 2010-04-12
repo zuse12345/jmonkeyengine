@@ -12,7 +12,10 @@
       </classpath>
     </taskdef>
 
-    <target name="dist-gde" depends="suite.clean, zip-templates, -set-impl-version, suite.nbms, unset-impl-version">
+    <target name="dist-gde" depends="suite.clean, zip-templates, -set-impl-version, suite.build-zip, suite.build-mac, unset-impl-version">
+        <zip basedir="dist/" destfile="dist/${app.name}-macosx.zip">
+            <include name="${app.name}.app/"/>
+        </zip>
     </target>
 
     <target name="dist-gde-hudson" depends="suite.clean, zip-templates, -set-impl-version-hudson, suite.nbms, unset-impl-version-hudson">
@@ -99,8 +102,7 @@
       </if>
 
       <echo>Setting implementation version for ${module_dir} to revision: ${svn.Lastchange}</echo>
-      <replace dir="${module_dir}" token="OpenIDE-Module-Implementation-Version: 0" value="OpenIDE-Module-Implementation-Version: ${svn.Lastchange}">
-        <include name="**/*.mf"/>
+      <replace  file="${module_dir}/manifest.mf" token="OpenIDE-Module-Implementation-Version: 0" value="OpenIDE-Module-Implementation-Version: ${svn.Lastchange}">
       </replace>
     </target>
 
@@ -148,8 +150,7 @@
       </if>
       
       <echo>Removing implementation version for ${module_dir} from revision: ${svn.Lastchange}</echo>
-      <replace dir="${module_dir}" token="OpenIDE-Module-Implementation-Version: ${svn.Lastchange}" value="OpenIDE-Module-Implementation-Version: 0">
-        <include name="**/*.mf"/>
+      <replace file="${module_dir}/manifest.mf" token="OpenIDE-Module-Implementation-Version: ${svn.Lastchange}" value="OpenIDE-Module-Implementation-Version: 0">
       </replace>
 
     </target>

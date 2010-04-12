@@ -15,7 +15,7 @@
     <target name="dist-gde" depends="suite.clean, zip-templates, -set-impl-version, suite.nbms, unset-impl-version">
     </target>
 
-    <target name="build-mac" depends="-copy-mac-icon" description="Build Mac OS X Application">
+    <target name="build-mac" depends="suite.build-mac, -copy-mac-icon" description="Build Mac OS X Application">
     </target>
 
     <!--zips up the templates and adds them to the template project-->

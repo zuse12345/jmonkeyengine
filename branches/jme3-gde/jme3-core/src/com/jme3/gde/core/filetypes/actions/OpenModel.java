@@ -31,13 +31,15 @@
  */
 package com.jme3.gde.core.filetypes.actions;
 
+import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.scene.SceneApplication;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
@@ -51,10 +53,17 @@ public final class OpenModel implements ActionListener {
 
     public void actionPerformed(ActionEvent ev) {
         Set<FileObject> files = context.files();
+        ProjectAssetManager manager = context.getNodeDelegate().getLookup().lookup(ProjectAssetManager.class);
+        if(manager==null){
+            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "No ProjectAssetManager found in DataObject!");
+            return;
+        }
         for (Iterator<FileObject> it = files.iterator(); it.hasNext();) {
             FileObject fileObject = it.next();
-            final String name=getModelPath(fileObject.getPath());
+
+            final String name = manager.getRelativeAssetPath(fileObject.getPath());
             SceneApplication.getApplication().enqueue(new Callable<Object>() {
+
                 public Object call() throws Exception {
                     SceneApplication.getApplication().showModel(name);
                     return null;
@@ -63,9 +72,4 @@ public final class OpenModel implements ActionListener {
         }
     }
 
-    private String getModelPath(String input){
-        //TODO: do via Lookup&ProjectAssetManager when it works..
-        int idx=input.lastIndexOf(File.separator+"assets"+File.separator);
-        return input.substring(idx+8);
-    }
 }

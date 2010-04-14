@@ -44,30 +44,31 @@ import org.openide.filesystems.FileObject;
  * @author normenhansen
  */
 public class ProjectAssetManager {
+
     private Project project;
     //TODO: one assetmanager per project
     private static AssetManager manager;
 
     public ProjectAssetManager(Project prj) {
-        this.project=prj;
-        AssetManager manager=getManager();
-        StatusDisplayer.getDefault().setStatusText("adding asset folder from "+prj.getProjectDirectory()+" to assetmanager");
+        this.project = prj;
+        AssetManager manager = getManager();
+        StatusDisplayer.getDefault().setStatusText("adding asset folder from " + prj.getProjectDirectory() + " to assetmanager");
 //        manager =  G3DSystem.newAssetManager();
         manager.registerLoader("com.jme3.export.binary.BinaryImporter", "j3s");
-        
-        manager.registerLocator(prj.getProjectDirectory()+"/assets/",
+
+        manager.registerLocator(prj.getProjectDirectory() + "/assets/",
                 "com.jme3.asset.plugins.FileLocator", "*");
 
         //model loader paths TODO: remove
-        manager.registerLocator(prj.getProjectDirectory()+"/assets/models/",
+        manager.registerLocator(prj.getProjectDirectory() + "/assets/models/",
                 "com.jme3.asset.plugins.FileLocator", "j3o");
 
         //scene loader paths TODO: remove
-        manager.registerLocator(prj.getProjectDirectory()+"/assets/scenes/",
+        manager.registerLocator(prj.getProjectDirectory() + "/assets/scenes/",
                 "com.jme3.asset.plugins.FileLocator", "j3s");
-        
+
         //dds, hdr, pfm, tga, bmp, png, jpg, jpeg, gif TODO: remove
-        manager.registerLocator(prj.getProjectDirectory()+"/assets/textures/",
+        manager.registerLocator(prj.getProjectDirectory() + "/assets/textures/",
                 "com.jme3.asset.plugins.FileLocator", "dds", "hdr", "pfm", "tga", "bmp", "jpg", "jpeg", "gif");
     }
 
@@ -75,15 +76,23 @@ public class ProjectAssetManager {
         return project;
     }
 
+    public String getRelativeAssetPath(String absolutePath) {
+        String prefix = project.getProjectDirectory().getFileObject("assets/").getPath();
+        int idx=absolutePath.indexOf(prefix);
+        if(idx==0){
+            return absolutePath.substring(prefix.length());
+        }
+        return absolutePath;
+    }
+
     public static void setManager(AssetManager _manager) {
-        manager=_manager;
+        manager = _manager;
     }
 
     public static AssetManager getManager() {
-        if(manager==null) manager=JmeSystem.newAssetManager();//new DesktopAssetManager(true);
+        if (manager == null) {
+            manager = JmeSystem.newAssetManager();//new DesktopAssetManager(true);
+        }
         return manager;
     }
-
-
-
 }

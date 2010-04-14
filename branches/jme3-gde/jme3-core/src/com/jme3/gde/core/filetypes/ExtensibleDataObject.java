@@ -29,43 +29,47 @@
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.gde.core.assets.nodes;
 
-import com.jme3.gde.core.assets.ProjectAssetManager;
-import com.jme3.gde.core.filetypes.JMEBinaryModelDataObject;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.FilterNode;
+package com.jme3.gde.core.filetypes;
+
+import java.io.IOException;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
  * @author normenhansen
  */
-public class AssetNode extends FilterNode {
+public class ExtensibleDataObject extends MultiDataObject {
+    private final Lookup lookup;
+    private final InstanceContent lookupContents = new InstanceContent();
 
-    private Node node;
-
-    public AssetNode(ProjectAssetManager manager, Node node) {
-        super(node, new AssetChildren(manager, node), createLookupProxy(manager, node));
-        this.node = node;
-        enableDelegation(DELEGATE_GET_ACTIONS);
-        enableDelegation(DELEGATE_GET_CONTEXT_ACTIONS);
+    public ExtensibleDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+        super(pf, loader);
+        lookup = new ProxyLookup(getCookieSet().getLookup(), new AbstractLookup(getLookupContents()));
     }
 
-    public static Lookup createLookupProxy(ProjectAssetManager manager, Node node) {
-        DataObject obj=node.getLookup().lookup(DataObject.class);
-        if(obj instanceof JMEBinaryModelDataObject){
-            ((JMEBinaryModelDataObject)obj).getLookupContents().add(manager);
-        }
-        return new ProxyLookup(
-                new Lookup[]{
-                    node.getLookup(),
-                    Lookups.fixed(manager)
-                });
+    @Override
+    protected Node createNodeDelegate() {
+        return new DataNode(this, Children.LEAF, getLookup());
     }
+
+    @Override
+    public Lookup getLookup() {
+        return lookup;
+    }
+
+    public InstanceContent getLookupContents() {
+        return lookupContents;
+    }
+
 }

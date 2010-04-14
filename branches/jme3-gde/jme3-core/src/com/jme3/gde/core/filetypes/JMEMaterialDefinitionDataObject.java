@@ -43,7 +43,7 @@ import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.text.DataEditorSupport;
 
-public class JMEMaterialDefinitionDataObject extends MultiDataObject {
+public class JMEMaterialDefinitionDataObject extends ExtensibleDataObject {
 
     public JMEMaterialDefinitionDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
@@ -51,13 +51,4 @@ public class JMEMaterialDefinitionDataObject extends MultiDataObject {
         cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
     }
 
-    @Override
-    protected Node createNodeDelegate() {
-        return new DataNode(this, Children.LEAF, getLookup());
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
-    }
 }

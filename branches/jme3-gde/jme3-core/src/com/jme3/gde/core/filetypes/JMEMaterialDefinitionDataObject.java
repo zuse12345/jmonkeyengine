@@ -43,7 +43,7 @@ import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.text.DataEditorSupport;
 
-public class JMEMaterialDefinitionDataObject extends ExtensibleDataObject {
+public class JMEMaterialDefinitionDataObject extends AssetDataObject {
 
     public JMEMaterialDefinitionDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);

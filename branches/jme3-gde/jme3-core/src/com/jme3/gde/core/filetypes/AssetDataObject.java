@@ -49,11 +49,11 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author normenhansen
  */
-public class ExtensibleDataObject extends MultiDataObject {
+public class AssetDataObject extends MultiDataObject {
     private final Lookup lookup;
     private final InstanceContent lookupContents = new InstanceContent();
 
-    public ExtensibleDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+    public AssetDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         lookup = new ProxyLookup(getCookieSet().getLookup(), new AbstractLookup(getLookupContents()));
     }

@@ -36,7 +36,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiFileLoader;
 
-public class JMEMaterialDataObject extends ExtensibleDataObject {
+public class JMEMaterialDataObject extends AssetDataObject {
 
     public JMEMaterialDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);

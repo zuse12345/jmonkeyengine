@@ -32,7 +32,7 @@
 package com.jme3.gde.core.assets.nodes;
 
 import com.jme3.gde.core.assets.ProjectAssetManager;
-import com.jme3.gde.core.filetypes.ExtensibleDataObject;
+import com.jme3.gde.core.filetypes.AssetDataObject;
 import com.jme3.gde.core.filetypes.JMEBinaryModelDataObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
@@ -57,9 +57,9 @@ public class AssetNode extends FilterNode {
     }
 
     public static Lookup createLookupProxy(ProjectAssetManager manager, Node node) {
-        DataObject obj=node.getLookup().lookup(DataObject.class);
-        if(obj instanceof ExtensibleDataObject){
-            ((ExtensibleDataObject)obj).getLookupContents().add(manager);
+        DataObject obj = node.getLookup().lookup(DataObject.class);
+        if (obj instanceof AssetDataObject && obj.getLookup().lookup(ProjectAssetManager.class) == null) {
+            ((AssetDataObject) obj).getLookupContents().add(manager);
         }
         return new ProxyLookup(
                 new Lookup[]{

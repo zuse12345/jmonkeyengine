@@ -36,7 +36,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiFileLoader;
 
-public class JMEBinaryModelDataObject extends ExtensibleDataObject {
+public class JMEBinaryModelDataObject extends AssetDataObject {
 
     public JMEBinaryModelDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);

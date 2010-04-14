@@ -32,43 +32,32 @@
 package com.jme3.gde.core.assets.nodes;
 
 import com.jme3.gde.core.assets.ProjectAssetManager;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.Action;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.actions.SystemAction;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
  * @author normenhansen
  */
 public class AssetNode extends FilterNode {
+
     private Node node;
 
     public AssetNode(ProjectAssetManager manager, Node node) {
-        //Children.create(new AssetNodeChildFactory(node, manager), true)
-        super(node, new AssetChildren(manager, node), Lookups.fixed(node, manager));
-        this.node=node;
+        super(node, new AssetChildren(manager, node), createLookupProxy(manager, node));
+        this.node = node;
         enableDelegation(DELEGATE_GET_ACTIONS);
         enableDelegation(DELEGATE_GET_CONTEXT_ACTIONS);
     }
 
-//    @Override
-//    public SystemAction[] getActions() {
-//        return node.getActions();
-//    }
-//
-    @Override
-    public Action[] getActions(boolean context) {
-        Action[] actions = new Action[0];//node.getActions(context);
-        for (int i = 0; i < actions.length; i++) {
-            Action action = actions[i];
-            if(action!=null)
-                action.setEnabled(true);
-        }
-        return actions;
+    public static Lookup createLookupProxy(ProjectAssetManager manager, Node node) {
+        return new ProxyLookup(
+                new Lookup[]{
+                    node.getLookup(),
+                    Lookups.fixed(manager)
+                });
     }
-
 }

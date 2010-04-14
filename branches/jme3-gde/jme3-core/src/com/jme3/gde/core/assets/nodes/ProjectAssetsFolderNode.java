@@ -36,7 +36,9 @@ import java.awt.Image;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -50,8 +52,7 @@ public class ProjectAssetsFolderNode extends FilterNode {
     private ProjectAssetManager manager;
 
     public ProjectAssetsFolderNode(ProjectAssetManager manager, Node node, String icon, String name) {
-        //TODO: wrapping disables file node actions.. bug?
-        super(node, /*Children.create(new AssetNodeChildFactory(node, manager), true)*/null, Lookups.fixed(node, manager));
+        super(node, Children.create(new AssetNodeChildFactory(node, manager), true), createLookupProxy(manager, node));
         this.manager = manager;
         this.name = name;
         this.node = node;
@@ -72,4 +73,11 @@ public class ProjectAssetsFolderNode extends FilterNode {
         return ImageUtilities.mergeImages(original, smallImage, 5, 5);
     }
 
+    public static Lookup createLookupProxy(ProjectAssetManager manager, Node node) {
+        return new ProxyLookup(
+                new Lookup[]{
+                    node.getLookup(),
+                    Lookups.fixed(manager)
+                });
+    }
 }

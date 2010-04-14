@@ -53,7 +53,7 @@ public final class OpenModel implements ActionListener {
 
     public void actionPerformed(ActionEvent ev) {
         Set<FileObject> files = context.files();
-        ProjectAssetManager manager = context.getNodeDelegate().getLookup().lookup(ProjectAssetManager.class);
+        ProjectAssetManager manager = context.getLookup().lookup(ProjectAssetManager.class);
         if(manager==null){
             Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "No ProjectAssetManager found in DataObject!");
             return;

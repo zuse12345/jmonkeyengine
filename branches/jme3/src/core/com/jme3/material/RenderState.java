@@ -42,6 +42,14 @@ public class RenderState implements Cloneable, Savable {
         AlphaAdditive,
 
         /**
+         * Color blending, blends in color from dest color
+         * using source color.
+         *
+         * Result = Source Color + (1 - Source Color) * Dest Color
+         */
+        Color,
+
+        /**
          * Alpha blending, interpolates to source color from dest color
          * using source alpha.
          *

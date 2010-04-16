@@ -1,4 +1,4 @@
-package jme3test.fx;
+package jme3test.effect;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.light.DirectionalLight;

@@ -31,6 +31,7 @@ public abstract class SimpleApplication extends Application {
     protected float secondCounter = 0.0f;
     protected BitmapText fpsText;
     protected BitmapFont guiFont;
+    protected StatsView statsView;
 
     protected FlyByCamera flyCam;
     protected boolean showSettings = true;
@@ -72,6 +73,13 @@ public abstract class SimpleApplication extends Application {
         guiNode.attachChild(fpsText);
     }
 
+    public void loadStatsView(){
+        statsView = new StatsView("Statistics View", manager, renderer.getStatistics());
+        // move it up so it appears above fps text
+        statsView.setLocalTranslation(0, fpsText.getLineHeight(), 0);
+        guiNode.attachChild(statsView);
+    }
+
     @Override
     public void initialize(){
         super.initialize();
@@ -82,13 +90,14 @@ public abstract class SimpleApplication extends Application {
         guiNode.setQueueBucket(Bucket.Gui);
         guiNode.setCullHint(CullHint.Never);
         loadFPSText();
+        loadStatsView();
         viewPort.attachScene(rootNode);
         guiViewPort.attachScene(guiNode);
 
         if (inputManager != null){
             flyCam = new FlyByCamera(cam);
             flyCam.setMoveSpeed(1f);
-            flyCam.registerWithDispatcher(inputManager);
+            flyCam.registerWithInput(inputManager);
 
             if (context.getType() == Type.Display){
                 inputManager.registerKeyBinding("SIMPLEAPP_Exit", KeyInput.KEY_ESCAPE);
@@ -127,7 +136,7 @@ public abstract class SimpleApplication extends Application {
         super.update();
         float tpf = timer.getTimePerFrame() * speed;
 
-        secondCounter += tpf;
+        secondCounter += timer.getTimePerFrame();
         int fps = (int) timer.getFrameRate();
         if (secondCounter >= 1.0f){
             fpsText.setText("Frames per second: "+fps);

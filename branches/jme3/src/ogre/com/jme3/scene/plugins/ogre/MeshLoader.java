@@ -84,10 +84,10 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     public static Spatial loadModel(AssetManager manager,
                                     String meshName, String materialName){
         OgreMaterialList matList = materialName != null ?
-                        (OgreMaterialList) manager.loadContent(materialName)
+                        (OgreMaterialList) manager.loadAsset(materialName)
                         : null;
         OgreMeshKey key = new OgreMeshKey(meshName, matList);
-        return (Spatial) manager.loadContent(key);
+        return (Spatial) manager.loadAsset(key);
     }
 
     @Override
@@ -159,7 +159,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             }
             if (mat == null){
                 logger.warning("Material "+matName+" not found. Applying default material");
-                mat = (Material) assetManager.loadContent(new AssetKey("red_color.j3m"));
+                mat = (Material) assetManager.loadAsset(new AssetKey("red_color.j3m"));
             }
         }
         
@@ -468,7 +468,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     }
 
     private void startSkeleton(String name){
-        animData = (AnimData) assetManager.loadContent(name+"xml");
+        animData = (AnimData) assetManager.loadAsset(name+"xml");
     }
 
     @Override
@@ -677,7 +677,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
                                                meshes,
                                                animData.skeleton);
             ctrl.setAnimations(anims);
-            model.setControl(ctrl);
+            model.addControl(ctrl);
         }
 
         for (int i = 0; i < geoms.size(); i++){

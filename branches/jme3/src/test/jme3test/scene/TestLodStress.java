@@ -1,4 +1,4 @@
-package jme3test.model;
+package jme3test.scene;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.input.KeyInput;
@@ -45,7 +45,7 @@ public class TestLodStress extends SimpleApplication implements BindingListener 
                 clonePot.setLocalScale(.15f);
                 
                 LodControl control = new LodControl(clonePot);
-                clonePot.setControl(control);
+                clonePot.addControl(control);
                 rootNode.attachChild(clonePot);
             }
         }

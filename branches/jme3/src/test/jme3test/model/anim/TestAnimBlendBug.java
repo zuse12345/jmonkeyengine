@@ -2,19 +2,14 @@ package jme3test.model.anim;
 
 import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
-import com.jme3.animation.Bone;
-import com.jme3.animation.LoopMode;
 import com.jme3.app.SimpleApplication;
 import com.jme3.input.KeyInput;
 import com.jme3.input.binding.BindingListener;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.FastMath;
-import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
-import com.jme3.scene.control.ControlType;
 import com.jme3.scene.debug.SkeletonDebugger;
 import com.jme3.scene.plugins.ogre.OgreMaterialList;
 import com.jme3.scene.plugins.ogre.OgreMeshKey;
@@ -66,20 +61,31 @@ public class TestAnimBlendBug extends SimpleApplication implements BindingListen
         dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
         rootNode.addLight(dl);
 
-        OgreMaterialList matList = (OgreMaterialList) manager.loadContent("ninja.material");
+        OgreMaterialList matList = (OgreMaterialList) manager.loadAsset("ninja.material");
         OgreMeshKey key = new OgreMeshKey("ninja.meshxml", matList);
-        Node model1 = (Node) manager.loadContent(key);
+        Node model1 = (Node) manager.loadAsset(key);
         Node model2 = model1.clone();
 
         model1.setLocalTranslation(-60, 0, 0);
         model2.setLocalTranslation(60, 0, 0);
 
-        AnimControl control1 = (AnimControl) model1.getControl(ControlType.BoneAnimation);
+        AnimControl control1 = model1.getControl(AnimControl.class);
         animNames = control1.getAnimationNames().toArray(new String[0]);
         channel1 = control1.createChannel();
         
-        AnimControl control2 = (AnimControl) model2.getControl(ControlType.BoneAnimation);
+        AnimControl control2 = model2.getControl(AnimControl.class);
         channel2 = control2.createChannel();
+
+        SkeletonDebugger skeletonDebug = new SkeletonDebugger("skeleton1", control1.getSkeleton());
+        Material mat = new Material(manager, "wire_color.j3md");
+        mat.setColor("m_Color", ColorRGBA.Green);
+        mat.getAdditionalRenderState().setDepthTest(false);
+        skeletonDebug.setMaterial(mat);
+        model1.attachChild(skeletonDebug);
+
+        skeletonDebug = new SkeletonDebugger("skeleton2", control2.getSkeleton());
+        skeletonDebug.setMaterial(mat);
+        model2.attachChild(skeletonDebug);
 
         rootNode.attachChild(model1);
         rootNode.attachChild(model2);

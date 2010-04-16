@@ -4,7 +4,6 @@ import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.app.Application;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.control.ControlType;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -24,7 +23,7 @@ public class ModelAnimHandler implements IAnimationHandler {
 
     public ModelAnimHandler(Spatial model){
         this.model = model;
-        control = (AnimControl) model.getControl(ControlType.BoneAnimation);
+        control = model.getControl(AnimControl.class);
         channel = control.createChannel();
     }
 

@@ -6,7 +6,6 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 import com.jme3.post.HDRRenderer;
-import com.jme3.texture.Image.Format;
 import com.jme3.ui.Picture;
 
 public class TestHDR extends SimpleApplication {
@@ -24,7 +23,7 @@ public class TestHDR extends SimpleApplication {
         Geometry box = new Geometry("Box", boxMesh);
         box.updateModelBound();
         boxMesh.setStatic();
-        Material mat = (Material) manager.loadContent("hdr_pic.j3m");
+        Material mat = (Material) manager.loadAsset("hdr_pic.j3m");
         box.setMaterial(mat);
         return box;
     }

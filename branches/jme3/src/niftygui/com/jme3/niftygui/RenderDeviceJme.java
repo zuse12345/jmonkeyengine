@@ -63,14 +63,19 @@ public class RenderDeviceJme implements RenderDevice {
         quadModTC.setUsage(Usage.Stream);
 
         solidColor = new Material(display.getAssetManager(), "default_gui.j3md");
+        solidColor.setBoolean("m_VertexColor", false);
+        solidColor.setBoolean("m_EnableUbo", true);
 //        quadGeom.setMaterial(solidColor);
 
         gradientColor = new Material(display.getAssetManager(), "default_gui.j3md");
         gradientColor.setBoolean("m_VertexColor", true);
         gradientColor.setColor("m_Color", ColorRGBA.White);
+        gradientColor.setBoolean("m_EnableUbo", true);
 //        gradQuadGeom.setMaterial(gradientColor);
 
         imageColor = new Material(display.getAssetManager(), "default_gui.j3md");
+        imageColor.setBoolean("m_VertexColor", false);
+        imageColor.setBoolean("m_EnableUbo", true);
 //        imageQuadGeom.setMaterial(imageColor);
 //        imageQuadNode.attachChild(imageQuadGeom);
     }

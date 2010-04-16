@@ -37,6 +37,7 @@ public class BitmapText extends Geometry {
         this.rightToLeft = rightToLeft;
         this.font = font;
         this.block = new StringBlock();
+        block.setSize(font.getPreferredSize());
 
         Material mat = font.getPage(0);
         if (mat == null)
@@ -69,6 +70,16 @@ public class BitmapText extends Geometry {
 
     public BitmapText(BitmapFont font){
         this(font, false, false);
+    }
+
+    @Override
+    public BitmapText clone(){
+        BitmapText clone = (BitmapText) super.clone();
+        clone.mesh = mesh.deepClone();
+        clone.needRefresh = true;
+        clone.quadList = new QuadList();
+        clone.block = block.clone();
+        return clone;
     }
 
     public BitmapFont getFont() {

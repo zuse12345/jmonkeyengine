@@ -18,7 +18,7 @@ public class BitmapFontLoader implements AssetLoader {
 
     public Object load(AssetInfo info) throws IOException {
         MaterialDef spriteMat = 
-                (MaterialDef) info.getManager().loadContent(new AssetKey("default_gui.j3md"));
+                (MaterialDef) info.getManager().loadAsset(new AssetKey("default_gui.j3md"));
 
 
         BitmapCharacterSet charSet = new BitmapCharacterSet();
@@ -83,7 +83,7 @@ public class BitmapFontLoader implements AssetLoader {
                     mat.setTexture("m_Texture", tex);
                     mat.setColor("m_Color", ColorRGBA.White);
                     mat.setBoolean("m_VertexColor", true);
-                    mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+                    mat.getAdditionalRenderState().setBlendMode(BlendMode.Color);
                     matPages[index] = mat;
                 }
             }else if (tokens[0].equals("char")){

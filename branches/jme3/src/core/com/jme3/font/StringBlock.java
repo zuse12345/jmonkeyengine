@@ -9,7 +9,7 @@ import com.jme3.math.ColorRGBA;
  *         Defines a String that is to be drawn in one block that can be constrained by a {@link Rectangle}. Also holds
  *         formatting information for the StringBlock
  */
-public class StringBlock {
+public class StringBlock implements Cloneable {
 
     private String text;
     private Rectangle textBox;
@@ -44,6 +44,19 @@ public class StringBlock {
         this.size = 100;
         this.color.set(ColorRGBA.White);
         this.kerning = true;
+    }
+
+    @Override
+    public StringBlock clone(){
+        try {
+            StringBlock clone = (StringBlock) super.clone();
+            clone.color = color.clone();
+            if (textBox != null)
+                clone.textBox = textBox.clone();
+            return clone;
+        } catch (CloneNotSupportedException ex) {
+            throw new AssertionError();
+        }
     }
 
     public String getText() {

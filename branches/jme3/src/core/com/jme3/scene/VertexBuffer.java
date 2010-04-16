@@ -161,10 +161,12 @@ public class VertexBuffer extends GLObject implements Savable, Cloneable {
      */
     protected transient int componentsLength = 0;
     protected Buffer data = null;
+    protected transient ByteBuffer mappedData;
     protected Usage usage;
     protected Type bufType;
     protected Format format;
     protected boolean normalized = false;
+    protected transient boolean dataSizeChanged = false;
 
     /**
      * Creates an empty, uninitialized buffer.
@@ -206,6 +208,14 @@ public class VertexBuffer extends GLObject implements Savable, Cloneable {
         return data;
     }
 
+    public ByteBuffer getMappedData() {
+        return mappedData;
+    }
+
+    public void setMappedData(ByteBuffer mappedData) {
+        this.mappedData = mappedData;
+    }
+    
     public Usage getUsage(){
         return usage;
     }
@@ -255,8 +265,21 @@ public class VertexBuffer extends GLObject implements Savable, Cloneable {
         }
 
         // will force renderer to call glBufferData again
+        if (this.data.capacity() != data.capacity()){
+            dataSizeChanged = true;
+        }
         this.data = data;
         setUpdateNeeded();
+    }
+
+    public boolean hasDataSizeChanged() {
+        return dataSizeChanged;
+    }
+
+    @Override
+    public void clearUpdateNeeded(){
+        super.clearUpdateNeeded();
+        dataSizeChanged = false;
     }
 
     public void convertToHalf(){
@@ -282,6 +305,8 @@ public class VertexBuffer extends GLObject implements Savable, Cloneable {
             halfData.putShort(half);
         }
         this.data = halfData;
+        setUpdateNeeded();
+        dataSizeChanged = true;
     }
 
     public void compact(int numElements){
@@ -324,6 +349,8 @@ public class VertexBuffer extends GLObject implements Savable, Cloneable {
                 throw new UnsupportedOperationException("Unrecognized buffer format: "+format);
         }
         data.clear();
+        setUpdateNeeded();
+        dataSizeChanged = true;
     }
 
     public void copyElement(int inIndex, VertexBuffer outVb, int outIndex){

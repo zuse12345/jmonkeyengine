@@ -47,8 +47,8 @@ public class FloatToFixed {
             Buffer newBuf = VertexBuffer.createBuffer(posFmt, positions.getNumComponents(),
                                                       mesh.getVertexCount());
             Transform t = convertPositions(fb, bbox, newBuf);
-            t.combineWithParent(geom.getTransform());
-            geom.setTransform(t);
+            t.combineWithParent(geom.getLocalTransform());
+            geom.setLocalTransform(t);
 
             VertexBuffer newPosVb = new VertexBuffer(Type.Position);
             newPosVb.setupData(positions.getUsage(),

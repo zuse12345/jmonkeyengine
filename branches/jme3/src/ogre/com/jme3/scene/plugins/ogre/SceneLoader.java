@@ -127,7 +127,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             entityNode = new Node(name);
             OgreMeshKey key = new OgreMeshKey(meshFile, materialList);
             Spatial ogreMesh = 
-                    (Spatial) assetManager.loadContent(key);
+                    (Spatial) assetManager.loadAsset(key);
             entityNode.attachChild(ogreMesh);
             node.attachChild(entityNode);
             node = null;
@@ -167,7 +167,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             sceneName = sceneName.substring(0, sceneName.length() - ext.length() - 1);
 
             materialList = (OgreMaterialList) 
-                    assetManager.loadContent(new AssetKey(sceneName+".material"));
+                    assetManager.loadAsset(new AssetKey(sceneName+".material"));
 
             XMLReader xr = XMLReaderFactory.createXMLReader();
             xr.setContentHandler(this);

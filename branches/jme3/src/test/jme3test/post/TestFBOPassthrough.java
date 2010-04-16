@@ -43,7 +43,7 @@ public class TestFBOPassthrough extends SimpleApplication {
 
         // setup framebuffer's scene
         Sphere sphMesh = new Sphere(20, 20, 1);
-        Material solidColor = (Material) manager.loadContent("red_color.j3m");
+        Material solidColor = (Material) manager.loadAsset("red_color.j3m");
 
         Geometry sphere = new Geometry("sphere", sphMesh);
         sphere.setMaterial(solidColor);
@@ -72,7 +72,7 @@ public class TestFBOPassthrough extends SimpleApplication {
         //do FBO rendering
         r.setFrameBuffer(fb);
 
-        rm.setCamera(cam); // FBO uses current camera
+        rm.setCamera(cam, false); // FBO uses current camera
         r.clearBuffers(true, true, true);
         rm.renderScene(fbNode, viewPort);
         rm.flushQueue(viewPort);

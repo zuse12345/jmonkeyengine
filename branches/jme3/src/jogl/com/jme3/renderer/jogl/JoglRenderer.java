@@ -12,6 +12,7 @@ import com.jme3.renderer.GLObjectManager;
 import com.jme3.renderer.IDList;
 import com.jme3.renderer.RenderContext;
 import com.jme3.renderer.Renderer;
+import com.jme3.renderer.Statistics;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Mesh.Mode;
 import com.jme3.scene.VertexBuffer;
@@ -40,6 +41,8 @@ public class JoglRenderer implements Renderer {
 
     private static final Logger logger = Logger.getLogger(JoglRenderer.class.getName());
 
+    protected Statistics statistics = new Statistics();
+
     protected Matrix4f worldMatrix = new Matrix4f();
     protected Matrix4f viewMatrix = new Matrix4f();
     protected Matrix4f projMatrix = new Matrix4f();
@@ -63,6 +66,10 @@ public class JoglRenderer implements Renderer {
 
     public void setGL(GL gl){
         this.gl = gl;
+    }
+
+    public Statistics getStatistics(){
+        return statistics;
     }
 
     public void initialize(){
@@ -207,6 +214,9 @@ public class JoglRenderer implements Renderer {
                     break;
                 case Alpha:
                     gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA);
+                    break;
+                case Color:
+                    gl.glBlendFunc(gl.GL_ONE, gl.GL_ONE_MINUS_SRC_COLOR);
                     break;
                 case PremultAlpha:
                     gl.glBlendFunc(gl.GL_ONE, gl.GL_ONE_MINUS_SRC_ALPHA);

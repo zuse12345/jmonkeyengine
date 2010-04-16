@@ -1,4 +1,4 @@
-package jme3test.model;
+package jme3test.scene;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.plugins.ZipLocator;
@@ -59,9 +59,9 @@ public class TestQ3 extends SimpleApplication {
         manager.registerLocator("quake3level.zip", ZipLocator.class.getName(), "tga", "meshxml", "material");
 
         // create the geometry and attach it
-        OgreMaterialList matList = (OgreMaterialList) manager.loadContent("Scene.material");
+        OgreMaterialList matList = (OgreMaterialList) manager.loadAsset("Scene.material");
         OgreMeshKey key = new OgreMeshKey("main.meshxml", matList);
-        gameLevel = (Spatial) manager.loadContent(key);
+        gameLevel = (Spatial) manager.loadAsset(key);
         gameLevel.updateGeometricState();
 //        gameLevel.setLocalScale(0.2f);
         rootNode.attachChild(gameLevel);

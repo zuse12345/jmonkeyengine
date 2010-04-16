@@ -21,11 +21,6 @@ public interface Control extends Savable {
     public Control cloneForSpatial(Spatial spatial);
 
     /**
-     * @return The type of this control. Constant for a given implementation.
-     */
-    public ControlType getType();
-
-    /**
      * @param spatial the spatial to be controlled. This should not be called
      * from user code.
      */

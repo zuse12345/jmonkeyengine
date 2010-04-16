@@ -36,7 +36,6 @@ public class DesktopAssetManager implements AssetManager {
     private final ImplHandler handler = new ImplHandler(this);
     private final ThreadingManager threadingMan = new ThreadingManager(this);
     private final Set<AssetKey> alreadyLoadingSet = new HashSet<AssetKey>();
-    private final int forceAniso = 16;
 
     public DesktopAssetManager(){
         this(false);
@@ -128,7 +127,7 @@ public class DesktopAssetManager implements AssetManager {
      * @param name
      * @return
      */
-    public Object loadContent(AssetKey key){
+    public Object loadAsset(AssetKey key){
         Object o = key.shouldCache() ? cache.getFromCache(key) : null;
         if (o == null){
             synchronized (alreadyLoadingSet){
@@ -193,8 +192,8 @@ public class DesktopAssetManager implements AssetManager {
         return key.createClonedInstance(o);
     }
 
-    public Object loadContent(String name){
-        return loadContent(new AssetKey(name));
+    public Object loadAsset(String name){
+        return loadAsset(new AssetKey(name));
     }
 
 //    public void loadContents(String ... names){
@@ -224,12 +223,11 @@ public class DesktopAssetManager implements AssetManager {
      * @return
      */
     public Texture loadTexture(TextureKey key){
-        key.setAnisotropy(forceAniso);
-        return (Texture) loadContent(key);
+        return (Texture) loadAsset(key);
     }
 
     public Material loadMaterial(String name){
-        return (Material) loadContent(new AssetKey(name));
+        return (Material) loadAsset(new AssetKey(name));
     }
 
     /**
@@ -260,7 +258,7 @@ public class DesktopAssetManager implements AssetManager {
     }
 
     public AudioData loadAudio(AudioKey key){
-        return (AudioData) loadContent(key);
+        return (AudioData) loadAsset(key);
     }
 
     public AudioData loadAudio(String name){
@@ -274,11 +272,11 @@ public class DesktopAssetManager implements AssetManager {
      * @return
      */
     public BitmapFont loadFont(String name){
-        return (BitmapFont) loadContent(new AssetKey(name));
+        return (BitmapFont) loadAsset(new AssetKey(name));
     }
 
     public InputStream loadGLSLLibrary(AssetKey key){
-        return (InputStream) loadContent(key);
+        return (InputStream) loadAsset(key);
     }
 
     /**
@@ -295,8 +293,8 @@ public class DesktopAssetManager implements AssetManager {
             String vertName = key.getVertName();
             String fragName = key.getFragName();
 
-            String vertSource = (String) loadContent(new AssetKey(vertName));
-            String fragSource = (String) loadContent(new AssetKey(fragName));
+            String vertSource = (String) loadAsset(new AssetKey(vertName));
+            String fragSource = (String) loadAsset(new AssetKey(fragName));
 
             s = new Shader(key.getLanguage());
             s.addSource(Shader.ShaderType.Vertex,   vertName, vertSource, key.getDefines().getCompiled());
@@ -314,7 +312,7 @@ public class DesktopAssetManager implements AssetManager {
      * @return
      */
     public Spatial loadModel(String name){
-        return (Spatial) loadContent(new AssetKey(name));
+        return (Spatial) loadAsset(new AssetKey(name));
     }
     
 }

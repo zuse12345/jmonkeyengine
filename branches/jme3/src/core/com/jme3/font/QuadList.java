@@ -1,11 +1,10 @@
 package com.jme3.font;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class QuadList {
 
-    private List<FontQuad> quads = new ArrayList<FontQuad>();
+    private ArrayList<FontQuad> quads = new ArrayList<FontQuad>();
     private int actualSize = 0;
 
     public void addQuad(FontQuad quad){

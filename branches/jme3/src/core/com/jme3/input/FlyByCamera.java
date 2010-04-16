@@ -77,41 +77,41 @@ public class FlyByCamera implements BindingListener {
      * Dispatcher.
      * @param dispacher
      */
-    public void registerWithDispatcher(InputManager dispacher){
-        dispacher.setCursorVisible(false);
+    public void registerWithInput(InputManager inputManager){
+        inputManager.setCursorVisible(false);
 
-        dispacher.registerJoystickAxisBinding("FLYCAM_Left",  2, JoyInput.AXIS_X, true);
-        dispacher.registerJoystickAxisBinding("FLYCAM_Right", 2, JoyInput.AXIS_X, false);
-        dispacher.registerJoystickAxisBinding("FLYCAM_Up",    2, JoyInput.AXIS_Y, true);
-        dispacher.registerJoystickAxisBinding("FLYCAM_Down",  2, JoyInput.AXIS_Y, false);
+        inputManager.registerJoystickAxisBinding("FLYCAM_Left",  2, JoyInput.AXIS_X, true);
+        inputManager.registerJoystickAxisBinding("FLYCAM_Right", 2, JoyInput.AXIS_X, false);
+        inputManager.registerJoystickAxisBinding("FLYCAM_Up",    2, JoyInput.AXIS_Y, true);
+        inputManager.registerJoystickAxisBinding("FLYCAM_Down",  2, JoyInput.AXIS_Y, false);
 
-        dispacher.registerJoystickAxisBinding("FLYCAM_StrafeLeft",  2, JoyInput.POV_X, true);
-        dispacher.registerJoystickAxisBinding("FLYCAM_StrafeRight", 2, JoyInput.POV_X, false);
-        dispacher.registerJoystickAxisBinding("FLYCAM_Forward",     2, JoyInput.POV_Y, true);
-        dispacher.registerJoystickAxisBinding("FLYCAM_Backward",    2, JoyInput.POV_Y, false);
+        inputManager.registerJoystickAxisBinding("FLYCAM_StrafeLeft",  2, JoyInput.POV_X, true);
+        inputManager.registerJoystickAxisBinding("FLYCAM_StrafeRight", 2, JoyInput.POV_X, false);
+        inputManager.registerJoystickAxisBinding("FLYCAM_Forward",     2, JoyInput.POV_Y, true);
+        inputManager.registerJoystickAxisBinding("FLYCAM_Backward",    2, JoyInput.POV_Y, false);
         
-        dispacher.registerMouseAxisBinding("FLYCAM_Left", 0, true);
-        dispacher.registerMouseAxisBinding("FLYCAM_Right", 0, false);
-        dispacher.registerMouseAxisBinding("FLYCAM_Up", 1, false);
-        dispacher.registerMouseAxisBinding("FLYCAM_Down", 1, true);
+        inputManager.registerMouseAxisBinding("FLYCAM_Left", 0, true);
+        inputManager.registerMouseAxisBinding("FLYCAM_Right", 0, false);
+        inputManager.registerMouseAxisBinding("FLYCAM_Up", 1, false);
+        inputManager.registerMouseAxisBinding("FLYCAM_Down", 1, true);
 
-        dispacher.registerMouseAxisBinding("FLYCAM_ZoomIn", 2, false);
-        dispacher.registerMouseAxisBinding("FLYCAM_ZoomOut", 2, true);
+        inputManager.registerMouseAxisBinding("FLYCAM_ZoomIn", 2, false);
+        inputManager.registerMouseAxisBinding("FLYCAM_ZoomOut", 2, true);
 
-        dispacher.registerKeyBinding("FLYCAM_Left", KeyInput.KEY_LEFT);
-        dispacher.registerKeyBinding("FLYCAM_Right", KeyInput.KEY_RIGHT);
-        dispacher.registerKeyBinding("FLYCAM_Up", KeyInput.KEY_UP);
-        dispacher.registerKeyBinding("FLYCAM_Down", KeyInput.KEY_DOWN);
+        inputManager.registerKeyBinding("FLYCAM_Left", KeyInput.KEY_LEFT);
+        inputManager.registerKeyBinding("FLYCAM_Right", KeyInput.KEY_RIGHT);
+        inputManager.registerKeyBinding("FLYCAM_Up", KeyInput.KEY_UP);
+        inputManager.registerKeyBinding("FLYCAM_Down", KeyInput.KEY_DOWN);
 
-        dispacher.registerKeyBinding("FLYCAM_StrafeLeft", KeyInput.KEY_A);
-        dispacher.registerKeyBinding("FLYCAM_StrafeRight", KeyInput.KEY_D);
-        dispacher.registerKeyBinding("FLYCAM_Forward", KeyInput.KEY_W);
-        dispacher.registerKeyBinding("FLYCAM_Backward", KeyInput.KEY_S);
+        inputManager.registerKeyBinding("FLYCAM_StrafeLeft", KeyInput.KEY_A);
+        inputManager.registerKeyBinding("FLYCAM_StrafeRight", KeyInput.KEY_D);
+        inputManager.registerKeyBinding("FLYCAM_Forward", KeyInput.KEY_W);
+        inputManager.registerKeyBinding("FLYCAM_Backward", KeyInput.KEY_S);
 
-        dispacher.registerKeyBinding("FLYCAM_Rise", KeyInput.KEY_Q);
-        dispacher.registerKeyBinding("FLYCAM_Lower", KeyInput.KEY_Z);
+        inputManager.registerKeyBinding("FLYCAM_Rise", KeyInput.KEY_Q);
+        inputManager.registerKeyBinding("FLYCAM_Lower", KeyInput.KEY_Z);
 
-        dispacher.addBindingListener(this);
+        inputManager.addBindingListener(this);
     }
 
     private void rotateCamera(float value, Vector3f axis){

@@ -55,7 +55,7 @@ public class LwjglOffscreenBuffer extends LwjglContext implements Runnable {
 //                attribs.withDebug(false);
 //                Display.create(pf, attribs);
 //            }else{
-              pbuffer = new Pbuffer(width, height, pixelFormat, null, null, null);
+              pbuffer = new Pbuffer(width, height, pixelFormat, null);
 //                Display.create();
 //            }
 
@@ -107,7 +107,7 @@ public class LwjglOffscreenBuffer extends LwjglContext implements Runnable {
         if (pbuffer.isBufferLost()){
             pbuffer.destroy();
             try{
-                pbuffer = new Pbuffer(width, height, pixelFormat, null, null, null);
+                pbuffer = new Pbuffer(width, height, pixelFormat, null);
             }catch (LWJGLException ex){
                 listener.handleError("Failed to restore pbuffer content", ex);
             }

@@ -95,6 +95,7 @@ public class GLObjectManager {
             if (logger.isLoggable(Level.FINEST))
                 logger.log(Level.FINEST, "Reset: {0}", realObj);
         }
+        refList.clear();
     }
 
 //    public void printObjects(){

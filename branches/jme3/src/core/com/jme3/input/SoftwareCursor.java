@@ -25,7 +25,6 @@ public class SoftwareCursor extends Geometry implements BindingListener {
         quad.updateGeometry(1, 1, true);
         
         // setup texture
-        tex.setAnisotropicFilter(0);
         tex.setMagFilter(MagFilter.Bilinear);
         tex.setMinFilter(MinFilter.BilinearNoMipMaps);
 

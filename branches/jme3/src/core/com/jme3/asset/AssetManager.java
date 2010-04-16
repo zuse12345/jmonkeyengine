@@ -11,8 +11,8 @@ import com.jme3.texture.Texture;
 public interface AssetManager {
     public void registerLoader(String loaderClassName, String ... extensions);
     public void registerLocator(String rootPath, String locatorClassName, String ... extensions);
-    public Object loadContent(AssetKey key);
-    public Object loadContent(String name);
+    public Object loadAsset(AssetKey key);
+    public Object loadAsset(String name);
     public Texture loadTexture(TextureKey key);
     public Texture loadTexture(String name);
     public AudioData loadAudio(AudioKey key);

@@ -43,7 +43,7 @@ public class ThreadingManager {
             this.resourceName = resourceName;
         }
         public Object call() throws Exception {
-            return owner.loadContent(new AssetKey(resourceName));
+            return owner.loadAsset(new AssetKey(resourceName));
         }
     }
 

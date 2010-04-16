@@ -1,6 +1,8 @@
 package jme3test.texture;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.font.BitmapFont;
+import com.jme3.font.BitmapText;
 import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
@@ -41,13 +43,19 @@ public class TestYCoCgDds extends SimpleApplication {
     }
 
     public void simpleInitApp() {
+        BitmapFont font = manager.loadFont("cooper.fnt");
+        BitmapText txt = new BitmapText(font, false);
+        txt.setText("Left: Original, Middle: DXT5-YCoCg, Right: DXT1");
+        txt.setLocalTranslation(0, txt.getLineHeight() * 2, 0);
+        guiNode.attachChild(txt);
+
         // create a simple plane/quad
         quadMesh = new Quad(1, 1);
         quadMesh.updateGeometry(1, 1, false);
 
         rootNode.attachChild(createQuad(-1f, "nightsky.png", false));
-        rootNode.attachChild(createQuad(0,   "nightsky_dxt1.dds", false));
-        rootNode.attachChild(createQuad(1f,  "nightsky_ycc.dds", true));
+        rootNode.attachChild(createQuad(0,   "nightsky_ycc.dds", true));
+        rootNode.attachChild(createQuad(1f,  "nightsky_dxt1.dds", false));
     }
 
 }

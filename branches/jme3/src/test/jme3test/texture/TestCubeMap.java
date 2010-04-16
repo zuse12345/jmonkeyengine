@@ -39,7 +39,7 @@ public class TestCubeMap extends SimpleApplication {
     }
 
     public Geometry createReflectiveTeapot(){
-        Geometry g = (Geometry) manager.loadContent(new AssetKey("teapot.obj"));
+        Geometry g = (Geometry) manager.loadAsset(new AssetKey("teapot.obj"));
         g.setLocalScale(5);
         g.updateModelBound();
 

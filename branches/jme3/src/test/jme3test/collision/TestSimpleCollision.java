@@ -31,7 +31,7 @@ public class TestSimpleCollision extends SimpleApplication {
 
         Geometry g = new Geometry("Quad Geom", q);      
         g.rotate(FastMath.HALF_PI, 0, FastMath.PI);        
-        g.setMaterial( (Material) manager.loadContent(new AssetKey("jme_logo.j3m")));
+        g.setMaterial( (Material) manager.loadAsset(new AssetKey("jme_logo.j3m")));
         rootNode.attachChild(g);
         
         flyCam.setMotionAllowedListener(new SphereMotionAllowedListener(rootNode, new Vector3f(7f, 7f, 7f)));

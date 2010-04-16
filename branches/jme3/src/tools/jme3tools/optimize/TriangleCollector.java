@@ -204,7 +204,7 @@ public class TriangleCollector {
             out.setStatic();
             out.setInterleaved();
             Geometry outGeom = new Geometry("Geom"+entry.getKey(), out);
-            outGeom.setTransform(inGeom.getWorldTransform());
+            outGeom.setLocalTransform(inGeom.getWorldTransform());
             outGeom.setMaterial(inGeom.getMaterial());
             outGeom.updateGeometricState();
             newGeoms.add(outGeom);

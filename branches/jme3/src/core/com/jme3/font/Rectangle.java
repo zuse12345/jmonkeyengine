@@ -1,11 +1,14 @@
 package com.jme3.font;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * @author dhdd
  *
  * Defines a rectangle that can constrict a text paragraph.
  */
-public class Rectangle {
+public class Rectangle implements Cloneable {
 
     public final float x,  y,  width,  height;
 
@@ -21,5 +24,14 @@ public class Rectangle {
         this.y = y;
         this.width = width;
         this.height = height;
+    }
+
+    @Override
+    public Rectangle clone(){
+        try {
+            return (Rectangle) super.clone();
+        } catch (CloneNotSupportedException ex) {
+            throw new AssertionError();
+        }
     }
 }

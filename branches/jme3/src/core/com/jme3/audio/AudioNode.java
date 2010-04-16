@@ -60,7 +60,7 @@ public class AudioNode extends Node{
     public AudioNode(AssetManager manager, String name, boolean stream){
         this();
         this.key = new AudioKey(name, stream);
-        this.data = (AudioData) manager.loadContent(key);
+        this.data = (AudioData) manager.loadAsset(key);
     }
 
     public AudioNode(AssetManager manager, String name){

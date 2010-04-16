@@ -164,7 +164,7 @@ public class Material implements Cloneable, Savable {
     }
 
     public Material(AssetManager contentMan, String defName){
-        this( (MaterialDef) contentMan.loadContent(new AssetKey(defName)) );
+        this( (MaterialDef) contentMan.loadAsset(new AssetKey(defName)) );
     }
 
     /**
@@ -184,7 +184,7 @@ public class Material implements Cloneable, Savable {
     public void read(JmeImporter im) throws IOException{
         InputCapsule ic = im.getCapsule(this);
         String defName = ic.readString("material_def", null);
-        def = (MaterialDef) im.getAssetManager().loadContent(new AssetKey(defName));
+        def = (MaterialDef) im.getAssetManager().loadAsset(new AssetKey(defName));
         additionalState = (RenderState) ic.readSavable("render_state", null);
         transparent = ic.readBoolean("is_transparent", false);
         paramValues = (HashMap<String, MatParam>) ic.readStringSavableMap("parameters", null);

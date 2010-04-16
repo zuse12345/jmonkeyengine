@@ -45,11 +45,11 @@ public class TestOgreLoading extends SimpleApplication
 
 
         lightMdl = new Geometry("Light", new Sphere(10, 10, 0.1f));
-        lightMdl.setMaterial( (Material) manager.loadContent("red_color.j3m"));
+        lightMdl.setMaterial( (Material) manager.loadAsset("red_color.j3m"));
         rootNode.attachChild(lightMdl);
 
         lightMd2 = new Geometry("Light", new Sphere(10, 10, 0.1f));
-        lightMd2.setMaterial( (Material) manager.loadContent("white_color.j3m"));
+        lightMd2.setMaterial( (Material) manager.loadAsset("white_color.j3m"));
         rootNode.attachChild(lightMd2);
 
 
@@ -65,9 +65,9 @@ public class TestOgreLoading extends SimpleApplication
 
 
         // create the geometry and attach it
-        OgreMaterialList matList = (OgreMaterialList) manager.loadContent("elephant.material");
+        OgreMaterialList matList = (OgreMaterialList) manager.loadAsset("elephant.material");
         OgreMeshKey key = new OgreMeshKey("elephant_lowres.meshxml", matList);
-        Spatial elephant = (Spatial) manager.loadContent(key);
+        Spatial elephant = (Spatial) manager.loadAsset(key);
         float scale = 0.05f;
         elephant.scale(scale,scale,scale);
         rootNode.attachChild(elephant);

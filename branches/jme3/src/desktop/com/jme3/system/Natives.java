@@ -6,10 +6,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,9 +39,9 @@ class Natives {
         in.close();
         out.close();
 
-        if (load){
-            System.loadLibrary(name);
-        }
+//        if (load){
+//            System.loadLibrary(name);
+//        }
 
         logger.log(Level.FINE, "Copied {0} to {1}", new Object[]{fullname, targetFile});
     }

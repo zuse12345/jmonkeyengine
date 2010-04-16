@@ -26,12 +26,11 @@ import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.control.Control;
-import com.jme3.scene.control.ControlType;
-import com.jme3.util.IntMap;
-import com.jme3.util.IntMap.Entry;
 import com.jme3.util.TempVars;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -45,6 +44,8 @@ import java.util.ArrayList;
  * @version $Revision: 4075 $, $Data$
  */
 public abstract class Spatial implements Savable, Cloneable, Collidable {
+
+    private static final Logger logger = Logger.getLogger(Spatial.class.getName());
 
     public enum CullHint {
         /** 
@@ -109,7 +110,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
 
     protected Transform worldTransform;
 
-    protected IntMap<Control> controls = new IntMap<Control>();
+    protected ArrayList<Control> controls = new ArrayList<Control>(1);
 
     /** 
      * Spatial's parent, or null if it has none.
@@ -264,6 +265,12 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         return worldTransform.getScale();
     }
 
+    /**
+     * <code>getWorldTransform</code> retrieves the world transformation
+     * of the spatial.
+     *
+     * @return the world transform.
+     */
     public Transform getWorldTransform(){
         return worldTransform;
     }
@@ -316,6 +323,10 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      *            1, 0} in jME.)
      */
     public void lookAt(Vector3f position, Vector3f upVector) {
+        if ((refreshFlags & RF_TRANSFORM) != 0){
+            updateGeometricState();
+        }
+
         assert TempVars.get().lock();
         Vector3f compVecA = TempVars.get().vect1;
         compVecA.set(position).subtractLocal(getWorldTranslation());
@@ -375,56 +386,120 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
     private void runControlUpdate(float tpf){
         if (controls.size() == 0)
             return;
-        
-        for (Entry<Control> entry : controls){
-            entry.getValue().update(tpf);
+
+        for (int i = 0; i < controls.size(); i++){
+            controls.get(i).update(tpf);
         }
     }
 
+    /**
+     * Called when the Spatial is about to be rendered, to notify
+     * controls attached to this Spatial using the Control.render() method.
+     *
+     * @param rm The RenderManager rendering the Spatial.
+     * @param vp The ViewPort to which the Spatial is being rendered to.
+     *
+     * @see Spatial#addControl(com.jme3.scene.control.Control)
+     * @see Spatial#getControl(java.lang.Class) 
+     */
     public void runControlRender(RenderManager rm, ViewPort vp){
         if (controls.size() == 0)
             return;
 
-        for (Entry<Control> entry : controls){
-            entry.getValue().render(rm, vp);
+        for (int i = 0; i < controls.size(); i++){
+            controls.get(i).render(rm, vp);
         }
     }
 
-    public void setControl(Control control){
-        controls.put(control.getType().ordinal(), control);
+    /**
+     * Add a control to the list of controls.
+     * @param control The control to add.
+     *
+     * @see Spatial#removeControl(java.lang.Class) 
+     */
+    public void addControl(Control control){
+        controls.add(control);
     }
 
-    public void clearControl(ControlType type){
-        controls.remove(type.ordinal());
+    /**
+     * Removes the first control that is an instance of the given class.
+     *
+     * @see Spatial#addControl(com.jme3.scene.control.Control) 
+     */
+    public void removeControl(Class<? extends Control> controlType){
+        for (int i = 0; i < controls.size(); i++){
+            if (controlType.isAssignableFrom(controls.get(i).getClass())){
+                controls.remove(i);
+            }
+        }
     }
 
-    public Control getControl(ControlType type){
-        return controls.get(type.ordinal());
+    /**
+     * Returns the first control that is an instance of the given class,
+     * or null if no such control exists.
+     *
+     * @param controlType The superclass of the control to look for.
+     * @return The first instance in the list of the controlType class, or null.
+     *
+     * @see Spatial#addControl(com.jme3.scene.control.Control) 
+     */
+    public <T extends Control> T getControl(Class<T> controlType){
+        for (int i = 0; i < controls.size(); i++){
+            if (controlType.isAssignableFrom(controls.get(i).getClass())){
+                return (T) controls.get(i);
+            }
+        }
+        return null;
     }
 
+    /**
+     * Returns the control at the given index in the list.
+     *
+     * @param index The index of the control in the list to find.
+     * @return The control at the given index.
+     *
+     * @throws IndexOutOfBoundsException
+     *      If the index is outside the range [0, getNumControls()-1]
+     *
+     * @see Spatial#addControl(com.jme3.scene.control.Control)
+     */
+    public Control getControl(int index){
+        return controls.get(index);
+    }
+
+    /**
+     * @return The number of controls attached to this Spatial.
+     * @see Spatial#addControl(com.jme3.scene.control.Control)
+     * @see Spatial#removeControl(java.lang.Class) 
+     */
     public int getNumControls(){
         return controls.size();
     }
 
 
     /**
-     * <code>updateLogicalState</code> updates various logic state for
-     * the node. This method should be overriden to provide specific 
-     * functionality.
+     * <code>updateLogicalState</code> calls the <code>update()</code> method
+     * for all controls attached to this Spatial.
+     *
      * @param tpf Time per frame.
+     *
+     * @see Spatial#addControl(com.jme3.scene.control.Control)
      */
     public void updateLogicalState(float tpf){
         runControlUpdate(tpf);
     }
 
     /**
-     * <code>updateGeometricState</code> updates all the geometry information
-     * for the node.
-     *
-     * @param time
-     *            the frame time.
-     * @param initiator
-     *            true if this node started the update process.
+     * <code>updateGeometricState</code> updates the lightlist,
+     * computes the world transforms, and computes the world bounds
+     * for this Spatial.
+     * Calling this when the Spatial is attached to a node
+     * will cause undefined results. User code should only call this
+     * method on Spatials having no parent.
+     * 
+     * @see Spatial#getWorldLightList()
+     * @see Spatial#getWorldTransform()
+     * @see Spatial#getWorldBound()
      */
     public void updateGeometricState(){
         // assume that this Spatial is a leaf, a proper implementation
@@ -444,7 +519,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
     }
 
     /**
-     * Convert a vector (in) from this spatials local coordinate space to world
+     * Convert a vector (in) from this spatials' local coordinate space to world
      * coordinate space.
      *
      * @param in
@@ -459,7 +534,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
     }
 
     /**
-     * Convert a vector (in) from world coordinate space to this spatials local
+     * Convert a vector (in) from world coordinate space to this spatials' local
      * coordinate space.
      *
      * @param in
@@ -616,10 +691,10 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
 
     /**
      * <code>setLocalTranslation</code> sets the local translation of this
-     * node.
+     * spatial.
      *
      * @param localTranslation
-     *            the local translation of this node.
+     *            the local translation of this spatial.
      */
     public void setLocalTranslation(Vector3f localTranslation) {
         this.localTransform.setTranslation(localTranslation);
@@ -627,29 +702,60 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         setTransformRefresh();
     }
 
+    /**
+     * <code>setLocalTranslation</code> sets the local translation of this
+     * spatial.
+     */
     public void setLocalTranslation(float x, float y, float z) {
         this.localTransform.setTranslation(x,y,z);
         this.worldTransform.setTranslation(this.localTransform.getTranslation());
         setTransformRefresh();
     }
 
-    public void setTransform(Transform t) {
+    /**
+     * <code>setLocalTransform</code> sets the local transform of this
+     * spatial.
+     */
+    public void setLocalTransform(Transform t) {
         this.localTransform.set(t);
         setTransformRefresh();
     }
 
-    public Transform getTransform(){
+    /**
+     * <code>getLocalTransform</code> retrieves the local transform of
+     * this spatial.
+     *
+     * @return the local transform of this spatial.
+     */
+    public Transform getLocalTransform(){
         return localTransform;
     }
-    
-    public void setMaterial(Material mat){
+
+    /**
+     * Applies the given material to the Spatial, this will propagate the
+     * material down to the geometries in the scene graph.
+     *
+     * @param material The material to set.
+     */
+    public void setMaterial(Material material){
     }
 
-    public void addLight(Light l){
-        localLights.add(l);
+    /**
+     * <code>addLight</code> adds the given light to the Spatial; causing
+     * all child Spatials to be effected by it.
+     *
+     * @param light The light to add.
+     */
+    public void addLight(Light light){
+        localLights.add(light);
         setLightListRefresh();
     }
 
+    /**
+     * Translates the spatial by the given translation vector.
+     *
+     * @return The spatial on which this method is called, e.g <code>this</code>.
+     */
     public Spatial move(float x, float y, float z){
         this.localTransform.getTranslation().addLocal(x, y, z);
         this.worldTransform.setTranslation(this.localTransform.getTranslation());
@@ -658,6 +764,11 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         return this;
     }
 
+    /**
+     * Translates the spatial by the given translation vector.
+     *
+     * @return The spatial on which this method is called, e.g <code>this</code>.
+     */
     public Spatial move(Vector3f offset){
         this.localTransform.getTranslation().addLocal(offset);
         this.worldTransform.setTranslation(this.localTransform.getTranslation());
@@ -666,6 +777,11 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         return this;
     }
 
+    /**
+     * Scales the spatial by the given scale vector.
+     *
+     * @return The spatial on which this method is called, e.g <code>this</code>.
+     */
     public Spatial scale(float x, float y, float z){
         this.localTransform.getScale().multLocal(x,y,z);
         this.worldTransform.setScale(this.localTransform.getScale());
@@ -674,6 +790,11 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         return this;
     }
 
+    /**
+     * Rotates the spatial by the given rotation.
+     *
+     * @return The spatial on which this method is called, e.g <code>this</code>.
+     */
     public Spatial rotate(Quaternion rot){
         this.localTransform.getRotation().multLocal(rot);
         this.worldTransform.setRotation(this.localTransform.getRotation());
@@ -682,6 +803,12 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         return this;
     }
 
+    /**
+     * Rotates the spatial by the yaw, roll and pitch angles (in radians),
+     * in the local coordinate space.
+     *
+     * @return The spatial on which this method is called, e.g <code>this</code>.
+     */
     public Spatial rotate(float yaw, float roll, float pitch){
         assert TempVars.get().lock();
         Quaternion q = TempVars.get().quat1;
@@ -692,6 +819,12 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         return this;
     }
 
+    /**
+     * Centers the spatial in the origin, the spatial should have no
+     * parent when this method is called.
+     *
+     * @return The spatial on which this method is called, e.g <code>this</code>.
+     */
     public Spatial center(){
         if ((refreshFlags & RF_BOUND) != 0){
             updateGeometricState();
@@ -708,8 +841,8 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
 
     /**
      * @see #setCullHint(CullHint)
-     * @return the cull mode of this spatial, or if set to INHERIT, the cullmode
-     *         of it's parent.
+     * @return the cull mode of this spatial, or if set to CullHint.Inherit,
+     * the cullmode of it's parent.
      */
     public CullHint getCullHint() {
         if (cullHint != CullHint.Inherit)
@@ -736,6 +869,13 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
             return RenderQueue.Bucket.Opaque;
     }
 
+    /**
+     * @return The shadow mode of this spatial, if the local shadow
+     * mode is set to inherit, then the parent's shadow mode is returned.
+     *
+     * @see Spatial#setShadowMode(com.jme3.renderer.queue.RenderQueue.ShadowMode)
+     * @see ShadowMode
+     */
     public RenderQueue.ShadowMode getShadowMode() {
         if (shadowMode != RenderQueue.ShadowMode.Inherit)
             return shadowMode;
@@ -745,11 +885,17 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
             return ShadowMode.Off;
     }
 
+    /**
+     * Sets the level of detail to use when rendering this Spatial,
+     * this call propagates to all geometries under this Spatial.
+     *
+     * @param lod The lod level to set.
+     */
     public void setLodLevel(int lod){
     }
 
     /**
-     * <code>updateBound</code> recalculates the bounding object for this
+     * <code>updateModelBound</code> recalculates the bounding object for this
      * Spatial.
      */
     public abstract void updateModelBound();
@@ -761,34 +907,29 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      *            the bounding object for this spatial.
      */
     public abstract void setModelBound(BoundingVolume modelBound);
-//
-//    /**
-//     * checks this spatial against a second spatial, any collisions are stored
-//     * in the results object.
-//     *
-//     * @param scene
-//     *            the scene to test against.
-//     * @param results
-//     *            the results of the collisions.
-//     */
-//    public abstract void findCollisions(Spatial scene, CollisionResults results);
-//
-//
-//    /**
-//     * Tests a ray against this spatial, and stores the results in the result
-//     * object.
-//     *
-//     * @param toTest
-//     *            ray to test picking against
-//     * @param results
-//     *            the results of the picking
-//     */
-//    public abstract void findPick(Ray toTest, PickResults results);
 
+    /**
+     * @return The sum of all verticies under this Spatial.
+     */
     public abstract int getVertexCount();
 
+    /**
+     * @return The sum of all triangles under this Spatial.
+     */
     public abstract int getTriangleCount();
 
+    /**
+     * @return A clone of this Spatial, the scene graph in its entirety
+     * is cloned and can be altered independently of the original scene graph.
+     *
+     * Note that meshes of geometries are not cloned explicetly, they
+     * are shared if static, or specially cloned if animated.
+     *
+     * All controls will be cloned using the Control.cloneForSpatial method
+     * on the clone.
+     *
+     * @see Mesh#cloneForAnim() 
+     */
     @Override
     public Spatial clone(){
         try{
@@ -816,9 +957,9 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
             clone.setTransformRefresh();
             clone.setLightListRefresh();
 
-            clone.controls = new IntMap<Control>();
-            for (Entry<Control> c : controls){
-                clone.controls.put( c.getKey(), c.getValue().cloneForSpatial(clone) );
+            clone.controls = new ArrayList<Control>();
+            for (int i = 0; i < controls.size(); i++){
+                clone.controls.add( controls.get(i).cloneForSpatial(clone) );
             }
             return clone;
         }catch (CloneNotSupportedException ex){
@@ -827,8 +968,11 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
     }
 
     /**
-     * Create a deep clone, including of the mesh (copy the buffers).
-     * @return
+     * @return Similar to Spatial.clone() except will create a deep clone
+     * of all geometry's meshes, normally this method shouldn't be used
+     * instead use Spatial.clone()
+     *
+     * @see Spatial#clone()
      */
     public abstract Spatial deepClone();
 
@@ -841,15 +985,15 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         capsule.write(shadowMode, "shadow_mode", ShadowMode.Inherit);
         capsule.write(localTransform, "transform", new Transform());
         capsule.write(localLights, "lights", null);
-        capsule.writeIntSavableMap(controls, "controls", null);
+        capsule.writeSavableArrayList(controls, "controlsList", null);
 
 //        capsule.writeStringSavableMap(UserDataManager.getInstance().getAllData(
 //                this), "userData", null);
     }
 
-//    @SuppressWarnings("unchecked")
     public void read(JmeImporter im) throws IOException {
         InputCapsule ic = im.getCapsule(this);
+
         name = ic.readString("name", null);
         worldBound = (BoundingVolume) ic.readSavable("world_bound", null);
         cullHint = ic.readEnum("cull_mode", CullHint.class, CullHint.Inherit);
@@ -860,8 +1004,11 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
 
         localTransform = (Transform) ic.readSavable("transform", Transform.Identity);
         localLights = (LightList) ic.readSavable("lights", null);
-        controls = (IntMap<Control>) ic.readIntSavableMap("controls", null);
-        // world lights and world transform already initialized
+        controls = ic.readSavableArrayList("controlsList", null);
+
+        if (ic.readIntSavableMap("controls", null) != null){
+            logger.log(Level.WARNING, "You're attempting to read an outdated");
+        }
 
 //        HashMap<String, Savable> map = (HashMap<String, Savable>) capsule
 //                .readStringSavableMap("userData", null);
@@ -931,17 +1078,34 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         this.queueBucket = queueBucket;
     }
 
+    /**
+     * Sets the shadow mode of the spatial
+     * The shadow mode determines how the spatial should be shadowed,
+     * when a shadowing technique is used. See the
+     * documentation for the class ShadowMode for more information.
+     *
+     * @see ShadowMode
+     *
+     * @param shadowMode The local shadow mode to set.
+     */
     public void setShadowMode(RenderQueue.ShadowMode shadowMode){
         this.shadowMode = shadowMode;
     }
 
     /**
-     * @return
+     * @return The locally set queue bucket mode
+     *
+     * @see Spatial#setQueueBucket(com.jme3.renderer.queue.RenderQueue.Bucket)
      */
     public RenderQueue.Bucket getLocalQueueBucket() {
         return queueBucket;
     }
 
+    /**
+     * @return The locally set shadow mode
+     *
+     * @see Spatial#setShadowMode(com.jme3.renderer.queue.RenderQueue.ShadowMode)
+     */
     public RenderQueue.ShadowMode getLocalShadowMode() {
         return shadowMode;
     }
@@ -973,7 +1137,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
 
     /**
      * Returns the Spatial's name followed by the class of the spatial <br>
-     * Example: "MyNode (com.jme.scene.Spatial)
+     * Example: "MyNode (com.jme3.scene.Spatial)
      *
      * @return Spatial's name followed by the class of the Spatial
      */
@@ -982,6 +1146,18 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         return name + " (" + this.getClass().getSimpleName() + ')';
     }
 
+    /**
+     * Creates a transform matrix that will convert from this spatials'
+     * local coordinate space to the world coordinate space
+     * based on the world transform.
+     *
+     * @param store Matrix where to store the result, if null, a new one
+     * will be created and returned.
+     *
+     * @return store if not null, otherwise, a new matrix containing the result.
+     *
+     * @see Spatial#getWorldTransform() 
+     */
     public Matrix4f getLocalToWorldMatrix(Matrix4f store) {
         if (store == null) {
             store = new Matrix4f();

@@ -16,7 +16,6 @@ import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.Control;
-import com.jme3.scene.control.ControlType;
 import com.jme3.util.TempVars;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -68,7 +67,7 @@ public class ParticleEmitter extends Geometry implements Control {
 
         setNumParticles(numParticles);
 
-        controls.put(ControlType.Particle.ordinal(), this);
+        controls.add(this);
     }
 
     public ParticleEmitter(){
@@ -322,8 +321,10 @@ public class ParticleEmitter extends Geometry implements Control {
             }
 
             p.life -= tpf;
-            if (p.life <= 0)
+            if (p.life <= 0){
                 freeParticle(i);
+                continue;
+            }
             
             // position += velocity * tpf
             float g = gravity * tpf;
@@ -354,10 +355,6 @@ public class ParticleEmitter extends Geometry implements Control {
         for (int i = 0; i < particlesToEmit; i++){
             emitParticle();
         }
-    }
-
-    public ControlType getType() {
-        return ControlType.Particle;
     }
 
     public void setSpatial(Spatial spatial) {

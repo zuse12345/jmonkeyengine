@@ -1,4 +1,4 @@
-package jme3test.light;
+package jme3test.material;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.light.DirectionalLight;
@@ -9,27 +9,29 @@ import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.shape.Quad;
 import com.jme3.scene.shape.Sphere;
+import com.jme3.util.TangentBinormalGenerator;
 
-// phong cutoff for light to normal angle > 90?
-public class TestSimpleBumps extends SimpleApplication {
+public class TestNormalMapping extends SimpleApplication {
 
     float angle;
     PointLight pl;
     Spatial lightMdl;
 
     public static void main(String[] args){
-        TestSimpleBumps app = new TestSimpleBumps();
+        TestNormalMapping app = new TestNormalMapping();
         app.start();
     }
 
     @Override
     public void simpleInitApp() {
-        Quad quadMesh = new Quad(1, 1);
+        Sphere sphMesh = new Sphere(32, 32, 1);
+        sphMesh.setTextureMode(Sphere.TextureMode.Projected);
+        sphMesh.updateGeometry(32, 32, 1, false, false);
+        TangentBinormalGenerator.generate(sphMesh);
 
-        Geometry sphere = new Geometry("Rock Ball", quadMesh);
-        Material mat = manager.loadMaterial("simple_bump.j3m");
+        Geometry sphere = new Geometry("Rock Ball", sphMesh);
+        Material mat = manager.loadMaterial("pond_rock.j3m");
         sphere.setMaterial(mat);
         rootNode.attachChild(sphere);
 
@@ -42,10 +44,10 @@ public class TestSimpleBumps extends SimpleApplication {
         pl.setPosition(new Vector3f(0f, 0f, 4f));
         rootNode.addLight(pl);
 
-//        DirectionalLight dl = new DirectionalLight();
-//        dl.setDirection(new Vector3f(1, -1, -1).normalizeLocal());
-//        dl.setColor(new ColorRGBA(0.22f, 0.15f, 0.1f, 1.0f));
-//        rootNode.addLight(dl);
+        DirectionalLight dl = new DirectionalLight();
+        dl.setDirection(new Vector3f(1,-1,1).normalizeLocal());
+        dl.setColor(new ColorRGBA(0.22f, 0.15f, 0.1f, 1.0f));
+        rootNode.addLight(dl);
     }
 
     @Override

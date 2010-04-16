@@ -20,11 +20,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * <code>RenderManager</code> is a high-level rendering interface that is
+ * above the Renderer implementation. RenderManager takes care
+ * of rendering the scene graphs attached to each viewport and
+ * handling SceneProcessors.
+ *
+ * @see SceneProcessor
+ * @see ViewPort
+ * @see Spatial
+ */
 public class RenderManager {
 
     private static final Logger logger = Logger.getLogger(RenderManager.class.getName());
 
-    private Statistics statistics = new Statistics();
     private Renderer renderer;
     private Timer timer;
     private ArrayList<ViewPort> preViewPorts = new ArrayList<ViewPort>();
@@ -46,8 +55,8 @@ public class RenderManager {
                      camLoc = new Vector3f();
 
     /**
-     * Create a high-level rendering interface (HLRI) over the
-     * low-level rendering interface (LLRI).
+     * Create a high-level rendering interface over the
+     * low-level rendering interface.
      * @param renderer
      */
     public RenderManager(Renderer renderer){
@@ -154,14 +163,6 @@ public class RenderManager {
                     tempMat3.invertLocal();
                     tempMat3.transposeLocal();
                     u.setMatrix3(tempMat3);
-                    break;
-                case OrthoMatrix:
-                    u.setMatrix4(orthoMatrix);
-                    break;
-                case WorldOrthoMatrix:
-                    tempMat4.set(orthoMatrix);
-                    tempMat4.multLocal(worldMatrix);
-                    u.setMatrix4(tempMat4);
                     break;
                 case WorldViewProjectionMatrix:
                     tempMat4.set(viewProjMatrix);
@@ -347,9 +348,9 @@ public class RenderManager {
 
         if (!rq.isQueueEmpty(Bucket.Gui)){
             renderer.setDepthRange(0, 0);
-            setOrtho();
+            setCamera(cam, true);
             rq.renderQueue(Bucket.Gui, this, cam);
-            unsetOrtho();
+            setCamera(cam, false);
             depthRangeChanged = true;
         }
 
@@ -379,37 +380,41 @@ public class RenderManager {
          }
     }
 
-    private void setViewProjection(Camera cam){
+    private void setViewProjection(Camera cam, boolean ortho){
         if (shader){
-            viewMatrix.set(cam.getViewMatrix());
-            projMatrix.set(cam.getProjectionMatrix());
-            viewProjMatrix.set(cam.getViewProjectionMatrix());
+            if (ortho){
+                viewMatrix.set(Matrix4f.IDENTITY);
+                projMatrix.set(orthoMatrix);
+                viewProjMatrix.set(orthoMatrix);
+            }else{
+                viewMatrix.set(cam.getViewMatrix());
+                projMatrix.set(cam.getProjectionMatrix());
+                viewProjMatrix.set(cam.getViewProjectionMatrix());
+            }
+            
 
             camLoc.set(cam.getLocation());
             cam.getLeft(camLeft);
             cam.getUp(camUp);
             cam.getDirection(camDir);
         }else{
-            renderer.setViewProjectionMatrices(cam.getViewMatrix(),
-                                               cam.getProjectionMatrix());
+            if (ortho){
+                renderer.setViewProjectionMatrices(Matrix4f.IDENTITY, orthoMatrix);
+            }else{
+                renderer.setViewProjectionMatrices(cam.getViewMatrix(),
+                                                   cam.getProjectionMatrix());
+            }
+            
         }
     }
 
-    public void setOrtho(){
-        renderer.setViewProjectionMatrices(Matrix4f.IDENTITY, orthoMatrix);
-    }
-
-    public void unsetOrtho(){
-        renderer.setViewProjectionMatrices(viewMatrix, projMatrix);
-    }
-
-    public void setCamera(Camera cam){
+    public void setCamera(Camera cam, boolean ortho){
         setViewPort(cam);
-        setViewProjection(cam);
+        setViewProjection(cam, ortho);
     }
 
     public void renderViewPortRaw(ViewPort vp){
-        setCamera(vp.getCamera());
+        setCamera(vp.getCamera(), false);
         List<Spatial> scenes = vp.getScenes();
         for (int i = scenes.size() - 1; i >= 0; i--){
             renderScene(scenes.get(i), vp);
@@ -436,7 +441,7 @@ public class RenderManager {
 //            renderer.setBackgroundColor(vp.getBackgroundColor());
             renderer.clearBuffers(true, true, true);
         }
-        setCamera(vp.getCamera());
+        setCamera(vp.getCamera(), false);
         List<Spatial> scenes = vp.getScenes();
         for (int i = scenes.size() - 1; i >= 0; i--){
             renderScene(scenes.get(i), vp);

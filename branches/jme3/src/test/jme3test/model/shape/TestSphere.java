@@ -1,4 +1,4 @@
-package jme3test.model;
+package jme3test.model.shape;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.material.Material;
@@ -16,7 +16,7 @@ public class TestSphere extends SimpleApplication  {
     @Override
     public void simpleInitApp() {
         Sphere sphMesh = new Sphere(14, 14, 1);
-        Material solidColor = (Material) manager.loadContent("red_color.j3m");
+        Material solidColor = (Material) manager.loadAsset("red_color.j3m");
 
         for (int y = -5; y < 5; y++){
             for (int x = -5; x < 5; x++){

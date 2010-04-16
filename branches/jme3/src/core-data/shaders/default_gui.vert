@@ -1,4 +1,4 @@
-uniform mat4 g_WorldOrthoMatrix;
+uniform mat4 g_WorldViewProjectionMatrix;
 uniform vec4 m_Color;
 
 attribute vec4 inPosition;
@@ -15,7 +15,7 @@ varying vec2 texCoord;
 varying vec4 color;
 
 void main() {
-    vec2 pos = (g_WorldOrthoMatrix * inPosition).xy;
+    vec2 pos = (g_WorldViewProjectionMatrix * inPosition).xy;
     gl_Position = vec4(pos, 0.0, 1.0);
     #ifdef TEXTURE
         texCoord = inTexCoord;

@@ -23,6 +23,7 @@ public class NiftyJmeDisplay extends TimeProvider implements SceneProcessor {
     private RenderDeviceJme renderDev;
     private InputSystemJme inputSys;
     private SoundDeviceJme soundDev;
+    private ViewPort vp;
 
     private int w, h;
 
@@ -52,6 +53,7 @@ public class NiftyJmeDisplay extends TimeProvider implements SceneProcessor {
         this.renderManager = rm;
         renderDev.setRenderManager(rm);
         inited = true;
+        this.vp = vp;
     }
 
     public Nifty getNifty() {
@@ -92,9 +94,9 @@ public class NiftyJmeDisplay extends TimeProvider implements SceneProcessor {
 
     public void postQueue(RenderQueue rq) {
         // render nifty before anything else
-        renderManager.setOrtho();
+        renderManager.setCamera(vp.getCamera(), true);
         nifty.render(false);
-        renderManager.unsetOrtho();
+        renderManager.setCamera(vp.getCamera(), false);
 
         if (RenderDeviceJme.GUI_DEBUG)
             System.exit(1);

@@ -27,7 +27,6 @@ public class BasicShadowRenderer implements SceneProcessor {
 
     private Material preshadowMat;
     private Material postshadowMat;
-    private Material dispMat;
 
     private Picture dispPic = new Picture("Picture");
     private boolean noOccluders = false;
@@ -45,8 +44,7 @@ public class BasicShadowRenderer implements SceneProcessor {
         postshadowMat = new Material(manager, "postshadow.j3md");
         postshadowMat.setTexture("m_ShadowMap", shadowMap);
 
-        dispMat = new Material(manager, "sprite2d.j3md");
-        dispMat.setTexture("m_Texture", shadowMap);
+        dispPic.setTexture(manager, shadowMap, false);
 
         for (int i = 0; i < points.length; i++){
             points[i] = new Vector3f();
@@ -118,7 +116,7 @@ public class BasicShadowRenderer implements SceneProcessor {
         ShadowUtil.updateShadowCamera(occluders, recievers, shadowCam, points);
 
         Renderer r = renderManager.getRenderer();
-        renderManager.setCamera(shadowCam);
+        renderManager.setCamera(shadowCam, false);
         renderManager.setForcedMaterial(preshadowMat);
 
         r.setFrameBuffer(shadowFB);
@@ -127,7 +125,7 @@ public class BasicShadowRenderer implements SceneProcessor {
         r.setFrameBuffer(viewPort.getOutputFrameBuffer());
 
         renderManager.setForcedMaterial(null);
-        renderManager.setCamera(viewCam);
+        renderManager.setCamera(viewCam, false);
     }
 
     public void displayShadowMap(Renderer r){
@@ -138,7 +136,6 @@ public class BasicShadowRenderer implements SceneProcessor {
         dispPic.setPosition(w / 20f, h / 20f);
         dispPic.setWidth(w / 5f);
         dispPic.setHeight(h / 5f);
-        dispPic.setMaterial(dispMat);
         dispPic.updateGeometricState();
         renderManager.renderGeometry(dispPic);
     }

@@ -17,7 +17,6 @@ import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.Control;
-import com.jme3.scene.control.ControlType;
 import com.jme3.util.TempVars;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -184,13 +183,9 @@ public class PhysicsRagdollControl implements Control {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ControlType getType() {
-        return ControlType.BoneControl;
-    }
-
     public void setSpatial(Spatial model) {
         //TODO: cleanup when adding new
-        AnimControl animControl = (AnimControl) model.getControl(ControlType.BoneAnimation);
+        AnimControl animControl = model.getControl(AnimControl.class);
         skeleton = animControl.getSkeleton();
 
         // put into bind pose and compute bone transforms in model space

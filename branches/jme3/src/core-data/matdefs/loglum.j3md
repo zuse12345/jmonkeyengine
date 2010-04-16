@@ -12,14 +12,15 @@ MaterialDef Log Lum 2D {
     }
 
     Technique {
-        VertexShader GLSL100: sprite2d.vert
+        VertexShader GLSL100: default_gui.vert
         FragmentShader GLSL100: loglum.frag
 
         WorldParameters {
-            WorldOrthoMatrix
+            WorldViewProjectionMatrix
         }
 
         Defines {
+            TEXTURE
             ENCODE_LUM : m_EncodeLum
             DECODE_LUM : m_DecodeLum
             BLOCKS : m_Blocks

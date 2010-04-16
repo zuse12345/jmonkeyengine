@@ -86,10 +86,6 @@ public class LodControl extends AbstractControl implements Cloneable {
         spatial.setLodLevel(level);
     }
 
-    public ControlType getType() {
-        return ControlType.LevelOfDetail;
-    }
-
     @Override
     public void write(JmeExporter ex) throws IOException{
         super.write(ex);

@@ -17,22 +17,24 @@ public class TestAbsoluteLocators {
         am.registerLoader(AWTLoader.class.getName(), "png");
         am.registerLoader(WAVLoader.class.getName(), "wav");
 
-        // register two absolute locators
-        am.registerLocator("/sounds",  ClasspathLocator.class.getName(), "*");
-        am.registerLocator("/textures",ClasspathLocator.class.getName(), "*");
+        // register absolute locator
+        am.registerLocator("/",  ClasspathLocator.class.getName(), "*");
 
         // find a sound
-        AudioData audio = am.loadAudio("gun.wav");
+        AudioData audio = am.loadAudio("/sounds/gun.wav");
 
         // find a texture
-        Texture tex = am.loadTexture("pond.png");
-
+        Texture tex = am.loadTexture("/textures/pond.png");
 
         if (audio == null)
             throw new RuntimeException("Cannot find audio!");
+        else
+            System.out.println("Audio loaded from /sounds/gun.wav");
 
         if (tex == null)
             throw new RuntimeException("Cannot find texture!");
+        else
+            System.out.println("Texture loaded from /textures/pond.png");
 
         System.out.println("Success!");
     }

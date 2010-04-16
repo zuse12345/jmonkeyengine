@@ -8,7 +8,6 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.control.ControlType;
 import com.jme3.scene.plugins.ogre.OgreMaterialList;
 import com.jme3.scene.plugins.ogre.OgreMeshKey;
 
@@ -34,13 +33,13 @@ public class TestOgreAnim extends SimpleApplication {
         dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
         rootNode.addLight(dl);
 
-        OgreMaterialList matList = (OgreMaterialList) manager.loadContent("OTO.material");
+        OgreMaterialList matList = (OgreMaterialList) manager.loadAsset("OTO.material");
         OgreMeshKey key = new OgreMeshKey("OTO.meshxml", matList);
-        Spatial model = (Spatial) manager.loadContent(key);
+        Spatial model = (Spatial) manager.loadAsset(key);
 
         model.center();
 
-        AnimControl control = (AnimControl) model.getControl(ControlType.BoneAnimation);
+        AnimControl control = model.getControl(AnimControl.class);
         AnimChannel channel = control.createChannel();
         channel.setAnim("Walk");
 

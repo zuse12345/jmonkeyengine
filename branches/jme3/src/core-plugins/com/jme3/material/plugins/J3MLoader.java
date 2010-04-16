@@ -502,7 +502,7 @@ public class J3MLoader implements AssetLoader {
             scan.next(); // skip colon
             String extendedMat = readString("\\{");
 
-            MaterialDef def = (MaterialDef) owner.loadContent(new AssetKey(extendedMat));
+            MaterialDef def = (MaterialDef) owner.loadAsset(new AssetKey(extendedMat));
             if (def == null)
                 throw new IOException("Extended material "+extendedMat+" cannot be found.");
 

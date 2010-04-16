@@ -45,7 +45,6 @@ public class TestNormalLatc extends SimpleApplication {
     public void simpleInitApp() {
         BitmapFont font = manager.loadFont("cooper.fnt");
         BitmapText txt = new BitmapText(font, false);
-        txt.setSize(font.getCharSet().getRenderedSize());
         txt.setText("Left: LATC, Middle: JPG, Right: DXT1nm");
         txt.setLocalTranslation(0, txt.getLineHeight() * 2, 0);
         guiNode.attachChild(txt);
@@ -54,9 +53,9 @@ public class TestNormalLatc extends SimpleApplication {
         quadMesh = new Quad(1, 1);
         quadMesh.updateGeometry(1, 1, false);
 
-        rootNode.attachChild(createQuad(-1f, "dot3_latc.dds", true));
+        rootNode.attachChild(createQuad(-1f, "dot3_latc.DDS", true));
         rootNode.attachChild(createQuad(0f, "dot3.jpg", false));
-        rootNode.attachChild(createQuad(1f, "dot3_dxt1.dds", false));
+        rootNode.attachChild(createQuad(1f, "dot3_dxt1.DDS", false));
     }
 
 }

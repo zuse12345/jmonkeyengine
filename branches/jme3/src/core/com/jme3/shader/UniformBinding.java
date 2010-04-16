@@ -34,17 +34,6 @@ public enum UniformBinding {
     NormalMatrix,
 
     /**
-     * The ortho matrix. Used for GUI elements. Origin is at lower left.
-     * Converts world space to clip space.
-     */
-    OrthoMatrix,
-
-    /**
-     * The world ortho matrix. Converts model space to clip space.
-     */
-    WorldOrthoMatrix,
-
-    /**
      * The world view projection matrix. Converts Model space to Clip/Projection
      * space.
      * Type: mat4

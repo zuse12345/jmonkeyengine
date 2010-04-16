@@ -11,14 +11,8 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.RenderManager;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
-import com.jme3.scene.control.ControlType;
 import com.jme3.scene.debug.SkeletonDebugger;
-import com.jme3.scene.debug.SkeletonWire;
-import com.jme3.scene.debug.SkeletonPoints;
 import com.jme3.scene.plugins.ogre.OgreMaterialList;
 import com.jme3.scene.plugins.ogre.OgreMeshKey;
 
@@ -44,11 +38,11 @@ public class TestOgreComplexAnim extends SimpleApplication {
         dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
         rootNode.addLight(dl);
 
-        OgreMaterialList matList = (OgreMaterialList) manager.loadContent("OTO.material");
+        OgreMaterialList matList = (OgreMaterialList) manager.loadAsset("OTO.material");
         OgreMeshKey key = new OgreMeshKey("OTO.meshxml", matList);
-        Node model = (Node) manager.loadContent(key);
+        Node model = (Node) manager.loadAsset(key);
 
-        control = (AnimControl) model.getControl(ControlType.BoneAnimation);
+        control = model.getControl(AnimControl.class);
         AnimChannel feet = control.createChannel();
         AnimChannel leftHand = control.createChannel();
         AnimChannel rightHand = control.createChannel();

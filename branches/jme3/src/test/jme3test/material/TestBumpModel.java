@@ -1,4 +1,4 @@
-package jme3test.fx;
+package jme3test.material;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.AssetKey;
@@ -26,12 +26,12 @@ public class TestBumpModel extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        Spatial signpost = (Spatial) manager.loadContent(new OgreMeshKey("signpost.meshxml", null));
-        signpost.setMaterial( (Material) manager.loadContent(new AssetKey("signpost.j3m")));
+        Spatial signpost = (Spatial) manager.loadAsset(new OgreMeshKey("signpost.meshxml", null));
+        signpost.setMaterial( (Material) manager.loadAsset(new AssetKey("signpost.j3m")));
         rootNode.attachChild(signpost);
 
         lightMdl = new Geometry("Light", new Sphere(10, 10, 0.1f));
-        lightMdl.setMaterial( (Material) manager.loadContent(new AssetKey("red_color.j3m")));
+        lightMdl.setMaterial( (Material) manager.loadAsset(new AssetKey("red_color.j3m")));
         rootNode.attachChild(lightMdl);
 
         // flourescent main light

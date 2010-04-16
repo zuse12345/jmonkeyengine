@@ -8,7 +8,6 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.control.ControlType;
 import com.jme3.scene.plugins.ogre.OgreMaterialList;
 import com.jme3.scene.plugins.ogre.OgreMeshKey;
 
@@ -21,8 +20,8 @@ public class TestOgreConvert extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        OgreMaterialList materials = (OgreMaterialList) manager.loadContent(new AssetKey("OTO.material"));
-        Spatial ogreModel = (Spatial) manager.loadContent(new OgreMeshKey("OTO.meshxml", materials));
+        OgreMaterialList materials = (OgreMaterialList) manager.loadAsset(new AssetKey("OTO.material"));
+        Spatial ogreModel = (Spatial) manager.loadAsset(new OgreMeshKey("OTO.meshxml", materials));
 //        ogreModel.setLocalScale(0.1f);
 
         ogreModel = ogreModel.clone();
@@ -53,7 +52,7 @@ public class TestOgreConvert extends SimpleApplication {
 //            imp.setAssetManager(manager);
 //            Model ogreModelReloaded = (Model) imp.load(fis, null, null);
 
-        AnimControl control = (AnimControl) ogreModel.getControl(ControlType.BoneAnimation);
+        AnimControl control = ogreModel.getControl(AnimControl.class);
         AnimChannel chan = control.createChannel();
         chan.setAnim("push");
 //            fis.close();

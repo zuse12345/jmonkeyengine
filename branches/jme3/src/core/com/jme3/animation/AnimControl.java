@@ -17,7 +17,6 @@ import com.jme3.scene.VertexBuffer;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
-import com.jme3.scene.control.ControlType;
 import com.jme3.util.TempVars;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -170,10 +169,6 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
 
     @Override
     protected void controlRender(RenderManager rm, ViewPort vp) {
-    }
-
-    public ControlType getType() {
-        return ControlType.BoneAnimation;
     }
 
     private void softwareSkinUpdate(Mesh mesh, Matrix4f[] offsetMatrices){

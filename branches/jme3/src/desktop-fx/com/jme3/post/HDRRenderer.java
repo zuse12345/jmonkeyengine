@@ -199,7 +199,7 @@ public class HDRRenderer implements SceneProcessor {
         }
         fsQuad.setMaterial(mat);
         fsQuad.updateGeometricState();
-        renderManager.setCamera(fbCam);
+        renderManager.setCamera(fbCam, true);
 
         r.setFrameBuffer(dst);
         r.clearBuffers(true, true, true);
@@ -369,6 +369,8 @@ public class HDRRenderer implements SceneProcessor {
         // since out == mainSceneFB, tonemap into the main screen instead
         //renderToneMap(renderer, out);
         renderToneMap(renderer, null);
+
+        renderManager.setCamera(viewPort.getCamera(), false);
     }
 
     public void cleanup() {

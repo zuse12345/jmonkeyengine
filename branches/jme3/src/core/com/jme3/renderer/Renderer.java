@@ -21,6 +21,12 @@ public interface Renderer {
     public Collection<Caps> getCaps();
 
     /**
+     * @return The statistics allow tracking of how data
+     * per frame, such as number of objects rendered, number of triangles, etc.
+     */
+    public Statistics getStatistics();
+
+    /**
      * Clears certain channels of the current bound framebuffer.
      *
      * @param color True if to clear colors (RGBA)
@@ -69,13 +75,6 @@ public interface Renderer {
     public void clearClipRect();
 
     public void setLighting(LightList lights);
-
-    /**
-     * Updates the shader source, creating an ID and registering
-     * with the object manager.
-     * @param source
-     */
-    public void updateShaderSourceData(ShaderSource source);
 
     /**
      * Uploads the shader source code and prepares it for use.

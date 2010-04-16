@@ -34,7 +34,6 @@ package com.jme3.app;
 
 import com.jme3.system.*;
 import java.awt.BorderLayout;
-import java.awt.Dialog;
 import java.awt.DisplayMode;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -100,7 +99,7 @@ public final class SettingsDialog extends JDialog {
     private DisplayMode[] modes = null;
 
     // Array of windowed resolutions
-    private String[] windowedResolutions = { "640 x 480", "800 x 600",
+    private String[] windowedResolutions = { "320 x 240", "640 x 480", "800 x 600",
             "1024 x 768", "1152 x 864", "1280 x 720" };
 
     // UI components

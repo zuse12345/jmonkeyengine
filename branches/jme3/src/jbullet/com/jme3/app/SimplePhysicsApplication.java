@@ -120,7 +120,7 @@ public abstract class SimplePhysicsApplication extends PhysicsApplication {
         if (inputManager != null){
             flyCam = new FlyByCamera(cam);
             flyCam.setMoveSpeed(1f);
-            flyCam.registerWithDispatcher(inputManager);
+            flyCam.registerWithInput(inputManager);
 
             if (context.getType() == Type.Display){
                 inputManager.registerKeyBinding("SIMPLEAPP_Exit", KeyInput.KEY_ESCAPE);

@@ -9,11 +9,15 @@ MaterialDef Tone Mapper {
         Float m_Gamma
     }
     Technique {
-        VertexShader GLSL100: sprite2d.vert
+        VertexShader GLSL100: default_gui.vert
         FragmentShader GLSL100: tonemap.frag
 
         WorldParameters {
-            WorldOrthoMatrix
+            WorldViewProjectionMatrix
+        }
+
+        Defines {
+            TEXTURE
         }
     }
 }

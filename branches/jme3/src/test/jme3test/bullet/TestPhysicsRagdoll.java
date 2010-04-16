@@ -13,7 +13,6 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.control.ControlType;
 import com.jme3.scene.debug.SkeletonDebugger;
 import com.jme3.scene.plugins.ogre.MeshLoader;
 import com.jme3.scene.shape.Box;
@@ -53,7 +52,7 @@ public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
 //        Node model = (Node)MeshLoader.loadModel(manager, "ninja.meshxml", "ninja.material");
 
         //debug view
-        AnimControl control= (AnimControl) model.getControl(ControlType.BoneAnimation);
+        AnimControl control= model.getControl(AnimControl.class);
         SkeletonDebugger skeletonDebug = new SkeletonDebugger("skeleton", control.getSkeleton());
         Material mat2 = new Material(manager, "wire_color.j3md");
         mat2.setColor("m_Color", ColorRGBA.Green);
@@ -64,7 +63,7 @@ public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
         //Note: PhysicsRagdollControl is still TODO, constructor will change
         PhysicsRagdollControl ragdoll = new PhysicsRagdollControl(this,getPhysicsSpace());
         ragdoll.setSpatial(model);
-        model.setControl(ragdoll);
+        model.addControl(ragdoll);
 //        model.setLocalScale(0.2f);
 
         speed = 0.05f;

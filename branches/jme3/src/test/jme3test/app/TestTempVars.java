@@ -15,6 +15,10 @@ public class TestTempVars {
     }
 
     public static void main(String[] args){
+        System.err.println("NOTE: This test simulates a data corruption attempt\n" +
+                           " in the engine. If assertions are enabled (-ea VM flag), the \n" +
+                           "data corruption will be detected and displayed below.");
+
         TempVars vars = TempVars.get();
 
         assert vars.lock();

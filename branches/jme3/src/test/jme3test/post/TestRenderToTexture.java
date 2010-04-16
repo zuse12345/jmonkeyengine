@@ -45,7 +45,6 @@ public class TestRenderToTexture extends SimpleApplication {
 
         //setup framebuffer's texture
         Texture2D offTex = new Texture2D(512, 512, Format.RGB8);
-        offTex.setAnisotropicFilter(4);
 
         //setup framebuffer to use texture
         offBuffer.setDepthBuffer(Format.Depth);
@@ -56,7 +55,7 @@ public class TestRenderToTexture extends SimpleApplication {
 
         // setup framebuffer's scene
         Box boxMesh = new Box(Vector3f.ZERO, 1,1,1);
-        Material material = (Material) manager.loadContent("jme_logo.j3m");
+        Material material = (Material) manager.loadAsset("jme_logo.j3m");
         offBox = new Geometry("box", boxMesh);
         offBox.setMaterial(material);
 

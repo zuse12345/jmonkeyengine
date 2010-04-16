@@ -11,7 +11,7 @@ MaterialDef Default GUI {
         FragmentShader GLSL100: default_gui.frag
 
         WorldParameters {
-            WorldOrthoMatrix
+            WorldViewProjectionMatrix
         }
 
         Defines {

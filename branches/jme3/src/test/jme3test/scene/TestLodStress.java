@@ -8,7 +8,6 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 import com.jme3.scene.control.LodControl;
 import com.jme3.scene.plugins.ogre.MeshLoader;
 
@@ -25,6 +24,12 @@ public class TestLodStress extends SimpleApplication implements BindingListener 
         if (binding.equals("USELOD") && value >= 0f){
             lod = !lod;
         }
+    }
+
+    public void onPreUpdate(float tpf) {
+    }
+
+    public void onPostUpdate(float tpf) {
     }
 
     public void simpleInitApp() {

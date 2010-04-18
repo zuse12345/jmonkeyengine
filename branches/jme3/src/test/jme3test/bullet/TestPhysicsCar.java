@@ -37,24 +37,26 @@ public class TestPhysicsCar extends SimplePhysicsApplication implements BindingL
     }
 
     public void onBinding(String binding, float value) {
-        if(binding.equals("Lefts")){
+        if (binding.equals("Lefts")) {
             player.steer(.5f);
-        }
-        else if(binding.equals("Rights")){
+        } else if (binding.equals("Rights")) {
             player.steer(-.5f);
-        }
-        else if(binding.equals("Ups")){
+        } else if (binding.equals("Ups")) {
             player.accelerate(300f * value);
-        }
-        else if(binding.equals("Downs")){
+        } else if (binding.equals("Downs")) {
             player.brake(60f * value);
         }
-        else if(binding.equals("UPDATE")){
-            player.accelerate(0);
-            player.brake(0);
-            player.steer(0);
-        }
     }
+
+    public void onPreUpdate(float tpf) {
+        player.accelerate(0);
+        player.brake(0);
+        player.steer(0);
+    }
+
+    public void onPostUpdate(float tpf) {
+    }
+
 
     @Override
     public void simpleInitApp() {

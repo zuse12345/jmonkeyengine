@@ -8,13 +8,11 @@ package jme3test.awt;
 import com.jme3.app.Application;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeCanvasContext;
-import com.jme3.system.JmeContext.Type;
 import com.jme3.system.JmeSystem;
 import java.applet.Applet;
 import java.awt.Canvas;
 import java.awt.Graphics;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -31,6 +29,7 @@ public class AppHarness extends Applet {
         AppSettings settings = new AppSettings(true);
         settings.setWidth(getWidth());
         settings.setHeight(getHeight());
+        settings.setAudioRenderer(null);
 
         JmeSystem.setLowPermissions(true);
 
@@ -47,9 +46,11 @@ public class AppHarness extends Applet {
 
         app.setSettings(settings);
         app.createCanvas();
+        
         context = (JmeCanvasContext) app.getContext();
         canvas = context.getCanvas();
         canvas.setSize(getWidth(), getHeight());
+        
         add(canvas);
         app.startCanvas();
     }
@@ -60,7 +61,6 @@ public class AppHarness extends Applet {
 
     public void init(){
         appClass = getParameter("AppClass");
-        appClass = "jme3test.model.TestBox";
         if (appClass == null)
             throw new RuntimeException("The required parameter AppClass isnt specified!");
         
@@ -79,13 +79,15 @@ public class AppHarness extends Applet {
     }
 
     public void destroy(){
-        app.stop();
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException ex) {
-        }
-        removeAll();
-        System.out.println("applet:destroy");
+        System.out.println("applet:destroyStart");
+        SwingUtilities.invokeLater(new Runnable(){
+            public void run(){
+                removeAll();
+                System.out.println("applet:destroyRemoved");
+            }
+        });
+        app.stop(true);
+        System.out.println("applet:destroyDone");
     }
 
 }

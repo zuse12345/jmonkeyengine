@@ -61,13 +61,15 @@ public class LwjglDisplay extends LwjglAbstractDisplay {
     }
 
     @Override
-    public void create(){
+    public void create(boolean waitFor){
         if (created.get()){
             logger.warning("create() called when display is already created!");
             return;
         }
 
         new Thread(this, "LWJGL Renderer Thread").start();
+        if (waitFor)
+            waitFor(true);
     }
 
     @Override

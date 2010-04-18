@@ -14,12 +14,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.PixelFormat;
+import org.lwjgl.opengl.GLContext;
 
 
 public abstract class LwjglAbstractDisplay extends LwjglContext implements Runnable {
@@ -56,8 +54,6 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
      * Does LWJGL display initialization in the OpenGL thread
      */
     protected void initInThread(){
-        
-
         try{
             createContext(settings);
 //            String rendererStr = settings.getString("Renderer");
@@ -73,23 +69,23 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
                 });
             }
 
-            Keyboard.poll();
-            Mouse.poll();
-
-            String vendor = GL11.glGetString(GL11.GL_VENDOR);
-            String version = GL11.glGetString(GL11.GL_VERSION);
-            String renderer = GL11.glGetString(GL11.GL_RENDERER);
-            String shadingLang = GL11.glGetString(GL20.GL_SHADING_LANGUAGE_VERSION);
-
-            logger.info("Vendor: "+vendor);
-            logger.info("Renderer: "+renderer);
-
             logger.info("Adapter: "+Display.getAdapter());
             logger.info("Driver Version: "+Display.getVersion());
 
-            logger.info("OpenGL Version: "+version);
-            logger.info("GLSL Ver: "+shadingLang);
+            String vendor = GL11.glGetString(GL11.GL_VENDOR);
+            logger.info("Vendor: "+vendor);
 
+            String version = GL11.glGetString(GL11.GL_VERSION);
+            logger.info("OpenGL Version: "+version);
+
+            String renderer = GL11.glGetString(GL11.GL_RENDERER);
+            logger.info("Renderer: "+renderer);
+
+            if (GLContext.getCapabilities().OpenGL20){
+                String shadingLang = GL11.glGetString(GL20.GL_SHADING_LANGUAGE_VERSION);
+                logger.info("GLSL Ver: "+shadingLang);
+            }
+            
             created.set(true);
         } catch (LWJGLException ex){
             listener.handleError("Failed to create display", ex);
@@ -102,7 +98,7 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
                     Display.destroy();
             }
         }
-        super.create();
+        super.internalCreate();
         listener.initialize();
     }
 
@@ -143,7 +139,7 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
             Display.destroy();
         }
         logger.info("Display destroyed.");
-        super.destroy();
+        super.internalDestroy();
     }
 
     public void run(){
@@ -188,8 +184,10 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
     }
 
     @Override
-    public void destroy(){
+    public void destroy(boolean waitFor){
         needClose.set(true);
+        if (waitFor)
+            waitFor(false);
     }
 
 }

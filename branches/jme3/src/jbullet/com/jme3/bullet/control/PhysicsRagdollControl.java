@@ -11,6 +11,7 @@ import com.jme3.bullet.joints.PhysicsJoint;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
+import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
@@ -153,7 +154,7 @@ public class PhysicsRagdollControl implements Control {
         TempVars vars = TempVars.get();
         assert vars.lock();
 
-
+        skeleton.reset();
         for (PhysicsBoneLink link : boneLinks) {
             Vector3f p   = link.shapeNode.getWorldTranslation();
             Quaternion q = link.shapeNode.getWorldRotation();
@@ -167,6 +168,9 @@ public class PhysicsRagdollControl implements Control {
             Vector3f childPos  = new Vector3f(p).addLocal(dir.mult(len/2f));
 
             Quaternion q2 = q.clone();
+            Quaternion rot = new Quaternion();
+            rot.fromAngles(FastMath.HALF_PI, 0, 0);
+            q2.multLocal(rot);
             q2.normalize();
             
             link.parentBone.setUserTransformsWorld(parentPos, q2);

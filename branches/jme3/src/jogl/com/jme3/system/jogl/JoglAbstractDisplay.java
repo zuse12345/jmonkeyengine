@@ -32,6 +32,7 @@ public abstract class JoglAbstractDisplay extends JoglContext implements GLEvent
     protected int frameRate;
     protected boolean useAwt = true;
     protected AtomicBoolean autoFlush = new AtomicBoolean(true);
+    protected boolean wasAnimating = false;
 
     protected void initGLCanvas(){
         device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
@@ -42,12 +43,23 @@ public abstract class JoglAbstractDisplay extends JoglContext implements GLEvent
         caps.setStencilBits(settings.getStencilBits());
         caps.setDepthBits(settings.getDepthBits());
 
-        if (settings.getSamples() > 0){
+        if (settings.getSamples() > 1){
             caps.setSampleBuffers(true);
             caps.setNumSamples(settings.getSamples());
         }
 
-        canvas = new GLCanvas(caps);
+        canvas = new GLCanvas(caps){
+            @Override
+            public void addNotify(){
+                super.addNotify();
+                onCanvasAdded();
+            }
+            @Override
+            public void removeNotify(){
+                onCanvasRemoved();
+                super.removeNotify();
+            }
+        };
         if (settings.isVSync()){
             canvas.getGL().setSwapInterval(1);
         }
@@ -67,7 +79,6 @@ public abstract class JoglAbstractDisplay extends JoglContext implements GLEvent
             // production mode
         }
         renderer = new JoglRenderer(gl);
-        super.create();
     }
 
     protected void startGLCanvas(){
@@ -79,10 +90,14 @@ public abstract class JoglAbstractDisplay extends JoglContext implements GLEvent
             animator.setRunAsFastAsPossible(true);
         }
 
-        canvas.requestFocus();
         animator.start();
+        wasAnimating = true;
+    }
 
-        logger.info("Display created.");
+    protected void onCanvasAdded(){
+    }
+
+    protected void onCanvasRemoved(){
     }
 
     @Override
@@ -93,15 +108,6 @@ public abstract class JoglAbstractDisplay extends JoglContext implements GLEvent
     @Override
     public MouseInput getMouseInput(){
         return new AwtMouseInput(canvas);
-    }
-
-    /**
-     * Callback.
-     */
-    public void init(GLAutoDrawable drawable) {
-        //((JoglRenderer)renderer).setGL(drawable.getGL());
-        renderer.initialize();
-        listener.initialize();
     }
 
     public void setAutoFlushFrames(boolean enabled){

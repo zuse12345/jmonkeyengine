@@ -62,11 +62,15 @@ public class TestPhysicsCharacter extends SimplePhysicsApplication implements Bi
         else if(binding.equals("Space")){
             physicsCharacter.jump();
         }
-        else if(binding.equals("UPDATE")){
-            walkDirection.set(0,0,0);
-        }
     }
 
+    public void onPreUpdate(float tpf) {
+        walkDirection.set(0,0,0);
+    }
+
+    public void onPostUpdate(float tpf) {
+    }
+    
     @Override
     public void simpleInitApp() {
 

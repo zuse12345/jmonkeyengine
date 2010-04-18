@@ -14,11 +14,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GLContext;
 import org.lwjgl.opengl.Pbuffer;
 import org.lwjgl.opengl.PixelFormat;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.*;
 
 public class LwjglOffscreenBuffer extends LwjglContext implements Runnable {
 
@@ -56,15 +57,6 @@ public class LwjglOffscreenBuffer extends LwjglContext implements Runnable {
 //                Display.create(pf, attribs);
 //            }else{
               pbuffer = new Pbuffer(width, height, pixelFormat, null);
-//                Display.create();
-//            }
-
-//            if (!Display.isFullscreen()){
-//                // put it in the center
-//                DisplayMode desktop = Display.getDesktopDisplayMode();
-//                DisplayMode displayMode = Display.getDisplayMode();
-//                Display.setLocation((desktop.getWidth() - displayMode.getWidth()) / 2,
-//                                  (desktop.getHeight() - displayMode.getHeight()) / 2);
 //            }
 
             pbuffer.makeCurrent();
@@ -78,16 +70,19 @@ public class LwjglOffscreenBuffer extends LwjglContext implements Runnable {
                 }
             });
 
-            String vendor = glGetString(GL_VENDOR);
-            String version = glGetString(GL_VERSION);
-            String renderer = glGetString(GL_RENDERER);
-            String shadingLang = glGetString(GL_SHADING_LANGUAGE_VERSION);
-
+            String vendor = GL11.glGetString(GL11.GL_VENDOR);
             logger.info("Vendor: "+vendor);
+
+            String version = GL11.glGetString(GL11.GL_VERSION);
+            logger.info("OpenGL Version: "+version);
+
+            String renderer = GL11.glGetString(GL11.GL_RENDERER);
             logger.info("Renderer: "+renderer);
 
-            logger.info("OpenGL Version: "+version);
-            logger.info("GLSL Ver: "+shadingLang);
+            if (GLContext.getCapabilities().OpenGL20){
+                String shadingLang = GL11.glGetString(GL20.GL_SHADING_LANGUAGE_VERSION);
+                logger.info("GLSL Ver: "+shadingLang);
+            }
 
             created.set(true);
         } catch (LWJGLException ex){
@@ -96,7 +91,7 @@ public class LwjglOffscreenBuffer extends LwjglContext implements Runnable {
             // TODO: It is possible to avoid "Failed to find pixel format"
             // error here by creating a default display.
         }
-        super.create();
+        super.internalCreate();
         listener.initialize();
     }
 
@@ -140,18 +135,22 @@ public class LwjglOffscreenBuffer extends LwjglContext implements Runnable {
     }
 
     @Override
-    public void destroy(){
+    public void destroy(boolean waitFor){
         needClose.set(true);
+        if (waitFor)
+            waitFor(false);
     }
 
     @Override
-    public void create(){
+    public void create(boolean waitFor){
         if (created.get()){
             logger.warning("create() called when pbuffer is already created!");
             return;
         }
 
         new Thread(this, "LWJGL Renderer Thread").start();
+        if (waitFor)
+            waitFor(true);
     }
 
     public void restart() {

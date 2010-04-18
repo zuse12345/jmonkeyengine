@@ -27,6 +27,9 @@ public class FlyByCamera implements BindingListener {
     private float moveSpeed = 3f;
     private MotionAllowedListener motionAllowed = null;
     private boolean enabled = true;
+    private boolean dragToRotate = false;
+    private boolean canRotate = false;
+    private InputManager inputManager;
 
     /**
      * Creates a new FlyByCamera to control the given Camera object.
@@ -73,13 +76,33 @@ public class FlyByCamera implements BindingListener {
     }
 
     /**
+     * @return If drag to rotate feature is enabled.
+     *
+     * @see FlyByCamera#setDragToRotate(boolean) 
+     */
+    public boolean isDragToRotate() {
+        return dragToRotate;
+    }
+
+    /**
+     * @param dragToRotate When true, the user must hold the mouse button
+     * and drag over the screen to rotate the camera, and the cursor is
+     * visible until dragged. Otherwise, the cursor is invisible at all times
+     * and holding the mouse button is not needed to rotate the camera.
+     * This feature is disabled by default.
+     */
+    public void setDragToRotate(boolean dragToRotate) {
+        this.dragToRotate = dragToRotate;
+    }
+
+    /**
      * Registers the FlyByCamera to recieve input events from the provided
      * Dispatcher.
      * @param dispacher
      */
     public void registerWithInput(InputManager inputManager){
-        inputManager.setCursorVisible(false);
-
+        this.inputManager = inputManager;
+        
         inputManager.registerJoystickAxisBinding("FLYCAM_Left",  2, JoyInput.AXIS_X, true);
         inputManager.registerJoystickAxisBinding("FLYCAM_Right", 2, JoyInput.AXIS_X, false);
         inputManager.registerJoystickAxisBinding("FLYCAM_Up",    2, JoyInput.AXIS_Y, true);
@@ -97,6 +120,8 @@ public class FlyByCamera implements BindingListener {
 
         inputManager.registerMouseAxisBinding("FLYCAM_ZoomIn", 2, false);
         inputManager.registerMouseAxisBinding("FLYCAM_ZoomOut", 2, true);
+        
+        inputManager.registerMouseButtonBinding("FLYCAM_RotateDrag", 0);
 
         inputManager.registerKeyBinding("FLYCAM_Left", KeyInput.KEY_LEFT);
         inputManager.registerKeyBinding("FLYCAM_Right", KeyInput.KEY_RIGHT);
@@ -115,6 +140,14 @@ public class FlyByCamera implements BindingListener {
     }
 
     private void rotateCamera(float value, Vector3f axis){
+        if (dragToRotate){
+            if (canRotate){
+//                value = -value;
+            }else{
+                return;
+            }
+        }
+
         Matrix3f mat = new Matrix3f();
         mat.fromAngleNormalAxis(rotationSpeed * value, axis);
 
@@ -197,6 +230,8 @@ public class FlyByCamera implements BindingListener {
             rotateCamera(-value, cam.getLeft());
         }else if (binding.equals("FLYCAM_Down")){
             rotateCamera(value, cam.getLeft());
+        }else if (binding.equals("FLYCAM_RotateDrag") && dragToRotate){
+            canRotate = true;
         }else if (binding.equals("FLYCAM_Forward")){
             moveCamera(value, false);
         }else if (binding.equals("FLYCAM_Backward")){
@@ -213,6 +248,19 @@ public class FlyByCamera implements BindingListener {
             zoomCamera(value);
         }else if (binding.equals("FLYCAM_ZoomOut")){
             zoomCamera(-value);
+        }
+    }
+
+    public void onPreUpdate(float tpf) {
+        canRotate = false;
+        
+    }
+
+    public void onPostUpdate(float tpf) {
+        if (dragToRotate){
+            inputManager.setCursorVisible(!canRotate);
+        }else{
+            inputManager.setCursorVisible(false);
         }
     }
 

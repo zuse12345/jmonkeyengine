@@ -288,6 +288,13 @@ public class CubeField extends SimpleApplication implements BindingListener {
             camAngle += value;
         }
     }
+
+    public void onPreUpdate(float tpf){
+    }
+
+    public void onPostUpdate(float tpf){
+    }
+
     /**
      * Determines the colors of the player, floor, obstacle and background
      */

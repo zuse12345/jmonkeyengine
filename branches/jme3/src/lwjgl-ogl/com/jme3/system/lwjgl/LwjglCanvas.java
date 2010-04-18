@@ -13,7 +13,6 @@ import org.lwjgl.input.Controllers;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.Pbuffer;
 import org.lwjgl.opengl.PixelFormat;
 
 public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContext {
@@ -79,19 +78,6 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
         };
         canvas.setFocusable(true);
         canvas.setIgnoreRepaint(true);
-    }
-
-    @Override
-    public void run(){
-//        try {
-//            PixelFormat pf = new PixelFormat(0, 0, 0, 0, 0);
-//            dummyCtx = new Pbuffer(1, 1, pf, null);
-//            dummyCtx.makeCurrent();
-//        } catch (LWJGLException ex) {
-//            logger.log(Level.SEVERE, "Failed to create dummy context", ex);
-//        }
-
-        super.run();
     }
 
     @Override
@@ -164,9 +150,11 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
     }
 
     @Override
-    public void create(){
+    public void create(boolean waitFor){
         // do not do anything.
         // superclass's create() will be called at initInThread()
+        if (waitFor)
+            waitFor(true);
     }
 
     @Override

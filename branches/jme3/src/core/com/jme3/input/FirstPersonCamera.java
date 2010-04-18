@@ -174,9 +174,14 @@ public class FirstPersonCamera implements BindingListener {
             moveCamera(value, true);
         }else if (binding.equals("FPSCAM_StrafeRight")){
             moveCamera(-value, true);
-        }else if (binding.equals("UPDATE")){
-            updateCamera(value);
         }
-    }  
+    }
+
+    public void onPreUpdate(float tpf) {
+    }
+
+    public void onPostUpdate(float tpf) {
+        updateCamera(tpf);
+    }
 
 }

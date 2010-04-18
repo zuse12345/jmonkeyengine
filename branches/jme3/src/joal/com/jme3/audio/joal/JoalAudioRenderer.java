@@ -180,7 +180,7 @@ public class JoalAudioRenderer implements AudioRenderer {
         alc.alcMakeContextCurrent(null);
         alc.alcDestroyContext(context);
         alc.alcCloseDevice(device);
-
+        
         alc = null;
         al = null;
         device = null;

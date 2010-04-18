@@ -7,11 +7,18 @@ package com.jme3.system.jogl;
 
 import com.jme3.system.JmeCanvasContext;
 import java.awt.Canvas;
+import java.util.logging.Logger;
 import javax.media.opengl.GLAutoDrawable;
 
 public class JoglCanvas extends JoglAbstractDisplay implements JmeCanvasContext {
 
+    private static final Logger logger = Logger.getLogger(JoglCanvas.class.getName());
     private int width, height;
+
+    public JoglCanvas(){
+        super();
+        initGLCanvas();
+    }
 
     public Type getType() {
         return Type.Canvas;
@@ -23,14 +30,46 @@ public class JoglCanvas extends JoglAbstractDisplay implements JmeCanvasContext 
     public void restart() {
     }
 
-    public void destroy() {
+    public void create(boolean waitFor){
+        if (waitFor)
+            waitFor(true);
     }
 
-    public void create(){
+    public void destroy(boolean waitFor){
+        if (waitFor)
+            waitFor(false);
+    }
+
+    @Override
+    protected void onCanvasRemoved(){
+        super.onCanvasRemoved();
+        created.set(false);
+        waitFor(false);
+    }
+
+    @Override
+    protected void onCanvasAdded(){
         startGLCanvas();
     }
 
+    public void init(GLAutoDrawable drawable) {
+        canvas.requestFocus();
+
+        super.internalCreate();
+        logger.info("Display created.");
+
+        renderer.initialize();
+        listener.initialize();
+    }
+
     public void display(GLAutoDrawable glad) {
+        if (!created.get() && renderer != null){
+            listener.destroy();
+            logger.info("Canvas destroyed.");
+            super.internalDestroy();
+            return;
+        }
+
         if (width != canvas.getWidth() || height != canvas.getHeight()){
             width = canvas.getWidth();
             height = canvas.getHeight();
@@ -39,25 +78,20 @@ public class JoglCanvas extends JoglAbstractDisplay implements JmeCanvasContext 
         }
 
         boolean flush = autoFlush.get();
-        if (animator.isAnimating() != flush){
-            if (flush)
-                animator.stop();
-            else
-                animator.start();
+        if (flush && !wasAnimating){
+            animator.start();
+            wasAnimating = true;
+        }else if (!flush && wasAnimating){
+            animator.stop();
+            wasAnimating = false;
         }
-
+            
         listener.update();
         renderer.onFrame();
 
-        if (!canvas.isDisplayable()){
-            destroy(); // native peer destroyed
-        }
     }
 
     public Canvas getCanvas() {
-        if (canvas == null)
-            initGLCanvas();
-        
         return canvas;
     }
 

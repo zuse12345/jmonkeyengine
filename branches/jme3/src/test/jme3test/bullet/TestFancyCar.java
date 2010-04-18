@@ -46,30 +46,31 @@ public class TestFancyCar extends SimplePhysicsApplication implements BindingLis
     }
 
     public void onBinding(String binding, float value) {
-        if(binding.equals("Lefts")){
+        if (binding.equals("Lefts")) {
             player.steer(.5f);
-        }
-        else if(binding.equals("Rights")){
+        } else if (binding.equals("Rights")) {
             player.steer(-.5f);
-        }
-        else if(binding.equals("Ups")){
+        } else if (binding.equals("Ups")) {
             player.accelerate(300f * value);
-        }
-        else if(binding.equals("Downs")){
+        } else if (binding.equals("Downs")) {
             player.brake(60f * value);
         }
-        else if(binding.equals("UPDATE")){
-            float carSpeed = player.getLinearVelocity().length() / wheelRadius;
+    }
 
-            player.accelerate(0);
-            player.brake(0);
-            player.steer(0);
+    public void onPreUpdate(float tpf) {
+    }
 
-            node_bl.rotate(-carSpeed * value, 0, 0);
-            node_br.rotate(-carSpeed * value, 0, 0);
-            node_fl.rotate(-carSpeed * value, 0, 0);
-            node_fr.rotate(-carSpeed * value, 0, 0);
-        }
+    public void onPostUpdate(float tpf) {
+        float carSpeed = player.getLinearVelocity().length() / wheelRadius;
+
+        player.accelerate(0);
+        player.brake(0);
+        player.steer(0);
+
+        node_bl.rotate(-carSpeed * tpf, 0, 0);
+        node_br.rotate(-carSpeed * tpf, 0, 0);
+        node_fl.rotate(-carSpeed * tpf, 0, 0);
+        node_fr.rotate(-carSpeed * tpf, 0, 0);
     }
 
     @Override

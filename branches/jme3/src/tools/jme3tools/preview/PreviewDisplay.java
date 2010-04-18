@@ -126,26 +126,6 @@ public class PreviewDisplay extends Application implements BindingListener {
     }
 
     public void onBinding(String binding, float value){
-        if (binding.equals("UPDATE")){
-            if (leftMouse){
-                rotateCamera(Vector3f.UNIT_Y, -deltaX * 5);
-                rotateCamera(cam.getLeft(), -deltaY * 5);
-            }
-            if (deltaWheel != 0){
-                zoomCamera(deltaWheel * 10);
-            }
-            if (rightMouse){
-                panCamera(deltaX * 10, -deltaY * 10);
-            }
-
-            leftMouse = false;
-            rightMouse = false;
-            middleMouse = false;
-            deltaX = 0;
-            deltaY = 0;
-            deltaWheel = 0;
-        }
-
         if (binding.equals("MOUSE_LEFT"))
             leftMouse = value > 0f;
         else if (binding.equals("MOUSE_RIGHT"))
@@ -165,6 +145,29 @@ public class PreviewDisplay extends Application implements BindingListener {
         }else if (binding.equals("MOUSE_W-")){
             deltaWheel = -value;
         }
+    }
+
+    public void onPreUpdate(float tpf) {
+    }
+
+    public void onPostUpdate(float tpf) {
+        if (leftMouse){
+            rotateCamera(Vector3f.UNIT_Y, -deltaX * 5);
+            rotateCamera(cam.getLeft(), -deltaY * 5);
+        }
+        if (deltaWheel != 0){
+            zoomCamera(deltaWheel * 10);
+        }
+        if (rightMouse){
+            panCamera(deltaX * 10, -deltaY * 10);
+        }
+
+        leftMouse = false;
+        rightMouse = false;
+        middleMouse = false;
+        deltaX = 0;
+        deltaY = 0;
+        deltaWheel = 0;
     }
 
     private void setMode(int mode, Spatial spatial){

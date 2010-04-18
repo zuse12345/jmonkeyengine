@@ -5,11 +5,8 @@ import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
 import com.jme3.input.awt.AwtKeyInput;
 import com.jme3.input.awt.AwtMouseInput;
-import com.jme3.input.dummy.DummyKeyInput;
-import com.jme3.input.dummy.DummyMouseInput;
 import com.jme3.renderer.Renderer;
 import com.jme3.renderer.jogl.JoglRenderer;
-import com.jme3.renderer.lwjgl.LwjglRenderer;
 import com.jme3.system.AppSettings;
 import com.jme3.system.SystemListener;
 import com.jme3.system.JmeContext;
@@ -20,6 +17,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class JoglContext implements JmeContext {
 
     protected AtomicBoolean created = new AtomicBoolean(false);
+    protected final Object createdLock = new Object();
+
     protected AppSettings settings = new AppSettings(true);
     protected JoglRenderer renderer;
     protected Timer timer;
@@ -64,16 +63,42 @@ public abstract class JoglContext implements JmeContext {
         return created.get();
     }
 
-    public void create() {
+    public void create(){
+        create(false);
+    }
+
+    public void destroy(){
+        destroy(false);
+    }
+
+    protected void waitFor(boolean createdVal){
+        synchronized (createdLock){
+            while (created.get() != createdVal){
+                try {
+                    createdLock.wait();
+                } catch (InterruptedException ex) {
+                }
+            }
+        }
+    }
+
+     public void internalCreate() {
         timer = new NanoTimer();
-        created.set(true);
+        synchronized (createdLock){
+            created.set(true);
+            createdLock.notifyAll();
+        }
         // renderer initialization must happen in subclass.
     }
 
     protected void internalDestroy() {
-        created.set(false);
         renderer = null;
         timer = null;
+
+        synchronized (createdLock){
+            created.set(false);
+            createdLock.notifyAll();
+        }
     }
 
 }

@@ -37,6 +37,7 @@ public class InputManager implements RawInputListener {
     private MouseButtonEvent lastButtonEvent = null;
     private KeyInputEvent lastKeyEvent = null;
     private float frameTPF = -1f;
+    private boolean mouseVisible = true;
 
     private boolean[] keyboard;
     private boolean[] mouse;
@@ -88,7 +89,10 @@ public class InputManager implements RawInputListener {
      * @param visible whether the mouse cursor should be visible or not.
      */
     public void setCursorVisible(boolean visible){
-        mouseInput.setCursorVisible(visible);
+        if (mouseVisible != visible){
+            mouseVisible = visible;
+            mouseInput.setCursorVisible(mouseVisible);
+        }
     }
 
     public void onMouseMotionEvent(MouseMotionEvent evt) {
@@ -205,7 +209,9 @@ public class InputManager implements RawInputListener {
         lastKeyEvent = null;
         frameTPF = tpf;
 
-        notifyListeners("UPDATE", tpf);
+        for (int i = 0; i < listeners.size(); i++){
+            listeners.get(i).onPreUpdate(tpf);
+        }
 
         // query current keyboard state for all bindings
         for (Entry<String> entry : keyBindings){
@@ -250,6 +256,10 @@ public class InputManager implements RawInputListener {
                     notifyListeners(entry.getValue(), -tpf * value);
                 }
             }
+        }
+
+        for (int i = 0; i < listeners.size(); i++){
+            listeners.get(i).onPostUpdate(tpf);
         }
     }
 

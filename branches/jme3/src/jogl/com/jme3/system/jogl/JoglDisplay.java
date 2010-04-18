@@ -150,23 +150,46 @@ public class JoglDisplay extends JoglAbstractDisplay {
         startGLCanvas();
     }
 
+    public void init(GLAutoDrawable drawable){
+        canvas.requestFocus();
+
+        super.internalCreate();
+        logger.info("Display created.");
+
+        renderer.initialize();
+        listener.initialize();
+    }
+
     @Override
-    public void create(){
+    public void create(boolean waitFor){
         try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    initInEDT();
+            if (waitFor){
+                try{
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        public void run() {
+                            initInEDT();
+                        }
+                    });
+                } catch (InterruptedException ex) {
+                    listener.handleError("Interrupted", ex);
                 }
-            });
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
+            }else{
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        initInEDT();
+                    }
+                });
+            }
         } catch (InvocationTargetException ex) {
-            ex.printStackTrace();
+            throw new AssertionError(); // can never happen
         }
     }
 
-    public void destroy(){
+    public void destroy(boolean waitFor){
         needClose.set(true);
+        if (waitFor){
+            waitFor(false);
+        }
     }
 
     public void restart() {

@@ -1,4 +1,4 @@
-package g3dtools.converters;
+package jme3tools.converters;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.system.JmeSystem;

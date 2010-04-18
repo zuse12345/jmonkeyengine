@@ -39,6 +39,12 @@ public class TestAnimBlendBug extends SimpleApplication implements BindingListen
         }
     }
 
+    public void onPreUpdate(float tpf) {
+    }
+
+    public void onPostUpdate(float tpf) {
+    }
+
     @Override
     public void simpleUpdate(float tpf) {
         // Is there currently a blending underway?

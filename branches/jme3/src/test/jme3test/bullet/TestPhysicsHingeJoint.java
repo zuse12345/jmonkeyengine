@@ -43,6 +43,12 @@ public class TestPhysicsHingeJoint extends SimplePhysicsApplication implements B
         }
     }
 
+    public void onPreUpdate(float tpf) {
+    }
+
+    public void onPostUpdate(float tpf) {
+    }
+
     @Override
     public void simpleInitApp() {
         setupKeys();

@@ -14,6 +14,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class LwjglContext implements JmeContext {
 
     protected AtomicBoolean created = new AtomicBoolean(false);
+    protected final Object createdLock = new Object();
+
     protected AppSettings settings = new AppSettings(true);
     protected LwjglRenderer renderer;
     protected Timer timer;
@@ -23,17 +25,42 @@ public abstract class LwjglContext implements JmeContext {
         this.listener = listener;
     }
 
-    public void destroy(){
-        created.set(false);
+    public void internalDestroy(){
         renderer = null;
         timer = null;
+        synchronized (createdLock){
+            created.set(false);
+            createdLock.notifyAll();
+        }
     }
     
-    public void create(){
+    public void internalCreate(){
         timer = new LwjglTimer();
         renderer = new LwjglRenderer();
         renderer.initialize();
-        created.set(true);
+        synchronized (createdLock){
+            created.set(true);
+            createdLock.notifyAll();
+        }
+    }
+
+    public void create(){
+        create(false);
+    }
+
+    public void destroy(){
+        destroy(false);
+    }
+
+    protected void waitFor(boolean createdVal){
+        synchronized (createdLock){
+            while (created.get() != createdVal){
+                try {
+                    createdLock.wait();
+                } catch (InterruptedException ex) {
+                }
+            }
+        }
     }
 
     public boolean isCreated(){

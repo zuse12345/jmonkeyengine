@@ -33,6 +33,7 @@ package com.jme3.app;
 
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
+import com.jme3.input.BindingAdapter;
 import com.jme3.input.FlyByCamera;
 import com.jme3.input.KeyInput;
 import com.jme3.input.binding.BindingListener;
@@ -128,7 +129,8 @@ public abstract class SimplePhysicsApplication extends PhysicsApplication {
 
             inputManager.registerKeyBinding("SIMPLEAPP_CameraPos", KeyInput.KEY_C);
             inputManager.registerKeyBinding("SIMPLEAPP_Memory",    KeyInput.KEY_M);
-            inputManager.addBindingListener(new BindingListener() {
+            inputManager.addBindingListener(new BindingAdapter() {
+                @Override
                 public void onBinding(String binding, float value) {
                     if (binding.equals("SIMPLEAPP_Exit")){
                         stop();

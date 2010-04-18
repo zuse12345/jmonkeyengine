@@ -109,7 +109,15 @@ public interface JmeContext {
     /**
      * Creates the context and makes it active.
      */
+    @Deprecated
     public void create();
+
+    /**
+     * Creates the context and makes it active.
+     *
+     * @param waitFor If true, will wait until context has initialized.
+     */
+    public void create(boolean waitFor);
 
     /**
      * Destroys and then re-creates the context. This should be called after
@@ -120,6 +128,14 @@ public interface JmeContext {
     /**
      * Destroys the context completely, making it inactive.
      */
+    @Deprecated
     public void destroy();
+
+    /**
+     * Destroys the context completely, making it inactive.
+     *
+     * @param waitFor If true, will wait until the context is destroyed fully.
+     */
+    public void destroy(boolean waitFor);
 
 }

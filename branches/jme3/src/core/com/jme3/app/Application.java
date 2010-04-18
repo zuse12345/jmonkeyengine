@@ -238,7 +238,7 @@ public class Application implements SystemListener {
         logger.fine("Starting application: "+getClass().getName());
         context = JmeSystem.newContext(settings, contextType);
         context.setSystemListener(this);
-        context.create();
+        context.create(false);
     }
 
     public void createCanvas(){
@@ -256,8 +256,12 @@ public class Application implements SystemListener {
     }
 
     public void startCanvas(){
+        startCanvas(false);
+    }
+
+    public void startCanvas(boolean waitFor){
         context.setSystemListener(this);
-        context.create();
+        context.create(waitFor);
     }
 
     public void reshape(int w, int h){
@@ -268,13 +272,17 @@ public class Application implements SystemListener {
         context.restart();
     }
 
+    public void stop(){
+        stop(false);
+    }
+
     /**
      * Requests the display to close, shutting down the main loop
      * and making neccessary cleanup operations.
      */
-    public void stop(){
+    public void stop(boolean waitFor){
         logger.fine("Closing application: "+getClass().getName());
-        context.destroy();
+        context.destroy(waitFor);
     }
 
     /**

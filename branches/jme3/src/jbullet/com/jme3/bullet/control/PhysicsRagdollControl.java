@@ -6,7 +6,7 @@ import com.jme3.animation.Skeleton;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
-import com.jme3.bullet.joints.PhysicsConeJoint;
+import com.jme3.bullet.joints.Physics6DofJoint;
 import com.jme3.bullet.joints.PhysicsJoint;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.export.JmeExporter;
@@ -35,11 +35,11 @@ public class PhysicsRagdollControl implements Control {
     private Skeleton skeleton;
     private PhysicsSpace space;
     //TODO:remove after testing
-    private TestPhysicsRagdoll root;
+//    private TestPhysicsRagdoll root;
 
-    public PhysicsRagdollControl(TestPhysicsRagdoll root, PhysicsSpace space) {
+    public PhysicsRagdollControl(/*TestPhysicsRagdoll root, */PhysicsSpace space) {
         this.space = space;
-        this.root = root;
+//        this.root = root;
     }
 
     private List<PhysicsBoneLink> boneRecursion(Bone bone, PhysicsNode parent, List<PhysicsBoneLink> list) {
@@ -64,14 +64,14 @@ public class PhysicsRagdollControl implements Control {
             PhysicsNode shapeNode = null;
 
             //TODO: remove cylinder when testing is over
-            shapeNode = new PhysicsNode(root.createCylinder(.2f, height), shape, 10);
+            shapeNode = new PhysicsNode(shape, 10);
             shapeNode.setLocalTranslation(jointCenter);
             shapeNode.setLocalRotation(jointRotation);//parentBone.getWorldRotation());
             //TODO: only called to sync physics location with jme location
             shapeNode.updateGeometricState();
 
             //TODO: remove when testing is over, the shapeNode may not be in display tree (see update() method)
-            root.getRootNode().attachChild(shapeNode);
+//            root.getRootNode().attachChild(shapeNode);
             space.addQueued(shapeNode);
 
             PhysicsBoneLink link = new PhysicsBoneLink();
@@ -92,18 +92,19 @@ public class PhysicsRagdollControl implements Control {
                 //local position from child
                 link.pivotB = new Vector3f(0,0,  -(height * .5f));
 
-                PhysicsConeJoint joint = new PhysicsConeJoint(parent, shapeNode,
-                        link.pivotA,
-                        link.pivotB);
+//                PhysicsConeJoint joint = new PhysicsConeJoint(parent, shapeNode,
+//                        link.pivotA,
+//                        link.pivotB);
                 //TODO:
 //                joint.setAngularOnly(true);
 //                joint.setLimit(FastMath.QUARTER_PI, FastMath.QUARTER_PI, 0);
 
-//                Physics6DofJoint joint = new Physics6DofJoint(parent,shapeNode,
-//                                                                            link.pivotA,
-//                                                                            link.pivotB,true);
-//                joint.getRotationalLimitMotor(0).setHiLimit(0);
-//                joint.getRotationalLimitMotor(0).setLoLimit(0);
+                Physics6DofJoint joint = new Physics6DofJoint(parent,shapeNode,
+                                                                            link.pivotA,
+                                                                            link.pivotB,true);
+                joint.getRotationalLimitMotor(0).setHiLimit(0);
+                joint.getRotationalLimitMotor(0).setLoLimit(0);
+
                 link.joint = joint;
                 joint.setCollisionBetweenLinkedBodys(false);
                 space.addQueued(joint);
@@ -156,6 +157,7 @@ public class PhysicsRagdollControl implements Control {
 
         skeleton.reset();
         for (PhysicsBoneLink link : boneLinks) {
+            link.shapeNode.updateGeometricState();
             Vector3f p   = link.shapeNode.getWorldTranslation();
             Quaternion q = link.shapeNode.getWorldRotation();
 
@@ -204,10 +206,10 @@ public class PhysicsRagdollControl implements Control {
             if (childBone.getParent() == null) {
                 Vector3f parentPos = childBone.getWorldPosition();
                 logger.log(Level.INFO, "Found root bone in skeleton {0}", skeleton);
-                PhysicsNode shapeNode = new PhysicsNode(root.createCylinder(.1f, .2f), new SphereCollisionShape(.1f), 1);
+                PhysicsNode shapeNode = new PhysicsNode(null, new SphereCollisionShape(.1f), 1);
                 shapeNode.setLocalTranslation(parentPos);
                 shapeNode.updateGeometricState();
-                root.getRootNode().attachChild(shapeNode);
+//                root.getRootNode().attachChild(shapeNode);
                 space.addQueued(shapeNode);
                 boneLinks = boneRecursion(childBone, shapeNode, list);
             }

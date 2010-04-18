@@ -93,6 +93,12 @@ public class PhysicsNode extends CollisionObject{
         rebuildRigidBody();
     }
 
+    public PhysicsNode(CollisionShape shape, float mass){
+        collisionShape=shape;
+        this.mass=mass;
+        rebuildRigidBody();
+    }
+
     /**
      * creates a new PhysicsNode with the supplied child node or geometry and
      * sets the supplied collision shape to the PhysicsNode

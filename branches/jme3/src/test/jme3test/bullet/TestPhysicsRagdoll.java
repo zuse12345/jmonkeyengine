@@ -61,12 +61,12 @@ public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
         
 
         //Note: PhysicsRagdollControl is still TODO, constructor will change
-        PhysicsRagdollControl ragdoll = new PhysicsRagdollControl(this,getPhysicsSpace());
+        PhysicsRagdollControl ragdoll = new PhysicsRagdollControl(getPhysicsSpace());
         ragdoll.setSpatial(model);
         model.addControl(ragdoll);
 //        model.setLocalScale(0.2f);
 
-        speed = 0.05f;
+        speed = 0.4f;
 
 //        model.setCullHint(Spatial.CullHint.Always);
 

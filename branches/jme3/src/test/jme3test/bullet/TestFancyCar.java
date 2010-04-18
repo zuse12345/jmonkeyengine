@@ -67,6 +67,7 @@ public class TestFancyCar extends SimplePhysicsApplication implements BindingLis
         player.brake(0);
         player.steer(0);
 
+        //XXX: hack alert: physics wheels do not rotate atm, force them
         node_bl.rotate(-carSpeed * tpf, 0, 0);
         node_br.rotate(-carSpeed * tpf, 0, 0);
         node_fl.rotate(-carSpeed * tpf, 0, 0);

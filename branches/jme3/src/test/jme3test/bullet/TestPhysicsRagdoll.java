@@ -19,6 +19,10 @@ import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Cylinder;
 import com.jme3.texture.Texture;
 
+/**
+ * PHYSICS RAGDOLLS ARE NOT WORKING PROPERLY YET!
+ * @author normenhansen
+ */
 public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
 
     public static void main(String[] args){

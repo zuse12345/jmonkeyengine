@@ -596,4 +596,12 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             }
         });
     }
+
+    public void onPreUpdate(float f) {
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void onPostUpdate(float f) {
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

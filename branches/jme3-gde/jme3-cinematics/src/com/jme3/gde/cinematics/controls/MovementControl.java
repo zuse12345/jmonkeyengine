@@ -91,7 +91,7 @@ public class MovementControl extends AbstractControl {
         return null;
     }
 
-    @Override
+//    @Override
     public ControlType getType() {
         // TODO get a real Type
         return ControlType.Particle;

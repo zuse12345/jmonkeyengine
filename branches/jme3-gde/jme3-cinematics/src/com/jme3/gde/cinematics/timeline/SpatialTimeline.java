@@ -90,7 +90,7 @@ public class SpatialTimeline extends Timeline<JmeSpatial> {
             @Override
             public Object call() throws Exception {
                 for (Control control : controls) {
-                    spatial.setControl(control);
+                    spatial.addControl(control);
                     control.setEnabled(true);
                 }
 

@@ -19,11 +19,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
-public final class ConvertToJme implements ActionListener {
+public final class OgreXMLToJme implements ActionListener {
 
     private final DataObject context;
 
-    public ConvertToJme(DataObject context) {
+    public OgreXMLToJme(DataObject context) {
         this.context = context;
     }
 

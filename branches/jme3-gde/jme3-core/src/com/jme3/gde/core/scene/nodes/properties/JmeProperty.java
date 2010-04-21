@@ -62,19 +62,20 @@ public class JmeProperty<T> extends PropertySupport.Reflection<T> {
 
     @Override
     public T getValue() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        try {
-            return SceneApplication.getApplication().enqueue(new Callable<T>() {
-
-                public T call() throws Exception {
-                    return getSuperValue();
-                }
-            }).get();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
+        return super.getValue();
+//        try {
+//            return SceneApplication.getApplication().enqueue(new Callable<T>() {
+//
+//                public T call() throws Exception {
+//                    return getSuperValue();
+//                }
+//            }).get();
+//        } catch (InterruptedException ex) {
+//            Exceptions.printStackTrace(ex);
+//        } catch (ExecutionException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+//        return null;
     }
 
     private T getSuperValue() {

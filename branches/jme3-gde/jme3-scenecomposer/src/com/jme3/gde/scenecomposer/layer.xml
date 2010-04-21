@@ -18,7 +18,7 @@
             <file name="com-jme3-gde-scenecomposer-SceneComposerAction.instance">
                 <attr name="component" methodvalue="com.jme3.gde.scenecomposer.SceneComposerTopComponent.findInstance"/>
                 <attr name="displayName" bundlevalue="com.jme3.gde.scenecomposer.Bundle#CTL_SceneComposerAction"/>
-                <attr name="iconBase" stringvalue="com/jme3/gde/scenecomposer/jme-logo24.png"/>
+                <attr name="iconBase" stringvalue="com/jme3/gde/scenecomposer/jme-logo.png"/>
                 <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
             </file>
         </folder>

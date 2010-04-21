@@ -4,34 +4,58 @@
  */
 package com.jme3.gde.scenecomposer;
 
+import com.jme3.effect.EmitterSphereShape;
+import com.jme3.effect.ParticleEmitter;
+import com.jme3.effect.ParticleMesh;
+import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
+import com.jme3.gde.core.scene.nodes.JmeNode;
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
+import com.jme3.material.Material;
+import com.jme3.math.Vector3f;
+import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import java.awt.image.BufferedImage;
+import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.openide.util.LookupListener;
+import org.openide.util.Utilities;
 
 /**
  * Top component which displays something.
  */
 @ConvertAsProperties(dtd = "-//com.jme3.gde.scenecomposer//SceneComposer//EN",
 autostore = false)
-public final class SceneComposerTopComponent extends TopComponent implements SceneListener{
+public final class SceneComposerTopComponent extends TopComponent implements SceneListener, LookupListener {
 
     private static SceneComposerTopComponent instance;
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "com/jme3/gde/scenecomposer/jme-logo24.png";
     private static final String PREFERRED_ID = "SceneComposerTopComponent";
+    private JmeNode rootNode;
+    private final Result<JmeSpatial> result;
+    private Spatial selected;
+    private JmeSpatial selectedSpat;
+    private boolean displayed = false;
 
     public SceneComposerTopComponent() {
         initComponents();
         setName(NbBundle.getMessage(SceneComposerTopComponent.class, "CTL_SceneComposerTopComponent"));
         setToolTipText(NbBundle.getMessage(SceneComposerTopComponent.class, "HINT_SceneComposerTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-
+        result = Utilities.actionsGlobalContext().lookupResult(JmeSpatial.class);
+        result.addLookupListener(this);
+        SceneApplication.getApplication().addSceneListener(this);
     }
 
     /** This method is called from within the constructor to
@@ -42,20 +66,103 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
+
+        jList1.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Particle Emitter" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane1.setViewportView(jList1);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.jButton1.text")); // NOI18N
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButton2, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.jButton2.text")); // NOI18N
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 400, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(jButton1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jButton2)
+                .add(200, 200, 200))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 300, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jButton1)
+                    .add(jButton2)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        if (displayed && selected != null) {
+            SceneApplication.getApplication().enqueue(new Callable() {
+
+                public Object call() throws Exception {
+                    selected.removeFromParent();
+                    return null;
+                }
+            });
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        if (displayed && selected instanceof Node) {
+            try {
+                SceneApplication.getApplication().enqueue(new Callable() {
+
+                    public Object call() throws Exception {
+                        ParticleEmitter emit = new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 200);
+                        emit.setShape(new EmitterSphereShape(Vector3f.ZERO, 1f));
+                        emit.setGravity(0);
+                        emit.setLowLife(5);
+                        emit.setHighLife(10);
+                        emit.setStartVel(new Vector3f(0, 0, 0));
+                        emit.setImagesX(15);
+                        Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
+                        //                    mat.setTexture("m_Texture", SceneApplication.getApplication().getAssetManager().loadTexture("Effects/Smoke/Smoke.png"));
+                        emit.setMaterial(mat);
+                        ((Node) selected).attachChild(emit);
+                        return null;
+
+                    }
+                }).get();
+                if(selectedSpat!=null)
+                    selectedSpat.refresh(true);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JList jList1;
+    private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
+
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
@@ -127,15 +234,33 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         return PREFERRED_ID;
     }
 
+    public void setRootNode(JmeNode node) {
+        this.rootNode = node;
+    }
+
     public void rootNodeChanged(JmeSpatial spatial) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (spatial.equals(rootNode)) {
+            displayed = true;
+        } else {
+            displayed = false;
+        }
+//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void nodeSelected(JmeSpatial spatial) {
-        throw new UnsupportedOperationException("Not supported yet.");
+//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void previewChanged(BufferedImage preview, Object origin) {
-        throw new UnsupportedOperationException("Not supported yet.");
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void resultChanged(LookupEvent ev) {
+        Collection<JmeSpatial> items = (Collection<JmeSpatial>) result.allInstances();
+        for (JmeSpatial spatial : items) {
+            selectedSpat = spatial;
+            selected=spatial.getLookup().lookup(Spatial.class);
+        }
+//        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

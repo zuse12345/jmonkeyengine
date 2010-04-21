@@ -4,8 +4,15 @@
  */
 package com.jme3.gde.scenecomposer;
 
+import com.jme3.gde.core.assets.ProjectAssetManager;
+import com.jme3.gde.core.scene.SceneApplication;
+import com.jme3.gde.core.scene.nodes.JmeNode;
+import com.jme3.gde.core.scene.nodes.NodeUtility;
+import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
 public final class OpenSceneComposer implements ActionListener {
@@ -17,6 +24,22 @@ public final class OpenSceneComposer implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent ev) {
-        // TODO use context
+        ProjectAssetManager manager=context.getLookup().lookup(ProjectAssetManager.class);
+        if(manager == null) return;
+        FileObject file=context.getPrimaryFile();
+        String assetName=manager.getRelativeAssetPath(file.getPath());
+        Spatial spat=manager.getManager().loadModel(assetName);
+        if(spat instanceof Node){
+            JmeNode jmeNode=NodeUtility.createNode((Node)spat);
+            SceneComposerTopComponent.findInstance().setRootNode(jmeNode);
+            SceneApplication.getApplication().showTree(jmeNode);
+        }
+        else{
+            Node node=new Node();
+            node.attachChild(spat);
+            JmeNode jmeNode=NodeUtility.createNode(node);
+            SceneComposerTopComponent.findInstance().setRootNode(jmeNode);
+            SceneApplication.getApplication().showTree(jmeNode);
+        }
     }
 }

@@ -44,7 +44,8 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -54,12 +55,21 @@ public class JmeSpatial extends AbstractNode {
 
     private Spatial spatial;
     private JmeSpatialChildFactory factory;
+    private final InstanceContent lookupContents;
+    private Lookup lookup;
 
     public JmeSpatial(Spatial spatial, JmeSpatialChildFactory factory) {
-        super(Children.create(factory, false), Lookups.fixed(spatial));
+        super(Children.create(factory, false), new JmeLookup(new InstanceContent()));
         this.factory=factory;
         this.spatial = spatial;
+        lookupContents=((JmeLookup)getLookup()).getInstanceContent();
+        getLookupContents().add(spatial);
+        getLookupContents().add(this);
         setName(spatial.getName());
+    }
+
+    public InstanceContent getLookupContents() {
+        return lookupContents;
     }
 
     public JmeSpatialChildFactory getFactory() {

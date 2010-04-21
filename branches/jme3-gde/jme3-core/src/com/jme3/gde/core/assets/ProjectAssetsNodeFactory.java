@@ -31,14 +31,14 @@
  */
 package com.jme3.gde.core.assets;
 
-import com.jme3.gde.core.assets.nodes.ProjectAssetsChildFactory;
 import com.jme3.gde.core.assets.nodes.ProjectAssetsNode;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
 /**
@@ -53,15 +53,22 @@ public class ProjectAssetsNodeFactory implements NodeFactory {
 
         this.proj = project;
 
-        //return a new node for the project view if theres an assets folder:
-        ProjectAssetManager item = project.getLookup().lookup(ProjectAssetManager.class);
-        if (item != null) {
-            try {
-                ProjectAssetsNode nd = new ProjectAssetsNode(item, proj);
-                return NodeFactorySupport.fixedNodeList(nd);
-            } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
+        DataObject assetsFolder;
+        try {
+            assetsFolder = DataObject.find(project.getProjectDirectory().getFileObject("assets"));
+            Node node = assetsFolder.getNodeDelegate();
+            //return a new node for the project view if theres an assets folder:
+            ProjectAssetManager item = project.getLookup().lookup(ProjectAssetManager.class);
+            if (item != null) {
+                try {
+                    ProjectAssetsNode nd = new ProjectAssetsNode(item, proj, node);
+                    return NodeFactorySupport.fixedNodeList(nd);
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
         }
 
         //If our item isn't in the lookup,

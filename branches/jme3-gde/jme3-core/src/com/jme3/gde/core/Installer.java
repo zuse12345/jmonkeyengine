@@ -32,6 +32,7 @@
 package com.jme3.gde.core;
 
 import com.jme3.gde.core.scene.SceneApplication;
+import java.io.File;
 import org.openide.modules.ModuleInstall;
 
 /**
@@ -49,8 +50,18 @@ public class Installer extends ModuleInstall {
 
     @Override
     public void restored() {
-        SceneApplication.getApplication();
+       SceneApplication.getApplication();
         // By default, do nothing.
         // Put your startup code here.
+    }
+
+    static{
+       File userDir = new File(System.getProperty("user.home"));
+       File myProjectsDir = new File(userDir, "jMonkeyProjects");
+       if (! myProjectsDir.exists()) {
+           myProjectsDir.mkdirs ();
+       }
+
+       System.setProperty("netbeans.projects.dir", myProjectsDir.getAbsolutePath());
     }
 }

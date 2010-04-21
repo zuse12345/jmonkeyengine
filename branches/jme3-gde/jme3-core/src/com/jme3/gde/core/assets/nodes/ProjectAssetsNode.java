@@ -36,7 +36,7 @@ import java.awt.Image;
 import org.netbeans.api.project.Project;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.lookup.Lookups;
 
@@ -49,8 +49,8 @@ public class ProjectAssetsNode extends AbstractNode {
     private static Image smallImage =
             ImageUtilities.loadImage("/com/jme3/gde/core/assets/nodes/icons/assets.gif");
 
-    public ProjectAssetsNode(ProjectAssetManager manager, Project proj) throws DataObjectNotFoundException {
-        super(Children.create(new ProjectAssetsChildFactory(proj, manager),true), Lookups.fixed(manager));
+    public ProjectAssetsNode(ProjectAssetManager manager, Project proj, Node node) throws DataObjectNotFoundException {
+        super(new AssetChildren(manager, node), Lookups.fixed(manager));
     }
 
     public String getDisplayName() {

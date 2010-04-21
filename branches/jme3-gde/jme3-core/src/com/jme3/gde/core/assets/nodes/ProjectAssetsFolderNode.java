@@ -63,15 +63,15 @@ public class ProjectAssetsFolderNode extends FilterNode {
         return name;
     }
 
-    public Image getIcon(int type) {
-        Image original = node.getIcon(type);
-        return ImageUtilities.mergeImages(original, smallImage, 5, 5);
-    }
-
-    public Image getOpenedIcon(int type) {
-        Image original = node.getOpenedIcon(type);
-        return ImageUtilities.mergeImages(original, smallImage, 5, 5);
-    }
+//    public Image getIcon(int type) {
+//        Image original = node.getIcon(type);
+//        return ImageUtilities.mergeImages(original, smallImage, 5, 5);
+//    }
+//
+//    public Image getOpenedIcon(int type) {
+//        Image original = node.getOpenedIcon(type);
+//        return ImageUtilities.mergeImages(original, smallImage, 5, 5);
+//    }
 
     public static Lookup createLookupProxy(ProjectAssetManager manager, Node node) {
         return new ProxyLookup(

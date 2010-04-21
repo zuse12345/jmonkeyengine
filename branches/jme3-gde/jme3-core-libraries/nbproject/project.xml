@@ -190,6 +190,10 @@
                 <binary-origin>release/modules/ext/nifty-examples-1.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
+                <runtime-relative-path>ext/jME3-lwjgl-natives-2.4.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/jME3-lwjgl-natives-2.4.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
                 <runtime-relative-path>ext/xmlpull-xpp3-1.1.4c.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/xmlpull-xpp3-1.1.4c.jar</binary-origin>
             </class-path-extension>
@@ -212,10 +216,6 @@
             <class-path-extension>
                 <runtime-relative-path>ext/jME3-jogl-natives.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/jME3-jogl-natives.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jME3-lwjgl-natives.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/jME3-lwjgl-natives.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jbullet.jar</runtime-relative-path>

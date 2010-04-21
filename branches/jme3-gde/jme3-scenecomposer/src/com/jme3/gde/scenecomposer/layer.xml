@@ -14,6 +14,14 @@
                 <attr name="type" stringvalue="org.openide.loaders.DataObject"/>
             </file>
         </folder>
+        <folder name="Window">
+            <file name="com-jme3-gde-scenecomposer-SceneComposerAction.instance">
+                <attr name="component" methodvalue="com.jme3.gde.scenecomposer.SceneComposerTopComponent.findInstance"/>
+                <attr name="displayName" bundlevalue="com.jme3.gde.scenecomposer.Bundle#CTL_SceneComposerAction"/>
+                <attr name="iconBase" stringvalue="com/jme3/gde/scenecomposer/jme-logo24.png"/>
+                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+            </file>
+        </folder>
     </folder>
     <folder name="Loaders">
         <folder name="application">
@@ -24,6 +32,23 @@
                         <attr name="position" intvalue="50"/>
                     </file>
                 </folder>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="Window">
+            <file name="SceneComposerAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/com-jme3-gde-scenecomposer-SceneComposerAction.instance"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="SceneComposerTopComponent.settings" url="SceneComposerTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="properties">
+                <file name="SceneComposerTopComponent.wstcref" url="SceneComposerTopComponentWstcref.xml"/>
             </folder>
         </folder>
     </folder>

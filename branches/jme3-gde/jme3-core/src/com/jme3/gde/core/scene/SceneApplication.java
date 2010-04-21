@@ -152,7 +152,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     }
 
     private void loadFPSText() {
-        BitmapFont font = manager.loadFont("cooper.fnt");
+        BitmapFont font = manager.loadFont("Interface/Fonts/Default.fnt");
 
         fpsText = new BitmapText(font, false);
         fpsText.setSize(font.getCharSet().getRenderedSize());

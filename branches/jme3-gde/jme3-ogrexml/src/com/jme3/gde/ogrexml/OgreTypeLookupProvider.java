@@ -31,20 +31,26 @@
  */
 package com.jme3.gde.ogrexml;
 
-import com.jme3.gde.core.filetypes.AssetDataObject;
-import java.io.IOException;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.nodes.CookieSet;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.LookupProvider;
 import org.openide.nodes.Node;
-import org.openide.text.DataEditorSupport;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
-public class OgreMaterialDataObject extends AssetDataObject {
+/**
+ *
+ * @author normenhansen
+ */
+public class OgreTypeLookupProvider  implements LookupProvider {
 
-    public OgreMaterialDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-        CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+    public Lookup createAdditionalLookup(Lookup lookup) {
+        Project prj = lookup.lookup(Project.class);
+
+        if (prj.getProjectDirectory().getFileObject("assets") != null) {
+            return Lookups.fixed(Node.EMPTY);
+        }
+
+        return Lookups.fixed();
     }
+
 }

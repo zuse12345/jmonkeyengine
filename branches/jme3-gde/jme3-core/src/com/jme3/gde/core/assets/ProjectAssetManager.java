@@ -53,23 +53,12 @@ public class ProjectAssetManager {
         this.project = prj;
         AssetManager manager = getManager();
         StatusDisplayer.getDefault().setStatusText("adding asset folder from " + prj.getProjectDirectory() + " to assetmanager");
-//        manager =  G3DSystem.newAssetManager();
+
         manager.registerLoader("com.jme3.export.binary.BinaryImporter", "j3s");
 
         manager.registerLocator(prj.getProjectDirectory() + "/assets/",
-                "com.jme3.asset.plugins.FileLocator", "*");
+                "com.jme3.asset.plugins.FileLocator");
 
-        //model loader paths TODO: remove
-        manager.registerLocator(prj.getProjectDirectory() + "/assets/models/",
-                "com.jme3.asset.plugins.FileLocator", "j3o");
-
-        //scene loader paths TODO: remove
-        manager.registerLocator(prj.getProjectDirectory() + "/assets/scenes/",
-                "com.jme3.asset.plugins.FileLocator", "j3s");
-
-        //dds, hdr, pfm, tga, bmp, png, jpg, jpeg, gif TODO: remove
-        manager.registerLocator(prj.getProjectDirectory() + "/assets/textures/",
-                "com.jme3.asset.plugins.FileLocator", "dds", "hdr", "pfm", "tga", "bmp", "jpg", "jpeg", "gif");
     }
 
     public Project getProject() {

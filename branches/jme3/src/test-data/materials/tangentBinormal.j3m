@@ -1,6 +1,0 @@
-Material TangentBinormal : phong_lighting.j3md {
-     MaterialParameters {
-         m_Shininess: 8.0
-         m_DiffuseMap: tangentBinormal.png
-     }
-}

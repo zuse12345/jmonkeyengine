@@ -1,8 +1,0 @@
-Material ElephantBody : phong_lighting.j3md {
-    MaterialParameters {
-         m_Shininess: 4.0
-         m_DiffuseMap: ELPHSKIN_C.jpg
-         m_NormalMap: ELPHSKIN_N.jpg
-
-    }
-}

@@ -1,5 +1,0 @@
-Material HDR Picture : plain_texture.j3md {
-    MaterialParameters {
-        m_ColorMap : Flip memorial.hdr
-    }
-}

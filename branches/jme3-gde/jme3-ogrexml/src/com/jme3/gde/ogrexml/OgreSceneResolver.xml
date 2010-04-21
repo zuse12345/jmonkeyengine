@@ -7,6 +7,11 @@ and open the template in the editor.
 <MIME-resolver>
     <file>
         <ext name="scene"/>
-        <resolver mime="text/ogrescene"/>
+        <ext name="xml"/>
+        <resolver mime="text/ogrescene+xml">
+            <xml-rule>
+                <element name="scene"/>
+            </xml-rule>
+        </resolver>
     </file>
 </MIME-resolver>

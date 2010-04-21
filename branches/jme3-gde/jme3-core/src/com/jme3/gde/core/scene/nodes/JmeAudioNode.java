@@ -53,7 +53,7 @@ public class JmeAudioNode extends JmeNode{
 
     private AudioNode node;
 
-    public JmeAudioNode(AudioNode spatial, Children children) {
+    public JmeAudioNode(AudioNode spatial, JmeSpatialChildFactory children) {
         super(spatial, children);
         this.node = spatial;
         setName(spatial.getName());

@@ -52,7 +52,7 @@ public class JmeBitmapText extends JmeGeometry {
             ImageUtilities.loadImage("/com/jme3/gde/core/scene/nodes/icons/bitmaptext.gif");
     private BitmapText geom;
 
-    public JmeBitmapText(BitmapText spatial, Children children) {
+    public JmeBitmapText(BitmapText spatial, JmeSpatialChildFactory children) {
         super(spatial, children);
         this.geom = spatial;
         setName(spatial.getName());

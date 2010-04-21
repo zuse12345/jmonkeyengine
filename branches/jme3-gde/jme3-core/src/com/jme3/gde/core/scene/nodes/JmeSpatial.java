@@ -53,11 +53,22 @@ import org.openide.util.lookup.Lookups;
 public class JmeSpatial extends AbstractNode {
 
     private Spatial spatial;
+    private JmeSpatialChildFactory factory;
 
-    public JmeSpatial(Spatial spatial, Children children) {
-        super(children, Lookups.singleton(spatial));
+    public JmeSpatial(Spatial spatial, JmeSpatialChildFactory factory) {
+        super(Children.create(factory, false), Lookups.fixed(spatial));
+        this.factory=factory;
         this.spatial = spatial;
         setName(spatial.getName());
+    }
+
+    public JmeSpatialChildFactory getFactory() {
+        return factory;
+    }
+
+    //TODO: refresh does not work
+    public void refresh(boolean immediate){
+        factory.refreshChildren(immediate);
     }
 
     @Override

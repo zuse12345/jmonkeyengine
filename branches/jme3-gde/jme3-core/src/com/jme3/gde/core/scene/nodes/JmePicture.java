@@ -50,7 +50,7 @@ public class JmePicture extends JmeGeometry {
             ImageUtilities.loadImage("com/jme3/gde/core/scene/nodes/icons/picture.gif");
     private Picture geom;
 
-    public JmePicture(Picture spatial, Children children) {
+    public JmePicture(Picture spatial, JmeSpatialChildFactory children) {
         super(spatial, children);
         this.geom = spatial;
         setName(spatial.getName());

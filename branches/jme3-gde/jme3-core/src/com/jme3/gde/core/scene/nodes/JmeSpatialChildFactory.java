@@ -57,6 +57,10 @@ public class JmeSpatialChildFactory extends ChildFactory<Spatial> {
         this.spatial = spatial;
     }
 
+    public void refreshChildren(boolean immediate){
+        super.refresh(immediate);
+    }
+
     @Override
     protected boolean createKeys(final List<Spatial> toPopulate) {
         try {
@@ -84,24 +88,24 @@ public class JmeSpatialChildFactory extends ChildFactory<Spatial> {
         //      best via registering some object in the global lookup
         JmeSpatialChildFactory factory = new JmeSpatialChildFactory(key);
         if (key instanceof com.jme3.audio.AudioNode) {
-            return new JmeAudioNode((com.jme3.audio.AudioNode) key, Children.create(factory, false));
+            return new JmeAudioNode((com.jme3.audio.AudioNode) key, factory);
         }
         if (key instanceof com.jme3.scene.Node) {
-            return new JmeNode((com.jme3.scene.Node) key, Children.create(factory, false));
+            return new JmeNode((com.jme3.scene.Node) key, factory);
         }
         if (key instanceof BitmapText) {
-            return new JmeBitmapText((BitmapText) key, Children.create(factory, false));
+            return new JmeBitmapText((BitmapText) key, factory);
         }
         if (key instanceof Picture) {
-            return new JmePicture((Picture) key, Children.create(factory, false));
+            return new JmePicture((Picture) key, factory);
         }
         if (key instanceof ParticleEmitter) {
-            return new JmeParticleEmitter((ParticleEmitter) key, Children.create(factory, false));
+            return new JmeParticleEmitter((ParticleEmitter) key, factory);
         }
         if (key instanceof com.jme3.scene.Geometry) {
-            return new JmeGeometry((Geometry) key, Children.create(factory, false));
+            return new JmeGeometry((Geometry) key, factory);
         }
-        return new JmeSpatial(key, Children.create(factory, false));
+        return new JmeSpatial(key, factory);
     }
 
     @Override
@@ -109,25 +113,25 @@ public class JmeSpatialChildFactory extends ChildFactory<Spatial> {
         JmeSpatialChildFactory factory = new JmeSpatialChildFactory(key);
         Node[] nodes = new Node[1];
         if (key instanceof com.jme3.audio.AudioNode) {
-            nodes[0] = new JmeAudioNode((com.jme3.audio.AudioNode) key, Children.create(factory, false));
+            nodes[0] = new JmeAudioNode((com.jme3.audio.AudioNode) key, factory);
         }
         else if (key instanceof com.jme3.scene.Node) {
-            nodes[0] = new JmeNode((com.jme3.scene.Node) key, Children.create(factory, false));
+            nodes[0] = new JmeNode((com.jme3.scene.Node) key, factory);
         }
         else if (key instanceof BitmapText) {
-            nodes[0] = new JmeBitmapText((BitmapText) key, Children.create(factory, false));
+            nodes[0] = new JmeBitmapText((BitmapText) key, factory);
         }
         else if (key instanceof Picture) {
-            nodes[0] = new JmePicture((Picture) key, Children.create(factory, false));
+            nodes[0] = new JmePicture((Picture) key, factory);
         }
         else if (key instanceof ParticleEmitter) {
-            nodes[0] = new JmeParticleEmitter((ParticleEmitter) key, Children.create(factory, false));
+            nodes[0] = new JmeParticleEmitter((ParticleEmitter) key, factory);
         }
         else if (key instanceof com.jme3.scene.Geometry) {
-            nodes[0] = new JmeGeometry((Geometry) key, Children.create(factory, false));
+            nodes[0] = new JmeGeometry((Geometry) key, factory);
         }
         else {
-            nodes[0] = new JmeSpatial(key, Children.create(factory, false));
+            nodes[0] = new JmeSpatial(key, factory);
         }
         return nodes;
     }

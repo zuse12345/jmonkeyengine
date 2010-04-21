@@ -49,7 +49,7 @@ public class JmeNode extends JmeSpatial {
 
     private Node node;
 
-    public JmeNode(Node spatial, Children children) {
+    public JmeNode(Node spatial, JmeSpatialChildFactory children) {
         super(spatial, children);
         this.node = spatial;
         setName(spatial.getName());

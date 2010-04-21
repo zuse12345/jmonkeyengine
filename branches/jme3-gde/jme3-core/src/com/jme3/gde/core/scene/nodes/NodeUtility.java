@@ -44,13 +44,13 @@ public class NodeUtility {
 
     public static JmeNode createNode(Node node){
         JmeSpatialChildFactory factory = new JmeSpatialChildFactory(node);
-        JmeNode jmeNode = new JmeNode(node, Children.create(factory, false));
+        JmeNode jmeNode = new JmeNode(node, factory);
         return jmeNode;
     }
 
     public static JmeSpatial createSpatial(Spatial node){
         JmeSpatialChildFactory factory = new JmeSpatialChildFactory(node);
-        JmeSpatial jmeSpatial = new JmeSpatial(node, Children.create(factory, false));
+        JmeSpatial jmeSpatial = new JmeSpatial(node, factory);
         return jmeSpatial;
     }
 

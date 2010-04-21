@@ -17,12 +17,12 @@ public class TestTriangleStrip extends SimpleApplication {
     }
 
     public void simpleInitApp() {
-        Geometry teaGeom = (Geometry) manager.loadModel("teapot.obj");
+        Geometry teaGeom = (Geometry) manager.loadModel("Models/Teapot/Teapot.obj");
         Mesh teaMesh = teaGeom.getMesh();
         ModelConverter.generateStrips(teaMesh, true, false, 24, 0);
 
         // show normals as material
-        Material mat = new Material(manager, "debug_normals.j3md");
+        Material mat = new Material(manager, "Common/MatDefs/Misc/ShowNormals.j3md");
 
         for (int y = -10; y < 10; y++){
             for (int x = -10; x < 10; x++){

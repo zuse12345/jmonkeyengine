@@ -20,12 +20,12 @@ public class TestAmbient extends AudioApp {
 
     @Override
     public void initAudioApp(){
-        waves  = new AudioNode(manager, "ocean_waves.ogg", true);
+        waves  = new AudioNode(manager, "Sound/Environment/Ocean Waves.ogg", true);
 
-        nature = new AudioNode(manager, "nature.ogg", true);
+        nature = new AudioNode(manager, "Sound/Environment/Nature.ogg", true);
         nature.setPositional(true);
         
-//        river  = new AudioSource(manager, "river.ogg");
+//        river  = new AudioSource(manager, "sounds/river.ogg");
 
 //        float[] eax = new float[]
 //            {15,	38.0f,	0.300f,	-1000,	-3300,	0,		1.49f,	0.54f,	1.00f,  -2560,	0.162f, 0.00f,0.00f,0.00f,	-229,	0.088f,		0.00f,0.00f,0.00f,	0.125f, 1.000f, 0.250f, 0.000f, -5.0f,  5000.0f,	250.0f, 0.00f,	0x3f }

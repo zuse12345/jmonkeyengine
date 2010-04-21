@@ -26,7 +26,7 @@ public class TestNormalLatc extends SimpleApplication {
         TextureKey key = new TextureKey(texName, true);
         key.setGenerateMips(false);
         Texture tex = manager.loadTexture(key);
-        Material mat = new Material(manager, "plain_texture.j3md");
+        Material mat = new Material(manager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         mat.setTexture("m_ColorMap", tex);
 //        mat.setBoolean("m_Normalize", true);
         if (latc)
@@ -43,7 +43,7 @@ public class TestNormalLatc extends SimpleApplication {
     }
 
     public void simpleInitApp() {
-        BitmapFont font = manager.loadFont("cooper.fnt");
+        BitmapFont font = manager.loadFont("Interface/Fonts/Default.fnt");
         BitmapText txt = new BitmapText(font, false);
         txt.setText("Left: LATC, Middle: JPG, Right: DXT1nm");
         txt.setLocalTranslation(0, txt.getLineHeight() * 2, 0);
@@ -53,9 +53,9 @@ public class TestNormalLatc extends SimpleApplication {
         quadMesh = new Quad(1, 1);
         quadMesh.updateGeometry(1, 1, false);
 
-        rootNode.attachChild(createQuad(-1f, "dot3_latc.DDS", true));
-        rootNode.attachChild(createQuad(0f, "dot3.jpg", false));
-        rootNode.attachChild(createQuad(1f, "dot3_dxt1.DDS", false));
+        rootNode.attachChild(createQuad(-1f, "Textures/BumpMapTest/Dot3_latc.dds", true));
+        rootNode.attachChild(createQuad(0f,  "Textures/BumpMapTest/Dot3.jpg", false));
+        rootNode.attachChild(createQuad(1f,  "Textures/BumpMapTest/Dot3_dxt1.dds", false));
     }
 
 }

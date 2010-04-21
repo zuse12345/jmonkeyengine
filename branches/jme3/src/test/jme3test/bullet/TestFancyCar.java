@@ -58,9 +58,6 @@ public class TestFancyCar extends SimplePhysicsApplication implements BindingLis
     }
 
     public void onPreUpdate(float tpf) {
-    }
-
-    public void onPostUpdate(float tpf) {
         float carSpeed = player.getLinearVelocity().length() / wheelRadius;
 
         player.accelerate(0);
@@ -72,6 +69,9 @@ public class TestFancyCar extends SimplePhysicsApplication implements BindingLis
         node_br.rotate(-carSpeed * tpf, 0, 0);
         node_fl.rotate(-carSpeed * tpf, 0, 0);
         node_fr.rotate(-carSpeed * tpf, 0, 0);
+    }
+
+    public void onPostUpdate(float tpf) {
     }
 
     @Override
@@ -98,9 +98,9 @@ public class TestFancyCar extends SimplePhysicsApplication implements BindingLis
 
 
     public void setupFloor() {
-        Material mat = manager.loadMaterial("pond_rock.j3m");
-        mat.getTextureParam("m_DiffuseMap").getValue().setWrap(WrapMode.Repeat);
-        mat.getTextureParam("m_NormalMap").getValue().setWrap(WrapMode.Repeat);
+        Material mat = manager.loadMaterial("Textures/Terrain/Pond/Pond.j3m");
+        mat.getTextureParam("m_DiffuseMap").getTextureValue().setWrap(WrapMode.Repeat);
+        mat.getTextureParam("m_NormalMap").getTextureValue().setWrap(WrapMode.Repeat);
 
         Box floor = new Box(Vector3f.ZERO, 40, 1f, 40);
         floor.scaleTextureCoordinates(new Vector2f(12.0f, 12.0f));
@@ -139,7 +139,7 @@ public class TestFancyCar extends SimplePhysicsApplication implements BindingLis
         float dampValue=0.8f;
         float mass = 1;
 
-        Spatial car = manager.loadModel("car.scene");
+        Spatial car = manager.loadModel("Models/Ferrari/Car.scene");
         Node carNode = (Node) car;
         Geometry chasis = findGeom(carNode, "car");
         BoundingBox box = (BoundingBox) chasis.getModelBound();

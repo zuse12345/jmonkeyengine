@@ -6,7 +6,6 @@ import com.jme3.font.BitmapText;
 import com.jme3.input.BindingAdapter;
 import com.jme3.input.FlyByCamera;
 import com.jme3.input.KeyInput;
-import com.jme3.input.binding.BindingListener;
 import com.jme3.material.RenderState;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
@@ -78,7 +77,7 @@ public abstract class SimpleApplication extends Application {
     }
 
     public void loadFPSText(){
-        guiFont = manager.loadFont("cooper.fnt");
+        guiFont = manager.loadFont("Interface/Fonts/Default.fnt");
         fpsText = new BitmapText(guiFont, false);
         fpsText.setSize(guiFont.getCharSet().getRenderedSize());
         fpsText.setLocalTranslation(0, fpsText.getLineHeight(), 0);

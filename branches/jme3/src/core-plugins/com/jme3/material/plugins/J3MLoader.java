@@ -3,8 +3,6 @@ package com.jme3.material.plugins;
 import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetKey;
 import com.jme3.material.*;
-import com.jme3.material.MaterialDef.MatParam;
-import com.jme3.material.MaterialDef.MatParamType;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
@@ -16,6 +14,7 @@ import com.jme3.material.RenderState.FaceCullMode;
 import com.jme3.material.TechniqueDef.LightMode;
 import com.jme3.material.TechniqueDef.ShadowMode;
 import com.jme3.shader.Shader.ShaderType;
+import com.jme3.shader.VarType;
 import com.jme3.texture.Image;
 import com.jme3.texture.Image.Format;
 import com.jme3.texture.Texture;
@@ -124,15 +123,16 @@ public class J3MLoader implements AssetLoader {
 
     private void readParam() throws IOException{
         String word = scan.next();
-        MaterialDef.MatParamType type;
+        VarType type;
         if (word.equals("Color")){
-            type = MatParamType.Vector4;
+            type = VarType.Vector4;
         }else{
-            type = MaterialDef.MatParamType.valueOf(word);
+            type = VarType.valueOf(word);
         }
         
         word = readString("[\n;(//)(\\})]");
-        materialDef.addMaterialParam(type, word);
+        // TODO: add support for default vals
+        materialDef.addMaterialParam(type, word, null);
     }
 
     private void readValueParam() throws IOException{
@@ -144,9 +144,10 @@ public class J3MLoader implements AssetLoader {
         if (p == null)
             throw new IOException("The material parameter: "+name+" is undefined.");
 
-        MatParamType type = p.getType();
+        VarType type = p.getVarType();
         if (type.isTextureType()){
-            String texturePath = readString("[\n;(//)(\\})]");
+//            String texturePath = readString("[\n;(//)(\\})]");
+            String texturePath = readString("[\n;(\\})]");
             boolean flipY = false;
             if (texturePath.startsWith("Flip ")){
                 texturePath = texturePath.substring(5).trim();
@@ -154,38 +155,11 @@ public class J3MLoader implements AssetLoader {
             }
 
             TextureKey key = new TextureKey(texturePath, flipY);
-            key.setAsCube(p.getType() == MatParamType.TextureCubeMap);
+            key.setAsCube(type == VarType.TextureCubeMap);
             key.setGenerateMips(true);
 
             Texture tex = owner.loadTexture(key);
             material.setTextureParam(name, type, tex);
-//            Image img;
-//            if (texturePath.startsWith("color")){
-//                texturePath = texturePath.substring(5).trim();
-//                String[] split = texturePath.split(" ");
-//                if (split.length == 4){
-//                    img = createColorTexture(new ColorRGBA(Float.parseFloat(split[0]),
-//                                                           Float.parseFloat(split[1]),
-//                                                           Float.parseFloat(split[2]),
-//                                                           Float.parseFloat(split[3])));
-//                }else if (split.length == 3){
-//                    img = createColorTexture(new ColorRGBA(Float.parseFloat(split[0]),
-//                                                           Float.parseFloat(split[1]),
-//                                                           Float.parseFloat(split[2]),
-//                                                           1.0f));
-//                }else{
-//                    throw new IOException("Expected 3 or 4 floats, got '"+texturePath+"'");
-//                }
-//            }else{
-//                img = (Image) owner.loadContent(new TextureKey(texturePath, false));
-//            }
-//
-//            // parse texture
-//            if (type == MatParamType.Texture2D){
-//                material.setTextureParam(name, type, new Texture2D(img));
-//            }else if (type == MatParamType.TextureCubeMap){
-//                material.setTextureParam(name, type, new TextureCubeMap(img));
-//            }
         }else{
             switch (type){
                 case Float:
@@ -193,18 +167,18 @@ public class J3MLoader implements AssetLoader {
                     break;
                 case Vector2:
                     material.setParam(name, type, new Vector2f(scan.nextFloat(),
-                                                         scan.nextFloat()));
+                                                               scan.nextFloat()));
                     break;
                 case Vector3:
                     material.setParam(name, type, new Vector3f(scan.nextFloat(),
-                                                         scan.nextFloat(),
-                                                         scan.nextFloat()));
+                                                               scan.nextFloat(),
+                                                               scan.nextFloat()));
                     break;
                 case Vector4:
                     material.setParam(name, type, new ColorRGBA(scan.nextFloat(),
-                                                          scan.nextFloat(),
-                                                          scan.nextFloat(),
-                                                          scan.nextFloat()));
+                                                                scan.nextFloat(),
+                                                                scan.nextFloat(),
+                                                                scan.nextFloat()));
                     break;
                 case Int:
                     material.setParam(name, type, scan.nextInt());
@@ -213,7 +187,7 @@ public class J3MLoader implements AssetLoader {
                     material.setParam(name, type, scan.nextBoolean());
                     break;
                 default:
-                    throw new UnsupportedOperationException("Unknown type: "+p.getType());
+                    throw new UnsupportedOperationException("Unknown type: "+type);
             }
         }
     }
@@ -355,7 +329,7 @@ public class J3MLoader implements AssetLoader {
             technique.addShaderParamDefine(matParamName, defineName);
         }else{
             // add preset define
-            technique.addShaderPresetDefine(defineName, "1");
+            technique.addShaderPresetDefine(defineName, VarType.Boolean, true);
         }
     }
 

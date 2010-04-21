@@ -68,7 +68,7 @@ public class TestPhysicsCar extends SimplePhysicsApplication implements BindingL
 
     public void setupFloor() {
         Material mat = new Material(manager, "plain_texture.j3md");
-        TextureKey key = new TextureKey("Monkey.jpg", true);
+        TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);
         key.setGenerateMips(true);
         Texture tex = manager.loadTexture(key);
         tex.setMinFilter(Texture.MinFilter.Trilinear);
@@ -94,12 +94,12 @@ public class TestPhysicsCar extends SimplePhysicsApplication implements BindingL
         float dampValue=0.8f;
 
         Material matBox = new Material(manager, "plain_texture.j3md");
-        TextureKey keyBox = new TextureKey("signpost_color.jpg", true);
+        TextureKey keyBox = new TextureKey("Models/Sign Post/Sign Post.jpg", true);
         keyBox.setGenerateMips(true);
         Texture texBox = manager.loadTexture(keyBox);
         matBox.setTexture("m_ColorMap", texBox);
         Material mat = new Material(manager, "plain_texture.j3md");
-        TextureKey key = new TextureKey("Monkey.jpg", true);
+        TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);
         key.setGenerateMips(true);
         Texture tex = manager.loadTexture(key);
         mat.setTexture("m_ColorMap", tex);

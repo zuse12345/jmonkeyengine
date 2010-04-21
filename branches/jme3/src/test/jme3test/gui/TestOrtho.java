@@ -15,7 +15,7 @@ public class TestOrtho extends SimpleApplication {
         p.setPosition(0, 0);
         p.setWidth(settings.getWidth());
         p.setHeight(settings.getHeight());
-        p.setImage(manager, "Monkey.png", false);
+        p.setImage(manager, "Interface/Logo/Monkey.png", false);
 
         // attach geometry to orthoNode
         guiNode.attachChild(p);

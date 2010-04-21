@@ -17,7 +17,7 @@ public class TestBitmapFont extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        BitmapFont fnt = manager.loadFont("cooper.fnt");
+        BitmapFont fnt = manager.loadFont("Interface/Fonts/Default.fnt");
         BitmapText txt = new BitmapText(fnt, false);
         txt.setBox(new Rectangle(0, 0, settings.getWidth(), settings.getHeight()));
         txt.setSize(fnt.getPreferredSize() * 2f);

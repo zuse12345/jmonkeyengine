@@ -4,7 +4,6 @@ import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
-import com.jme3.export.Savable;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Matrix4f;
@@ -13,56 +12,35 @@ import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.util.BufferUtils;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.BufferOverflowException;
 import java.nio.FloatBuffer;
 
 public class Uniform extends ShaderVariable {
-
-    public static enum Type {
-        Float,
-        Vector2,
-        Vector3,
-        Vector4,
-
-        FloatArray,
-        Vector2Array,
-        Vector3Array,
-        Vector4Array,
-
-        Boolean,
-
-        Matrix3,
-        Matrix4,
-
-        Matrix3Array,
-        Matrix4Array,
-
-        Int,
-    }
 
     /**
      * Currently set value of the uniform.
      */
     protected Object value = null;
-    protected FloatBuffer matrixValue = null;
+    protected FloatBuffer multiData = null;
 
     /**
      * Type of uniform
      */
-    protected Type dataType;
+    protected VarType varType;
 
     /**
      * Binding to a renderer value, or null if user-defined uniform
      */
     protected UniformBinding binding;
 
+    protected Object lastChanger = null;
+
+    @Override
     public void write(JmeExporter ex) throws IOException{
         super.write(ex);
         OutputCapsule oc = ex.getCapsule(this);
-        oc.write(dataType, "dataType", null);
+        oc.write(varType, "varType", null);
         oc.write(binding, "binding", null);
-        switch (dataType){
+        switch (varType){
             case Boolean:
                 oc.write( ((Boolean)value).booleanValue(), "valueBoolean", false );
                 break;
@@ -103,12 +81,13 @@ public class Uniform extends ShaderVariable {
         }
     }
 
+    @Override
     public void read(JmeImporter im) throws IOException{
         super.read(im);
         InputCapsule ic = im.getCapsule(this);
-        dataType = ic.readEnum("dataType", Type.class, null);
+        varType = ic.readEnum("varType", VarType.class, null);
         binding = ic.readEnum("binding", UniformBinding.class, null);
-        switch (dataType){
+        switch (varType){
             case Boolean:
                 value = ic.readBoolean("valueBoolean", false);
                 break;
@@ -122,12 +101,12 @@ public class Uniform extends ShaderVariable {
                 value = ic.readInt("valueInt", 0);
                 break;
             case Matrix3:
-                matrixValue = ic.readFloatBuffer("valueMatrix3", null);
-                value = matrixValue;
+                multiData = ic.readFloatBuffer("valueMatrix3", null);
+                value = multiData;
                 break;
             case Matrix4:
-                matrixValue = ic.readFloatBuffer("valueMatrix4", null);
-                value = matrixValue;
+                multiData = ic.readFloatBuffer("valueMatrix4", null);
+                value = multiData;
                 break;
             case Vector2:
                 value = ic.readSavable("valueVector2", null);
@@ -155,117 +134,114 @@ public class Uniform extends ShaderVariable {
         return binding;
     }
 
-    public Type getDataType() {
-        return dataType;
+    public VarType getVarType() {
+        return varType;
     }
 
     public Object getValue(){
         return value;
     }
 
-    public void setMatrix4(Matrix4f mat){
+    public void setLastChanger(Object lastChanger){
+        this.lastChanger = lastChanger;
+    }
+
+    public Object getLastChanger(){
+        return lastChanger;
+    }
+
+    public void setValue(VarType type, Object value){
         if (location == -1)
             return;
 
-        if (dataType != null && dataType != Type.Matrix4)
-            throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
+        if (varType != null && varType != type)
+            throw new IllegalArgumentException("Expected a "+varType.name()+" value!");
 
-        if (matrixValue == null){
-            matrixValue = BufferUtils.createFloatBuffer(16);
-            value = matrixValue;
+        if (value == null)
+            throw new NullPointerException();
+
+        switch (type){
+            case Matrix3:
+                Matrix3f m3 = (Matrix3f) value;
+                if (multiData == null)
+                    multiData = BufferUtils.createFloatBuffer(9);
+                else{
+                    m3.fillFloatBuffer(multiData, true);
+                    multiData.clear();
+                }
+                break;
+            case Matrix4:
+                Matrix4f m4 = (Matrix4f) value;
+                if (multiData == null)
+                    multiData = BufferUtils.createFloatBuffer(16);
+                else{
+                    m4.fillFloatBuffer(multiData, true);
+                    multiData.clear();
+                }
+                break;
+            case FloatArray:
+                float[] fa = (float[]) value;
+                if (multiData == null)
+                    multiData = BufferUtils.createFloatBuffer(fa);
+                else{
+                    multiData = BufferUtils.ensureLargeEnough(multiData, fa.length);
+                    multiData.clear();
+                    multiData.put(fa).clear();
+                }
+                break;
+            case Vector2Array:
+                Vector2f[] v2a = (Vector2f[]) value;
+                if (multiData == null)
+                    multiData = BufferUtils.createFloatBuffer(v2a);
+                else{
+                    multiData = BufferUtils.ensureLargeEnough(multiData, v2a.length * 2);
+                    multiData.clear();
+                    for (int i = 0; i < v2a.length; i++)
+                        BufferUtils.setInBuffer(v2a[i], multiData, i);
+                    multiData.clear();
+                }
+                break;
+            case Vector3Array:
+                Vector3f[] v3a = (Vector3f[]) value;
+                if (multiData == null)
+                    multiData = BufferUtils.createFloatBuffer(v3a);
+                else{
+                    multiData = BufferUtils.ensureLargeEnough(multiData, v3a.length * 3);
+                    multiData.clear();
+                    for (int i = 0; i < v3a.length; i++)
+                        BufferUtils.setInBuffer(v3a[i], multiData, i);
+                    multiData.clear();
+                }
+                break;
+            case Vector4Array:
+                Quaternion[] v4a = (Quaternion[]) value;
+                if (multiData == null)
+                    multiData = BufferUtils.createFloatBuffer(v4a);
+                else{
+                    multiData = BufferUtils.ensureLargeEnough(multiData, v4a.length * 4);
+                    multiData.clear();
+                    for (int i = 0; i < v4a.length; i++)
+                        BufferUtils.setInBuffer(v4a[i], multiData, i);
+                    multiData.clear();
+                }
+                break;
+            case Matrix3Array:
+                Matrix3f[] m3a = (Matrix3f[]) value;
+                throw new UnsupportedOperationException();
+//                break;
+            case Matrix4Array:
+                Matrix4f[] m4a = (Matrix4f[]) value;
+                throw new UnsupportedOperationException();
+//                break;
+            default:
+                this.value = value;
+                break;
         }
-        mat.fillFloatBuffer(matrixValue, true);
-        matrixValue.flip();
-        dataType = Type.Matrix4;
-        updateNeeded = true;
-    }
 
-    public void setMatrix3(Matrix3f mat){
-        if (location == -1)
-            return;
-
-        if (dataType != null && dataType != Type.Matrix3)
-            throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
-
-        if (matrixValue == null){
-            matrixValue = BufferUtils.createFloatBuffer(9);
-            value = matrixValue;
-        }
-        mat.fillFloatBuffer(matrixValue, true);
-        matrixValue.flip();
-        dataType = Type.Matrix3;
-        updateNeeded = true;
-    }
-
-    public void setFloat(float val){
-        if (location == -1)
-            return;
-
-        if (dataType != null && dataType != Type.Float)
-            throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
-
-        value = new Float(val);
-        dataType = Type.Float;
-        updateNeeded = true;
-    }
-
-    public void setBoolean(boolean val) {
-        if (location == -1)
-            return;
-
-        if (dataType != null && dataType != Type.Boolean)
-            throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
-
-        value = new Boolean(val);
-        dataType = Type.Boolean;
-        updateNeeded = true;
-    }
-
-    public void setFloatArray(float[] vals){
-        if (location == -1)
-            return;
-
-        if (dataType != null && dataType != Type.FloatArray)
-            throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
-
-        value = BufferUtils.createFloatBuffer(vals);
-        dataType = Type.FloatArray;
-        updateNeeded = true;
-    }
-
-    public void setVector3Array(Vector3f[] vals){
-        if (location == -1)
-            return;
-
-        if (dataType != null && dataType != Type.Vector3Array)
-            throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
-
-        value = BufferUtils.createFloatBuffer(vals);
-        dataType = Type.Vector3Array;
-        updateNeeded = true;
-    }
-
-    public void setVector4Array(Quaternion[] vals){
-        if (location == -1)
-            return;
-
-        if (dataType != null && dataType != Type.Vector4Array)
-            throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
-
-        FloatBuffer fb = (FloatBuffer) value;
-        if (fb == null){
-            fb = BufferUtils.createFloatBuffer(vals.length * 4);
-        }else if (fb.capacity() < vals.length){
-            throw new BufferOverflowException();
-        }
-        fb.rewind();
-        for (Quaternion q : vals){
-            q.get(fb);
-        }
-        fb.flip();
-        value = fb;
-
-        dataType = Type.Vector4Array;
+        if (multiData != null)
+            this.value = multiData;
+        
+        varType = type;
         updateNeeded = true;
     }
 
@@ -278,7 +254,7 @@ public class Uniform extends ShaderVariable {
             value = BufferUtils.createFloatBuffer(length * 4);
         }
 
-        dataType = Type.Vector4Array;
+        varType = VarType.Vector4Array;
         updateNeeded = true;
     }
 
@@ -286,8 +262,8 @@ public class Uniform extends ShaderVariable {
         if (location == -1)
             return;
 
-        if (dataType != null && dataType != Type.Vector4Array)
-            throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
+        if (varType != null && varType != VarType.Vector4Array)
+            throw new IllegalArgumentException("Expected a "+varType.name()+" value!");
 
         FloatBuffer fb = (FloatBuffer) value;
         fb.position(index * 4);
@@ -295,79 +271,7 @@ public class Uniform extends ShaderVariable {
         fb.rewind();
         updateNeeded = true;
     }
-
-    public void setVector2(Vector2f val){
-        if (location == -1)
-            return;
-
-        if (dataType != null && dataType != Type.Vector2)
-            throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
-
-        value = val.clone();
-        dataType = Type.Vector2;
-        updateNeeded = true;
-    }
-
-    public void setVector3(Vector3f val){
-        if (location == -1)
-            return;
-
-        if (dataType != null && dataType != Type.Vector3)
-            throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
-
-        value = val.clone();
-        dataType = Type.Vector3;
-        updateNeeded = true;
-    }
-
-    public void setVector4(float x, float y, float z, float w){
-        if (location == -1)
-            return;
-
-        if (dataType != null && dataType != Type.Vector4)
-            throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
-
-        value = new ColorRGBA(x, y, z, w);
-        dataType = Type.Vector4;
-        updateNeeded = true;
-    }
-
-    public void setVector4(Quaternion val){
-        if (location == -1)
-            return;
-
-        if (dataType != null && dataType != Type.Vector4)
-            throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
-
-        value = new ColorRGBA(val.getX(), val.getY(), val.getZ(), val.getW());
-        dataType = Type.Vector4;
-        updateNeeded = true;
-    }
-
-    public void setColor(ColorRGBA color){
-        if (location == -1)
-            return;
-
-        if (dataType != null && dataType != Type.Vector4)
-            throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
-
-        value = color.clone();
-        dataType = Type.Vector4;
-        updateNeeded = true;
-    }
-
-    public void setInt(int val){
-        if (location == -1)
-            return;
-        
-        if (dataType != null && dataType != Type.Int)
-            throw new IllegalArgumentException("Expected a "+dataType.name()+" value!");
-
-        value = new Integer(val);
-        dataType = Type.Int;
-        updateNeeded = true;
-    }
-
+    
     public boolean isUpdateNeeded(){
         return updateNeeded;
     }
@@ -377,6 +281,7 @@ public class Uniform extends ShaderVariable {
     }
 
     public void reset(){
+        lastChanger = null;
         location = -2;
         updateNeeded = true;
     }

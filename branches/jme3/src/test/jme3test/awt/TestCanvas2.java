@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package jme3test.awt;
 
 import com.jme3.app.Application;
@@ -15,10 +10,6 @@ import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-/**
- *
- * @author Kirusha
- */
 public class TestCanvas2 {
 
     private static JmeCanvasContext context;
@@ -74,7 +65,7 @@ public class TestCanvas2 {
     public static void main(String[] args){
         SwingUtilities.invokeLater(new Runnable(){
             public void run(){
-                String appClass = "jme3test.model.TestBox";
+                String appClass = "jme3test.model.shape.TestBox";
                 createCanvas(appClass);
                 createFrame();
                 frame.getContentPane().add(canvas);

@@ -44,7 +44,7 @@ public class Picture extends Geometry {
 
     public void setImage(AssetManager manager, String imgName, boolean useAlpha){
         if (getMaterial() == null){
-            Material mat = new Material(manager, "default_gui.j3md");
+            Material mat = new Material(manager, "Common/MatDefs/Gui/Gui.j3md");
             mat.setColor("m_Color", ColorRGBA.White);
             setMaterial(mat);
         }
@@ -54,7 +54,7 @@ public class Picture extends Geometry {
 
     public void setTexture(AssetManager manager, Texture2D tex, boolean useAlpha){
         if (getMaterial() == null){
-            Material mat = new Material(manager, "default_gui.j3md");
+            Material mat = new Material(manager, "Common/MatDefs/Gui/Gui.j3md");
             mat.setColor("m_Color", ColorRGBA.White);
             setMaterial(mat);
         }

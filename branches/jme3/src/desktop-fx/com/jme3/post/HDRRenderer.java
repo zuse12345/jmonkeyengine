@@ -126,7 +126,7 @@ public class HDRRenderer implements SceneProcessor {
         if (scene64 == null)
             return null;
 
-        Material mat = new Material(manager, "loglum.j3md");
+        Material mat = new Material(manager, "Common/MatDefs/Hdr/LogLum.j3md");
 //        if (mode == LUMMODE_ENCODE_LUM)
 //            mat.setBoolean("m_EncodeLum", true);
 //        else if (mode == LUMMODE_DECODE_LUM)
@@ -141,7 +141,7 @@ public class HDRRenderer implements SceneProcessor {
 
     private Material createLumShader(int srcW, int srcH, int bufW, int bufH, int mode,
                                 int iters, Texture tex){
-        Material mat = new Material(manager, "loglum.j3md");
+        Material mat = new Material(manager, "Common/MatDefs/Hdr/LogLum.j3md");
         
         Vector2f blockSize = new Vector2f(1f / bufW, 1f / bufH);
         Vector2f pixelSize = new Vector2f(1f / srcW, 1f / srcH);
@@ -292,7 +292,7 @@ public class HDRRenderer implements SceneProcessor {
         scene1FB[1].setColorTexture(scene1[1]);
 
         // prepare tonemap shader
-        tone = new Material(manager, "tonemap.j3md");
+        tone = new Material(manager, "Common/MatDefs/Hdr/ToneMap.j3md");
         tone.setFloat("m_A", 0.18f);
         tone.setFloat("m_White", 100);
 

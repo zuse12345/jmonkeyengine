@@ -97,9 +97,6 @@ public class NiftyJmeDisplay extends TimeProvider implements SceneProcessor {
         renderManager.setCamera(vp.getCamera(), true);
         nifty.render(false);
         renderManager.setCamera(vp.getCamera(), false);
-
-        if (RenderDeviceJme.GUI_DEBUG)
-            System.exit(1);
     }
 
     public void postFrame(FrameBuffer out) {

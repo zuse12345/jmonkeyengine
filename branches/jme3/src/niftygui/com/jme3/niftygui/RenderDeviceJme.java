@@ -8,12 +8,12 @@ import com.jme3.math.Matrix4f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.Renderer;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Node;
 import com.jme3.scene.VertexBuffer;
 import com.jme3.scene.VertexBuffer.Format;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.scene.VertexBuffer.Usage;
 import com.jme3.scene.shape.Quad;
+import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 import com.jme3.util.BufferUtils;
 import de.lessvoid.nifty.render.BlendMode;
@@ -30,7 +30,7 @@ public class RenderDeviceJme implements RenderDevice {
     private RenderManager rm;
     private Renderer r;
 
-    private final Quad quad = new Quad(1, 1);
+    private final Quad quad = new Quad(1, -1, true);
     private final Geometry quadGeom = new Geometry("nifty-quad", quad);
     private final Geometry gradQuadGeom = new Geometry("nifty-gradient-quad", quad);
     private final Geometry imageQuadGeom = new Geometry("nifty-image-quad", quad);
@@ -38,11 +38,8 @@ public class RenderDeviceJme implements RenderDevice {
 //    private final Node textNode = new Node("nifty-text-node");
 
     private final ColorRGBA colorRgba = new ColorRGBA();
-    private final Material solidColor;
-    private final Material gradientColor;
-    private final Material imageColor;
+    private final Material niftyMat;
 
-    public static boolean GUI_DEBUG = false;
     private boolean clipWasSet = false;
     private BlendMode blendMode = null;
 
@@ -62,22 +59,7 @@ public class RenderDeviceJme implements RenderDevice {
 
         quadModTC.setUsage(Usage.Stream);
 
-        solidColor = new Material(display.getAssetManager(), "default_gui.j3md");
-        solidColor.setBoolean("m_VertexColor", false);
-        solidColor.setBoolean("m_EnableUbo", true);
-//        quadGeom.setMaterial(solidColor);
-
-        gradientColor = new Material(display.getAssetManager(), "default_gui.j3md");
-        gradientColor.setBoolean("m_VertexColor", true);
-        gradientColor.setColor("m_Color", ColorRGBA.White);
-        gradientColor.setBoolean("m_EnableUbo", true);
-//        gradQuadGeom.setMaterial(gradientColor);
-
-        imageColor = new Material(display.getAssetManager(), "default_gui.j3md");
-        imageColor.setBoolean("m_VertexColor", false);
-        imageColor.setBoolean("m_EnableUbo", true);
-//        imageQuadGeom.setMaterial(imageColor);
-//        imageQuadNode.attachChild(imageQuadGeom);
+        niftyMat = new Material(display.getAssetManager(), "Common/MatDefs/Nifty/Nifty.j3md");
     }
 
     public void setRenderManager(RenderManager rm){
@@ -86,16 +68,10 @@ public class RenderDeviceJme implements RenderDevice {
     }
 
     public RenderImage createImage(String filename, boolean linear) {
-        if (GUI_DEBUG)
-            System.out.println("LoadImage('"+filename+"', "+linear+")");
-        
         return new RenderImageJme(filename, linear, display);
     }
 
     public RenderFont createFont(String filename) {
-        if (GUI_DEBUG)
-            System.out.println("LoadFont('"+filename+"')");
-        
         return new RenderFontJme(filename, display);
     }
 
@@ -108,16 +84,11 @@ public class RenderDeviceJme implements RenderDevice {
     }
 
     public void clear() {
-        if (GUI_DEBUG)
-            System.out.println("Clear()");
     }
 
     public void setBlendMode(BlendMode blendMode) {
         if (this.blendMode != blendMode){
             this.blendMode = blendMode;
-
-            if (GUI_DEBUG)
-                System.out.println("BlendMode("+blendMode.name()+")");
         }
     }
 
@@ -141,14 +112,15 @@ public class RenderDeviceJme implements RenderDevice {
         return colorRgba;
     }
 
-    void renderText(String str, int x, int y, Color color, float size, BitmapText text){
+    void renderText(String str, int x, int y, Color color, float size, BitmapText text, Texture texture){
         if (str.length() == 0)
             return;
-//        textNode.detachAllChildren();
-//        textNode.attachChild(text);
 
-//        text.setColor(convertColor(color));
-        text.getMaterial().setColor("m_Color", convertColor(color));
+        niftyMat.setColor("m_Color", convertColor(color));
+        niftyMat.setTexture("m_Texture", texture);
+        niftyMat.setInt("m_Mode", 4);
+        niftyMat.getAdditionalRenderState().setBlendMode(convertBlend());
+
         text.setText(str);
         text.updateLogicalState(0);
 
@@ -163,24 +135,7 @@ public class RenderDeviceJme implements RenderDevice {
         tempMat.setScale(size, size, 0);
 
         rm.setWorldMatrix(tempMat);
-        text.getMaterial().render(text, rm);
-
-//        textNode.updateLogicalState(0);
-//        textNode.updateModelBound();
-//        textNode.updateGeometricState();
-//
-//        BoundingBox bbox = (BoundingBox) text.getWorldBound();
-//        float width2 = bbox.getXExtent() * 2f;
-//        float height2 = bbox.getYExtent() * 2f;
-
-//        text.setLocalTranslation(-width/2f, -height/2f, 0);
-//        textNode.setLocalTranslation(x + width/2f, getHeight() + (height/2f) - y, 0);
-//        textNode.setLocalScale(size);
-//        textNode.updateGeometricState();
-//        display.getRenderManager().renderGeometry(text);
-
-        if (RenderDeviceJme.GUI_DEBUG)
-            System.out.println("DrawText('"+str+"', "+x+", "+y+", "+color+", "+size+")");
+        niftyMat.render(text, rm);
     }
 
     void renderTextureQuad(int x, int y, int w, int h,
@@ -188,9 +143,10 @@ public class RenderDeviceJme implements RenderDevice {
                            Color color, float scale,
                            int centerX, int centerY, Texture2D texture){
 
-        imageColor.getAdditionalRenderState().setBlendMode(convertBlend());
-        imageColor.setTexture("m_Texture", texture);
-        imageColor.setColor("m_Color", convertColor(color));
+        niftyMat.getAdditionalRenderState().setBlendMode(convertBlend());
+        niftyMat.setTexture("m_Texture", texture);
+        niftyMat.setInt("m_Mode", 3);
+        niftyMat.setColor("m_Color", convertColor(color));
 
         float imageWidth  = texture.getImage().getWidth();
         float imageHeight = texture.getImage().getHeight();
@@ -216,75 +172,49 @@ public class RenderDeviceJme implements RenderDevice {
         quad.setBuffer(quadModTC);
 
         float x0 = centerX + (x - centerX) * scale;
-        float y0 = centerY - (y - centerY) * scale;
+        float y0 = centerY + (y - centerY) * scale;
 
         tempMat.loadIdentity();
         tempMat.setTranslation(x0, getHeight() - y0, 0);
         tempMat.setScale(w * scale, h * scale, 0);
 
         rm.setWorldMatrix(tempMat);
-        imageColor.render(imageQuadGeom, rm);
-
-
-//        imageQuadGeom.setLocalScale(w, h, 0);
-//        imageQuadGeom.setLocalTranslation(-w/2f - centerX, -h/2f - centerY, 0);
-//        imageQuadNode.setLocalTranslation(x + w/2f + centerX, getHeight() - (h/2f) - y + centerY, 0);
-//        imageQuadNode.setLocalScale(scale);
-//        imageQuadNode.updateGeometricState();
-//        display.getRenderManager().renderGeometry(imageQuadGeom);
-
-        if (GUI_DEBUG)
-            System.out.println("DrawImageEx("+x+", "+y+", "+w+", "+h+", \n" +
-                               "            "+srcX+", "+srcY+", "+srcW+", "+srcH+", \n" +
-                               "            "+centerX+", "+centerY+", \n" +
-                               "            "+color+", "+scale+")");
+        niftyMat.render(imageQuadGeom, rm);
     }
 
     void renderTextureQuad(int x, int y, int width, int height,
                        Color color, float imageScale, Texture2D texture){
 
-        imageColor.getAdditionalRenderState().setBlendMode(convertBlend());
-        imageColor.setTexture("m_Texture", texture);
-        imageColor.setColor("m_Color", convertColor(color));
-
+        niftyMat.getAdditionalRenderState().setBlendMode(convertBlend());
+        niftyMat.setTexture("m_Texture", texture);
+        niftyMat.setInt("m_Mode", 3);
+        niftyMat.setColor("m_Color", convertColor(color));
+          
         quad.clearBuffer(Type.TexCoord);
         quad.setBuffer(quadDefaultTC);
 
         float x0 = x + 0.5f * width  * (1f - imageScale);
-        float y0 = y + 0.5f * height * (1f + imageScale);
+        float y0 = y + 0.5f * height * (1f - imageScale);
 
         tempMat.loadIdentity();
         tempMat.setTranslation(x0, getHeight() - y0, 0);
         tempMat.setScale(width * imageScale, height * imageScale, 0);
 
         rm.setWorldMatrix(tempMat);
-        imageColor.render(imageQuadGeom, rm);
-
-//        imageQuadGeom.setLocalScale(width, height, 0);
-//        imageQuadGeom.setLocalTranslation(-width/2f, -height/2f, 0);
-//        imageQuadNode.setLocalTranslation(x + width/2f, getHeight() - (height/2f) - y, 0);
-//        imageQuadNode.setLocalScale(imageScale);
-//        imageQuadNode.updateGeometricState();
-//
-//        display.getRenderManager().renderGeometry(imageQuadGeom);
-
-        if (GUI_DEBUG)
-            System.out.println("DrawImage("+x+", "+y+", "+width+", "+height+", "+color+", "+imageScale+")");
+        niftyMat.render(imageQuadGeom, rm);
     }
 
     public void renderQuad(int x, int y, int width, int height, Color color){
-        solidColor.getAdditionalRenderState().setBlendMode(convertBlend());
-        solidColor.setColor("m_Color", convertColor(color));
+        niftyMat.getAdditionalRenderState().setBlendMode(convertBlend());
+        niftyMat.setInt("m_Mode", 1);
+        niftyMat.setColor("m_Color", convertColor(color));
 
         tempMat.loadIdentity();
-        tempMat.setTranslation(x, getHeight() - height - y, 0);
+        tempMat.setTranslation(x, getHeight() - y, 0);
         tempMat.setScale(width, height, 0);
 
         rm.setWorldMatrix(tempMat);
-        solidColor.render(quadGeom, rm);
-
-        if (GUI_DEBUG)
-            System.out.println("DrawRect("+x+", "+y+", "+width+", "+height+", "+color+")");
+        niftyMat.render(quadGeom, rm);
     }
 
     public void renderQuad(int x, int y, int width, int height,
@@ -300,38 +230,24 @@ public class RenderDeviceJme implements RenderDevice {
         buf.flip();
         colors.updateData(buf);
 
-        gradientColor.getAdditionalRenderState().setBlendMode(convertBlend());
-
-//        gradQuadGeom.setLocalTranslation(x, getHeight() - height - y, 0);
-//        gradQuadGeom.setLocalScale(width, height, 0);
-//        gradQuadGeom.updateGeometricState();
-//        display.getRenderManager().renderGeometry(gradQuadGeom);
+        niftyMat.getAdditionalRenderState().setBlendMode(convertBlend());
+        niftyMat.setInt("m_Mode", 2);
 
         tempMat.loadIdentity();
-        tempMat.setTranslation(x, getHeight() - height - y, 0);
+        tempMat.setTranslation(x, getHeight() - y, 0);
         tempMat.setScale(width, height, 0);
 
         rm.setWorldMatrix(tempMat);
-        gradientColor.render(gradQuadGeom, rm);
-
-        if (GUI_DEBUG)
-            System.out.println("DrawRectEx("+x+", "+y+", "+width+", "+height+")");
-
+        niftyMat.render(gradQuadGeom, rm);
     }
 
     public void enableClip(int x0, int y0, int x1, int y1){
         clipWasSet = true;
         r.setClipRect(x0, getHeight() - y1, x1 - x0, y1 - y0);
-
-        if (GUI_DEBUG)
-            System.out.println("ClipRect("+x0+", "+y0+", "+x1+", "+y1+")");
     }
 
     public void disableClip() {
         if (clipWasSet){
-            if (GUI_DEBUG)
-                System.out.println("DisableClip()");
-
             r.clearClipRect();
             clipWasSet = false;
         }

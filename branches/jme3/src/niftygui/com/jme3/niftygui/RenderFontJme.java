@@ -2,7 +2,8 @@ package com.jme3.niftygui;
 
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
-import com.jme3.material.RenderState.BlendMode;
+import com.jme3.material.Material;
+import com.jme3.texture.Texture;
 import de.lessvoid.nifty.spi.render.RenderFont;
 import de.lessvoid.nifty.tools.Color;
 
@@ -11,6 +12,7 @@ public class RenderFontJme implements RenderFont {
     private NiftyJmeDisplay display;
     private BitmapFont font;
     private BitmapText text;
+    private Texture texture;
     private float actualSize;
 
     /**
@@ -20,7 +22,7 @@ public class RenderFontJme implements RenderFont {
     public RenderFontJme(String name, NiftyJmeDisplay display) {
         this.display = display;
         font = display.getAssetManager().loadFont(name);
-        font.getPage(0).getAdditionalRenderState().setBlendMode(BlendMode.AlphaAdditive);
+        texture = font.getPage(0).getTextureParam("m_Texture").getTextureValue();
         text = new BitmapText(font);
         actualSize = font.getPreferredSize();
         text.setSize(actualSize);
@@ -35,7 +37,7 @@ public class RenderFontJme implements RenderFont {
      * @param fontSize size
      */
     public void render(final String str, final int x, final int y, final Color color, final float fontSize) {
-        display.getRenderDevice().renderText(str, x, y, color, fontSize, text);
+        display.getRenderDevice().renderText(str, x, y, color, fontSize, text, texture);
     }
 
     /**

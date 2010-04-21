@@ -1,107 +1,14 @@
 package com.jme3.material;
 
 import com.jme3.asset.AssetManager;
-import com.jme3.export.JmeExporter;
-import com.jme3.export.JmeImporter;
-import com.jme3.export.InputCapsule;
-import com.jme3.export.OutputCapsule;
-import com.jme3.export.Savable;
-import java.io.IOException;
+import com.jme3.shader.VarType;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-public class MaterialDef /*implements Savable*/ {
+public class MaterialDef {
 
     private static final Logger logger = Logger.getLogger(MaterialDef.class.getName());
-
-    public enum MatParamType {
-        Float(false),
-        Vector2(false),
-        Vector3(false),
-        Vector4(false),
-
-        Int(false),
-
-        Boolean(false),
-
-        Matrix2(false),
-        Matrix3(false),
-        Matrix4(false),
-
-        TextureBuffer(true),
-        Texture2D(true),
-        Texture3D(true),
-        TextureCubeMap(true),
-        TextureArray(true);
-        
-        private boolean textureType;
-
-        MatParamType(boolean textureType){
-            this.textureType = textureType;
-        }
-
-        public boolean isTextureType() {
-            return textureType;
-        }
-    }
-
-    public static class MatParam implements Savable, Cloneable {
-        
-        private MatParamType type;
-        private String name;
-
-        public MatParam(MatParamType type, String name){
-            this.type = type;
-            this.name = name;
-        }
-
-        public MatParam(){
-        }
-
-        public MatParamType getType() {
-            return type;
-        }
-        public String getName(){
-            return name;
-        }
-
-        public MatParam clone(){
-            try{
-                MatParam param = (MatParam) super.clone();
-                return param;
-            }catch (CloneNotSupportedException ex){
-                throw new AssertionError();
-            }
-        }
-
-        public void write(JmeExporter ex) throws IOException{
-            OutputCapsule oc = ex.getCapsule(this);
-            oc.write(type, "type", null);
-            oc.write(name, "name", null);
-        }
-
-        public void read(JmeImporter im) throws IOException{
-            InputCapsule ic = im.getCapsule(this);
-            type = ic.readEnum("type", MatParamType.class, null);
-            name = ic.readString("name", null);
-        }
-
-        @Override
-        public boolean equals(Object other){
-            if (!(other instanceof MatParam))
-                return false;
-
-            MatParam otherParam = (MatParam) other;
-            return otherParam.type == type &&
-                   otherParam.name.equals(name);
-        }
-
-        @Override
-        public String toString(){
-            return type.name()+" "+name;
-        }
-    }
 
     private String name;
     private String assetName;
@@ -127,21 +34,6 @@ public class MaterialDef /*implements Savable*/ {
         return assetName;
     }
 
-//    public void write(G3DExporter ex) throws IOException{
-//        OutputCapsule oc = ex.getCapsule(this);
-//        oc.write(name, "name", null);
-//        oc.writeStringSavableMap(techniques, "techniques", null);
-//        oc.writeStringSavableMap(matParams, "matParams", null);
-//    }
-//
-//    public void read(G3DImporter im) throws IOException{
-//        InputCapsule ic = im.getCapsule(this);
-//        name = ic.readString("name", null);
-//        techniques = (Map<String, TechniqueDef>) ic.readStringSavableMap("techniques", null);
-//        matParams = (Map<String, MatParam>) ic.readStringSavableMap("matParams", null);
-//        assetManager = im.getAssetManager();
-//    }
-
     public AssetManager getAssetManager(){
         return assetManager;
     }
@@ -150,8 +42,8 @@ public class MaterialDef /*implements Savable*/ {
         return name;
     }
 
-    public void addMaterialParam(MatParamType type, String name) {
-        matParams.put(name, new MatParam(type,name));
+    public void addMaterialParam(VarType type, String name, Object value) {
+        matParams.put(name, new MatParam(type, name, value));
     }
     
     public MatParam getMaterialParam(String name){

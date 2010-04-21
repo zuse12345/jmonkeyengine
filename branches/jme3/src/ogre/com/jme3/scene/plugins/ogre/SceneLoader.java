@@ -28,6 +28,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
 
     private Stack<String> elementStack = new Stack<String>();
     private String sceneName;
+    private String folderName;
     private AssetManager assetManager;
     private OgreMaterialList materialList;
     private Node root;
@@ -122,6 +123,9 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
                 throw new SAXException("Required attribute 'meshFile' missing for 'entity' node");
 
             // NOTE: append "xml" since its assumed mesh filse are binary in dotScene
+            if (folderName != null)
+                meshFile = folderName + meshFile;
+            
             meshFile += "xml";
             
             entityNode = new Node(name);
@@ -164,6 +168,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             assetManager = info.getManager();
             sceneName = info.getKey().getName();
             String ext = info.getKey().getExtension();
+            folderName = info.getKey().getFolder();
             sceneName = sceneName.substring(0, sceneName.length() - ext.length() - 1);
 
             materialList = (OgreMaterialList) 

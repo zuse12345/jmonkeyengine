@@ -43,7 +43,7 @@ public class TestFBOPassthrough extends SimpleApplication {
 
         // setup framebuffer's scene
         Sphere sphMesh = new Sphere(20, 20, 1);
-        Material solidColor = (Material) manager.loadAsset("red_color.j3m");
+        Material solidColor = manager.loadMaterial("Common/Materials/RedColor.j3m");
 
         Geometry sphere = new Geometry("sphere", sphMesh);
         sphere.setMaterial(solidColor);

@@ -4,12 +4,18 @@ import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.AssetKey;
+import com.jme3.export.binary.BinaryExporter;
+import com.jme3.export.binary.BinaryImporter;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.plugins.ogre.OgreMaterialList;
 import com.jme3.scene.plugins.ogre.OgreMeshKey;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 public class TestOgreConvert extends SimpleApplication {
 
@@ -20,46 +26,32 @@ public class TestOgreConvert extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        OgreMaterialList materials = (OgreMaterialList) manager.loadAsset(new AssetKey("OTO.material"));
-        Spatial ogreModel = (Spatial) manager.loadAsset(new OgreMeshKey("OTO.meshxml", materials));
-//        ogreModel.setLocalScale(0.1f);
-
-        ogreModel = ogreModel.clone();
+        OgreMaterialList materials = (OgreMaterialList) manager.loadAsset(new AssetKey("Models/Oto/Oto.material"));
+        Spatial ogreModel = (Spatial) manager.loadAsset(new OgreMeshKey("Models/Oto/Oto.meshxml", materials));
 
         DirectionalLight dl = new DirectionalLight();
         dl.setColor(ColorRGBA.White);
         dl.setDirection(new Vector3f(0,-1,-1).normalizeLocal());
-        System.out.println(dl.getDirection());
         rootNode.addLight(dl);
 
-//        try {
-//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//            BinaryExporter exp = new BinaryExporter();
-//            exp.save(ogreModel, baos);
-//
-//            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-//            BinaryImporter imp = new BinaryImporter(manager);
-//            Model ogreModelReloaded = (Model) imp.load(bais, null, null);
-//            ogreModelReloaded.setAnimation("push");
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            BinaryExporter exp = new BinaryExporter();
+            exp.save(ogreModel, baos);
 
-//            FileOutputStream fos = new FileOutputStream("C:\\mymodel.j3o");
-//            BinaryExporter exp = new BinaryExporter();
-//            exp.save(ogreModel, fos);
-//            fos.close();
-//
-//            FileInputStream fis = new FileInputStream("C:\\mymodel.j3o");
-//            BinaryImporter imp = new BinaryImporter();
-//            imp.setAssetManager(manager);
-//            Model ogreModelReloaded = (Model) imp.load(fis, null, null);
-
-        AnimControl control = ogreModel.getControl(AnimControl.class);
-        AnimChannel chan = control.createChannel();
-        chan.setAnim("push");
+            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+            BinaryImporter imp = new BinaryImporter();
+            imp.setAssetManager(manager);
+            Node ogreModelReloaded = (Node) imp.load(bais, null, null);
+            
+            AnimControl control = ogreModelReloaded.getControl(AnimControl.class);
+            AnimChannel chan = control.createChannel();
+            chan.setAnim("push");
 //            fis.close();
 
-            rootNode.attachChild(ogreModel);
-//        } catch (IOException ex){
-//            ex.printStackTrace();
-//        }
+            rootNode.attachChild(ogreModelReloaded);
+        } catch (IOException ex){
+            ex.printStackTrace();
+        }
     }
 }

@@ -19,7 +19,7 @@ public class TestReverb extends AudioApp {
 
     @Override
     public void initAudioApp(){
-        src = new AudioNode(manager, "bang.wav");
+        src = new AudioNode(manager, "Sound/Effects/Bang.wav");
 //        src.setLowPassHf(0.1f);
 
         float[] eax = new float[]

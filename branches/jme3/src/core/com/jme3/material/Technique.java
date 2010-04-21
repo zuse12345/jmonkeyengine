@@ -1,24 +1,17 @@
 package com.jme3.material;
 
-import com.jme3.material.MaterialDef.MatParam;
-import com.jme3.material.MaterialDef.MatParamType;
-import com.jme3.math.ColorRGBA;
-import com.jme3.math.Matrix3f;
-import com.jme3.math.Matrix4f;
-import com.jme3.math.Vector2f;
-import com.jme3.math.Vector3f;
 import com.jme3.asset.AssetManager;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
-import com.jme3.material.Material.MatParamValue;
 import com.jme3.shader.DefineList;
 import com.jme3.shader.Shader;
 import com.jme3.shader.ShaderKey;
 import com.jme3.shader.Uniform;
 import com.jme3.shader.UniformBinding;
+import com.jme3.shader.VarType;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,6 +60,8 @@ public class Technique implements Savable {
         worldBindUniforms = ic.readSavableArrayList("worldBindUniforms", null);
         defines = (DefineList) ic.readSavable("defines", null);
         shader = (Shader) ic.readSavable("shader", null);
+        if (shader != null)
+            owner.updateUniformLinks();
     }
 
     public TechniqueDef getDef() {
@@ -81,48 +76,38 @@ public class Technique implements Savable {
         return worldBindUniforms;
     }
 
-    public void setUserDefine(String defineName, String value){
-        String prevVal = defines.get(defineName);
-        if (value == null && prevVal != null){
-            // clear define
-            defines.remove(defineName);
-            needReload = true;
-        }else if (prevVal == null || !prevVal.equals(value)){
-            // set define
-            defines.set(defineName, value);
-            needReload = true;
-        }
-    }
-    
     /**
      * @param paramName
      */
-    public void notifySetParam(String paramName, MatParamType type, Object value){
+    public void notifySetParam(String paramName, VarType type, Object value){
         String defineName = def.getShaderParamDefine(paramName);
         if (defineName != null){
-            setUserDefine(defineName, value != null ? "1" : null);
+            defines.set(defineName, type, value);
+            needReload = true;
         }
         if (shader != null){
             updateUniformParam(paramName, type, value);
         }
     }
 
-    void updateUniformParam(String paramName, MatParamType type, Object value){
+    void updateUniformParam(String paramName, VarType type, Object value, boolean ifNotOwner){
         Uniform u = shader.getUniform(paramName);
+//        if (ifNotOwner && u.getLastChanger() == owner)
+//            return;
+
         switch (type){
-            case Boolean: u.setBoolean( (Boolean)value ); break;
-            case Float:   u.setFloat( (Float) value );    break;
             case Texture2D: // fall intentional
             case Texture3D:
             case TextureArray:
             case TextureCubeMap:
-            case Int:     u.setInt( (Integer) value );    break;
-            case Matrix3: u.setMatrix3( (Matrix3f) value ); break;
-            case Matrix4: u.setMatrix4( (Matrix4f) value ); break;
-            case Vector2: u.setVector2( (Vector2f) value ); break;
-            case Vector3: u.setVector3( (Vector3f) value ); break;
-            case Vector4: u.setColor( (ColorRGBA) value ); break;
+            case Int:     u.setValue(VarType.Int, value); break;
+            default:      u.setValue(type, value); break;
         }
+//        u.setLastChanger(owner);
+    }
+
+    void updateUniformParam(String paramName, VarType type, Object value){
+        updateUniformParam(paramName, type, value, false);
     }
 
     public boolean isNeedReload(){
@@ -141,24 +126,7 @@ public class Technique implements Savable {
             for (MatParam param : params){
                 String defineName = def.getShaderParamDefine(param.getName());
                 if (defineName != null){
-                    if (param instanceof MatParamValue){
-                        MatParamValue paramVal = (MatParamValue) param;
-                        switch (paramVal.getType()){
-                            case Boolean:
-                                if ( ((Boolean) paramVal.getValue()).booleanValue() )
-                                    newDefines.set(defineName, "1");
-                                break;
-                            case Float:
-                            case Int:
-                                newDefines.set(defineName, paramVal.getValue().toString());
-                                break;
-                            default:
-                                newDefines.set(defineName, "1");
-                                break;
-                        }
-                    }else{
-                        newDefines.set(defineName, "1");
-                    }
+                    newDefines.set(defineName, param.getVarType(), param.getValue());
                 }
             }
 
@@ -189,6 +157,9 @@ public class Technique implements Savable {
             logger.warning("Failed to reload shader!");
             return;
         }
+
+        // refresh the uniform links
+        owner.updateUniformLinks();
 
         // register the world bound uniforms
         worldBindUniforms.clear();

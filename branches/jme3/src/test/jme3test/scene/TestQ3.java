@@ -56,7 +56,7 @@ public class TestQ3 extends SimpleApplication {
         dl.setDirection(new Vector3f(1, -1, 1).normalize());
         rootNode.addLight(dl);
         // create the geometry and attach it
-        manager.registerLocator("quake3level.zip", ZipLocator.class.getName(), "tga", "meshxml", "material");
+        manager.registerLocator("quake3level.zip", ZipLocator.class.getName());
 
         // create the geometry and attach it
         OgreMaterialList matList = (OgreMaterialList) manager.loadAsset("Scene.material");

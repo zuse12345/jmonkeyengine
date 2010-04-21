@@ -40,8 +40,8 @@ public class BasicShadowRenderer implements SceneProcessor {
         shadowFB.setDepthTexture(shadowMap);
         shadowCam = new Camera(size,size);
         
-        preshadowMat  = new Material(manager, "preshadow.j3md");
-        postshadowMat = new Material(manager, "postshadow.j3md");
+        preshadowMat  = new Material(manager, "Common/MatDefs/Shadow/PreShadow.j3md");
+        postshadowMat = new Material(manager, "Common/MatDefs/Shadow/PostShadow.j3md");
         postshadowMat.setTexture("m_ShadowMap", shadowMap);
 
         dispPic.setTexture(manager, shadowMap, false);

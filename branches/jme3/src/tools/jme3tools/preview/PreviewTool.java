@@ -460,8 +460,7 @@ public class PreviewTool extends javax.swing.JFrame {
                     
                     try{
                         display.getAssetManager().registerLocator(selected.getParent(),
-                                                                  "com.jme3.asset.plugins.FileSystemLocator",
-                                                                  "*");
+                                                                  "com.jme3.asset.plugins.FileSystemLocator");
 
                         Spatial model;
                         if (ogreMaterial != null){

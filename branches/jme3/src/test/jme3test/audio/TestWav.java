@@ -18,7 +18,7 @@ public class TestWav extends AudioApp {
 
     @Override
     public void initAudioApp(){
-        AudioNode src = new AudioNode(manager, "gun.wav", false);
+        AudioNode src = new AudioNode(manager, "Sound/Effects/Gun.wav", false);
         src.setLooping(true);
 
         ar.playSource(src);

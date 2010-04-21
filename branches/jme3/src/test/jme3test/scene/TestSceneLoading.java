@@ -1,14 +1,10 @@
 package jme3test.scene;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.asset.TextureKey;
 import com.jme3.asset.plugins.ZipLocator;
-import com.jme3.material.Material;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Sphere;
-import com.jme3.texture.Texture;
 
 public class TestSceneLoading extends SimpleApplication {
 
@@ -41,10 +37,7 @@ public class TestSceneLoading extends SimpleApplication {
 //        rootNode.attachChild(sphere);
 
         // create the geometry and attach it
-        manager.registerLocator("wildhouse.zip",
-                                ZipLocator.class.getName(),
-                                "scene", "meshxml",
-                                "material", "jpg", "png");
+        manager.registerLocator("wildhouse.zip", ZipLocator.class.getName());
 
         Spatial scene = manager.loadModel("main.scene");
         rootNode.attachChild(scene);

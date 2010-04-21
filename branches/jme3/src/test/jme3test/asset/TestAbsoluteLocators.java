@@ -5,8 +5,6 @@ import com.jme3.asset.DesktopAssetManager;
 import com.jme3.asset.plugins.ClasspathLocator;
 import com.jme3.audio.AudioData;
 import com.jme3.audio.plugins.WAVLoader;
-import com.jme3.font.BitmapFont;
-import com.jme3.font.plugins.BitmapFontLoader;
 import com.jme3.texture.Texture;
 import com.jme3.texture.plugins.AWTLoader;
 
@@ -18,23 +16,23 @@ public class TestAbsoluteLocators {
         am.registerLoader(WAVLoader.class.getName(), "wav");
 
         // register absolute locator
-        am.registerLocator("/",  ClasspathLocator.class.getName(), "*");
+        am.registerLocator("/",  ClasspathLocator.class.getName());
 
         // find a sound
-        AudioData audio = am.loadAudio("/sounds/gun.wav");
+        AudioData audio = am.loadAudio("Sound/Effects/Gun.wav");
 
         // find a texture
-        Texture tex = am.loadTexture("/textures/pond.png");
+        Texture tex = am.loadTexture("Textures/Terrain/Pond/Pond.png");
 
         if (audio == null)
             throw new RuntimeException("Cannot find audio!");
         else
-            System.out.println("Audio loaded from /sounds/gun.wav");
+            System.out.println("Audio loaded from Sounds/Effects/Gun.wav");
 
         if (tex == null)
             throw new RuntimeException("Cannot find texture!");
         else
-            System.out.println("Texture loaded from /textures/pond.png");
+            System.out.println("Texture loaded from Textures/Terrain/Pond/Pond.png");
 
         System.out.println("Success!");
     }

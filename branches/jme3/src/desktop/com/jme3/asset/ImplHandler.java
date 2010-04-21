@@ -1,14 +1,8 @@
 package com.jme3.asset;
 
-import com.jme3.asset.AssetLocator;
-import com.jme3.asset.AssetInfo;
-import com.jme3.asset.AssetLoader;
-import com.jme3.asset.AssetKey;
-import com.jme3.asset.AssetManager;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -28,9 +22,6 @@ public class ImplHandler {
                 new ArrayList<ImplThreadLocal>();
 
     private final Hashtable<String, ImplThreadLocal> loaders =
-                new Hashtable<String, ImplThreadLocal>();
-
-    private final Hashtable<String, ImplThreadLocal> locators =
                 new Hashtable<String, ImplThreadLocal>();
 
     public ImplHandler(AssetManager owner){
@@ -88,21 +79,7 @@ public class ImplHandler {
      * access, or null if not found.
      */
     public AssetInfo tryLocate(AssetKey key){
-        ImplThreadLocal extLocal = null;
-        synchronized (locators){
-            extLocal = locators.get(key.getExtension());
-        }
-
-        if (extLocal != null){
-            AssetLocator locator = (AssetLocator) extLocal.get();
-            if (extLocal.getPath() != null){
-                locator.setRootPath(extLocal.getPath());
-            }
-            AssetInfo info = locator.locate(owner, key);
-            if (info != null)
-                return info;
-        }
-        synchronized (locators){
+        synchronized (genericLocators){
             if (genericLocators.size() == 0)
                 return null;
 
@@ -120,8 +97,8 @@ public class ImplHandler {
     }
 
     public int getLocatorCount(){
-        synchronized (locators){
-            return locators.size() + genericLocators.size();
+        synchronized (genericLocators){
+            return genericLocators.size();
         }
     }
 
@@ -151,46 +128,21 @@ public class ImplHandler {
         }
     }
 
-    public void addLocator(final Class<?> locatorType, String rootPath, String ... extensions){
+    public void addLocator(final Class<?> locatorType, String rootPath){
         ImplThreadLocal local = new ImplThreadLocal(locatorType, rootPath);
-        if (extensions.length == 1 && extensions[0].equals("*")){
-            synchronized (locators){
-                genericLocators.add(local);
-            }
-        }else{
-            for (String extension : extensions){
-                extension = extension.toLowerCase();
-                synchronized (locators){
-                    locators.put(extension, local);
-                }
-            }
+        synchronized (genericLocators){
+            genericLocators.add(local);
         }
     }
 
-    public void removeLocator(final Class<?> locatorType, String rootPath, String ... extensions){
-        if (extensions.length == 1 && extensions[0].equals("*")){
-            synchronized (locators){
-                Iterator<ImplThreadLocal> it = genericLocators.iterator();
-                while (it.hasNext()){
-                    ImplThreadLocal locator = it.next();
-                    if (locator.getPath().equals(rootPath) &&
-                        locator.getTypeClass().equals(locatorType)){
-                        it.remove();
-                    }
-                }
-            }
-        }else{
-            for (String extension : extensions){
-                extension = extension.toLowerCase();
-                synchronized (locators){
-                    Iterator<ImplThreadLocal> it = locators.values().iterator();
-                    while (it.hasNext()){
-                        ImplThreadLocal locator = it.next();
-                        if (locator.getPath().equals(rootPath) &&
-                            locator.getTypeClass().equals(locatorType)){
-                            it.remove();
-                        }
-                    }
+    public void removeLocator(final Class<?> locatorType, String rootPath){
+        synchronized (genericLocators){
+            Iterator<ImplThreadLocal> it = genericLocators.iterator();
+            while (it.hasNext()){
+                ImplThreadLocal locator = it.next();
+                if (locator.getPath().equals(rootPath) &&
+                    locator.getTypeClass().equals(locatorType)){
+                    it.remove();
                 }
             }
         }

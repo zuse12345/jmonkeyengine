@@ -24,7 +24,7 @@ public class TestSimpleLighting extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        Spatial teapot = manager.loadModel("teapot.obj");
+        Spatial teapot = manager.loadModel("Models/Teapot/Teapot.obj");
         if (teapot instanceof Geometry){
             Geometry g = (Geometry) teapot;
             //TangentBinormalGenerator.generate(g.getMesh());
@@ -32,13 +32,13 @@ public class TestSimpleLighting extends SimpleApplication {
             throw new RuntimeException();
         }
         teapot.setLocalScale(2f);
-        Material mat = new Material(manager, "phong_lighting.j3md");
+        Material mat = new Material(manager, "Common/MatDefs/Light/Lighting.j3md");
         mat.setFloat("m_Shininess", 32f);
         teapot.setMaterial(mat);
         rootNode.attachChild(teapot);
 
         lightMdl = new Geometry("Light", new Sphere(10, 10, 0.1f));
-        lightMdl.setMaterial(manager.loadMaterial("red_color.j3m"));
+        lightMdl.setMaterial(manager.loadMaterial("Common/Materials/RedColor.j3m"));
         lightMdl.getMesh().setStatic();
         rootNode.attachChild(lightMdl);
 

@@ -65,17 +65,8 @@ public class AssetConfig {
                 manager.registerLoader(loaderClass, extensions);
             }else if (cmd.equals("LOCATOR")){
                 String rootPath = scan.next();
-                String locatorClass = scan.next();
-                String colon = scan.next();
-                if (!colon.equals(":")){
-                    throw new IOException("Expected ':', got '"+colon+"'");
-                }
-                String extensionsList = scan.nextLine();
-                String[] extensions = extensionsList.split(",");
-                for (int i = 0; i < extensions.length; i++){
-                    extensions[i] = extensions[i].trim();
-                }
-                manager.registerLocator(rootPath, locatorClass, extensions);
+                String locatorClass = scan.nextLine().trim();
+                manager.registerLocator(rootPath, locatorClass);
             }else{
                 throw new IOException("Expected command, got '"+cmd+"'");
             }
@@ -99,13 +90,7 @@ public class AssetConfig {
         for (int i = 0; i < locatorEntries; i++){
             String locatorClazz = readString(dataIn);
             String rootPath = readString(dataIn);
-            int numExtensions = dataIn.readUnsignedByte();
-            String[] extensions = new String[numExtensions];
-            for (int j = 0; j < numExtensions; j++){
-                extensions[j] = readString(dataIn);
-            }
-
-            manager.registerLocator(rootPath, locatorClazz, extensions);
+            manager.registerLocator(rootPath, locatorClazz);
         }
 
         int loaderEntries = dataIn.readUnsignedShort();

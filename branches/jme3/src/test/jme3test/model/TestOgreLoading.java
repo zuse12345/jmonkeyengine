@@ -9,8 +9,6 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.plugins.ogre.OgreMaterialList;
-import com.jme3.scene.plugins.ogre.OgreMeshKey;
 import com.jme3.scene.shape.Sphere;
 
 public class TestOgreLoading extends SimpleApplication
@@ -45,11 +43,11 @@ public class TestOgreLoading extends SimpleApplication
 
 
         lightMdl = new Geometry("Light", new Sphere(10, 10, 0.1f));
-        lightMdl.setMaterial( (Material) manager.loadAsset("red_color.j3m"));
+        lightMdl.setMaterial( (Material) manager.loadAsset("Common/Materials/RedColor.j3m"));
         rootNode.attachChild(lightMdl);
 
         lightMd2 = new Geometry("Light", new Sphere(10, 10, 0.1f));
-        lightMd2.setMaterial( (Material) manager.loadAsset("white_color.j3m"));
+        lightMd2.setMaterial( (Material) manager.loadAsset("Common/Materials/WhiteColor.j3m"));
         rootNode.attachChild(lightMd2);
 
 
@@ -65,9 +63,7 @@ public class TestOgreLoading extends SimpleApplication
 
 
         // create the geometry and attach it
-        OgreMaterialList matList = (OgreMaterialList) manager.loadAsset("elephant.material");
-        OgreMeshKey key = new OgreMeshKey("elephant_lowres.meshxml", matList);
-        Spatial elephant = (Spatial) manager.loadAsset(key);
+        Spatial elephant = (Spatial) manager.loadModel("Models/Elephant/Elephant.meshxml");
         float scale = 0.05f;
         elephant.scale(scale,scale,scale);
         rootNode.attachChild(elephant);

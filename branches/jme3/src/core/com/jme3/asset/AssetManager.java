@@ -8,9 +8,20 @@ import com.jme3.shader.Shader;
 import com.jme3.shader.ShaderKey;
 import com.jme3.texture.Texture;
 
+/**
+ * <code>AssetManager</code> provides an interface for managing the data assets
+ * of a jME3 application.
+ */
 public interface AssetManager {
+
+    /**
+     * Registers a loader for the given extensions.
+     * @param loaderClassName
+     * @param extensions
+     */
     public void registerLoader(String loaderClassName, String ... extensions);
-    public void registerLocator(String rootPath, String locatorClassName, String ... extensions);
+    public void registerLocator(String rootPath, String locatorClassName);
+
     public Object loadAsset(AssetKey key);
     public Object loadAsset(String name);
     public Texture loadTexture(TextureKey key);

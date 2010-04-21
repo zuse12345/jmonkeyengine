@@ -23,7 +23,7 @@ public class TestHDR extends SimpleApplication {
         Geometry box = new Geometry("Box", boxMesh);
         box.updateModelBound();
         boxMesh.setStatic();
-        Material mat = (Material) manager.loadAsset("hdr_pic.j3m");
+        Material mat = manager.loadMaterial("Textures/HdrTest/Memorial.j3m");
         box.setMaterial(mat);
         return box;
     }
@@ -50,7 +50,7 @@ public class TestHDR extends SimpleApplication {
             dispQuad = hdrRender.createDisplayQuad();
             dispQuad.setWidth(128);
             dispQuad.setHeight(128);
-            dispQuad.setPosition(4, 30);
+            dispQuad.setPosition(30, cam.getHeight() - 128 - 30);
             guiNode.attachChild(dispQuad);
         }
     }

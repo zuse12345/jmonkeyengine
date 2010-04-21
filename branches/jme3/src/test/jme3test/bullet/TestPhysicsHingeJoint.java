@@ -58,7 +58,7 @@ public class TestPhysicsHingeJoint extends SimplePhysicsApplication implements B
 
     public void setupFloor() {
         Material mat = new Material(manager, "plain_texture.j3md");
-        TextureKey key = new TextureKey("Monkey.jpg", true);
+        TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);
         key.setGenerateMips(true);
         Texture tex = manager.loadTexture(key);
         tex.setMinFilter(Texture.MinFilter.Trilinear);
@@ -79,7 +79,7 @@ public class TestPhysicsHingeJoint extends SimplePhysicsApplication implements B
 
     public void setupJoint() {
         Material mat = new Material(manager, "plain_texture.j3md");
-        TextureKey key = new TextureKey("Monkey.jpg", true);
+        TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);
         key.setGenerateMips(true);
         Texture tex = manager.loadTexture(key);
         tex.setMinFilter(Texture.MinFilter.Trilinear);

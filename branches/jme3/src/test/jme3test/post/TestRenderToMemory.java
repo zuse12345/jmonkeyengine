@@ -194,7 +194,7 @@ public class TestRenderToMemory extends SimpleApplication implements SceneProces
 
         // setup framebuffer's scene
         Box boxMesh = new Box(Vector3f.ZERO, 1,1,1);
-        Material material = (Material) manager.loadAsset("jme_logo.j3m");
+        Material material = manager.loadMaterial("Interface/Logo/Logo.j3m");
         offBox = new Geometry("box", boxMesh);
         offBox.setMaterial(material);
 

@@ -37,9 +37,31 @@ public class DefineList implements Savable {
         return defines.get(key);
     }
 
-    public void set(String key, String val){
+//    public void set(String key, String val){
+//        compiled = null;
+//        defines.put(key, val);
+//    }
+
+    public void set(String key, VarType type, Object val){
         compiled = null;
-        defines.put(key, val);
+        if (val == null){
+            defines.remove(key);
+            return;
+        }
+
+        switch (type){
+            case Boolean:
+                if ( ((Boolean) val).booleanValue() )
+                    defines.put(key, "1");
+                break;
+            case Float:
+            case Int:
+                defines.put(key, val.toString());
+                break;
+            default:
+                defines.put(key, "1");
+                break;
+        }
     }
 
     public void remove(String key){

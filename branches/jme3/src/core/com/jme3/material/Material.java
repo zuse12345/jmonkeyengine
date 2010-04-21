@@ -1,8 +1,6 @@
 package com.jme3.material;
 
 import com.jme3.asset.AssetKey;
-import com.jme3.material.MaterialDef.MatParam;
-import com.jme3.material.MaterialDef.MatParamType;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Matrix4f;
 import com.jme3.math.Vector2f;
@@ -17,6 +15,7 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.light.Light;
 import com.jme3.light.LightList;
 import com.jme3.light.PointLight;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Caps;
 import com.jme3.renderer.RenderManager;
@@ -24,25 +23,23 @@ import com.jme3.renderer.Renderer;
 import com.jme3.scene.Geometry;
 import com.jme3.shader.Shader;
 import com.jme3.shader.Uniform;
+import com.jme3.shader.VarType;
 import com.jme3.texture.Texture;
+import com.jme3.util.TempVars;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 
 public class Material implements Cloneable, Savable {
 
     private static final RenderState additiveLight = new RenderState();
 
     static {
-//        additiveLight.set
         additiveLight.setBlendMode(RenderState.BlendMode.Additive);
     }
 
     private MaterialDef def;
     private HashMap<String, MatParam> paramValues = new HashMap<String, MatParam>();
-//    private final Map<String, MatParamValue> paramValues = new HashMap<String, MatParamValue>();
-//    private final Map<String, MatParamTextureValue> texValues = new HashMap<String, MatParamTextureValue>();
 
     private Technique technique;
     private HashMap<String, Technique> techniques = new HashMap<String, Technique>();
@@ -51,108 +48,49 @@ public class Material implements Cloneable, Savable {
     private boolean transparent = false;
     private boolean recievesShadows = false;
 
-    public static class MatParamValue extends MatParam {
+    public static class MatParamTexture extends MatParam {
 
-        private Object value;
-
-        public MatParamValue(MatParamType type, String name, Object value){
-            super(type, name);
-            this.value = value;
-        }
-
-        public MatParamValue(){
-        }
-
-        public Object getValue(){
-            return value;
-        }
-
-        public void setValue(Object value){
-            this.value = value;
-        }
-
-        public MatParamValue clone(){
-            return (MatParamValue) super.clone();
-        }
-
-        public void write(JmeExporter ex) throws IOException{
-            super.write(ex);
-            OutputCapsule oc = ex.getCapsule(this);
-            if (value instanceof Savable){
-                Savable s = (Savable) value;
-                oc.write(s, "value_savable", null);
-            }else if (value instanceof Float){
-                Float f = (Float) value;
-                oc.write(f.floatValue(), "value_float", 0f);
-            }else if (value instanceof Integer){
-                Integer i = (Integer) value;
-                oc.write(i.intValue(), "value_int", 0);
-            }else if (value instanceof Boolean){
-                Boolean b = (Boolean) value;
-                oc.write(b.booleanValue(), "value_bool", false);
-            }
-        }
-
-        public void read(JmeImporter im) throws IOException{
-            super.read(im);
-            InputCapsule ic = im.getCapsule(this);
-            switch (getType()){
-                case Boolean:
-                    value = ic.readBoolean("value_bool", false);
-                    break;
-                case Float:
-                    value = ic.readFloat("value_float", 0f);
-                    break;
-                case Int:
-                    value = ic.readInt("value_int", 0);
-                    break;
-                default:
-                    value = ic.readSavable("value_savable", null);
-                    break;
-            }
-        }
-    }
-
-    public static class MatParamTextureValue extends MatParam {
-
-        private Texture value;
+        private Texture texture;
         private int unit;
         private transient TextureKey key;
 
-        public MatParamTextureValue(MatParamType type, String name, Texture value, int unit){
-            super(type, name);
-            this.value = value;
+        public MatParamTexture(VarType type, String name, Texture texture, int unit){
+            super(type, name, texture);
+            this.texture = texture;
             this.unit = unit;
         }
 
-        public MatParamTextureValue(){
+        public MatParamTexture(){
         }
 
-        public Texture getValue(){
-            return value;
+        public Texture getTextureValue(){
+            return texture;
         }
 
-        public void setValue(Texture value){
+        public void setTextureValue(Texture value){
             this.value = value;
+            this.texture = value;
         }
         
         public int getUnit() {
             return unit;
         }
 
+        @Override
         public void write(JmeExporter ex) throws IOException{
             super.write(ex);
             OutputCapsule oc = ex.getCapsule(this);
             oc.write(unit, "texture_unit", -1);
-            oc.write(value, "texture", null);
+            oc.write(texture, "texture", null);
         }
 
+        @Override
         public void read(JmeImporter im) throws IOException{
             super.read(im);
             InputCapsule ic = im.getCapsule(this);
             unit = ic.readInt("texture_unit", -1);
-            value = (Texture) ic.readSavable("texture", null);
-            key = value.getTextureKey();
+            texture = (Texture) ic.readSavable("texture", null);
+            key = texture.getTextureKey();
         }
     }
 
@@ -171,34 +109,6 @@ public class Material implements Cloneable, Savable {
      * Do not use this constructor. Serialization purposes only.
      */
     public Material(){
-    }
-
-    public void write(JmeExporter ex) throws IOException{
-        OutputCapsule oc = ex.getCapsule(this);
-        oc.write(def.getAssetName(), "material_def", null);
-        oc.write(additionalState, "render_state", null);
-        oc.write(transparent, "is_transparent", false);
-        oc.writeStringSavableMap(paramValues, "parameters", null);
-    }
-
-    public void read(JmeImporter im) throws IOException{
-        InputCapsule ic = im.getCapsule(this);
-        String defName = ic.readString("material_def", null);
-        def = (MaterialDef) im.getAssetManager().loadAsset(new AssetKey(defName));
-        additionalState = (RenderState) ic.readSavable("render_state", null);
-        transparent = ic.readBoolean("is_transparent", false);
-        paramValues = (HashMap<String, MatParam>) ic.readStringSavableMap("parameters", null);
-
-        // load the textures and update nextTexUnit
-        for (MatParam param : paramValues.values()){
-            if (param instanceof MatParamTextureValue){
-                MatParamTextureValue texVal = (MatParamTextureValue) param;
-//                texVal.tryLoadFromKey(im.getAssetManager());
-                if (nextTexUnit < texVal.getUnit()+1){
-                    nextTexUnit = texVal.getUnit()+1;
-                }
-            }
-        }
     }
 
     @Override
@@ -255,6 +165,12 @@ public class Material implements Cloneable, Savable {
         return def;
     }
 
+    void updateUniformLinks(){
+        for (MatParam param : paramValues.values()){
+            param.uniform = technique.getShader().getUniform(param.name);
+        }
+    }
+
     public void selectTechnique(String name){
         // check if already created
         Technique tech = techniques.get(name);
@@ -270,22 +186,22 @@ public class Material implements Cloneable, Savable {
             // active technique.
             return;
         }
-        tech.makeCurrent(def.getAssetManager());
         technique = tech;
+        tech.makeCurrent(def.getAssetManager());
     }
 
-    public MatParamValue getParam(String name){
+    public MatParam getParam(String name){
         MatParam param = paramValues.get(name);
-        if (param instanceof MatParamValue)
-            return (MatParamValue) param;
+        if (param instanceof MatParam)
+            return (MatParam) param;
 
         return null;
     }
 
-    public MatParamTextureValue getTextureParam(String name){
+    public MatParamTexture getTextureParam(String name){
         MatParam param = paramValues.get(name);
-        if (param instanceof MatParamTextureValue)
-            return (MatParamTextureValue) param;
+        if (param instanceof MatParamTexture)
+            return (MatParamTexture) param;
 
         return null;
     }
@@ -294,27 +210,26 @@ public class Material implements Cloneable, Savable {
         return paramValues.values();
     }
 
-    public void setParam(String name, MatParamType type, Object value){
-        MatParamValue val = getParam(name);
+    public void setParam(String name, VarType type, Object value){
+        MatParam val = getParam(name);
         if (technique != null){
             technique.notifySetParam(name, type, value);
         }
         if (val == null)
-            paramValues.put(name, new MatParamValue(type, name, value));
+            paramValues.put(name, new MatParam(type, name, value));
         else
             val.setValue(value);
     }
 
-    public void setTextureParam(String name, MatParamType type, Texture value){
+    public void setTextureParam(String name, VarType type, Texture value){
         if (value == null)
             return;
-
-        MatParamTextureValue val = getTextureParam(name);
-
+        
+        MatParamTexture val = getTextureParam(name);
         if (val == null)
-            paramValues.put(name, new MatParamTextureValue(type, name, value, nextTexUnit++));
+            paramValues.put(name, new MatParamTexture(type, name, value, nextTexUnit++));
         else
-            val.setValue(value);
+            val.setTextureValue(value);
 
         if (technique != null){
             technique.notifySetParam(name, type, nextTexUnit-1);
@@ -322,19 +237,19 @@ public class Material implements Cloneable, Savable {
     }
 
     public void setTexture(String name, Texture value){
-        MatParamType paramType = null;
+        VarType paramType = null;
         switch (value.getType()){
             case TwoDimensional:
-                paramType = MatParamType.Texture2D;
+                paramType = VarType.Texture2D;
                 break;
             case TwoDimensionalArray:
-                paramType = MatParamType.TextureArray;
+                paramType = VarType.TextureArray;
                 break;
             case ThreeDimensional:
-                paramType = MatParamType.Texture3D;
+                paramType = VarType.Texture3D;
                 break;
             case CubeMap:
-                paramType = MatParamType.TextureCubeMap;
+                paramType = VarType.TextureCubeMap;
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown texture type: "+value.getType());
@@ -344,28 +259,34 @@ public class Material implements Cloneable, Savable {
     }
 
     public void setMatrix4(String name, Matrix4f value) {
-        setParam(name, MatParamType.Matrix4, value);
+        setParam(name, VarType.Matrix4, value);
     }
     
     public void setBoolean(String name, boolean value){
-        setParam(name, MatParamType.Boolean, value);
+        setParam(name, VarType.Boolean, value);
     }
 
     public void setFloat(String name, float value){
-        setParam(name, MatParamType.Float, value);
+        setParam(name, VarType.Float, value);
+    }
+
+    public void setInt(String name, int value){
+        setParam(name, VarType.Int, value);
     }
 
     public void setColor(String name, ColorRGBA value){
-        setParam(name, MatParamType.Vector4, value);
+        setParam(name, VarType.Vector4, value);
     }
 
     public void setVector2(String name, Vector2f value) {
-        setParam(name, MatParamType.Vector2, value);
+        setParam(name, VarType.Vector2, value);
     }
     
     public void setVector3(String name, Vector3f value) {
-        setParam(name, MatParamType.Vector3, value);
+        setParam(name, VarType.Vector3, value);
     }
+
+
 
     /**
      * Uploads the lights in the light list as two uniform arrays.<br/><br/>
@@ -428,8 +349,6 @@ public class Material implements Cloneable, Savable {
         }
     }
 
-
-
     private void renderMultipassLighting(Shader shader, Geometry g, Renderer r){
         LightList lightList = g.getWorldLightList();
         Uniform lightColor = shader.getUniform("g_LightColor");
@@ -442,16 +361,16 @@ public class Material implements Cloneable, Savable {
 
             Light l = lightList.get(i);
             ColorRGBA color = l.getColor();
-            lightColor.setVector4(color.getRed(),
-                                  color.getGreen(),
-                                  color.getBlue(),
-                                  l.getType().getId());
+            ColorRGBA color2 = new ColorRGBA(color);
+            color2.a = l.getType().getId();
+            lightColor.setValue(VarType.Vector4, color2);
 
             switch (l.getType()){
                 case Directional:
                     DirectionalLight dl = (DirectionalLight) l;
                     Vector3f dir = dl.getDirection();
-                    lightPos.setVector4(dir.getX(), dir.getY(), dir.getZ(), -1);
+                    Quaternion q1 = new Quaternion(dir.getX(), dir.getY(), dir.getZ(), -1);
+                    lightPos.setValue(VarType.Vector4, q1);
                     break;
                 case Point:
                     PointLight pl = (PointLight) l;
@@ -460,7 +379,8 @@ public class Material implements Cloneable, Savable {
                     if (invRadius != 0){
                         invRadius = 1f / invRadius;
                     }
-                    lightPos.setVector4(pos.getX(), pos.getY(), pos.getZ(), invRadius);
+                    Quaternion q2 = new Quaternion(pos.getX(), pos.getY(), pos.getZ(), invRadius);
+                    lightPos.setValue(VarType.Vector4, q2);
                     break;
                 default:
                     throw new UnsupportedOperationException("Unknown type of light: "+l.getType());
@@ -469,7 +389,6 @@ public class Material implements Cloneable, Savable {
             r.setShader(shader);
             r.renderMesh(g.getMesh(), g.getLodLevel(), 1);
         }
-        
     }
 
     /**
@@ -513,21 +432,21 @@ public class Material implements Cloneable, Savable {
         // setup textures
         Collection<MatParam> params = paramValues.values();
         for (MatParam param : params){
-            if (param instanceof MatParamTextureValue){
-                MatParamTextureValue texParam = (MatParamTextureValue) param;
-                r.setTexture(texParam.getUnit(), texParam.getValue());
-                if (techDef.isUsingShaders())
+            if (param instanceof MatParamTexture){
+                MatParamTexture texParam = (MatParamTexture) param;
+                r.setTexture(texParam.getUnit(), texParam.getTextureValue());
+                if (techDef.isUsingShaders()){
                     technique.updateUniformParam(texParam.getName(),
-                                                 texParam.getType(),
-                                                 texParam.getUnit());
+                                                 texParam.getVarType(),
+                                                 texParam.getUnit(), true);
+                }
             }else{
                 if (!techDef.isUsingShaders())
                     continue;
                 
-                MatParamValue valParam = (MatParamValue) param;
-                technique.updateUniformParam(valParam.getName(),
-                                             valParam.getType(),
-                                             valParam.getValue());
+                technique.updateUniformParam(param.getName(),
+                                             param.getVarType(),
+                                             param.getValue(), true);
             }
         }
 
@@ -553,6 +472,34 @@ public class Material implements Cloneable, Savable {
             r.setShader(shader);
         
         r.renderMesh(geom.getMesh(), geom.getLodLevel(), 1);
+    }
+
+    public void write(JmeExporter ex) throws IOException{
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(def.getAssetName(), "material_def", null);
+        oc.write(additionalState, "render_state", null);
+        oc.write(transparent, "is_transparent", false);
+        oc.writeStringSavableMap(paramValues, "parameters", null);
+    }
+
+    public void read(JmeImporter im) throws IOException{
+        InputCapsule ic = im.getCapsule(this);
+        String defName = ic.readString("material_def", null);
+        def = (MaterialDef) im.getAssetManager().loadAsset(new AssetKey(defName));
+        additionalState = (RenderState) ic.readSavable("render_state", null);
+        transparent = ic.readBoolean("is_transparent", false);
+        paramValues = (HashMap<String, MatParam>) ic.readStringSavableMap("parameters", null);
+
+        // load the textures and update nextTexUnit
+        for (MatParam param : paramValues.values()){
+            if (param instanceof MatParamTexture){
+                MatParamTexture texVal = (MatParamTexture) param;
+//                texVal.tryLoadFromKey(im.getAssetManager());
+                if (nextTexUnit < texVal.getUnit()+1){
+                    nextTexUnit = texVal.getUnit()+1;
+                }
+            }
+        }
     }
 
 }

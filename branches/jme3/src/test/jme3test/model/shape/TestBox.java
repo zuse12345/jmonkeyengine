@@ -21,8 +21,8 @@ public class TestBox extends SimpleApplication {
         Geometry geom = new Geometry("Box", b);
         geom.updateModelBound();
 
-        Material mat = new Material(manager, "plain_texture.j3md");
-        TextureKey key = new TextureKey("Monkey.jpg", true);
+        Material mat = new Material(manager, "Common/MatDefs/Misc/SimpleTextured.j3md");
+        TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);
         key.setGenerateMips(true);
         Texture tex = manager.loadTexture(key);
         tex.setMinFilter(Texture.MinFilter.Trilinear);

@@ -15,6 +15,7 @@ import java.io.IOException;
 public class AssetKey implements Savable {
 
     protected String name;
+    protected transient String folder;
     protected transient String extension;
 
     public AssetKey(String name){
@@ -25,12 +26,20 @@ public class AssetKey implements Savable {
     public AssetKey(){
     }
 
-    protected String getExtension(String name){
+    protected static String getExtension(String name){
         int idx = name.lastIndexOf('.');
         if (idx <= 0 || idx == name.length() - 1)
             return "";
         else
             return name.substring(idx+1).toLowerCase();
+    }
+
+    protected static String getFolder(String name){
+        int idx = name.lastIndexOf('/');
+        if (idx <= 0 || idx == name.length() - 1)
+            return "";
+        else
+            return name.substring(0, idx+1);
     }
 
     public String getName() {
@@ -39,6 +48,13 @@ public class AssetKey implements Savable {
 
     public String getExtension() {
         return extension;
+    }
+
+    public String getFolder(){
+        if (folder == null)
+            folder = getFolder(name);
+        
+        return folder;
     }
 
     /**

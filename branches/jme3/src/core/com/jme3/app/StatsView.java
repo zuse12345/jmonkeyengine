@@ -26,10 +26,9 @@ public class StatsView extends Node implements Control {
         statData = new int[statLabels.length];
         labels = new BitmapText[statLabels.length];
 
-        BitmapFont font = manager.loadFont("cooper.fnt");
+        BitmapFont font = manager.loadFont("Interface/Fonts/Console.fnt");
         for (int i = 0; i < labels.length; i++){
             labels[i] = new BitmapText(font);
-            labels[i].setSize(font.getPreferredSize() * 0.5f);
             labels[i].setLocalTranslation(0, labels[i].getLineHeight() * (i+1), 0);
             attachChild(labels[i]);
         }

@@ -37,8 +37,8 @@ public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
         dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
         rootNode.addLight(dl);
 
-        Material mat = new Material(manager, "plain_texture.j3md");
-        TextureKey key = new TextureKey("Monkey.jpg", true);
+        Material mat = new Material(manager, "Common/MatDefs/Misc/SimpleTextured.j3md");
+        TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);
         key.setGenerateMips(true);
         Texture tex = manager.loadTexture(key);
         tex.setMinFilter(Texture.MinFilter.Trilinear);
@@ -58,7 +58,7 @@ public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
         //debug view
         AnimControl control= model.getControl(AnimControl.class);
         SkeletonDebugger skeletonDebug = new SkeletonDebugger("skeleton", control.getSkeleton());
-        Material mat2 = new Material(manager, "wire_color.j3md");
+        Material mat2 = new Material(manager, "Common/MatDefs/Misc/WireColor.j3md");
         mat2.setColor("m_Color", ColorRGBA.Green);
         mat2.getAdditionalRenderState().setDepthTest(false);
         skeletonDebug.setMaterial(mat2);
@@ -84,8 +84,8 @@ public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
         Geometry geom = new Geometry("Box", b);
         geom.updateModelBound();
 
-        Material mat = new Material(manager, "plain_texture.j3md");
-        TextureKey key = new TextureKey("Monkey.jpg", true);
+        Material mat = new Material(manager, "Common/MatDefs/Misc/SimpleTextured.j3md");
+        TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);
         key.setGenerateMips(true);
         Texture tex = manager.loadTexture(key);
         tex.setMinFilter(Texture.MinFilter.Trilinear);

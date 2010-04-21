@@ -31,12 +31,12 @@ public class TestNormalMapping extends SimpleApplication {
         TangentBinormalGenerator.generate(sphMesh);
 
         Geometry sphere = new Geometry("Rock Ball", sphMesh);
-        Material mat = manager.loadMaterial("pond_rock.j3m");
+        Material mat = manager.loadMaterial("Textures/Terrain/Pond/Pond.j3m");
         sphere.setMaterial(mat);
         rootNode.attachChild(sphere);
 
         lightMdl = new Geometry("Light", new Sphere(10, 10, 0.1f));
-        lightMdl.setMaterial(manager.loadMaterial("red_color.j3m"));
+        lightMdl.setMaterial(manager.loadMaterial("Common/Materials/RedColor.j3m"));
         rootNode.attachChild(lightMdl);
 
         pl = new PointLight();

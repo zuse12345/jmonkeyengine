@@ -22,9 +22,9 @@ public class TestDdsLoading extends SimpleApplication {
         Geometry quad = new Geometry("Textured Quad", quadMesh);
         quad.updateModelBound();
         
-        Texture tex = manager.loadTexture("nightsky_dxt1.dds");
+        Texture tex = manager.loadTexture("Textures/Sky/Night/Night_dxt1.dds");
 
-        Material mat = new Material(manager, "plain_texture.j3md");
+        Material mat = new Material(manager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         mat.setTexture("m_ColorMap", tex);
         quad.setMaterial(mat);
 

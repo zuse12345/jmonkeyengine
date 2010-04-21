@@ -18,12 +18,13 @@ public class BitmapFontLoader implements AssetLoader {
 
     public Object load(AssetInfo info) throws IOException {
         MaterialDef spriteMat = 
-                (MaterialDef) info.getManager().loadAsset(new AssetKey("default_gui.j3md"));
-
+                (MaterialDef) info.getManager().loadAsset(new AssetKey("Common/MatDefs/Gui/Gui.j3md"));
 
         BitmapCharacterSet charSet = new BitmapCharacterSet();
         Material[] matPages = null;
         BitmapFont font = new BitmapFont();
+
+        String folder = info.getKey().getFolder();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(info.openStream()));
         String regex = "[\\s=]+";
@@ -70,7 +71,7 @@ public class BitmapFontLoader implements AssetLoader {
                         if (file.startsWith("\"")){
                             file = file.substring(1, file.length()-1);
                         }
-                        TextureKey key = new TextureKey(file, true);
+                        TextureKey key = new TextureKey(folder + file, true);
                         key.setGenerateMips(false);
                         tex = info.getManager().loadTexture(key);
                         tex.setMagFilter(Texture.MagFilter.Bilinear);
@@ -83,7 +84,7 @@ public class BitmapFontLoader implements AssetLoader {
                     mat.setTexture("m_Texture", tex);
                     mat.setColor("m_Color", ColorRGBA.White);
                     mat.setBoolean("m_VertexColor", true);
-                    mat.getAdditionalRenderState().setBlendMode(BlendMode.Color);
+                    mat.getAdditionalRenderState().setBlendMode(BlendMode.AlphaAdditive);
                     matPages[index] = mat;
                 }
             }else if (tokens[0].equals("char")){

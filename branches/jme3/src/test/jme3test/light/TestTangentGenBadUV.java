@@ -25,7 +25,7 @@ public class TestTangentGenBadUV extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        Spatial teapot = manager.loadModel("teapot.obj");
+        Spatial teapot = manager.loadModel("Models/Teapot/Teapot.obj");
         if (teapot instanceof Geometry){
             Geometry g = (Geometry) teapot;
             TangentBinormalGenerator.generate(g.getMesh());
@@ -33,7 +33,7 @@ public class TestTangentGenBadUV extends SimpleApplication {
             throw new RuntimeException();
         }
         teapot.setLocalScale(2f);
-        Material mat = manager.loadMaterial("tangentBinormal.j3m");
+        Material mat = manager.loadMaterial("Textures/BumpMapTest/Tangent.j3m");
         teapot.setMaterial(mat);
         rootNode.attachChild(teapot);
 
@@ -41,7 +41,7 @@ public class TestTangentGenBadUV extends SimpleApplication {
                 "Debug Teapot",
                 TangentBinormalGenerator.genTbnLines(((Geometry) teapot).getMesh(), 0.03f)
         );
-        Material debugMat = manager.loadMaterial("vertex_color.j3m");
+        Material debugMat = manager.loadMaterial("Common/Materials/VertexColor.j3m");
         debug.setMaterial(debugMat);
         debug.setCullHint(Spatial.CullHint.Never);
         debug.getLocalTranslation().set(teapot.getLocalTranslation());
@@ -55,7 +55,7 @@ public class TestTangentGenBadUV extends SimpleApplication {
         rootNode.addLight(dl);
 
         lightMdl = new Geometry("Light", new Sphere(10, 10, 0.1f));
-        lightMdl.setMaterial(manager.loadMaterial("red_color.j3m"));
+        lightMdl.setMaterial(manager.loadMaterial("Common/Materials/RedColor.j3m"));
         lightMdl.getMesh().setStatic();
         rootNode.attachChild(lightMdl);
 

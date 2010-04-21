@@ -42,6 +42,7 @@ public class Quad extends Mesh {
                                                 width,  height, 0,
                                                 0,      height, 0
                                                 });
+        
 
         if (flipCoords){
             setBuffer(Type.TexCoord, 2, new float[]{0, 1,
@@ -58,8 +59,14 @@ public class Quad extends Mesh {
                                               0, 0, 1,
                                               0, 0, 1,
                                               0, 0, 1});
-        setBuffer(Type.Index, 3, new short[]{0, 1, 2,
-                                             0, 2, 3});
+        if (height < 0){
+            setBuffer(Type.Index, 3, new short[]{0, 2, 1,
+                                                 0, 3, 2});
+        }else{
+            setBuffer(Type.Index, 3, new short[]{0, 1, 2,
+                                                 0, 2, 3});
+        }
+        
 
         updateBound();
     }

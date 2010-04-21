@@ -11,8 +11,6 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.debug.SkeletonDebugger;
-import com.jme3.scene.plugins.ogre.OgreMaterialList;
-import com.jme3.scene.plugins.ogre.OgreMeshKey;
 
 public class TestAnimBlendBug extends SimpleApplication implements BindingListener {
 
@@ -67,9 +65,7 @@ public class TestAnimBlendBug extends SimpleApplication implements BindingListen
         dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
         rootNode.addLight(dl);
 
-        OgreMaterialList matList = (OgreMaterialList) manager.loadAsset("ninja.material");
-        OgreMeshKey key = new OgreMeshKey("ninja.meshxml", matList);
-        Node model1 = (Node) manager.loadAsset(key);
+        Node model1 = (Node) manager.loadModel("Models/Ninja/Ninja.meshxml");
         Node model2 = model1.clone();
 
         model1.setLocalTranslation(-60, 0, 0);
@@ -83,7 +79,7 @@ public class TestAnimBlendBug extends SimpleApplication implements BindingListen
         channel2 = control2.createChannel();
 
         SkeletonDebugger skeletonDebug = new SkeletonDebugger("skeleton1", control1.getSkeleton());
-        Material mat = new Material(manager, "wire_color.j3md");
+        Material mat = new Material(manager, "Common/MatDefs/Misc/WireColor.j3md");
         mat.setColor("m_Color", ColorRGBA.Green);
         mat.getAdditionalRenderState().setDepthTest(false);
         skeletonDebug.setMaterial(mat);

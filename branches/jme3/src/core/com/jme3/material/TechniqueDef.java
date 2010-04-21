@@ -7,11 +7,11 @@ import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
 import com.jme3.shader.DefineList;
 import com.jme3.shader.UniformBinding;
+import com.jme3.shader.VarType;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class TechniqueDef implements Savable {
 
@@ -142,11 +142,11 @@ public class TechniqueDef implements Savable {
         defineParams.put(paramName, defineName);
     }
 
-    public void addShaderPresetDefine(String defineName, String value){
+    public void addShaderPresetDefine(String defineName, VarType type, Object value){
         if (presetDefines == null)
             presetDefines = new DefineList();
 
-        presetDefines.set(defineName, value);
+        presetDefines.set(defineName, type, value);
     }
 
     public String getFragName() {

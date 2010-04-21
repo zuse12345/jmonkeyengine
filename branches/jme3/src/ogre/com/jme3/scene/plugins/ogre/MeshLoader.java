@@ -7,7 +7,6 @@ import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetLoader;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
-import com.jme3.material.RenderState.BlendMode;
 import com.jme3.math.ColorRGBA;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
@@ -53,6 +52,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     public static boolean HARDWARE_SKINNING = false;
 
     private String meshName;
+    private String folderName;
     private AssetManager assetManager;
     private OgreMaterialList materialList;
 
@@ -81,6 +81,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
         super();
     }
 
+    @Deprecated
     public static Spatial loadModel(AssetManager manager,
                                     String meshName, String materialName){
         OgreMaterialList matList = materialName != null ?
@@ -150,16 +151,16 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             // load as native jme3 material instance
             mat = assetManager.loadMaterial(matName);
             // XXX: hack!
-            mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+//            mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
 //            mat.getAdditionalRenderState().setFaceCullMode(FaceCullMode.Off);
-            mat.getAdditionalRenderState().setAlphaFallOff(0.1f);
+//            mat.getAdditionalRenderState().setAlphaFallOff(0.1f);
         }else{
             if (materialList != null){
                 mat = materialList.get(matName);
             }
             if (mat == null){
                 logger.warning("Material "+matName+" not found. Applying default material");
-                mat = (Material) assetManager.loadAsset(new AssetKey("red_color.j3m"));
+                mat = (Material) assetManager.loadAsset(new AssetKey("Common/Materials/RedColor.j3m"));
             }
         }
         
@@ -468,7 +469,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     }
 
     private void startSkeleton(String name){
-        animData = (AnimData) assetManager.loadAsset(name+"xml");
+        animData = (AnimData) assetManager.loadAsset(folderName + name + "xml");
     }
 
     @Override
@@ -694,11 +695,23 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
 
     public Object load(AssetInfo info) throws IOException {
         try{
-            assetManager = info.getManager();
-            meshName = info.getKey().getName();
-            String ext = info.getKey().getExtension();
+            AssetKey key = info.getKey();
+            meshName = key.getName();
+            folderName = key.getFolder();
+            String ext = key.getExtension();
             meshName = meshName.substring(0, meshName.length() - ext.length() - 1);
-            materialList = ((OgreMeshKey)info.getKey()).getMaterialList();
+            if (folderName != null && folderName.length() > 0){
+                meshName = meshName.substring(folderName.length());
+            }
+            assetManager = info.getManager();
+
+            OgreMeshKey meshKey = null;
+            if (key instanceof OgreMeshKey){
+                meshKey = (OgreMeshKey) key;
+                materialList = meshKey.getMaterialList();
+            }else{
+                materialList = (OgreMaterialList) assetManager.loadAsset(folderName + meshName + ".material");
+            }
 
             XMLReader xr = XMLReaderFactory.createXMLReader();
             xr.setContentHandler(this);

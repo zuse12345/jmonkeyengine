@@ -21,6 +21,7 @@ import java.util.Scanner;
 
 public class MaterialLoader implements AssetLoader {
 
+    private String folderName;
     private AssetManager assetManager;
     private Scanner scan;
     private ColorRGBA diffuse, specular;
@@ -78,7 +79,7 @@ public class MaterialLoader implements AssetLoader {
             cubic = true;
         }
 
-        TextureKey key = new TextureKey(path, false);
+        TextureKey key = new TextureKey(folderName + path, false);
         key.setGenerateMips(genMips);
         key.setAsCube(cubic);
         texture = assetManager.loadTexture(key);
@@ -254,7 +255,7 @@ public class MaterialLoader implements AssetLoader {
     }
 
     private Material compileMaterial(){
-        Material mat = new Material(assetManager, "phong_lighting.j3md");
+        Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
         if (blend){
             RenderState rs = mat.getAdditionalRenderState();
             rs.setAlphaTest(true);
@@ -292,6 +293,7 @@ public class MaterialLoader implements AssetLoader {
     }
 
     public Object load(AssetInfo info) throws IOException {
+        folderName = info.getKey().getFolder();
         assetManager = info.getManager();
         OgreMaterialList list = new OgreMaterialList();
         scan = new Scanner(info.openStream());

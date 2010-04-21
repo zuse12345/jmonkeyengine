@@ -39,8 +39,7 @@ public class FolderConverter {
 
         assetManager = JmeSystem.newAssetManager();
         assetManager.registerLocator(sourceRoot.toString(), 
-                                     "com.jme3.asset.plugins.FileSystemLocator",
-                                     "*");
+                                     "com.jme3.asset.plugins.FileSystemLocator");
         for (File f : sourceRoot.listFiles()){
              process(f);
         }

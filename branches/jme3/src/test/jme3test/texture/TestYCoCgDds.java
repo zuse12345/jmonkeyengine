@@ -27,7 +27,7 @@ public class TestYCoCgDds extends SimpleApplication {
         quad.updateModelBound();
 
         Texture tex = manager.loadTexture(texName);
-        Material mat = new Material(manager, "plain_texture.j3md");
+        Material mat = new Material(manager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         mat.setTexture("m_ColorMap", tex);
         if (ycocg)
             mat.setBoolean("m_YCoCg", true);
@@ -43,7 +43,7 @@ public class TestYCoCgDds extends SimpleApplication {
     }
 
     public void simpleInitApp() {
-        BitmapFont font = manager.loadFont("cooper.fnt");
+        BitmapFont font = manager.loadFont("Interface/Fonts/Default.fnt");
         BitmapText txt = new BitmapText(font, false);
         txt.setText("Left: Original, Middle: DXT5-YCoCg, Right: DXT1");
         txt.setLocalTranslation(0, txt.getLineHeight() * 2, 0);
@@ -53,9 +53,9 @@ public class TestYCoCgDds extends SimpleApplication {
         quadMesh = new Quad(1, 1);
         quadMesh.updateGeometry(1, 1, false);
 
-        rootNode.attachChild(createQuad(-1f, "nightsky.png", false));
-        rootNode.attachChild(createQuad(0,   "nightsky_ycc.dds", true));
-        rootNode.attachChild(createQuad(1f,  "nightsky_dxt1.dds", false));
+        rootNode.attachChild(createQuad(-1f, "Textures/Sky/Night/Night.png", false));
+        rootNode.attachChild(createQuad(0,   "Textures/Sky/Night/Night_ycc.dds", true));
+        rootNode.attachChild(createQuad(1f,  "Textures/Sky/Night/Night_dxt1.dds", false));
     }
 
 }

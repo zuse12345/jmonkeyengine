@@ -30,13 +30,12 @@ public class TestUrlLoading extends SimpleApplication {
         quad.updateModelBound();
 
         manager.registerLocator("http://www.jmonkeyengine.com/images/",
-                                UrlLocator.class.getName(),
-                                "*");
+                                UrlLocator.class.getName());
         TextureKey key = new TextureKey("jmeheader.png", false);
         key.setGenerateMips(true);
         Texture tex = manager.loadTexture(key);
 
-        Material mat = new Material(manager, "plain_texture.j3md");
+        Material mat = new Material(manager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         mat.setTexture("m_ColorMap", tex);
         quad.setMaterial(mat);
 

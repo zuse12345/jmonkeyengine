@@ -9,7 +9,6 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.control.LodControl;
-import com.jme3.scene.plugins.ogre.MeshLoader;
 
 public class TestLodStress extends SimpleApplication implements BindingListener {
 
@@ -35,11 +34,11 @@ public class TestLodStress extends SimpleApplication implements BindingListener 
     public void simpleInitApp() {
         inputManager.registerKeyBinding("USELOD", KeyInput.KEY_L);
 
-        Node teapotNode = (Node) MeshLoader.loadModel(manager, "teapot.meshxml", null);
+        Node teapotNode = (Node) manager.loadModel("Models/Teapot/Teapot.meshxml");
         Geometry teapot = (Geometry) teapotNode.getChild(0);
 
         // show normals as material
-        Material mat = new Material(manager, "debug_normals.j3md");
+        Material mat = new Material(manager, "Common/MatDefs/Misc/ShowNormals.j3md");
 
         for (int y = -10; y < 10; y++){
             for (int x = -10; x < 10; x++){

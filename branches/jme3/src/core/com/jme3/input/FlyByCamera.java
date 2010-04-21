@@ -257,10 +257,12 @@ public class FlyByCamera implements BindingListener {
     }
 
     public void onPostUpdate(float tpf) {
-        if (dragToRotate){
-            inputManager.setCursorVisible(!canRotate);
-        }else{
-            inputManager.setCursorVisible(false);
+        if (enabled){
+            if (dragToRotate){
+                inputManager.setCursorVisible(!canRotate);
+            }else{
+                inputManager.setCursorVisible(false);
+            }
         }
     }
 

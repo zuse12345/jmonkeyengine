@@ -15,7 +15,7 @@ public class TestOgg extends AudioApp {
     @Override
     public void initAudioApp(){
         System.out.println("Playing without filter");
-        src = new AudioNode(manager, "footsteps.ogg", true);
+        src = new AudioNode(manager, "Sound/Effects/Foot steps.ogg", true);
         ar.playSource(src);
     }
 
@@ -24,7 +24,7 @@ public class TestOgg extends AudioApp {
             ar.deleteAudioData(src.getAudioData());
 
             System.out.println("Playing with low pass filter");
-            src = new AudioNode(manager, "footsteps.ogg", true);
+            src = new AudioNode(manager, "sounds/footsteps.ogg", true);
             src.setDryFilter(new LowPassFilter(1f, .5f));
             ar.playSource(src);
         }

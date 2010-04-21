@@ -14,6 +14,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.shader.Uniform;
+import com.jme3.shader.VarType;
 import com.jme3.system.Timer;
 import com.jme3.util.TempVars;
 import java.util.ArrayList;
@@ -135,7 +136,6 @@ public class RenderManager {
         
         Matrix4f tempMat4 = vars.tempMat4;
         Matrix3f tempMat3 = vars.tempMat3;
-//        Vector3f tempVec3 = vars.vect1;
         Vector2f tempVec2 = vars.vect2d;
         Quaternion tempVec4 = vars.quat1;
 
@@ -143,18 +143,18 @@ public class RenderManager {
             Uniform u = params.get(i);
             switch (u.getBinding()){
                 case WorldMatrix:
-                    u.setMatrix4(worldMatrix);
+                    u.setValue(VarType.Matrix4, worldMatrix);
                     break;
                 case ViewMatrix:
-                    u.setMatrix4(viewMatrix);
+                    u.setValue(VarType.Matrix4, viewMatrix);
                     break;
                 case ProjectionMatrix:
-                    u.setMatrix4(projMatrix);
+                    u.setValue(VarType.Matrix4, projMatrix);
                     break;
                 case WorldViewMatrix:
                     tempMat4.set(viewMatrix);
                     tempMat4.multLocal(worldMatrix);
-                    u.setMatrix4(tempMat4);
+                    u.setValue(VarType.Matrix4, tempMat4);
                     break;
                 case NormalMatrix:
                     tempMat4.set(viewMatrix);
@@ -162,50 +162,50 @@ public class RenderManager {
                     tempMat4.toRotationMatrix(tempMat3);
                     tempMat3.invertLocal();
                     tempMat3.transposeLocal();
-                    u.setMatrix3(tempMat3);
+                    u.setValue(VarType.Matrix3, tempMat3);
                     break;
                 case WorldViewProjectionMatrix:
                     tempMat4.set(viewProjMatrix);
                     tempMat4.multLocal(worldMatrix);
-                    u.setMatrix4(tempMat4);
+                    u.setValue(VarType.Matrix4, tempMat4);
                     break;
                 case ViewMatrixInverse:
                     tempMat4.set(viewMatrix);
                     tempMat4.invertLocal();
-                    u.setMatrix4(tempMat4);
+                    u.setValue(VarType.Matrix4, tempMat4);
                     break;
                 case ViewPort:
                     tempVec4.set(viewX, viewY, viewWidth, viewHeight);
-                    u.setVector4(tempVec4);
+                    u.setValue(VarType.Vector4, tempVec4);
                     break;
                 case Resolution:
                     tempVec2.set(viewWidth, viewHeight);
-                    u.setVector2(tempVec2);
+                    u.setValue(VarType.Vector2, tempVec2);
                     break;
                 case Aspect:
                     float aspect = ((float) viewWidth) / viewHeight;
-                    u.setFloat(aspect);
+                    u.setValue(VarType.Float, aspect);
                     break;
                 case CameraPosition:
-                    u.setVector3(camLoc);
+                    u.setValue(VarType.Vector3, camLoc);
                     break;
                 case CameraDirection:
-                    u.setVector3(camDir);
+                    u.setValue(VarType.Vector3, camDir);
                     break;
                 case CameraLeft:
-                    u.setVector3(camLeft);
+                    u.setValue(VarType.Vector3, camLeft);
                     break;
                 case CameraUp:
-                    u.setVector3(camUp);
+                    u.setValue(VarType.Vector3, camUp);
                     break;
                 case Time:
-                    u.setFloat(timer.getTimeInSeconds());
+                    u.setValue(VarType.Float, timer.getTimeInSeconds());
                     break;
                 case Tpf:
-                    u.setFloat(timer.getTimePerFrame());
+                    u.setValue(VarType.Float, timer.getTimePerFrame());
                     break;
                 case FrameRate:
-                    u.setFloat(timer.getFrameRate());
+                    u.setValue(VarType.Float, timer.getFrameRate());
                     break;
             }
         }

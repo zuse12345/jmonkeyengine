@@ -13,8 +13,6 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.debug.SkeletonDebugger;
-import com.jme3.scene.plugins.ogre.OgreMaterialList;
-import com.jme3.scene.plugins.ogre.OgreMeshKey;
 
 public class TestOgreComplexAnim extends SimpleApplication {
 
@@ -38,9 +36,7 @@ public class TestOgreComplexAnim extends SimpleApplication {
         dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
         rootNode.addLight(dl);
 
-        OgreMaterialList matList = (OgreMaterialList) manager.loadAsset("OTO.material");
-        OgreMeshKey key = new OgreMeshKey("OTO.meshxml", matList);
-        Node model = (Node) manager.loadAsset(key);
+        Node model = (Node) manager.loadModel("Models/Oto/Oto.meshxml");
 
         control = model.getControl(AnimControl.class);
         AnimChannel feet = control.createChannel();
@@ -73,7 +69,7 @@ public class TestOgreComplexAnim extends SimpleApplication {
         rightHand.setAnim("push");
 
         SkeletonDebugger skeletonDebug = new SkeletonDebugger("skeleton", control.getSkeleton());
-        Material mat = new Material(manager, "wire_color.j3md");
+        Material mat = new Material(manager, "Common/MatDefs/Misc/WireColor.j3md");
         mat.setColor("m_Color", ColorRGBA.Green);
         mat.getAdditionalRenderState().setDepthTest(false);
         skeletonDebug.setMaterial(mat);

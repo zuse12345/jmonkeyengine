@@ -4,6 +4,7 @@ import com.jme3.light.LightList;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Matrix4f;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Caps;
@@ -555,7 +556,7 @@ public class LwjglRenderer implements Renderer {
 
         uniform.clearUpdateNeeded();
         FloatBuffer fb;
-        switch (uniform.getDataType()){
+        switch (uniform.getVarType()){
             case Float:
                 Float f = (Float)uniform.getValue();
                 glUniform1f(loc, f.floatValue());
@@ -569,8 +570,14 @@ public class LwjglRenderer implements Renderer {
                 glUniform3f(loc, v3.getX(), v3.getY(), v3.getZ());
                 break;
             case Vector4:
-                ColorRGBA c = (ColorRGBA)uniform.getValue();
-                glUniform4f(loc, c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
+                Object val = uniform.getValue();
+                if (val instanceof ColorRGBA){
+                    ColorRGBA c = (ColorRGBA) val;
+                    glUniform4f(loc, c.r, c.g, c.b, c.a);
+                }else{
+                    Quaternion c = (Quaternion)uniform.getValue();
+                    glUniform4f(loc, c.getX(), c.getY(), c.getZ(), c.getW());
+                }
                 break;
             case Boolean:
                 Boolean b = (Boolean)uniform.getValue();

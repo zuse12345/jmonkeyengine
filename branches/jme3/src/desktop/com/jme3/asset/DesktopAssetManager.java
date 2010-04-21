@@ -34,8 +34,8 @@ public class DesktopAssetManager implements AssetManager {
 
     private final AssetCache cache = new AssetCache();
     private final ImplHandler handler = new ImplHandler(this);
-    private final ThreadingManager threadingMan = new ThreadingManager(this);
-    private final Set<AssetKey> alreadyLoadingSet = new HashSet<AssetKey>();
+//    private final ThreadingManager threadingMan = new ThreadingManager(this);
+//    private final Set<AssetKey> alreadyLoadingSet = new HashSet<AssetKey>();
 
     public DesktopAssetManager(){
         this(false);
@@ -60,6 +60,14 @@ public class DesktopAssetManager implements AssetManager {
         logger.info("DesktopAssetManager created.");
     }
 
+    public void registerLoader(Class<?> loader, String ... extensions){
+        handler.addLoader(loader, extensions);
+        if (logger.isLoggable(Level.FINER)){
+            logger.finer("Registered loader: "+loader.getSimpleName()+" for extensions "+
+                        Arrays.toString(extensions));
+        }
+    }
+
     public void registerLoader(String clsName, String ... extensions){
         Class<? extends AssetLoader> clazz = null;
         try{
@@ -72,7 +80,7 @@ public class DesktopAssetManager implements AssetManager {
         }
     }
 
-    public void registerLocator(String rootPath, String clsName, String ... extensions){
+    public void registerLocator(String rootPath, String clsName){
         Class<? extends AssetLoader> clazz = null;
         try{
             clazz = (Class<? extends AssetLoader>) Class.forName(clsName);
@@ -80,37 +88,14 @@ public class DesktopAssetManager implements AssetManager {
             logger.log(Level.WARNING, "Failed to find locator: "+clsName, ex);
         }
         if (clazz != null){
-            registerLocator(rootPath, clazz, extensions);
-        }
-    }
-
-    public void registerLoader(Class<?> loader, String ... extensions){
-        handler.addLoader(loader, extensions);
-        if (logger.isLoggable(Level.FINER)){
-            logger.finer("Registered loader: "+loader.getSimpleName()+" for extensions "+
-                        Arrays.toString(extensions));
-        }
-    }
-
-    public void registerLocator(Class<?> locator){
-        registerLocator(locator, "*");
-    }
-
-    public void registerLocator(Class<?> locator, String ... extensions){
-        registerLocator(null, locator, extensions);
-    }
-
-    public void registerLocator(String rootPath, Class<?> locator, String ... extensions){
-        handler.addLocator(locator, rootPath, extensions);
-        if (logger.isLoggable(Level.FINER)){
-            logger.finer("Registered locator: "+locator.getSimpleName());
+            handler.addLocator(clazz, rootPath);
         }
     }
     
-    public void unregisterLocator(String rootPath, Class<?> locator, String ... extensions){
-        handler.removeLocator(locator, rootPath, extensions);
+    public void unregisterLocator(String rootPath, Class<?> clazz){
+        handler.removeLocator(clazz, rootPath);
         if (logger.isLoggable(Level.FINER)){
-            logger.finer("Unregistered locator: "+locator.getSimpleName());
+            logger.finer("Unregistered locator: "+clazz.getSimpleName());
         }
     }
 
@@ -130,13 +115,13 @@ public class DesktopAssetManager implements AssetManager {
     public Object loadAsset(AssetKey key){
         Object o = key.shouldCache() ? cache.getFromCache(key) : null;
         if (o == null){
-            synchronized (alreadyLoadingSet){
-                if (alreadyLoadingSet.contains(key)){
-                    System.out.println("!!! Resource is already loading in another thread!");
-                    return null;
-                }
-                alreadyLoadingSet.add(key);
-            }
+//            synchronized (alreadyLoadingSet){
+//                if (alreadyLoadingSet.contains(key)){
+//                    System.out.println("!!! Resource is already loading in another thread!");
+//                    return null;
+//                }
+//                alreadyLoadingSet.add(key);
+//            }
 
             AssetLoader loader = handler.aquireLoader(key);
             if (loader == null){
@@ -178,13 +163,13 @@ public class DesktopAssetManager implements AssetManager {
                     cache.addToCache(key, o);
             }
 
-            synchronized (alreadyLoadingSet){
-                if (!alreadyLoadingSet.contains(key)){
-                    System.out.println("!!!! This really shouldn't happen!");
-//                    return null;
-                }
-                alreadyLoadingSet.remove(key);
-            }
+//            synchronized (alreadyLoadingSet){
+//                if (!alreadyLoadingSet.contains(key)){
+//                    System.out.println("!!!! This really shouldn't happen!");
+////                    return null;
+//                }
+//                alreadyLoadingSet.remove(key);
+//            }
         }
 
         // object o is the asset
@@ -195,20 +180,6 @@ public class DesktopAssetManager implements AssetManager {
     public Object loadAsset(String name){
         return loadAsset(new AssetKey(name));
     }
-
-//    public void loadContents(String ... names){
-//        for (String name : names){
-//            loadContent(new AssetKey(name));
-//        }
-//    }
-
-//    private Future<Object> loadContentLater(String name){
-//        return threadingMan.loadContent(name);
-//    }
-//
-//    private Future<Void> loadContentsLater(String ... names){
-//        return threadingMan.loadContents(names);
-//    }
 
     /**
      * Loads a texture.

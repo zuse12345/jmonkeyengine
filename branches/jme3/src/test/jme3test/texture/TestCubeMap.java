@@ -29,9 +29,9 @@ public class TestCubeMap extends SimpleApplication {
     public void loadEnvMap(){
         TextureKey key;
         if (renderer.getCaps().contains(Caps.FloatTexture)){
-            key = new TextureKey("stpeters_probe.hdr", true);
+            key = new TextureKey("Textures/Sky/St Peters/StPeters.hdr", true);
         }else{
-            key = new TextureKey("stpeters_probe.jpg", true);
+            key = new TextureKey("Textures/Sky/St Peters/StPeters.jpg", true);
         }
         key.setGenerateMips(true);
         key.setAsCube(false);
@@ -39,11 +39,11 @@ public class TestCubeMap extends SimpleApplication {
     }
 
     public Geometry createReflectiveTeapot(){
-        Geometry g = (Geometry) manager.loadAsset(new AssetKey("teapot.obj"));
+        Geometry g = (Geometry) manager.loadAsset(new AssetKey("Models/Teapot/Teapot.obj"));
         g.setLocalScale(5);
         g.updateModelBound();
 
-        Material mat = new Material(manager, "cube_texture.j3md");
+        Material mat = new Material(manager, "Common/MatDefs/Light/Reflection.j3md");
         mat.setTexture("m_Texture", envMap);
         mat.setBoolean("m_SphereMap", true);
         g.setMaterial(mat);
@@ -69,7 +69,7 @@ public class TestCubeMap extends SimpleApplication {
         skyGeom.updateModelBound();
         skyGeom.setCullHint(CullHint.Never);
 
-        Material skyMat = new Material(manager, "sky.j3md");
+        Material skyMat = new Material(manager, "Common/MatDefs/Misc/Sky.j3md");
         skyMat.setBoolean("m_SphereMap", true);
         skyMat.setTexture("m_Texture", envMap);
         skyMat.setVector3("m_NormalScale", new Vector3f(1, 1, 1));

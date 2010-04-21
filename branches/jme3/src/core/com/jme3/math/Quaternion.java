@@ -1177,10 +1177,6 @@ public final class Quaternion implements Savable, Cloneable {
 
     }
 
-    public void get(FloatBuffer buf){
-        buf.put(x).put(y).put(z).put(w);
-    }
-
     /**
      * <code>readExternal</code> builds a quaternion from an
      * <code>ObjectInput</code> object. <br>

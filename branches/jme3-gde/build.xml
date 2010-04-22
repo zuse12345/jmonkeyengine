@@ -15,9 +15,8 @@
     <target name="dist-gde" depends="suite.clean, zip-templates, -set-impl-version, suite.build-zip, build-mac, unset-impl-version">
         <exec executable="zip" dir="dist/">
             <arg value="-yr"/>
-            <arg value="jmonkeyplatform.app"/>
-            <arg value="--output-file"/>
             <arg value="jmonkeyplatform-osx.zip"/>
+            <arg value="jmonkeyplatform.app"/>
         </exec>
     </target>
 

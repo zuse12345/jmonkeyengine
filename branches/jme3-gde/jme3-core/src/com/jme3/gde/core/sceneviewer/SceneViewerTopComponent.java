@@ -40,6 +40,9 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  * Top component which displays something.
@@ -56,15 +59,20 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     private JmeCanvasContext ctx;
     private SceneApplication app;
 
+    private Lookup lookup;
+    private final InstanceContent lookupContents = new InstanceContent();
+
     public SceneViewerTopComponent() {
         initComponents();
         setName(NbBundle.getMessage(SceneViewerTopComponent.class, "CTL_SceneViewerTopComponent"));
         setToolTipText(NbBundle.getMessage(SceneViewerTopComponent.class, "HINT_SceneViewerTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
+        lookup = new AbstractLookup(lookupContents);
+        associateLookup(lookup);
 //        putClientProperty(TopComponent.PROP_CLOSING_DISABLED, Boolean.TRUE);
 //        putClientProperty(TopComponent.PROP_SLIDING_DISABLED, Boolean.TRUE);
-//        app=Lookup.getDefault().lookup(SceneViewerApplication.class);
         app=SceneApplication.getApplication();
+//        lookupContents.add(app);
     }
 
     /** This method is called from within the constructor to

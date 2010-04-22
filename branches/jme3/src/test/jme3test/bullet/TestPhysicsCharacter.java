@@ -71,7 +71,7 @@ public class TestPhysicsCharacter extends SimplePhysicsApplication implements Bi
 
         setupKeys();
         
-        Material mat = new Material(manager, "plain_texture.j3md");
+        Material mat = new Material(manager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);
         key.setGenerateMips(true);
         Texture tex = manager.loadTexture(key);

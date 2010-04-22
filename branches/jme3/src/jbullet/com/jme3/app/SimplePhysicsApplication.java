@@ -96,7 +96,7 @@ public abstract class SimplePhysicsApplication extends PhysicsApplication {
     }
 
     public void loadFPSText(){
-        BitmapFont font = manager.loadFont("fonts/cooper.fnt");
+        BitmapFont font = manager.loadFont("Interface/Fonts/Default.fnt");
 
         fpsText = new BitmapText(font, false);
         fpsText.setSize(font.getCharSet().getRenderedSize());

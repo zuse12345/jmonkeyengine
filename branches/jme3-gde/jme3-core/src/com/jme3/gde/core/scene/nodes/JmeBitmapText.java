@@ -36,7 +36,6 @@ import com.jme3.font.BitmapText;
 import com.jme3.gde.core.scene.nodes.properties.JmeProperty;
 import com.jme3.math.ColorRGBA;
 import java.awt.Image;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
@@ -54,6 +53,7 @@ public class JmeBitmapText extends JmeGeometry {
 
     public JmeBitmapText(BitmapText spatial, JmeSpatialChildFactory children) {
         super(spatial, children);
+        getLookupContents().add(spatial);
         this.geom = spatial;
         setName(spatial.getName());
     }

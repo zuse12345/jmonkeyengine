@@ -29,17 +29,13 @@
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.gde.core.scene.nodes;
 
-import com.jme3.effect.EmitterShape;
 import com.jme3.effect.ParticleEmitter;
-import com.jme3.effect.ParticleMesh;
 import com.jme3.gde.core.scene.nodes.properties.JmeProperty;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import java.awt.Image;
-import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -48,13 +44,15 @@ import org.openide.util.ImageUtilities;
  *
  * @author normenhansen
  */
-public class JmeParticleEmitter extends JmeGeometry{
+public class JmeParticleEmitter extends JmeGeometry {
+
     private static Image smallImage =
             ImageUtilities.loadImage("com/jme3/gde/core/scene/nodes/icons/particleemitter.gif");
     private ParticleEmitter geom;
 
     public JmeParticleEmitter(ParticleEmitter spatial, JmeSpatialChildFactory children) {
         super(spatial, children);
+        getLookupContents().add(spatial);
         this.geom = spatial;
         setName(spatial.getName());
     }

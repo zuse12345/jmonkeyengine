@@ -34,7 +34,6 @@ package com.jme3.gde.core.scene.nodes;
 import com.jme3.gde.core.scene.nodes.properties.JmeProperty;
 import com.jme3.ui.Picture;
 import java.awt.Image;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
@@ -52,6 +51,7 @@ public class JmePicture extends JmeGeometry {
 
     public JmePicture(Picture spatial, JmeSpatialChildFactory children) {
         super(spatial, children);
+        getLookupContents().add(spatial);
         this.geom = spatial;
         setName(spatial.getName());
     }

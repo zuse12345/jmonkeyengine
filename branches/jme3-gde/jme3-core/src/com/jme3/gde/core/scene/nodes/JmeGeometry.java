@@ -36,7 +36,6 @@ import com.jme3.material.Material;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import java.awt.Image;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
@@ -54,6 +53,7 @@ public class JmeGeometry extends JmeSpatial {
 
     public JmeGeometry(Geometry spatial, JmeSpatialChildFactory children) {
         super(spatial, children);
+        getLookupContents().add(spatial);
         this.geom = spatial;
         setName(spatial.getName());
     }

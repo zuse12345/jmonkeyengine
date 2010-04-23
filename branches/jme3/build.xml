@@ -23,6 +23,10 @@
 
         <!--jme3 base libs-->
         <copy file="${dist.jar}" toDir="../jme3-gde/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
+        <copy file="dist/lib/jME3-lwjgl-natives-2.4.jar" toDir="../jme3-gde/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
+        <copy file="dist/lib/jME3-jogl-natives.jar" toDir="../jme3-gde/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
+        <copy file="dist/lib/jME3-natives-joal.jar" toDir="../jme3-gde/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
+
         <copy file="${dist.jar}" toDir="../jme3-gde/jme3-project-baselibs/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
 
         <!--jme3 libraries-->
@@ -30,6 +34,9 @@
             <!--exclude jme3 test data from core-->
             <fileset dir="dist/lib/">
                 <exclude name="jme3testdata.jar"/>
+                <exclude name="jME3-lwjgl-natives-2.4.jar"/>
+                <exclude name="jME3-jogl-natives.jar"/>
+                <exclude name="jME3-natives-joal.jar"/>
             </fileset>
         </copy>
         <copy todir="../jme3-gde/jme3-project-libraries/release/libs/" overwrite="true" failonerror="true" verbose="true">
@@ -66,8 +73,12 @@
         <delete dir="../../jme3-jmp/workspace/jme3-project-baselibs/release/libs/"/>
         <delete dir="../../jme3-jmp/workspace/jme3-project-testdata/release/libs/"/>
 
-        <!--jme3 base libs-->
+        <!--jme3 jMP base libs-->
         <copy file="${dist.jar}" toDir="../../jme3-jmp/workspace/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
+        <copy file="dist/lib/jME3-lwjgl-natives-2.4.jar" toDir="../../jme3-jmp/workspace/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
+        <copy file="dist/lib/jME3-jogl-natives.jar" toDir="../../jme3-jmp/workspace/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
+        <copy file="dist/lib/jME3-natives-joal.jar" toDir="../../jme3-jmp/workspace/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
+        <!--jme3 project base libs-->
         <copy file="${dist.jar}" toDir="../../jme3-jmp/workspace/jme3-project-baselibs/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
 
         <!--jme3 libraries-->
@@ -75,6 +86,9 @@
             <!--exclude jme3 test data from core-->
             <fileset dir="dist/lib/">
                 <exclude name="jme3testdata.jar"/>
+                <exclude name="jME3-lwjgl-natives-2.4.jar"/>
+                <exclude name="jME3-jogl-natives.jar"/>
+                <exclude name="jME3-natives-joal.jar"/>
             </fileset>
         </copy>
         <copy todir="../../jme3-jmp/workspace/jme3-project-libraries/release/libs/" overwrite="true" failonerror="true" verbose="true">

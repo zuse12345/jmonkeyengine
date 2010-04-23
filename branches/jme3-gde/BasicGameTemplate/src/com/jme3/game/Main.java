@@ -1,13 +1,12 @@
 package com.jme3.game;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.asset.TextureKey;
 import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
-import com.jme3.texture.Texture;
 
 /**
  * test
@@ -15,7 +14,7 @@ import com.jme3.texture.Texture;
  */
 public class Main extends SimpleApplication {
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         Main app = new Main();
         app.start();
     }
@@ -26,13 +25,8 @@ public class Main extends SimpleApplication {
         Geometry geom = new Geometry("Box", b);
         geom.updateModelBound();
 
-        Material mat = new Material(manager, "plain_texture.j3md");
-        TextureKey key = new TextureKey("Monkey.jpg", true);
-        key.setGenerateMips(true);
-        Texture tex = manager.loadTexture(key);
-        tex.setMinFilter(Texture.MinFilter.Trilinear);
-        mat.setTexture("m_ColorMap", tex);
-
+        Material mat = new Material(manager, "Common/MatDefs/Misc/SolidColor.j3md");
+        mat.setColor("m_Color", ColorRGBA.Blue);
         geom.setMaterial(mat);
 
         rootNode.attachChild(geom);
@@ -47,5 +41,4 @@ public class Main extends SimpleApplication {
     public void simpleRender(RenderManager rm) {
         //TODO: add render code
     }
-
 }

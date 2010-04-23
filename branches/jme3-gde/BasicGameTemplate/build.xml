@@ -11,13 +11,23 @@
     <description>Builds, tests, and runs the project BasicGameTemplate.</description>
     <import file="nbproject/build-impl.xml"/>
 
-<!--
-    <target name="-post-jar">
-        <jar>
-            <fileset dir="assets/"/>
-        </jar>
+    <!--this target creates the assets jar file and modifies the classpath to include it-->
+    <target name="-pre-jar">
+        <!--create jar from assets-->
+        <jar jarfile="build/assets.jar" basedir="assets/" compress="true"/>
+        <!--resolve assets and assets jar location-->
+        <property location="assets" name="assets.dir.resolved"/>
+        <property location="build/assets.jar" name="assets.jar.resolved"/>
+        <!--this sets properties that would normally later be created in the build-impl.xml-->
+        <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
+        <pathconvert property="run.classpath.without.build.classes.dir">
+            <!--remove build.classes.dir and replace assets folder in dist classpath-->
+            <path path="${run.classpath}"/>
+            <map from="${build.classes.dir.resolved}" to=""/>
+            <map from="${assets.dir.resolved}" to="${assets.jar.resolved}"/>
+        </pathconvert>
     </target>
--->
+
     <!--
 
     There exist several targets which are by default empty and which can be 

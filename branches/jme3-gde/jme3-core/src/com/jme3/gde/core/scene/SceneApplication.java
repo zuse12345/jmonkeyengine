@@ -107,12 +107,10 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     private Quaternion rot = new Quaternion();
     private Vector3f vector = new Vector3f();
     private Vector3f focus = new Vector3f();
-    private boolean doPreview = false;
+    //preview variables
     private static final int width = 120, height = 120;
     private final ByteBuffer cpuBuf = BufferUtils.createByteBuffer(width * height * 4);
     private final byte[] cpuArray = new byte[width * height * 4];
-    private final BufferedImage image = new BufferedImage(width, height,
-            BufferedImage.TYPE_4BYTE_ABGR);
     protected Node previewNode = new Node("Preview Node");
     protected JmeSpatial previewSpat = null;
     protected float secondCounter = 0.0f;
@@ -124,7 +122,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     private WireProcessor wireProcessor;
     private FrameBuffer offBuffer;
     private ViewPort offView;
-//    private JmeSpatial currentNode;
     private ConcurrentLinkedQueue<PreviewRequest> previewQueue = new ConcurrentLinkedQueue<PreviewRequest>();
     private SceneRequest currentSceneRequest;
     private PreviewRequest currentPreviewRequest;
@@ -146,7 +143,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         projectResult.addLookupListener(this);
 
         createCanvas();
-//        ctx = (JmeCanvasContext) app.getContext();
         getContext().setAutoFlushFrames(true);
         getContext().setSystemListener(this);
     }
@@ -199,9 +195,9 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         wireProcessor = new WireProcessor(manager);
     }
 
-    private void doPreviews(){
-        currentPreviewRequest=previewQueue.poll();
-        if(currentPreviewRequest!=null){
+    private void doPreviews() {
+        currentPreviewRequest = previewQueue.poll();
+        if (currentPreviewRequest != null) {
             previewNode.detachAllChildren();
             previewNode.attachChild(currentPreviewRequest.getSpatial());
         }
@@ -441,15 +437,15 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         }
 
         BufferedImage image = new BufferedImage(width, height,
-            BufferedImage.TYPE_4BYTE_ABGR);
+                BufferedImage.TYPE_4BYTE_ABGR);
 //        synchronized (image) {
-            WritableRaster wr = image.getRaster();
-            DataBufferByte db = (DataBufferByte) wr.getDataBuffer();
-            System.arraycopy(cpuArray, 0, db.getData(), 0, cpuArray.length);
+        WritableRaster wr = image.getRaster();
+        DataBufferByte db = (DataBufferByte) wr.getDataBuffer();
+        System.arraycopy(cpuArray, 0, db.getData(), 0, cpuArray.length);
 //        }
         currentPreviewRequest.setImage(image);
         notifySceneListeners(currentPreviewRequest);
-        currentPreviewRequest=null;
+        currentPreviewRequest = null;
     }
 
     public void initialize(RenderManager rm, ViewPort vp) {
@@ -470,7 +466,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     boolean mooPreview = false;
 
     public void postFrame(FrameBuffer fb) {
-        if (currentPreviewRequest!=null) {
+        if (currentPreviewRequest != null) {
             updateImageContents();
         }
     }
@@ -498,9 +494,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     private void notifySceneListeners(PreviewRequest request) {
         for (Iterator<SceneListener> it = listeners.iterator(); it.hasNext();) {
             SceneListener sceneViewerListener = it.next();
-            synchronized (image) {
-                sceneViewerListener.previewRequested(request);
-            }
+            sceneViewerListener.previewRequested(request);
         }
     }
 
@@ -576,6 +570,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 
     private void setWindowTitle(final String string) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 SceneViewerTopComponent.findInstance().setDisplayName(string);
             }

@@ -90,8 +90,20 @@
                 <package>jme3tools.preview</package>
             </public-packages>
             <class-path-extension>
+                <runtime-relative-path>ext/jME3-natives-joal.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/jME3-natives-joal.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
                 <runtime-relative-path>ext/jMonkeyEngine3.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/jMonkeyEngine3.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jME3-jogl-natives.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/jME3-jogl-natives.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jME3-lwjgl-natives-2.4.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/jME3-lwjgl-natives-2.4.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

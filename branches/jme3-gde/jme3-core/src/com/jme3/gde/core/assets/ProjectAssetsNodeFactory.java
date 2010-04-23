@@ -55,11 +55,11 @@ public class ProjectAssetsNodeFactory implements NodeFactory {
 
         DataObject assetsFolder;
         try {
-            assetsFolder = DataObject.find(project.getProjectDirectory().getFileObject("assets"));
-            Node node = assetsFolder.getNodeDelegate();
             //return a new node for the project view if theres an assets folder:
             ProjectAssetManager item = project.getLookup().lookup(ProjectAssetManager.class);
             if (item != null) {
+                assetsFolder = DataObject.find(project.getProjectDirectory().getFileObject("assets"));
+                Node node = assetsFolder.getNodeDelegate();
                 try {
                     ProjectAssetsNode nd = new ProjectAssetsNode(item, proj, node);
                     return NodeFactorySupport.fixedNodeList(nd);

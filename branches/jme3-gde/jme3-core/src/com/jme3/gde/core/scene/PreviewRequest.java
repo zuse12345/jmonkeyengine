@@ -29,20 +29,47 @@
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 package com.jme3.gde.core.scene;
 
-import com.jme3.gde.core.scene.nodes.JmeSpatial;
+import com.jme3.scene.Spatial;
+import java.awt.image.BufferedImage;
 
 /**
- * To be replaced with Lookup functionality
+ *
  * @author normenhansen
  */
-public interface SceneListener {
+public class PreviewRequest {
+    private Object requester;
+    private Spatial spatial;
+    private BufferedImage image;
 
-    public void sceneRequested(SceneRequest request);
+    /**
+     * @return the requester
+     */
+    public Object getRequester() {
+        return requester;
+    }
 
-    public void nodeSelected(JmeSpatial spatial);
+    /**
+     * @return the spatial
+     */
+    public Spatial getSpatial() {
+        return spatial;
+    }
 
-    public void previewRequested(PreviewRequest request);
+    /**
+     * @return the image
+     */
+    public BufferedImage getImage() {
+        return image;
+    }
+
+    /**
+     * @param image the image to set
+     */
+    public void setImage(BufferedImage image) {
+        this.image = image;
+    }
 
 }

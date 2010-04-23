@@ -34,12 +34,13 @@ package com.jme3.gde.cinematics.timeline;
 import com.jme3.gde.cinematics.TimelineBottomPanel;
 import com.jme3.gde.cinematics.TimelinePanel;
 import com.jme3.gde.cinematics.timeline.keyframes.Vector3fKeyFrame;
+import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneListener;
+import com.jme3.gde.core.scene.SceneRequest;
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
 import com.jme3.math.Vector3f;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -363,8 +364,8 @@ public class TimelineManager implements TimelinePropertyListener, SceneListener 
     }
 
     @Override
-    public void rootNodeChanged(JmeSpatial spatial) {
-        ((SpatialTimeline)timelines.get(0)).setObject(spatial);
+    public void sceneRequested(SceneRequest request) {
+        ((SpatialTimeline)timelines.get(0)).setObject(request.getRootNode());
 
         reloadControls();
     }
@@ -379,6 +380,6 @@ public class TimelineManager implements TimelinePropertyListener, SceneListener 
        // TODO
     }
 
-    public void previewChanged(BufferedImage preview, Object source) {
+    public void previewRequested(PreviewRequest source) {
     }
 }

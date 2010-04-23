@@ -29,20 +29,86 @@
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 package com.jme3.gde.core.scene;
 
-import com.jme3.gde.core.scene.nodes.JmeSpatial;
+import com.jme3.gde.core.scene.nodes.JmeNode;
+import org.openide.util.Lookup;
 
 /**
- * To be replaced with Lookup functionality
+ *
  * @author normenhansen
  */
-public interface SceneListener {
+public class SceneRequest {
+    private String windowTitle="";
+    private String mimeType="";
+    private Object requester;
+    private JmeNode rootNode;
+    private boolean displayed=false;
 
-    public void sceneRequested(SceneRequest request);
+    public SceneRequest(Object requester, JmeNode rootNode) {
+        this.requester = requester;
+        this.rootNode = rootNode;
+    }
 
-    public void nodeSelected(JmeSpatial spatial);
+    public Lookup getLookup(){
+        return rootNode.getLookup();
+    }
 
-    public void previewRequested(PreviewRequest request);
+    /**
+     * @return the windowTitle
+     */
+    public String getWindowTitle() {
+        return windowTitle;
+    }
+
+    /**
+     * @param windowTitle the windowTitle to set
+     */
+    public void setWindowTitle(String windowTitle) {
+        this.windowTitle = windowTitle;
+    }
+
+    /**
+     * @return the mimeType
+     */
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    /**
+     * @param mimeType the mimeType to set
+     */
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    /**
+     * @return the requester
+     */
+    public Object getRequester() {
+        return requester;
+    }
+
+    /**
+     * @return the rootNode
+     */
+    public JmeNode getRootNode() {
+        return rootNode;
+    }
+
+    /**
+     * @return the displayed
+     */
+    public boolean isDisplayed() {
+        return displayed;
+    }
+
+    /**
+     * @param displayed the displayed to set
+     */
+    public void setDisplayed(boolean displayed) {
+        this.displayed = displayed;
+    }
 
 }

@@ -31,10 +31,11 @@
  */
 package com.jme3.gde.core.sceneexplorer;
 
+import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
+import com.jme3.gde.core.scene.SceneRequest;
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
-import java.awt.image.BufferedImage;
 import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -169,17 +170,15 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
         return explorerManager;
     }
 
-    public void rootNodeChanged(JmeSpatial spatial) {
-        explorerManager.setRootContext(spatial);
-        explorerManager.getRootContext().setDisplayName(spatial.getName());
+    public void sceneRequested(SceneRequest request) {
+        explorerManager.setRootContext(request.getRootNode());
+        explorerManager.getRootContext().setDisplayName(request.getRootNode().getName());
     }
 
     public void nodeSelected(JmeSpatial spatial) {
-        // TODO
+        //TODO: node selection
     }
 
-    public void previewChanged(BufferedImage preview, Object source) {
-//        final BufferedImage image=new BufferedImage(preview.getWidth(),preview.getHeight(),preview.getType());
-//        image.getGraphics().drawImage(preview, 0, 0, null);
+    public void previewRequested(PreviewRequest request) {
     }
 }

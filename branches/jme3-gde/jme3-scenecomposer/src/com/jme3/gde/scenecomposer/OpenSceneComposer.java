@@ -6,6 +6,7 @@ package com.jme3.gde.scenecomposer;
 
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.scene.SceneApplication;
+import com.jme3.gde.core.scene.SceneRequest;
 import com.jme3.gde.core.scene.nodes.JmeNode;
 import com.jme3.gde.core.scene.nodes.NodeUtility;
 import com.jme3.scene.Node;
@@ -31,15 +32,21 @@ public final class OpenSceneComposer implements ActionListener {
         Spatial spat=manager.getManager().loadModel(assetName);
         if(spat instanceof Node){
             JmeNode jmeNode=NodeUtility.createNode((Node)spat);
-            SceneComposerTopComponent.findInstance().setRootNode(jmeNode);
-            SceneApplication.getApplication().showTree(jmeNode);
+            SceneComposerTopComponent composer=SceneComposerTopComponent.findInstance();
+            composer.setRootNode(jmeNode);
+            SceneRequest request=new SceneRequest(composer,jmeNode);
+            request.setWindowTitle("SceneComposer - "+spat.getName());
+            SceneApplication.getApplication().requestScene(request);
         }
         else{
             Node node=new Node();
             node.attachChild(spat);
             JmeNode jmeNode=NodeUtility.createNode(node);
-            SceneComposerTopComponent.findInstance().setRootNode(jmeNode);
-            SceneApplication.getApplication().showTree(jmeNode);
+            SceneComposerTopComponent composer=SceneComposerTopComponent.findInstance();
+            composer.setRootNode(jmeNode);
+            SceneRequest request=new SceneRequest(composer,jmeNode);
+            request.setWindowTitle("SceneComposer - "+spat.getName());
+            SceneApplication.getApplication().requestScene(request);
         }
     }
 }

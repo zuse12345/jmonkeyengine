@@ -7,8 +7,10 @@ package com.jme3.gde.scenecomposer;
 import com.jme3.effect.EmitterSphereShape;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
+import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
+import com.jme3.gde.core.scene.SceneRequest;
 import com.jme3.gde.core.scene.nodes.JmeNode;
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
 import com.jme3.material.Material;
@@ -238,8 +240,17 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         this.rootNode = node;
     }
 
-    public void rootNodeChanged(JmeSpatial spatial) {
-        if (spatial.equals(rootNode)) {
+    public void resultChanged(LookupEvent ev) {
+        Collection<JmeSpatial> items = (Collection<JmeSpatial>) result.allInstances();
+        for (JmeSpatial spatial : items) {
+            selectedSpat = spatial;
+            selected=spatial.getLookup().lookup(Spatial.class);
+        }
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void sceneRequested(SceneRequest request) {
+        if (request.getRootNode().equals(rootNode)) {
             displayed = true;
         } else {
             displayed = false;
@@ -251,16 +262,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 //        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void previewChanged(BufferedImage preview, Object origin) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void resultChanged(LookupEvent ev) {
-        Collection<JmeSpatial> items = (Collection<JmeSpatial>) result.allInstances();
-        for (JmeSpatial spatial : items) {
-            selectedSpat = spatial;
-            selected=spatial.getLookup().lookup(Spatial.class);
-        }
+    public void previewRequested(PreviewRequest request) {
 //        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

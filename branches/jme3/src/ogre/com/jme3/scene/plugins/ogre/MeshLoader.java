@@ -469,7 +469,10 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     }
 
     private void startSkeleton(String name){
-        animData = (AnimData) assetManager.loadAsset(folderName + name + "xml");
+        animData = (AnimData) assetManager.loadAsset(folderName + name + ".xml");
+        //TODO:workaround for meshxml / mesh.xml
+        if(animData==null)
+            animData = (AnimData) assetManager.loadAsset(folderName + name + "xml");
     }
 
     @Override

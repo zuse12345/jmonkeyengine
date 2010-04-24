@@ -126,12 +126,18 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             if (folderName != null)
                 meshFile = folderName + meshFile;
             
-            meshFile += "xml";
+            meshFile += ".xml";
             
             entityNode = new Node(name);
             OgreMeshKey key = new OgreMeshKey(meshFile, materialList);
             Spatial ogreMesh = 
                     (Spatial) assetManager.loadAsset(key);
+            //TODO:workaround for meshxml / mesh.xml
+            if(ogreMesh==null){
+                meshFile = folderName + meshFile + "xml";
+                key = new OgreMeshKey(meshFile, materialList);
+                ogreMesh = (Spatial) assetManager.loadAsset(key);
+            }
             entityNode.attachChild(ogreMesh);
             node.attachChild(entityNode);
             node = null;

@@ -13,11 +13,13 @@
 
     <!--this target creates the assets jar file and modifies the classpath to include it-->
     <target name="-pre-jar">
+        <!--load assets properties-->
+        <property file="nbproject/assets.properties"/>
         <!--create jar from assets-->
-        <jar jarfile="build/assets.jar" basedir="assets/" compress="true"/>
+        <jar jarfile="${build.dir}/${assets.jar.name}" excludes="${assets.excludes}" basedir="${assets.folder.name}" compress="true"/>
         <!--resolve assets and assets jar location-->
         <property location="assets" name="assets.dir.resolved"/>
-        <property location="build/assets.jar" name="assets.jar.resolved"/>
+        <property location="${build.dir}/${assets.jar.name}" name="assets.jar.resolved"/>
         <!--this sets properties that would normally later be created in the build-impl.xml-->
         <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
         <pathconvert property="run.classpath.without.build.classes.dir">

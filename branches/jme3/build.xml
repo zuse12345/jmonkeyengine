@@ -13,76 +13,35 @@
 
     <!-- convenience target to transfer jme3 libraries to jme3-gde (jMonkeyPlatform) -->
     <target name="update-gde" depends="jar, javadoc">
-        <!--clear old files-->
-        <delete dir="../jme3-gde/JME3TestsTemplate/src/"/>
-        <delete dir="../jme3-gde/jme3-core-baselibs/release/modules/ext/"/>
-        <delete dir="../jme3-gde/jme3-core-libraries/release/modules/ext/"/>
-        <delete dir="../jme3-gde/jme3-project-libraries/release/libs/"/>
-        <delete dir="../jme3-gde/jme3-project-baselibs/release/libs/"/>
-        <delete dir="../jme3-gde/jme3-project-testdata/release/libs/"/>
-
-        <!--jme3 base libs-->
-        <copy file="${dist.jar}" toDir="../jme3-gde/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
-        <copy file="dist/lib/jME3-lwjgl-natives-2.4.jar" toDir="../jme3-gde/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
-        <copy file="dist/lib/jME3-jogl-natives.jar" toDir="../jme3-gde/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
-        <copy file="dist/lib/jME3-natives-joal.jar" toDir="../jme3-gde/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
-
-        <copy file="${dist.jar}" toDir="../jme3-gde/jme3-project-baselibs/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
-
-        <!--jme3 libraries-->
-        <copy todir="../jme3-gde/jme3-core-libraries/release/modules/ext/" overwrite="true" failonerror="true" verbose="true">
-            <!--exclude jme3 test data from core-->
-            <fileset dir="dist/lib/">
-                <exclude name="jme3testdata.jar"/>
-                <exclude name="jME3-lwjgl-natives-2.4.jar"/>
-                <exclude name="jME3-jogl-natives.jar"/>
-                <exclude name="jME3-natives-joal.jar"/>
-            </fileset>
-        </copy>
-        <copy todir="../jme3-gde/jme3-project-libraries/release/libs/" overwrite="true" failonerror="true" verbose="true">
-            <!--exclude jme3 test data from libs-->
-            <fileset dir="dist/lib/">
-                <exclude name="jme3testdata.jar"/>
-            </fileset>
-        </copy>
-
-        <!--test data-->
-        <copy file="dist/jme3testdata.jar" toDir="../jme3-gde/jme3-project-testdata/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
-
-        <!--javadoc-->
-        <zip destfile="dist/jMonkeyEngine3-javadoc.zip">
-            <zipfileset dir="dist/javadoc/"/>
-        </zip>
-        <copy file="dist/jMonkeyEngine3-javadoc.zip" toDir="../jme3-gde/jme3-project-baselibs/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
-
-        <!--examples-->
-        <copy todir="../jme3-gde/JME3TestsTemplate/src/" overwrite="true" failonerror="true" verbose="true">
-            <fileset dir="src/test/">
-                <exclude name=".svn"/>
-            </fileset>
-        </copy>
+        <property value="../jme3-gde/" name="jmp_dir"/>
+        <antcall target="-do-update-gde"/>
     </target>
 
     <!-- convenience target to transfer jme3 libraries to the jme3-jmp folder on the Hudson build server (jMonkeyPlatform) -->
     <target name="update-jmp-hudson">
-        <!--clear old files-->
-        <delete dir="../../jme3-jmp/workspace/JME3TestsTemplate/src/"/>
-        <delete dir="../../jme3-jmp/workspace/jme3-core-baselibs/release/modules/ext/"/>
-        <delete dir="../../jme3-jmp/workspace/jme3-core-libraries/release/modules/ext/"/>
-        <delete dir="../../jme3-jmp/workspace/jme3-project-libraries/release/libs/"/>
-        <delete dir="../../jme3-jmp/workspace/jme3-project-baselibs/release/libs/"/>
-        <delete dir="../../jme3-jmp/workspace/jme3-project-testdata/release/libs/"/>
+        <property value="../../jme3-jmp/" name="jmp_dir"/>
+        <antcall target="-do-update-gde"/>
+    </target>
 
-        <!--jme3 jMP base libs-->
-        <copy file="${dist.jar}" toDir="../../jme3-jmp/workspace/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
-        <copy file="dist/lib/jME3-lwjgl-natives-2.4.jar" toDir="../../jme3-jmp/workspace/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
-        <copy file="dist/lib/jME3-jogl-natives.jar" toDir="../../jme3-jmp/workspace/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
-        <copy file="dist/lib/jME3-natives-joal.jar" toDir="../../jme3-jmp/workspace/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
-        <!--jme3 project base libs-->
-        <copy file="${dist.jar}" toDir="../../jme3-jmp/workspace/jme3-project-baselibs/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
+    <target name="-do-update-gde">
+        <!--clear old files-->
+        <delete dir="${jmp_dir}/JME3TestsTemplate/src/"/>
+        <delete dir="${jmp_dir}/jme3-core-baselibs/release/modules/ext/"/>
+        <delete dir="${jmp_dir}/jme3-core-libraries/release/modules/ext/"/>
+        <delete dir="${jmp_dir}/jme3-project-libraries/release/libs/"/>
+        <delete dir="${jmp_dir}/jme3-project-baselibs/release/libs/"/>
+        <delete dir="${jmp_dir}/jme3-project-testdata/release/libs/"/>
+
+        <!--jme3 base libs-->
+        <copy file="${dist.jar}" toDir="${jmp_dir}/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
+        <copy file="dist/lib/jME3-lwjgl-natives-2.4.jar" toDir="${jmp_dir}/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
+        <copy file="dist/lib/jME3-jogl-natives.jar" toDir="${jmp_dir}/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
+        <copy file="dist/lib/jME3-natives-joal.jar" toDir="${jmp_dir}/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
+
+        <copy file="${dist.jar}" toDir="${jmp_dir}/jme3-project-baselibs/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
 
         <!--jme3 libraries-->
-        <copy todir="../../jme3-jmp/workspace/jme3-core-libraries/release/modules/ext/" overwrite="true" failonerror="true" verbose="true">
+        <copy todir="${jmp_dir}/jme3-core-libraries/release/modules/ext/" overwrite="true" failonerror="true" verbose="true">
             <!--exclude jme3 test data from core-->
             <fileset dir="dist/lib/">
                 <exclude name="jme3testdata.jar"/>
@@ -91,7 +50,7 @@
                 <exclude name="jME3-natives-joal.jar"/>
             </fileset>
         </copy>
-        <copy todir="../../jme3-jmp/workspace/jme3-project-libraries/release/libs/" overwrite="true" failonerror="true" verbose="true">
+        <copy todir="${jmp_dir}/jme3-project-libraries/release/libs/" overwrite="true" failonerror="true" verbose="true">
             <!--exclude jme3 test data from libs-->
             <fileset dir="dist/lib/">
                 <exclude name="jme3testdata.jar"/>
@@ -99,16 +58,16 @@
         </copy>
 
         <!--test data-->
-        <copy file="dist/jme3testdata.jar" toDir="../../jme3-jmp/workspace/jme3-project-testdata/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
+        <copy file="dist/jme3testdata.jar" toDir="${jmp_dir}/jme3-project-testdata/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
 
         <!--javadoc-->
         <zip destfile="dist/jMonkeyEngine3-javadoc.zip">
             <zipfileset dir="dist/javadoc/"/>
         </zip>
-        <copy file="dist/jMonkeyEngine3-javadoc.zip" toDir="../../jme3-jmp/workspace/jme3-project-baselibs/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
+        <copy file="dist/jMonkeyEngine3-javadoc.zip" toDir="${jmp_dir}/jme3-project-baselibs/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
 
         <!--examples-->
-        <copy todir="../../jme3-jmp/workspace/JME3TestsTemplate/src/" overwrite="true" failonerror="true" verbose="true">
+        <copy todir="${jmp_dir}/JME3TestsTemplate/src/" overwrite="true" failonerror="true" verbose="true">
             <fileset dir="src/test/">
                 <exclude name=".svn"/>
             </fileset>

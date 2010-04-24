@@ -16,7 +16,7 @@
         <!--load assets properties-->
         <property file="nbproject/assets.properties"/>
         <!--create jar from assets-->
-        <jar jarfile="${build.dir}/${assets.jar.name}" excludes="${assets.excludes}" basedir="${assets.folder.name}" compress="true"/>
+        <jar jarfile="${build.dir}/${assets.jar.name}" excludes="${assets.excludes}" basedir="${assets.folder.name}" compress="${assets.compress}"/>
         <!--resolve assets and assets jar location-->
         <property location="assets" name="assets.dir.resolved"/>
         <property location="${build.dir}/${assets.jar.name}" name="assets.jar.resolved"/>

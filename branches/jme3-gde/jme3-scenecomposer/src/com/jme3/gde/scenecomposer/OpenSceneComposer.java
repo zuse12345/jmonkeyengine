@@ -33,20 +33,16 @@ public final class OpenSceneComposer implements ActionListener {
         if(spat instanceof Node){
             JmeNode jmeNode=NodeUtility.createNode((Node)spat);
             SceneComposerTopComponent composer=SceneComposerTopComponent.findInstance();
-            composer.setRootNode(jmeNode);
             SceneRequest request=new SceneRequest(composer,jmeNode);
-            request.setWindowTitle("SceneComposer - "+spat.getName());
-            SceneApplication.getApplication().requestScene(request);
+            composer.loadRequest(request, file);
         }
         else{
             Node node=new Node();
             node.attachChild(spat);
             JmeNode jmeNode=NodeUtility.createNode(node);
             SceneComposerTopComponent composer=SceneComposerTopComponent.findInstance();
-            composer.setRootNode(jmeNode);
             SceneRequest request=new SceneRequest(composer,jmeNode);
-            request.setWindowTitle("SceneComposer - "+spat.getName());
-            SceneApplication.getApplication().requestScene(request);
+            composer.loadRequest(request, file);
         }
     }
 }

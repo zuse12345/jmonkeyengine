@@ -4,24 +4,27 @@
  */
 package com.jme3.gde.scenecomposer;
 
+import com.jme3.asset.AssetManager;
 import com.jme3.effect.EmitterSphereShape;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
+import com.jme3.export.binary.BinaryExporter;
 import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
 import com.jme3.gde.core.scene.SceneRequest;
-import com.jme3.gde.core.scene.nodes.JmeNode;
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
 import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
@@ -30,11 +33,13 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
 
 /**
- * Top component which displays something.
+ * TODO: some threading stuff
  */
 @ConvertAsProperties(dtd = "-//com.jme3.gde.scenecomposer//SceneComposer//EN",
 autostore = false)
@@ -44,11 +49,11 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "com/jme3/gde/scenecomposer/jme-logo24.png";
     private static final String PREFERRED_ID = "SceneComposerTopComponent";
-    private JmeNode rootNode;
+    private SceneRequest currentRequest;
+    private FileObject currentFileObject;
     private final Result<JmeSpatial> result;
-    private Spatial selected;
     private JmeSpatial selectedSpat;
-    private boolean displayed = false;
+    private Spatial selected;
 
     public SceneComposerTopComponent() {
         initComponents();
@@ -69,55 +74,100 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        objectList = new javax.swing.JList();
+        addObjectButton = new javax.swing.JButton();
+        deleteObjectButton = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        saveButton = new javax.swing.JButton();
+        sceneNameLabel = new javax.swing.JLabel();
 
-        jList1.setModel(new javax.swing.AbstractListModel() {
+        objectList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Particle Emitter" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
-        jScrollPane1.setViewportView(jList1);
+        jScrollPane1.setViewportView(objectList);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.jButton1.text")); // NOI18N
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(addObjectButton, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.addObjectButton.text")); // NOI18N
+        addObjectButton.setEnabled(false);
+        addObjectButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                addObjectButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton2, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.jButton2.text")); // NOI18N
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(deleteObjectButton, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.deleteObjectButton.text")); // NOI18N
+        deleteObjectButton.setEnabled(false);
+        deleteObjectButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                deleteObjectButtonActionPerformed(evt);
             }
         });
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.jLabel1.text")); // NOI18N
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        org.openide.awt.Mnemonics.setLocalizedText(saveButton, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.saveButton.text")); // NOI18N
+        saveButton.setEnabled(false);
+        saveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(sceneNameLabel, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.sceneNameLabel.text")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(168, Short.MAX_VALUE)
+                .add(saveButton))
+            .add(sceneNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                .add(sceneNameLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 104, Short.MAX_VALUE)
+                .add(saveButton))
+        );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
-                .add(jButton1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jButton2)
-                .add(200, 200, 200))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                            .add(addObjectButton)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(deleteObjectButton))))
+                .add(223, 223, 223)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jButton1)
-                    .add(jButton2)))
+                    .add(addObjectButton)
+                    .add(deleteObjectButton)))
+            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        if (displayed && selected != null) {
+    private void deleteObjectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteObjectButtonActionPerformed
+        if (currentRequest != null && currentRequest.isDisplayed() && selected != null) {
             SceneApplication.getApplication().enqueue(new Callable() {
 
                 public Object call() throws Exception {
@@ -126,10 +176,10 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 }
             });
         }
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_deleteObjectButtonActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        if (displayed && selected instanceof Node) {
+    private void addObjectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addObjectButtonActionPerformed
+        if (currentRequest != null && currentRequest.isDisplayed() && selected instanceof Node) {
             try {
                 SceneApplication.getApplication().enqueue(new Callable() {
 
@@ -145,24 +195,31 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                         //                    mat.setTexture("m_Texture", SceneApplication.getApplication().getAssetManager().loadTexture("Effects/Smoke/Smoke.png"));
                         emit.setMaterial(mat);
                         ((Node) selected).attachChild(emit);
+                        refreshSelected();
                         return null;
 
                     }
                 }).get();
-                if(selectedSpat!=null)
-                    selectedSpat.refresh(true);
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (ExecutionException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_addObjectButtonActionPerformed
+
+    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
+        saveRequest();
+    }//GEN-LAST:event_saveButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JList jList1;
+    private javax.swing.JButton addObjectButton;
+    private javax.swing.JButton deleteObjectButton;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JList objectList;
+    private javax.swing.JButton saveButton;
+    private javax.swing.JLabel sceneNameLabel;
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -236,33 +293,115 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         return PREFERRED_ID;
     }
 
-    public void setRootNode(JmeNode node) {
-        this.rootNode = node;
+    private void refreshSelected() {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                if (selectedSpat != null) {
+                    selectedSpat.refresh(false);
+                }
+            }
+        });
+
     }
 
+    /*
+     * methods for external access
+     */
+    public void addModel(final AssetManager manager, final String assetName) {
+
+        if (currentRequest != null && currentRequest.isDisplayed() && selected != null && selected instanceof Node) {
+            SceneApplication.getApplication().enqueue(new Callable() {
+
+                public Object call() throws Exception {
+                    ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Importing Model..");
+                    progressHandle.start();
+                    Spatial spat = manager.loadModel(assetName);
+                    ((Node) selected).attachChild(spat);
+                    refreshSelected();
+                    progressHandle.finish();
+                    return null;
+                }
+            });
+        }
+    }
+
+    public void loadRequest(SceneRequest request, FileObject file) {
+        //TODO: handle request change
+        this.currentRequest = request;
+        this.currentFileObject = file;
+        request.setWindowTitle("SceneComposer - " + request.getRootNode().getName());
+        SceneApplication.getApplication().requestScene(request);
+    }
+
+    public void saveRequest() {
+        if (currentFileObject != null && currentRequest != null && currentRequest.isDisplayed()) {
+            SceneApplication.getApplication().enqueue(new Callable() {
+
+                public Object call() throws Exception {
+                    ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Saving File..");
+                    progressHandle.start();
+                    Node node = currentRequest.getRootNode().getLookup().lookup(Node.class);
+                    BinaryExporter exp = BinaryExporter.getInstance();
+                    try {
+                        exp.save(node, FileUtil.toFile(currentFileObject));
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    progressHandle.finish();
+                    //try make NetBeans update the tree.. :/
+                    return null;
+                }
+            });
+        }
+    }
+
+    /**
+     * method to set the state of the ui items
+     */
+    private void setLoadedState(final String name, final boolean active) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                sceneNameLabel.setText(name);
+                if (!active) {
+                    saveButton.setEnabled(false);
+                    addObjectButton.setEnabled(false);
+                    deleteObjectButton.setEnabled(false);
+                } else {
+                    saveButton.setEnabled(true);
+                    addObjectButton.setEnabled(true);
+                    deleteObjectButton.setEnabled(true);
+                }
+            }
+        });
+    }
+
+    /**
+     * listener for node selection changes
+     */
     public void resultChanged(LookupEvent ev) {
         Collection<JmeSpatial> items = (Collection<JmeSpatial>) result.allInstances();
         for (JmeSpatial spatial : items) {
             selectedSpat = spatial;
-            selected=spatial.getLookup().lookup(Spatial.class);
+            selected = spatial.getLookup().lookup(Spatial.class);
         }
-//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /*
+     * SceneListener
+     */
     public void sceneRequested(SceneRequest request) {
-        if (request.getRootNode().equals(rootNode)) {
-            displayed = true;
+        if (request.equals(currentRequest)) {
+            setLoadedState(currentRequest.getRootNode().getName(), true);
         } else {
-            displayed = false;
+            setLoadedState("no scene loaded", false);
         }
-//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void nodeSelected(JmeSpatial spatial) {
-//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void previewRequested(PreviewRequest request) {
-//        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

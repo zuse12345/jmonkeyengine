@@ -23,9 +23,6 @@
     <target name="dist-gde-hudson" depends="suite.clean, zip-templates, -set-impl-version-hudson, suite.nbms, unset-impl-version-hudson">
     </target>
 
-    <target name="build-mac" depends="suite.build-mac, -copy-mac-icon" description="Build Mac OS X Application">
-    </target>
-
     <!--zips up the templates and adds them to the template project-->
     <target name="zip-templates" description="Updates the template zip files">
         <zip basedir="BasicGameTemplate/" destfile="jme3-templates/src/com/jme3/gde/templates/BasicGameProject.zip">
@@ -40,26 +37,35 @@
         </zip>
     </target>
 
-    <target name="-set-impl-version" depends="-jme3-svn-properties">
+    <target name="-set-impl-version">
         <property file="nbproject/project.properties"/>
+        <property value="../jme3/" name="jme3_dir"/>
+        <antcall target="-create-jme3-svn-properties"/>
         <foreach target="-do-set-impl-version" list="${modules}" delimiter=":" param="module_dir"/>
     </target>
 
-    <target name="unset-impl-version" depends="-jme3-svn-properties">
+    <target name="unset-impl-version">
         <property file="nbproject/project.properties"/>
+        <property value="../jme3/" name="jme3_dir"/>
+        <antcall target="-create-jme3-svn-properties"/>
         <foreach target="-do-unset-impl-version" list="${modules}" delimiter=":" param="module_dir"/>
     </target>
 
-    <target name="-set-impl-version-hudson" depends="-jme3-svn-properties-hudson">
+    <target name="-set-impl-version-hudson">
         <property file="nbproject/project.properties"/>
+        <property value="../../jme3/workspace/" name="jme3_dir"/>
+        <antcall target="-create-jme3-svn-properties"/>
         <foreach target="-do-set-impl-version" list="${modules}" delimiter=":" param="module_dir"/>
     </target>
 
-    <target name="unset-impl-version-hudson" depends="-jme3-svn-properties-hudson">
+    <target name="unset-impl-version-hudson">
         <property file="nbproject/project.properties"/>
+        <property value="../../jme3/workspace/" name="jme3_dir"/>
+        <antcall target="-create-jme3-svn-properties"/>
         <foreach target="-do-unset-impl-version" list="${modules}" delimiter=":" param="module_dir"/>
     </target>
 
+    <!--sets implementation version to svn revision for plugins-->
     <target name="-do-set-impl-version">
        <!--load correct svn properties for project-->
        <if>
@@ -108,6 +114,7 @@
       </replace>
     </target>
 
+    <!--removes implementation version from plugins-->
     <target name="-do-unset-impl-version">
       <!--load correct svn properties for project-->
       <if>
@@ -157,44 +164,31 @@
 
     </target>
 
-    <target name="-jme3-svn-properties">
+    <!--creates properties files containing svn info for the jme3 folders-->
+    <target name="-create-jme3-svn-properties">
       <mkdir dir="build"/>
       <!--jme3 svn properties-->
-      <exec executable="svn" dir="../jme3/" output="build/jme3-svn.properties">
+      <exec executable="svn" dir="${jme3_dir}" output="build/jme3-svn.properties">
         <arg value="info" />
       </exec>
       <replace file="build/jme3-svn.properties" token="Last Changed Rev" value="Lastchange"/>
       <!--jme3 test data svn properties-->
-      <exec executable="svn" dir="../jme3/src/test-data/" output="build/jme3-testdata-svn.properties">
+      <exec executable="svn" dir="${jme3_dir}/src/test-data/" output="build/jme3-testdata-svn.properties">
         <arg value="info" />
       </exec>
       <replace file="build/jme3-testdata-svn.properties" token="Last Changed Rev" value="Lastchange"/>
       <!--jme3 libraries svn properties-->
-      <exec executable="svn" dir="../jme3/lib/" output="build/jme3-lib-svn.properties">
+      <exec executable="svn" dir="${jme3_dir}/lib/" output="build/jme3-lib-svn.properties">
         <arg value="info" />
       </exec>
       <replace file="build/jme3-lib-svn.properties" token="Last Changed Rev" value="Lastchange"/>
     </target>
 
-    <target name="-jme3-svn-properties-hudson">
-      <mkdir dir="build"/>
-      <!--jme3 svn properties-->
-      <exec executable="svn" dir="../../jme3/workspace/" output="build/jme3-svn.properties">
-        <arg value="info" />
-      </exec>
-      <replace file="build/jme3-svn.properties" token="Last Changed Rev" value="Lastchange"/>
-      <!--jme3 test data svn properties-->
-      <exec executable="svn" dir="../../jme3/workspace/src/test-data/" output="build/jme3-testdata-svn.properties">
-        <arg value="info" />
-      </exec>
-      <replace file="build/jme3-testdata-svn.properties" token="Last Changed Rev" value="Lastchange"/>
-      <!--jme3 libraries svn properties-->
-      <exec executable="svn" dir="../../jme3/workspace/lib/" output="build/jme3-lib-svn.properties">
-        <arg value="info" />
-      </exec>
-      <replace file="build/jme3-lib-svn.properties" token="Last Changed Rev" value="Lastchange"/>
+    <!--overriding mac build target to copy icon-->
+    <target name="build-mac" depends="suite.build-mac, -copy-mac-icon" description="Build Mac OS X Application">
     </target>
 
+    <!--copy mac icon-->
     <target name="-copy-mac-icon">
         <echo>Copy mac icon..</echo>
         <property name="nbdist-contents.dir" value="${dist.dir}/${app.name}.app/Contents"/>

@@ -5,10 +5,21 @@
     <import file="nbproject/build-impl.xml"/>
     <import file="nbproject/profiler-build-impl.xml"/>
     
-    <!-- creates the test data jar file -->
+    <!--this target creates the assets jar file and modifies the classpath to include it-->
     <target name="-pre-jar">
-        <mkdir dir="dist"/>
-        <jar jarfile="dist/jme3testdata.jar" basedir="src/test-data" compress="true"/>
+        <!--create jar from assets-->
+        <jar jarfile="build/jme3testdata.jar" basedir="src/test-data" compress="true"/>
+        <!--resolve assets and assets jar location-->
+        <property location="src/test-data" name="testdata.dir.resolved"/>
+        <property location="build/jme3testdata.jar" name="testdata.jar.resolved"/>
+        <!--this sets properties that would normally later be created in the build-impl.xml-->
+        <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
+        <pathconvert property="run.classpath.without.build.classes.dir">
+            <!--remove build.classes.dir and replace assets folder in dist classpath-->
+            <path path="${run.classpath}"/>
+            <map from="${build.classes.dir.resolved}" to=""/>
+            <map from="${testdata.dir.resolved}" to="${testdata.jar.resolved}"/>
+        </pathconvert>
     </target>
 
     <!-- convenience target to transfer jme3 libraries to jme3-gde (jMonkeyPlatform) -->
@@ -19,7 +30,7 @@
 
     <!-- convenience target to transfer jme3 libraries to the jme3-jmp folder on the Hudson build server (jMonkeyPlatform) -->
     <target name="update-jmp-hudson">
-        <property value="../../jme3-jmp/" name="jmp_dir"/>
+        <property value="../../jme3-jmp/workspace/" name="jmp_dir"/>
         <antcall target="-do-update-gde"/>
     </target>
 
@@ -58,7 +69,7 @@
         </copy>
 
         <!--test data-->
-        <copy file="dist/jme3testdata.jar" toDir="${jmp_dir}/jme3-project-testdata/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
+        <copy file="dist/lib/jme3testdata.jar" toDir="${jmp_dir}/jme3-project-testdata/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
 
         <!--javadoc-->
         <zip destfile="dist/jMonkeyEngine3-javadoc.zip">
@@ -84,10 +95,10 @@
 
 	   <!-- make zip file -->
         <zip destfile="${jme3zip}">
-		<fileset dir="dist/">
-		   <include name="jMonkeyEngine3.jar"/>
-		   <exclude name="jme3testdata.jar"/>
-		</fileset>
+            <fileset dir="dist/">
+               <include name="jMonkeyEngine3.jar"/>
+               <exclude name="jme3testdata.jar"/>
+            </fileset>
            <zipfileset dir="dist/lib" prefix="lib"/>
 		<zipfileset dir="dist/javadoc" prefix="javadoc"/>
 	   </zip>

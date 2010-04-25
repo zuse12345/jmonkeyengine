@@ -67,13 +67,13 @@
             </folder>
         </folder>
     </folder>
-    <folder name="Menu">
+    <!--<folder name="Menu">
         <folder name="Window">
             <file name="SceneComposerAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/com-jme3-gde-scenecomposer-SceneComposerAction.instance"/>
             </file>
         </folder>
-    </folder>
+    </folder>-->
     <folder name="Windows2">
         <folder name="Components">
             <file name="SceneComposerTopComponent.settings" url="SceneComposerTopComponentSettings.xml"/>

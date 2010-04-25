@@ -368,10 +368,13 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                     saveButton.setEnabled(false);
                     addObjectButton.setEnabled(false);
                     deleteObjectButton.setEnabled(false);
+                    close();
                 } else {
                     saveButton.setEnabled(true);
                     addObjectButton.setEnabled(true);
                     deleteObjectButton.setEnabled(true);
+                    open();
+                    requestActive();
                 }
             }
         });

@@ -69,8 +69,7 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         lookup = new AbstractLookup(lookupContents);
         associateLookup(lookup);
-//        putClientProperty(TopComponent.PROP_CLOSING_DISABLED, Boolean.TRUE);
-//        putClientProperty(TopComponent.PROP_SLIDING_DISABLED, Boolean.TRUE);
+        putClientProperty(TopComponent.PROP_CLOSING_DISABLED, Boolean.TRUE);
         app=SceneApplication.getApplication();
 //        lookupContents.add(app);
     }

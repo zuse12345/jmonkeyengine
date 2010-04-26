@@ -44,6 +44,11 @@ public class PreviewRequest {
     private Spatial spatial;
     private BufferedImage image;
 
+    public PreviewRequest(Object requester, Spatial spatial) {
+        this.requester = requester;
+        this.spatial = spatial;
+    }
+
     /**
      * @return the requester
      */

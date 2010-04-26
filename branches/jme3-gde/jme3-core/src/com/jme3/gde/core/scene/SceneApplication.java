@@ -45,6 +45,7 @@ import com.jme3.input.FlyByCamera;
 import com.jme3.input.KeyInput;
 import com.jme3.input.binding.BindingListener;
 import com.jme3.light.PointLight;
+import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -71,6 +72,7 @@ import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
@@ -85,8 +87,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  * TODO:
- * - generalized way to access/use rootNode from other plugins
- * - Node tree creation from scenegraph
+ * - unbloat this file by outsourcing stuff to other classes
  * @author normenhansen
  */
 public class SceneApplication extends Application implements LookupProvider, LookupListener, BindingListener, SceneProcessor {
@@ -616,5 +617,31 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 
     public void onPostUpdate(float f) {
 //        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    /**
+     * get list of materials used in this scene, those are the ones that
+     * will be saved with the scene.
+     * @return
+     */
+    private LinkedList<Material> getMaterialList(Node node, LinkedList<Material> materials) {
+        List<Spatial> children = node.getChildren();
+        for (Spatial spatial : children) {
+            if (spatial instanceof Geometry) {
+                Geometry geometry = (Geometry) spatial;
+                Material material = geometry.getMaterial();
+                if (!materials.contains(material)) {
+                    materials.add(material);
+                }
+            }
+            if (spatial instanceof Node) {
+                getMaterialList((Node) spatial, materials);
+            }
+        }
+        return materials;
+    }
+
+    public LinkedList<Material> getMaterialList() {
+        return getMaterialList(rootNode, new LinkedList<Material>());
     }
 }

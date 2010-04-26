@@ -16,13 +16,13 @@ import org.openide.nodes.Node;
  * @author normenhansen
  */
 public class PreviewToolbarElement extends ToolBarMultiViewElement {
-    private NiftyGuiDataObject dObj;
+//    private NiftyGuiDataObject dObj;
     private ToolBarDesignEditor comp;
     private NiftyPreviewPanel viewPanel;
 
     public PreviewToolbarElement(NiftyGuiDataObject dObj) {
         super(dObj);
-        this.dObj = dObj;
+//        this.dObj = dObj;
         comp = new ToolBarDesignEditor();
         setVisualEditor(comp);
         viewPanel=new NiftyPreviewPanel(dObj);

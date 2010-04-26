@@ -134,7 +134,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
                     (Spatial) assetManager.loadAsset(key);
             //TODO:workaround for meshxml / mesh.xml
             if(ogreMesh==null){
-                meshFile = folderName + meshFile + "xml";
+                meshFile = folderName + attribs.getValue("meshFile") + "xml";
                 key = new OgreMeshKey(meshFile, materialList);
                 ogreMesh = (Spatial) assetManager.loadAsset(key);
             }

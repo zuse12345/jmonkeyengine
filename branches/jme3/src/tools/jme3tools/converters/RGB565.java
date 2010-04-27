@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package g3dtools.converters;
+package jme3tools.converters;
 
 /**
  *

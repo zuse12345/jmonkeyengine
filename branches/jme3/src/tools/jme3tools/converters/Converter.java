@@ -1,4 +1,4 @@
-package g3dtools.converters;
+package jme3tools.converters;
 
 import java.util.Map;
 

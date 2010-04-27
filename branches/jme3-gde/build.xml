@@ -48,7 +48,7 @@
     <target name="unset-impl-version">
         <property file="nbproject/project.properties"/>
         <property value="../jme3/" name="jme3_dir"/>
-        <property value="false" name="set_impl_version"/>
+        <property value="true" name="unset_impl_version"/>
         <antcall target="-create-jme3-svn-properties"/>
         <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true"/>
     </target>
@@ -64,7 +64,7 @@
     <target name="unset-impl-version-hudson">
         <property file="nbproject/project.properties"/>
         <property value="../../jme3/workspace/" name="jme3_dir"/>
-        <property value="false" name="set_impl_version"/>
+        <property value="true" name="unset_impl_version"/>
         <antcall target="-create-jme3-svn-properties"/>
         <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true"/>
     </target>
@@ -114,15 +114,18 @@
         </if>
 
         <if>
-            <equals arg1="${set_impl_version}" arg2="true"/>
+            <equals arg1="${unset_impl_version}" arg2="true"/>
             <then>
-                <echo>Setting implementation version for ${module_dir} to revision: ${svn.Lastchange}</echo>
-                <replace  file="${module_dir}/manifest.mf" token="OpenIDE-Module-Implementation-Version: 0" value="OpenIDE-Module-Implementation-Version: ${svn.Lastchange}"/>
-            </then>
-            <else>
                 <echo>Removing implementation version for ${module_dir} from revision: ${svn.Lastchange}</echo>
                 <replace file="${module_dir}/manifest.mf" token="OpenIDE-Module-Implementation-Version: ${svn.Lastchange}" value="OpenIDE-Module-Implementation-Version: 0"/>
-            </else>
+            </then>
+            <elseif>
+                <equals arg1="${set_impl_version}" arg2="true"/>
+                <then>
+                    <echo>Setting implementation version for ${module_dir} to revision: ${svn.Lastchange}</echo>
+                    <replace  file="${module_dir}/manifest.mf" token="OpenIDE-Module-Implementation-Version: 0" value="OpenIDE-Module-Implementation-Version: ${svn.Lastchange}"/>
+                </then>
+            </elseif>
         </if>
 
     </target>

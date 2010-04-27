@@ -7,9 +7,9 @@
     <import file="nbproject/build-impl.xml"/>
     <!--TODO: using the evil for loop from ant-contrib for loops and if, change that..-->
     <taskdef resource="net/sf/antcontrib/antcontrib.properties">
-      <classpath>
-        <pathelement location="ant-lib/ant-contrib.jar"/>
-      </classpath>
+        <classpath>
+            <pathelement location="ant-lib/ant-contrib.jar"/>
+        </classpath>
     </taskdef>
 
     <target name="dist-gde" depends="suite.clean, zip-templates, -set-impl-version, suite.build-zip, build-mac, unset-impl-version">
@@ -71,80 +71,80 @@
 
     <!--sets/unsets implementation version to svn revision for plugins-->
     <target name="-do-impl-version">
-       <!--load correct svn properties for project-->
-       <if>
-          <or>
-              <equals arg1="${module_dir}" arg2="jme3-core-libraries"/>
-              <equals arg1="${module_dir}" arg2="jme3-project-libraries"/>
-          </or>
-          <then>
-            <!--set jme3 svn revision for these projects-->
-            <property prefix="svn" file="build/jme3-lib-svn.properties"/>
-          </then>
-          <else>
-              <if>
-                  <or>
-                      <equals arg1="${module_dir}" arg2="jme3-core-baselibs"/>
-                      <equals arg1="${module_dir}" arg2="jme3-project-baselibs"/>
-                      <equals arg1="${module_dir}" arg2="jme3-tests-template"/>
-                  </or>
-                  <then>
-                    <!--set jme3-testdata svn revision for this project-->
-                    <property prefix="svn" file="build/jme3-svn.properties"/>
-                  </then>
-                  <else>
-                      <if>
-                          <equals arg1="${module_dir}" arg2="jme3-project-testdata"/>
-                          <then>
-                            <!--set jme3-testdata svn revision for this project-->
-                            <property prefix="svn" file="build/jme3-testdata-svn.properties"/>
-                          </then>
-                          <else>
-                              <!--load and set svn revision of this projects folder for this project-->
-                              <exec executable="svn" output="build/${module_dir}-svn.properties" dir="${module_dir}">
-                                <arg value="info" />
-                              </exec>
-                              <replace file="build/${module_dir}-svn.properties" token="Last Changed Rev" value="Lastchange"/>
-                              <property prefix="svn" file="build/${module_dir}-svn.properties"/>
-                          </else>
-                      </if>
-                  </else>
-              </if>
-          </else>
-      </if>
+        <!--load correct svn properties for project-->
+        <if>
+            <or>
+                <equals arg1="${module_dir}" arg2="jme3-core-libraries"/>
+                <equals arg1="${module_dir}" arg2="jme3-project-libraries"/>
+            </or>
+            <then>
+                <!--set jme3 svn revision for these projects-->
+                <property prefix="svn" file="build/jme3-lib-svn.properties"/>
+            </then>
+            <else>
+                <if>
+                    <or>
+                        <equals arg1="${module_dir}" arg2="jme3-core-baselibs"/>
+                        <equals arg1="${module_dir}" arg2="jme3-project-baselibs"/>
+                        <equals arg1="${module_dir}" arg2="jme3-tests-template"/>
+                    </or>
+                    <then>
+                        <!--set jme3-testdata svn revision for this project-->
+                        <property prefix="svn" file="build/jme3-svn.properties"/>
+                    </then>
+                    <else>
+                        <if>
+                            <equals arg1="${module_dir}" arg2="jme3-project-testdata"/>
+                            <then>
+                                <!--set jme3-testdata svn revision for this project-->
+                                <property prefix="svn" file="build/jme3-testdata-svn.properties"/>
+                            </then>
+                            <else>
+                                <!--load and set svn revision of this projects folder for this project-->
+                                <exec executable="svn" output="build/${module_dir}-svn.properties" dir="${module_dir}">
+                                    <arg value="info" />
+                                </exec>
+                                <replace file="build/${module_dir}-svn.properties" token="Last Changed Rev" value="Lastchange"/>
+                                <property prefix="svn" file="build/${module_dir}-svn.properties"/>
+                            </else>
+                        </if>
+                    </else>
+                </if>
+            </else>
+        </if>
 
-      <if>
-        <equals arg1="${set_impl_version}" arg2="true"/>
-        <then>
-          <echo>Setting implementation version for ${module_dir} to revision: ${svn.Lastchange}</echo>
-          <replace  file="${module_dir}/manifest.mf" token="OpenIDE-Module-Implementation-Version: 0" value="OpenIDE-Module-Implementation-Version: ${svn.Lastchange}"/>
-        </then>
-        <else>
-          <echo>Removing implementation version for ${module_dir} from revision: ${svn.Lastchange}</echo>
-          <replace file="${module_dir}/manifest.mf" token="OpenIDE-Module-Implementation-Version: ${svn.Lastchange}" value="OpenIDE-Module-Implementation-Version: 0"/>
-        </else>
-      </if>
-          
+        <if>
+            <equals arg1="${set_impl_version}" arg2="true"/>
+            <then>
+                <echo>Setting implementation version for ${module_dir} to revision: ${svn.Lastchange}</echo>
+                <replace  file="${module_dir}/manifest.mf" token="OpenIDE-Module-Implementation-Version: 0" value="OpenIDE-Module-Implementation-Version: ${svn.Lastchange}"/>
+            </then>
+            <else>
+                <echo>Removing implementation version for ${module_dir} from revision: ${svn.Lastchange}</echo>
+                <replace file="${module_dir}/manifest.mf" token="OpenIDE-Module-Implementation-Version: ${svn.Lastchange}" value="OpenIDE-Module-Implementation-Version: 0"/>
+            </else>
+        </if>
+
     </target>
 
     <!--creates properties files containing svn info for the jme3 folders-->
     <target name="-create-jme3-svn-properties">
-      <mkdir dir="build"/>
-      <!--jme3 svn properties-->
-      <exec executable="svn" dir="${jme3_dir}" output="build/jme3-svn.properties">
-        <arg value="info" />
-      </exec>
-      <replace file="build/jme3-svn.properties" token="Last Changed Rev" value="Lastchange"/>
-      <!--jme3 test data svn properties-->
-      <exec executable="svn" dir="${jme3_dir}/src/test-data/" output="build/jme3-testdata-svn.properties">
-        <arg value="info" />
-      </exec>
-      <replace file="build/jme3-testdata-svn.properties" token="Last Changed Rev" value="Lastchange"/>
-      <!--jme3 libraries svn properties-->
-      <exec executable="svn" dir="${jme3_dir}/lib/" output="build/jme3-lib-svn.properties">
-        <arg value="info" />
-      </exec>
-      <replace file="build/jme3-lib-svn.properties" token="Last Changed Rev" value="Lastchange"/>
+        <mkdir dir="build"/>
+        <!--jme3 svn properties-->
+        <exec executable="svn" dir="${jme3_dir}" output="build/jme3-svn.properties">
+            <arg value="info" />
+        </exec>
+        <replace file="build/jme3-svn.properties" token="Last Changed Rev" value="Lastchange"/>
+        <!--jme3 test data svn properties-->
+        <exec executable="svn" dir="${jme3_dir}/src/test-data/" output="build/jme3-testdata-svn.properties">
+            <arg value="info" />
+        </exec>
+        <replace file="build/jme3-testdata-svn.properties" token="Last Changed Rev" value="Lastchange"/>
+        <!--jme3 libraries svn properties-->
+        <exec executable="svn" dir="${jme3_dir}/lib/" output="build/jme3-lib-svn.properties">
+            <arg value="info" />
+        </exec>
+        <replace file="build/jme3-lib-svn.properties" token="Last Changed Rev" value="Lastchange"/>
     </target>
 
     <!--overriding mac build target to copy icon-->

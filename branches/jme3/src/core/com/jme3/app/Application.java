@@ -329,7 +329,7 @@ public class Application implements SystemListener {
     }
 
     public void requestClose(boolean esc){
-        context.destroy();
+        context.destroy(false);
     }
 
     public <V> Future<V> enqueue(Callable<V> callable) {

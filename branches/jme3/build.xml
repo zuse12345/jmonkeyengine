@@ -95,10 +95,13 @@
 
 	   <!-- make zip file -->
         <zip destfile="${jme3zip}">
-            <fileset dir="dist/">
-               <include name="jMonkeyEngine3.jar"/>
-               <exclude name="jme3testdata.jar"/>
-            </fileset>
+		<fileset dir=".">
+		   <include name="TestChooser.exe"/>
+		</fileset>
+		<fileset dir="dist/">
+		   <include name="jMonkeyEngine3.jar"/>
+		   <exclude name="jme3testdata.jar"/>
+		</fileset>
            <zipfileset dir="dist/lib" prefix="lib"/>
 		<zipfileset dir="dist/javadoc" prefix="javadoc"/>
 	   </zip>

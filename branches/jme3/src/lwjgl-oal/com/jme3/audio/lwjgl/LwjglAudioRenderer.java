@@ -180,6 +180,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
 
         boolean active = true;
         int processed = alGetSourcei(sourceId, AL_BUFFERS_PROCESSED);
+
         while((processed--) != 0){
             int buffer;
 
@@ -266,7 +267,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
 
             int state = alGetSourcei(sourceId, AL_SOURCE_STATE);
             boolean wantPlaying = src.getStatus() == Status.Playing;
-            boolean stopped = state == AL_STOPPED;
+            boolean stopped = state == AL_STOPPED || state == AL_PAUSED;
 
             if (streaming && wantPlaying){
                 AudioStream stream = (AudioStream) src.getAudioData();

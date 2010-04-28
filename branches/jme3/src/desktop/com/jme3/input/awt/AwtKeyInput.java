@@ -37,14 +37,15 @@ public class AwtKeyInput implements KeyInput, KeyListener {
     }
 
     public int getKeyCount() {
-        return 255;
+        return KeyEvent.KEY_LAST+1;
     }
 
     public void update() {
         // flush events to listener
-        for (KeyInputEvent evt : eventQueue){
-            listener.onKeyEvent(evt);
+        for (int i = 0; i < eventQueue.size(); i++){
+            listener.onKeyEvent(eventQueue.get(i));
         }
+        eventQueue.clear();
     }
 
     public void destroy() {
@@ -67,19 +68,22 @@ public class AwtKeyInput implements KeyInput, KeyListener {
         int code = 0;
         //int code = convertAwtKey(evt.getKeyCode());
         KeyInputEvent keyEvent = new KeyInputEvent(code, evt.getKeyChar(), false, true);
-        listener.onKeyEvent(keyEvent);
+        keyEvent.setTime(evt.getWhen());
+        eventQueue.add(keyEvent);
     }
 
     public void keyPressed(KeyEvent evt) {
         int code = convertAwtKey(evt.getKeyCode());
         KeyInputEvent keyEvent = new KeyInputEvent(code, evt.getKeyChar(), true, false);
-        listener.onKeyEvent(keyEvent);
+        keyEvent.setTime(evt.getWhen());
+        eventQueue.add(keyEvent);
     }
 
     public void keyReleased(KeyEvent evt) {
         int code = convertAwtKey(evt.getKeyCode());
         KeyInputEvent keyEvent = new KeyInputEvent(code, evt.getKeyChar(), false, false);
-        listener.onKeyEvent(keyEvent);
+        keyEvent.setTime(evt.getWhen());
+        eventQueue.add(keyEvent);
     }
 
     /**

@@ -132,7 +132,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
         }else{
             System.out.println("Player has Collided. Final Score is " + Score);
         }
-        context.destroy();
+        context.destroy(false);
     }
     /**
      * Randomly Places a cube on the map between 30 and 90 paces away from player

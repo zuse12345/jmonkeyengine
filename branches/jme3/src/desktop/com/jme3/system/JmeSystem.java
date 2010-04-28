@@ -8,6 +8,7 @@ import com.jme3.asset.AssetManager;
 import com.jme3.asset.DesktopAssetManager;
 import com.jme3.util.G3DFormatter;
 import com.jme3.audio.AudioRenderer;
+import com.jme3.audio.QueuedAudioRenderer;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -260,8 +261,10 @@ public class JmeSystem {
                                 "Unrecognizable audio renderer specified: "+
                                 settings.getAudioRenderer());
             }
-            
-            return clazz.newInstance();
+
+            AudioRenderer ar = clazz.newInstance();
+//            ar = new QueuedAudioRenderer(ar);
+            return ar;
         }catch (InstantiationException ex){
             logger.log(Level.SEVERE, "Failed to create context", ex);
         }catch (IllegalAccessException ex){

@@ -1,19 +1,17 @@
 package com.jme3.input.event;
 
-import com.jme3.input.*;
-
 public class KeyInputEvent extends InputEvent {
 
     private int keyCode;
     private char keyChar;
     private boolean pressed;
-    private boolean down;
+    private boolean repeating;
 
-    public KeyInputEvent(int keyCode, char keyChar, boolean pressed, boolean down) {
+    public KeyInputEvent(int keyCode, char keyChar, boolean pressed, boolean repeating) {
         this.keyCode = keyCode;
         this.keyChar = keyChar;
         this.pressed = pressed;
-        this.down = down;
+        this.repeating = repeating;
     }
 
     public char getKeyChar() {
@@ -28,8 +26,8 @@ public class KeyInputEvent extends InputEvent {
         return pressed;
     }
 
-    public boolean isDown() {
-        return down;
+    public boolean isRepeating() {
+        return repeating;
     }
 
     public boolean isReleased() {
@@ -41,8 +39,8 @@ public class KeyInputEvent extends InputEvent {
         if (keyChar != '\0')
             str = str + ", CHAR=" + keyChar;
             
-        if (down){
-            return str + ", DOWN)";
+        if (repeating){
+            return str + ", REPEATING)";
         }else if (pressed){
             return str + ", PRESSED)";
         }else{

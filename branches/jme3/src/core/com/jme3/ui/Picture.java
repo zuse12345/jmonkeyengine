@@ -22,10 +22,14 @@ public class Picture extends Geometry {
     private float width;
     private float height;
 
-    public Picture(String name){
-        super(name, new Quad(1, 1, false));
+    public Picture(String name, boolean flipY){
+        super(name, new Quad(1, 1, flipY));
         setQueueBucket(Bucket.Gui);
         setCullHint(CullHint.Never);
+    }
+
+    public Picture(String name){
+        this(name, false);
     }
 
     public void setWidth(float width){

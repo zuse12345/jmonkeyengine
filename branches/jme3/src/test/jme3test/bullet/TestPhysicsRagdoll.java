@@ -14,7 +14,6 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.debug.SkeletonDebugger;
-import com.jme3.scene.plugins.ogre.MeshLoader;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Cylinder;
 import com.jme3.texture.Texture;
@@ -52,7 +51,7 @@ public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
         rootNode.attachChild(node3);
         getPhysicsSpace().add(node3);
 
-        Node model = (Node)MeshLoader.loadModel(manager, "OTO.meshxml", "OTO.material");
+        Node model = (Node) manager.loadModel("Models/Oto/Oto.meshxml");
 //        Node model = (Node)MeshLoader.loadModel(manager, "ninja.meshxml", "ninja.material");
 
         //debug view

@@ -445,7 +445,6 @@ public class PreviewTool extends javax.swing.JFrame {
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION){
             File selected = chooser.getSelectedFile();
             if (selected.exists()){
-                String ogreMaterial = null;
                 String lowerCaseName = selected.getName().toLowerCase();
                 int i = lowerCaseName.lastIndexOf('.');
                 if (i > 0){
@@ -454,7 +453,6 @@ public class PreviewTool extends javax.swing.JFrame {
                         if (lowerCaseName.endsWith("mesh.xml") 
                          || lowerCaseName.endsWith("meshxml")){
                             ext = "mesh.xml";
-                            ogreMaterial = lowerCaseName.substring(0, i) + ".material";
                         }
                     }
                     
@@ -462,13 +460,7 @@ public class PreviewTool extends javax.swing.JFrame {
                         display.getAssetManager().registerLocator(selected.getParent(),
                                                                   "com.jme3.asset.plugins.FileSystemLocator");
 
-                        Spatial model;
-                        if (ogreMaterial != null){
-                            model = MeshLoader.loadModel(display.getAssetManager(), selected.getName(),
-                                                                            ogreMaterial);
-                        }else{
-                            model = display.getAssetManager().loadModel(selected.getName());
-                        }
+                        Spatial model = display.getAssetManager().loadModel(selected.getName());
                         if (model == null)
                             return;
 

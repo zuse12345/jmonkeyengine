@@ -158,7 +158,7 @@ public class InputManager implements RawInputListener {
             rawListeners.get(i).onKeyEvent(evt);
         }
 
-        if (evt.isDown())
+        if (evt.isRepeating())
             return; // repeat events not used for bindings
 
         // update keyboard state

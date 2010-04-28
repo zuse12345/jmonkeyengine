@@ -148,7 +148,6 @@ is divided into following sections:
                 <available file="${src.pack.dir}"/>
                 <available file="${src.jheora.dir}"/>
                 <available file="${src.test.dir}"/>
-                <available file="${src.test-data.dir}"/>
                 <available file="${src.tools.dir}"/>
                 <available file="${src.xml.dir}"/>
             </or>
@@ -221,7 +220,6 @@ is divided into following sections:
         <fail unless="src.pack.dir">Must set src.pack.dir</fail>
         <fail unless="src.jheora.dir">Must set src.jheora.dir</fail>
         <fail unless="src.test.dir">Must set src.test.dir</fail>
-        <fail unless="src.test-data.dir">Must set src.test-data.dir</fail>
         <fail unless="src.tools.dir">Must set src.tools.dir</fail>
         <fail unless="src.xml.dir">Must set src.xml.dir</fail>
         <fail unless="build.dir">Must set build.dir</fail>
@@ -244,7 +242,7 @@ is divided into following sections:
     </target>
     <target name="-init-macrodef-javac">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.core.dir}:${src.core-data.dir}:${src.core-plugins.dir}:${src.desktop.dir}:${src.desktop-fx.dir}:${src.games.dir}:${src.jbullet.dir}:${src.niftygui.dir}:${src.joal.dir}:${src.jogg.dir}:${src.jogl.dir}:${src.lwjgl-oal.dir}:${src.lwjgl-ogl.dir}:${src.ogre.dir}:${src.pack.dir}:${src.jheora.dir}:${src.test.dir}:${src.test-data.dir}:${src.tools.dir}:${src.xml.dir}" name="srcdir"/>
+            <attribute default="${src.core.dir}:${src.core-data.dir}:${src.core-plugins.dir}:${src.desktop.dir}:${src.desktop-fx.dir}:${src.games.dir}:${src.jbullet.dir}:${src.niftygui.dir}:${src.joal.dir}:${src.jogg.dir}:${src.jogl.dir}:${src.lwjgl-oal.dir}:${src.lwjgl-ogl.dir}:${src.ogre.dir}:${src.pack.dir}:${src.jheora.dir}:${src.test.dir}:${src.tools.dir}:${src.xml.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <attribute default="${includes}" name="includes"/>
@@ -272,7 +270,7 @@ is divided into following sections:
             </sequential>
         </macrodef>
         <macrodef name="depend" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.core.dir}:${src.core-data.dir}:${src.core-plugins.dir}:${src.desktop.dir}:${src.desktop-fx.dir}:${src.games.dir}:${src.jbullet.dir}:${src.niftygui.dir}:${src.joal.dir}:${src.jogg.dir}:${src.jogl.dir}:${src.lwjgl-oal.dir}:${src.lwjgl-ogl.dir}:${src.ogre.dir}:${src.pack.dir}:${src.jheora.dir}:${src.test.dir}:${src.test-data.dir}:${src.tools.dir}:${src.xml.dir}" name="srcdir"/>
+            <attribute default="${src.core.dir}:${src.core-data.dir}:${src.core-plugins.dir}:${src.desktop.dir}:${src.desktop-fx.dir}:${src.games.dir}:${src.jbullet.dir}:${src.niftygui.dir}:${src.joal.dir}:${src.jogg.dir}:${src.jogl.dir}:${src.lwjgl-oal.dir}:${src.lwjgl-ogl.dir}:${src.ogre.dir}:${src.pack.dir}:${src.jheora.dir}:${src.test.dir}:${src.tools.dir}:${src.xml.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <sequential>
@@ -463,7 +461,7 @@ is divided into following sections:
                 <include name="*"/>
             </dirset>
         </pathconvert>
-        <j2seproject3:depend srcdir="${src.core.dir}:${src.core-data.dir}:${src.core-plugins.dir}:${src.desktop.dir}:${src.desktop-fx.dir}:${src.games.dir}:${src.jbullet.dir}:${src.niftygui.dir}:${src.joal.dir}:${src.jogg.dir}:${src.jogl.dir}:${src.lwjgl-oal.dir}:${src.lwjgl-ogl.dir}:${src.ogre.dir}:${src.pack.dir}:${src.jheora.dir}:${src.test.dir}:${src.test-data.dir}:${src.tools.dir}:${src.xml.dir}:${build.generated.subdirs}"/>
+        <j2seproject3:depend srcdir="${src.core.dir}:${src.core-data.dir}:${src.core-plugins.dir}:${src.desktop.dir}:${src.desktop-fx.dir}:${src.games.dir}:${src.jbullet.dir}:${src.niftygui.dir}:${src.joal.dir}:${src.jogg.dir}:${src.jogl.dir}:${src.lwjgl-oal.dir}:${src.lwjgl-ogl.dir}:${src.ogre.dir}:${src.pack.dir}:${src.jheora.dir}:${src.test.dir}:${src.tools.dir}:${src.xml.dir}:${build.generated.subdirs}"/>
     </target>
     <target depends="init,deps-jar,-pre-pre-compile,-pre-compile,-compile-depend" if="have.sources" name="-do-compile">
         <j2seproject3:javac gensrcdir="${build.generated.sources.dir}"/>
@@ -485,7 +483,6 @@ is divided into following sections:
             <fileset dir="${src.pack.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.jheora.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.test.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${src.test-data.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.tools.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.xml.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
         </copy>
@@ -502,7 +499,7 @@ is divided into following sections:
     <target depends="init,deps-jar,-pre-pre-compile" name="-do-compile-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <j2seproject3:force-recompile/>
-        <j2seproject3:javac excludes="" gensrcdir="${build.generated.sources.dir}" includes="${javac.includes}" sourcepath="${src.core.dir}:${src.core-data.dir}:${src.core-plugins.dir}:${src.desktop.dir}:${src.desktop-fx.dir}:${src.games.dir}:${src.jbullet.dir}:${src.niftygui.dir}:${src.joal.dir}:${src.jogg.dir}:${src.jogl.dir}:${src.lwjgl-oal.dir}:${src.lwjgl-ogl.dir}:${src.ogre.dir}:${src.pack.dir}:${src.jheora.dir}:${src.test.dir}:${src.test-data.dir}:${src.tools.dir}:${src.xml.dir}"/>
+        <j2seproject3:javac excludes="" gensrcdir="${build.generated.sources.dir}" includes="${javac.includes}" sourcepath="${src.core.dir}:${src.core-data.dir}:${src.core-plugins.dir}:${src.desktop.dir}:${src.desktop-fx.dir}:${src.games.dir}:${src.jbullet.dir}:${src.niftygui.dir}:${src.joal.dir}:${src.jogg.dir}:${src.jogl.dir}:${src.lwjgl-oal.dir}:${src.lwjgl-ogl.dir}:${src.ogre.dir}:${src.pack.dir}:${src.jheora.dir}:${src.test.dir}:${src.tools.dir}:${src.xml.dir}"/>
     </target>
     <target name="-post-compile-single">
         <!-- Empty placeholder for easier customization. -->
@@ -739,9 +736,6 @@ is divided into following sections:
                 <filename name="**/*.java"/>
             </fileset>
             <fileset dir="${src.test.dir}" excludes="${excludes}" includes="${includes}">
-                <filename name="**/*.java"/>
-            </fileset>
-            <fileset dir="${src.test-data.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
             <fileset dir="${src.tools.dir}" excludes="${excludes}" includes="${includes}">

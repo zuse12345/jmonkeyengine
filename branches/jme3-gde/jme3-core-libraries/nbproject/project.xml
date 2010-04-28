@@ -20,8 +20,6 @@
                 <package>com.bulletphysics.linearmath</package>
                 <package>com.bulletphysics.linearmath.convexhull</package>
                 <package>com.bulletphysics.util</package>
-                <package>com.jcraft.jogg</package>
-                <package>com.jcraft.jorbis</package>
                 <package>com.sun.gluegen.runtime</package>
                 <package>com.sun.opengl.cg</package>
                 <package>com.sun.opengl.impl</package>
@@ -200,6 +198,10 @@
             <class-path-extension>
                 <runtime-relative-path>ext/nifty-1.1.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/nifty-1.1.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jheora-debug-0.6.0.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/jheora-debug-0.6.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/vecmath.jar</runtime-relative-path>

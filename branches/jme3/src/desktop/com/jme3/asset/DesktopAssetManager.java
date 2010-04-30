@@ -1,11 +1,6 @@
 package com.jme3.asset;
 
-import com.jme3.asset.AssetInfo;
-import com.jme3.asset.TextureKey;
-import com.jme3.asset.AssetLoader;
-import com.jme3.asset.AssetKey;
-import com.jme3.asset.AssetManager;
-import com.jme3.asset.AssetConfig;
+import com.jme3.audio.AudioKey;
 import com.jme3.audio.AudioData;
 import com.jme3.font.BitmapFont;
 import com.jme3.material.Material;
@@ -13,18 +8,15 @@ import com.jme3.scene.Spatial;
 import com.jme3.shader.Shader;
 import com.jme3.shader.ShaderKey;
 import com.jme3.texture.Texture;
-import com.jme3.texture.plugins.AWTLoader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * <code>AssetManager</code> is the primary method for managing and loading
- * resources inside jME.
+ * assets inside jME.
  *
  * @author Kirill Vainer
  */
@@ -34,6 +26,7 @@ public class DesktopAssetManager implements AssetManager {
 
     private final AssetCache cache = new AssetCache();
     private final ImplHandler handler = new ImplHandler(this);
+    
 //    private final ThreadingManager threadingMan = new ThreadingManager(this);
 //    private final Set<AssetKey> alreadyLoadingSet = new HashSet<AssetKey>();
 
@@ -89,6 +82,9 @@ public class DesktopAssetManager implements AssetManager {
         }
         if (clazz != null){
             handler.addLocator(clazz, rootPath);
+            if (logger.isLoggable(Level.FINER)){
+                logger.finer("Registered locator: "+clazz.getSimpleName());
+            }
         }
     }
     
@@ -115,14 +111,6 @@ public class DesktopAssetManager implements AssetManager {
     public Object loadAsset(AssetKey key){
         Object o = key.shouldCache() ? cache.getFromCache(key) : null;
         if (o == null){
-//            synchronized (alreadyLoadingSet){
-//                if (alreadyLoadingSet.contains(key)){
-//                    System.out.println("!!! Resource is already loading in another thread!");
-//                    return null;
-//                }
-//                alreadyLoadingSet.add(key);
-//            }
-
             AssetLoader loader = handler.aquireLoader(key);
             if (loader == null){
                 logger.warning("No loader registered for"+
@@ -162,14 +150,6 @@ public class DesktopAssetManager implements AssetManager {
                 if (key.shouldCache())
                     cache.addToCache(key, o);
             }
-
-//            synchronized (alreadyLoadingSet){
-//                if (!alreadyLoadingSet.contains(key)){
-//                    System.out.println("!!!! This really shouldn't happen!");
-////                    return null;
-//                }
-//                alreadyLoadingSet.remove(key);
-//            }
         }
 
         // object o is the asset
@@ -184,13 +164,6 @@ public class DesktopAssetManager implements AssetManager {
     /**
      * Loads a texture.
      *
-     * @param name Name of the texture.
-     * @param generateMipmaps Enable if applying texture to 3D objects, disable
-     * for GUI/HUD elements.
-     * @param flipY If to flip image along Y axis- turn on for LWJGL or JOGL
-     * renderer.
-     * @param anisotropy Anisotropic filter value. Set to Integer.MAX_VALUE to
-     * select highest supported by video card.
      * @return
      */
     public Texture loadTexture(TextureKey key){
@@ -276,6 +249,10 @@ public class DesktopAssetManager implements AssetManager {
         return s;
     }
 
+    public Spatial loadModel(ModelKey key){
+        return (Spatial) loadAsset(key);
+    }
+
     /**
      * Load a model.
      *
@@ -283,7 +260,7 @@ public class DesktopAssetManager implements AssetManager {
      * @return
      */
     public Spatial loadModel(String name){
-        return (Spatial) loadAsset(new AssetKey(name));
+        return loadModel(new ModelKey(name));
     }
     
 }

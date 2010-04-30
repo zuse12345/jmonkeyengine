@@ -1,8 +1,11 @@
 package jme3test.niftygui;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.material.Material;
+import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
-import com.jme3.system.AppSettings;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.shape.Box;
 import de.lessvoid.nifty.Nifty;
 
 public class TestNiftyGui extends SimpleApplication {
@@ -10,14 +13,18 @@ public class TestNiftyGui extends SimpleApplication {
     private Nifty nifty;
 
     public static void main(String[] args){
-        AppSettings settings = new AppSettings(true);
-        settings.setAudioRenderer("LWJGL");
         TestNiftyGui app = new TestNiftyGui();
-        app.setSettings(settings);
         app.start();
     }
 
     public void simpleInitApp() {
+        Box b = new Box(Vector3f.ZERO, 1, 1, 1);
+        Geometry geom = new Geometry("Box", b);
+        Material mat = new Material(manager, "Common/MatDefs/Misc/SimpleTextured.j3md");
+        mat.setTexture("m_ColorMap", manager.loadTexture("Interface/Logo/Monkey.jpg"));
+        geom.setMaterial(mat);
+        rootNode.attachChild(geom);
+
         NiftyJmeDisplay niftyDisplay = new NiftyJmeDisplay(manager,
                                                           inputManager,
                                                           audioRenderer,
@@ -27,14 +34,16 @@ public class TestNiftyGui extends SimpleApplication {
         // load helloworld.xml
         //nifty.fromXml("jme3test/niftygui/helloworld.xml", "start");
 //        nifty.fromXml("tutorial/tutorial.xml"/*"all/intro.xml"*/, "start");
-        nifty.fromXml("all/intro.xml", "start");
+//        nifty.fromXml("all/intro.xml", "start");
+        nifty.fromXml("jme3test/niftygui/hellojme.xml", "start");
 //        nifty.fromXml("textfield/textfield.xml", "start");
 
         // attach the nifty display to the gui view port as a processor
         guiViewPort.addProcessor(niftyDisplay);
 
         // disable the fly cam
-        flyCam.setEnabled(false);
+//        flyCam.setEnabled(false);
+        flyCam.setDragToRotate(true);
     }
 
 }

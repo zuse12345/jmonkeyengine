@@ -66,7 +66,7 @@ public final class BufferUtils {
     ////  -- TRACKER HASH --  ////
     private static final Map<Buffer, Object> trackingHash = Collections.synchronizedMap(new WeakHashMap<Buffer, Object>());
     private static final Object ref = new Object();
-    private static boolean trackDirectMemory = false;
+    private static final boolean trackDirectMemory = false;
 
     ////  -- GENERIC CLONE -- ////
 

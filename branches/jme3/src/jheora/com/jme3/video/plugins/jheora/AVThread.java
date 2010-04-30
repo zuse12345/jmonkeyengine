@@ -55,7 +55,8 @@ public class AVThread implements Runnable {
         videoDecoder = new VDecoder(videoQueue);
         audioDecoder = new ADecoder();
         systemClock = new SystemClock();
-        masterClock = systemClock;//audioDecoder;
+//        masterClock = systemClock;//audioDecoder;
+        masterClock = audioDecoder;
         audioDecoder.setMasterClock(masterClock);
         videoDecoder.setMasterClock(masterClock);
 //        masterClock = videoDecoder;

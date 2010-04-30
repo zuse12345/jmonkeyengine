@@ -44,6 +44,7 @@ public class ZipLocator implements AssetLocator {
         try{
             zipfile = new ZipFile(new File(rootPath), ZipFile.OPEN_READ);
         }catch (IOException ex){
+            logger.log(Level.WARNING, "Failed to open zip file: "+rootPath, ex);
         }
     }
 

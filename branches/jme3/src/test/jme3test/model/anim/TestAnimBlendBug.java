@@ -66,7 +66,8 @@ public class TestAnimBlendBug extends SimpleApplication implements BindingListen
         rootNode.addLight(dl);
 
         Node model1 = (Node) manager.loadModel("Models/Ninja/Ninja.meshxml");
-        Node model2 = model1.clone();
+        Node model2 = (Node) manager.loadModel("Models/Ninja/Ninja.meshxml");
+//        Node model2 = model1.clone();
 
         model1.setLocalTranslation(-60, 0, 0);
         model2.setLocalTranslation(60, 0, 0);

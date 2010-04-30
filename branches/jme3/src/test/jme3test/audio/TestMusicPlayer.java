@@ -12,7 +12,7 @@
 package jme3test.audio;
 
 import com.jme3.asset.AssetInfo;
-import com.jme3.asset.AudioKey;
+import com.jme3.audio.AudioKey;
 import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioRenderer;
 import com.jme3.audio.AudioNode;

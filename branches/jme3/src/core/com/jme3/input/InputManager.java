@@ -226,7 +226,7 @@ public class InputManager implements RawInputListener {
 
         // query current mouse button state for all bindings
         for (Entry<String> entry : mouseBtnBindings){
-            if (entry.getKey() > mouse.length)
+            if (entry.getKey() >= mouse.length)
                 continue;
             
             if (mouse[entry.getKey()]){

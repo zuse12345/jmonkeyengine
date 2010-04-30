@@ -37,6 +37,9 @@ public class ADecoder extends InputStream implements Clock {
 
     private long lastPts = 0;
     private long lastWritten = 0;
+    private long lastRead = 0;
+    private long lastPtsRead = 0;
+    private long lastPtsWrite = 0;
 
     private long timeDiffSum = 0;
     private int timesDesynced = 0;
@@ -65,10 +68,12 @@ public class ADecoder extends InputStream implements Clock {
         long bytesRead = ringBuffer.getTotalRead();
         if (bytesRead == 0)
             return 0;
-
-        long diff = bytesRead - lastWritten;
+        
+        //long diff = bytesRead - lastWritten;
+        long diff = bytesRead;
         long diffNs = (diff * Clock.SECONDS_TO_NANOS) / (2 * info.channels * info.rate);
-        return lastPts + diffNs;
+        long timeSinceLastRead = System.nanoTime() - lastPtsRead;
+        return /*lastPts +*/ diffNs + timeSinceLastRead;
     }
 
     public double getTimeSeconds(){
@@ -133,11 +138,11 @@ public class ADecoder extends InputStream implements Clock {
 
     @Override
     public int read(byte[] buf, int offset, int length){
-        int diff = (int) (ringBuffer.getTotalWritten() - ringBuffer.getTotalRead());
-        if ( diff > info.rate * info.channels * 2){
-            System.out.println("Warning: more than 1 second lag for audio. Adjusting..");
-            ringBuffer.skip( diff );
-        }
+//        int diff = (int) (ringBuffer.getTotalWritten() - ringBuffer.getTotalRead());
+//        if ( diff > info.rate * info.channels * 2){
+//            System.out.println("Warning: more than 1 second lag for audio. Adjusting..");
+//            ringBuffer.skip( diff );
+//        }
 
 
 //        if (masterClock != null)
@@ -150,6 +155,8 @@ public class ADecoder extends InputStream implements Clock {
                 buf[offset + i] = 0x0;
             }
             return length;
+        }else{
+            lastPtsRead = System.nanoTime();
         }
         return r;
     }
@@ -231,6 +238,8 @@ public class ADecoder extends InputStream implements Clock {
             if (gp != -1){
                 lastPts = (gp * Clock.SECONDS_TO_NANOS) / info.rate;
                 lastWritten = ringBuffer.getTotalWritten();
+                lastRead    = ringBuffer.getTotalRead();
+                lastPtsWrite = System.nanoTime();
             }
             
             decodeDsp(packet);

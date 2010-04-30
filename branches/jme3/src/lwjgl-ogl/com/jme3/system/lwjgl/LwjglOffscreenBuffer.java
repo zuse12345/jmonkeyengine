@@ -122,7 +122,6 @@ public class LwjglOffscreenBuffer extends LwjglContext implements Runnable {
         renderer.cleanup();
         pbuffer.destroy();
         logger.info("Offscreen buffer destroyed.");
-        super.destroy();
     }
 
     public void run(){

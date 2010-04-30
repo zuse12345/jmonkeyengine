@@ -1,5 +1,6 @@
 package com.jme3.asset;
 
+import com.jme3.audio.AudioKey;
 import com.jme3.audio.AudioData;
 import com.jme3.font.BitmapFont;
 import com.jme3.material.Material;
@@ -28,6 +29,7 @@ public interface AssetManager {
     public Texture loadTexture(String name);
     public AudioData loadAudio(AudioKey key);
     public AudioData loadAudio(String name);
+    public Spatial loadModel(ModelKey key);
     public Spatial loadModel(String name);
     public Material loadMaterial(String name);
     public Shader loadShader(ShaderKey key);

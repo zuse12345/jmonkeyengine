@@ -19,17 +19,9 @@ public class TestBox extends SimpleApplication {
     public void simpleInitApp() {
         Box b = new Box(Vector3f.ZERO, 1, 1, 1);
         Geometry geom = new Geometry("Box", b);
-        geom.updateModelBound();
-
         Material mat = new Material(manager, "Common/MatDefs/Misc/SimpleTextured.j3md");
-        TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);
-        key.setGenerateMips(true);
-        Texture tex = manager.loadTexture(key);
-        tex.setMinFilter(Texture.MinFilter.Trilinear);
-        mat.setTexture("m_ColorMap", tex);
-
+        mat.setTexture("m_ColorMap", manager.loadTexture("Interface/Logo/Monkey.jpg"));
         geom.setMaterial(mat);
-        
         rootNode.attachChild(geom);
     }
 

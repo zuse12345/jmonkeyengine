@@ -2,23 +2,25 @@ package jme3test.scene;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.plugins.ZipLocator;
-import com.jme3.scene.Geometry;
+import com.jme3.light.DirectionalLight;
+import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.shape.Sphere;
 
 public class TestSceneLoading extends SimpleApplication {
 
-    private Sphere sphereMesh = new Sphere(32, 32, 10, false, true);
-    private Geometry sphere = new Geometry("Sky", sphereMesh);
+//    private Sphere sphereMesh = new Sphere(32, 32, 10, false, true);
+//    private Geometry sphere = new Geometry("Sky", sphereMesh);
 
     public static void main(String[] args){
         TestSceneLoading app = new TestSceneLoading();
+        app.setShowSettings(false);
         app.start();
     }
 
     @Override
     public void simpleUpdate(float tpf){
-        sphere.setLocalTranslation(cam.getLocation());
+//        sphere.setLocalTranslation(cam.getLocation());
     }
 
     public void simpleInitApp() {
@@ -38,8 +40,13 @@ public class TestSceneLoading extends SimpleApplication {
 
         // create the geometry and attach it
         manager.registerLocator("wildhouse.zip", ZipLocator.class.getName());
-
         Spatial scene = manager.loadModel("main.scene");
+
+        DirectionalLight sun = new DirectionalLight();
+        sun.setDirection(Vector3f.UNIT_Y.negate());
+        sun.setColor(ColorRGBA.White);
+        scene.addLight(sun);
+
         rootNode.attachChild(scene);
     }
 }

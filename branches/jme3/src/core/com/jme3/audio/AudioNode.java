@@ -6,7 +6,6 @@
 package com.jme3.audio;
 
 import com.jme3.asset.AssetManager;
-import com.jme3.asset.AudioKey;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
@@ -37,11 +36,11 @@ public class AudioNode extends Node{
     protected float refDistance = 10; // 10 meters
     protected Filter reverbFilter;
 
-    private boolean directional=false;
-    protected Vector3f direction = new Vector3f(0,0,1);
+    private boolean directional = false;
+    protected Vector3f direction = new Vector3f(0, 0, 1);
     protected float innerAngle = 360;
     protected float outerAngle = 360;
-    private boolean positional=true;
+    private boolean positional = true;
 
     public enum Status {
         Playing,

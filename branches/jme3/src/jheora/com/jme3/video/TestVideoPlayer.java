@@ -2,13 +2,12 @@ package com.jme3.video;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.audio.AudioNode;
-import com.jme3.math.Vector2f;
+import com.jme3.system.AppSettings;
 import com.jme3.texture.Image;
 import com.jme3.ui.Picture;
 import com.jme3.video.plugins.jheora.AVThread;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 
 public class TestVideoPlayer extends SimpleApplication {
 
@@ -26,14 +25,17 @@ public class TestVideoPlayer extends SimpleApplication {
 
     public static void main(String[] args){
         TestVideoPlayer app = new TestVideoPlayer();
+        AppSettings settings = new AppSettings(true);
+        settings.setFrameRate(60);
+        app.setSettings(settings);
         app.start();
     }
 
     private void createVideo(){
         try {
             // uncomment to play video from harddrive
-//          FileInputStream  fis = new FileInputStream("E:\\bunny.ogg");
-            InputStream fis = new URL("http://mirrorblender.top-ix.org/peach/bigbuckbunny_movies/big_buck_bunny_480p_stereo.ogg").openStream();
+          FileInputStream  fis = new FileInputStream("E:\\bunny.ogg");
+//            InputStream fis = new URL("http://mirrorblender.top-ix.org/peach/bigbuckbunny_movies/big_buck_bunny_480p_stereo.ogg").openStream();
 
             // increasing queued frames value from 5 will make web streamed
             // playback smoother at the cost of memory.
@@ -131,9 +133,10 @@ public class TestVideoPlayer extends SimpleApplication {
                 return;
             }
 
-            long AV_SYNC_THRESHOLD = 10 * Clock.MILLIS_TO_NANOS;
+            long AV_SYNC_THRESHOLD = 1 * Clock.MILLIS_TO_NANOS;
 
             long delay = frame.getTime() - lastFrameTime;
+//            delay -= tpf * Clock.SECONDS_TO_NANOS;
             long diff = frame.getTime() - masterClock.getTime();
             long syncThresh = delay > AV_SYNC_THRESHOLD ? delay : AV_SYNC_THRESHOLD;
 
@@ -145,16 +148,17 @@ public class TestVideoPlayer extends SimpleApplication {
                   delay = 2 * delay;
                 }
             }
+//            delay = diff;
 
-//            System.out.println("M: "+decoder.getSystemClock().getTimeSeconds()+
-//                               ", V: "+decoder.getVideoClock().getTimeSeconds()+
-//                               ", A: "+decoder.getAudioClock().getTimeSeconds());
+            System.out.println("M: "+decoder.getSystemClock().getTimeSeconds()+
+                               ", V: "+decoder.getVideoClock().getTimeSeconds()+
+                               ", A: "+decoder.getAudioClock().getTimeSeconds());
 
             if (delay > 0){
-//                waitNanos(delay);
-//                drawFrame(frame);
-                waitTime = (float) ((double) delay / Clock.SECONDS_TO_NANOS);
-                frameToDraw = frame;
+                waitNanos(delay);
+                drawFrame(frame);
+//                waitTime = (float) ((double) delay / Clock.SECONDS_TO_NANOS);
+//                frameToDraw = frame;
             }else{
                 videoQueue.returnFrame(frame);
                 lastFrameTime = frame.getTime();

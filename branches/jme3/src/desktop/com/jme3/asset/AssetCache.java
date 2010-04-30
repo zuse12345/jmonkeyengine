@@ -1,11 +1,6 @@
 package com.jme3.asset;
 
-import com.jme3.asset.AssetKey;
-import com.jme3.asset.Asset;
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.WeakHashMap;
 
 /**

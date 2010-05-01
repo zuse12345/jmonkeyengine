@@ -2,6 +2,7 @@ package jme3test.model.anim;
 
 import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
+import com.jme3.animation.AnimEventListener;
 import com.jme3.animation.Bone;
 import com.jme3.animation.LoopMode;
 import com.jme3.app.SimpleApplication;
@@ -39,6 +40,7 @@ public class TestOgreComplexAnim extends SimpleApplication {
         Node model = (Node) manager.loadModel("Models/Oto/Oto.meshxml");
 
         control = model.getControl(AnimControl.class);
+
         AnimChannel feet = control.createChannel();
         AnimChannel leftHand = control.createChannel();
         AnimChannel rightHand = control.createChannel();

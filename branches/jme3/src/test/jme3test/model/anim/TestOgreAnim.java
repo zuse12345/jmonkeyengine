@@ -2,6 +2,7 @@ package jme3test.model.anim;
 
 import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
+import com.jme3.animation.AnimEventListener;
 import com.jme3.app.SimpleApplication;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
@@ -13,7 +14,7 @@ import com.jme3.scene.Spatial;
  *
  * @author lex
  */
-public class TestOgreAnim extends SimpleApplication {
+public class TestOgreAnim extends SimpleApplication implements AnimEventListener {
 
     public static void main(String[] args) {
         TestOgreAnim app = new TestOgreAnim();
@@ -36,13 +37,22 @@ public class TestOgreAnim extends SimpleApplication {
         model.center();
 
         AnimControl control = model.getControl(AnimControl.class);
+        control.addListener(this);
         AnimChannel channel = control.createChannel();
+
         channel.setAnim("Walk");
 
 //        float scale = 1.00f;
         rootNode.attachChild(model);
 
 //        model.setAnimation("Walk");
+    }
+
+    public void onAnimCycleDone(AnimControl control, AnimChannel channel, String animName) {
+        System.out.println("AnimDone: "+animName);
+    }
+
+    public void onAnimChange(AnimControl control, AnimChannel channel, String animName) {
     }
 
 }

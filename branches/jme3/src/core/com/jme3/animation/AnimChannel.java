@@ -1,6 +1,5 @@
 package com.jme3.animation;
 
-import java.util.ArrayList;
 import java.util.BitSet;
 
 public class AnimChannel {
@@ -89,6 +88,8 @@ public class AnimChannel {
         BoneAnimation anim = control.animationMap.get(name);
         if (anim == null)
             throw new IllegalArgumentException("Cannot find animation named: '"+name+"'");
+
+        control.notifyAnimChange(this, name);
 
         if (animation != null && blendTime > 0f){
             // activate blending
@@ -211,6 +212,14 @@ public class AnimChannel {
 
         animation.setTime(time, control.skeleton, blendAmount, affectedBones);
         time += tpf * speed;
+
+        if (animation.getLength() > 0){
+            if (time >= animation.getLength())
+                control.notifyAnimCycleDone(this, animation.getName());
+            else if (time < 0)
+                control.notifyAnimCycleDone(this, animation.getName());
+        }
+
         time = clampWrapTime(time, animation.getLength(), loopMode);
         if (time < 0){
             time = -time;

@@ -48,6 +48,9 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
     transient ArrayList<AnimChannel> channels
             = new ArrayList<AnimChannel>();
 
+    transient ArrayList<AnimEventListener> listeners
+            = new ArrayList<AnimEventListener>();
+
     public AnimControl(Node model, Mesh[] meshes, Skeleton skeleton){
         super(model);
         this.skeleton = skeleton;
@@ -104,6 +107,30 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
 
     public Mesh[] getTargets() {
         return targets;
+    }
+
+    public void addListener(AnimEventListener listener){
+        listeners.add(listener);
+    }
+
+    public void removeListener(AnimEventListener listener){
+        listeners.remove(listener);
+    }
+
+    public void clearListeners(){
+        listeners.clear();
+    }
+
+    void notifyAnimChange(AnimChannel channel, String name){
+        for (int i = 0; i < listeners.size(); i++){
+            listeners.get(i).onAnimChange(this, channel, name);
+        }
+    }
+
+    void notifyAnimCycleDone(AnimChannel channel, String name){
+        for (int i = 0; i < listeners.size(); i++){
+            listeners.get(i).onAnimCycleDone(this, channel, name);
+        }
     }
 
     void reset(){

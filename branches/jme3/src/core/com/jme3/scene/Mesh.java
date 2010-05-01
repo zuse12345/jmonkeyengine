@@ -49,7 +49,7 @@ public class Mesh implements Savable, Cloneable {
      */
     private BoundingVolume meshBound =  new BoundingBox();
 
-    private BIHTree collisionTree = null;
+    private CollisionData collisionTree = null;
 
 //    private EnumMap<VertexBuffer.Type, VertexBuffer> buffers = new EnumMap<Type, VertexBuffer>(VertexBuffer.Type.class);
 //    private VertexBuffer[] buffers = new VertexBuffer[BUFFERS_SIZE];
@@ -396,8 +396,9 @@ public class Mesh implements Savable, Cloneable {
     }
 
     public void createCollisionData(){
-        collisionTree = new BIHTree(this);
-        collisionTree.construct();
+        BIHTree tree = new BIHTree(this);
+        tree.construct();
+        collisionTree = tree;
     }
 
     public int collideWith(Collidable other, 

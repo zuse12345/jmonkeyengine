@@ -326,7 +326,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
 	                break;
 	            case 4:
 	                obstacleColors.set(0, ColorRGBA.Cyan);
-	                obstacleColors.add(ColorRGBA.Magneta);
+	                obstacleColors.add(ColorRGBA.Magenta);
 	                renderer.setBackgroundColor(ColorRGBA.Gray);
                         floorMaterial.setColor("m_Color", ColorRGBA.Gray);
 	                playerMaterial.setColor("m_Color", ColorRGBA.White);

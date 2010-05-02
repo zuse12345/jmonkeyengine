@@ -33,8 +33,7 @@ package com.jme3.gde.core.scene;
 
 import com.jme3.app.Application;
 import com.jme3.app.StatsView;
-import com.jme3.bounding.BoundingBox;
-import com.jme3.bounding.BoundingVolume;
+import com.jme3.asset.DesktopAssetManager;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.gde.core.assets.ProjectAssetManager;
@@ -66,14 +65,12 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
-import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
@@ -390,6 +387,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                 rootNode.detachAllChildren();
                 closeCurrentScene();
                 manager = projectManager.getManager();
+                ((DesktopAssetManager)manager).clearCache();
                 Spatial model = manager.loadModel(name);
                 if (!(model instanceof Node)) {
                     StatusDisplayer.getDefault().setStatusText("could not load model " + name + ", no root node");

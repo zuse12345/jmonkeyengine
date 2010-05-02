@@ -5,6 +5,7 @@
 package com.jme3.gde.scenecomposer;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.asset.DesktopAssetManager;
 import com.jme3.audio.AudioNode;
 import com.jme3.effect.EmitterSphereShape;
 import com.jme3.effect.ParticleEmitter;
@@ -422,6 +423,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 public Object call() throws Exception {
                     ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Importing Model..");
                     progressHandle.start();
+                    ((DesktopAssetManager)manager).clearCache();
                     Spatial spat = manager.loadModel(assetName);
                     ((Node) selected).attachChild(spat);
                     refreshSelected();

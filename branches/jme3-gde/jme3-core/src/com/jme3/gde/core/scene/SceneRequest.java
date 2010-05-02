@@ -29,9 +29,9 @@
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.gde.core.scene;
 
+import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.scene.nodes.JmeNode;
 import org.openide.util.Lookup;
 
@@ -40,18 +40,21 @@ import org.openide.util.Lookup;
  * @author normenhansen
  */
 public class SceneRequest {
-    private String windowTitle="";
-    private String mimeType="";
+
+    private String windowTitle = "";
+    private String mimeType = "";
     private Object requester;
     private JmeNode rootNode;
-    private boolean displayed=false;
+    private ProjectAssetManager manager;
+    private boolean displayed = false;
 
-    public SceneRequest(Object requester, JmeNode rootNode) {
+    public SceneRequest(Object requester, JmeNode rootNode, ProjectAssetManager manager) {
         this.requester = requester;
         this.rootNode = rootNode;
+        this.manager = manager;
     }
 
-    public Lookup getLookup(){
+    public Lookup getLookup() {
         return rootNode.getLookup();
     }
 
@@ -111,4 +114,10 @@ public class SceneRequest {
         this.displayed = displayed;
     }
 
+    /**
+     * @return the manager
+     */
+    public ProjectAssetManager getManager() {
+        return manager;
+    }
 }

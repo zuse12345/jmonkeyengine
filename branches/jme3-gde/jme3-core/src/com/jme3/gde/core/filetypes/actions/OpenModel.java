@@ -53,8 +53,8 @@ public final class OpenModel implements ActionListener {
 
     public void actionPerformed(ActionEvent ev) {
         Set<FileObject> files = context.files();
-        ProjectAssetManager manager = context.getLookup().lookup(ProjectAssetManager.class);
-        if(manager==null){
+        final ProjectAssetManager manager = context.getLookup().lookup(ProjectAssetManager.class);
+        if (manager == null) {
             Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "No ProjectAssetManager found in DataObject!");
             return;
         }
@@ -65,11 +65,10 @@ public final class OpenModel implements ActionListener {
             SceneApplication.getApplication().enqueue(new Callable<Object>() {
 
                 public Object call() throws Exception {
-                    SceneApplication.getApplication().showModel(name);
+                    SceneApplication.getApplication().showModel(name, manager);
                     return null;
                 }
             });
         }
     }
-
 }

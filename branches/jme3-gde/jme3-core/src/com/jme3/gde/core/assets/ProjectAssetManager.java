@@ -33,8 +33,8 @@ package com.jme3.gde.core.assets;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.system.JmeSystem;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import org.netbeans.api.project.Project;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -47,7 +47,7 @@ public class ProjectAssetManager {
 
     private Project project;
     //TODO: one assetmanager per project
-    private static AssetManager manager;
+    private AssetManager manager;
 
     public ProjectAssetManager(Project prj) {
         this.project = prj;
@@ -67,21 +67,31 @@ public class ProjectAssetManager {
 
     public String getRelativeAssetPath(String absolutePath) {
         String prefix = project.getProjectDirectory().getFileObject("assets/").getPath();
-        int idx=absolutePath.indexOf(prefix);
-        if(idx==0){
+        int idx = absolutePath.indexOf(prefix);
+        if (idx == 0) {
             return absolutePath.substring(prefix.length());
         }
         return absolutePath;
     }
 
-    public static void setManager(AssetManager _manager) {
-        manager = _manager;
-    }
-
-    public static AssetManager getManager() {
+    public AssetManager getManager() {
         if (manager == null) {
             manager = JmeSystem.newAssetManager();//new DesktopAssetManager(true);
         }
         return manager;
+    }
+
+    public String[] getMaterials() {
+        FileObject assetsFolder = project.getProjectDirectory().getFileObject("assets/");
+        Enumeration<FileObject> assets = (Enumeration<FileObject>) assetsFolder.getChildren(true);
+        ArrayList<String> list = new ArrayList<String>();
+        list.add("geddoch");
+        while (assets.hasMoreElements()) {
+            FileObject asset = assets.nextElement();
+            if (asset.hasExt("j3m")) {
+                list.add(getRelativeAssetPath(asset.getPath()));
+            }
+        }
+        return list.toArray(new String[list.size()]);
     }
 }

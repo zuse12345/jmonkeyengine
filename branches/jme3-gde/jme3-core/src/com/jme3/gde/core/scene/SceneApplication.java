@@ -32,6 +32,7 @@
 package com.jme3.gde.core.scene;
 
 import com.jme3.app.Application;
+import com.jme3.app.StatsView;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bounding.BoundingVolume;
 import com.jme3.font.BitmapFont;
@@ -42,14 +43,10 @@ import com.jme3.gde.core.scene.nodes.NodeUtility;
 import com.jme3.gde.core.scene.processors.WireProcessor;
 import com.jme3.gde.core.sceneviewer.SceneViewerTopComponent;
 import com.jme3.input.FlyByCamera;
-import com.jme3.input.KeyInput;
-import com.jme3.input.binding.BindingListener;
 import com.jme3.light.PointLight;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.FastMath;
-import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.post.SceneProcessor;
 import com.jme3.renderer.Camera;
@@ -69,7 +66,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -103,9 +99,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     }
     protected Node rootNode = new Node("Root Node");
     protected Node guiNode = new Node("Gui Node");
-
     private SceneCameraController camController;
-
     //preview variables
     private static final int width = 120, height = 120;
     private final ByteBuffer cpuBuf = BufferUtils.createByteBuffer(width * height * 4);
@@ -114,9 +108,10 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     protected JmeSpatial previewSpat = null;
     protected float secondCounter = 0.0f;
     protected BitmapText fpsText;
+    protected StatsView statsView;
     protected FlyByCamera flyCam;
     protected boolean showSettings = true;
-    private Lookup.Result projectResult;
+    private Lookup.Result nodeSelectionResult;
     private ApplicationLogHandler logHandler = new ApplicationLogHandler();
     private WireProcessor wireProcessor;
     private FrameBuffer offBuffer;
@@ -126,7 +121,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     private PreviewRequest currentPreviewRequest;
 
     public SceneApplication() {
-        manager = ProjectAssetManager.getManager();
         AppSettings newSetting = new AppSettings(true);
         newSetting.setFrameRate(30);
 //        settings.setVSync(true);
@@ -138,8 +132,8 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         setPauseOnLostFocus(false);
 
         //add listener for project selection
-        projectResult = Utilities.actionsGlobalContext().lookupResult(Project.class);
-        projectResult.addLookupListener(this);
+        nodeSelectionResult = Utilities.actionsGlobalContext().lookupResult(JmeSpatial.class);
+        nodeSelectionResult.addLookupListener(this);
 
         createCanvas();
         getContext().setAutoFlushFrames(true);
@@ -156,11 +150,18 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         guiNode.attachChild(fpsText);
     }
 
+    public void loadStatsView() {
+        statsView = new StatsView("Statistics View", manager, renderer.getStatistics());
+        // move it up so it appears above fps text
+        statsView.setLocalTranslation(0, fpsText.getLineHeight(), 0);
+        guiNode.attachChild(statsView);
+    }
+
     @Override
     public void initialize() {
         super.initialize();
         //create camera controler
-        camController=new SceneCameraController(cam, inputManager);
+        camController = new SceneCameraController(cam, inputManager);
         //create preview view
         setupPreviewView();
 
@@ -174,6 +175,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         guiNode.setQueueBucket(Bucket.Gui);
         guiNode.setCullHint(CullHint.Never);
         loadFPSText();
+        loadStatsView();
         viewPort.attachScene(rootNode);
         guiViewPort.attachScene(guiNode);
         cam.setLocation(new Vector3f(0, 0, 10));
@@ -221,65 +223,16 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         renderManager.render(tpf);
     }
 
-    private static Spatial scaleAndCenter(Spatial model, float size) {
-        if (model != null) {
-            model.updateGeometricState();
-
-            BoundingVolume worldBound = model.getWorldBound();
-            if (worldBound == null) {
-                model.setModelBound(new BoundingBox());
-                model.updateModelBound();
-                model.updateGeometricState();
-                worldBound = model.getWorldBound();
-            }
-
-            if (worldBound != null) { // check not still null (no geoms)
-                Vector3f center = worldBound.getCenter();
-
-                BoundingBox boundingBox = new BoundingBox(center, 0, 0, 0);
-                boundingBox.mergeLocal(worldBound);
-
-                Vector3f extent = boundingBox.getExtent(null);
-                float maxExtent = Math.max(Math.max(extent.x, extent.y), extent.z);
-                float height = extent.y;
-                if (maxExtent != 0) {
-                    model.setLocalScale(size / maxExtent);
-                    Vector3f pos = center.negate().addLocal(0.0f, height / 2.0f, 0.0f); //.multLocal(model.getLocalScale().x);
-                    model.setLocalTranslation(pos);
-                    System.out.println("Model size: " + maxExtent);
-                    System.out.println("Model position: " + center);
-                }
-            }
-        }
-        return model;
-    }
-
     //TODO: Lookup for Application
     public Lookup createAdditionalLookup(Lookup baseContext) {
         return Lookups.fixed(getApplication());
     }
 
-    //changes asset manager (not needed right now, AssetManager is static)
+    /**
+     * updates node selection
+     * @param ev
+     */
     public void resultChanged(LookupEvent ev) {
-        Collection<Project> myResult = projectResult.allInstances();
-        for (Iterator<Project> it = myResult.iterator(); it.hasNext();) {
-            Project project = it.next();
-            final ProjectAssetManager pmanager = project.getLookup().lookup(ProjectAssetManager.class);
-            if (pmanager != null) {
-                StatusDisplayer.getDefault().setStatusText(System.currentTimeMillis() + " - set asset manager: " + pmanager);
-                enqueue(new Callable<Object>() {
-
-                    public Object call() throws Exception {
-                        if (manager != ProjectAssetManager.getManager()) {
-                            rootNode.detachAllChildren();
-                            manager = ProjectAssetManager.getManager();
-                        }
-                        return null;
-                    }
-                });
-                return;
-            }
-        }
     }
 
     private void setupPreviewView() {
@@ -401,6 +354,14 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         }
     }
 
+    private void notifySceneListeners(JmeSpatial selected) {
+        SceneViewerTopComponent window = SceneViewerTopComponent.findInstance();
+        for (Iterator<SceneListener> it = listeners.iterator(); it.hasNext();) {
+            SceneListener sceneViewerListener = it.next();
+            sceneViewerListener.nodeSelected(selected);
+        }
+    }
+
     public void createPreview(final PreviewRequest request) {
         previewQueue.add(request);
     }
@@ -410,7 +371,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
      * only to be used to show models in the assetmanager
      * @param name
      */
-    public void showModel(final String name) {
+    public void showModel(final String name, final ProjectAssetManager projectManager) {
         //TODO: notify listeners about change
         setWindowTitle("View Model");
         setMimeType(null);
@@ -419,14 +380,15 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             public Object call() throws Exception {
                 rootNode.detachAllChildren();
                 closeCurrentScene();
+                manager = projectManager.getManager();
                 Spatial model = manager.loadModel(name);
                 if (!(model instanceof Node)) {
                     StatusDisplayer.getDefault().setStatusText("could not load model " + name + ", no root node");
                     return null;
                 }
-                currentSceneRequest = new SceneRequest(null, NodeUtility.createNode((Node) model));
-                currentSceneRequest.setWindowTitle("View Model");
-                currentSceneRequest.setDisplayed(true);
+                currentSceneRequest = new SceneRequest(null, NodeUtility.createNode((Node) model), projectManager);
+                getCurrentSceneRequest().setWindowTitle("View Model");
+                getCurrentSceneRequest().setDisplayed(true);
                 if (model == null) {
                     StatusDisplayer.getDefault().setStatusText("could not load model " + name);
                     return null;
@@ -449,12 +411,15 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 
             public Object call() throws Exception {
                 rootNode.detachAllChildren();
+                if (request.getManager() != null) {
+                    manager = request.getManager().getManager();
+                }
                 closeCurrentScene();
                 currentSceneRequest = request;
-                currentSceneRequest.setDisplayed(true);
+                getCurrentSceneRequest().setDisplayed(true);
                 Node model = request.getLookup().lookup(Node.class);
                 if (model == null) {
-                    StatusDisplayer.getDefault().setStatusText("could not load tree from request: " + currentSceneRequest.getWindowTitle());
+                    StatusDisplayer.getDefault().setStatusText("could not load tree from request: " + getCurrentSceneRequest().getWindowTitle());
                     return null;
                 }
                 rootNode.attachChild(model);
@@ -535,7 +500,15 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         return materials;
     }
 
+    @Deprecated
     public LinkedList<Material> getMaterialList() {
         return getMaterialList(rootNode, new LinkedList<Material>());
+    }
+
+    /**
+     * @return the currentSceneRequest
+     */
+    public SceneRequest getCurrentSceneRequest() {
+        return currentSceneRequest;
     }
 }

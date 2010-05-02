@@ -31,9 +31,14 @@
  */
 package com.jme3.gde.core.sceneviewer;
 
+import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
+import com.jme3.gde.core.scene.SceneListener;
+import com.jme3.gde.core.scene.SceneRequest;
+import com.jme3.gde.core.scene.nodes.JmeSpatial;
 import com.jme3.system.JmeCanvasContext;
 import com.jme3.system.SystemListener;
+import java.util.Collection;
 import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -49,16 +54,14 @@ import org.openide.util.lookup.InstanceContent;
  */
 @ConvertAsProperties(dtd = "-//com.jme3.gde.core.sceneviewer//SceneViewer//EN",
 autostore = false)
-public final class SceneViewerTopComponent extends TopComponent implements SystemListener{
+public final class SceneViewerTopComponent extends TopComponent implements SystemListener, SceneListener {
 
     private static SceneViewerTopComponent instance;
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "com/jme3/gde/core/sceneviewer/jme-logo.png";
     private static final String PREFERRED_ID = "SceneViewerTopComponent";
-
     private JmeCanvasContext ctx;
     private SceneApplication app;
-
     private Lookup lookup;
     private final InstanceContent lookupContents = new InstanceContent();
 
@@ -70,7 +73,7 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
         lookup = new AbstractLookup(lookupContents);
         associateLookup(lookup);
         putClientProperty(TopComponent.PROP_CLOSING_DISABLED, Boolean.TRUE);
-        app=SceneApplication.getApplication();
+        app = SceneApplication.getApplication();
 //        lookupContents.add(app);
     }
 
@@ -124,6 +127,7 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 
         oGLPanel.setMinimumSize(new java.awt.Dimension(10, 10));
         oGLPanel.setPreferredSize(new java.awt.Dimension(100, 100));
+        oGLPanel.setSize(new java.awt.Dimension(100, 100));
         oGLPanel.setLayout(new java.awt.GridLayout(1, 0));
         add(oGLPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
@@ -135,13 +139,13 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     private void enableWireframeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableWireframeActionPerformed
         app.enableWireFrame(enableWireframe.isSelected());
     }//GEN-LAST:event_enableWireframeActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton enableCamLight;
     private javax.swing.JToggleButton enableWireframe;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JPanel oGLPanel;
     // End of variables declaration//GEN-END:variables
+
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
@@ -181,7 +185,7 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     @Override
     public void componentOpened() {
         super.componentOpened();
-        oGLPanel.add(((JmeCanvasContext)app.getContext()).getCanvas());
+        oGLPanel.add(((JmeCanvasContext) app.getContext()).getCanvas());
     }
 
     @Override
@@ -193,7 +197,6 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     protected void componentHidden() {
         super.componentHidden();
     }
-
 
     @Override
     public void componentClosed() {
@@ -229,7 +232,6 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     /*
      * SystemListener
      */
-
     public void initialize() {
 //        throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -262,4 +264,26 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 //        throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    public void sceneRequested(SceneRequest request) {
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void nodeSelected(final JmeSpatial spatial) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                Collection<JmeSpatial> old = (Collection<JmeSpatial>)getLookup().lookupAll(JmeSpatial.class);
+                if (old.size()>0) {
+                    for (JmeSpatial jmeSpatial : old) {
+                        lookupContents.remove(jmeSpatial);
+                    }
+                }
+                lookupContents.add(spatial.getLookup().lookupAll(JmeSpatial.class));
+            }
+        });
+    }
+
+    public void previewRequested(PreviewRequest request) {
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

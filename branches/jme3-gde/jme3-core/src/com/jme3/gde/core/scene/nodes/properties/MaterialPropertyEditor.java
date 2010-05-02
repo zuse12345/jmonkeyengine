@@ -32,6 +32,7 @@
 package com.jme3.gde.core.scene.nodes.properties;
 
 import com.jme3.gde.core.scene.SceneApplication;
+import com.jme3.gde.core.scene.SceneRequest;
 import com.jme3.material.Material;
 import com.jme3.math.Quaternion;
 import java.awt.Component;
@@ -44,7 +45,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import org.openide.util.Exceptions;
 
 /**
@@ -58,7 +58,7 @@ public class MaterialPropertyEditor implements PropertyEditor {
 
     public void setValue(Object value) {
         if (value instanceof Material) {
-            material=(Material)value;
+            material = (Material) value;
         }
     }
 
@@ -79,36 +79,30 @@ public class MaterialPropertyEditor implements PropertyEditor {
     }
 
     public String getAsText() {
-        return "";
+        return material.toString();
     }
 
-    public void setAsText(String text) throws IllegalArgumentException {
-        
-    }
-
-    public String[] getTags() {
-        Callable<String[]> call=new Callable<String[]>(){
-            public String[] call(){
-                LinkedList<Material> materials=SceneApplication.getApplication().getMaterialList();
-                String[] strings=new String[materials.size()];
-                for (int i = 0; i < materials.size(); i++) {
-                    Material material = materials.get(i);
-                    strings[i]=material.toString();
-                }
-                return strings;
-            }
-        };
-        Future<String[]> fut=SceneApplication.getApplication().enqueue(call);
-        String[] strings;
+    public void setAsText(final String text) throws IllegalArgumentException {
         try {
-            strings = fut.get();
-            return strings;
+            SceneApplication.getApplication().enqueue(new Callable<Void>() {
+
+                public Void call() throws Exception {
+                    SceneRequest request = SceneApplication.getApplication().getCurrentSceneRequest();
+                    material = (Material) request.getManager().getManager().loadAsset(text);
+                    return null;
+                }
+            }).get();
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         } catch (ExecutionException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return null;
+    }
+
+    public String[] getTags() {
+        SceneRequest request = SceneApplication.getApplication().getCurrentSceneRequest();
+        String[] mats = request.getManager().getMaterials();
+        return mats;
     }
 
     public Component getCustomEditor() {

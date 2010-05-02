@@ -25,23 +25,24 @@ public final class OpenSceneComposer implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent ev) {
-        ProjectAssetManager manager=context.getLookup().lookup(ProjectAssetManager.class);
-        if(manager == null) return;
-        FileObject file=context.getPrimaryFile();
-        String assetName=manager.getRelativeAssetPath(file.getPath());
-        Spatial spat=manager.getManager().loadModel(assetName);
-        if(spat instanceof Node){
-            JmeNode jmeNode=NodeUtility.createNode((Node)spat);
-            SceneComposerTopComponent composer=SceneComposerTopComponent.findInstance();
-            SceneRequest request=new SceneRequest(composer,jmeNode);
-            composer.loadRequest(request, file);
+        ProjectAssetManager manager = context.getLookup().lookup(ProjectAssetManager.class);
+        if (manager == null) {
+            return;
         }
-        else{
-            Node node=new Node();
+        FileObject file = context.getPrimaryFile();
+        String assetName = manager.getRelativeAssetPath(file.getPath());
+        Spatial spat = manager.getManager().loadModel(assetName);
+        if (spat instanceof Node) {
+            JmeNode jmeNode = NodeUtility.createNode((Node) spat);
+            SceneComposerTopComponent composer = SceneComposerTopComponent.findInstance();
+            SceneRequest request = new SceneRequest(composer, jmeNode, manager);
+            composer.loadRequest(request, file);
+        } else {
+            Node node = new Node();
             node.attachChild(spat);
-            JmeNode jmeNode=NodeUtility.createNode(node);
-            SceneComposerTopComponent composer=SceneComposerTopComponent.findInstance();
-            SceneRequest request=new SceneRequest(composer,jmeNode);
+            JmeNode jmeNode = NodeUtility.createNode(node);
+            SceneComposerTopComponent composer = SceneComposerTopComponent.findInstance();
+            SceneRequest request = new SceneRequest(composer, jmeNode, manager);
             composer.loadRequest(request, file);
         }
     }

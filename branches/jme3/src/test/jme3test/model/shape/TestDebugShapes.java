@@ -54,7 +54,7 @@ public class TestDebugShapes extends SimpleApplication {
 
         putBox(new Vector3f(2, 0, 0), 0.5f, ColorRGBA.Yellow);
         putGrid(new Vector3f(3.5f, 0, 0), ColorRGBA.White);
-        putSphere(new Vector3f(4.5f, 0, 0), ColorRGBA.Magneta);
+        putSphere(new Vector3f(4.5f, 0, 0), ColorRGBA.Magenta);
     }
 
 }

@@ -6,12 +6,13 @@ package com.jme3.gde.ogrexml.importer;
 
 import com.jme3.export.binary.BinaryExporter;
 import com.jme3.gde.core.assets.ProjectAssetManager;
+import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.plugins.ogre.MeshLoader;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Callable;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.awt.StatusDisplayer;
@@ -35,14 +36,14 @@ public final class OgreXMLToJme implements ActionListener {
         }
 
         if (context != null) {
-            Runnable run = new Runnable() {
+            Callable run = new Callable() {
 
-                public void run() {
+                public Void call() {
                     ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Importing OgreXML");
                     progressHandle.start();
 
                     FileObject file = context.getPrimaryFile();
-                    Spatial model=manager.getManager().loadModel(manager.getRelativeAssetPath(file.getPath()));
+                    Spatial model = manager.getManager().loadModel(manager.getRelativeAssetPath(file.getPath()));
 
                     String outputPath = file.getParent().getPath() + File.separator + file.getName() + ".j3o";
                     BinaryExporter exp = BinaryExporter.getInstance();
@@ -54,10 +55,12 @@ public final class OgreXMLToJme implements ActionListener {
                     progressHandle.finish();
                     //try make NetBeans update the tree.. :/
                     context.getPrimaryFile().getParent().refresh();
+                    return null;
                 }
             };
-            new Thread(run).start();
+            SceneApplication.getApplication().enqueue(run);
         }
 
-        StatusDisplayer.getDefault().setStatusText("Import with project AssetManager: " + manager);    }
+        StatusDisplayer.getDefault().setStatusText("Import with project AssetManager: " + manager);
+    }
 }

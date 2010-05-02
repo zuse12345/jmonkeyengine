@@ -32,6 +32,8 @@
 package com.jme3.gde.core.scene.nodes;
 
 import com.jme3.bounding.BoundingVolume;
+import com.jme3.export.binary.BinaryExporter;
+import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.nodes.properties.JmeProperty;
 import com.jme3.light.LightList;
 import com.jme3.math.Quaternion;
@@ -40,11 +42,23 @@ import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import org.openide.actions.CopyAction;
+import org.openide.actions.CutAction;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.PasteAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.InstanceContent;
 
 /**
@@ -57,12 +71,13 @@ public class JmeSpatial extends AbstractNode {
     private JmeSpatialChildFactory factory;
     private final InstanceContent lookupContents;
     private Lookup lookup;
+    protected final DataFlavor SPATIAL_FLAVOR = new DataFlavor(ClipboardSpatial.class, "Spatial");
 
     public JmeSpatial(Spatial spatial, JmeSpatialChildFactory factory) {
         super(Children.create(factory, false), new JmeLookup(new InstanceContent()));
-        this.factory=factory;
+        this.factory = factory;
         this.spatial = spatial;
-        lookupContents=((JmeLookup)getLookup()).getInstanceContent();
+        lookupContents = ((JmeLookup) getLookup()).getInstanceContent();
         getLookupContents().add(spatial);
         getLookupContents().add(this);
         setName(spatial.getName());
@@ -77,8 +92,127 @@ public class JmeSpatial extends AbstractNode {
     }
 
     //TODO: refresh does not work
-    public void refresh(boolean immediate){
+    public void refresh(boolean immediate) {
         factory.refreshChildren(immediate);
+    }
+
+    protected SystemAction[] createActions() {
+        return new SystemAction[]{
+                    SystemAction.get(CopyAction.class),
+                    SystemAction.get(CutAction.class),
+                    SystemAction.get(PasteAction.class),
+                    SystemAction.get(DeleteAction.class)
+                };
+    }
+
+    @Override
+    public boolean canCopy() {
+        return true;
+    }
+
+    @Override
+    public boolean canCut() {
+        return true;
+    }
+
+    @Override
+    public boolean canDestroy() {
+        return true;
+    }
+
+    @Override
+    public void destroy() throws IOException {
+        try {
+            SceneApplication.getApplication().enqueue(new Callable<Void>() {
+
+                public Void call() throws Exception {
+                    spatial.removeFromParent();
+                    return null;
+                }
+            }).get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    @Override
+    public Transferable clipboardCopy() throws IOException {
+        Transferable trans = new Transferable() {
+
+            public DataFlavor[] getTransferDataFlavors() {
+                return new DataFlavor[]{SPATIAL_FLAVOR};
+            }
+
+            public boolean isDataFlavorSupported(DataFlavor flavor) {
+                if (SPATIAL_FLAVOR.equals(flavor)) {
+                    return true;
+                }
+                return false;
+            }
+
+            public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+                if (SPATIAL_FLAVOR.equals(flavor)) {
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    BinaryExporter.getInstance().save(spatial, out);
+
+                    return new ClipboardSpatial(out.toByteArray());
+                } else {
+                    throw new UnsupportedFlavorException(flavor);
+                }
+            }
+        };
+        return trans;
+    }
+
+    @Override
+    public Transferable clipboardCut() throws IOException {
+        Transferable trans = new Transferable() {
+
+            public DataFlavor[] getTransferDataFlavors() {
+                return new DataFlavor[]{SPATIAL_FLAVOR};
+            }
+
+            public boolean isDataFlavorSupported(DataFlavor flavor) {
+                if (SPATIAL_FLAVOR.equals(flavor)) {
+                    return true;
+                }
+                return false;
+            }
+
+            public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+                if (SPATIAL_FLAVOR.equals(flavor)) {
+                    try {
+                        SceneApplication.getApplication().enqueue(new Callable<Void>() {
+
+                            public Void call() throws Exception {
+                                spatial.removeFromParent();
+                                return null;
+                            }
+                        }).get();
+                        //TODO: not a good cast
+                        JmeNode node = ((JmeNode) getParentNode());
+                        if (node != null) {
+                            node.refresh(false);
+                        }
+//                        return spatial;
+                        ByteArrayOutputStream out = new ByteArrayOutputStream();
+                        BinaryExporter.getInstance().save(spatial, out);
+//
+                        return new ClipboardSpatial(out.toByteArray());
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (ExecutionException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    return null;
+                } else {
+                    throw new UnsupportedFlavorException(flavor);
+                }
+            }
+        };
+        return trans;
     }
 
     @Override

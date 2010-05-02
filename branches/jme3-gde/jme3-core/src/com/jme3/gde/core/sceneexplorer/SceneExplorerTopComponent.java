@@ -43,16 +43,21 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.openide.actions.CopyAction;
+import org.openide.actions.CutAction;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.PasteAction;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Top component which displays something.
  */
 @ConvertAsProperties(dtd = "-//com.jme3.gde.core.sceneexplorer//SceneExplorer//EN",
 autostore = false)
-public final class SceneExplorerTopComponent extends TopComponent implements ExplorerManager.Provider, SceneListener{
+public final class SceneExplorerTopComponent extends TopComponent implements ExplorerManager.Provider, SceneListener {
 
     private static SceneExplorerTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -66,7 +71,18 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
         setToolTipText(NbBundle.getMessage(SceneExplorerTopComponent.class, "HINT_SceneExplorerTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         associateLookup(ExplorerUtils.createLookup(explorerManager, getActionMap()));
+        initActions();
+    }
 
+    private void initActions() {
+        CutAction cut = SystemAction.get(CutAction.class);
+        getActionMap().put(cut.getActionMapKey(), ExplorerUtils.actionCut(explorerManager));
+        CopyAction copy = SystemAction.get(CopyAction.class);
+        getActionMap().put(copy.getActionMapKey(), ExplorerUtils.actionCopy(explorerManager));
+        PasteAction paste = SystemAction.get(PasteAction.class);
+        getActionMap().put(paste.getActionMapKey(), ExplorerUtils.actionPaste(explorerManager));
+        DeleteAction delete = SystemAction.get(DeleteAction.class);
+        getActionMap().put(delete.getActionMapKey(), ExplorerUtils.actionDelete(explorerManager, true));
     }
 
     /** This method is called from within the constructor to
@@ -112,16 +128,18 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        if(request==null) return;
-        JmeNode node=request.getRootNode();
+        if (request == null) {
+            return;
+        }
+        JmeNode node = request.getRootNode();
         node.refresh(false);
     }//GEN-LAST:event_jButton1ActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane explorerScrollPane;
     private javax.swing.JButton jButton1;
     private javax.swing.JToolBar jToolBar1;
     // End of variables declaration//GEN-END:variables
+
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
@@ -194,14 +212,14 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
     protected String preferredID() {
         return PREFERRED_ID;
     }
-
     private transient ExplorerManager explorerManager = new ExplorerManager();
+
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
 
     public void sceneRequested(SceneRequest request) {
-        this.request=request;
+        this.request = request;
         explorerManager.setRootContext(request.getRootNode());
         explorerManager.getRootContext().setDisplayName(request.getRootNode().getName());
     }

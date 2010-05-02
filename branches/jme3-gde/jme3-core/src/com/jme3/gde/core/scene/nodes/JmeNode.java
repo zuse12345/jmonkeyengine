@@ -31,12 +31,21 @@
  */
 package com.jme3.gde.core.scene.nodes;
 
+import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.nodes.properties.JmeProperty;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import java.awt.Image;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  *
@@ -101,5 +110,53 @@ public class JmeNode extends JmeSpatial {
             Exceptions.printStackTrace(ex);
         }
         return prop;
+    }
+
+    @Override
+    public PasteType getDropType(final Transferable t, int action, int index) {
+        Object data = null;
+        try {
+            data = t.getTransferData(SPATIAL_FLAVOR);
+        } catch (Exception ex) {
+//            Exceptions.printStackTrace(ex);
+        }
+        if (data == null) {
+            return null;
+        }
+        if (data instanceof ClipboardSpatial) {
+            final Spatial spat = ((ClipboardSpatial) data).createSpatial();
+            return new PasteType() {
+
+                @Override
+                public Transferable paste() throws IOException {
+                    try {
+                        SceneApplication.getApplication().enqueue(new Callable<Void>() {
+
+                            public Void call() throws Exception {
+                                node.attachChild(spat);
+                                return null;
+                            }
+                        }).get();
+                        refresh(false);
+                        return t;
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (ExecutionException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    return null;
+                }
+            };
+        }
+        return null;
+    }
+
+    @Override
+    protected void createPasteTypes(Transferable t, List<PasteType> s) {
+        super.createPasteTypes(t, s);
+        PasteType paste = getDropType(t, DnDConstants.ACTION_COPY_OR_MOVE, -1);
+        if (null != paste) {
+            s.add(paste);
+        }
     }
 }

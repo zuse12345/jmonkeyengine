@@ -66,6 +66,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -233,6 +234,14 @@ public class SceneApplication extends Application implements LookupProvider, Loo
      * @param ev
      */
     public void resultChanged(LookupEvent ev) {
+//        Collection collection = nodeSelectionResult.allInstances();
+//        for (Iterator it = collection.iterator(); it.hasNext();) {
+//            Object object = it.next();
+//            if(object instanceof JmeSpatial){
+//                notifySceneListeners((JmeSpatial)object);
+//                return;
+//            }
+//        }
     }
 
     private void setupPreviewView() {

@@ -96,7 +96,7 @@ public final class ColorRGBA implements Savable, Cloneable {
     /**
      * the color magenta (1,0,1).
      */
-    public static final ColorRGBA Magneta = new ColorRGBA(1f, 0f, 1f, 1f);
+    public static final ColorRGBA Magenta = new ColorRGBA(1f, 0f, 1f, 1f);
     /**
      * the color cyan (0,1,1).
      */

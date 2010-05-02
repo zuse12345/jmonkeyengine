@@ -90,10 +90,8 @@ import org.openide.util.lookup.Lookups;
  * - unbloat this file by outsourcing stuff to other classes
  * @author normenhansen
  */
-public class SceneApplication extends Application implements LookupProvider, LookupListener, BindingListener, SceneProcessor {
+public class SceneApplication extends Application implements LookupProvider, LookupListener, SceneProcessor {
 
-    private boolean leftMouse, rightMouse, middleMouse;
-    private float deltaX, deltaY, deltaZ, deltaWheel;
     private PointLight camLight;
     private static SceneApplication application;
 
@@ -105,9 +103,9 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     }
     protected Node rootNode = new Node("Root Node");
     protected Node guiNode = new Node("Gui Node");
-    private Quaternion rot = new Quaternion();
-    private Vector3f vector = new Vector3f();
-    private Vector3f focus = new Vector3f();
+
+    private SceneCameraController camController;
+
     //preview variables
     private static final int width = 120, height = 120;
     private final ByteBuffer cpuBuf = BufferUtils.createByteBuffer(width * height * 4);
@@ -161,7 +159,9 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     @Override
     public void initialize() {
         super.initialize();
-
+        //create camera controler
+        camController=new SceneCameraController(cam, inputManager);
+        //create preview view
         setupPreviewView();
 
         // enable depth test and back-face culling for performance
@@ -177,21 +177,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         viewPort.attachScene(rootNode);
         guiViewPort.attachScene(guiNode);
         cam.setLocation(new Vector3f(0, 0, 10));
-
-        inputManager.addBindingListener(this);
-        inputManager.registerMouseAxisBinding("MOUSE_X+", 0, false);
-        inputManager.registerMouseAxisBinding("MOUSE_X-", 0, true);
-        inputManager.registerMouseAxisBinding("MOUSE_Y+", 1, false);
-        inputManager.registerMouseAxisBinding("MOUSE_Y-", 1, true);
-        inputManager.registerMouseAxisBinding("MOUSE_W+", 2, false);
-        inputManager.registerMouseAxisBinding("MOUSE_W-", 2, true);
-
-        inputManager.registerMouseButtonBinding("MOUSE_LEFT", 0);
-        inputManager.registerMouseButtonBinding("MOUSE_RIGHT", 1);
-        inputManager.registerMouseButtonBinding("MOUSE_MIDDLE", 2);
-
-        inputManager.registerKeyBinding("Up", KeyInput.KEY_UP);
-        inputManager.registerKeyBinding("Down", KeyInput.KEY_DOWN);
 
         wireProcessor = new WireProcessor(manager);
     }
@@ -294,89 +279,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                 });
                 return;
             }
-        }
-    }
-
-    private void rotateCamera(Vector3f axis, float amount) {
-        if (axis.equals(cam.getLeft())) {
-            float elevation = -FastMath.asin(cam.getDirection().y);
-            amount = Math.min(Math.max(elevation + amount,
-                    -FastMath.HALF_PI), FastMath.HALF_PI)
-                    - elevation;
-        }
-        rot.fromAngleAxis(amount, axis);
-        cam.getLocation().subtract(focus, vector);
-        rot.mult(vector, vector);
-        focus.add(vector, cam.getLocation());
-
-        Quaternion curRot = cam.getRotation().clone();
-        cam.setRotation(rot.mult(curRot));
-    }
-
-    private void panCamera(float left, float up) {
-        cam.getLeft().mult(left, vector);
-        vector.scaleAdd(up, cam.getUp(), vector);
-        cam.setLocation(cam.getLocation().add(vector));
-        focus.addLocal(vector);
-    }
-
-    private void moveCamera(float forward) {
-        cam.getDirection().mult(forward, vector);
-        cam.setLocation(cam.getLocation().add(vector));
-    }
-
-    private void zoomCamera(float amount) {
-        float dist = cam.getLocation().distance(focus);
-        amount = dist - Math.max(0f, dist - amount);
-        Vector3f loc = cam.getLocation().clone();
-        loc.scaleAdd(amount, cam.getDirection(), loc);
-        cam.setLocation(loc);
-    }
-
-    public void onBinding(String binding, float value) {
-        if (binding.equals("UPDATE")) {
-            if (leftMouse) {
-                rotateCamera(Vector3f.UNIT_Y, -deltaX * 5);
-                rotateCamera(cam.getLeft(), -deltaY * 5);
-            }
-            if (deltaWheel != 0) {
-                zoomCamera(deltaWheel * 10);
-            }
-            if (rightMouse) {
-                panCamera(deltaX * 10, -deltaY * 10);
-            }
-
-            moveCamera(deltaZ);
-
-            leftMouse = false;
-            rightMouse = false;
-            middleMouse = false;
-            deltaX = 0;
-            deltaY = 0;
-            deltaZ = 0;
-            deltaWheel = 0;
-        } else if (binding.equals("Up")) {
-            deltaZ = 10;
-        } else if (binding.equals("Down")) {
-            deltaZ = -10;
-        } else if (binding.equals("MOUSE_LEFT")) {
-            leftMouse = value > 0f;
-        } else if (binding.equals("MOUSE_RIGHT")) {
-            rightMouse = value > 0f;
-        } else if (binding.equals("MOUSE_MIDDLE")) {
-            middleMouse = value > 0f;
-        } else if (binding.equals("MOUSE_X+")) {
-            deltaX = value;
-        } else if (binding.equals("MOUSE_X-")) {
-            deltaX = -value;
-        } else if (binding.equals("MOUSE_Y+")) {
-            deltaY = value;
-        } else if (binding.equals("MOUSE_Y-")) {
-            deltaY = -value;
-        } else if (binding.equals("MOUSE_W+")) {
-            deltaWheel = value;
-        } else if (binding.equals("MOUSE_W-")) {
-            deltaWheel = -value;
         }
     }
 
@@ -609,14 +511,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                 return null;
             }
         });
-    }
-
-    public void onPreUpdate(float f) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void onPostUpdate(float f) {
-//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     /**

@@ -441,7 +441,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             currentSceneRequest.setDisplayed(false);
         }
         currentSceneRequest = null;
-        ((DesktopAssetManager)manager).clearCache();
     }
 
     private void setWindowTitle(final String string) {

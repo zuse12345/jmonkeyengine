@@ -88,7 +88,10 @@ public class MaterialPropertyEditor implements PropertyEditor {
 
                 public Void call() throws Exception {
                     SceneRequest request = SceneApplication.getApplication().getCurrentSceneRequest();
-                    material = (Material) request.getManager().getManager().loadAsset(text);
+                    Material localMaterial = (Material) request.getManager().getManager().loadAsset(text);
+                    if (localMaterial != null) {
+                        material = localMaterial;
+                    }
                     return null;
                 }
             }).get();

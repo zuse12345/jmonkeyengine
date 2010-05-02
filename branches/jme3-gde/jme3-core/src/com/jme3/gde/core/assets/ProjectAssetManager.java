@@ -85,7 +85,6 @@ public class ProjectAssetManager {
         FileObject assetsFolder = project.getProjectDirectory().getFileObject("assets/");
         Enumeration<FileObject> assets = (Enumeration<FileObject>) assetsFolder.getChildren(true);
         ArrayList<String> list = new ArrayList<String>();
-        list.add("geddoch");
         while (assets.hasMoreElements()) {
             FileObject asset = assets.nextElement();
             if (asset.hasExt("j3m")) {

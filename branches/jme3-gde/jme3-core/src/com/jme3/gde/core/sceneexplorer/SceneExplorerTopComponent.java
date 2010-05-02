@@ -67,11 +67,11 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
 
     public SceneExplorerTopComponent() {
         initComponents();
+        initActions();
         setName(NbBundle.getMessage(SceneExplorerTopComponent.class, "CTL_SceneExplorerTopComponent"));
         setToolTipText(NbBundle.getMessage(SceneExplorerTopComponent.class, "HINT_SceneExplorerTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         associateLookup(ExplorerUtils.createLookup(explorerManager, getActionMap()));
-        initActions();
     }
 
     private void initActions() {

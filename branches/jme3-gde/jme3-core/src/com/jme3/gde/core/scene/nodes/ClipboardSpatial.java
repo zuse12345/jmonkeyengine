@@ -31,6 +31,7 @@
  */
 package com.jme3.gde.core.scene.nodes;
 
+import com.jme3.export.binary.BinaryExporter;
 import com.jme3.export.binary.BinaryImporter;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.scene.Spatial;
@@ -38,6 +39,7 @@ import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import org.openide.util.Exceptions;
 
@@ -48,6 +50,16 @@ import org.openide.util.Exceptions;
 public class ClipboardSpatial implements Transferable, ClipboardOwner {
 
     private byte[] data;
+
+    public ClipboardSpatial(Spatial spat){
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            BinaryExporter.getInstance().save(spat, out);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        data= out.toByteArray();
+    }
 
     public ClipboardSpatial(byte[] spatial) {
         data = spatial;

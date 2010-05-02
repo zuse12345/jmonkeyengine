@@ -5,6 +5,7 @@
 package com.jme3.gde.scenecomposer;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.audio.AudioNode;
 import com.jme3.effect.EmitterSphereShape;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
@@ -13,11 +14,13 @@ import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
 import com.jme3.gde.core.scene.SceneRequest;
+import com.jme3.gde.core.scene.nodes.JmeNode;
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
 import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.ui.Picture;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.Callable;
@@ -33,6 +36,7 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.netbeans.spi.palette.PaletteController;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.LookupListener;
@@ -54,6 +58,9 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     private final Result<JmeSpatial> result;
     private JmeSpatial selectedSpat;
     private Spatial selected;
+    //palette
+    private PaletteController palette = null;
+    private JmeNode paletteRoot;
 
     public SceneComposerTopComponent() {
         initComponents();
@@ -63,6 +70,8 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         result = Utilities.actionsGlobalContext().lookupResult(JmeSpatial.class);
         result.addLookupListener(this);
         SceneApplication.getApplication().addSceneListener(this);
+//        preparePalette();
+//        associateLookup(Lookups.fixed(new Object[]{getPalette()}));
     }
 
     /** This method is called from within the constructor to
@@ -78,10 +87,9 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         sceneNameLabel = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        objectList = new javax.swing.JList();
         addObjectButton = new javax.swing.JButton();
-        deleteObjectButton = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList();
 
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -108,18 +116,11 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                 .add(sceneNameLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 104, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 94, Short.MAX_VALUE)
                 .add(saveButton))
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.jLabel1.text")); // NOI18N
-
-        objectList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Particle Emitter" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
-        jScrollPane1.setViewportView(objectList);
 
         org.openide.awt.Mnemonics.setLocalizedText(addObjectButton, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.addObjectButton.text")); // NOI18N
         addObjectButton.setEnabled(false);
@@ -129,97 +130,57 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(deleteObjectButton, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.deleteObjectButton.text")); // NOI18N
-        deleteObjectButton.setEnabled(false);
-        deleteObjectButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deleteObjectButtonActionPerformed(evt);
-            }
+        jList1.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Node", "Particle Emitter", "Audio Node", "Picture" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
         });
+        jScrollPane1.setViewportView(jList1);
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
             .add(jPanel2Layout.createSequentialGroup()
                 .add(2, 2, 2)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
                     .add(jPanel2Layout.createSequentialGroup()
                         .add(addObjectButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(deleteObjectButton)
-                        .addContainerGap(19, Short.MAX_VALUE))))
-            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE)
+                        .addContainerGap(99, Short.MAX_VALUE))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(addObjectButton)
-                    .add(deleteObjectButton)))
+                .add(addObjectButton))
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 280, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 282, Short.MAX_VALUE)
                 .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void deleteObjectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteObjectButtonActionPerformed
-        if (currentRequest != null && currentRequest.isDisplayed() && selected != null) {
-            SceneApplication.getApplication().enqueue(new Callable() {
-
-                public Object call() throws Exception {
-                    selected.removeFromParent();
-                    return null;
-                }
-            });
-        }
-    }//GEN-LAST:event_deleteObjectButtonActionPerformed
-
     private void addObjectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addObjectButtonActionPerformed
-        if (currentRequest != null && currentRequest.isDisplayed() && selected instanceof Node) {
-            try {
-                SceneApplication.getApplication().enqueue(new Callable() {
-
-                    public Object call() throws Exception {
-                        ParticleEmitter emit = new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 200);
-                        emit.setShape(new EmitterSphereShape(Vector3f.ZERO, 1f));
-                        emit.setGravity(0);
-                        emit.setLowLife(5);
-                        emit.setHighLife(10);
-                        emit.setStartVel(new Vector3f(0, 0, 0));
-                        emit.setImagesX(15);
-                        Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
-                        //                    mat.setTexture("m_Texture", SceneApplication.getApplication().getAssetManager().loadTexture("Effects/Smoke/Smoke.png"));
-                        emit.setMaterial(mat);
-                        ((Node) selected).attachChild(emit);
-                        refreshSelected();
-                        return null;
-
-                    }
-                }).get();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        if(jList1.getSelectedValue()!=null){
+            addSpatial(jList1.getSelectedValue().toString());
         }
+
     }//GEN-LAST:event_addObjectButtonActionPerformed
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
@@ -227,12 +188,11 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     }//GEN-LAST:event_saveButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addObjectButton;
-    private javax.swing.JButton deleteObjectButton;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JList jList1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JList objectList;
     private javax.swing.JButton saveButton;
     private javax.swing.JLabel sceneNameLabel;
     // End of variables declaration//GEN-END:variables
@@ -319,6 +279,137 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         });
 
     }
+//    private Node paletteNode;
+//
+//    private void preparePalette() {
+//        paletteNode = new Node("Palette Root");
+//        //NODE
+//        paletteNode.attachChild(new Node("Node"));
+//        //PARTICLE EMITTER
+//        ParticleEmitter emit = new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 200);
+//        emit.setShape(new EmitterSphereShape(Vector3f.ZERO, 1f));
+//        emit.setName("Particle Emitter");
+//        emit.setGravity(0);
+//        emit.setLowLife(5);
+//        emit.setHighLife(10);
+//        emit.setStartVel(new Vector3f(0, 0, 0));
+//        emit.setImagesX(15);
+//        Material mat = null;
+//        try {
+//            mat = SceneApplication.getApplication().enqueue(new Callable<Material>() {
+//
+//                public Material call() throws Exception {
+//                    Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
+//                    mat.setTexture("m_Texture", SceneApplication.getApplication().getAssetManager().loadTexture("Effects/Smoke/Smoke.png"));
+//                    return mat;
+//                }
+//            }).get();
+//        } catch (InterruptedException ex) {
+//            Exceptions.printStackTrace(ex);
+//        } catch (ExecutionException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+//        if (mat != null) {
+//            emit.setMaterial(mat);
+//        }
+//        paletteNode.attachChild(emit);
+//    }
+//
+//    private PaletteController getPalette() {
+//        if (null == palette) {
+//            paletteRoot = NodeUtility.createNode(paletteNode);
+//            paletteRoot.setName("Palette Root");
+//
+//            palette = PaletteFactory.createPalette(paletteRoot,
+//                    new MyPaletteActions(), null, new MyDragAndDropHandler());
+//        }
+//        return palette;
+//    }
+//    public static final DataFlavor MyCustomDataFlavor = new DataFlavor(ClipboardSpatial.class, "Spatial");
+//
+//    private static class MyDragAndDropHandler extends DragAndDropHandler {
+//
+//        public void customize(ExTransferable exTransferable, Lookup lookup) {
+//            final Spatial item = (Spatial) lookup.lookup(Spatial.class);
+//            if (null != item) {
+//                exTransferable.put(new ExTransferable.Single(MyCustomDataFlavor) {
+//
+//                    protected Object getData() throws IOException, UnsupportedFlavorException {
+//                        return new ClipboardSpatial(item);
+//                    }
+//                });
+//            }
+//        }
+//    }
+//
+//    private static class MyPaletteActions extends PaletteActions {
+//
+//        public Action[] getImportActions() {
+//            return null;
+//        }
+//
+//        public Action[] getCustomPaletteActions() {
+//            return null;
+//        }
+//
+//        public Action[] getCustomCategoryActions(Lookup lookup) {
+//            return null;
+//        }
+//
+//        public Action[] getCustomItemActions(Lookup lookup) {
+//            return null;
+//        }
+//
+//        public Action getPreferredAction(Lookup lookup) {
+//            return null;
+//        }
+//    }
+
+    private void addSpatial(final String name) {
+        if (currentRequest != null && currentRequest.isDisplayed() && selected instanceof Node) {
+            try {
+                SceneApplication.getApplication().enqueue(new Callable() {
+
+                    public Object call() throws Exception {
+                        if("Node".equals(name)){
+                            ((Node) selected).attachChild(new Node("Node"));
+                        }
+                        else if("Particle Emitter".equals(name)){
+                            ParticleEmitter emit = new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 200);
+                            emit.setShape(new EmitterSphereShape(Vector3f.ZERO, 1f));
+                            emit.setGravity(0);
+                            emit.setLowLife(5);
+                            emit.setHighLife(10);
+                            emit.setStartVel(new Vector3f(0, 0, 0));
+                            emit.setImagesX(15);
+                            Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
+                            //                    mat.setTexture("m_Texture", SceneApplication.getApplication().getAssetManager().loadTexture("Effects/Smoke/Smoke.png"));
+                            emit.setMaterial(mat);
+                            ((Node) selected).attachChild(emit);
+                        }
+                        else if("Audio Node".equals(name)){
+                            AudioNode node=new AudioNode();
+                            node.setName("Audio Node");
+                            ((Node) selected).attachChild(node);
+                        }
+                        else if("Picture".equals(name)){
+                            Picture pic=new Picture("Picture");
+                            Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
+                            pic.setMaterial(mat);
+                            ((Node) selected).attachChild(pic);
+                        }
+                        refreshSelected();
+                        return null;
+
+                    }
+                }).get();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
 
     /*
      * methods for external access
@@ -382,12 +473,10 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 if (!active) {
                     saveButton.setEnabled(false);
                     addObjectButton.setEnabled(false);
-                    deleteObjectButton.setEnabled(false);
                     close();
                 } else {
                     saveButton.setEnabled(true);
                     addObjectButton.setEnabled(true);
-                    deleteObjectButton.setEnabled(true);
                     open();
                     requestActive();
                 }

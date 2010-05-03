@@ -462,6 +462,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                         Exceptions.printStackTrace(ex);
                     }
                     progressHandle.finish();
+                    StatusDisplayer.getDefault().setStatusText("Saved file " + currentFileObject.getNameExt());
                     //try make NetBeans update the tree.. :/
                     return null;
                 }

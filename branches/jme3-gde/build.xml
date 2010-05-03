@@ -41,7 +41,7 @@
         <property file="nbproject/project.properties"/>
         <property value="../jme3/" name="jme3_dir"/>
         <property value="true" name="set_impl_version"/>
-        <antcall target="-create-jme3-svn-properties"/>
+        <antcall target="-create-jme3-svn-properties" inheritall="true"/>
         <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true"/>
     </target>
 
@@ -49,7 +49,7 @@
         <property file="nbproject/project.properties"/>
         <property value="../jme3/" name="jme3_dir"/>
         <property value="true" name="unset_impl_version"/>
-        <antcall target="-create-jme3-svn-properties"/>
+        <antcall target="-create-jme3-svn-properties" inheritall="true"/>
         <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true"/>
     </target>
 
@@ -57,7 +57,7 @@
         <property file="nbproject/project.properties"/>
         <property value="../../jme3/workspace/" name="jme3_dir"/>
         <property value="true" name="set_impl_version"/>
-        <antcall target="-create-jme3-svn-properties"/>
+        <antcall target="-create-jme3-svn-properties" inheritall="true"/>
         <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true"/>
     </target>
 
@@ -65,7 +65,7 @@
         <property file="nbproject/project.properties"/>
         <property value="../../jme3/workspace/" name="jme3_dir"/>
         <property value="true" name="unset_impl_version"/>
-        <antcall target="-create-jme3-svn-properties"/>
+        <antcall target="-create-jme3-svn-properties" inheritall="true"/>
         <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true"/>
     </target>
 

@@ -282,8 +282,7 @@
     <folder name="Services">
         <folder name="AutoupdateType">
             <file name="com_jme3_gde_core_update_center.instance">
-                <attr name="SystemFileSystem.localizingBundle"
-                    stringvalue="com.jme3.gde.core.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="com.jme3.gde.core.Bundle"/>
                 <attr name="displayName" bundlevalue="com.jme3.gde.core.Bundle#Services/AutoupdateType/com_jme3_gde_core_update_center.instance"/>
                 <attr name="enabled" boolvalue="true"/>
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider"/>
@@ -326,6 +325,15 @@
             </folder>
             <folder name="commonpalette">
                 <file name="SceneExplorerTopComponent.wstcref" url="SceneExplorerTopComponentWstcref.xml"/>
+            </folder>
+            <folder name="explorer">
+                <file name="projectTabLogical_tc.wstcref" url="projectTabLogical_tcWstcref.xml"/>
+            </folder>
+            <folder name="output">
+                <file name="output.wstcref" url="outputWstcref.xml"/>
+            </folder>
+            <folder name="properties">
+                <file name="properties.wstcref" url="propertiesWstcref.xml"/>
             </folder>
         </folder>
     </folder>

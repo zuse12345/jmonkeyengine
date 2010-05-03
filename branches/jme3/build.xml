@@ -25,13 +25,13 @@
     <!-- convenience target to transfer jme3 libraries to jme3-gde (jMonkeyPlatform) -->
     <target name="update-gde" depends="jar, javadoc">
         <property value="../jme3-gde/" name="jmp_dir"/>
-        <antcall target="-do-update-gde"/>
+        <antcall target="-do-update-gde" inheritall="true"/>
     </target>
 
     <!-- convenience target to transfer jme3 libraries to the jme3-jmp folder on the Hudson build server (jMonkeyPlatform) -->
     <target name="update-jmp-hudson">
         <property value="../../jme3-jmp/workspace/" name="jmp_dir"/>
-        <antcall target="-do-update-gde"/>
+        <antcall target="-do-update-gde" inheritall="true"/>
     </target>
 
     <target name="-do-update-gde">

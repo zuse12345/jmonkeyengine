@@ -67,10 +67,10 @@ public class TestPhysicsCar extends SimplePhysicsApplication implements BindingL
 
 
     public void setupFloor() {
-        Material mat = new Material(manager, "Common/MatDefs/Misc/SimpleTextured.j3md");
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);
         key.setGenerateMips(true);
-        Texture tex = manager.loadTexture(key);
+        Texture tex = assetManager.loadTexture(key);
         tex.setMinFilter(Texture.MinFilter.Trilinear);
         mat.setTexture("m_ColorMap", tex);
         
@@ -93,15 +93,15 @@ public class TestPhysicsCar extends SimplePhysicsApplication implements BindingL
         float compValue=0.4f; //(lower than damp!)
         float dampValue=0.8f;
 
-        Material matBox = new Material(manager, "Common/MatDefs/Misc/SimpleTextured.j3md");
+        Material matBox = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         TextureKey keyBox = new TextureKey("Models/Sign Post/Sign Post.jpg", true);
         keyBox.setGenerateMips(true);
-        Texture texBox = manager.loadTexture(keyBox);
+        Texture texBox = assetManager.loadTexture(keyBox);
         matBox.setTexture("m_ColorMap", texBox);
-        Material mat = new Material(manager, "Common/MatDefs/Misc/SimpleTextured.j3md");
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);
         key.setGenerateMips(true);
-        Texture tex = manager.loadTexture(key);
+        Texture tex = assetManager.loadTexture(key);
         mat.setTexture("m_ColorMap", tex);
         //box stand in
         Box b = new Box(new Vector3f(0,0,0),0.5f,0.5f,2f);

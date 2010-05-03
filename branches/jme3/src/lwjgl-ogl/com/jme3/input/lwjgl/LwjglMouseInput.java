@@ -68,8 +68,7 @@ public class LwjglMouseInput implements MouseInput {
             }
             if (btn != -1){
                 MouseButtonEvent evt = new MouseButtonEvent(btn,
-                                                Mouse.getEventButtonState(),
-                                                Mouse.getEventButtonState());
+                                                            Mouse.getEventButtonState());
                 listener.onMouseButtonEvent(evt);
             }
         }

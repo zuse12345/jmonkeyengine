@@ -35,7 +35,7 @@ public class TestEverything extends SimpleApplication {
     }
 
     public void setupHdr(){
-        hdrRender = new HDRRenderer(manager, renderer);
+        hdrRender = new HDRRenderer(assetManager, renderer);
         hdrRender.setMaxIterations(40);
         hdrRender.setSamples(settings.getSamples());
         
@@ -50,7 +50,7 @@ public class TestEverything extends SimpleApplication {
     }
 
     public void setupBasicShadow(){
-        bsr = new BasicShadowRenderer(manager, 1024);
+        bsr = new BasicShadowRenderer(assetManager, 1024);
         bsr.setDirection(lightDir);
         viewPort.addProcessor(bsr);
     }
@@ -65,12 +65,12 @@ public class TestEverything extends SimpleApplication {
 
         Texture envMap;
         if (renderer.getCaps().contains(Caps.FloatTexture)){
-            envMap = manager.loadTexture("Textures/Sky/St Peters/StPeters.hdr");
+            envMap = assetManager.loadTexture("Textures/Sky/St Peters/StPeters.hdr");
         }else{
-            envMap = manager.loadTexture("Textures/Sky/St Peters/StPeters.jpg");
+            envMap = assetManager.loadTexture("Textures/Sky/St Peters/StPeters.jpg");
         }
            
-        Material skyMat = new Material(manager, "Common/MatDefs/Misc/Sky.j3md");
+        Material skyMat = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
         skyMat.setBoolean("m_SphereMap", true);
         skyMat.setTexture("m_Texture", envMap);
         skyMat.setVector3("m_NormalScale", new Vector3f(-1, 1, -1));
@@ -102,7 +102,7 @@ public class TestEverything extends SimpleApplication {
     }
 
     public void setupFloor(){
-        Material mat = manager.loadMaterial("Textures/Terrain/BrickWall/BrickWall.j3m");
+        Material mat = assetManager.loadMaterial("Textures/Terrain/BrickWall/BrickWall.j3m");
         mat.getTextureParam("m_DiffuseMap").getTextureValue().setWrap(WrapMode.Repeat);
         mat.getTextureParam("m_NormalMap").getTextureValue().setWrap(WrapMode.Repeat);
         mat.getTextureParam("m_ParallaxMap").getTextureValue().setWrap(WrapMode.Repeat);
@@ -137,8 +137,8 @@ public class TestEverything extends SimpleApplication {
 //    }
 
     public void setupRobotGuy(){
-        Node model = (Node) manager.loadModel("Models/Oto/Oto.meshxml");
-        Material mat = manager.loadMaterial("Models/Oto/Oto.j3m");
+        Node model = (Node) assetManager.loadModel("Models/Oto/Oto.meshxml");
+        Material mat = assetManager.loadMaterial("Models/Oto/Oto.j3m");
         model.getChild(0).setMaterial(mat);
 //        model.setAnimation("Walk");
         model.setLocalTranslation(30, 10.5f, 30);
@@ -148,8 +148,8 @@ public class TestEverything extends SimpleApplication {
     }
 
     public void setupSignpost(){
-        Spatial signpost = manager.loadModel("Models/Sign Post/Sign Post.meshxml");
-        Material mat = manager.loadMaterial("Models/Sign Post/Sign Post.j3m");
+        Spatial signpost = assetManager.loadModel("Models/Sign Post/Sign Post.meshxml");
+        Material mat = assetManager.loadMaterial("Models/Sign Post/Sign Post.j3m");
         signpost.setMaterial(mat);
         signpost.rotate(0, FastMath.HALF_PI, 0);
         signpost.setLocalTranslation(12, 3.5f, 30);

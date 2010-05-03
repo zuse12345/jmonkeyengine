@@ -56,12 +56,12 @@ public class TestQ3 extends SimpleApplication {
         dl.setDirection(new Vector3f(1, -1, 1).normalize());
         rootNode.addLight(dl);
         // create the geometry and attach it
-        manager.registerLocator("quake3level.zip", ZipLocator.class.getName());
+        assetManager.registerLocator("quake3level.zip", ZipLocator.class.getName());
 
         // create the geometry and attach it
-        OgreMaterialList matList = (OgreMaterialList) manager.loadAsset("Scene.material");
+        OgreMaterialList matList = (OgreMaterialList) assetManager.loadAsset("Scene.material");
         OgreMeshKey key = new OgreMeshKey("main.meshxml", matList);
-        gameLevel = (Spatial) manager.loadAsset(key);
+        gameLevel = (Spatial) assetManager.loadAsset(key);
         gameLevel.updateGeometricState();
 //        gameLevel.setLocalScale(0.2f);
         rootNode.attachChild(gameLevel);

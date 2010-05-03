@@ -34,11 +34,11 @@ public class TestLodStress extends SimpleApplication implements BindingListener 
     public void simpleInitApp() {
         inputManager.registerKeyBinding("USELOD", KeyInput.KEY_L);
 
-        Node teapotNode = (Node) manager.loadModel("Models/Teapot/Teapot.meshxml");
+        Node teapotNode = (Node) assetManager.loadModel("Models/Teapot/Teapot.meshxml");
         Geometry teapot = (Geometry) teapotNode.getChild(0);
 
         // show normals as material
-        Material mat = new Material(manager, "Common/MatDefs/Misc/ShowNormals.j3md");
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
 
         for (int y = -10; y < 10; y++){
             for (int x = -10; x < 10; x++){

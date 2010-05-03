@@ -1,17 +1,12 @@
 package com.jme3.system;
 
-import com.jme3.system.AppSettings;
-import com.jme3.system.JmeContext;
 import com.jme3.app.SettingsDialog;
 import com.jme3.app.SettingsDialog.SelectionListener;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.DesktopAssetManager;
-import com.jme3.util.G3DFormatter;
+import com.jme3.util.JmeFormatter;
 import com.jme3.audio.AudioRenderer;
-import com.jme3.audio.QueuedAudioRenderer;
-import java.awt.EventQueue;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -286,7 +281,7 @@ public class JmeSystem {
                 // can only modify logging settings
                 // if permissions are available
 
-                G3DFormatter formatter = new G3DFormatter();
+                JmeFormatter formatter = new JmeFormatter();
                 Handler fileHandler = new FileHandler("jme.log");
                 fileHandler.setFormatter(formatter);
                 Logger.getLogger("").addHandler(fileHandler);

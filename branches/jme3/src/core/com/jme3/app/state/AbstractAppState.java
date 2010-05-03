@@ -7,7 +7,7 @@ public class AbstractAppState implements AppState {
 
     private boolean initialized = false;
 
-    public void initialize(Application app) {
+    public void initialize(AppStateManager stateManager, Application app) {
         initialized = true;
     }
 
@@ -15,10 +15,10 @@ public class AbstractAppState implements AppState {
         return initialized;
     }
 
-    public void stateAttached() {
+    public void stateAttached(AppStateManager stateManager) {
     }
 
-    public void stateDetached() {
+    public void stateDetached(AppStateManager stateManager) {
     }
 
     public void update(float tpf) {

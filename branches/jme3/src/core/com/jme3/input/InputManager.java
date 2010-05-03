@@ -86,6 +86,12 @@ public class InputManager implements RawInputListener {
     }
 
     /**
+     * Called to reset pressed keys or buttons when focus is restored.
+     */
+    public void reset(){
+    }
+
+    /**
      * @param visible whether the mouse cursor should be visible or not.
      */
     public void setCursorVisible(boolean visible){

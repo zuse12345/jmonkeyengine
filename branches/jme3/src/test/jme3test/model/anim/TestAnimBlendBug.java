@@ -65,8 +65,8 @@ public class TestAnimBlendBug extends SimpleApplication implements BindingListen
         dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
         rootNode.addLight(dl);
 
-        Node model1 = (Node) manager.loadModel("Models/Ninja/Ninja.meshxml");
-        Node model2 = (Node) manager.loadModel("Models/Ninja/Ninja.meshxml");
+        Node model1 = (Node) assetManager.loadModel("Models/Ninja/Ninja.meshxml");
+        Node model2 = (Node) assetManager.loadModel("Models/Ninja/Ninja.meshxml");
 //        Node model2 = model1.clone();
 
         model1.setLocalTranslation(-60, 0, 0);
@@ -80,7 +80,7 @@ public class TestAnimBlendBug extends SimpleApplication implements BindingListen
         channel2 = control2.createChannel();
 
         SkeletonDebugger skeletonDebug = new SkeletonDebugger("skeleton1", control1.getSkeleton());
-        Material mat = new Material(manager, "Common/MatDefs/Misc/WireColor.j3md");
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/WireColor.j3md");
         mat.setColor("m_Color", ColorRGBA.Green);
         mat.getAdditionalRenderState().setDepthTest(false);
         skeletonDebug.setMaterial(mat);

@@ -180,17 +180,17 @@ public class AwtMouseInput implements MouseInput, MouseListener, MouseWheelListe
     }
 
     public void mouseClicked(MouseEvent arg0) {
-        MouseButtonEvent evt = new MouseButtonEvent(getJMEButtonIndex(arg0), false, true);
-        listener.onMouseButtonEvent(evt);
+//        MouseButtonEvent evt = new MouseButtonEvent(getJMEButtonIndex(arg0), false);
+//        listener.onMouseButtonEvent(evt);
     }
 
     public void mousePressed(MouseEvent arg0) {
-        MouseButtonEvent evt = new MouseButtonEvent(getJMEButtonIndex(arg0), true, false);
+        MouseButtonEvent evt = new MouseButtonEvent(getJMEButtonIndex(arg0), true);
         listener.onMouseButtonEvent(evt);
     }
 
     public void mouseReleased(MouseEvent arg0) {
-        MouseButtonEvent evt = new MouseButtonEvent(getJMEButtonIndex(arg0), false, false);
+        MouseButtonEvent evt = new MouseButtonEvent(getJMEButtonIndex(arg0), false);
         listener.onMouseButtonEvent(evt);
     }
 

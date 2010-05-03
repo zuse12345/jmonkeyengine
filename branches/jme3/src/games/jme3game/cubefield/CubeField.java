@@ -56,7 +56,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
 
         Keys();
 
-        BitmapFont font = manager.loadFont("cooper.fnt");
+        BitmapFont font = assetManager.loadFont("cooper.fnt");
         pressStart = new BitmapText(font, false);
         fpsScoreText = new BitmapText(font, false);
 
@@ -149,7 +149,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
 //        playerX+difficulty+30,playerX+difficulty+90
 
 
-        Material mat = new Material(manager, boxSolid);
+        Material mat = new Material(assetManager, boxSolid);
         mat.setColor("m_Color", obstacleColors.get(FastMath.nextRandomInt(0, obstacleColors.size() - 1)));
         cube.setMaterial(mat);
 
@@ -163,7 +163,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
         Box b = new Box(loc, 1, 1, 1);
 
         Geometry geom = new Geometry("Box", b);
-        Material mat = new Material(manager, "solid_color.j3md");
+        Material mat = new Material(assetManager, "solid_color.j3md");
         mat.setColor("m_Color", ColorRGBA.Blue);
         geom.setMaterial(mat);
 
@@ -175,7 +175,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
         Geometry playerMesh = new Geometry("Box", b);
         playerMesh.updateModelBound();
 
-        playerMaterial = new Material(manager, "solid_color.j3md");
+        playerMaterial = new Material(assetManager, "solid_color.j3md");
         playerMaterial.setColor("m_Color", ColorRGBA.Red);
         playerMesh.setMaterial(playerMaterial);
         playerMesh.setName("player");
@@ -185,7 +185,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
         Geometry floorMesh = new Geometry("Box", floor);
         floorMesh.updateModelBound();
 
-        floorMaterial = new Material(manager, "solid_color.j3md");
+        floorMaterial = new Material(assetManager, "solid_color.j3md");
         floorMaterial.setColor("m_Color", ColorRGBA.LightGray);
         floorMesh.setMaterial(floorMaterial);
         floorMesh.setName("floor");
@@ -202,7 +202,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
      */
     private void gameLost(){
         START = false;
-        BitmapFont font = manager.loadFont("cooper.fnt");
+        BitmapFont font = assetManager.loadFont("cooper.fnt");
         loadText(pressStart, "You lost! Press enter to try again.", font, 0, 5, 0);
         gameReset();
     }

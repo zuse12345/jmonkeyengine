@@ -1,12 +1,12 @@
 package com.jme3.system;
 
 import android.content.res.Resources;
-import com.g3d.util.AndroidLogHandler;
+import com.jme3.util.AndroidLogHandler;
 import com.jme3.asset.AndroidAssetManager;
 import com.jme3.asset.AssetManager;
 import com.jme3.system.JmeContext.Type;
 import com.jme3.system.android.OGLESContext;
-import com.jme3.util.G3DFormatter;
+import com.jme3.util.JmeFormatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;

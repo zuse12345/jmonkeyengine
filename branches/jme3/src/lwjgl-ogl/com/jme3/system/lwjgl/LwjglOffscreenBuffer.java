@@ -133,14 +133,12 @@ public class LwjglOffscreenBuffer extends LwjglContext implements Runnable {
         deinitInThread();
     }
 
-    @Override
     public void destroy(boolean waitFor){
         needClose.set(true);
         if (waitFor)
             waitFor(false);
     }
 
-    @Override
     public void create(boolean waitFor){
         if (created.get()){
             logger.warning("create() called when pbuffer is already created!");

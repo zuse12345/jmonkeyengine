@@ -55,7 +55,7 @@ public class TestVideoPlayer extends SimpleApplication {
         picture.setPosition(0, 0);
         picture.setWidth(settings.getWidth());
         picture.setHeight(settings.getHeight());
-        picture.setImage(manager, "Interface/Logo/Monkey.jpg", false);
+        picture.setImage(assetManager, "Interface/Logo/Monkey.jpg", false);
 
         // attach geometry to orthoNode
         rootNode.attachChild(picture);
@@ -67,7 +67,7 @@ public class TestVideoPlayer extends SimpleApplication {
     private void drawFrame(VFrame frame){
         Image image = frame.getImage();
         frame.setImage(image);
-        picture.setTexture(manager, frame, false);
+        picture.setTexture(assetManager, frame, false);
 
         // note: this forces renderer to upload frame immediately,
         // since it is going to be returned to the video queue pool

@@ -54,7 +54,7 @@ public class PreviewDisplay extends Application implements BindingListener {
 
         Sphere s = new Sphere(30, 20, 10);
         Geometry geom = new Geometry("sphere", s);
-        geom.setMaterial(manager.loadMaterial("Interface/Logo/Logo.j3m"));
+        geom.setMaterial(assetManager.loadMaterial("Interface/Logo/Logo.j3m"));
         model = geom;
         model.getLocalRotation().fromAngles(-FastMath.HALF_PI, 0, 0);
         rootNode.attachChild(model);

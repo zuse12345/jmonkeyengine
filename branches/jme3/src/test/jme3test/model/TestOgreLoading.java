@@ -43,11 +43,11 @@ public class TestOgreLoading extends SimpleApplication
 
 
         lightMdl = new Geometry("Light", new Sphere(10, 10, 0.1f));
-        lightMdl.setMaterial( (Material) manager.loadAsset("Common/Materials/RedColor.j3m"));
+        lightMdl.setMaterial( (Material) assetManager.loadAsset("Common/Materials/RedColor.j3m"));
         rootNode.attachChild(lightMdl);
 
         lightMd2 = new Geometry("Light", new Sphere(10, 10, 0.1f));
-        lightMd2.setMaterial( (Material) manager.loadAsset("Common/Materials/WhiteColor.j3m"));
+        lightMd2.setMaterial( (Material) assetManager.loadAsset("Common/Materials/WhiteColor.j3m"));
         rootNode.attachChild(lightMd2);
 
 
@@ -63,7 +63,7 @@ public class TestOgreLoading extends SimpleApplication
 
 
         // create the geometry and attach it
-        Spatial elephant = (Spatial) manager.loadModel("Models/Elephant/Elephant.meshxml");
+        Spatial elephant = (Spatial) assetManager.loadModel("Models/Elephant/Elephant.meshxml");
         float scale = 0.05f;
         elephant.scale(scale,scale,scale);
         rootNode.attachChild(elephant);

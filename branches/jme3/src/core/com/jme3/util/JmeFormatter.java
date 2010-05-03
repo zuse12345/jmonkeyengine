@@ -1,16 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.jme3.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.MessageFormat;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
@@ -19,7 +12,7 @@ import java.util.logging.LogRecord;
  * Example output: <br/>
  * INFO Display3D 12:00 PM: Display created.
  */
-public class G3DFormatter extends Formatter {
+public class JmeFormatter extends Formatter {
 
     private Date calendar = new Date();
     private String lineSeperator;
@@ -27,7 +20,7 @@ public class G3DFormatter extends Formatter {
     private Object args[] = new Object[1];
     private StringBuffer store = new StringBuffer();
 
-    public G3DFormatter(){
+    public JmeFormatter(){
         lineSeperator = System.getProperty("line.separator");
         format = new MessageFormat("{0,time}");
     }

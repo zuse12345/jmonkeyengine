@@ -66,10 +66,10 @@ public class TestSimplePhysics extends SimplePhysicsApplication{
     @Override
     public void simpleInitApp() {
 
-        Material mat = new Material(manager, "Common/MatDefs/Misc/SimpleTextured.j3md");
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         TextureKey key = new TextureKey("Monkey.jpg", true);
         key.setGenerateMips(true);
-        Texture tex = manager.loadTexture(key);
+        Texture tex = assetManager.loadTexture(key);
         tex.setMinFilter(Texture.MinFilter.Trilinear);
         mat.setTexture("m_ColorMap", tex);
 

@@ -149,7 +149,6 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
         return Type.Canvas;
     }
 
-    @Override
     public void create(boolean waitFor){
         // do not do anything.
         // superclass's create() will be called at initInThread()

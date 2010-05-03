@@ -39,4 +39,7 @@ public class SoundHandleJme implements SoundHandle {
     public boolean isPlaying() {
         return node.getStatus() == Status.Playing;
     }
+
+    public void dispose() {
+    }
 }

@@ -36,10 +36,10 @@ public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
         dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
         rootNode.addLight(dl);
 
-        Material mat = new Material(manager, "Common/MatDefs/Misc/SimpleTextured.j3md");
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);
         key.setGenerateMips(true);
-        Texture tex = manager.loadTexture(key);
+        Texture tex = assetManager.loadTexture(key);
         tex.setMinFilter(Texture.MinFilter.Trilinear);
         mat.setTexture("m_ColorMap", tex);
 
@@ -51,13 +51,13 @@ public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
         rootNode.attachChild(node3);
         getPhysicsSpace().add(node3);
 
-        Node model = (Node) manager.loadModel("Models/Oto/Oto.meshxml");
+        Node model = (Node) assetManager.loadModel("Models/Oto/Oto.meshxml");
 //        Node model = (Node)MeshLoader.loadModel(manager, "ninja.meshxml", "ninja.material");
 
         //debug view
         AnimControl control= model.getControl(AnimControl.class);
         SkeletonDebugger skeletonDebug = new SkeletonDebugger("skeleton", control.getSkeleton());
-        Material mat2 = new Material(manager, "Common/MatDefs/Misc/WireColor.j3md");
+        Material mat2 = new Material(assetManager, "Common/MatDefs/Misc/WireColor.j3md");
         mat2.setColor("m_Color", ColorRGBA.Green);
         mat2.getAdditionalRenderState().setDepthTest(false);
         skeletonDebug.setMaterial(mat2);
@@ -83,10 +83,10 @@ public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
         Geometry geom = new Geometry("Box", b);
         geom.updateModelBound();
 
-        Material mat = new Material(manager, "Common/MatDefs/Misc/SimpleTextured.j3md");
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);
         key.setGenerateMips(true);
-        Texture tex = manager.loadTexture(key);
+        Texture tex = assetManager.loadTexture(key);
         tex.setMinFilter(Texture.MinFilter.Trilinear);
         mat.setTexture("m_ColorMap", tex);
 

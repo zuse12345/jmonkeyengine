@@ -20,7 +20,7 @@ public class TestDebugShapes extends SimpleApplication {
 
     public Geometry putShape(Mesh shape, ColorRGBA color){
         Geometry g = new Geometry("shape", shape);
-        Material mat = new Material(manager, "wire_color.j3md");
+        Material mat = new Material(assetManager, "wire_color.j3md");
         mat.setColor("m_Color", color);
         g.setMaterial(mat);
         rootNode.attachChild(g);

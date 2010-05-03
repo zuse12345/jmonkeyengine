@@ -5,13 +5,11 @@ import com.jme3.audio.AudioRenderer;
 import com.jme3.input.InputManager;
 import com.jme3.post.SceneProcessor;
 import com.jme3.renderer.RenderManager;
+import com.jme3.renderer.Renderer;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.texture.FrameBuffer;
 import de.lessvoid.nifty.Nifty;
-import de.lessvoid.nifty.render.NiftyRenderEngine;
-import de.lessvoid.nifty.render.NiftyRenderEngineImpl;
-import de.lessvoid.nifty.sound.SoundSystem;
 import de.lessvoid.nifty.tools.TimeProvider;
 
 public class NiftyJmeDisplay extends TimeProvider implements SceneProcessor {
@@ -23,6 +21,7 @@ public class NiftyJmeDisplay extends TimeProvider implements SceneProcessor {
     private RenderDeviceJme renderDev;
     private InputSystemJme inputSys;
     private SoundDeviceJme soundDev;
+    private Renderer renderer;
     private ViewPort vp;
 
     private int w, h;
@@ -40,13 +39,7 @@ public class NiftyJmeDisplay extends TimeProvider implements SceneProcessor {
         renderDev = new RenderDeviceJme(this);
         inputSys = new InputSystemJme();
         inputManager.addRawInputListener(inputSys);
-        NiftyRenderEngine renderEngine = new NiftyRenderEngineImpl(renderDev);
-
-        nifty = new Nifty(
-                renderEngine,
-                new SoundSystem(soundDev),
-                inputSys,
-                new TimeProvider());
+        nifty = new Nifty(renderDev, soundDev, inputSys, this);
     }
 
     public void initialize(RenderManager rm, ViewPort vp) {
@@ -54,6 +47,7 @@ public class NiftyJmeDisplay extends TimeProvider implements SceneProcessor {
         renderDev.setRenderManager(rm);
         inited = true;
         this.vp = vp;
+        this.renderer = rm.getRenderer();
     }
 
     public Nifty getNifty() {
@@ -78,6 +72,10 @@ public class NiftyJmeDisplay extends TimeProvider implements SceneProcessor {
 
     int getWidth() {
         return w;
+    }
+
+    Renderer getRenderer(){
+        return renderer;
     }
 
     public void reshape(ViewPort vp, int w, int h) {

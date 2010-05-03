@@ -6,7 +6,6 @@ import com.jme3.texture.Texture.MagFilter;
 import com.jme3.texture.Texture.MinFilter;
 import com.jme3.texture.Texture2D;
 import de.lessvoid.nifty.spi.render.RenderImage;
-import de.lessvoid.nifty.tools.Color;
 
 public class RenderImageJme implements RenderImage {
 
@@ -36,6 +35,10 @@ public class RenderImageJme implements RenderImage {
         this.image = texture.getImage();
     }
 
+    public Texture2D getTexture(){
+        return texture;
+    }
+
     public int getWidth() {
         return image.getWidth();
     }
@@ -44,15 +47,6 @@ public class RenderImageJme implements RenderImage {
         return image.getHeight();
     }
 
-    public void render(int x, int y, int width, int height,
-                       Color color, float imageScale){
-        display.getRenderDevice().renderTextureQuad(x, y, width, height, color, imageScale, texture);
-    }
-
-    public void render(int x, int y, int w, int h,
-                       int srcX, int srcY, int srcW, int srcH,
-                       Color color, float scale,
-                       int centerX, int centerY){
-        display.getRenderDevice().renderTextureQuad(x, y, w, h, srcX, srcY, srcW, srcH, color, scale, centerX, centerY, texture);
+    public void dispose() {
     }
 }

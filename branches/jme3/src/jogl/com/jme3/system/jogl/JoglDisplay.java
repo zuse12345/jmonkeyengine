@@ -160,7 +160,6 @@ public class JoglDisplay extends JoglAbstractDisplay {
         listener.initialize();
     }
 
-    @Override
     public void create(boolean waitFor){
         try {
             if (waitFor){

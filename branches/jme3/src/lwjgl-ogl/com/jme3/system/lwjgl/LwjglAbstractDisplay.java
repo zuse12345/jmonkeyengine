@@ -183,7 +183,6 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
         this.autoFlush = enabled;
     }
 
-    @Override
     public void destroy(boolean waitFor){
         needClose.set(true);
         if (waitFor)

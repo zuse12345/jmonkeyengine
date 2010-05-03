@@ -23,8 +23,8 @@ public class TestParticleEmitter extends SimpleApplication {
         emit.setHighLife(10);
         emit.setStartVel(new Vector3f(0, 0, 0));
         emit.setImagesX(15);
-        Material mat = new Material(manager, "Common/MatDefs/Misc/Particle.j3md");
-        mat.setTexture("m_Texture", manager.loadTexture("Effects/Smoke/Smoke.png"));
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+        mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Smoke/Smoke.png"));
         emit.setMaterial(mat);
 
         rootNode.attachChild(emit);

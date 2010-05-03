@@ -37,7 +37,7 @@ public class TestOgreComplexAnim extends SimpleApplication {
         dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
         rootNode.addLight(dl);
 
-        Node model = (Node) manager.loadModel("Models/Oto/Oto.meshxml");
+        Node model = (Node) assetManager.loadModel("Models/Oto/Oto.meshxml");
 
         control = model.getControl(AnimControl.class);
 
@@ -71,7 +71,7 @@ public class TestOgreComplexAnim extends SimpleApplication {
         rightHand.setAnim("push");
 
         SkeletonDebugger skeletonDebug = new SkeletonDebugger("skeleton", control.getSkeleton());
-        Material mat = new Material(manager, "Common/MatDefs/Misc/WireColor.j3md");
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/WireColor.j3md");
         mat.setColor("m_Color", ColorRGBA.Green);
         mat.getAdditionalRenderState().setDepthTest(false);
         skeletonDebug.setMaterial(mat);

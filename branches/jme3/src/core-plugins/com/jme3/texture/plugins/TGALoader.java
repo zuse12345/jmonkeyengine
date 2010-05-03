@@ -42,8 +42,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * <code>TextureManager</code> provides static methods for building a
@@ -52,7 +50,7 @@ import java.util.logging.Logger;
  * 
  * @author Mark Powell
  * @author Joshua Slack - cleaned, commented, added ability to read 16bit true color and color-mapped TGAs.
- * @author Kirill Vainer - ported to jME3/G3D
+ * @author Kirill Vainer - ported to jME3
  * @version $Id: TGALoader.java 4131 2009-03-19 20:15:28Z blaine.dev $
  */
 public final class TGALoader implements AssetLoader {

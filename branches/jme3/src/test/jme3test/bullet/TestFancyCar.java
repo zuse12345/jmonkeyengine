@@ -77,7 +77,7 @@ public class TestFancyCar extends SimplePhysicsApplication implements BindingLis
     @Override
     public void simpleInitApp() {
         if (settings.getRenderer().startsWith("LWJGL")){
-            BasicShadowRenderer bsr = new BasicShadowRenderer(manager, 512);
+            BasicShadowRenderer bsr = new BasicShadowRenderer(assetManager, 512);
             bsr.setDirection(new Vector3f(-0.5f, -0.3f, -0.3f).normalizeLocal());
             viewPort.addProcessor(bsr);
         }
@@ -98,7 +98,7 @@ public class TestFancyCar extends SimplePhysicsApplication implements BindingLis
 
 
     public void setupFloor() {
-        Material mat = manager.loadMaterial("Textures/Terrain/Pond/Pond.j3m");
+        Material mat = assetManager.loadMaterial("Textures/Terrain/Pond/Pond.j3m");
         mat.getTextureParam("m_DiffuseMap").getTextureValue().setWrap(WrapMode.Repeat);
         mat.getTextureParam("m_NormalMap").getTextureValue().setWrap(WrapMode.Repeat);
 
@@ -139,7 +139,7 @@ public class TestFancyCar extends SimplePhysicsApplication implements BindingLis
         float dampValue=0.8f;
         float mass = 1;
 
-        Spatial car = manager.loadModel("Models/Ferrari/Car.scene");
+        Spatial car = assetManager.loadModel("Models/Ferrari/Car.scene");
         Node carNode = (Node) car;
         Geometry chasis = findGeom(carNode, "car");
         BoundingBox box = (BoundingBox) chasis.getModelBound();

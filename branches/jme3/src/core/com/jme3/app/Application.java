@@ -1,5 +1,6 @@
 package com.jme3.app;
 
+import com.jme3.app.state.AppStateManager;
 import com.jme3.input.JoyInput;
 import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
@@ -16,6 +17,7 @@ import com.jme3.renderer.ViewPort;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -36,6 +38,13 @@ public class Application implements SystemListener {
     /**
      * The content manager. Typically initialized outside the GL thread
      * to allow offline loading of content.
+     */
+    protected AssetManager assetManager;
+    
+    @Deprecated
+    /**
+     * If you're still using this variable, please switch to using
+     * "<code>assetManager</code>" instead. 
      */
     protected AssetManager manager;
 
@@ -59,6 +68,7 @@ public class Application implements SystemListener {
     protected KeyInput keyInput;
     protected JoyInput joyInput;
     protected InputManager inputManager;
+    protected AppStateManager stateManager;
 
     private final ConcurrentLinkedQueue<AppTask<?>> taskQueue = new ConcurrentLinkedQueue<AppTask<?>>();
 
@@ -68,7 +78,7 @@ public class Application implements SystemListener {
     public Application(){
         // Why initialize it here? 
         // Because it allows offline loading of content.
-        initContentManager();
+        initAssetManager();
     }
 
     public boolean isPauseOnLostFocus() {
@@ -161,18 +171,22 @@ public class Application implements SystemListener {
         inputManager = new InputManager(mouseInput, keyInput, joyInput);
     }
 
+    private void initStateManager(){
+        stateManager = new AppStateManager(this);
+    }
+
     /**
      * Initializes the content manager.
      */
-    private void initContentManager(){
-        manager = JmeSystem.newAssetManager();
+    private void initAssetManager(){
+        assetManager = JmeSystem.newAssetManager();
     }
 
     /**
      * @return The content manager for this application.
      */
     public AssetManager getAssetManager(){
-        return manager;
+        return assetManager;
     }
 
     /**
@@ -302,6 +316,7 @@ public class Application implements SystemListener {
             initInput();
         }
         initAudio();
+        initStateManager();
 
         // update timer so that the next delta is not too large
         timer.update();
@@ -310,14 +325,15 @@ public class Application implements SystemListener {
     }
 
     public void handleError(String errMsg, Throwable t){
-        if (t != null)
-            t.printStackTrace();
+        logger.log(Level.SEVERE, errMsg, t);
     }
 
     public void gainFocus(){
         if (pauseOnFocus){
             paused = false;
             context.setAutoFlushFrames(true);
+            if (inputManager != null)
+                inputManager.reset();
         }
     }
 

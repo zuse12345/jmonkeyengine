@@ -1,4 +1,4 @@
-package com.g3d.util;
+package com.jme3.util;
 
 import android.util.Log;
 import java.util.logging.Handler;

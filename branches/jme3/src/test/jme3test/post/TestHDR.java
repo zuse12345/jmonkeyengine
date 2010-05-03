@@ -23,7 +23,7 @@ public class TestHDR extends SimpleApplication {
         Geometry box = new Geometry("Box", boxMesh);
         box.updateModelBound();
         boxMesh.setStatic();
-        Material mat = manager.loadMaterial("Textures/HdrTest/Memorial.j3m");
+        Material mat = assetManager.loadMaterial("Textures/HdrTest/Memorial.j3m");
         box.setMaterial(mat);
         return box;
     }
@@ -32,7 +32,7 @@ public class TestHDR extends SimpleApplication {
     
     @Override
     public void simpleInitApp() {
-        hdrRender = new HDRRenderer(manager, renderer);
+        hdrRender = new HDRRenderer(assetManager, renderer);
         hdrRender.setSamples(0);
         hdrRender.setMaxIterations(20);
         hdrRender.setExposure(0.87f);

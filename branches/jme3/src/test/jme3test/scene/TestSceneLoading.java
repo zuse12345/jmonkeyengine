@@ -39,8 +39,8 @@ public class TestSceneLoading extends SimpleApplication {
 //        rootNode.attachChild(sphere);
 
         // create the geometry and attach it
-        manager.registerLocator("wildhouse.zip", ZipLocator.class.getName());
-        Spatial scene = manager.loadModel("main.scene");
+        assetManager.registerLocator("wildhouse.zip", ZipLocator.class.getName());
+        Spatial scene = assetManager.loadModel("main.scene");
 
         DirectionalLight sun = new DirectionalLight();
         sun.setDirection(Vector3f.UNIT_Y.negate());

@@ -1,6 +1,5 @@
 package com.jme3.app;
 
-import com.jme3.app.Application;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.input.BindingAdapter;
@@ -77,7 +76,7 @@ public abstract class SimpleApplication extends Application {
     }
 
     public void loadFPSText(){
-        guiFont = manager.loadFont("Interface/Fonts/Default.fnt");
+        guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
         fpsText = new BitmapText(guiFont, false);
         fpsText.setSize(guiFont.getCharSet().getRenderedSize());
         fpsText.setLocalTranslation(0, fpsText.getLineHeight(), 0);
@@ -86,7 +85,7 @@ public abstract class SimpleApplication extends Application {
     }
 
     public void loadStatsView(){
-        statsView = new StatsView("Statistics View", manager, renderer.getStatistics());
+        statsView = new StatsView("Statistics View", assetManager, renderer.getStatistics());
         // move it up so it appears above fps text
         statsView.setLocalTranslation(0, fpsText.getLineHeight(), 0);
         guiNode.attachChild(statsView);

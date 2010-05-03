@@ -75,6 +75,12 @@ public class RenderDeviceJme implements RenderDevice {
         return new RenderFontJme(filename, display);
     }
 
+    public void beginFrame() {
+    }
+
+    public void endFrame() {
+    }
+
     public int getWidth() {
         return display.getWidth();
     }
@@ -112,9 +118,13 @@ public class RenderDeviceJme implements RenderDevice {
         return colorRgba;
     }
 
-    void renderText(String str, int x, int y, Color color, float size, BitmapText text, Texture texture){
+    public void renderFont(RenderFont font, String str, int x, int y, Color color, float size){
         if (str.length() == 0)
             return;
+
+        RenderFontJme jmeFont = (RenderFontJme) font;
+        Texture2D texture = jmeFont.getTexture();
+        BitmapText text = jmeFont.getText();
 
         niftyMat.setColor("m_Color", convertColor(color));
         niftyMat.setTexture("m_Texture", texture);
@@ -138,10 +148,13 @@ public class RenderDeviceJme implements RenderDevice {
         niftyMat.render(text, rm);
     }
 
-    void renderTextureQuad(int x, int y, int w, int h,
-                           int srcX, int srcY, int srcW, int srcH,
-                           Color color, float scale,
-                           int centerX, int centerY, Texture2D texture){
+    public void renderImage(RenderImage image, int x, int y, int w, int h,
+                            int srcX, int srcY, int srcW, int srcH,
+                            Color color, float scale,
+                            int centerX, int centerY){
+
+        RenderImageJme jmeImage = (RenderImageJme) image;
+        Texture2D texture = jmeImage.getTexture();
 
         niftyMat.getAdditionalRenderState().setBlendMode(convertBlend());
         niftyMat.setTexture("m_Texture", texture);
@@ -182,11 +195,13 @@ public class RenderDeviceJme implements RenderDevice {
         niftyMat.render(imageQuadGeom, rm);
     }
 
-    void renderTextureQuad(int x, int y, int width, int height,
-                       Color color, float imageScale, Texture2D texture){
+    public void renderImage(RenderImage image, int x, int y, int width, int height,
+                       Color color, float imageScale){
+
+        RenderImageJme jmeImage = (RenderImageJme) image;
 
         niftyMat.getAdditionalRenderState().setBlendMode(convertBlend());
-        niftyMat.setTexture("m_Texture", texture);
+        niftyMat.setTexture("m_Texture", jmeImage.getTexture());
         niftyMat.setInt("m_Mode", 3);
         niftyMat.setColor("m_Color", convertColor(color));
           

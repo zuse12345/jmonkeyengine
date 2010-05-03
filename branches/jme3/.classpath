@@ -34,7 +34,7 @@
 	<classpathentry kind="lib" path="lib/lwjgl/2.3_jar/lwjgl-debug.jar"/>
 	<classpathentry kind="lib" path="lib/lwjgl/2.3_jar/lwjgl.jar"/>
 	<classpathentry kind="lib" path="lib/lwjgl/jME3-lwjgl-natives.jar"/>
-	<classpathentry kind="lib" path="lib/niftygui/nifty-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/niftygui/nifty-1.2-SNAPSHOT-2.jar"/>
 	<classpathentry kind="lib" path="lib/niftygui/nifty-default-controls-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/niftygui/nifty-examples-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/niftygui/nifty-style-black-1.1-sources.jar"/>

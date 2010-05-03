@@ -29,12 +29,12 @@ public class TestSimpleBumps extends SimpleApplication {
         Quad quadMesh = new Quad(1, 1);
 
         Geometry sphere = new Geometry("Rock Ball", quadMesh);
-        Material mat = manager.loadMaterial("Textures/BumpMapTest/SimpleBump.j3m");
+        Material mat = assetManager.loadMaterial("Textures/BumpMapTest/SimpleBump.j3m");
         sphere.setMaterial(mat);
         rootNode.attachChild(sphere);
 
         lightMdl = new Geometry("Light", new Sphere(10, 10, 0.1f));
-        lightMdl.setMaterial(manager.loadMaterial("Common/Materials/RedColor.j3m"));
+        lightMdl.setMaterial(assetManager.loadMaterial("Common/Materials/RedColor.j3m"));
         rootNode.attachChild(lightMdl);
 
         pl = new PointLight();

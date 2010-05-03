@@ -27,8 +27,8 @@ public class TestOctree extends SimpleApplication {
         this.cam.setFrustumFar(10000);
         MeshLoader.AUTO_INTERLEAVE = false;
 
-        manager.registerLocator("quake3level.zip", "com.jme3.asset.plugins.JARLocator");
-        Spatial scene = MeshLoader.loadModel(manager, "main.meshxml","Scene.material");
+        assetManager.registerLocator("quake3level.zip", "com.jme3.asset.plugins.JARLocator");
+        Spatial scene = MeshLoader.loadModel(assetManager, "main.meshxml","Scene.material");
 //        scene.setLocalScale(0.2f);
 //        Spatial scene = manager.loadModel("models/teapot.obj");
 //        Material mat = new Material(manager, "Common/MatDefs/Misc/ShowNormals.j3md");
@@ -54,7 +54,7 @@ public class TestOctree extends SimpleApplication {
         Matrix4f transform = new Matrix4f();
 //        transform.setScale(0.2f, 0.2f, 0.2f);
         System.out.println("Tris: "+tris);
-        Material mat = new Material(manager, "Common/MatDefs/Misc/WireColor.j3md");
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/WireColor.j3md");
         mat.setColor("m_Color", ColorRGBA.White);
         tree.renderBounds(viewPort.getQueue(), transform, mat);
 

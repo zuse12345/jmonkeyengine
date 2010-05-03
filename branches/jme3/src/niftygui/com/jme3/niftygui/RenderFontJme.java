@@ -4,8 +4,8 @@ import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.material.Material;
 import com.jme3.texture.Texture;
+import com.jme3.texture.Texture2D;
 import de.lessvoid.nifty.spi.render.RenderFont;
-import de.lessvoid.nifty.tools.Color;
 
 public class RenderFontJme implements RenderFont {
 
@@ -28,16 +28,12 @@ public class RenderFontJme implements RenderFont {
         text.setSize(actualSize);
     }
 
-    /**
-     * render the text.
-     * @param text text
-     * @param x x
-     * @param y y
-     * @param color color
-     * @param fontSize size
-     */
-    public void render(final String str, final int x, final int y, final Color color, final float fontSize) {
-        display.getRenderDevice().renderText(str, x, y, color, fontSize, text, texture);
+    public BitmapText getText(){
+        return text;
+    }
+
+    public Texture2D getTexture(){
+        return (Texture2D) texture;
     }
 
     /**
@@ -81,5 +77,8 @@ public class RenderFontJme implements RenderFont {
 //            return new Integer(
 //                    (int) (currentCharacterInfo.getXadvance() * size + getKerning(currentCharacterInfo, nextCharacter)));
 //        }
+    }
+
+    public void dispose() {
     }
 }

@@ -42,8 +42,8 @@ public class TestExplosionEffect extends SimpleApplication {
         flame.setVariation(1f);
         flame.setImagesX(2);
         flame.setImagesY(2);
-        Material mat = new Material(manager, "Common/MatDefs/Misc/Particle.j3md");
-        mat.setTexture("m_Texture", manager.loadTexture("Effects/Explosion/flame.png"));
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+        mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/flame.png"));
         flame.setMaterial(mat);
         rootNode.attachChild(flame);
     }
@@ -64,8 +64,8 @@ public class TestExplosionEffect extends SimpleApplication {
         flash.setVariation(1);
         flash.setImagesX(2);
         flash.setImagesY(2);
-        Material mat = new Material(manager, "Common/MatDefs/Misc/Particle.j3md");
-        mat.setTexture("m_Texture", manager.loadTexture("Effects/Explosion/flash.png"));
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+        mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/flash.png"));
         flash.setMaterial(mat);
         rootNode.attachChild(flash);
     }
@@ -85,8 +85,8 @@ public class TestExplosionEffect extends SimpleApplication {
         roundspark.setVariation(.5f);
         roundspark.setImagesX(1);
         roundspark.setImagesY(1);
-        Material mat = new Material(manager, "Common/MatDefs/Misc/Particle.j3md");
-        mat.setTexture("m_Texture", manager.loadTexture("Effects/Explosion/roundspark.png"));
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+        mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/roundspark.png"));
         roundspark.setMaterial(mat);
         rootNode.attachChild(roundspark);
     }
@@ -108,8 +108,8 @@ public class TestExplosionEffect extends SimpleApplication {
         spark.setVariation(1);
         spark.setImagesX(1);
         spark.setImagesY(1);
-        Material mat = new Material(manager, "Common/MatDefs/Misc/Particle.j3md");
-        mat.setTexture("m_Texture", manager.loadTexture("Effects/Explosion/spark.png"));
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+        mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/spark.png"));
         spark.setMaterial(mat);
         rootNode.attachChild(spark);
     }
@@ -131,8 +131,8 @@ public class TestExplosionEffect extends SimpleApplication {
         smoketrail.setVariation(1);
         smoketrail.setImagesX(1);
         smoketrail.setImagesY(3);
-        Material mat = new Material(manager, "Common/MatDefs/Misc/Particle.j3md");
-        mat.setTexture("m_Texture", manager.loadTexture("Effects/Explosion/smoketrail.png"));
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+        mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/smoketrail.png"));
         smoketrail.setMaterial(mat);
         rootNode.attachChild(smoketrail);
     }
@@ -156,8 +156,8 @@ public class TestExplosionEffect extends SimpleApplication {
         debris.setVariation(.60f);
         debris.setImagesX(3);
         debris.setImagesY(3);
-        Material mat = new Material(manager, "Common/MatDefs/Misc/Particle.j3md");
-        mat.setTexture("m_Texture", manager.loadTexture("Effects/Explosion/Debris.png"));
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+        mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/Debris.png"));
         debris.setMaterial(mat);
         rootNode.attachChild(debris);
     }
@@ -180,8 +180,8 @@ public class TestExplosionEffect extends SimpleApplication {
         shockwave.setVariation(0f);
         shockwave.setImagesX(1);
         shockwave.setImagesY(1);
-        Material mat = new Material(manager, "Common/MatDefs/Misc/Particle.j3md");
-        mat.setTexture("m_Texture", manager.loadTexture("Effects/Explosion/shockwave.png"));
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+        mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/shockwave.png"));
         shockwave.setMaterial(mat);
         rootNode.attachChild(shockwave);
     }

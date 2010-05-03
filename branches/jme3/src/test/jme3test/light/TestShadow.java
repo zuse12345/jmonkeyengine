@@ -42,7 +42,7 @@ public class TestShadow extends SimpleApplication {
         cam.setRotation(new Quaternion(0.1961598f, -0.7213164f, 0.2266092f, 0.6243975f));
         cam.setFrustumFar(10);
 
-        Material mat = manager.loadMaterial("Common/Materials/WhiteColor.j3m");
+        Material mat = assetManager.loadMaterial("Common/Materials/WhiteColor.j3m");
         rootNode.setShadowMode(ShadowMode.Off);
         Box floor = new Box(Vector3f.ZERO, 3, 0.1f, 3);
         Geometry floorGeom = new Geometry("Floor", floor);
@@ -52,7 +52,7 @@ public class TestShadow extends SimpleApplication {
         floorGeom.setShadowMode(ShadowMode.Recieve);
         rootNode.attachChild(floorGeom);
 
-        teapot = manager.loadModel("Models/Teapot/Teapot.obj");
+        teapot = assetManager.loadModel("Models/Teapot/Teapot.obj");
         teapot.setLocalScale(2f);
         teapot.setMaterial(mat);
         teapot.setShadowMode(ShadowMode.CastAndRecieve);
@@ -63,7 +63,7 @@ public class TestShadow extends SimpleApplication {
 //        lightMdl.setShadowMode(ShadowMode.Off);
 //        rootNode.attachChild(lightMdl);
 
-        bsr = new BasicShadowRenderer(manager, 512);
+        bsr = new BasicShadowRenderer(assetManager, 512);
         bsr.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
         viewPort.addProcessor(bsr);
 
@@ -71,7 +71,7 @@ public class TestShadow extends SimpleApplication {
         frustumMdl = new Geometry("f", frustum);
         frustumMdl.setCullHint(Spatial.CullHint.Never);
         frustumMdl.setShadowMode(ShadowMode.Off);
-        frustumMdl.setMaterial(new Material(manager, "Common/MatDefs/Misc/WireColor.j3md"));
+        frustumMdl.setMaterial(new Material(assetManager, "Common/MatDefs/Misc/WireColor.j3md"));
         frustumMdl.getMaterial().setColor("m_Color", ColorRGBA.Red);
         rootNode.attachChild(frustumMdl);
     }

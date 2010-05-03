@@ -35,15 +35,15 @@ public class TestCubeMap extends SimpleApplication {
         }
         key.setGenerateMips(true);
         key.setAsCube(false);
-        envMap = manager.loadTexture(key);
+        envMap = assetManager.loadTexture(key);
     }
 
     public Geometry createReflectiveTeapot(){
-        Geometry g = (Geometry) manager.loadAsset(new AssetKey("Models/Teapot/Teapot.obj"));
+        Geometry g = (Geometry) assetManager.loadAsset(new AssetKey("Models/Teapot/Teapot.obj"));
         g.setLocalScale(5);
         g.updateModelBound();
 
-        Material mat = new Material(manager, "Common/MatDefs/Light/Reflection.j3md");
+        Material mat = new Material(assetManager, "Common/MatDefs/Light/Reflection.j3md");
         mat.setTexture("m_Texture", envMap);
         mat.setBoolean("m_SphereMap", true);
         g.setMaterial(mat);
@@ -52,7 +52,7 @@ public class TestCubeMap extends SimpleApplication {
     }
 
     public void initHDR(){
-        hdrRender = new HDRRenderer(manager, renderer);
+        hdrRender = new HDRRenderer(assetManager, renderer);
 
         hdrRender.setSamples(settings.getSamples());
         hdrRender.setExposure(0.80f);
@@ -69,7 +69,7 @@ public class TestCubeMap extends SimpleApplication {
         skyGeom.updateModelBound();
         skyGeom.setCullHint(CullHint.Never);
 
-        Material skyMat = new Material(manager, "Common/MatDefs/Misc/Sky.j3md");
+        Material skyMat = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
         skyMat.setBoolean("m_SphereMap", true);
         skyMat.setTexture("m_Texture", envMap);
         skyMat.setVector3("m_NormalScale", new Vector3f(1, 1, 1));

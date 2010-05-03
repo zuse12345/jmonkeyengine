@@ -4,6 +4,7 @@
  */
 package com.jme3.gde.ogrexml.importer;
 
+import com.jme3.asset.DesktopAssetManager;
 import com.jme3.export.binary.BinaryExporter;
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.scene.SceneApplication;
@@ -43,6 +44,7 @@ public final class OgreXMLToJme implements ActionListener {
                     progressHandle.start();
 
                     FileObject file = context.getPrimaryFile();
+                    ((DesktopAssetManager) manager.getManager()).clearCache();
                     Spatial model = manager.getManager().loadModel(manager.getRelativeAssetPath(file.getPath()));
 
                     String outputPath = file.getParent().getPath() + File.separator + file.getName() + ".j3o";

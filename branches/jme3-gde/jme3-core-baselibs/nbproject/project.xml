@@ -19,6 +19,7 @@
             <public-packages>
                 <package>com.jme3.animation</package>
                 <package>com.jme3.app</package>
+                <package>com.jme3.app.state</package>
                 <package>com.jme3.asset</package>
                 <package>com.jme3.asset.pack</package>
                 <package>com.jme3.asset.plugins</package>
@@ -79,8 +80,9 @@
                 <package>com.jme3.ui</package>
                 <package>com.jme3.util</package>
                 <package>com.jme3.util.xml</package>
+                <package>com.jme3.video</package>
+                <package>com.jme3.video.plugins.jheora</package>
                 <package>de.lessvoid.nifty</package>
-                <package>g3dtools.converters</package>
                 <package>jme3game.cubefield</package>
                 <package>jme3tools.converters</package>
                 <package>jme3tools.converters.model</package>

@@ -12,12 +12,24 @@
         </classpath>
     </taskdef>
 
-    <target name="dist-gde" depends="suite.clean, zip-templates, -set-impl-version, suite.build-zip, build-mac, unset-impl-version">
+    <!--creates linux/win and osx zip distributions of jMonkeyPlatform-->
+    <target name="dist-gde" depends="suite.clean, -create-netbeans-config, zip-templates, -set-impl-version, suite.build-zip, build-mac, unset-impl-version">
         <exec executable="zip" dir="dist/">
             <arg value="-yr"/>
             <arg value="jmonkeyplatform-osx.zip"/>
             <arg value="jmonkeyplatform.app"/>
         </exec>
+    </target>
+
+    <!--replaces default values in config file-->
+    <target name="-create-netbeans-config">
+        <mkdir dir="build/launcher/etc"/>
+        <copy file="${harness.dir}/etc/app.conf" tofile="build/launcher/etc/${app.name}.conf">
+            <filterchain>
+                <replacestring from="$${branding.token}" to="${branding.token}"/>
+                <replacestring from="-J-Xmx64m" to="${run.args.extra}"/>
+            </filterchain>
+        </copy>
     </target>
 
     <target name="dist-gde-hudson" depends="suite.clean, zip-templates, -set-impl-version-hudson, suite.nbms, unset-impl-version-hudson">

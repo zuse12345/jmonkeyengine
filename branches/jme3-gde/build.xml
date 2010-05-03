@@ -39,34 +39,42 @@
 
     <target name="-set-impl-version">
         <property file="nbproject/project.properties"/>
-        <property value="../jme3/" name="jme3_dir"/>
-        <property value="true" name="set_impl_version"/>
-        <antcall target="-create-jme3-svn-properties" inheritall="true"/>
-        <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true"/>
+        <antcall target="-create-jme3-svn-properties" inheritall="true">
+            <param name="jme3_dir" value="../jme3/"/>
+        </antcall>
+        <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true">
+            <param name="set_impl_version" value="true"/>
+        </foreach>
     </target>
 
     <target name="unset-impl-version">
         <property file="nbproject/project.properties"/>
-        <property value="../jme3/" name="jme3_dir"/>
-        <property value="true" name="unset_impl_version"/>
-        <antcall target="-create-jme3-svn-properties" inheritall="true"/>
-        <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true"/>
+        <antcall target="-create-jme3-svn-properties" inheritall="true">
+            <param name="jme3_dir" value="../jme3/"/>
+        </antcall>
+        <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true">
+            <param name="set_impl_version" value="false"/>
+        </foreach>
     </target>
 
     <target name="-set-impl-version-hudson">
         <property file="nbproject/project.properties"/>
-        <property value="../../jme3/workspace/" name="jme3_dir"/>
-        <property value="true" name="set_impl_version"/>
-        <antcall target="-create-jme3-svn-properties" inheritall="true"/>
-        <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true"/>
+        <antcall target="-create-jme3-svn-properties" inheritall="true">
+            <param name="jme3_dir" value="../../jme3/workspace/"/>
+        </antcall>
+        <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true">
+            <param name="set_impl_version" value="true"/>
+        </foreach>
     </target>
 
     <target name="unset-impl-version-hudson">
         <property file="nbproject/project.properties"/>
-        <property value="../../jme3/workspace/" name="jme3_dir"/>
-        <property value="true" name="unset_impl_version"/>
-        <antcall target="-create-jme3-svn-properties" inheritall="true"/>
-        <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true"/>
+        <antcall target="-create-jme3-svn-properties" inheritall="true">
+            <param name="jme3_dir" value="../../jme3/workspace/"/>
+        </antcall>
+        <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true">
+            <param name="set_impl_version" value="false"/>
+        </foreach>
     </target>
 
     <!--sets/unsets implementation version to svn revision for plugins-->
@@ -114,18 +122,15 @@
         </if>
 
         <if>
-            <equals arg1="${unset_impl_version}" arg2="true"/>
+            <equals arg1="${set_impl_version}" arg2="true"/>
             <then>
+                <echo>Setting implementation version for ${module_dir} to revision: ${svn.Lastchange}</echo>
+                <replace  file="${module_dir}/manifest.mf" token="OpenIDE-Module-Implementation-Version: 0" value="OpenIDE-Module-Implementation-Version: ${svn.Lastchange}"/>
+            </then>
+            <else>
                 <echo>Removing implementation version for ${module_dir} from revision: ${svn.Lastchange}</echo>
                 <replace file="${module_dir}/manifest.mf" token="OpenIDE-Module-Implementation-Version: ${svn.Lastchange}" value="OpenIDE-Module-Implementation-Version: 0"/>
-            </then>
-            <elseif>
-                <equals arg1="${set_impl_version}" arg2="true"/>
-                <then>
-                    <echo>Setting implementation version for ${module_dir} to revision: ${svn.Lastchange}</echo>
-                    <replace  file="${module_dir}/manifest.mf" token="OpenIDE-Module-Implementation-Version: 0" value="OpenIDE-Module-Implementation-Version: ${svn.Lastchange}"/>
-                </then>
-            </elseif>
+            </else>
         </if>
 
     </target>

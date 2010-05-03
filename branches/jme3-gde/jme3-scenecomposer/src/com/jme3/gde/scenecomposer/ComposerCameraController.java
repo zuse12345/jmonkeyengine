@@ -29,21 +29,32 @@
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.gde.core.scene;
+package com.jme3.gde.scenecomposer;
 
-import com.jme3.input.InputManager;
-import com.jme3.input.KeyInput;
+import com.jme3.collision.CollisionResult;
+import com.jme3.collision.CollisionResults;
+import com.jme3.input.RawInputListener;
 import com.jme3.input.binding.BindingListener;
+import com.jme3.input.event.JoyAxisEvent;
+import com.jme3.input.event.JoyButtonEvent;
+import com.jme3.input.event.KeyInputEvent;
+import com.jme3.input.event.MouseButtonEvent;
+import com.jme3.input.event.MouseMotionEvent;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
+import com.jme3.math.Ray;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
+import org.openide.awt.StatusDisplayer;
 
 /**
  *
  * @author normenhansen
  */
-public class SceneCameraController implements BindingListener{
+public class ComposerCameraController implements BindingListener, RawInputListener {
 
     private boolean leftMouse, rightMouse, middleMouse;
     private float deltaX, deltaY, deltaZ, deltaWheel;
@@ -53,70 +64,27 @@ public class SceneCameraController implements BindingListener{
     private Vector3f vector = new Vector3f();
     private Vector3f focus = new Vector3f();
     private Camera cam;
-    private InputManager inputManager;
+    private Node rootNode;
 
-    public SceneCameraController(Camera cam, InputManager inputManager) {
+    public ComposerCameraController(Camera cam, Node rootNode) {
         this.cam = cam;
-        this.inputManager = inputManager;
-
-        inputManager.registerMouseAxisBinding("MOUSE_X+", 0, false);
-        inputManager.registerMouseAxisBinding("MOUSE_X-", 0, true);
-        inputManager.registerMouseAxisBinding("MOUSE_Y+", 1, false);
-        inputManager.registerMouseAxisBinding("MOUSE_Y-", 1, true);
-        inputManager.registerMouseAxisBinding("MOUSE_W+", 2, false);
-        inputManager.registerMouseAxisBinding("MOUSE_W-", 2, true);
-
-        inputManager.registerMouseButtonBinding("MOUSE_LEFT", 0);
-        inputManager.registerMouseButtonBinding("MOUSE_RIGHT", 1);
-        inputManager.registerMouseButtonBinding("MOUSE_MIDDLE", 2);
-
-        inputManager.registerKeyBinding("Up", KeyInput.KEY_UP);
-        inputManager.registerKeyBinding("Down", KeyInput.KEY_DOWN);
-
+        this.rootNode = rootNode;
     }
 
-    public void enable(){
-        inputManager.addBindingListener(this);
-    }
-
-    public void disable(){
-        inputManager.removeBindingListener(this);
-    }
-
-    private void rotateCamera(Vector3f axis, float amount) {
-        if (axis.equals(cam.getLeft())) {
-            float elevation = -FastMath.asin(cam.getDirection().y);
-            amount = Math.min(Math.max(elevation + amount,
-                    -FastMath.HALF_PI), FastMath.HALF_PI)
-                    - elevation;
+    public Geometry checkClick() {
+        if (leftMouse) {
+            CollisionResults results = new CollisionResults();
+            Ray ray = new Ray();
+//            ray.setOrigin(cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0));
+            ray.setOrigin(cam.getLocation());
+            ray.setDirection(cam.getDirection());
+            rootNode.collideWith(ray, results);
+            CollisionResult result = results.getClosestCollision();
+            if (result != null) {
+                return result.getGeometry();
+            }
         }
-        rot.fromAngleAxis(amount, axis);
-        cam.getLocation().subtract(focus, vector);
-        rot.mult(vector, vector);
-        focus.add(vector, cam.getLocation());
-
-        Quaternion curRot = cam.getRotation().clone();
-        cam.setRotation(rot.mult(curRot));
-    }
-
-    private void panCamera(float left, float up) {
-        cam.getLeft().mult(left, vector);
-        vector.scaleAdd(up, cam.getUp(), vector);
-        cam.setLocation(cam.getLocation().add(vector));
-        focus.addLocal(vector);
-    }
-
-    private void moveCamera(float forward) {
-        cam.getDirection().mult(forward, vector);
-        cam.setLocation(cam.getLocation().add(vector));
-    }
-
-    private void zoomCamera(float amount) {
-        float dist = cam.getLocation().distance(focus);
-        amount = dist - Math.max(0f, dist - amount);
-        Vector3f loc = cam.getLocation().clone();
-        loc.scaleAdd(amount, cam.getDirection(), loc);
-        cam.setLocation(loc);
+        return null;
     }
 
     public void onBinding(String binding, float value) {
@@ -170,6 +138,73 @@ public class SceneCameraController implements BindingListener{
     }
 
     public void onPostUpdate(float f) {
+        //TODO: wrong, gotta call checkClick() from application after update
+//        rootNode.updateGeometricState();
+//        Geometry geom = checkClick();
+//        if (geom != null) {
+//            StatusDisplayer.getDefault().setStatusText("Clicked Geometry: " + geom.toString());
+//        }
     }
 
+    public void onJoyAxisEvent(JoyAxisEvent jae) {
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void onJoyButtonEvent(JoyButtonEvent jbe) {
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void onMouseMotionEvent(MouseMotionEvent mme) {
+        mouseX = mme.getX();
+        mouseY = mme.getY();
+    }
+
+    public void onMouseButtonEvent(MouseButtonEvent mbe) {
+//        mbe.
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void onKeyEvent(KeyInputEvent kie) {
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    /*
+     * methods to move camera
+     */
+    
+    private void rotateCamera(Vector3f axis, float amount) {
+        if (axis.equals(cam.getLeft())) {
+            float elevation = -FastMath.asin(cam.getDirection().y);
+            amount = Math.min(Math.max(elevation + amount,
+                    -FastMath.HALF_PI), FastMath.HALF_PI)
+                    - elevation;
+        }
+        rot.fromAngleAxis(amount, axis);
+        cam.getLocation().subtract(focus, vector);
+        rot.mult(vector, vector);
+        focus.add(vector, cam.getLocation());
+
+        Quaternion curRot = cam.getRotation().clone();
+        cam.setRotation(rot.mult(curRot));
+    }
+
+    private void panCamera(float left, float up) {
+        cam.getLeft().mult(left, vector);
+        vector.scaleAdd(up, cam.getUp(), vector);
+        cam.setLocation(cam.getLocation().add(vector));
+        focus.addLocal(vector);
+    }
+
+    private void moveCamera(float forward) {
+        cam.getDirection().mult(forward, vector);
+        cam.setLocation(cam.getLocation().add(vector));
+    }
+
+    private void zoomCamera(float amount) {
+        float dist = cam.getLocation().distance(focus);
+        amount = dist - Math.max(0f, dist - amount);
+        Vector3f loc = cam.getLocation().clone();
+        loc.scaleAdd(amount, cam.getDirection(), loc);
+        cam.setLocation(loc);
+    }
 }

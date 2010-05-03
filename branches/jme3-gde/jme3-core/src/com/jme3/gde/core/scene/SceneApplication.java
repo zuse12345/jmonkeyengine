@@ -159,7 +159,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     public void initialize() {
         super.initialize();
         //create camera controler
-        camController = new SceneCameraController(cam, inputManager, rootNode);
+        camController = new SceneCameraController(cam, inputManager);
         //create preview view
         setupPreviewView();
 
@@ -217,10 +217,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 
         previewNode.updateLogicalState(tpf);
         previewNode.updateGeometricState();
-
-        Geometry geom = camController.checkClick();
-        if (null != geom) {
-        }
 
         renderManager.render(tpf);
     }
@@ -364,14 +360,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         }
     }
 
-    private void notifySceneListeners(JmeSpatial selected) {
-        SceneViewerTopComponent window = SceneViewerTopComponent.findInstance();
-        for (Iterator<SceneListener> it = listeners.iterator(); it.hasNext();) {
-            SceneListener sceneViewerListener = it.next();
-            sceneViewerListener.nodeSelected(selected);
-        }
-    }
-
     public void createPreview(final PreviewRequest request) {
         previewQueue.add(request);
     }
@@ -388,6 +376,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         enqueue(new Callable() {
 
             public Object call() throws Exception {
+                camController.enable();
                 rootNode.detachAllChildren();
                 closeCurrentScene();
                 assetManager = projectManager.getManager();
@@ -422,6 +411,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         enqueue(new Callable() {
 
             public Object call() throws Exception {
+                camController.disable();
                 rootNode.detachAllChildren();
                 if (request.getManager() != null) {
                     assetManager = request.getManager().getManager();
@@ -447,6 +437,12 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             currentSceneRequest.setDisplayed(false);
         }
         currentSceneRequest = null;
+        resetCam();
+    }
+
+    private void resetCam() {
+        cam.setLocation(new Vector3f(0, 0, 10));
+        cam.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
     }
 
     private void setWindowTitle(final String string) {

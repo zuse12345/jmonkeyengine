@@ -31,8 +31,6 @@
  */
 package com.jme3.gde.core.scene;
 
-import com.jme3.gde.core.scene.nodes.JmeSpatial;
-
 /**
  * To be replaced with Lookup functionality
  * @author normenhansen
@@ -40,8 +38,6 @@ import com.jme3.gde.core.scene.nodes.JmeSpatial;
 public interface SceneListener {
 
     public void sceneRequested(SceneRequest request);
-
-    public void nodeSelected(JmeSpatial spatial);
 
     public void previewRequested(PreviewRequest request);
 

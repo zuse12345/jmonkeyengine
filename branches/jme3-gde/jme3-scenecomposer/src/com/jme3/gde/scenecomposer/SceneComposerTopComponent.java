@@ -4,6 +4,9 @@
  */
 package com.jme3.gde.scenecomposer;
 
+import com.jme3.app.Application;
+import com.jme3.app.state.AppState;
+import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.DesktopAssetManager;
 import com.jme3.audio.AudioNode;
@@ -19,6 +22,8 @@ import com.jme3.gde.core.scene.nodes.JmeNode;
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
 import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.RenderManager;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.ui.Picture;
@@ -38,6 +43,7 @@ import org.openide.windows.WindowManager;
 import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.spi.palette.PaletteController;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.LookupListener;
@@ -48,7 +54,7 @@ import org.openide.util.Utilities;
  */
 @ConvertAsProperties(dtd = "-//com.jme3.gde.scenecomposer//SceneComposer//EN",
 autostore = false)
-public final class SceneComposerTopComponent extends TopComponent implements SceneListener, LookupListener {
+public final class SceneComposerTopComponent extends TopComponent implements SceneListener, LookupListener, AppState {
 
     private static SceneComposerTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -59,6 +65,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     private final Result<JmeSpatial> result;
     private JmeSpatial selectedSpat;
     private Spatial selected;
+    ComposerCameraController camController;
     //palette
     private PaletteController palette = null;
     private JmeNode paletteRoot;
@@ -71,6 +78,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         result = Utilities.actionsGlobalContext().lookupResult(JmeSpatial.class);
         result.addLookupListener(this);
         SceneApplication.getApplication().addSceneListener(this);
+//        SceneApplication.getApplication().get
 //        preparePalette();
 //        associateLookup(Lookups.fixed(new Object[]{getPalette()}));
     }
@@ -178,7 +186,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     }// </editor-fold>//GEN-END:initComponents
 
     private void addObjectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addObjectButtonActionPerformed
-        if(jList1.getSelectedValue()!=null){
+        if (jList1.getSelectedValue() != null) {
             addSpatial(jList1.getSelectedValue().toString());
         }
 
@@ -372,10 +380,9 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 SceneApplication.getApplication().enqueue(new Callable() {
 
                     public Object call() throws Exception {
-                        if("Node".equals(name)){
+                        if ("Node".equals(name)) {
                             ((Node) selected).attachChild(new Node("Node"));
-                        }
-                        else if("Particle Emitter".equals(name)){
+                        } else if ("Particle Emitter".equals(name)) {
                             ParticleEmitter emit = new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 200);
                             emit.setShape(new EmitterSphereShape(Vector3f.ZERO, 1f));
                             emit.setGravity(0);
@@ -387,14 +394,12 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                             //                    mat.setTexture("m_Texture", SceneApplication.getApplication().getAssetManager().loadTexture("Effects/Smoke/Smoke.png"));
                             emit.setMaterial(mat);
                             ((Node) selected).attachChild(emit);
-                        }
-                        else if("Audio Node".equals(name)){
-                            AudioNode node=new AudioNode();
+                        } else if ("Audio Node".equals(name)) {
+                            AudioNode node = new AudioNode();
                             node.setName("Audio Node");
                             ((Node) selected).attachChild(node);
-                        }
-                        else if("Picture".equals(name)){
-                            Picture pic=new Picture("Picture");
+                        } else if ("Picture".equals(name)) {
+                            Picture pic = new Picture("Picture");
                             Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
                             pic.setMaterial(mat);
                             ((Node) selected).attachChild(pic);
@@ -423,7 +428,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 public Object call() throws Exception {
                     ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Importing Model..");
                     progressHandle.start();
-                    ((DesktopAssetManager)manager).clearCache();
+                    ((DesktopAssetManager) manager).clearCache();
                     Spatial spat = manager.loadModel(assetName);
                     ((Node) selected).attachChild(spat);
                     refreshSelected();
@@ -503,7 +508,19 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     public void sceneRequested(SceneRequest request) {
         if (request.equals(currentRequest)) {
             setLoadedState(currentRequest.getRootNode().getName(), true);
+            if (camController != null) {
+                SceneApplication.getApplication().getInputManager().removeRawInputListener(camController);
+                SceneApplication.getApplication().getInputManager().removeBindingListener(camController);
+            }
+            camController = new ComposerCameraController(SceneApplication.getApplication().getCamera(), request.getRootNode().getLookup().lookup(Node.class));
+            SceneApplication.getApplication().getInputManager().addRawInputListener(camController);
+            SceneApplication.getApplication().getInputManager().addBindingListener(camController);
         } else {
+            if (camController != null) {
+                SceneApplication.getApplication().getInputManager().removeRawInputListener(camController);
+                SceneApplication.getApplication().getInputManager().removeBindingListener(camController);
+                camController = null;
+            }
             setLoadedState("no scene loaded", false);
         }
     }
@@ -512,5 +529,41 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     }
 
     public void previewRequested(PreviewRequest request) {
+    }
+
+    /*
+     * AppState
+     */
+    public void initialize(AppStateManager asm, Application aplctn) {
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean isInitialized() {
+        return true;
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void stateAttached(AppStateManager asm) {
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void stateDetached(AppStateManager asm) {
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void update(float f) {
+    }
+
+    public void render(RenderManager rm) {
+//        if (camController != null) {
+//            Geometry geom = camController.checkClick();
+//            if (geom != null) {
+//                StatusDisplayer.getDefault().setStatusText("Clicked Geometry: " + geom.toString());
+//            }
+//        }
+    }
+
+    public void cleanup() {
+//        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

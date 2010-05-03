@@ -139,7 +139,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     }
 
     private void loadFPSText() {
-        BitmapFont font = manager.loadFont("Interface/Fonts/Default.fnt");
+        BitmapFont font = assetManager.loadFont("Interface/Fonts/Default.fnt");
 
         fpsText = new BitmapText(font, false);
         fpsText.setSize(font.getCharSet().getRenderedSize());
@@ -149,7 +149,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     }
 
     public void loadStatsView() {
-        statsView = new StatsView("Statistics View", manager, renderer.getStatistics());
+        statsView = new StatsView("Statistics View", assetManager, renderer.getStatistics());
         // move it up so it appears above fps text
         statsView.setLocalTranslation(0, fpsText.getLineHeight(), 0);
         guiNode.attachChild(statsView);
@@ -159,7 +159,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     public void initialize() {
         super.initialize();
         //create camera controler
-        camController = new SceneCameraController(cam, inputManager);
+        camController = new SceneCameraController(cam, inputManager, rootNode);
         //create preview view
         setupPreviewView();
 
@@ -178,7 +178,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         guiViewPort.attachScene(guiNode);
         cam.setLocation(new Vector3f(0, 0, 10));
 
-        wireProcessor = new WireProcessor(manager);
+        wireProcessor = new WireProcessor(assetManager);
     }
 
     private void doPreviews() {
@@ -217,6 +217,10 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 
         previewNode.updateLogicalState(tpf);
         previewNode.updateGeometricState();
+
+        Geometry geom = camController.checkClick();
+        if (null != geom) {
+        }
 
         renderManager.render(tpf);
     }
@@ -386,9 +390,10 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             public Object call() throws Exception {
                 rootNode.detachAllChildren();
                 closeCurrentScene();
-                manager = projectManager.getManager();
-                ((DesktopAssetManager)manager).clearCache();
-                Spatial model = manager.loadModel(name);
+                assetManager = projectManager.getManager();
+                manager = assetManager;
+                ((DesktopAssetManager) assetManager).clearCache();
+                Spatial model = assetManager.loadModel(name);
                 if (!(model instanceof Node)) {
                     StatusDisplayer.getDefault().setStatusText("could not load model " + name + ", no root node");
                     return null;
@@ -419,7 +424,8 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             public Object call() throws Exception {
                 rootNode.detachAllChildren();
                 if (request.getManager() != null) {
-                    manager = request.getManager().getManager();
+                    assetManager = request.getManager().getManager();
+                    manager = assetManager;
                 }
                 closeCurrentScene();
                 currentSceneRequest = request;

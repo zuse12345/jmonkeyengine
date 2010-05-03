@@ -29,34 +29,51 @@
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.gde.core.scene;
 
+import com.jme3.collision.CollisionResult;
+import com.jme3.collision.CollisionResults;
 import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
+import com.jme3.input.RawInputListener;
 import com.jme3.input.binding.BindingListener;
+import com.jme3.input.event.JoyAxisEvent;
+import com.jme3.input.event.JoyButtonEvent;
+import com.jme3.input.event.KeyInputEvent;
+import com.jme3.input.event.MouseButtonEvent;
+import com.jme3.input.event.MouseMotionEvent;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
+import com.jme3.math.Ray;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
 
 /**
  *
  * @author normenhansen
  */
-public class SceneCameraController implements BindingListener{
+public class SceneCameraController implements BindingListener, RawInputListener {
+
     private boolean leftMouse, rightMouse, middleMouse;
     private float deltaX, deltaY, deltaZ, deltaWheel;
+    private int mouseX = 0;
+    private int mouseY = 0;
     private Quaternion rot = new Quaternion();
     private Vector3f vector = new Vector3f();
     private Vector3f focus = new Vector3f();
     private Camera cam;
     private InputManager inputManager;
+    private Node rootNode;
 
-    public SceneCameraController(Camera cam, InputManager inputManager) {
+    public SceneCameraController(Camera cam, InputManager inputManager, Node rootNode) {
         this.cam = cam;
-        this.inputManager=inputManager;
+        this.inputManager = inputManager;
+        this.rootNode = rootNode;
         inputManager.addBindingListener(this);
+        inputManager.addRawInputListener(this);
         inputManager.registerMouseAxisBinding("MOUSE_X+", 0, false);
         inputManager.registerMouseAxisBinding("MOUSE_X-", 0, true);
         inputManager.registerMouseAxisBinding("MOUSE_Y+", 1, false);
@@ -137,31 +154,65 @@ public class SceneCameraController implements BindingListener{
     }
 
     public void onPreUpdate(float f) {
-            if (leftMouse) {
-                rotateCamera(Vector3f.UNIT_Y, -deltaX * 5);
-                rotateCamera(cam.getLeft(), -deltaY * 5);
-            }
-            if (deltaWheel != 0) {
-                zoomCamera(deltaWheel * 10);
-            }
-            if (rightMouse) {
-                panCamera(deltaX * 10, -deltaY * 10);
-            }
+        if (leftMouse) {
+            rotateCamera(Vector3f.UNIT_Y, -deltaX * 5);
+            rotateCamera(cam.getLeft(), -deltaY * 5);
+        }
+        if (deltaWheel != 0) {
+            zoomCamera(deltaWheel * 10);
+        }
+        if (rightMouse) {
+            panCamera(deltaX * 10, -deltaY * 10);
+        }
 
-            moveCamera(deltaZ);
+        moveCamera(deltaZ);
 
-            leftMouse = false;
-            rightMouse = false;
-            middleMouse = false;
-            deltaX = 0;
-            deltaY = 0;
-            deltaZ = 0;
-            deltaWheel = 0;
-//        throw new UnsupportedOperationException("Not supported yet.");
+        leftMouse = false;
+        rightMouse = false;
+        middleMouse = false;
+        deltaX = 0;
+        deltaY = 0;
+        deltaZ = 0;
+        deltaWheel = 0;
     }
 
     public void onPostUpdate(float f) {
+    }
+
+    public Geometry checkClick() {
+        if (leftMouse) {
+            CollisionResults results = new CollisionResults();
+            Ray ray = new Ray();
+            ray.setOrigin(cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), cam.getFrustumNear()));
+            ray.setDirection(cam.getDirection());
+            rootNode.collideWith(ray, results);
+            CollisionResult result = results.getClosestCollision();
+            if (result != null) {
+                return result.getGeometry();
+            }
+        }
+        return null;
+    }
+
+    public void onJoyAxisEvent(JoyAxisEvent jae) {
 //        throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    public void onJoyButtonEvent(JoyButtonEvent jbe) {
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void onMouseMotionEvent(MouseMotionEvent mme) {
+        mouseX = mme.getX();
+        mouseY = mme.getY();
+    }
+
+    public void onMouseButtonEvent(MouseButtonEvent mbe) {
+//        mbe.
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void onKeyEvent(KeyInputEvent kie) {
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

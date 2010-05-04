@@ -5,8 +5,8 @@ MaterialDef My MaterialDef {
     }
 
     Technique {
-        VertexShader GLSL100: solid_color.vert
-        FragmentShader GLSL100: solid_color.frag
+        VertexShader GLSL100:   Common/MatDefs/Misc/SolidColor.vert
+        FragmentShader GLSL100: Common/MatDefs/Misc/SolidColor.frag
 
         WorldParameters {
             WorldViewProjectionMatrix

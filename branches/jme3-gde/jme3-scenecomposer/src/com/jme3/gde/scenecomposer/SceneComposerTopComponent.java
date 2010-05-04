@@ -18,7 +18,6 @@ import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
 import com.jme3.gde.core.scene.SceneRequest;
-import com.jme3.gde.core.scene.nodes.JmeNode;
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.PointLight;
@@ -44,7 +43,6 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
-import org.netbeans.spi.palette.PaletteController;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -68,9 +66,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     private JmeSpatial selectedSpat;
     private Spatial selected;
     ComposerCameraController camController;
-    //palette
-    private PaletteController palette = null;
-    private JmeNode paletteRoot;
 
     public SceneComposerTopComponent() {
         initComponents();
@@ -80,9 +75,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         result = Utilities.actionsGlobalContext().lookupResult(JmeSpatial.class);
         result.addLookupListener(this);
         SceneApplication.getApplication().addSceneListener(this);
-//        SceneApplication.getApplication().get
-//        preparePalette();
-//        associateLookup(Lookups.fixed(new Object[]{getPalette()}));
     }
 
     /** This method is called from within the constructor to
@@ -97,7 +89,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         saveButton = new javax.swing.JButton();
         sceneNameLabel = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        selectedSpatialLabel = new javax.swing.JLabel();
         addObjectButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
@@ -119,9 +111,9 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
-                .addContainerGap(128, Short.MAX_VALUE)
+                .addContainerGap(191, Short.MAX_VALUE)
                 .add(saveButton))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, sceneNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, sceneNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -131,7 +123,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 .add(saveButton))
         );
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(selectedSpatialLabel, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.selectedSpatialLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addObjectButton, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.addObjectButton.text")); // NOI18N
         addObjectButton.setEnabled(false);
@@ -152,19 +144,19 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
+            .add(selectedSpatialLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
             .add(jPanel2Layout.createSequentialGroup()
                 .add(2, 2, 2)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
                     .add(jPanel2Layout.createSequentialGroup()
                         .add(addObjectButton)
-                        .addContainerGap(99, Short.MAX_VALUE))))
+                        .addContainerGap(182, Short.MAX_VALUE))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
-                .add(jLabel1)
+                .add(selectedSpatialLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -177,7 +169,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 282, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 136, Short.MAX_VALUE)
                 .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
@@ -199,13 +191,13 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     }//GEN-LAST:event_saveButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addObjectButton;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JList jList1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton saveButton;
     private javax.swing.JLabel sceneNameLabel;
+    private javax.swing.JLabel selectedSpatialLabel;
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -302,91 +294,15 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         });
 
     }
-//    private Node paletteNode;
-//
-//    private void preparePalette() {
-//        paletteNode = new Node("Palette Root");
-//        //NODE
-//        paletteNode.attachChild(new Node("Node"));
-//        //PARTICLE EMITTER
-//        ParticleEmitter emit = new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 200);
-//        emit.setShape(new EmitterSphereShape(Vector3f.ZERO, 1f));
-//        emit.setName("Particle Emitter");
-//        emit.setGravity(0);
-//        emit.setLowLife(5);
-//        emit.setHighLife(10);
-//        emit.setStartVel(new Vector3f(0, 0, 0));
-//        emit.setImagesX(15);
-//        Material mat = null;
-//        try {
-//            mat = SceneApplication.getApplication().enqueue(new Callable<Material>() {
-//
-//                public Material call() throws Exception {
-//                    Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
-//                    mat.setTexture("m_Texture", SceneApplication.getApplication().getAssetManager().loadTexture("Effects/Smoke/Smoke.png"));
-//                    return mat;
-//                }
-//            }).get();
-//        } catch (InterruptedException ex) {
-//            Exceptions.printStackTrace(ex);
-//        } catch (ExecutionException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-//        if (mat != null) {
-//            emit.setMaterial(mat);
-//        }
-//        paletteNode.attachChild(emit);
-//    }
-//
-//    private PaletteController getPalette() {
-//        if (null == palette) {
-//            paletteRoot = NodeUtility.createNode(paletteNode);
-//            paletteRoot.setName("Palette Root");
-//
-//            palette = PaletteFactory.createPalette(paletteRoot,
-//                    new MyPaletteActions(), null, new MyDragAndDropHandler());
-//        }
-//        return palette;
-//    }
-//    public static final DataFlavor MyCustomDataFlavor = new DataFlavor(ClipboardSpatial.class, "Spatial");
-//
-//    private static class MyDragAndDropHandler extends DragAndDropHandler {
-//
-//        public void customize(ExTransferable exTransferable, Lookup lookup) {
-//            final Spatial item = (Spatial) lookup.lookup(Spatial.class);
-//            if (null != item) {
-//                exTransferable.put(new ExTransferable.Single(MyCustomDataFlavor) {
-//
-//                    protected Object getData() throws IOException, UnsupportedFlavorException {
-//                        return new ClipboardSpatial(item);
-//                    }
-//                });
-//            }
-//        }
-//    }
-//
-//    private static class MyPaletteActions extends PaletteActions {
-//
-//        public Action[] getImportActions() {
-//            return null;
-//        }
-//
-//        public Action[] getCustomPaletteActions() {
-//            return null;
-//        }
-//
-//        public Action[] getCustomCategoryActions(Lookup lookup) {
-//            return null;
-//        }
-//
-//        public Action[] getCustomItemActions(Lookup lookup) {
-//            return null;
-//        }
-//
-//        public Action getPreferredAction(Lookup lookup) {
-//            return null;
-//        }
-//    }
+
+    private void setSelectedObjectText(final String text) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                selectedSpatialLabel.setText(text);
+            }
+        });
+    }
 
     private void addSpatial(final String name) {
         if (currentRequest != null && currentRequest.isDisplayed()) {
@@ -420,6 +336,12 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                                 Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
                                 pic.setMaterial(mat);
                                 ((Node) selected).attachChild(pic);
+                                refreshSelected();
+                            } else if ("Point Light".equals(name)) {
+                                ((Node) selected).addLight(new PointLight());
+                                refreshSelected();
+                            } else if ("Directional Light".equals(name)) {
+                                ((Node) selected).addLight(new DirectionalLight());
                                 refreshSelected();
                             }
                         } else if (selected instanceof Geometry) {
@@ -507,6 +429,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 if (!active) {
                     saveButton.setEnabled(false);
                     addObjectButton.setEnabled(false);
+                    selectedSpatialLabel.setText("");
                     close();
                 } else {
                     saveButton.setEnabled(true);
@@ -522,10 +445,15 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
      * listener for node selection changes
      */
     public void resultChanged(LookupEvent ev) {
+        if (currentRequest==null||!currentRequest.isDisplayed()) {
+            return;
+        }
         Collection<JmeSpatial> items = (Collection<JmeSpatial>) result.allInstances();
         for (JmeSpatial spatial : items) {
             selectedSpat = spatial;
             selected = spatial.getLookup().lookup(Spatial.class);
+            setSelectedObjectText(spatial.getName());
+            return;
         }
     }
 

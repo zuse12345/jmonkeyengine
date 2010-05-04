@@ -29,32 +29,37 @@
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 package com.jme3.gde.core.scene.nodes;
 
-import com.jme3.scene.Node;
+import com.jme3.light.Light;
 import com.jme3.scene.Spatial;
 
 /**
  *
  * @author normenhansen
  */
-public class NodeUtility {
+public class LightSpatialPair {
+    private Light light;
+    private Spatial spatial;
 
-    public static JmeNode createNode(Node node) {
-        JmeSpatialChildFactory factory = new JmeSpatialChildFactory(node);
-        JmeNode jmeNode = new JmeNode(node, factory);
-        return jmeNode;
+    public LightSpatialPair(Light light, Spatial spatial) {
+        this.light = light;
+        this.spatial = spatial;
     }
 
-    public static JmeNode createNode(Node node, boolean includeLights) {
-        JmeSpatialChildFactory factory = new JmeSpatialChildFactory(node, includeLights);
-        JmeNode jmeNode = new JmeNode(node, factory);
-        return jmeNode;
+    /**
+     * @return the light
+     */
+    public Light getLight() {
+        return light;
     }
 
-    public static JmeSpatial createSpatial(Spatial node) {
-        JmeSpatialChildFactory factory = new JmeSpatialChildFactory(node);
-        JmeSpatial jmeSpatial = new JmeSpatial(node, factory);
-        return jmeSpatial;
+    /**
+     * @return the spatial
+     */
+    public Spatial getSpatial() {
+        return spatial;
     }
+
 }

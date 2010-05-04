@@ -34,6 +34,10 @@ package com.jme3.gde.core.scene.nodes;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.font.BitmapText;
 import com.jme3.gde.core.scene.SceneApplication;
+import com.jme3.light.DirectionalLight;
+import com.jme3.light.Light;
+import com.jme3.light.LightList;
+import com.jme3.light.PointLight;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.ui.Picture;
@@ -41,7 +45,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import org.openide.nodes.ChildFactory;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
@@ -49,20 +52,26 @@ import org.openide.util.Exceptions;
  *
  * @author normenhansen
  */
-public class JmeSpatialChildFactory extends ChildFactory<Spatial> {
+public class JmeSpatialChildFactory extends ChildFactory<Object> {
 
     private com.jme3.scene.Spatial spatial;
+    private boolean doLights = true;
 
     public JmeSpatialChildFactory(com.jme3.scene.Spatial spatial) {
         this.spatial = spatial;
     }
 
-    public void refreshChildren(boolean immediate){
+    public JmeSpatialChildFactory(com.jme3.scene.Spatial spatial, boolean doLights) {
+        this.spatial = spatial;
+        this.doLights = doLights;
+    }
+
+    public void refreshChildren(boolean immediate) {
         super.refresh(immediate);
     }
 
     @Override
-    protected boolean createKeys(final List<Spatial> toPopulate) {
+    protected boolean createKeys(final List<Object> toPopulate) {
         try {
             return SceneApplication.getApplication().enqueue(new Callable<Boolean>() {
 
@@ -70,6 +79,15 @@ public class JmeSpatialChildFactory extends ChildFactory<Spatial> {
                     if (spatial != null && spatial instanceof com.jme3.scene.Node) {
                         toPopulate.addAll(((com.jme3.scene.Node) spatial).getChildren());
                         return true;
+                    }
+                    if(doLights){
+                        LightList lights = spatial.getWorldLightList();
+                        for (int i = 0; i < lights.size(); i++) {
+                            Light light = lights.get(i);
+                            if (light != null) {
+                                toPopulate.add(new LightSpatialPair(light, spatial));
+                            }
+                        }
                     }
                     return true;
                 }
@@ -83,56 +101,47 @@ public class JmeSpatialChildFactory extends ChildFactory<Spatial> {
     }
 
     @Override
-    protected Node createNodeForKey(Spatial key) {
+    protected Node createNodeForKey(Object key) {
         //TODO: add way for plugins to add their own spatial types, probably
         //      best via registering some object in the global lookup
-        JmeSpatialChildFactory factory = new JmeSpatialChildFactory(key);
-        if (key instanceof com.jme3.audio.AudioNode) {
-            return new JmeAudioNode((com.jme3.audio.AudioNode) key, factory);
+        if (key instanceof Spatial) {
+            JmeSpatialChildFactory factory = new JmeSpatialChildFactory((Spatial) key);
+            if (key instanceof com.jme3.audio.AudioNode) {
+                return new JmeAudioNode((com.jme3.audio.AudioNode) key, factory);
+            }
+            if (key instanceof com.jme3.scene.Node) {
+                return new JmeNode((com.jme3.scene.Node) key, factory);
+            }
+            if (key instanceof BitmapText) {
+                return new JmeBitmapText((BitmapText) key, factory);
+            }
+            if (key instanceof Picture) {
+                return new JmePicture((Picture) key, factory);
+            }
+            if (key instanceof ParticleEmitter) {
+                return new JmeParticleEmitter((ParticleEmitter) key, factory);
+            }
+            if (key instanceof com.jme3.scene.Geometry) {
+                return new JmeGeometry((Geometry) key, factory);
+            }
+            return new JmeSpatial((Spatial) key, factory);
+        } else if (key instanceof LightSpatialPair) {
+            LightSpatialPair pair = (LightSpatialPair) key;
+            if (pair.getLight() instanceof PointLight) {
+                return new JmePointLight(pair.getSpatial(), (PointLight) pair.getLight());
+            }
+            if (pair.getLight() instanceof DirectionalLight) {
+                return new JmeDirectionalLight(pair.getSpatial(), (DirectionalLight) pair.getLight());
+            }
+            return new JmeLight(pair.getSpatial(), pair.getLight());
         }
-        if (key instanceof com.jme3.scene.Node) {
-            return new JmeNode((com.jme3.scene.Node) key, factory);
-        }
-        if (key instanceof BitmapText) {
-            return new JmeBitmapText((BitmapText) key, factory);
-        }
-        if (key instanceof Picture) {
-            return new JmePicture((Picture) key, factory);
-        }
-        if (key instanceof ParticleEmitter) {
-            return new JmeParticleEmitter((ParticleEmitter) key, factory);
-        }
-        if (key instanceof com.jme3.scene.Geometry) {
-            return new JmeGeometry((Geometry) key, factory);
-        }
-        return new JmeSpatial(key, factory);
+        return null;
     }
 
     @Override
-    protected Node[] createNodesForKey(Spatial key) {
-        JmeSpatialChildFactory factory = new JmeSpatialChildFactory(key);
+    protected Node[] createNodesForKey(Object key) {
         Node[] nodes = new Node[1];
-        if (key instanceof com.jme3.audio.AudioNode) {
-            nodes[0] = new JmeAudioNode((com.jme3.audio.AudioNode) key, factory);
-        }
-        else if (key instanceof com.jme3.scene.Node) {
-            nodes[0] = new JmeNode((com.jme3.scene.Node) key, factory);
-        }
-        else if (key instanceof BitmapText) {
-            nodes[0] = new JmeBitmapText((BitmapText) key, factory);
-        }
-        else if (key instanceof Picture) {
-            nodes[0] = new JmePicture((Picture) key, factory);
-        }
-        else if (key instanceof ParticleEmitter) {
-            nodes[0] = new JmeParticleEmitter((ParticleEmitter) key, factory);
-        }
-        else if (key instanceof com.jme3.scene.Geometry) {
-            nodes[0] = new JmeGeometry((Geometry) key, factory);
-        }
-        else {
-            nodes[0] = new JmeSpatial(key, factory);
-        }
+        nodes[0] = createNodeForKey(key);
         return nodes;
     }
 }

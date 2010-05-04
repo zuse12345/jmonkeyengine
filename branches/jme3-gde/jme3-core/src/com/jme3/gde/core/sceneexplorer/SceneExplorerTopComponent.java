@@ -37,7 +37,10 @@ import com.jme3.gde.core.scene.SceneListener;
 import com.jme3.gde.core.scene.SceneRequest;
 import com.jme3.gde.core.scene.nodes.JmeNode;
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.logging.Logger;
+import org.openide.util.Lookup.Result;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -50,6 +53,9 @@ import org.openide.actions.PasteAction;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -57,13 +63,15 @@ import org.openide.util.actions.SystemAction;
  */
 @ConvertAsProperties(dtd = "-//com.jme3.gde.core.sceneexplorer//SceneExplorer//EN",
 autostore = false)
-public final class SceneExplorerTopComponent extends TopComponent implements ExplorerManager.Provider, SceneListener {
+public final class SceneExplorerTopComponent extends TopComponent implements ExplorerManager.Provider, SceneListener, LookupListener {
 
     private static SceneExplorerTopComponent instance;
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "com/jme3/gde/core/sceneexplorer/jme-logo.png";
     private static final String PREFERRED_ID = "SceneExplorerTopComponent";
     private SceneRequest request;
+    private final Result<JmeSpatial> nodeSelectionResult;
+    private JmeSpatial selectedSpatial;
 
     public SceneExplorerTopComponent() {
         initComponents();
@@ -72,6 +80,8 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
         setToolTipText(NbBundle.getMessage(SceneExplorerTopComponent.class, "HINT_SceneExplorerTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         associateLookup(ExplorerUtils.createLookup(explorerManager, getActionMap()));
+        nodeSelectionResult = Utilities.actionsGlobalContext().lookupResult(JmeSpatial.class);
+        nodeSelectionResult.addLookupListener(this);
     }
 
     private void initActions() {
@@ -128,11 +138,10 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        if (request == null) {
+        if (selectedSpatial == null) {
             return;
         }
-        JmeNode node = request.getRootNode();
-        node.refresh(false);
+        selectedSpatial.refresh(false);
     }//GEN-LAST:event_jButton1ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane explorerScrollPane;
@@ -218,14 +227,22 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
         return explorerManager;
     }
 
+    public void resultChanged(LookupEvent ev) {
+        Collection collection = nodeSelectionResult.allInstances();
+        for (Iterator it = collection.iterator(); it.hasNext();) {
+            Object object = it.next();
+            if(object instanceof JmeSpatial){
+                selectedSpatial=(JmeSpatial)object;
+                return;
+            }
+        }
+        selectedSpatial=null;
+    }
+
     public void sceneRequested(SceneRequest request) {
         this.request = request;
         explorerManager.setRootContext(request.getRootNode());
         explorerManager.getRootContext().setDisplayName(request.getRootNode().getName());
-    }
-
-    public void nodeSelected(JmeSpatial spatial) {
-        //TODO: node selection
     }
 
     public void previewRequested(PreviewRequest request) {

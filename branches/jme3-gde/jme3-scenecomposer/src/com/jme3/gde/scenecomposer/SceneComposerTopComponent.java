@@ -20,6 +20,8 @@ import com.jme3.gde.core.scene.SceneListener;
 import com.jme3.gde.core.scene.SceneRequest;
 import com.jme3.gde.core.scene.nodes.JmeNode;
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
+import com.jme3.light.DirectionalLight;
+import com.jme3.light.PointLight;
 import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
@@ -140,7 +142,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         });
 
         jList1.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Node", "Particle Emitter", "Audio Node", "Picture" };
+            String[] strings = { "Node", "Particle Emitter", "Audio Node", "Picture", "Point Light", "Directional Light" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
@@ -288,6 +290,18 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         });
 
     }
+
+    private void refreshRoot() {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                if (currentRequest != null) {
+                    currentRequest.getRootNode().refresh(false);
+                }
+            }
+        });
+
+    }
 //    private Node paletteNode;
 //
 //    private void preparePalette() {
@@ -375,36 +389,48 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 //    }
 
     private void addSpatial(final String name) {
-        if (currentRequest != null && currentRequest.isDisplayed() && selected instanceof Node) {
+        if (currentRequest != null && currentRequest.isDisplayed()) {
             try {
                 SceneApplication.getApplication().enqueue(new Callable() {
 
                     public Object call() throws Exception {
-                        if ("Node".equals(name)) {
-                            ((Node) selected).attachChild(new Node("Node"));
-                        } else if ("Particle Emitter".equals(name)) {
-                            ParticleEmitter emit = new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 200);
-                            emit.setShape(new EmitterSphereShape(Vector3f.ZERO, 1f));
-                            emit.setGravity(0);
-                            emit.setLowLife(5);
-                            emit.setHighLife(10);
-                            emit.setStartVel(new Vector3f(0, 0, 0));
-                            emit.setImagesX(15);
-                            Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
-                            //                    mat.setTexture("m_Texture", SceneApplication.getApplication().getAssetManager().loadTexture("Effects/Smoke/Smoke.png"));
-                            emit.setMaterial(mat);
-                            ((Node) selected).attachChild(emit);
-                        } else if ("Audio Node".equals(name)) {
-                            AudioNode node = new AudioNode();
-                            node.setName("Audio Node");
-                            ((Node) selected).attachChild(node);
-                        } else if ("Picture".equals(name)) {
-                            Picture pic = new Picture("Picture");
-                            Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
-                            pic.setMaterial(mat);
-                            ((Node) selected).attachChild(pic);
+                        if (selected instanceof Node) {
+                            if ("Node".equals(name)) {
+                                ((Node) selected).attachChild(new Node("Node"));
+                            } else if ("Particle Emitter".equals(name)) {
+                                ParticleEmitter emit = new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 200);
+                                emit.setShape(new EmitterSphereShape(Vector3f.ZERO, 1f));
+                                emit.setGravity(0);
+                                emit.setLowLife(5);
+                                emit.setHighLife(10);
+                                emit.setStartVel(new Vector3f(0, 0, 0));
+                                emit.setImagesX(15);
+                                Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
+                                //                    mat.setTexture("m_Texture", SceneApplication.getApplication().getAssetManager().loadTexture("Effects/Smoke/Smoke.png"));
+                                emit.setMaterial(mat);
+                                ((Node) selected).attachChild(emit);
+                                refreshSelected();
+                            } else if ("Audio Node".equals(name)) {
+                                AudioNode node = new AudioNode();
+                                node.setName("Audio Node");
+                                ((Node) selected).attachChild(node);
+                                refreshSelected();
+                            } else if ("Picture".equals(name)) {
+                                Picture pic = new Picture("Picture");
+                                Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
+                                pic.setMaterial(mat);
+                                ((Node) selected).attachChild(pic);
+                                refreshSelected();
+                            }
+                        } else if (selected instanceof Geometry) {
+                            if ("Point Light".equals(name)) {
+                                ((Spatial) selected).addLight(new PointLight());
+                                refreshSelected();
+                            } else if ("Directional Light".equals(name)) {
+                                ((Spatial) selected).addLight(new DirectionalLight());
+                                refreshSelected();
+                            }
                         }
-                        refreshSelected();
                         return null;
 
                     }

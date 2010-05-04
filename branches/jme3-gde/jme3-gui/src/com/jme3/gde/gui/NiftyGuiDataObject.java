@@ -44,7 +44,7 @@ public class NiftyGuiDataObject extends XmlMultiViewDataObject {
 
     @Override
     protected String getPrefixMark() {
-        return "null";
+        return "Nifty";
 //        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

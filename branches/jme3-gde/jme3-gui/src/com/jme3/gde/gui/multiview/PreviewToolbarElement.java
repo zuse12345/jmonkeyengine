@@ -28,7 +28,7 @@ public class PreviewToolbarElement extends ToolBarMultiViewElement {
         viewPanel=new NiftyPreviewPanel(dObj);
         comp.setRootContext(Node.EMPTY);
         comp.setContentView(viewPanel);
-        viewPanel.open();
+//        viewPanel.open();
     }
 
     public SectionView getSectionView() {

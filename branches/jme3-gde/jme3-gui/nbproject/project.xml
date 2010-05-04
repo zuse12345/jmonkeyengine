@@ -109,10 +109,13 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>de.lessvoid.nifty.java2d.input</package>
+                <package>de.lessvoid.nifty.java2d.renderer</package>
+            </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/nifty-1.2-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/nifty-1.2-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>ext/nifty-java2d-renderer-1.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/nifty-java2d-renderer-1.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

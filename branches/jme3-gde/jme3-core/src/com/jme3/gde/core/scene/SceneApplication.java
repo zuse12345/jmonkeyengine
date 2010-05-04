@@ -209,16 +209,20 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             fpsText.setText("Frames per second: " + fps);
             secondCounter = 0.0f;
         }
+        try{
+            rootNode.updateLogicalState(tpf);
+            guiNode.updateLogicalState(tpf);
+            rootNode.updateGeometricState();
+            guiNode.updateGeometricState();
 
-        rootNode.updateLogicalState(tpf);
-        guiNode.updateLogicalState(tpf);
-        rootNode.updateGeometricState();
-        guiNode.updateGeometricState();
+            previewNode.updateLogicalState(tpf);
+            previewNode.updateGeometricState();
 
-        previewNode.updateLogicalState(tpf);
-        previewNode.updateGeometricState();
-
-        renderManager.render(tpf);
+            renderManager.render(tpf);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     //TODO: Lookup for Application

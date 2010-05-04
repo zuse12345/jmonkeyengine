@@ -74,4 +74,8 @@ public class PhysicsHingeJoint extends PhysicsJoint{
         ((HingeConstraint)constraint).setLimit(low, high, _softness, _biasFactor, _relaxationFactor);
     }
 
+    public float getHingeAngle(){
+        return ((HingeConstraint) constraint).getHingeAngle();
+    }
+
 }

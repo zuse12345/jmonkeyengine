@@ -31,6 +31,7 @@ public final class OpenSceneComposer implements ActionListener {
         }
         FileObject file = context.getPrimaryFile();
         String assetName = manager.getRelativeAssetPath(file.getPath());
+        ((DesktopAssetManager) manager.getManager()).clearCache();
         Spatial spat = manager.getManager().loadModel(assetName);
         if (spat instanceof Node) {
             JmeNode jmeNode = NodeUtility.createNode((Node) spat);

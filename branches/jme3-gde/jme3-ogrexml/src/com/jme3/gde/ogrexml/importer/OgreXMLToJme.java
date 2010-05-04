@@ -16,6 +16,9 @@ import java.io.IOException;
 import java.util.concurrent.Callable;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -40,23 +43,28 @@ public final class OgreXMLToJme implements ActionListener {
             Callable run = new Callable() {
 
                 public Void call() {
-                    ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Importing OgreXML");
+                    ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Converting OgreXML");
                     progressHandle.start();
 
                     FileObject file = context.getPrimaryFile();
-                    ((DesktopAssetManager) manager.getManager()).clearCache();
-                    Spatial model = manager.getManager().loadModel(manager.getRelativeAssetPath(file.getPath()));
-
                     String outputPath = file.getParent().getPath() + File.separator + file.getName() + ".j3o";
-                    BinaryExporter exp = BinaryExporter.getInstance();
                     try {
+                        ((DesktopAssetManager) manager.getManager()).clearCache();
+                        Spatial model = manager.getManager().loadModel(manager.getRelativeAssetPath(file.getPath()));
+                        BinaryExporter exp = BinaryExporter.getInstance();
                         exp.save(model, new File(outputPath));
+                        StatusDisplayer.getDefault().setStatusText("Created file " + file.getName()+".j3o");
+                        //try make NetBeans update the tree.. :/
+                        context.getPrimaryFile().getParent().refresh();
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
+                        Confirmation msg = new NotifyDescriptor.Confirmation(
+                                "Error converting " + file.getNameExt() + "\n" + ex.toString(),
+                                NotifyDescriptor.OK_CANCEL_OPTION,
+                                NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(msg);
                     }
                     progressHandle.finish();
-                    //try make NetBeans update the tree.. :/
-                    context.getPrimaryFile().getParent().refresh();
                     return null;
                 }
             };

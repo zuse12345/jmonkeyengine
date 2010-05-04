@@ -43,6 +43,9 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -376,10 +379,19 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 public Object call() throws Exception {
                     ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Importing Model..");
                     progressHandle.start();
-                    ((DesktopAssetManager) manager).clearCache();
-                    Spatial spat = manager.loadModel(assetName);
-                    ((Node) selected).attachChild(spat);
-                    refreshSelected();
+                    try{
+                        ((DesktopAssetManager) manager).clearCache();
+                        Spatial spat = manager.loadModel(assetName);
+                        ((Node) selected).attachChild(spat);
+                        refreshSelected();
+                    }
+                    catch(Exception ex){
+                        Confirmation msg = new NotifyDescriptor.Confirmation(
+                                "Error importing " + assetName + "\n" + ex.toString(),
+                                NotifyDescriptor.OK_CANCEL_OPTION,
+                                NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(msg);
+                    }
                     progressHandle.finish();
                     return null;
                 }
@@ -429,7 +441,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 if (!active) {
                     saveButton.setEnabled(false);
                     addObjectButton.setEnabled(false);
-                    selectedSpatialLabel.setText("");
                     close();
                 } else {
                     saveButton.setEnabled(true);
@@ -471,13 +482,16 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             SceneApplication.getApplication().getInputManager().addRawInputListener(camController);
             SceneApplication.getApplication().getInputManager().addBindingListener(camController);
         } else {
+            setLoadedState("no scene loaded", false);
             if (camController != null) {
                 SceneApplication.getApplication().getInputManager().removeRawInputListener(camController);
                 SceneApplication.getApplication().getInputManager().removeBindingListener(camController);
                 camController = null;
             }
-            setLoadedState("no scene loaded", false);
         }
+        selected=null;
+        selectedSpat=null;
+        setSelectedObjectText("");
     }
 
     public void nodeSelected(JmeSpatial spatial) {

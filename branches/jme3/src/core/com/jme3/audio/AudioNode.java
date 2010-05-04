@@ -167,6 +167,7 @@ public class AudioNode extends Node{
     protected AudioKey key;*/
 
     public void write(JmeExporter ex) throws IOException {
+        super.write(ex);
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(key, "key", null);
         oc.write(loop, "looping", false);
@@ -188,6 +189,7 @@ public class AudioNode extends Node{
     }
 
     public void read(JmeImporter im) throws IOException {
+        super.read(im);
         InputCapsule ic = im.getCapsule(this);
         key =   (AudioKey) ic.readSavable("key", null);
         loop = ic.readBoolean("looping", false);

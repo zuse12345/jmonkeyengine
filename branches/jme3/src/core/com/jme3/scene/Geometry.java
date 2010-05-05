@@ -24,6 +24,11 @@ public class Geometry extends Spatial {
 
     protected Material material;
 
+    /**
+     * When true, the geometry's transform will not be applied.
+     */
+    protected boolean ignoreTransform = false;
+
     protected transient Matrix4f cachedWorldMat = new Matrix4f();
 
     /**
@@ -54,6 +59,22 @@ public class Geometry extends Spatial {
         this.mesh = mesh;
     }
 
+    /**
+     * @return If ignoreTransform mode is set.
+     * @see Geometry#setIgnoreTransform(boolean) 
+     */
+    public boolean isIgnoreTransform() {
+        return ignoreTransform;
+    }
+
+    /**
+     * @param ignoreTransform If true, the geometry's transform will not be applied.
+     */
+    public void setIgnoreTransform(boolean ignoreTransform) {
+        this.ignoreTransform = ignoreTransform;
+    }
+
+    @Override
     public void setLodLevel(int lod){
         if (mesh.getNumLodLevels() == 0)
             throw new IllegalStateException("LOD levels are not set on this mesh");
@@ -88,6 +109,7 @@ public class Geometry extends Spatial {
         return mesh;
     }
 
+    @Override
     public void setMaterial(Material material){
         this.material = material;
     }
@@ -210,6 +232,7 @@ public class Geometry extends Spatial {
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(mesh, "mesh", null);
         oc.write(material, "material", null);
+        oc.write(ignoreTransform, "ignoreTransform", false);
     }
 
     @Override
@@ -218,6 +241,7 @@ public class Geometry extends Spatial {
         InputCapsule ic = im.getCapsule(this);
         mesh = (Mesh) ic.readSavable("mesh", null);
         material = (Material) ic.readSavable("material", null);
+        ignoreTransform = ic.readBoolean("ignoreTransform", false);
     }
 
 }

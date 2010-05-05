@@ -11,7 +11,6 @@ import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
 import com.jme3.math.Matrix4f;
-import com.jme3.math.Transform;
 import com.jme3.math.Triangle;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
@@ -72,6 +71,7 @@ public class Mesh implements Savable, Cloneable {
     public Mesh(){
     }
 
+    @Override
     public Mesh clone(){
         try{
             Mesh clone = (Mesh) super.clone();
@@ -127,6 +127,26 @@ public class Mesh implements Savable, Cloneable {
             }
         }
         return clone;
+    }
+
+    public void prepareForAnim(boolean swAnim){
+        if (swAnim){
+            // convert indices
+            VertexBuffer indices = getBuffer(Type.BoneIndex);
+            ByteBuffer originalIndex = (ByteBuffer) indices.getData();
+            ByteBuffer arrayIndex = ByteBuffer.allocate(originalIndex.capacity());
+            originalIndex.clear();
+            arrayIndex.put(originalIndex);
+            indices.updateData(arrayIndex);
+
+            // convert weights
+            VertexBuffer weights = getBuffer(Type.BoneWeight);
+            FloatBuffer originalWeight = (FloatBuffer) weights.getData();
+            FloatBuffer arrayWeight = FloatBuffer.allocate(originalWeight.capacity());
+            originalWeight.clear();
+            arrayWeight.put(originalWeight);
+            weights.updateData(arrayWeight);
+        }
     }
 
     public void setLodLevels(VertexBuffer[] lodLevels){

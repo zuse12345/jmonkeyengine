@@ -141,7 +141,7 @@ public class TestFancyCar extends SimplePhysicsApplication implements BindingLis
 
         Spatial car = assetManager.loadModel("Models/Ferrari/Car.scene");
         Node carNode = (Node) car;
-        Geometry chasis = findGeom(carNode, "car");
+        Geometry chasis = findGeom(carNode, "Car");
         BoundingBox box = (BoundingBox) chasis.getModelBound();
 
         Vector3f extent = box.getExtent(null);
@@ -163,7 +163,7 @@ public class TestFancyCar extends SimplePhysicsApplication implements BindingLis
         Vector3f wheelDirection = new Vector3f(0,-1,0);
         Vector3f wheelAxle = new Vector3f(1,0,0);
 
-        Geometry wheel_fr = findGeom(carNode, "front_right");
+        Geometry wheel_fr = findGeom(carNode, "WheelFrontRight");
         wheel_fr.removeFromParent();
         wheel_fr.center();
         node_fr = new Node("wheel_node");
@@ -179,7 +179,7 @@ public class TestFancyCar extends SimplePhysicsApplication implements BindingLis
                 wheelDirection, wheelAxle, 0.2f, wheelRadius, true);
 
 
-        Geometry wheel_fl = findGeom(carNode, "front_left");
+        Geometry wheel_fl = findGeom(carNode, "WheelFrontLeft");
         wheel_fl.removeFromParent();
         wheel_fl.center();
         node_fl = new Node("wheel_node");
@@ -191,7 +191,7 @@ public class TestFancyCar extends SimplePhysicsApplication implements BindingLis
         player.addWheel(primaryNode, box.getCenter().add(0, -front_wheel_h, 0),
                         wheelDirection, wheelAxle, 0.2f, wheelRadius, true);
 
-        Geometry wheel_br = findGeom(carNode, "back_right");
+        Geometry wheel_br = findGeom(carNode, "WheelBackRight");
         wheel_br.removeFromParent();
         wheel_br.center();
         node_br = new Node("wheel_node");
@@ -203,7 +203,7 @@ public class TestFancyCar extends SimplePhysicsApplication implements BindingLis
         player.addWheel(primaryNode, box.getCenter().add(0, -back_wheel_h, 0),
                         wheelDirection, wheelAxle, 0.2f, wheelRadius, false);
 
-        Geometry wheel_bl = findGeom(carNode, "back_left");
+        Geometry wheel_bl = findGeom(carNode, "WheelBackLeft");
         wheel_bl.removeFromParent();
         wheel_bl.center();
         node_bl = new Node("wheel_node");

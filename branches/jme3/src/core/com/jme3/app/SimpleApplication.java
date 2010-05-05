@@ -127,7 +127,8 @@ public abstract class SimpleApplication extends Application {
                             Quaternion rot = cam.getRotation();
                             System.out.println("Camera Position: ("+
                                     loc.x+", "+loc.y+", "+loc.z+")");
-                            System.out.println("Camera Position: "+rot);
+                            System.out.println("Camera Rotation: "+rot);
+                            System.out.println("Camera Direction: "+cam.getDirection());
                         }
                     }else if (binding.equals("SIMPLEAPP_Memory")){
                         BufferUtils.printCurrentDirectMemory(null);

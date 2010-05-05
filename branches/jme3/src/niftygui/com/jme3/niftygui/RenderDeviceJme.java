@@ -16,6 +16,7 @@ import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 import com.jme3.util.BufferUtils;
+import de.lessvoid.nifty.elements.render.TextRenderer.RenderFontNull;
 import de.lessvoid.nifty.render.BlendMode;
 import de.lessvoid.nifty.spi.render.RenderDevice;
 import de.lessvoid.nifty.spi.render.RenderFont;
@@ -120,6 +121,9 @@ public class RenderDeviceJme implements RenderDevice {
 
     public void renderFont(RenderFont font, String str, int x, int y, Color color, float size){
         if (str.length() == 0)
+            return;
+
+        if (font instanceof RenderFontNull)
             return;
 
         RenderFontJme jmeFont = (RenderFontJme) font;

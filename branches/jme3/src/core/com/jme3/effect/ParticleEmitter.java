@@ -52,10 +52,13 @@ public class ParticleEmitter extends Geometry implements Control {
     private ColorRGBA endColor = new ColorRGBA(0.1f,0.1f,0.1f,0.0f);
     private float startSize = 0.2f;
     private float endSize = 2f;
-    private boolean worldSpace = false;
+    private boolean worldSpace = true;
 
     public ParticleEmitter(String name, Type type, int numParticles){
         super(name);
+
+        // ignore world transform, unless user sets inLocalSpace
+        setIgnoreTransform(true);
 
         // particles neither recieve nor cast shadows
         setShadowMode(ShadowMode.Off);
@@ -80,6 +83,19 @@ public class ParticleEmitter extends Geometry implements Control {
 
     public void setShape(EmitterShape shape) {
         this.shape = shape;
+    }
+
+    public EmitterShape getShape(){
+        return shape;
+    }
+
+    public boolean isInWorldSpace() {
+        return worldSpace;
+    }
+
+    public void setInWorldSpace(boolean worldSpace) {
+        setIgnoreTransform(worldSpace);
+        this.worldSpace = worldSpace;
     }
 
     public int getNumVisibleParticles(){
@@ -268,6 +284,9 @@ public class ParticleEmitter extends Geometry implements Control {
         p.color.set(startColor);
         p.size = startSize;
         shape.getRandomPoint(p.position);
+        if (worldSpace){
+            p.position.addLocal(worldTransform.getTranslation());
+        }
         p.velocity.set(startVel);
         if (randomAngle)
             p.angle = FastMath.nextRandomFloat() * FastMath.TWO_PI;

@@ -37,6 +37,7 @@ public class DesktopAssetManager implements AssetManager {
     public DesktopAssetManager(boolean loadDefaults){
         if (loadDefaults){
             AssetConfig cfg = new AssetConfig(this);
+//            InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream("Desktop.cfg");
             InputStream stream = DesktopAssetManager.class.getResourceAsStream("Desktop.cfg");
             try{
                 cfg.loadText(stream);

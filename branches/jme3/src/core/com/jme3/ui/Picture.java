@@ -32,6 +32,9 @@ public class Picture extends Geometry {
         this(name, false);
     }
 
+    public Picture(){
+    }
+
     public void setWidth(float width){
         this.width = width;
         setLocalScale(new Vector3f(width, height, 1f));

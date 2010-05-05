@@ -232,8 +232,12 @@ public class RenderManager {
             renderer.setWorldMatrix(mat);
     }
 
-    public void renderGeometry(Geometry g) {    
-        setWorldMatrix(g.getWorldMatrix());
+    public void renderGeometry(Geometry g) {
+        if (g.isIgnoreTransform()){
+            setWorldMatrix(Matrix4f.IDENTITY);
+        }else{
+            setWorldMatrix(g.getWorldMatrix());
+        }
 
         if (forcedMaterial != null){
             // use forced material

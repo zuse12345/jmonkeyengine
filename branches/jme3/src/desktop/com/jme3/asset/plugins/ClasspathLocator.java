@@ -47,11 +47,11 @@ public class ClasspathLocator implements AssetLocator {
     public AssetInfo locate(AssetManager manager, AssetKey key) {
         URL url;
         String name = key.getName();
-        if (name.startsWith(root)){
-            url = ClasspathLocator.class.getResource(name);
-        }else{
-            url = ClasspathLocator.class.getResource(root + name);
-        }
+//        if (!name.startsWith(root)){
+//            name = root + name;
+//        }
+        //url = ClasspathLocator.class.getResource(name);
+        url = Thread.currentThread().getContextClassLoader().getResource(name);
         if (url == null)
             return null;
         

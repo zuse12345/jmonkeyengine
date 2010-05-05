@@ -67,7 +67,7 @@ public class TestSimplePhysics extends SimplePhysicsApplication{
     public void simpleInitApp() {
 
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
-        TextureKey key = new TextureKey("Monkey.jpg", true);
+        TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);
         key.setGenerateMips(true);
         Texture tex = assetManager.loadTexture(key);
         tex.setMinFilter(Texture.MinFilter.Trilinear);

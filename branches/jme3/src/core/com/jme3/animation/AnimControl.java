@@ -87,6 +87,18 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
         animationMap = animations;
     }
 
+    public BoneAnimation getAnim(String name){
+        return animationMap.get(name);
+    }
+
+    public void addAnim(BoneAnimation anim){
+        animationMap.put(anim.getName(), anim);
+    }
+
+    public void removeAnim(BoneAnimation anim){
+        animationMap.remove(anim.getName());
+    }
+
     public AnimChannel createChannel(){
         AnimChannel channel = new AnimChannel(this);
         channels.add(channel);
@@ -142,11 +154,16 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
 
     void resetToBind(){
         for (int i = 0; i < targets.length; i++){
+            Mesh mesh = targets[i];
             if (targets[i].getBuffer(Type.BindPosePosition) != null){
-                VertexBuffer bindPos = targets[i].getBuffer(Type.BindPosePosition);
-                VertexBuffer bindNorm = targets[i].getBuffer(Type.BindPoseNormal);
-                VertexBuffer pos = targets[i].getBuffer(Type.Position);
-                VertexBuffer norm = targets[i].getBuffer(Type.Normal);
+                VertexBuffer bi = mesh.getBuffer(Type.BoneIndex);
+                if (!bi.getData().hasArray())
+                    mesh.prepareForAnim(true);
+                    
+                VertexBuffer bindPos = mesh.getBuffer(Type.BindPosePosition);
+                VertexBuffer bindNorm = mesh.getBuffer(Type.BindPoseNormal);
+                VertexBuffer pos = mesh.getBuffer(Type.Position);
+                VertexBuffer norm = mesh.getBuffer(Type.Normal);
                 FloatBuffer pb = (FloatBuffer) pos.getData();
                 FloatBuffer nb = (FloatBuffer) norm.getData();
                 FloatBuffer bpb = (FloatBuffer) bindPos.getData();

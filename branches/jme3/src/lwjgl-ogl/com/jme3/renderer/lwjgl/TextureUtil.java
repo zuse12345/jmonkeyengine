@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 import org.lwjgl.opengl.ARBDepthBufferFloat;
 import org.lwjgl.opengl.ARBHalfFloatPixel;
 import org.lwjgl.opengl.ARBTextureFloat;
-import org.lwjgl.opengl.ATITextureCompression3DC;
 import org.lwjgl.opengl.EXTPackedFloat;
 import org.lwjgl.opengl.EXTTextureArray;
 import org.lwjgl.opengl.EXTTextureSharedExponent;
@@ -308,6 +307,8 @@ public class TextureUtil {
                 mipSizes = new int[]{ width * height * fmt.getBitsPerPixel() / 8 };
         }
 
+        boolean subtex = false;
+
         for (int i = 0; i < mipSizes.length; i++){
             int mipWidth =  Math.max(1, width  >> i);
             int mipHeight = Math.max(1, height >> i);
@@ -319,14 +320,7 @@ public class TextureUtil {
             }
             
             if (compress && data != null){
-                if (target == GL_TEXTURE_1D){
-                    glCompressedTexImage1D(target,
-                                           i,
-                                           internalFormat,
-                                           mipWidth,
-                                           border,
-                                           data);
-                }else if (target == GL_TEXTURE_3D){
+                if (target == GL_TEXTURE_3D){
                     glCompressedTexImage3D(target,
                                            i,
                                            internalFormat,
@@ -346,16 +340,7 @@ public class TextureUtil {
                                            data);
                 }
             }else{
-                if (target == GL_TEXTURE_1D){
-                    glTexImage1D(target,
-                                 i,
-                                 internalFormat,
-                                 mipWidth,
-                                 border,
-                                 format,
-                                 dataType,
-                                 data);
-                }else if (target == GL_TEXTURE_3D){
+                if (target == GL_TEXTURE_3D){
                     glTexImage3D(target,
                                  i,
                                  internalFormat,
@@ -394,15 +379,25 @@ public class TextureUtil {
                                         data);
                     }
                 }else{
-                    glTexImage2D(target,
-                                 i,
-                                 internalFormat,
-                                 mipWidth,
-                                 mipHeight,
-                                 border,
-                                 format,
-                                 dataType,
-                                 data);
+                    if (subtex){
+                        glTexSubImage2D(target,
+                                        i,
+                                        0, 0,
+                                        mipWidth, mipHeight,
+                                        format,
+                                        dataType,
+                                        data);
+                    }else{
+                        glTexImage2D(target,
+                                     i,
+                                     internalFormat,
+                                     mipWidth,
+                                     mipHeight,
+                                     border,
+                                     format,
+                                     dataType,
+                                     data);
+                    }
                 }
             }
             

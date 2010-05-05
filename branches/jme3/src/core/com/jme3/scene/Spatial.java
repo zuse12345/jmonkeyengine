@@ -231,6 +231,10 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         return name;
     }
 
+    public LightList getLocalLightList(){
+        return localLights;
+    }
+
     public LightList getWorldLightList() {
         return worldLights;
     }

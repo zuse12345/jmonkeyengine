@@ -24,7 +24,9 @@ class Natives {
     public static void extractNativeLib(String sysName, String name, boolean load) throws IOException{
         String fullname = System.mapLibraryName(name);
 
-        InputStream in = Natives.class.getResourceAsStream("/native/"+sysName+"/" + fullname);
+        String path = "/native/"+sysName+"/" + fullname;
+        InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
+        //InputStream in = Natives.class.getResourceAsStream();
         if (in == null) {
             logger.log(Level.WARNING, "Cannot locate native library: {0}/{1}", 
                     new String[]{ sysName, fullname} );

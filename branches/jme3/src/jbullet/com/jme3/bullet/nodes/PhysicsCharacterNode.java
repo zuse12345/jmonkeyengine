@@ -43,27 +43,26 @@ import com.jme3.bullet.util.Converter;
  *
  * @author normenhansen
  */
-public class PhysicsCharacterNode extends PhysicsGhostNode{
+public class PhysicsCharacterNode extends PhysicsGhostNode {
+
     private KinematicCharacterController character;
-
     private float stepHeight;
-
-    private Vector3f walkDirection=new Vector3f();
-
+    private Vector3f walkDirection = new Vector3f();
 
     public PhysicsCharacterNode(Spatial spat, CollisionShape shape, float stepHeight) {
         super(spat, shape);
-        this.stepHeight=stepHeight;
-        character=new KinematicCharacterController(gObject, (ConvexShape)cShape.getCShape(), stepHeight);
-   }
+        this.stepHeight = stepHeight;
+        character = new KinematicCharacterController(gObject, (ConvexShape) cShape.getCShape(), stepHeight);
+    }
 
     @Override
     protected void buildObject() {
         super.buildObject();
+        gObject.setCollisionFlags(gObject.getCollisionFlags() & ~CollisionFlags.NO_CONTACT_RESPONSE);
         gObject.setCollisionFlags(gObject.getCollisionFlags() | CollisionFlags.CHARACTER_OBJECT);
     }
 
-    public void warp(Vector3f location){
+    public void warp(Vector3f location) {
         character.warp(Converter.convert(location));
     }
 
@@ -71,16 +70,16 @@ public class PhysicsCharacterNode extends PhysicsGhostNode{
      * set the walk direction, works continuously
      * @param vec the walk direction to set
      */
-    public void setWalkDirection(Vector3f vec){
+    public void setWalkDirection(Vector3f vec) {
         walkDirection.set(vec);
         character.setWalkDirection(Converter.convert(walkDirection));
     }
 
-    public void setUpAxis(int axis){
+    public void setUpAxis(int axis) {
         character.setUpAxis(axis);
     }
 
-    public void setMaxJumpHeight(float height){
+    public void setMaxJumpHeight(float height) {
         character.setMaxJumpHeight(height);
     }
 
@@ -99,5 +98,4 @@ public class PhysicsCharacterNode extends PhysicsGhostNode{
     public void destroy() {
         super.destroy();
     }
-
 }

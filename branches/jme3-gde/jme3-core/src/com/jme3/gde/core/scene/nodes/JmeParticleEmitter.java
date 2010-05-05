@@ -31,6 +31,7 @@
  */
 package com.jme3.gde.core.scene.nodes;
 
+import com.jme3.effect.EmitterShape;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.gde.core.scene.nodes.properties.JmeProperty;
 import com.jme3.math.ColorRGBA;
@@ -79,9 +80,9 @@ public class JmeParticleEmitter extends JmeGeometry {
             return sheet;
         }
 
-//        set.put(makeProperty(obj, ParticleMesh.Type.class, "getType", "type"));
         set.put(makeProperty(obj, boolean.class, "isEnabled", "setEnabled", "enabled"));
-//        set.put(makeProperty(obj, int.class, "getNumParticles", "setNumParticles", "num particles"));
+        set.put(makeProperty(obj, EmitterShape.class, "getShape", "setShape", "emitter shape"));
+        set.put(makeProperty(obj, int.class, "getNumVisibleParticles", "setNumParticles", "num particles"));
         set.put(makeProperty(obj, float.class, "getParticlesPerSec", "setParticlesPerSec", "particles per sec"));
         set.put(makeProperty(obj, ColorRGBA.class, "getStartColor", "setStartColor", "start color"));
         set.put(makeProperty(obj, ColorRGBA.class, "getEndColor", "setEndColor", "end color"));

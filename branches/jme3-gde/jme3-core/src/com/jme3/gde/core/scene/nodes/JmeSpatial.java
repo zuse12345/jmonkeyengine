@@ -53,6 +53,7 @@ import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.PasteAction;
+import org.openide.actions.RenameAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
@@ -98,6 +99,7 @@ public class JmeSpatial extends AbstractNode {
 
     protected SystemAction[] createActions() {
         return new SystemAction[]{
+                    SystemAction.get(RenameAction.class),
                     SystemAction.get(CopyAction.class),
                     SystemAction.get(CutAction.class),
                     SystemAction.get(PasteAction.class),
@@ -118,6 +120,29 @@ public class JmeSpatial extends AbstractNode {
     @Override
     public boolean canDestroy() {
         return true;
+    }
+
+    @Override
+    public boolean canRename() {
+        return super.canRename();
+    }
+
+    @Override
+    public void setName(final String s) {
+        super.setName(s);
+        try {
+            SceneApplication.getApplication().enqueue(new Callable<Void>() {
+
+                public Void call() throws Exception {
+                    spatial.setName(s);
+                    return null;
+                }
+            }).get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     @Override

@@ -31,6 +31,7 @@
  */
 package com.jme3.gde.core.scene.nodes.properties;
 
+import com.jme3.effect.EmitterShape;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -61,6 +62,9 @@ public class JmeProperty<T> extends PropertySupport.Reflection<T> {
         }
         else if (valueType == Material.class) {
             setPropertyEditorClass(MaterialPropertyEditor.class);
+        }
+        else if (valueType == EmitterShape.class) {
+            setPropertyEditorClass(EmitterShapePropertyEditor.class);
         }
     }
 

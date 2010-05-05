@@ -40,9 +40,9 @@ public final class OgreXMLToJme implements ActionListener {
         }
 
         if (context != null) {
-            Callable run = new Callable() {
+            Runnable run = new Runnable() {
 
-                public Void call() {
+                public void run() {
                     ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Converting OgreXML");
                     progressHandle.start();
 
@@ -65,10 +65,9 @@ public final class OgreXMLToJme implements ActionListener {
                         DialogDisplayer.getDefault().notify(msg);
                     }
                     progressHandle.finish();
-                    return null;
                 }
             };
-            SceneApplication.getApplication().enqueue(run);
+            new Thread(run).start();
         }
 
         StatusDisplayer.getDefault().setStatusText("Import with project AssetManager: " + manager);

@@ -71,6 +71,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
@@ -118,7 +120,10 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     private SceneRequest currentSceneRequest;
     private PreviewRequest currentPreviewRequest;
 
+    private ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Opening SceneViewer..");
+
     public SceneApplication() {
+        progressHandle.start(7);
         AppSettings newSetting = new AppSettings(true);
         newSetting.setFrameRate(30);
 //        settings.setVSync(true);
@@ -136,6 +141,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         createCanvas();
         getContext().setAutoFlushFrames(true);
         getContext().setSystemListener(this);
+        progressHandle.progress("initialize Base Application", 1);
     }
 
     private void loadFPSText() {
@@ -158,27 +164,34 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     @Override
     public void initialize() {
         super.initialize();
+        progressHandle.progress("Setup Camera Controller", 2);
         //create camera controler
         camController = new SceneCameraController(cam, inputManager);
         //create preview view
+        progressHandle.progress("Setup Preview Scene", 3);
         setupPreviewView();
 
         // enable depth test and back-face culling for performance
         renderer.applyRenderState(RenderState.DEFAULT);
 
+        progressHandle.progress("Prepare Camera", 4);
         camLight = new PointLight();
         camLight.setColor(ColorRGBA.White);
         rootNode.addLight(camLight);
 
+        progressHandle.progress("Prepare Stats View", 5);
         guiNode.setQueueBucket(Bucket.Gui);
         guiNode.setCullHint(CullHint.Never);
         loadFPSText();
         loadStatsView();
+        progressHandle.progress("Attach Scene to Viewport", 6);
         viewPort.attachScene(rootNode);
         guiViewPort.attachScene(guiNode);
         cam.setLocation(new Vector3f(0, 0, 10));
 
+        progressHandle.progress("Create", 6);
         wireProcessor = new WireProcessor(assetManager);
+        progressHandle.finish();
     }
 
     private void doPreviews() {

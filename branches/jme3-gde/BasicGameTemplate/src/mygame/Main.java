@@ -1,4 +1,4 @@
-package com.jme3.game;
+package mygame;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.material.Material;
@@ -25,7 +25,7 @@ public class Main extends SimpleApplication {
         Geometry geom = new Geometry("Box", b);
         geom.updateModelBound();
 
-        Material mat = new Material(manager, "Common/MatDefs/Misc/SolidColor.j3md");
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/SolidColor.j3md");
         mat.setColor("m_Color", ColorRGBA.Blue);
         geom.setMaterial(mat);
 

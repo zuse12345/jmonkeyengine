@@ -36,6 +36,22 @@ public class EmitterSphereShape implements EmitterShape {
         store.multLocal(radius).addLocal(center);
     }
 
+    public Vector3f getCenter() {
+        return center;
+    }
+
+    public void setCenter(Vector3f center) {
+        this.center = center;
+    }
+
+    public float getRadius() {
+        return radius;
+    }
+
+    public void setRadius(float radius) {
+        this.radius = radius;
+    }
+    
     public void write(JmeExporter ex) throws IOException {
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(center, "center", null);
@@ -47,5 +63,5 @@ public class EmitterSphereShape implements EmitterShape {
         center = (Vector3f) ic.readSavable("center", null);
         radius = ic.readFloat("radius", 0);
     }
-    
+
 }

@@ -21,6 +21,14 @@ public class EmitterPointShape implements EmitterShape {
        store.set(point);
     }
 
+    public Vector3f getPoint() {
+        return point;
+    }
+
+    public void setPoint(Vector3f point) {
+        this.point = point;
+    }
+
     public void write(JmeExporter ex) throws IOException {
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(point, "point", null);

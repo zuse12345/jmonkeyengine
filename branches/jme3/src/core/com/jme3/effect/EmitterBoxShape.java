@@ -29,6 +29,22 @@ public class EmitterBoxShape implements EmitterShape {
         store.z = min.z + len.z * FastMath.nextRandomFloat();
     }
 
+    public Vector3f getMin() {
+        return min;
+    }
+
+    public void setMin(Vector3f min) {
+        this.min = min;
+    }
+
+    public Vector3f getLen() {
+        return len;
+    }
+
+    public void setLen(Vector3f len) {
+        this.len = len;
+    }
+
     public void write(JmeExporter ex) throws IOException {
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(min, "min", null);

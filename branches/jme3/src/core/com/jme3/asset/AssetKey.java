@@ -29,7 +29,7 @@ public class AssetKey implements Savable {
     protected static String getExtension(String name){
         int idx = name.lastIndexOf('.');
         //workaround for filenames ending with xml and another dot ending before that (my.mesh.xml)
-        if(name.indexOf(".xml")==name.length()-4){
+        if(name.toLowerCase().indexOf(".xml")==name.length()-4){
             idx = name.substring(0, idx).lastIndexOf('.');;
             if(idx==-1){
                 idx=name.lastIndexOf('.');

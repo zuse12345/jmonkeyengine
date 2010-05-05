@@ -32,25 +32,43 @@
 package com.jme3.gde.core.assets.nodes;
 
 import com.jme3.gde.core.assets.ProjectAssetManager;
+import com.jme3.gde.core.filetypes.AssetDataObject;
 import java.awt.Image;
 import org.netbeans.api.project.Project;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.AbstractNode;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
  * @author normenhansen
  */
-public class ProjectAssetsNode extends AbstractNode {
+public class ProjectAssetsNode extends FilterNode {
 
     private static Image smallImage =
             ImageUtilities.loadImage("/com/jme3/gde/core/assets/nodes/icons/assets.gif");
 
     public ProjectAssetsNode(ProjectAssetManager manager, Project proj, Node node) throws DataObjectNotFoundException {
-        super(new AssetChildren(manager, node), Lookups.fixed(manager));
+        super(node, new AssetChildren(manager, node), createLookupProxy(manager, node));
+        enableDelegation(DELEGATE_GET_ACTIONS);
+        enableDelegation(DELEGATE_GET_CONTEXT_ACTIONS);
+    }
+
+    public static Lookup createLookupProxy(ProjectAssetManager manager, Node node) {
+        DataObject obj = node.getLookup().lookup(DataObject.class);
+        if (obj instanceof AssetDataObject && obj.getLookup().lookup(ProjectAssetManager.class) == null) {
+            ((AssetDataObject) obj).getLookupContents().add(manager);
+        }
+        return new ProxyLookup(
+                new Lookup[]{
+                    node.getLookup(),
+                    Lookups.fixed(manager)
+                });
     }
 
     public String getDisplayName() {

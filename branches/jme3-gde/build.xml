@@ -21,6 +21,10 @@
         </exec>
     </target>
 
+    <!--creates update center version via hudson build server-->
+    <target name="dist-gde-hudson" depends="suite.clean, zip-templates, -set-impl-version-hudson, suite.nbms, unset-impl-version-hudson">
+    </target>
+
     <!--replaces default values in config file-->
     <target name="-create-netbeans-config">
         <mkdir dir="build/launcher/etc"/>
@@ -32,7 +36,18 @@
         </copy>
     </target>
 
-    <target name="dist-gde-hudson" depends="suite.clean, zip-templates, -set-impl-version-hudson, suite.nbms, unset-impl-version-hudson">
+    <!--overriding mac build target to copy icon-->
+    <target name="build-mac" depends="suite.build-mac, -copy-mac-icon" description="Build Mac OS X Application">
+    </target>
+
+    <!--copy mac icon-->
+    <target name="-copy-mac-icon">
+        <echo>Copy mac icon..</echo>
+        <property name="nbdist-contents.dir" value="${dist.dir}/${app.name}.app/Contents"/>
+        <property name="nbdist-resources.dir" value="${nbdist-contents.dir}/Resources"/>
+        <!-- Replace the icns file. -->
+        <delete file="${nbdist-resources.dir}/${app.name}.icns"/>
+        <copy tofile="${nbdist-resources.dir}/${app.name}.icns" file="${app.name}.icns" />
     </target>
 
     <!--zips up the templates and adds them to the template project-->
@@ -61,9 +76,6 @@
 
     <target name="unset-impl-version">
         <property file="nbproject/project.properties"/>
-        <antcall target="-create-jme3-svn-properties" inheritall="true">
-            <param name="jme3_dir" value="../jme3/"/>
-        </antcall>
         <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true">
             <param name="set_impl_version" value="false"/>
         </foreach>
@@ -81,9 +93,6 @@
 
     <target name="unset-impl-version-hudson">
         <property file="nbproject/project.properties"/>
-        <antcall target="-create-jme3-svn-properties" inheritall="true">
-            <param name="jme3_dir" value="../../jme3/workspace/"/>
-        </antcall>
         <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true">
             <param name="set_impl_version" value="false"/>
         </foreach>
@@ -91,17 +100,18 @@
 
     <!--sets/unsets implementation version to svn revision for plugins-->
     <target name="-do-impl-version">
-        <!--load correct svn properties for project-->
+        <!--jme3 libraries-->
         <if>
             <or>
                 <equals arg1="${module_dir}" arg2="jme3-core-libraries"/>
                 <equals arg1="${module_dir}" arg2="jme3-project-libraries"/>
             </or>
             <then>
-                <!--set jme3 svn revision for these projects-->
+                <!--set jme3 libraries svn revision-->
                 <property prefix="svn" file="build/jme3-lib-svn.properties"/>
             </then>
             <else>
+                <!--jme3 core-->
                 <if>
                     <or>
                         <equals arg1="${module_dir}" arg2="jme3-core-baselibs"/>
@@ -109,22 +119,30 @@
                         <equals arg1="${module_dir}" arg2="jme3-tests-template"/>
                     </or>
                     <then>
-                        <!--set jme3-testdata svn revision for this project-->
+                        <!--set jme3 svn revision-->
                         <property prefix="svn" file="build/jme3-svn.properties"/>
                     </then>
                     <else>
+                        <!--jme3 test data-->
                         <if>
                             <equals arg1="${module_dir}" arg2="jme3-project-testdata"/>
                             <then>
-                                <!--set jme3-testdata svn revision for this project-->
+                                <!--set jme3 testdata svn revision-->
                                 <property prefix="svn" file="build/jme3-testdata-svn.properties"/>
                             </then>
+                            <!--"normal" module-->
                             <else>
-                                <!--load and set svn revision of this projects folder for this project-->
-                                <exec executable="svn" output="build/${module_dir}-svn.properties" dir="${module_dir}">
-                                    <arg value="info" />
-                                </exec>
-                                <replace file="build/${module_dir}-svn.properties" token="Last Changed Rev" value="Lastchange"/>
+                                <!--load svn revision of this modules folder if we are setting the value-->
+                                <if>
+                                    <equals arg1="${set_impl_version}" arg2="true"/>
+                                    <then>
+                                        <exec executable="svn" output="build/${module_dir}-svn.properties" dir="${module_dir}">
+                                            <arg value="info" />
+                                        </exec>
+                                        <replace file="build/${module_dir}-svn.properties" token=" " value=""/>
+                                    </then>
+                                </if>
+                                <!--set svn revision of module-->
                                 <property prefix="svn" file="build/${module_dir}-svn.properties"/>
                             </else>
                         </if>
@@ -136,12 +154,12 @@
         <if>
             <equals arg1="${set_impl_version}" arg2="true"/>
             <then>
-                <echo>Setting implementation version for ${module_dir} to revision: ${svn.Lastchange}</echo>
-                <replace  file="${module_dir}/manifest.mf" token="OpenIDE-Module-Implementation-Version: 0" value="OpenIDE-Module-Implementation-Version: ${svn.Lastchange}"/>
+                <echo>Setting implementation version for ${module_dir} to revision: ${svn.LastChangedRev}</echo>
+                <replace  file="${module_dir}/manifest.mf" token="OpenIDE-Module-Implementation-Version: 0" value="OpenIDE-Module-Implementation-Version: ${svn.LastChangedRev}"/>
             </then>
             <else>
-                <echo>Removing implementation version for ${module_dir} from revision: ${svn.Lastchange}</echo>
-                <replace file="${module_dir}/manifest.mf" token="OpenIDE-Module-Implementation-Version: ${svn.Lastchange}" value="OpenIDE-Module-Implementation-Version: 0"/>
+                <echo>Removing implementation version for ${module_dir} from revision: ${svn.LastChangedRev}</echo>
+                <replace file="${module_dir}/manifest.mf" token="OpenIDE-Module-Implementation-Version: ${svn.LastChangedRev}" value="OpenIDE-Module-Implementation-Version: 0"/>
             </else>
         </if>
 
@@ -162,31 +180,17 @@
         <exec executable="svn" dir="${jme3_dir}" output="build/jme3-svn.properties">
             <arg value="info" />
         </exec>
-        <replace file="build/jme3-svn.properties" token="Last Changed Rev" value="Lastchange"/>
+        <replace file="build/jme3-svn.properties" token=" " value=""/>
         <!--jme3 test data svn properties-->
         <exec executable="svn" dir="${jme3_dir}/src/test-data/" output="build/jme3-testdata-svn.properties">
             <arg value="info" />
         </exec>
-        <replace file="build/jme3-testdata-svn.properties" token="Last Changed Rev" value="Lastchange"/>
+        <replace file="build/jme3-testdata-svn.properties" token=" " value=""/>
         <!--jme3 libraries svn properties-->
         <exec executable="svn" dir="${jme3_dir}/lib/" output="build/jme3-lib-svn.properties">
             <arg value="info" />
         </exec>
-        <replace file="build/jme3-lib-svn.properties" token="Last Changed Rev" value="Lastchange"/>
-    </target>
-
-    <!--overriding mac build target to copy icon-->
-    <target name="build-mac" depends="suite.build-mac, -copy-mac-icon" description="Build Mac OS X Application">
-    </target>
-
-    <!--copy mac icon-->
-    <target name="-copy-mac-icon">
-        <echo>Copy mac icon..</echo>
-        <property name="nbdist-contents.dir" value="${dist.dir}/${app.name}.app/Contents"/>
-        <property name="nbdist-resources.dir" value="${nbdist-contents.dir}/Resources"/>
-        <!-- Replace the icns file. -->
-        <delete file="${nbdist-resources.dir}/${app.name}.icns"/>
-        <copy tofile="${nbdist-resources.dir}/${app.name}.icns" file="${app.name}.icns" />
+        <replace file="build/jme3-lib-svn.properties" token=" " value=""/>
     </target>
 
 </project>

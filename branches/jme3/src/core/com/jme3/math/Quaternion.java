@@ -790,7 +790,7 @@ public final class Quaternion implements Savable, Cloneable {
 	/**
      * <code>mult</code> multiplies this quaternion by a parameter quaternion.
      * The result is returned as a new quaternion. It should be noted that
-     * quaternion multiplication is not cummulative so q * p != p * q.
+     * quaternion multiplication is not commutative so q * p != p * q.
      *
      * @param q
      *            the quaternion to multiply this quaternion by.
@@ -803,7 +803,7 @@ public final class Quaternion implements Savable, Cloneable {
     /**
      * <code>mult</code> multiplies this quaternion by a parameter quaternion.
      * The result is returned as a new quaternion. It should be noted that
-     * quaternion multiplication is not cummulative so q * p != p * q.
+     * quaternion multiplication is not commutative so q * p != p * q.
      *
      * It IS safe for q and res to be the same object.
      *

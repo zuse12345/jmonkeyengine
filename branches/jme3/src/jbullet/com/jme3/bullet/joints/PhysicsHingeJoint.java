@@ -35,6 +35,11 @@ import com.bulletphysics.dynamics.constraintsolver.HingeConstraint;
 import com.jme3.math.Vector3f;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.util.Converter;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
+import java.io.IOException;
 
 /**
  * <i>From bullet manual:</i><br>
@@ -44,9 +49,17 @@ import com.jme3.bullet.util.Converter;
  * The user can specify limits and motor for the hinge.
  * @author normenhansen
  */
-public class PhysicsHingeJoint extends PhysicsJoint{
+public class PhysicsHingeJoint extends PhysicsJoint {
+
     protected Vector3f axisA;
     protected Vector3f axisB;
+    protected boolean angularOnly = false;
+    protected float biasFactor = 0.3f;
+    protected float relaxationFactor = 1.0f;
+    protected float limitSoftness = 0.9f;
+
+    public PhysicsHingeJoint() {
+    }
 
     /**
      * Creates a new HingeJoint
@@ -55,27 +68,81 @@ public class PhysicsHingeJoint extends PhysicsJoint{
      */
     public PhysicsHingeJoint(PhysicsNode nodeA, PhysicsNode nodeB, Vector3f pivotA, Vector3f pivotB, Vector3f axisA, Vector3f axisB) {
         super(nodeA, nodeB, pivotA, pivotB);
-        this.axisA=axisA;
-        this.axisB=axisB;
-        constraint=new HingeConstraint(nodeA.getRigidBody(), nodeB.getRigidBody(),
-                Converter.convert(pivotA), Converter.convert(pivotB),
-                Converter.convert(axisA), Converter.convert(axisB));
+        this.axisA = axisA;
+        this.axisB = axisB;
+        createJoint();
     }
 
-    public void enableMotor(boolean enable, float targetVelocity, float maxMotorImpulse){
-        ((HingeConstraint)constraint).enableAngularMotor(enable, targetVelocity, maxMotorImpulse);
+    public void enableMotor(boolean enable, float targetVelocity, float maxMotorImpulse) {
+        ((HingeConstraint) constraint).enableAngularMotor(enable, targetVelocity, maxMotorImpulse);
     }
 
-	public void setLimit(float low, float high) {
-        ((HingeConstraint)constraint).setLimit(low,high);
+    public void setLimit(float low, float high) {
+        ((HingeConstraint) constraint).setLimit(low, high);
     }
 
-	public void setLimit(float low, float high, float _softness, float _biasFactor, float _relaxationFactor) {
-        ((HingeConstraint)constraint).setLimit(low, high, _softness, _biasFactor, _relaxationFactor);
+    public void setLimit(float low, float high, float _softness, float _biasFactor, float _relaxationFactor) {
+        biasFactor = _biasFactor;
+        relaxationFactor = _relaxationFactor;
+        limitSoftness = _softness;
+        ((HingeConstraint) constraint).setLimit(low, high, _softness, _biasFactor, _relaxationFactor);
     }
 
-    public float getHingeAngle(){
+    public void setAngularOnly(boolean angularOnly) {
+        this.angularOnly = angularOnly;
+        ((HingeConstraint) constraint).setAngularOnly(angularOnly);
+    }
+
+    public float getHingeAngle() {
         return ((HingeConstraint) constraint).getHingeAngle();
     }
 
+    public void write(JmeExporter ex) throws IOException {
+        super.write(ex);
+        OutputCapsule capsule = ex.getCapsule(this);
+        capsule.write(axisA, "axisA", new Vector3f());
+        capsule.write(axisB, "axisB", new Vector3f());
+
+        capsule.write(angularOnly, "angularOnly", false);
+
+        capsule.write(((HingeConstraint) constraint).getLowerLimit(), "lowerLimit", 1e30f);
+        capsule.write(((HingeConstraint) constraint).getUpperLimit(), "upperLimit", -1e30f);
+
+        capsule.write(biasFactor, "biasFactor", 0.3f);
+        capsule.write(relaxationFactor, "relaxationFactor", 1f);
+        capsule.write(limitSoftness, "limitSoftness", 0.9f);
+
+        capsule.write(((HingeConstraint) constraint).getEnableAngularMotor(), "enableAngularMotor", false);
+        capsule.write(((HingeConstraint) constraint).getMotorTargetVelosity(), "targetVelocity", 0.0f);
+        capsule.write(((HingeConstraint) constraint).getMaxMotorImpulse(), "maxMotorImpulse", 0.0f);
+    }
+
+    public void read(JmeImporter im) throws IOException {
+        super.read(im);
+        InputCapsule capsule = im.getCapsule(this);
+        this.axisA = (Vector3f) capsule.readSavable("axisA", new Vector3f());
+        this.axisB = (Vector3f) capsule.readSavable("axisB", new Vector3f());
+
+        this.angularOnly = capsule.readBoolean("angularOnly", false);
+        float lowerLimit = capsule.readFloat("lowerLimit", 1e30f);
+        float upperLimit = capsule.readFloat("upperLimit", -1e30f);
+
+        this.biasFactor = capsule.readFloat("biasFactor", 0.3f);
+        this.relaxationFactor = capsule.readFloat("relaxationFactor", 1f);
+        this.limitSoftness = capsule.readFloat("limitSoftness", 0.9f);
+
+        boolean enableAngularMotor=capsule.readBoolean("enableAngularMotor", false);
+        float targetVelocity=capsule.readFloat("targetVelocity", 0.0f);
+        float maxMotorImpulse=capsule.readFloat("maxMotorImpulse", 0.0f);
+
+        createJoint();
+        enableMotor(enableAngularMotor, targetVelocity, maxMotorImpulse);
+        ((HingeConstraint) constraint).setLimit(lowerLimit, upperLimit, limitSoftness, biasFactor, relaxationFactor);
+    }
+
+    protected void createJoint() {
+        constraint = new HingeConstraint(nodeA.getRigidBody(), nodeB.getRigidBody(),
+                Converter.convert(pivotA), Converter.convert(pivotB),
+                Converter.convert(axisA), Converter.convert(axisB));
+    }
 }

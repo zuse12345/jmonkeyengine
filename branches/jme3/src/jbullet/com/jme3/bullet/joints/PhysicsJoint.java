@@ -36,20 +36,26 @@ import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.math.Vector3f;
 import com.jme3.bullet.nodes.PhysicsNode;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
 import java.io.IOException;
 
 /**
- * <p>PhysicsJoint - Basic jbullet-jme Phyiscs Joint</p>
+ * <p>PhysicsJoint - Basic Phyiscs Joint</p>
  * @author normenhansen
  */
-public abstract class PhysicsJoint implements Savable{
+public abstract class PhysicsJoint implements Savable {
+
     protected TypedConstraint constraint;
     protected PhysicsNode nodeA;
     protected PhysicsNode nodeB;
     protected Vector3f pivotA;
     protected Vector3f pivotB;
-    protected boolean collisionBetweenLinkedBodys=true;
+    protected boolean collisionBetweenLinkedBodys = true;
+
+    public PhysicsJoint() {
+    }
 
     /**
      * @param pivotA local translation of the joint connection point in node A
@@ -85,15 +91,22 @@ public abstract class PhysicsJoint implements Savable{
         this.collisionBetweenLinkedBodys = collisionBetweenLinkedBodys;
     }
 
-    public void destroy(){
-    }
-
-    public void read(JmeImporter im) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void destroy() {
     }
 
     public void write(JmeExporter ex) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        OutputCapsule capsule = ex.getCapsule(this);
+        capsule.write(nodeA, "nodeA", null);
+        capsule.write(nodeB, "nodeB", null);
+        capsule.write(pivotA, "pivotA", null);
+        capsule.write(pivotB, "pivotB", null);
     }
 
+    public void read(JmeImporter im) throws IOException {
+        InputCapsule capsule = im.getCapsule(this);
+        this.nodeA = (PhysicsNode) capsule.readSavable("nodeA", new PhysicsNode());
+        this.nodeB = (PhysicsNode) capsule.readSavable("nodeB", new PhysicsNode());
+        this.pivotA = (Vector3f) capsule.readSavable("pivotA", new Vector3f());
+        this.pivotB = (Vector3f) capsule.readSavable("pivotB", new Vector3f());
+    }
 }

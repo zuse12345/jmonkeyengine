@@ -37,6 +37,11 @@ import com.jme3.math.Matrix3f;
 import com.jme3.math.Vector3f;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.util.Converter;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
+import java.io.IOException;
 
 /**
  * <i>From bullet manual:</i><br>
@@ -45,43 +50,81 @@ import com.jme3.bullet.util.Converter;
  * The x-axis serves as twist axis.
  * @author normenhansen
  */
-public class PhysicsConeJoint extends PhysicsJoint{
-    private Matrix3f rotA, rotB;
+public class PhysicsConeJoint extends PhysicsJoint {
+
+    protected Matrix3f rotA, rotB;
+    protected float swingSpan1 = 1e30f;
+    protected float swingSpan2 = 1e30f;
+    protected float twistSpan = 1e30f;
+    protected boolean angularOnly = false;
+
+    public PhysicsConeJoint() {
+    }
 
     public PhysicsConeJoint(PhysicsNode nodeA, PhysicsNode nodeB, Vector3f pivotA, Vector3f pivotB) {
         super(nodeA, nodeB, pivotA, pivotB);
-        this.rotA=new Matrix3f();
-        this.rotB=new Matrix3f();
-        
-        Transform transA=new Transform(Converter.convert(new Matrix3f()));
-        Converter.convert(pivotA,transA.origin);
-        Transform transB=new Transform(Converter.convert(new Matrix3f()));
-        Converter.convert(pivotB,transB.origin);
-        constraint=new ConeTwistConstraint(nodeA.getRigidBody(), nodeB.getRigidBody(), transA, transB);
+        this.rotA = new Matrix3f();
+        this.rotB = new Matrix3f();
+        createJoint();
     }
 
     public PhysicsConeJoint(PhysicsNode nodeA, PhysicsNode nodeB, Vector3f pivotA, Vector3f pivotB, Matrix3f rotA, Matrix3f rotB) {
         super(nodeA, nodeB, pivotA, pivotB);
-        this.rotA=rotA;
-        this.rotB=rotB;
-
-        Transform transA=new Transform(Converter.convert(rotA));
-        Converter.convert(pivotA,transA.origin);
-        Converter.convert(rotA,transA.basis);
-
-        Transform transB=new Transform(Converter.convert(rotB));
-        Converter.convert(pivotB,transB.origin);
-        Converter.convert(rotB,transB.basis);
-        
-        constraint=new ConeTwistConstraint(nodeA.getRigidBody(), nodeB.getRigidBody(), transA, transB);
+        this.rotA = rotA;
+        this.rotB = rotB;
+        createJoint();
     }
 
     public void setLimit(float swingSpan1, float swingSpan2, float twistSpan) {
-        ((ConeTwistConstraint)constraint).setLimit(swingSpan1, swingSpan2, twistSpan);
+        this.swingSpan1 = swingSpan1;
+        this.swingSpan2 = swingSpan2;
+        this.twistSpan = twistSpan;
+        ((ConeTwistConstraint) constraint).setLimit(swingSpan1, swingSpan2, twistSpan);
     }
 
-    public void setAngularOnly(boolean value){
-        ((ConeTwistConstraint)constraint).setAngularOnly(value);
+    public void setAngularOnly(boolean value) {
+        angularOnly = value;
+        ((ConeTwistConstraint) constraint).setAngularOnly(value);
     }
 
+    @Override
+    public void write(JmeExporter ex) throws IOException {
+        super.write(ex);
+        OutputCapsule capsule = ex.getCapsule(this);
+        capsule.write(rotA, "rotA", new Matrix3f());
+        capsule.write(rotB, "rotB", new Matrix3f());
+
+        capsule.write(angularOnly, "angularOnly", false);
+        capsule.write(swingSpan1, "swingSpan1", 1e30f);
+        capsule.write(swingSpan2, "swingSpan2", 1e30f);
+        capsule.write(twistSpan, "twistSpan", 1e30f);
+    }
+
+    @Override
+    public void read(JmeImporter im) throws IOException {
+        super.read(im);
+        InputCapsule capsule = im.getCapsule(this);
+        this.rotA = (Matrix3f) capsule.readSavable("rotA", new Matrix3f());
+        this.rotB = (Matrix3f) capsule.readSavable("rotB", new Matrix3f());
+
+        this.angularOnly = capsule.readBoolean("angularOnly", false);
+        this.swingSpan1 = capsule.readFloat("swingSpan1", 1e30f);
+        this.swingSpan2 = capsule.readFloat("swingSpan2", 1e30f);
+        this.twistSpan = capsule.readFloat("twistSpan", 1e30f);
+        createJoint();
+    }
+
+    protected void createJoint() {
+        Transform transA = new Transform(Converter.convert(rotA));
+        Converter.convert(pivotA, transA.origin);
+        Converter.convert(rotA, transA.basis);
+
+        Transform transB = new Transform(Converter.convert(rotB));
+        Converter.convert(pivotB, transB.origin);
+        Converter.convert(rotB, transB.basis);
+
+        constraint = new ConeTwistConstraint(nodeA.getRigidBody(), nodeB.getRigidBody(), transA, transB);
+        ((ConeTwistConstraint) constraint).setLimit(swingSpan1, swingSpan2, twistSpan);
+        ((ConeTwistConstraint) constraint).setAngularOnly(angularOnly);
+    }
 }

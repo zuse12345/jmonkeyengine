@@ -50,7 +50,6 @@ import java.nio.ByteBuffer;
  */
 public class MeshCollisionShape extends CollisionShape {
 
-    protected Vector3f worldScale;
     protected int numVertices, numTriangles, vertexStride, triangleIndexStride;
     protected ByteBuffer triangleIndexBase, vertexBase;
 
@@ -66,7 +65,7 @@ public class MeshCollisionShape extends CollisionShape {
     }
 
     private void createCollisionMesh(Mesh mesh, Vector3f worldScale) {
-        this.worldScale = worldScale;
+        this.scale = worldScale;
         IndexedMesh imesh = Converter.convert(mesh);
         this.numVertices = imesh.numVertices;
         this.numTriangles = imesh.numTriangles;
@@ -80,7 +79,6 @@ public class MeshCollisionShape extends CollisionShape {
     public void write(JmeExporter ex) throws IOException {
         super.write(ex);
         OutputCapsule capsule = ex.getCapsule(this);
-        capsule.write(worldScale, "worldScale", new Vector3f(1, 1, 1));
         capsule.write(numVertices, "numVertices", 0);
         capsule.write(numTriangles, "numTriangles", 0);
         capsule.write(vertexStride, "vertexStride", 0);
@@ -93,7 +91,6 @@ public class MeshCollisionShape extends CollisionShape {
     public void read(JmeImporter im) throws IOException {
         super.read(im);
         InputCapsule capsule = im.getCapsule(this);
-        worldScale = (Vector3f) capsule.readSavable("worldScale", new Vector3f(1, 1, 1));
         numVertices = capsule.readInt("numVertices", 0);
         numTriangles = capsule.readInt("numTriangles", 0);
         vertexStride = capsule.readInt("vertexStride", 0);
@@ -115,7 +112,6 @@ public class MeshCollisionShape extends CollisionShape {
         mesh.triangleIndexBase = triangleIndexBase;
         TriangleIndexVertexArray tiv = new TriangleIndexVertexArray(numTriangles, triangleIndexBase, triangleIndexStride, numVertices, vertexBase, vertexStride);
         cShape = new BvhTriangleMeshShape(tiv, true);
-        cShape.setLocalScaling(Converter.convert(worldScale));
         cShape.setLocalScaling(Converter.convert(scale));
     }
 }

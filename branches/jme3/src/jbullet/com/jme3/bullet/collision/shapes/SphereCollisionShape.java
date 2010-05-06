@@ -47,6 +47,9 @@ public class SphereCollisionShape extends CollisionShape {
 
     protected float radius;
 
+    public SphereCollisionShape() {
+    }
+
     /**
      * creates a SphereCollisionShape with the given radius
      * @param radius

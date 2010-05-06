@@ -54,6 +54,9 @@ public class MeshCollisionShape extends CollisionShape {
     protected int numVertices, numTriangles, vertexStride, triangleIndexStride;
     protected ByteBuffer triangleIndexBase, vertexBase;
 
+    public MeshCollisionShape() {
+    }
+
     /**
      * creates a collision shape from the given TriMesh
      * @param mesh the TriMesh to use

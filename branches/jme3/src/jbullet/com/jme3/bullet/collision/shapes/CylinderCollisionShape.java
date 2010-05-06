@@ -51,6 +51,9 @@ public class CylinderCollisionShape extends CollisionShape {
     protected Vector3f halfExtents;
     protected int axis;
 
+    public CylinderCollisionShape() {
+    }
+
     /**
      * creates a cylinder shape from the given halfextents
      * @param halfExtents the halfextents to use

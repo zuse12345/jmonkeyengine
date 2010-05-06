@@ -54,6 +54,9 @@ public class GImpactCollisionShape extends CollisionShape{
     protected int numVertices, numTriangles, vertexStride, triangleIndexStride;
     protected ByteBuffer triangleIndexBase, vertexBase;
 
+    public GImpactCollisionShape() {
+    }
+
     /**
      * creates a collision shape from the given Mesh
      * @param mesh the Mesh to use

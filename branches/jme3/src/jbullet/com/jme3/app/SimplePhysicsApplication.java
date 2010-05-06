@@ -52,11 +52,7 @@ import com.jme3.system.JmeSystem;
 import com.jme3.util.BufferUtils;
 import java.net.URL;
 
-/**
- * <code>SimpleApplication</code> extends the <code>Application</code> class
- * to provide default functionality like a first-person camera,
- * and an accessible root node that is updated and rendered regularly.
- */
+@Deprecated
 public abstract class SimplePhysicsApplication extends PhysicsApplication {
 
     protected Node rootNode = new Node("Root Node");

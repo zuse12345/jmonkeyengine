@@ -1,6 +1,6 @@
 package jme3test.bullet;
 
-import com.jme3.app.SimplePhysicsApplication;
+import com.jme3.app.SimpleBulletApplication;
 import com.jme3.asset.TextureKey;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
@@ -17,7 +17,7 @@ import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Cylinder;
 import com.jme3.texture.Texture;
 
-public class TestPhysicsCar extends SimplePhysicsApplication implements BindingListener {
+public class TestPhysicsCar extends SimpleBulletApplication implements BindingListener {
     private PhysicsVehicleNode player;
 
     public static void main(String[] args) {

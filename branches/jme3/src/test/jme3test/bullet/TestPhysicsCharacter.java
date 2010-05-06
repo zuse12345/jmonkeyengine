@@ -1,6 +1,6 @@
 package jme3test.bullet;
 
-import com.jme3.app.SimplePhysicsApplication;
+import com.jme3.app.SimpleBulletApplication;
 import com.jme3.asset.TextureKey;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
@@ -21,7 +21,7 @@ import com.jme3.texture.Texture;
  *
  * @author normenhansen
  */
-public class TestPhysicsCharacter extends SimplePhysicsApplication implements BindingListener{
+public class TestPhysicsCharacter extends SimpleBulletApplication implements BindingListener{
     private PhysicsCharacterNode physicsCharacter;
     private Vector3f walkDirection=new Vector3f();
 

@@ -1,7 +1,7 @@
 package jme3test.bullet;
 
 import com.jme3.animation.AnimControl;
-import com.jme3.app.SimplePhysicsApplication;
+import com.jme3.app.SimpleBulletApplication;
 import com.jme3.asset.TextureKey;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.control.PhysicsRagdollControl;
@@ -22,7 +22,7 @@ import com.jme3.texture.Texture;
  * PHYSICS RAGDOLLS ARE NOT WORKING PROPERLY YET!
  * @author normenhansen
  */
-public class TestPhysicsRagdoll  extends SimplePhysicsApplication {
+public class TestPhysicsRagdoll  extends SimpleBulletApplication {
 
     public static void main(String[] args){
         TestPhysicsRagdoll app = new TestPhysicsRagdoll();

@@ -1,6 +1,6 @@
 package jme3test.bullet;
 
-import com.jme3.app.SimplePhysicsApplication;
+import com.jme3.app.SimpleBulletApplication;
 import com.jme3.asset.TextureKey;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
@@ -14,7 +14,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
 
-public class TestPhysicsHingeJoint extends SimplePhysicsApplication implements BindingListener {
+public class TestPhysicsHingeJoint extends SimpleBulletApplication implements BindingListener {
     private PhysicsHingeJoint joint;
 
     public static void main(String[] args) {

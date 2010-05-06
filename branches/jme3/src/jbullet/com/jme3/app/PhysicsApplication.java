@@ -39,6 +39,7 @@ import java.util.logging.Logger;
  *
  * @author normenhansen
  */
+@Deprecated
 public class PhysicsApplication extends Application implements Runnable{
     private Thread physicsThread;
     private PhysicsSpace pSpace;

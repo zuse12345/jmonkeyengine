@@ -1,6 +1,6 @@
 package jme3test.bullet;
 
-import com.jme3.app.SimplePhysicsApplication;
+import com.jme3.app.SimpleBulletApplication;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
@@ -21,8 +21,12 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.shadow.BasicShadowRenderer;
 import com.jme3.texture.Texture.WrapMode;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class TestFancyCar extends SimplePhysicsApplication implements BindingListener {
+public class TestFancyCar extends SimpleBulletApplication implements BindingListener {
     
     private PhysicsVehicleNode player;
     private PhysicsVehicleWheel fr, fl, br, bl;
@@ -137,20 +141,22 @@ public class TestFancyCar extends SimplePhysicsApplication implements BindingLis
         float stiffness=90.0f;//200=f1 car
         float compValue=0.4f; //(lower than damp!)
         float dampValue=0.8f;
-        float mass = 1;
+        final float mass = 1;
 
         Spatial car = assetManager.loadModel("Models/Ferrari/Car.scene");
         Node carNode = (Node) car;
-        Geometry chasis = findGeom(carNode, "Car");
+        final Geometry chasis = findGeom(carNode, "Car");
         BoundingBox box = (BoundingBox) chasis.getModelBound();
 
-        Vector3f extent = box.getExtent(null);
+        final Vector3f extent = box.getExtent(null);
 
         // put chasis in center, so that physics box matches up with it
         // also remove from parent to avoid transform issues
         chasis.removeFromParent();
         chasis.center();
         chasis.setShadowMode(ShadowMode.Cast);
+
+        //HINT: for now, vehicles have to be created in the physics thread when multithreading!
         player = new PhysicsVehicleNode(chasis, new BoxCollisionShape(extent), mass);
 
         //setting default values for wheels

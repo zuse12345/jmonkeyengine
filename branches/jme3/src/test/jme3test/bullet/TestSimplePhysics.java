@@ -32,6 +32,7 @@
 package jme3test.bullet;
 
 
+import com.jme3.app.SimpleBulletApplication;
 import com.jme3.asset.TextureKey;
 import com.jme3.material.Material;
 
@@ -41,7 +42,6 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
-import com.jme3.app.SimplePhysicsApplication;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CylinderCollisionShape;
@@ -55,7 +55,7 @@ import com.jme3.scene.shape.Cylinder;
  *
  * @author normenhansen
  */
-public class TestSimplePhysics extends SimplePhysicsApplication{
+public class TestSimplePhysics extends SimpleBulletApplication{
 //    private PhysicsSpace pSpace=PhysicsSpace.getPhysicsSpace();
 
     public static void main(String[] args){
@@ -82,7 +82,7 @@ public class TestSimplePhysics extends SimplePhysicsApplication{
         physicsSphere.updateGeometricState();
         physicsSphere.updateModelBound();
         rootNode.attachChild(physicsSphere);
-        getPhysicsSpace().addQueued(physicsSphere);
+        getPhysicsSpace().add(physicsSphere);
 
         // Add a physics sphere to the world using the collision shape from sphere one
         Sphere sphere2=new Sphere(16,16,1f);
@@ -93,7 +93,7 @@ public class TestSimplePhysics extends SimplePhysicsApplication{
         physicsSphere2.updateGeometricState();
         physicsSphere2.updateModelBound();
         rootNode.attachChild(physicsSphere2);
-        getPhysicsSpace().addQueued(physicsSphere2);
+        getPhysicsSpace().add(physicsSphere2);
 
         // Add a physics box to the world
         Box boxGeom=new Box(Vector3f.ZERO,1f,1f,1f);
@@ -105,7 +105,7 @@ public class TestSimplePhysics extends SimplePhysicsApplication{
         physicsBox.updateGeometricState();
         physicsBox.updateModelBound();
         rootNode.attachChild(physicsBox);
-        getPhysicsSpace().addQueued(physicsBox);
+        getPhysicsSpace().add(physicsBox);
 
         Cylinder cylGeom=new Cylinder(16,16,1f,3f);
         Geometry geom6=new Geometry("box",cylGeom);
@@ -115,7 +115,7 @@ public class TestSimplePhysics extends SimplePhysicsApplication{
         PhysicsNode physicsCylinder=new PhysicsNode(geom6, new CylinderCollisionShape(box.getExtent(null)));
         physicsCylinder.setLocalTranslation(new Vector3f(2,2,0));
         rootNode.attachChild(physicsCylinder);
-        getPhysicsSpace().addQueued(physicsCylinder);
+        getPhysicsSpace().add(physicsCylinder);
 //
 //        Capsule capGeom=new Capsule(16,16,16,0.5f,2f);
 //        PhysicsNode physicsCapsule=new PhysicsNode(capGeom, CollisionShape.ShapeTypes.CAPSULE);
@@ -136,7 +136,7 @@ public class TestSimplePhysics extends SimplePhysicsApplication{
         PhysicsNode node2=new PhysicsNode(geom4,new MeshCollisionShape(geom4.getMesh()),0);
         node2.setLocalTranslation(new Vector3f(2.5f,-4,0f));
         rootNode.attachChild(node2);
-        getPhysicsSpace().addQueued(node2);
+        getPhysicsSpace().add(node2);
 
         // the floor, does not move (mass=0)
         Geometry geom5=new Geometry("box2",new Box(Vector3f.ZERO,100f,0.2f,100f));
@@ -147,7 +147,7 @@ public class TestSimplePhysics extends SimplePhysicsApplication{
         rootNode.attachChild(node3);
         node3.updateModelBound();
         node3.updateGeometricState();
-        getPhysicsSpace().addQueued(node3);
+        getPhysicsSpace().add(node3);
     }
 
     @Override

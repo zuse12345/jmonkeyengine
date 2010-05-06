@@ -473,6 +473,10 @@ public class PhysicsSpace {
      * destroys the current PhysicsSpace so that a new one can be created
      */
     public void destroy(){
+        physicsNodes.clear();
+        physicsJoints.clear();
+        physicsGhostNodes.clear();
+
         dynamicsWorld.destroy();
         dynamicsWorld=null;
     }

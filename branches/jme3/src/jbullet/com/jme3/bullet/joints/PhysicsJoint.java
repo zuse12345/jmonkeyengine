@@ -32,14 +32,18 @@
 package com.jme3.bullet.joints;
 
 import com.bulletphysics.dynamics.constraintsolver.TypedConstraint;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.math.Vector3f;
 import com.jme3.bullet.nodes.PhysicsNode;
+import com.jme3.export.Savable;
+import java.io.IOException;
 
 /**
  * <p>PhysicsJoint - Basic jbullet-jme Phyiscs Joint</p>
  * @author normenhansen
  */
-public abstract class PhysicsJoint {
+public abstract class PhysicsJoint implements Savable{
     protected TypedConstraint constraint;
     protected PhysicsNode nodeA;
     protected PhysicsNode nodeB;
@@ -83,4 +87,13 @@ public abstract class PhysicsJoint {
 
     public void destroy(){
     }
+
+    public void read(JmeImporter im) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void write(JmeExporter ex) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }

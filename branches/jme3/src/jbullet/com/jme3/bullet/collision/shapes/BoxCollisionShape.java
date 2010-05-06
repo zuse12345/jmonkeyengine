@@ -32,53 +32,49 @@
 package com.jme3.bullet.collision.shapes;
 
 import com.bulletphysics.collision.shapes.BoxShape;
-import com.jme3.bounding.BoundingBox;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 import com.jme3.bullet.util.Converter;
-import java.util.List;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.OutputCapsule;
+import java.io.IOException;
 
 /**
  * Basic box collision shape
  * @author normenhansen
  */
-public class BoxCollisionShape extends CollisionShape{
+public class BoxCollisionShape extends CollisionShape {
+
+    protected Vector3f halfExtents;
+
+    public BoxCollisionShape() {
+    }
 
     /**
      * creates a collision box from the given halfExtents
      * @param halfExtents the halfExtents of the CollisionBox
      */
     public BoxCollisionShape(Vector3f halfExtents) {
-        BoxShape sphere=new BoxShape(Converter.convert(halfExtents));
-        cShape=sphere;
+        this.halfExtents = halfExtents;
+        createShape();
     }
 
-    /**
-     * creates a box in the physics space that represents this Node and all
-     * children. The extents are computed from the world bound of this Node.
-     */
-    private void createCollisionBox(Node node) {
-        List<Spatial> children=node.getChildren();
-        if(children.size()==0){
-            throw (new UnsupportedOperationException("PhysicsNode has no children, cannot compute collision box"));
-        }
-        if(!(node.getWorldBound() instanceof BoundingBox)){
-            node.setModelBound(new BoundingBox());
-        }
-        node.updateModelBound();
-        node.updateGeometricState();
-        BoundingBox volume=(BoundingBox)node.getWorldBound();
-        createCollisionBox(volume);
+    public void write(JmeExporter ex) throws IOException {
+        super.write(ex);
+        OutputCapsule capsule = ex.getCapsule(this);
+        capsule.write(halfExtents, "halfExtents", new Vector3f(1, 1, 1));
     }
 
-    private void createCollisionBox(BoundingBox volume) {
-        javax.vecmath.Vector3f halfExtents=new javax.vecmath.Vector3f(
-                volume.getXExtent() - volume.getCenter().x,
-                volume.getYExtent() - volume.getCenter().y,
-                volume.getZExtent() - volume.getCenter().z);
-        BoxShape sphere=new BoxShape(halfExtents);
-        cShape=sphere;
+    public void read(JmeImporter im) throws IOException {
+        super.read(im);
+        InputCapsule capsule = im.getCapsule(this);
+        Vector3f halfExtents = (Vector3f) capsule.readSavable("halfExtents", new Vector3f(1, 1, 1));
+        this.halfExtents = halfExtents;
+        createShape();
     }
 
+    protected void createShape() {
+        cShape = new BoxShape(Converter.convert(halfExtents));
+    }
 }

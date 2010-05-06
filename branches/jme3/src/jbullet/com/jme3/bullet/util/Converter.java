@@ -140,8 +140,7 @@ public class Converter {
         convert(in.getRotation().toRotationMatrix(),out.basis);
     }
 
-    public static TriangleIndexVertexArray convert(Mesh mesh) {
-        TriangleIndexVertexArray jBulletMeshData = new TriangleIndexVertexArray();
+    public static IndexedMesh convert(Mesh mesh) {
 
         IndexedMesh jBulletIndexedMesh = new IndexedMesh();
         jBulletIndexedMesh.triangleIndexBase = ByteBuffer.allocate( mesh.getTriangleCount() * 3 * 4 );
@@ -166,7 +165,6 @@ public class Converter {
             jBulletIndexedMesh.triangleIndexBase.putInt( indices.get(i) );
         }
 
-        jBulletMeshData.addIndexedMesh( jBulletIndexedMesh );
-        return jBulletMeshData;
+        return jBulletIndexedMesh;
     }
 }

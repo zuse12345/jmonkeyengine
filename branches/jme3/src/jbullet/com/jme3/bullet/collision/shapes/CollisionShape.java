@@ -31,8 +31,14 @@
  */
 package com.jme3.bullet.collision.shapes;
 
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.math.Vector3f;
 import com.jme3.bullet.util.Converter;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.OutputCapsule;
+import com.jme3.export.Savable;
+import java.io.IOException;
 
 /**
  * This Object holds information about a jbullet CollisionShape to be able to reuse
@@ -40,8 +46,10 @@ import com.jme3.bullet.util.Converter;
  * TODO: add static methods to create shapes from nodes (like jbullet-jme constructor)
  * @author normenhansen
  */
-public abstract class CollisionShape {
+public abstract class CollisionShape implements Savable {
+
     protected com.bulletphysics.collision.shapes.CollisionShape cShape;
+    protected Vector3f scale = new Vector3f(1, 1, 1);
 
     public CollisionShape() {
     }
@@ -49,12 +57,15 @@ public abstract class CollisionShape {
     /**
      * used internally, not safe
      */
-    public void calculateLocalInertia(float mass, javax.vecmath.Vector3f vector){
-        if(cShape==null) return;
-        if(this instanceof MeshCollisionShape)
-            vector.set(0,0,0);
-        else
+    public void calculateLocalInertia(float mass, javax.vecmath.Vector3f vector) {
+        if (cShape == null) {
+            return;
+        }
+        if (this instanceof MeshCollisionShape) {
+            vector.set(0, 0, 0);
+        } else {
             cShape.calculateLocalInertia(mass, vector);
+        }
     }
 
     /**
@@ -71,8 +82,18 @@ public abstract class CollisionShape {
         this.cShape = cShape;
     }
 
-    public void setScale(Vector3f scale){
+    public void setScale(Vector3f scale) {
+        this.scale.set(scale);
         cShape.setLocalScaling(Converter.convert(scale));
     }
 
+    public void write(JmeExporter ex) throws IOException {
+        OutputCapsule capsule = ex.getCapsule(this);
+        capsule.write(scale, "scale", new Vector3f(1, 1, 1));
+    }
+
+    public void read(JmeImporter im) throws IOException {
+        InputCapsule capsule = im.getCapsule(this);
+        this.scale = (Vector3f) capsule.readSavable("scale", new Vector3f(1, 1, 1));
+    }
 }

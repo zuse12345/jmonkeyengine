@@ -34,42 +34,31 @@ package com.jme3.bullet.collision.shapes;
 import com.bulletphysics.collision.shapes.CylinderShape;
 import com.bulletphysics.collision.shapes.CylinderShapeX;
 import com.bulletphysics.collision.shapes.CylinderShapeZ;
-import com.jme3.bounding.BoundingBox;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 import com.jme3.bullet.util.Converter;
-import java.util.List;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.OutputCapsule;
+import java.io.IOException;
 
 /**
  * Basic cylinder collision shape
  * @author normenhansen
  */
-public class CylinderCollisionShape extends CollisionShape{
+public class CylinderCollisionShape extends CollisionShape {
 
-//    /**
-//     * creates a collision shape from the bounding volume of the given node
-//     * @param node the node to get the BoundingVolume from
-//     */
-//    public CylinderCollisionShape(Node node) {
-//        createCollisionCylinder(node);
-//    }
-//
-//    /**
-//     * creates a collision shape from the given bounding volume
-//     * @param volume the BoundingVolume to use
-//     */
-//    public CylinderCollisionShape(BoundingBox volume) {
-//        createCollisionCylinder(volume);
-//    }
+    protected Vector3f halfExtents;
+    protected int axis;
 
     /**
      * creates a cylinder shape from the given halfextents
      * @param halfExtents the halfextents to use
      */
     public CylinderCollisionShape(Vector3f halfExtents) {
-        CylinderShape capShape=new CylinderShapeZ(Converter.convert(halfExtents));
-        cShape=capShape;
+        this.halfExtents = halfExtents;
+        this.axis = 2;
+        createShape();
     }
 
     /**
@@ -78,39 +67,37 @@ public class CylinderCollisionShape extends CollisionShape{
      * @param axis (0=X,1=Y,2=Z)
      */
     public CylinderCollisionShape(Vector3f halfExtents, int axis) {
-        switch(axis){
+        this.halfExtents = halfExtents;
+        this.axis = axis;
+        createShape();
+    }
+
+    public void write(JmeExporter ex) throws IOException {
+        super.write(ex);
+        OutputCapsule capsule = ex.getCapsule(this);
+        capsule.write(halfExtents, "halfExtents", new Vector3f(0.5f, 0.5f, 0.5f));
+        capsule.write(axis, "axis", 1);
+    }
+
+    public void read(JmeImporter im) throws IOException {
+        super.read(im);
+        InputCapsule capsule = im.getCapsule(this);
+        halfExtents = (Vector3f) capsule.readSavable("halfExtents", new Vector3f(0.5f, 0.5f, 0.5f));
+        axis = capsule.readInt("axis", 1);
+        createShape();
+    }
+
+    protected void createShape() {
+        switch (axis) {
             case 0:
-                cShape=new CylinderShapeX(Converter.convert(halfExtents));
-            break;
+                cShape = new CylinderShapeX(Converter.convert(halfExtents));
+                break;
             case 1:
-                cShape=new CylinderShape(Converter.convert(halfExtents));
-            break;
+                cShape = new CylinderShape(Converter.convert(halfExtents));
+                break;
             case 2:
-                cShape=new CylinderShapeZ(Converter.convert(halfExtents));
-            break;
+                cShape = new CylinderShapeZ(Converter.convert(halfExtents));
+                break;
         }
     }
-
-    private void createCollisionCylinder(Node node){
-        List<Spatial> children=node.getChildren();
-        if(children.size()==0){
-            throw (new UnsupportedOperationException("PhysicsNode has no children, cannot compute collision cylinder"));
-        }
-        node.setModelBound(new BoundingBox());
-        node.updateModelBound();
-        node.updateGeometricState();
-//        node.updateWorldBound();
-        BoundingBox volume=(BoundingBox)node.getWorldBound();
-        createCollisionCylinder(volume);
-    }
-
-    private void createCollisionCylinder(BoundingBox volume){
-        javax.vecmath.Vector3f halfExtents=new javax.vecmath.Vector3f(
-                volume.getXExtent() - volume.getCenter().x,
-                volume.getYExtent() - volume.getCenter().y,
-                volume.getZExtent() - volume.getCenter().z);
-        CylinderShapeZ capShape=new CylinderShapeZ(halfExtents);
-        cShape=capShape;
-    }
-
 }

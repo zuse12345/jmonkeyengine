@@ -33,19 +33,22 @@ package com.jme3.bullet.collision.shapes;
 
 import com.bulletphysics.collision.shapes.CompoundShape;
 import com.bulletphysics.linearmath.Transform;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Vector3f;
 import com.jme3.bullet.util.Converter;
+import java.io.IOException;
 
 /**
  * A CompoundCollisionShape allows combining multiple base shapes
  * to generate a more sophisticated shape.
  * @author normenhansen
  */
-public class CompoundCollisionShape extends CollisionShape{
+public class CompoundCollisionShape extends CollisionShape {
 
     public CompoundCollisionShape() {
-        cShape=new CompoundShape();
+        cShape = new CompoundShape();
     }
 
     /**
@@ -53,10 +56,10 @@ public class CompoundCollisionShape extends CollisionShape{
      * @param shape the child shape to add
      * @param location the local location of the child shape
      */
-    public void addChildShape(CollisionShape shape, Vector3f location){
-        Transform transA=new Transform(Converter.convert(new Matrix3f()));
-        Converter.convert(location,transA.origin);
-        ((CompoundShape)cShape).addChildShape(transA, shape.getCShape());
+    public void addChildShape(CollisionShape shape, Vector3f location) {
+        Transform transA = new Transform(Converter.convert(new Matrix3f()));
+        Converter.convert(location, transA.origin);
+        ((CompoundShape) cShape).addChildShape(transA, shape.getCShape());
     }
 
     /**
@@ -64,18 +67,25 @@ public class CompoundCollisionShape extends CollisionShape{
      * @param shape the child shape to add
      * @param location the local location of the child shape
      */
-    public void addChildShape(CollisionShape shape, Vector3f location, Matrix3f rotation){
-        Transform transA=new Transform(Converter.convert(rotation));
-        Converter.convert(location,transA.origin);
-        ((CompoundShape)cShape).addChildShape(transA, shape.getCShape());
+    public void addChildShape(CollisionShape shape, Vector3f location, Matrix3f rotation) {
+        Transform transA = new Transform(Converter.convert(rotation));
+        Converter.convert(location, transA.origin);
+        ((CompoundShape) cShape).addChildShape(transA, shape.getCShape());
     }
 
     /**
      * removes a child shape
      * @param shape the child shape to remove
      */
-    public void removeChildShape(CollisionShape shape){
-        ((CompoundShape)cShape).removeChildShape(shape.getCShape());
+    public void removeChildShape(CollisionShape shape) {
+        ((CompoundShape) cShape).removeChildShape(shape.getCShape());
     }
 
+    public void write(JmeExporter ex) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void read(JmeImporter im) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

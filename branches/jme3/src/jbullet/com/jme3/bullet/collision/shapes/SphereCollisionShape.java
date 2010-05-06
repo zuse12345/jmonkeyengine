@@ -32,63 +32,44 @@
 package com.jme3.bullet.collision.shapes;
 
 import com.bulletphysics.collision.shapes.SphereShape;
-import com.jme3.bounding.BoundingSphere;
-import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
-import java.util.List;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
+import com.jme3.math.Vector3f;
+import java.io.IOException;
 
 /**
  * Basic sphere collision shape
  * @author normenhansen
  */
-public class SphereCollisionShape extends CollisionShape{
+public class SphereCollisionShape extends CollisionShape {
 
-//    /**
-//     * creates a collision shape from the bounding volume of the given node
-//     * @param node the node to get the BoundingVolume from
-//     */
-//    public SphereCollisionShape(Node node) {
-//        createCollisionSphere(node);
-//    }
-//
-//    /**
-//     * creates a collision shape from the given bounding volume
-//     * @param volume the BoundingVolume to use
-//     */
-//    public SphereCollisionShape(BoundingSphere volume) {
-//        createCollisionSphere(volume);
-//    }
+    protected float radius;
 
     /**
      * creates a SphereCollisionShape with the given radius
      * @param radius
      */
     public SphereCollisionShape(float radius) {
-        SphereShape sphere=new SphereShape(radius);
-        cShape=sphere;
+        this.radius = radius;
+        createShape();
     }
 
-    /**
-     * creates a sphere in the physics space that represents this Node and all
-     * children. The radius is computed from the world bound of this Node.
-     */
-    private void createCollisionSphere(Node node) {
-        List<Spatial> children=node.getChildren();
-        if(children.size()==0){
-            throw (new UnsupportedOperationException("PhysicsNode has no children, cannot compute collision sphere"));
-        }
-        if(!(node.getWorldBound() instanceof BoundingSphere)){
-            node.setModelBound(new BoundingSphere());
-            node.updateModelBound();
-            node.updateGeometricState();
-        }
-        BoundingSphere volume=(BoundingSphere)node.getWorldBound();
-        createCollisionSphere(volume);
+    public void write(JmeExporter ex) throws IOException {
+        super.write(ex);
+        OutputCapsule capsule = ex.getCapsule(this);
+        capsule.write(radius, "radius", 0.5f);
     }
 
-    private void createCollisionSphere(BoundingSphere volume) {
-        SphereShape sphere=new SphereShape(volume.getRadius());
-        cShape=sphere;
+    public void read(JmeImporter im) throws IOException {
+        super.read(im);
+        InputCapsule capsule = im.getCapsule(this);
+        radius = capsule.readFloat("radius", 0.5f);
+        createShape();
     }
 
+    protected void createShape() {
+        cShape = new SphereShape(radius);
+    }
 }

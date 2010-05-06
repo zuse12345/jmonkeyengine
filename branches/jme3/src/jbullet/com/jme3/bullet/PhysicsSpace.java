@@ -52,6 +52,8 @@ import com.bulletphysics.dynamics.constraintsolver.ConstraintSolver;
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
 import com.bulletphysics.extras.gimpact.GImpactCollisionAlgorithm;
 import com.jme3.app.AppTask;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.math.Vector3f;
 //import com.jme3.util.GameTaskQueue;
 //import com.jme3.util.GameTaskQueueManager;
@@ -64,6 +66,8 @@ import com.jme3.bullet.nodes.PhysicsCharacterNode;
 import com.jme3.bullet.nodes.PhysicsVehicleNode;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.util.Converter;
+import com.jme3.export.Savable;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +83,7 @@ import java.util.logging.Logger;
  * @see com.jmex.jbullet.nodes.PhysicsNode
  * @author normenhansen
  */
-public class PhysicsSpace {
+public class PhysicsSpace implements Savable{
     public static ThreadLocal<ConcurrentLinkedQueue<AppTask<?>>> rQueueTL  =
             new ThreadLocal<ConcurrentLinkedQueue<AppTask<?>>>() {
                 @Override
@@ -527,6 +531,14 @@ public class PhysicsSpace {
 
     public void setWorldMax(Vector3f worldMax) {
         this.worldMax.set(worldMax);
+    }
+
+    public void write(JmeExporter ex) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void read(JmeImporter im) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     /**

@@ -99,5 +99,6 @@ public class CylinderCollisionShape extends CollisionShape {
                 cShape = new CylinderShapeZ(Converter.convert(halfExtents));
                 break;
         }
+        cShape.setLocalScaling(Converter.convert(scale));
     }
 }

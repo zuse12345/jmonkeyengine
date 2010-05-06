@@ -106,6 +106,7 @@ public class CompoundCollisionShape extends CollisionShape {
         super.read(im);
         InputCapsule capsule = im.getCapsule(this);
         children = capsule.readSavableArrayList("children", new ArrayList<ChildCollisionShape>());
+        cShape.setLocalScaling(Converter.convert(scale));
         loadChildren();
     }
 

@@ -8,6 +8,8 @@ import com.jme3.ui.Picture;
 import com.jme3.video.plugins.jheora.AVThread;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 
 public class TestVideoPlayer extends SimpleApplication {
 
@@ -34,8 +36,8 @@ public class TestVideoPlayer extends SimpleApplication {
     private void createVideo(){
         try {
             // uncomment to play video from harddrive
-          FileInputStream  fis = new FileInputStream("E:\\bunny.ogg");
-//            InputStream fis = new URL("http://mirrorblender.top-ix.org/peach/bigbuckbunny_movies/big_buck_bunny_480p_stereo.ogg").openStream();
+//          FileInputStream  fis = new FileInputStream("E:\\bunny.ogg");
+            InputStream fis = new URL("http://mirrorblender.top-ix.org/peach/bigbuckbunny_movies/big_buck_bunny_480p_stereo.ogg").openStream();
 
             // increasing queued frames value from 5 will make web streamed
             // playback smoother at the cost of memory.

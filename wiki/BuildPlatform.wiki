@@ -19,7 +19,7 @@ or
  # Click Next
  # Click Browse... to the right of "Repository Folder(s).
  # In the new window, open `branches` tree, and select `jme3-gde`
- # Under Local Folder specify the folder *in which the jme3 folder is*.
+ # Under Local Folder specify the folder *that already contains the jme3 folder*.
  # Click Finish
  # Wait until finishing the transfer
 

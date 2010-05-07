@@ -1,7 +1,7 @@
 package jme3tools.converters.model;
 
 import com.jme3.scene.Geometry;
-import com.jme3.scene.IndexBuffer;
+import com.jme3.scene.mesh.IndexBuffer;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Mesh.Mode;
 import com.jme3.scene.Node;

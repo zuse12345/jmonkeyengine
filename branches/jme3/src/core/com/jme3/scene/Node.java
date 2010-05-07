@@ -241,7 +241,7 @@ public class Node extends Spatial implements Savable {
         if (child == null)
             throw new NullPointerException();
 
-        if (child.getParent() != this) {
+        if (child.getParent() != this && child != this) {
             if (child.getParent() != null) {
                 child.getParent().detachChild(child);
             }
@@ -280,7 +280,7 @@ public class Node extends Spatial implements Savable {
         if (child == null)
             throw new NullPointerException();
 
-        if (child.getParent() != this) {
+        if (child.getParent() != this && child != this) {
             if (child.getParent() != null) {
                 child.getParent().detachChild(child);
             }

@@ -1,5 +1,9 @@
 package com.jme3.scene;
 
+import com.jme3.scene.mesh.IndexShortBuffer;
+import com.jme3.scene.mesh.IndexIntBuffer;
+import com.jme3.scene.mesh.IndexBuffer;
+import com.jme3.scene.mesh.IndexByteBuffer;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bounding.BoundingVolume;
 import com.jme3.collision.Collidable;

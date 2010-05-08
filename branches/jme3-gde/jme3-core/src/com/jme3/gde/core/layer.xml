@@ -314,7 +314,7 @@
             <folder name="editor">
                 <file name="SceneViewerTopComponent.wstcref" url="SceneViewerTopComponentWstcref.xml"/>
             </folder>
-            <folder name="commonpalette">
+            <folder name="navigator">
                 <file name="SceneExplorerTopComponent.wstcref" url="SceneExplorerTopComponentWstcref.xml"/>
             </folder>
             <folder name="explorer">

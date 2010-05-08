@@ -136,11 +136,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             }
         });
 
-        jList1.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Node", "Particle Emitter", "Audio Node", "Picture", "Point Light", "Directional Light" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         jScrollPane1.setViewportView(jList1);
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
@@ -313,11 +308,14 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         });
     }
 
-    private void setSelectionData(final boolean node) {
+    private void setSelectionData(final Boolean node) {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                if (node) {
+                if(node==null){
+                    jList1.setListData(new String[]{});
+                }
+                else if (node) {
                     jList1.setListData(new String[]{"Particle Emitter", "Audio Node", "Picture", "Point Light", "Directional Light"});
                 } else {
                     jList1.setListData(new String[]{"Point Light", "Directional Light"});
@@ -475,6 +473,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     public void resultChanged(LookupEvent ev) {
         if (currentRequest == null || !currentRequest.isDisplayed()) {
             setSelectedObjectText(null);
+            setSelectionData(null);
             return;
         }
         Collection<JmeSpatial> items = (Collection<JmeSpatial>) result.allInstances();
@@ -485,6 +484,8 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             setSelectionData(selected instanceof Node);
             return;
         }
+        setSelectedObjectText(null);
+        setSelectionData(null);
     }
 
     /*

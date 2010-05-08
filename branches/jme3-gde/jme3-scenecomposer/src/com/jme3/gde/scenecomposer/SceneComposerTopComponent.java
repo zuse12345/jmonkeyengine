@@ -509,7 +509,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         }
         selected = null;
         selectedSpat = null;
-        setSelectedObjectText("");
+        setSelectedObjectText(null);
     }
 
     public void nodeSelected(JmeSpatial spatial) {

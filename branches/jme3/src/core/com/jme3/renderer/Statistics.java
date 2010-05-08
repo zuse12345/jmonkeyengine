@@ -10,7 +10,7 @@ public class Statistics {
 
     protected int numObjects;
     protected int numTriangles;
-    protected int numVerticies;
+    protected int numVertices;
     protected int numShaderSwitches;
     protected int numTextureBinds;
     protected int numFboSwitches;
@@ -25,7 +25,7 @@ public class Statistics {
     protected HashSet<Integer> fbosUsed = new HashSet<Integer>();
 
     public String[] getLabels(){
-        return new String[]{ "Verticies",
+        return new String[]{ "Vertices",
                              "Triangles",
                              "Uniforms",
 
@@ -46,7 +46,7 @@ public class Statistics {
     }
 
     public void getData(int[] data){
-        data[0] = numVerticies;
+        data[0] = numVertices;
         data[1] = numTriangles;
         data[2] = numUniformsSet;
         data[3] = numObjects;
@@ -67,7 +67,7 @@ public class Statistics {
     public void onMeshDrawn(Mesh mesh, int lod){
         numObjects ++;
         numTriangles += mesh.getTriangleCount(lod);
-        numVerticies += mesh.getVertexCount();
+        numVertices += mesh.getVertexCount();
     }
 
     public void onShaderUse(Shader shader, boolean wasSwitched){
@@ -113,7 +113,7 @@ public class Statistics {
 
         numObjects = 0;
         numTriangles = 0;
-        numVerticies = 0;
+        numVertices = 0;
         numShaderSwitches = 0;
         numTextureBinds = 0;
         numFboSwitches = 0;

@@ -153,6 +153,7 @@ public class InstallBlenderExporterPanel extends javax.swing.JDialog {
                     NotifyDescriptor.DEFAULT_OPTION,
                     NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(msg);
+            dispose();
 
         } catch (IOException ex) {
             Confirmation msg = new NotifyDescriptor.Confirmation(

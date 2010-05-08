@@ -35,24 +35,28 @@ public class TestEverything extends SimpleApplication {
     }
 
     public void setupHdr(){
-        hdrRender = new HDRRenderer(assetManager, renderer);
-        hdrRender.setMaxIterations(40);
-        hdrRender.setSamples(settings.getSamples());
-        
-        hdrRender.setWhiteLevel(3);
-        hdrRender.setExposure(0.72f);
-        hdrRender.setThrottle(1);
+        if (renderer.getCaps().contains(Caps.GLSL100)){
+            hdrRender = new HDRRenderer(assetManager, renderer);
+            hdrRender.setMaxIterations(40);
+            hdrRender.setSamples(settings.getSamples());
 
-//        setPauseOnLostFocus(false);
-//        new HDRConfig(hdrRender).setVisible(true);
+            hdrRender.setWhiteLevel(3);
+            hdrRender.setExposure(0.72f);
+            hdrRender.setThrottle(1);
 
-        viewPort.addProcessor(hdrRender);
+    //        setPauseOnLostFocus(false);
+    //        new HDRConfig(hdrRender).setVisible(true);
+
+            viewPort.addProcessor(hdrRender);
+        }
     }
 
     public void setupBasicShadow(){
-        bsr = new BasicShadowRenderer(assetManager, 1024);
-        bsr.setDirection(lightDir);
-        viewPort.addProcessor(bsr);
+        if (renderer.getCaps().contains(Caps.GLSL100)){
+            bsr = new BasicShadowRenderer(assetManager, 1024);
+            bsr.setDirection(lightDir);
+            viewPort.addProcessor(bsr);
+        }
     }
 
     public void setupSkyBox(){
@@ -80,7 +84,10 @@ public class TestEverything extends SimpleApplication {
     }
 
     public void setupLighting(){
-        boolean hdr = hdrRender.isEnabled();
+        boolean hdr = false;
+        if (hdrRender != null){
+            hdr = hdrRender.isEnabled();
+        }
 
         DirectionalLight dl = new DirectionalLight();
         dl.setDirection(lightDir);

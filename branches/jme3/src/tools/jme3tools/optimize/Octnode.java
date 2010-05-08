@@ -191,7 +191,7 @@ public class Octnode {
         }
     }
 
-    public void renderBounds(RenderQueue rq, Matrix4f transform, Material mat){
+    public void renderBounds(RenderQueue rq, Matrix4f transform, WireBox box, Material mat){
         int numChilds = 0;
         for (int i = 0; i < 8; i++){
             if (children[i] != null){
@@ -202,11 +202,14 @@ public class Octnode {
         if (geoms != null && numChilds == 0){
             BoundingBox bbox2 = new BoundingBox(bbox);
             bbox.transform(transform, bbox2);
-            WireBox box = new WireBox(bbox2.getXExtent(), bbox2.getYExtent(),
-                                      bbox2.getZExtent());
+//            WireBox box = new WireBox(bbox2.getXExtent(), bbox2.getYExtent(),
+//                                      bbox2.getZExtent());
+//            WireBox box = new WireBox(1,1,1);
 
             Geometry geom = new Geometry("bound", box);
             geom.setLocalTranslation(bbox2.getCenter());
+            geom.setLocalScale(bbox2.getXExtent(), bbox2.getYExtent(),
+                               bbox2.getZExtent());
             geom.updateGeometricState();
             geom.setMaterial(mat);
             rq.addToQueue(geom, Bucket.Opaque);
@@ -215,7 +218,7 @@ public class Octnode {
         }
         for (int i = 0; i < 8; i++){
             if (children[i] != null){
-                children[i].renderBounds(rq, transform, mat);
+                children[i].renderBounds(rq, transform, box, mat);
             }
         }
     }

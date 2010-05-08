@@ -68,16 +68,16 @@ public abstract class JoglAbstractDisplay extends JoglContext implements GLEvent
         canvas.addGLEventListener(this);
 
         GL gl = canvas.getGL();
-        if (false){
+//        if (false){
             // trace mode
             // jME already uses err stream, use out instead
             gl = new TraceGL(gl, System.out);
-        }else if (false){
+//        }else if (false){
             // debug mode
-            gl = new DebugGL(gl);
-        }else{
+//            gl = new DebugGL(gl);
+//        }else{
             // production mode
-        }
+//        }
         renderer = new JoglRenderer(gl);
     }
 

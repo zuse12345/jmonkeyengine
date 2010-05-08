@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 public class ClasspathLocator implements AssetLocator {
 
     private static final Logger logger = Logger.getLogger(ClasspathLocator.class.getName());
-    private String root = "/";
+    private String root = "";
 
     private static class ClasspathAssetInfo extends AssetInfo {
 
@@ -40,13 +40,24 @@ public class ClasspathLocator implements AssetLocator {
 
     public void setRootPath(String rootPath) {
         this.root = rootPath;
-        if (!root.endsWith("/"))
-            root += "/";
+        if (root.equals("/"))
+            root = "";
+        else if (root.length() > 1){
+            if (root.startsWith("/")){
+                root = root.substring(1);
+            }
+            if (!root.endsWith("/"))
+                root += "/";
+        }
     }
     
     public AssetInfo locate(AssetManager manager, AssetKey key) {
         URL url;
         String name = key.getName();
+        if (name.startsWith("/"))
+            name = name.substring(1);
+
+        name = root + name;
 //        if (!name.startsWith(root)){
 //            name = root + name;
 //        }

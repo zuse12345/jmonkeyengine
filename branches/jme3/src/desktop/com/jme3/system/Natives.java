@@ -24,7 +24,7 @@ class Natives {
     public static void extractNativeLib(String sysName, String name, boolean load) throws IOException{
         String fullname = System.mapLibraryName(name);
 
-        String path = "/native/"+sysName+"/" + fullname;
+        String path = "native/"+sysName+"/" + fullname;
         InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
         //InputStream in = Natives.class.getResourceAsStream();
         if (in == null) {

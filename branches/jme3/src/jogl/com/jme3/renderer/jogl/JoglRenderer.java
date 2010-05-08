@@ -237,6 +237,7 @@ public class JoglRenderer implements Renderer {
     }
 
     public void onFrame() {
+        System.exit(1);
         objManager.deleteUnused(this);
     }
 
@@ -358,13 +359,7 @@ public class JoglRenderer implements Renderer {
         gl.glPopMatrix();
     }
 
-    public void updateShaderSourceData(ShaderSource source) {
-    }
-
     public void deleteShaderSource(ShaderSource source) {
-    }
-
-    public void updateShaderData(Shader shader) {
     }
 
     public void setShader(Shader shader) {
@@ -377,9 +372,6 @@ public class JoglRenderer implements Renderer {
     }
 
     public void setFrameBuffer(FrameBuffer fb) {
-    }
-
-    public void updateFrameBuffer(FrameBuffer fb) {
     }
 
     public void deleteFrameBuffer(FrameBuffer fb) {

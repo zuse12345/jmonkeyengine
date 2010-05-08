@@ -13,6 +13,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.debug.WireBox;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -94,8 +95,8 @@ public class Octree {
         root.generateRenderSet(renderSet, cam);
     }
 
-    public void renderBounds(RenderQueue rq, Matrix4f transform, Material mat){
-        root.renderBounds(rq, transform, mat);
+    public void renderBounds(RenderQueue rq, Matrix4f transform, WireBox box, Material mat){
+        root.renderBounds(rq, transform, box, mat);
     }
 
     public void intersect(Ray r, float farPlane, Geometry[] geoms, CollisionResults results){

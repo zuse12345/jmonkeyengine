@@ -457,6 +457,8 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 if (!active) {
                     saveButton.setEnabled(false);
                     addObjectButton.setEnabled(false);
+                    setSelectedObjectText(null);
+                    setSelectionData(null);
                     close();
                 } else {
                     saveButton.setEnabled(true);
@@ -484,8 +486,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             setSelectionData(selected instanceof Node);
             return;
         }
-        setSelectedObjectText(null);
-        setSelectionData(null);
     }
 
     /*

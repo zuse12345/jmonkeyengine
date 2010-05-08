@@ -31,17 +31,26 @@
  */
 package com.jme3.gde.core.filetypes.actions;
 
+import com.jme3.asset.DesktopAssetManager;
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.scene.SceneApplication;
+import com.jme3.gde.core.scene.SceneRequest;
+import com.jme3.gde.core.scene.nodes.JmeNode;
+import com.jme3.gde.core.scene.nodes.NodeUtility;
+import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.io.IOException;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Confirmation;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 public final class OpenModel implements ActionListener {
 
@@ -52,23 +61,50 @@ public final class OpenModel implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent ev) {
-        Set<FileObject> files = context.files();
-        final ProjectAssetManager manager = context.getLookup().lookup(ProjectAssetManager.class);
-        if (manager == null) {
-            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "No ProjectAssetManager found in DataObject!");
-            return;
-        }
-        for (Iterator<FileObject> it = files.iterator(); it.hasNext();) {
-            FileObject fileObject = it.next();
+        Runnable call = new Runnable() {
 
-            final String name = manager.getRelativeAssetPath(fileObject.getPath());
-            SceneApplication.getApplication().enqueue(new Callable<Object>() {
-
-                public Object call() throws Exception {
-                    SceneApplication.getApplication().showModel(name, manager);
-                    return null;
+            public void run() {
+                ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Opening in SceneComposer");
+                progressHandle.start();
+                final ProjectAssetManager manager = context.getLookup().lookup(ProjectAssetManager.class);
+                if (manager == null) {
+                    return;
                 }
-            });
-        }
+                final FileObject file = context.getPrimaryFile();
+                String assetName = manager.getRelativeAssetPath(file.getPath());
+                FileLock lock = null;
+                final Spatial spat;
+                try {
+                    ((DesktopAssetManager) manager.getManager()).clearCache();
+                    file.lock();
+                    spat = manager.getManager().loadModel(assetName);
+                    if (spat instanceof Node) {
+                        //TODO: change scenecomposer to not depend on awt thread (move stuff from TopComponent)
+                        JmeNode jmeNode = NodeUtility.createNode((Node) spat);
+                        SceneApplication app=SceneApplication.getApplication();
+                        SceneRequest request = new SceneRequest(app, jmeNode, manager);
+                        request.setWindowTitle("View Model");
+                        app.requestScene(request);
+                    } else {
+
+                    }
+
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                    Confirmation msg = new NotifyDescriptor.Confirmation(
+                            "Error opening " + file.getNameExt() + "\n" + ex.toString(),
+                            NotifyDescriptor.OK_CANCEL_OPTION,
+                            NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(msg);
+                } finally {
+                    if (lock != null) {
+                        lock.releaseLock();
+                    }
+                    progressHandle.finish();
+                }
+            }
+        };
+        new Thread(call).start();
+
     }
 }

@@ -13,10 +13,16 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Confirmation;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 public final class OpenSceneComposer implements ActionListener {
 
@@ -38,32 +44,50 @@ public final class OpenSceneComposer implements ActionListener {
                 }
                 final FileObject file = context.getPrimaryFile();
                 String assetName = manager.getRelativeAssetPath(file.getPath());
-                ((DesktopAssetManager) manager.getManager()).clearCache();
-                final Spatial spat = manager.getManager().loadModel(assetName);
-                if (spat instanceof Node) {
-                    java.awt.EventQueue.invokeLater(new Runnable() {
+                FileLock lock = null;
+                final Spatial spat;
+                try {
+                    ((DesktopAssetManager) manager.getManager()).clearCache();
+                    file.lock();
+                    spat = manager.getManager().loadModel(assetName);
+                    if (spat instanceof Node) {
+                        //TODO: change scenecomposer to not depend on awt thread (move stuff from TopComponent)
+                        java.awt.EventQueue.invokeLater(new Runnable() {
 
-                        public void run() {
-                            JmeNode jmeNode = NodeUtility.createNode((Node) spat);
-                            SceneComposerTopComponent composer = SceneComposerTopComponent.findInstance();
-                            SceneRequest request = new SceneRequest(composer, jmeNode, manager);
-                            composer.loadRequest(request, file);
-                        }
-                    });
-                } else {
-                    java.awt.EventQueue.invokeLater(new Runnable() {
+                            public void run() {
+                                JmeNode jmeNode = NodeUtility.createNode((Node) spat);
+                                SceneComposerTopComponent composer = SceneComposerTopComponent.findInstance();
+                                SceneRequest request = new SceneRequest(composer, jmeNode, manager);
+                                composer.loadRequest(request, file);
+                            }
+                        });
+                    } else {
+                        java.awt.EventQueue.invokeLater(new Runnable() {
 
-                        public void run() {
-                            Node node = new Node();
-                            node.attachChild(spat);
-                            JmeNode jmeNode = NodeUtility.createNode(node);
-                            SceneComposerTopComponent composer = SceneComposerTopComponent.findInstance();
-                            SceneRequest request = new SceneRequest(composer, jmeNode, manager);
-                            composer.loadRequest(request, file);
-                        }
-                    });
+                            public void run() {
+                                Node node = new Node();
+                                node.attachChild(spat);
+                                JmeNode jmeNode = NodeUtility.createNode(node);
+                                SceneComposerTopComponent composer = SceneComposerTopComponent.findInstance();
+                                SceneRequest request = new SceneRequest(composer, jmeNode, manager);
+                                composer.loadRequest(request, file);
+                            }
+                        });
+                    }
+
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                    Confirmation msg = new NotifyDescriptor.Confirmation(
+                            "Error opening " + file.getNameExt() + "\n" + ex.toString(),
+                            NotifyDescriptor.OK_CANCEL_OPTION,
+                            NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(msg);
+                } finally {
+                    if (lock != null) {
+                        lock.releaseLock();
+                    }
+                    progressHandle.finish();
                 }
-                progressHandle.finish();
             }
         };
         new Thread(call).start();

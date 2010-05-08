@@ -58,7 +58,7 @@ public class ProjectAssetsNodeFactory implements NodeFactory {
             //return a new node for the project view if theres an assets folder:
             ProjectAssetManager item = project.getLookup().lookup(ProjectAssetManager.class);
             if (item != null) {
-                assetsFolder = DataObject.find(project.getProjectDirectory().getFileObject("assets"));
+                assetsFolder = DataObject.find(project.getProjectDirectory().getFileObject(item.getFolderName()));
                 Node node = assetsFolder.getNodeDelegate();
                 try {
                     ProjectAssetsNode nd = new ProjectAssetsNode(item, proj, node);
@@ -67,7 +67,7 @@ public class ProjectAssetsNodeFactory implements NodeFactory {
                     Exceptions.printStackTrace(ex);
                 }
             }
-        } catch (DataObjectNotFoundException ex) {
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
 

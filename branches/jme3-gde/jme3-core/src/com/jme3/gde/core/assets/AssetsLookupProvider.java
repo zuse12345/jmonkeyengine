@@ -31,8 +31,13 @@
  */
 package com.jme3.gde.core.assets;
 
+import java.io.InputStream;
+import java.util.Properties;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.LookupProvider;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -40,16 +45,34 @@ import org.openide.util.lookup.Lookups;
  *
  * @author normenhansen
  */
-public class AssetsLookupProvider  implements LookupProvider {
+public class AssetsLookupProvider implements LookupProvider {
 
     public Lookup createAdditionalLookup(Lookup lookup) {
         Project prj = lookup.lookup(Project.class);
-
-        if (prj.getProjectDirectory().getFileObject("assets") != null) {
-            return Lookups.fixed(new ProjectAssetManager(prj));
+        FileObject assetsProperties = prj.getProjectDirectory().getFileObject("nbproject/assets.properties");
+        if (assetsProperties != null) {
+            FileLock lock = null;
+            try {
+                lock = assetsProperties.lock();
+                InputStream in = assetsProperties.getInputStream();
+                Properties properties = new Properties();
+                properties.load(in);
+                in.close();
+                String assetsFolderName = properties.getProperty("assets.folder.name", "assets");
+                if (prj.getProjectDirectory().getFileObject(assetsFolderName) != null) {
+                    return Lookups.fixed(new ProjectAssetManager(prj, assetsFolderName));
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                if (lock != null) {
+                    lock.releaseLock();
+                }
+            }
+        } else if (prj.getProjectDirectory().getFileObject("assets") != null) {
+            return Lookups.fixed(new ProjectAssetManager(prj, "assets"));
         }
 
         return Lookups.fixed();
     }
-
 }

@@ -75,7 +75,7 @@ public class JmeSpatial extends AbstractNode {
     protected final DataFlavor SPATIAL_FLAVOR = new DataFlavor(ClipboardSpatial.class, "Spatial");
 
     public JmeSpatial(Spatial spatial, JmeSpatialChildFactory factory) {
-        super(Children.create(factory, false), new JmeLookup(new InstanceContent()));
+        super(Children.create(factory, true), new JmeLookup(new InstanceContent()));
         this.factory = factory;
         this.spatial = spatial;
         lookupContents = ((JmeLookup) getLookup()).getInstanceContent();

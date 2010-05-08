@@ -33,6 +33,7 @@ package com.jme3.gde.core.assets;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.system.JmeSystem;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import org.netbeans.api.project.Project;
@@ -48,15 +49,17 @@ public class ProjectAssetManager {
     private Project project;
     //TODO: one assetmanager per project
     private AssetManager manager;
+    private String folderName;
 
-    public ProjectAssetManager(Project prj) {
+    public ProjectAssetManager(Project prj, String folderName) {
         this.project = prj;
+        this.folderName = folderName;
         AssetManager manager = getManager();
-        StatusDisplayer.getDefault().setStatusText("adding asset folder from " + prj.getProjectDirectory() + " to assetmanager");
+        StatusDisplayer.getDefault().setStatusText("adding asset folder from " + prj.getProjectDirectory() + "/" + folderName + " to assetmanager");
 
         manager.registerLoader("com.jme3.export.binary.BinaryImporter", "j3s");
 
-        manager.registerLocator(prj.getProjectDirectory() + "/assets/",
+        manager.registerLocator(prj.getProjectDirectory() + "/" + folderName + "/",
                 "com.jme3.asset.plugins.FileLocator");
 
     }
@@ -66,7 +69,7 @@ public class ProjectAssetManager {
     }
 
     public String getRelativeAssetPath(String absolutePath) {
-        String prefix = project.getProjectDirectory().getFileObject("assets/").getPath();
+        String prefix = project.getProjectDirectory().getFileObject(folderName + "/").getPath();
         int idx = absolutePath.indexOf(prefix);
         if (idx == 0) {
             return absolutePath.substring(prefix.length());
@@ -82,7 +85,7 @@ public class ProjectAssetManager {
     }
 
     public String[] getMaterials() {
-        FileObject assetsFolder = project.getProjectDirectory().getFileObject("assets/");
+        FileObject assetsFolder = project.getProjectDirectory().getFileObject(folderName + "/");
         Enumeration<FileObject> assets = (Enumeration<FileObject>) assetsFolder.getChildren(true);
         ArrayList<String> list = new ArrayList<String>();
         while (assets.hasMoreElements()) {
@@ -92,5 +95,19 @@ public class ProjectAssetManager {
             }
         }
         return list.toArray(new String[list.size()]);
+    }
+
+    /**
+     * @return the folderName
+     */
+    public String getFolderName() {
+        return folderName;
+    }
+
+    /**
+     * @param folderName the folderName to set
+     */
+    public void setFolderName(String folderName) {
+        this.folderName = folderName;
     }
 }

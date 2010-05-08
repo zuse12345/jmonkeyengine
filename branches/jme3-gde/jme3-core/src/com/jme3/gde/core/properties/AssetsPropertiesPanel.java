@@ -77,6 +77,8 @@ public class AssetsPropertiesPanel extends javax.swing.JPanel implements ActionL
         jLabel2 = new javax.swing.JLabel();
         jTextField2 = new javax.swing.JTextField();
         jCheckBox1 = new javax.swing.JCheckBox();
+        jLabel3 = new javax.swing.JLabel();
+        jTextField3 = new javax.swing.JTextField();
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(AssetsPropertiesPanel.class, "AssetsPropertiesPanel.jLabel1.text")); // NOI18N
 
@@ -88,6 +90,10 @@ public class AssetsPropertiesPanel extends javax.swing.JPanel implements ActionL
 
         jCheckBox1.setText(org.openide.util.NbBundle.getMessage(AssetsPropertiesPanel.class, "AssetsPropertiesPanel.jCheckBox1.text")); // NOI18N
 
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(AssetsPropertiesPanel.class, "AssetsPropertiesPanel.jLabel3.text")); // NOI18N
+
+        jTextField3.setText(org.openide.util.NbBundle.getMessage(AssetsPropertiesPanel.class, "AssetsPropertiesPanel.jTextField3.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -98,11 +104,13 @@ public class AssetsPropertiesPanel extends javax.swing.JPanel implements ActionL
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel1)
-                            .add(jLabel2))
+                            .add(jLabel2)
+                            .add(jLabel3))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jTextField2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
-                            .add(jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)))
+                            .add(jTextField2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+                            .add(jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+                            .add(jTextField3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)))
                     .add(jCheckBox1))
                 .addContainerGap())
         );
@@ -117,17 +125,23 @@ public class AssetsPropertiesPanel extends javax.swing.JPanel implements ActionL
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(jTextField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jTextField3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel3))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jCheckBox1)
-                .addContainerGap(183, Short.MAX_VALUE))
+                .addContainerGap(147, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
+    private javax.swing.JTextField jTextField3;
     // End of variables declaration//GEN-END:variables
 
     public void actionPerformed(ActionEvent e) {
@@ -145,6 +159,7 @@ public class AssetsPropertiesPanel extends javax.swing.JPanel implements ActionL
             stream.close();
             jTextField1.setText(properties.getProperty("assets.jar.name"));
             jTextField2.setText(properties.getProperty("assets.excludes"));
+            jTextField3.setText(properties.getProperty("assets.folder.name"));
             if ("true".equals(properties.getProperty("assets.compress"))) {
                 jCheckBox1.setSelected(true);
             } else {
@@ -160,10 +175,10 @@ public class AssetsPropertiesPanel extends javax.swing.JPanel implements ActionL
     private void saveSettings() {
         try {
             //TODO: lock problems? properties that are loaded are not set -> assets.folder.name
-            properties.setProperty("assets.folder.name", "assets");
 
             properties.setProperty("assets.jar.name", jTextField1.getText());
             properties.setProperty("assets.excludes", jTextField2.getText());
+            properties.setProperty("assets.folder.name", jTextField3.getText());
             if (jCheckBox1.isSelected()) {
                 properties.setProperty("assets.compress", "true");
             } else {

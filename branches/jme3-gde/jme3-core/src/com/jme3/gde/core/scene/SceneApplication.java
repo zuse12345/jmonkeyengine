@@ -33,12 +33,9 @@ package com.jme3.gde.core.scene;
 
 import com.jme3.app.Application;
 import com.jme3.app.StatsView;
-import com.jme3.asset.DesktopAssetManager;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
-import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
-import com.jme3.gde.core.scene.nodes.NodeUtility;
 import com.jme3.gde.core.scene.processors.WireProcessor;
 import com.jme3.gde.core.sceneviewer.SceneViewerTopComponent;
 import com.jme3.input.FlyByCamera;
@@ -119,7 +116,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     private ConcurrentLinkedQueue<PreviewRequest> previewQueue = new ConcurrentLinkedQueue<PreviewRequest>();
     private SceneRequest currentSceneRequest;
     private PreviewRequest currentPreviewRequest;
-
     private ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Opening SceneViewer..");
 
     public SceneApplication() {
@@ -222,7 +218,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             fpsText.setText("Frames per second: " + fps);
             secondCounter = 0.0f;
         }
-        try{
+        try {
             rootNode.updateLogicalState(tpf);
             guiNode.updateLogicalState(tpf);
             rootNode.updateGeometricState();
@@ -232,8 +228,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             previewNode.updateGeometricState();
 
             renderManager.render(tpf);
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -382,43 +377,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     }
 
     /**
-     * method to load and show a model via its name (threadsafe)<br>
-     * only to be used to show models in the assetmanager
-     * @param name
-     */
-    public void showModel(final String name, final ProjectAssetManager projectManager) {
-        //TODO: notify listeners about change
-        setWindowTitle("View Model");
-        setMimeType(null);
-        enqueue(new Callable() {
-
-            public Object call() throws Exception {
-                camController.enable();
-                rootNode.detachAllChildren();
-                closeCurrentScene();
-                assetManager = projectManager.getManager();
-                manager = assetManager;
-                ((DesktopAssetManager) assetManager).clearCache();
-                Spatial model = assetManager.loadModel(name);
-                if (!(model instanceof Node)) {
-                    StatusDisplayer.getDefault().setStatusText("could not load model " + name + ", no root node");
-                    return null;
-                }
-                currentSceneRequest = new SceneRequest(null, NodeUtility.createNode((Node) model), projectManager);
-                getCurrentSceneRequest().setWindowTitle("View Model");
-                getCurrentSceneRequest().setDisplayed(true);
-                if (model == null) {
-                    StatusDisplayer.getDefault().setStatusText("could not load model " + name);
-                    return null;
-                }
-                rootNode.attachChild(model);
-                notifySceneListeners();
-                return null;
-            }
-        });
-    }
-
-    /**
      * method to display the node tree of a plugin (threadsafe)
      * @param tree
      */
@@ -428,13 +386,16 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         enqueue(new Callable() {
 
             public Object call() throws Exception {
-                camController.disable();
                 rootNode.detachAllChildren();
                 if (request.getManager() != null) {
                     assetManager = request.getManager().getManager();
-                    manager = assetManager;
                 }
                 closeCurrentScene();
+                if (request.getRequester() instanceof SceneApplication) {
+                    camController.enable();
+                } else {
+                    camController.disable();
+                }
                 currentSceneRequest = request;
                 getCurrentSceneRequest().setDisplayed(true);
                 Node model = request.getLookup().lookup(Node.class);

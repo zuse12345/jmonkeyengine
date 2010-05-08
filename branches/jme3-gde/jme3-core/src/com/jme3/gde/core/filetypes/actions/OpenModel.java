@@ -64,7 +64,7 @@ public final class OpenModel implements ActionListener {
         Runnable call = new Runnable() {
 
             public void run() {
-                ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Opening in SceneComposer");
+                ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Opening Model");
                 progressHandle.start();
                 final ProjectAssetManager manager = context.getLookup().lookup(ProjectAssetManager.class);
                 if (manager == null) {

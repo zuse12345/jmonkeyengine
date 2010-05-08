@@ -19,9 +19,11 @@ import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.prefs.Preferences;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import javax.swing.JOptionPane;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Confirmation;
@@ -132,8 +134,8 @@ public class InstallBlenderExporterPanel extends javax.swing.JDialog {
                 if (entry.getName().contains(".svn") || entry.getName().contains(".DS_Store")) {
                     continue;
                 }
-                if(entry.isDirectory()){
-                    File dir=new File(scriptsFolder + File.separator+ entry.getName());
+                if (entry.isDirectory()) {
+                    File dir = new File(scriptsFolder + File.separator + entry.getName());
                     dir.mkdirs();
                     continue;
                 }
@@ -235,6 +237,49 @@ public class InstallBlenderExporterPanel extends javax.swing.JDialog {
         return result;
     }
 
+    static final String[] browsers = {"google-chrome", "firefox", "opera",
+        "konqueror", "epiphany", "seamonkey", "galeon", "kazehakase", "mozilla"};
+    static final String errMsg = "Error attempting to launch web browser";
+
+    public static void openURL(String url) {
+//        try {  //attempt to use Desktop library from JDK 1.6+ (even if on 1.5)
+//            Class<?> d = Class.forName("java.awt.Desktop");
+//            d.getDeclaredMethod("browse", new Class[]{java.net.URI.class}).invoke(
+//                    d.getDeclaredMethod("getDesktop").invoke(null),
+//                    new Object[]{java.net.URI.create(url)});
+//            //above code mimics:
+//            //   java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
+//        } catch (Exception ignore) {  //library not available or failed
+            String osName = System.getProperty("os.name");
+            try {
+                if (osName.startsWith("Mac OS")) {
+                    Class.forName("com.apple.eio.FileManager").getDeclaredMethod(
+                            "openURL", new Class[]{String.class}).invoke(null,
+                            new Object[]{url});
+                } else if (osName.startsWith("Windows")) {
+                    Runtime.getRuntime().exec(
+                            "rundll32 url.dll,FileProtocolHandler " + url);
+                } else { //assume Unix or Linux
+                    boolean found = false;
+                    for (String browser : browsers) {
+                        if (!found) {
+                            found = Runtime.getRuntime().exec(
+                                    new String[]{"which", browser}).waitFor() == 0;
+                            if (found) {
+                                Runtime.getRuntime().exec(new String[]{browser, url});
+                            }
+                        }
+                    }
+                    if (!found) {
+                        throw new Exception(Arrays.toString(browsers));
+                    }
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, errMsg + "\n" + e.toString());
+            }
+//        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -249,6 +294,9 @@ public class InstallBlenderExporterPanel extends javax.swing.JDialog {
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setIconImage(null);
@@ -279,6 +327,21 @@ public class InstallBlenderExporterPanel extends javax.swing.JDialog {
             }
         });
 
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(InstallBlenderExporterPanel.class, "InstallBlenderExporterPanel.jLabel2.text")); // NOI18N
+
+        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(InstallBlenderExporterPanel.class, "InstallBlenderExporterPanel.jLabel3.text")); // NOI18N
+
+        jLabel4.setForeground(new java.awt.Color(0, 51, 255));
+        jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(InstallBlenderExporterPanel.class, "InstallBlenderExporterPanel.jLabel4.text")); // NOI18N
+        jLabel4.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                openBrowser(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -286,6 +349,7 @@ public class InstallBlenderExporterPanel extends javax.swing.JDialog {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
                     .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
@@ -294,7 +358,9 @@ public class InstallBlenderExporterPanel extends javax.swing.JDialog {
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(jButton3)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButton2)))
+                        .add(jButton2))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
+                    .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -306,7 +372,13 @@ public class InstallBlenderExporterPanel extends javax.swing.JDialog {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jButton1))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 7, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jLabel2)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel3)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jLabel4)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 15, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jButton2)
                     .add(jButton3))
@@ -333,11 +405,18 @@ public class InstallBlenderExporterPanel extends javax.swing.JDialog {
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         dispose();
     }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void openBrowser(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_openBrowser
+        openURL("http://www.python.org/download/releases/2.6/");
+    }//GEN-LAST:event_openBrowser
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
 }

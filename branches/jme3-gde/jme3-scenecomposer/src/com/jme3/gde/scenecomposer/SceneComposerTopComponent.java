@@ -302,7 +302,26 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                selectedSpatialLabel.setText(text);
+                if (text != null) {
+                    selectedSpatialLabel.setText(text);
+                    addObjectButton.setEnabled(true);
+                } else {
+                    selectedSpatialLabel.setText("no spatial selected");
+                    addObjectButton.setEnabled(false);
+                }
+            }
+        });
+    }
+
+    private void setSelectionData(final boolean node) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                if (node) {
+                    jList1.setListData(new String[]{"Particle Emitter", "Audio Node", "Picture", "Point Light", "Directional Light"});
+                } else {
+                    jList1.setListData(new String[]{"Point Light", "Directional Light"});
+                }
             }
         });
     }
@@ -379,13 +398,12 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 public Object call() throws Exception {
                     ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Importing Model..");
                     progressHandle.start();
-                    try{
+                    try {
                         ((DesktopAssetManager) manager).clearCache();
                         Spatial spat = manager.loadModel(assetName);
                         ((Node) selected).attachChild(spat);
                         refreshSelected();
-                    }
-                    catch(Exception ex){
+                    } catch (Exception ex) {
                         Confirmation msg = new NotifyDescriptor.Confirmation(
                                 "Error importing " + assetName + "\n" + ex.toString(),
                                 NotifyDescriptor.OK_CANCEL_OPTION,
@@ -444,7 +462,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                     close();
                 } else {
                     saveButton.setEnabled(true);
-                    addObjectButton.setEnabled(true);
                     open();
                     requestActive();
                 }
@@ -456,7 +473,8 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
      * listener for node selection changes
      */
     public void resultChanged(LookupEvent ev) {
-        if (currentRequest==null||!currentRequest.isDisplayed()) {
+        if (currentRequest == null || !currentRequest.isDisplayed()) {
+            setSelectedObjectText(null);
             return;
         }
         Collection<JmeSpatial> items = (Collection<JmeSpatial>) result.allInstances();
@@ -464,6 +482,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             selectedSpat = spatial;
             selected = spatial.getLookup().lookup(Spatial.class);
             setSelectedObjectText(spatial.getName());
+            setSelectionData(selected instanceof Node);
             return;
         }
     }
@@ -489,8 +508,8 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 camController = null;
             }
         }
-        selected=null;
-        selectedSpat=null;
+        selected = null;
+        selectedSpat = null;
         setSelectedObjectText("");
     }
 

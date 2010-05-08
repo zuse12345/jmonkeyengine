@@ -73,10 +73,11 @@ public class ComposerCameraController implements BindingListener, RawInputListen
 
     public Geometry checkClick() {
         if (leftMouse) {
+            StatusDisplayer.getDefault().setStatusText("Do click check");
             CollisionResults results = new CollisionResults();
             Ray ray = new Ray();
-//            ray.setOrigin(cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0));
-            ray.setOrigin(cam.getLocation());
+            ray.setOrigin(cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0));
+//            ray.setOrigin(cam.getLocation());
             ray.setDirection(cam.getDirection());
             rootNode.collideWith(ray, results);
             CollisionResult result = results.getClosestCollision();

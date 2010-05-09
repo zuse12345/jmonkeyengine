@@ -59,7 +59,7 @@ public class InstallBlenderExporterPanel extends javax.swing.JDialog {
                 }
             }
             if (!scriptsDir.exists()) {
-                FileChooserBuilder builder = new FileChooserBuilder("");
+                FileChooserBuilder builder = new FileChooserBuilder("/Applications/");
                 builder.setDirectoriesOnly(true);
                 builder.setTitle("Select Blender.app Application");
                 File file = builder.showOpenDialog();

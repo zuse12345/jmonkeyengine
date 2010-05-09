@@ -37,6 +37,7 @@ import com.bulletphysics.dynamics.character.KinematicCharacterController;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import com.jme3.bullet.collision.shapes.CollisionShape;
+import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.util.Converter;
 
 /**
@@ -51,6 +52,9 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
 
     public PhysicsCharacterNode(Spatial spat, CollisionShape shape, float stepHeight) {
         super(spat, shape);
+        if (!(shape instanceof SphereCollisionShape)) {
+            throw (new UnsupportedOperationException("Kinematic character nodes can only have sphere collision shapes"));
+        }
         this.stepHeight = stepHeight;
         character = new KinematicCharacterController(gObject, (ConvexShape) cShape.getCShape(), stepHeight);
     }

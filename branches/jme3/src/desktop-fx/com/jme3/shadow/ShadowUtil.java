@@ -33,8 +33,8 @@ import static java.lang.Math.*;
 public class ShadowUtil {
 
     public static void main(String[] args){
-        float[] splits = new float[3];
-        updateFrustumSplits(splits, 1, 1000, 0.6f);
+        float[] splits = new float[4];
+        updateFrustumSplits(splits, 1, 1000, 0.5f);
         System.out.println(Arrays.toString(splits));
     }
 

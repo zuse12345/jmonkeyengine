@@ -10,13 +10,15 @@ attribute vec3 inNormal;
 varying vec3 direction;
 
 void main(){
-    vec4 pos = vec4(inPosition, 1.0);
+    // set w coordinate to 0
+    vec4 pos = vec4(inPosition, 0.0);
 
-    // rotation only
-    mat3 mat = mat3(g_ViewMatrix);
+    // compute rotation only for view matrix
+    pos = g_ViewMatrix * pos;
 
-    //gl_Position = g_WorldViewProjectionMatrix * pos;
-    gl_Position = g_ProjectionMatrix * vec4(mat * pos.xyz, 1.0);
+    // now find projection
+    pos.w = 1.0;
+    gl_Position = g_ProjectionMatrix * pos;
 
     direction = normalize(inNormal * m_NormalScale);
 }

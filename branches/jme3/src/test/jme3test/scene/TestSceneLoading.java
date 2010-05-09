@@ -20,7 +20,6 @@ public class TestSceneLoading extends SimpleApplication {
 
     public static void main(String[] args){
         TestSceneLoading app = new TestSceneLoading();
-        app.setShowSettings(false);
         app.start();
     }
 

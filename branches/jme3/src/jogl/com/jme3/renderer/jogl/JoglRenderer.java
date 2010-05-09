@@ -237,7 +237,6 @@ public class JoglRenderer implements Renderer {
     }
 
     public void onFrame() {
-        System.exit(1);
         objManager.deleteUnused(this);
     }
 
@@ -300,7 +299,7 @@ public class JoglRenderer implements Renderer {
     }
 
     public void setLighting(LightList list) {
-        if (list.size() == 0) {
+        if (list == null || list.size() == 0) {
             // turn off lighting
             gl.glDisable(gl.GL_LIGHTING);
             return;
@@ -314,8 +313,8 @@ public class JoglRenderer implements Renderer {
         // reset model view to specify
         // light positions in world space
         // instead of model space
-        gl.glPushMatrix();
-        gl.glLoadIdentity();
+//        gl.glPushMatrix();
+//        gl.glLoadIdentity();
 
         for (int i = 0; i < list.size()+1; i++){
             if (list.size() <= i){
@@ -356,7 +355,7 @@ public class JoglRenderer implements Renderer {
         }
 
         // restore modelview to original value
-        gl.glPopMatrix();
+//        gl.glPopMatrix();
     }
 
     public void deleteShaderSource(ShaderSource source) {

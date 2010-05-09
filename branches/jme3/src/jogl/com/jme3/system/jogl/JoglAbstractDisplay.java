@@ -71,7 +71,7 @@ public abstract class JoglAbstractDisplay extends JoglContext implements GLEvent
 //        if (false){
             // trace mode
             // jME already uses err stream, use out instead
-            gl = new TraceGL(gl, System.out);
+//            gl = new TraceGL(gl, System.out);
 //        }else if (false){
             // debug mode
 //            gl = new DebugGL(gl);

@@ -25,7 +25,6 @@ import com.jme3.shader.Shader;
 import com.jme3.shader.Uniform;
 import com.jme3.shader.VarType;
 import com.jme3.texture.Texture;
-import com.jme3.util.TempVars;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -454,6 +453,9 @@ public class Material implements Cloneable, Savable {
 
         // send lighting information, if needed
         switch (techDef.getLightMode()){
+            case Disable:
+                r.setLighting(null);
+                break;
             case SinglePass:
                 updateLightListUniforms(shader, geom, 4);
                 break;

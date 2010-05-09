@@ -9,7 +9,6 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Sphere;
-import com.jme3.util.TangentBinormalGenerator;
 
 public class TestSimpleLighting extends SimpleApplication {
 
@@ -31,7 +30,7 @@ public class TestSimpleLighting extends SimpleApplication {
         }else{
             throw new RuntimeException();
         }
-        teapot.setLocalScale(2f);
+//        teapot.setLocalScale(2f);
         Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
         mat.setFloat("m_Shininess", 32f);
         teapot.setMaterial(mat);

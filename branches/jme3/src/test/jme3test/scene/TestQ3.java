@@ -74,7 +74,7 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
         rootNode.addLight(dl);
         // create the geometry and attach it
         if(useHttp){
-            assetManager.registerLocator("http://jmonkeyengine.googlecode.com/svn/branches/jme3/quake3level.zip", HttpZipLocator.class.getName());
+            assetManager.registerLocator("http://jmonkeyengine.googlecode.com/files/quake3level.zip", HttpZipLocator.class.getName());
         }
         else{
             assetManager.registerLocator("quake3level.zip", ZipLocator.class.getName());

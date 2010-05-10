@@ -96,6 +96,14 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
         character.setMaxJumpHeight(height);
     }
 
+    public void setGravity(float value){
+        character.setGravity(value);
+    }
+
+    public float getGravity(){
+        return character.getGravity();
+    }
+
     public void jump() {
         character.jump();
     }

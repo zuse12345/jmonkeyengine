@@ -67,6 +67,9 @@ public class AudioDataProperty extends PropertySupport.ReadWrite<String> {
 
     @Override
     public void setValue(final String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        if ("null".equals(val)) {
+            return;
+        }
         if (node.getAudioData() == null) {
 //            val = val.replace('[', ' ').trim();
 //            val = val.replace(']', ' ').trim();
@@ -96,5 +99,4 @@ public class AudioDataProperty extends PropertySupport.ReadWrite<String> {
     public PropertyEditor getPropertyEditor() {
         return new AudioDataPropertyEditor();
     }
-
 }

@@ -79,14 +79,17 @@ public class AudioDataPropertyEditor implements PropertyEditor {
     }
 
     public void setAsText(String text) throws IllegalArgumentException {
+        if ("".equals(text)) {
+            material = "null";
+        }
         material = text;
     }
 
     public String[] getTags() {
-        if("null".equals(material)){
-        SceneRequest request = SceneApplication.getApplication().getCurrentSceneRequest();
-        String[] mats = request.getManager().getSounds();
-        return mats;
+        if ("null".equals(material)) {
+            SceneRequest request = SceneApplication.getApplication().getCurrentSceneRequest();
+            String[] mats = request.getManager().getSounds();
+            return mats;
         }
         return new String[]{"can set only once"};
     }

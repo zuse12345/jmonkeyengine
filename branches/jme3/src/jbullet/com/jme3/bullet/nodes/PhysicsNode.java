@@ -34,6 +34,7 @@ package com.jme3.bullet.nodes;
 import com.bulletphysics.collision.dispatch.CollisionFlags;
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
+import com.bulletphysics.linearmath.Transform;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import com.jme3.bullet.PhysicsSpace;
@@ -42,6 +43,7 @@ import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.nodes.infos.PhysicsNodeState;
 import com.jme3.bullet.util.Converter;
+import com.jme3.math.Matrix3f;
 import java.util.concurrent.Callable;
 
 /**
@@ -50,33 +52,31 @@ import java.util.concurrent.Callable;
  * @author normenhansen
  */
 public class PhysicsNode extends CollisionObject{
-    private RigidBodyConstructionInfo constructionInfo;
+    protected RigidBodyConstructionInfo constructionInfo;
     protected RigidBody rBody;
-    private CollisionShape collisionShape;
-    private PhysicsNodeState motionState=new PhysicsNodeState();
+    protected CollisionShape collisionShape;
+    protected PhysicsNodeState motionState=new PhysicsNodeState();
 
-    private boolean rebuildBody=true;
-    private float mass=1.0f;
-    private boolean kinematic=false;
-    private Vector3f scale=new Vector3f(1,1,1);
+    protected boolean rebuildBody=true;
+    protected float mass=1.0f;
+    protected boolean kinematic=false;
 
     protected javax.vecmath.Vector3f tempVec=new javax.vecmath.Vector3f();
+    protected Transform tempTrans=new Transform(new javax.vecmath.Matrix3f());
+    protected javax.vecmath.Matrix3f tempMatrix=new javax.vecmath.Matrix3f();
 
     //jme-specific
-    private Vector3f continuousForce=new Vector3f();
-    private Vector3f continuousForceLocation=new Vector3f();
-    private Vector3f continuousTorque=new Vector3f();
-
-    //lock for physics values setting/applying
-    private Object physicsLock=new Object();
+    protected Vector3f continuousForce=new Vector3f();
+    protected Vector3f continuousForceLocation=new Vector3f();
+    protected Vector3f continuousTorque=new Vector3f();
 
     //TEMP VARIABLES
     private javax.vecmath.Vector3f localInertia=new javax.vecmath.Vector3f();
 
-    private boolean applyForce=false;
-    private boolean applyTorque=false;
+    protected boolean applyForce=false;
+    protected boolean applyTorque=false;
 
-    private boolean dirty=true;
+    protected boolean dirty=true;
 
     public PhysicsNode(){
         collisionShape=new BoxCollisionShape(new Vector3f(0.5f,0.5f,0.5f));
@@ -227,15 +227,17 @@ public class PhysicsNode extends CollisionObject{
     }
 
     //TODO: set physics location directly for multithreaded games
-//    public void setPhysicsLocation(float x,float y,float z){
-//        rBody.getWorldTransform(tempTrans);
-//        Converter.convert(tempLocation,tempTrans.origin);
-//        rBody.setWorldTransform(tempTrans);
-//    }
-//
-//    public void setPhysicsRotation(float x,float y,float z, float w){
-//
-//    }
+    public void setPhysicsLocation(Vector3f location){
+        rBody.getWorldTransform(tempTrans);
+        Converter.convert(location,tempTrans.origin);
+        rBody.setWorldTransform(tempTrans);
+    }
+
+    public void setPhysicsRotation(Matrix3f rotation){
+        rBody.getWorldTransform(tempTrans);
+        Converter.convert(rotation,tempTrans.basis);
+        rBody.setWorldTransform(tempTrans);
+    }
 
     public void setKinematic(boolean kinematic){
         this.kinematic=kinematic;

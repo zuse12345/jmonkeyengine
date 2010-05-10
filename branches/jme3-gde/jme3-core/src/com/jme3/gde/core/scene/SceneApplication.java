@@ -172,7 +172,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 
         progressHandle.progress("Prepare Camera", 4);
         camLight = new PointLight();
-        camLight.setColor(ColorRGBA.White);
+        camLight.setColor(ColorRGBA.Black);
         rootNode.addLight(camLight);
 
         progressHandle.progress("Prepare Stats View", 5);

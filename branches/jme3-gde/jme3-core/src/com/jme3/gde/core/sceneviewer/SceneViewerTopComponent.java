@@ -96,7 +96,6 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
         jToolBar1.setRollover(true);
 
         enableCamLight.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/core/sceneviewer/icons/lightbulb_off.gif"))); // NOI18N
-        enableCamLight.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(enableCamLight, org.openide.util.NbBundle.getMessage(SceneViewerTopComponent.class, "SceneViewerTopComponent.enableCamLight.text")); // NOI18N
         enableCamLight.setToolTipText(org.openide.util.NbBundle.getMessage(SceneViewerTopComponent.class, "SceneViewerTopComponent.enableCamLight.toolTipText")); // NOI18N
         enableCamLight.setFocusable(false);

@@ -3,8 +3,6 @@
 *Menu*
  * [Introduction]
  * jMonkeyEngine3
-  * RoadMap
-  * DependsJme3
   * BuildJme3
   * SourcePackagesJme3
  * jMonkeyPlatform

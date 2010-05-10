@@ -34,6 +34,9 @@ package com.jme3.gde.core.assets.nodes;
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import java.util.ArrayList;
 import java.util.List;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 
@@ -70,6 +73,14 @@ public class AssetChildren extends FilterNode.Children {
 
     private boolean accept(Node node) {
         // ...
+        DataObject obj = node.getLookup().lookup(DataObject.class);
+        if (obj != null) {
+            FileObject file = obj.getPrimaryFile();
+            if(FileUtil.toFile(file).isHidden()){ //file.getName().startsWith(".")||
+                return false;
+            }
+
+        }
         return true;
     }
 }

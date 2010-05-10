@@ -100,6 +100,7 @@ public abstract class SimpleBulletApplication extends Application {
         Callable<Boolean> call = new Callable<Boolean>() {
 
             public Boolean call() throws Exception {
+                detachedPhysicsLastUpdate = System.currentTimeMillis();
                 pSpace = new PhysicsSpace();
                 return true;
             }
@@ -122,14 +123,15 @@ public abstract class SimpleBulletApplication extends Application {
             return true;
         }
     };
+    long detachedPhysicsLastUpdate = 0;
     private Callable<Boolean> detachedPhysicsUpdate = new Callable<Boolean>() {
 
         public Boolean call() throws Exception {
-            long time = System.currentTimeMillis();
-            simplePhysicsUpdate(getPhysicsSpace().getAccuracy());
+            simplePhysicsUpdate(getPhysicsSpace().getAccuracy() * speed);
             pSpace.update(getPhysicsSpace().getAccuracy() * speed);
-            time = System.currentTimeMillis() - time;
-            executor.schedule(detachedPhysicsUpdate, Math.round(getPhysicsSpace().getAccuracy() * 1000.0f) - time, TimeUnit.MILLISECONDS);
+            long update = System.currentTimeMillis() - detachedPhysicsLastUpdate;
+            detachedPhysicsLastUpdate = System.currentTimeMillis();
+            executor.schedule(detachedPhysicsUpdate, Math.round(getPhysicsSpace().getAccuracy() * 1000000.0f) - (update*1000), TimeUnit.MICROSECONDS);
             return true;
         }
     };

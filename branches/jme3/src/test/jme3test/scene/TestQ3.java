@@ -57,7 +57,7 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
         this.cam.setFrustumFar(2000);
 
         DirectionalLight dl = new DirectionalLight();
-        dl.setColor(ColorRGBA.White);
+        dl.setColor(ColorRGBA.White.clone().multLocal(2));
         dl.setDirection(new Vector3f(-1, -1, -1).normalize());
         rootNode.addLight(dl);
 

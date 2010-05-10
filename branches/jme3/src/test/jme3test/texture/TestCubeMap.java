@@ -11,7 +11,9 @@ import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial.CullHint;
 import com.jme3.scene.shape.Sphere;
+import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
+import com.jme3.texture.TextureCubeMap;
 
 public class TestCubeMap extends SimpleApplication {
 
@@ -36,6 +38,23 @@ public class TestCubeMap extends SimpleApplication {
         key.setGenerateMips(true);
         key.setAsCube(false);
         envMap = assetManager.loadTexture(key);
+
+//        Image negx = assetManager.loadTexture("Textures/Sky/CubeSky/negx.hdr").getImage();
+//        Image posx = assetManager.loadTexture("Textures/Sky/CubeSky/posx.hdr").getImage();
+//        Image negy = assetManager.loadTexture("Textures/Sky/CubeSky/negy.hdr").getImage();
+//        Image posy = assetManager.loadTexture("Textures/Sky/CubeSky/posy.hdr").getImage();
+//        Image negz = assetManager.loadTexture("Textures/Sky/CubeSky/negz.hdr").getImage();
+//        Image posz = assetManager.loadTexture("Textures/Sky/CubeSky/posz.hdr").getImage();
+//
+//        Image cube = new Image(negx.getFormat(), negx.getWidth(), negy.getHeight(), null);
+//        cube.addData(negx.getData(0));
+//        cube.addData(posx.getData(0));
+//        cube.addData(negy.getData(0));
+//        cube.addData(posy.getData(0));
+//        cube.addData(negz.getData(0));
+//        cube.addData(posz.getData(0));
+//
+//        envMap = new TextureCubeMap(cube);
     }
 
     public Geometry createReflectiveTeapot(){

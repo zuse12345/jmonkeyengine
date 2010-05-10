@@ -319,7 +319,8 @@ public class Application implements SystemListener {
         initStateManager();
 
         // update timer so that the next delta is not too large
-        timer.update();
+//        timer.update();
+        timer.reset();
 
         // user code here..
     }

@@ -231,16 +231,31 @@ public class PhysicsSpace implements Savable{
     	});
     }
 
+    private float particlesPerSec = 60;
+    private float emitCarry = 0f;
+
     /**
      * updates the physics space
      * @param time the current time value
      */
     public void update(float time){
-        int subSteps=1;
-//        if(time>accuracy){
-//            subSteps=Math.round(time/accuracy)+1;
+
+        float particlesToEmitF = particlesPerSec * time;
+        int particlesToEmit = (int) (particlesToEmitF);
+        if (particlesToEmitF > particlesToEmit){
+            emitCarry += particlesToEmitF - particlesToEmit;
+        }
+
+        if (emitCarry > 1f){
+            particlesToEmit ++;
+            emitCarry = 0f;
+        }
+
+//        for (int i = 0; i < particlesToEmit; i++){
+//            update(1f/60f,1);
 //        }
-        update(time,subSteps);
+        
+        update(1f/particlesPerSec,particlesToEmit);
     }
 
     /**
@@ -250,6 +265,7 @@ public class PhysicsSpace implements Savable{
      */
     public void update(float time, int maxSteps){
         if(getDynamicsWorld()==null) return;
+
         //add recurring events
         AppTask task = rQueue.poll();
         while(task!=null){

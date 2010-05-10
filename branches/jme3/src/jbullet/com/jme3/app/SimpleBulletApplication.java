@@ -52,6 +52,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -113,12 +114,22 @@ public abstract class SimpleBulletApplication extends Application {
             return false;
         }
     }
-
-    private Callable<Boolean> physicsUpdate = new Callable<Boolean>() {
+    private Callable<Boolean> parallelPhysicsUpdate = new Callable<Boolean>() {
 
         public Boolean call() throws Exception {
             simplePhysicsUpdate(timer.getTimePerFrame() * speed);
             pSpace.update(timer.getTimePerFrame() * speed);
+            return true;
+        }
+    };
+    private Callable<Boolean> detachedPhysicsUpdate = new Callable<Boolean>() {
+
+        public Boolean call() throws Exception {
+            long time = System.currentTimeMillis();
+            simplePhysicsUpdate(getPhysicsSpace().getAccuracy());
+            pSpace.update(getPhysicsSpace().getAccuracy() * speed);
+            time = System.currentTimeMillis() - time;
+            executor.schedule(detachedPhysicsUpdate, Math.round(getPhysicsSpace().getAccuracy() * 1000.0f) - time, TimeUnit.MILLISECONDS);
             return true;
         }
     };
@@ -178,10 +189,10 @@ public abstract class SimpleBulletApplication extends Application {
         if (threadingType == ThreadingType.PARALLEL) {
             executor = new ScheduledThreadPoolExecutor(1);
             startPhysics();
-        }
-        else if (threadingType == ThreadingType.DETACHED) {
+        } else if (threadingType == ThreadingType.DETACHED) {
             executor = new ScheduledThreadPoolExecutor(1);
-
+            startPhysics();
+            executor.submit(detachedPhysicsUpdate);
         } else {
             pSpace = new PhysicsSpace();
         }
@@ -258,7 +269,7 @@ public abstract class SimpleBulletApplication extends Application {
         //TODO: maybe create own thread instead of executor.
         if (threadingType == ThreadingType.PARALLEL) {
             //submit physics update
-            Future physicsFuture = executor.submit(physicsUpdate);
+            Future physicsFuture = executor.submit(parallelPhysicsUpdate);
             //render frame concurrently
             renderManager.render(tpf);
             simpleRender(renderManager);
@@ -274,8 +285,7 @@ public abstract class SimpleBulletApplication extends Application {
             pSpace.update(tpf);
             renderManager.render(tpf);
             simpleRender(renderManager);
-        }
-        else{
+        } else {
             renderManager.render(tpf);
             simpleRender(renderManager);
         }
@@ -310,9 +320,6 @@ public abstract class SimpleBulletApplication extends Application {
 
         SEQUENTIAL,
         PARALLEL,
-        /**
-         * not working yet
-         */
         DETACHED
     }
 }

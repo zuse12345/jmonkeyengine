@@ -277,11 +277,7 @@ public class PhysicsSpace implements Savable {
             physicsNode.updatePhysicsState();
         }
         //step simulation
-        if (maxSteps > 0) {
-            getDynamicsWorld().stepSimulation(time, maxSteps, accuracy);
-        } else {
-            getDynamicsWorld().stepSimulation(time, 0);
-        }
+        getDynamicsWorld().stepSimulation(time, maxSteps, accuracy);
 
         //sync ghostnodes TODO!
         for (PhysicsGhostNode node : physicsGhostNodes.values()) {

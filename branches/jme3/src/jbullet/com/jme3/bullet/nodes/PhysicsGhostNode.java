@@ -69,6 +69,11 @@ public class PhysicsGhostNode extends CollisionObject {
         buildObject();
     }
 
+    public PhysicsGhostNode(CollisionShape shape) {
+        cShape = shape;
+        buildObject();
+    }
+
     public PhysicsGhostNode(Spatial child, CollisionShape shape) {
         this.attachChild(child);
         cShape = shape;

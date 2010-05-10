@@ -50,6 +50,15 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
     private float stepHeight;
     private Vector3f walkDirection = new Vector3f();
 
+    public PhysicsCharacterNode(CollisionShape shape, float stepHeight) {
+        super(shape);
+        if (!(shape instanceof SphereCollisionShape)) {
+            throw (new UnsupportedOperationException("Kinematic character nodes can only have sphere collision shapes"));
+        }
+        this.stepHeight = stepHeight;
+        character = new KinematicCharacterController(gObject, (ConvexShape) cShape.getCShape(), stepHeight);
+    }
+
     public PhysicsCharacterNode(Spatial spat, CollisionShape shape, float stepHeight) {
         super(spat, shape);
         if (!(shape instanceof SphereCollisionShape)) {

@@ -12,10 +12,12 @@ import com.jme3.input.FirstPersonCamera;
 import com.jme3.input.KeyInput;
 import com.jme3.input.binding.BindingListener;
 import com.jme3.light.DirectionalLight;
+import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
@@ -23,8 +25,8 @@ import com.jme3.scene.plugins.ogre.MeshLoader;
 import com.jme3.scene.plugins.ogre.OgreMaterialList;
 import com.jme3.scene.plugins.ogre.OgreMeshKey;
 import com.jme3.scene.shape.Sphere;
+import com.jme3.texture.Texture;
 import java.io.File;
-import javax.swing.JOptionPane;
 
 public class TestQ3 extends SimpleBulletApplication implements BindingListener{
 
@@ -46,22 +48,13 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
 
     public void simpleInitApp() {
         inputManager.removeBindingListener(flyCam);
-        setupKeys();
         MeshLoader.AUTO_INTERLEAVE = false;
         FirstPersonCamera fps = new FirstPersonCamera(cam, new Vector3f(0, -10, 0));
         fps.registerWithDispatcher(inputManager);
         fps.setMoveSpeed(100);
+        setupKeys();
 
         this.cam.setFrustumFar(2000);
-
-        // load sky
-//        sphere.updateModelBound();
-//        sphere.setQueueBucket(Bucket.Sky);
-//        Material sky = new Material(manager, "sky.j3md");
-//        Texture tex = manager.loadTexture("sky3.dds", false, true, true, 0);
-//        sky.setTexture("m_Texture", tex);
-//        sphere.setMaterial(sky);
-//        rootNode.attachChild(sphere);
 
         DirectionalLight dl = new DirectionalLight();
         dl.setColor(ColorRGBA.White);
@@ -72,7 +65,8 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
         dl.setColor(ColorRGBA.White);
         dl.setDirection(new Vector3f(1, -1, 1).normalize());
         rootNode.addLight(dl);
-        // create the geometry and attach it
+        
+        // load the level from zip or http zip
         if(useHttp){
             assetManager.registerLocator("http://jmonkeyengine.googlecode.com/files/quake3level.zip", HttpZipLocator.class.getName());
         }
@@ -103,9 +97,6 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
 
         getPhysicsSpace().add(levelNode);
         getPhysicsSpace().add(player);
-
-//        MotionAllowedListener motAllow = new SphereMotionAllowedListener(rootNode, new Vector3f(100, 200, 100));
-//        fps.setMotionAllowedListener(motAllow);
     }
 
     @Override
@@ -115,10 +106,10 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
     }
 
     private void setupKeys() {
-        inputManager.registerKeyBinding("Lefts", KeyInput.KEY_H);
-        inputManager.registerKeyBinding("Rights", KeyInput.KEY_K);
-        inputManager.registerKeyBinding("Ups", KeyInput.KEY_U);
-        inputManager.registerKeyBinding("Downs", KeyInput.KEY_J);
+        inputManager.registerKeyBinding("Lefts", KeyInput.KEY_A);
+        inputManager.registerKeyBinding("Rights", KeyInput.KEY_D);
+        inputManager.registerKeyBinding("Ups", KeyInput.KEY_W);
+        inputManager.registerKeyBinding("Downs", KeyInput.KEY_S);
         inputManager.registerKeyBinding("Space", KeyInput.KEY_SPACE);
         //used with method onBinding in BindingListener interface
         //in order to add function to keys
@@ -128,17 +119,17 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
     public void onBinding(String binding, float value) {
         if(binding.equals("Lefts")){
             Quaternion quat=new Quaternion(0, 1, 0, FastMath.QUARTER_PI);
-            walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.6f)));
+            walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.4f)));
         }
         else if(binding.equals("Rights")){
             Quaternion quat=new Quaternion(0, 1, 0, -FastMath.QUARTER_PI);
-            walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.6f)));
+            walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.4f)));
         }
         else if(binding.equals("Ups")){
-            walkDirection.addLocal(cam.getDirection().mult(0.6f));
+            walkDirection.addLocal(cam.getDirection().mult(0.4f));
         }
         else if(binding.equals("Downs")){
-            walkDirection.addLocal(cam.getDirection().mult(-0.6f));
+            walkDirection.addLocal(cam.getDirection().mult(-0.4f));
         }
         else if(binding.equals("Space")){
             player.jump();

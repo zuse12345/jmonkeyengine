@@ -197,6 +197,10 @@ public class PhysicsNode extends CollisionObject{
         }
     }
 
+    public void superUpdateGeometric(){
+        super.updateGeometricState();
+    }
+
     /**
      * only to be called from physics thread!!
      */

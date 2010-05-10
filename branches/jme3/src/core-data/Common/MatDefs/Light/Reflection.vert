@@ -16,10 +16,11 @@ void main(){
     vec3 worldPos = (g_WorldMatrix * vec4(inPosition,1.0)).xyz;
 
     // WARNING: Not allowed to create matrix from matrix
-    mat3 worldMat3 = mat3(g_WorldMatrix);
+    // mat3 worldMat3 = mat3(g_WorldMatrix);
 
     vec3 I = normalize(worldPos - g_CameraPosition).xyz;
-    vec3 N = normalize(worldMat3 * inNormal);
+    //vec3 N = normalize(worldMat3 * inNormal);
+    vec3 N = normalize( (g_WorldMatrix * vec4(inNormal, 0.0)).xyz );
 
     float fresnelBias = 0.05;
     float fresnelScale = 0.25;

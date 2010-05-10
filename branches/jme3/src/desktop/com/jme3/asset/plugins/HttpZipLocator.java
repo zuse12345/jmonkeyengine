@@ -138,6 +138,8 @@ public class HttpZipLocator implements AssetLocator {
         conn.connect();
         if (conn.getResponseCode() == HttpURLConnection.HTTP_PARTIAL){
             return conn.getInputStream();
+        }else if (conn.getResponseCode() == HttpURLConnection.HTTP_OK){
+            throw new IOException("Your server does not support feature Content-Range. Please contact your server administrator.");
         }else{
             throw new IOException(conn.getResponseCode() + " " + conn.getResponseMessage());
         }

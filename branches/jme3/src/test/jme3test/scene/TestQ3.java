@@ -1,6 +1,7 @@
 package jme3test.scene;
 
 import com.jme3.app.SimpleBulletApplication;
+import com.jme3.asset.plugins.HttpZipLocator;
 import com.jme3.asset.plugins.ZipLocator;
 import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
@@ -32,12 +33,12 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
     private Spatial gameLevel;
     private PhysicsCharacterNode player;
     private Vector3f walkDirection=new Vector3f();
+    private static boolean useHttp=false;
 
     public static void main(String[] args){
         File file=new File("quake3level.zip");
         if(!file.exists()){
-            JOptionPane.showMessageDialog(null, "Error opening quake3level.zip\nPlease download at:\nhttp://jmonkeyengine.googlecode.com/svn/branches/jme3/quake3level.zip");
-            return;
+            useHttp=true;
         }
         TestQ3 app = new TestQ3();
         app.start();
@@ -72,7 +73,12 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
         dl.setDirection(new Vector3f(1, -1, 1).normalize());
         rootNode.addLight(dl);
         // create the geometry and attach it
-        assetManager.registerLocator("quake3level.zip", ZipLocator.class.getName());
+        if(useHttp){
+            assetManager.registerLocator("http://jmonkeyengine.googlecode.com/svn/branches/jme3/quake3level.zip", HttpZipLocator.class.getName());
+        }
+        else{
+            assetManager.registerLocator("quake3level.zip", ZipLocator.class.getName());
+        }
 
         // create the geometry and attach it
         OgreMaterialList matList = (OgreMaterialList) assetManager.loadAsset("Scene.material");

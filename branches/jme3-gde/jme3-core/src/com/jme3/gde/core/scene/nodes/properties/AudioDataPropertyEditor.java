@@ -83,9 +83,12 @@ public class AudioDataPropertyEditor implements PropertyEditor {
     }
 
     public String[] getTags() {
+        if("null".equals(material)){
         SceneRequest request = SceneApplication.getApplication().getCurrentSceneRequest();
         String[] mats = request.getManager().getSounds();
         return mats;
+        }
+        return new String[]{"can set only once"};
     }
 
     public Component getCustomEditor() {

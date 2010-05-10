@@ -34,6 +34,7 @@ package com.jme3.gde.core.scene.nodes;
 import com.jme3.audio.AudioNode;
 import com.jme3.audio.AudioNode.Status;
 import com.jme3.audio.Filter;
+import com.jme3.gde.core.scene.nodes.properties.AudioDataProperty;
 import com.jme3.gde.core.scene.nodes.properties.JmeProperty;
 import com.jme3.math.Vector3f;
 import java.awt.Image;
@@ -79,8 +80,9 @@ public class JmeAudioNode extends JmeNode {
         if (obj == null) {
             return sheet;
         }
-//        obj.set
+        obj.setAudioData(null, null);
 
+        set.put(new AudioDataProperty(obj));
         set.put(makeProperty(obj, int.class, "getChannel", "setChannel", "channel"));
         set.put(makeProperty(obj, Vector3f.class, "getDirection", "setDirection", "direction"));
         set.put(makeProperty(obj, boolean.class, "isDirectional", "setDirectional", "directional"));

@@ -320,6 +320,15 @@
                 <attr name="template" boolvalue="true"/>
             </file>
         </folder>
+        <folder name="Project">
+            <folder name="Samples">
+                <file name="Standard_hidden"/>
+            </folder>
+            <folder name="Standard">
+                <file name="desktopApp.xml_hidden"/>
+                <file name="emptyJ2SE.xml_hidden"/>
+            </folder>
+        </folder>
     </folder>
     <folder name="Windows2">
         <folder name="Components">

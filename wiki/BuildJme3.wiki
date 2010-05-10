@@ -1,5 +1,4 @@
 #summary How to download and build jME3
-#labels Featured
 
 == Check out jME3 from SVN using command line ==
 You will need a JDK >= 1.5 and Ant installed on your computer.

@@ -134,12 +134,11 @@ public class HttpZipLocator implements AssetLocator {
         }
 
         conn.setRequestProperty("Range", "bytes=" + range);
-        System.out.println("GET: " + range);
         conn.connect();
         if (conn.getResponseCode() == HttpURLConnection.HTTP_PARTIAL){
             return conn.getInputStream();
         }else if (conn.getResponseCode() == HttpURLConnection.HTTP_OK){
-            throw new IOException("Your server does not support feature Content-Range. Please contact your server administrator.");
+            throw new IOException("Your server does not support HTTP feature Content-Range. Please contact your server administrator.");
         }else{
             throw new IOException(conn.getResponseCode() + " " + conn.getResponseMessage());
         }
@@ -224,11 +223,6 @@ public class HttpZipLocator implements AssetLocator {
 
         zipUrl = url;
         readEndHeader();
-
-        System.out.println("Table Entries: "+numEntries);
-        System.out.println("Table Offset: "+tableOffset);
-        System.out.println("Table Length: "+tableLength);
-
         readCentralDirectory();
     }
 

@@ -14,8 +14,8 @@ vec2 Optics_SphereCoord(in vec3 dir){
 
     // compute 1/2p
     // NOTE: this simplification only works if dir is normalized.
-    //float inv_two_p = 1.414 * sqrt(dzplus1);
-    float inv_two_p = sqrt(dir.x * dir.x + dir.y * dir.y + dzplus1 * dzplus1);
+    float inv_two_p = 1.414 * sqrt(dzplus1);
+    //float inv_two_p = sqrt(dir.x * dir.x + dir.y * dir.y + dzplus1 * dzplus1);
     inv_two_p *= 2.0;
     inv_two_p = 1.0 / inv_two_p;
 

@@ -312,10 +312,9 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                if(node==null){
+                if (node == null) {
                     jList1.setListData(new String[]{});
-                }
-                else if (node) {
+                } else if (node) {
                     jList1.setListData(new String[]{"Particle Emitter", "Audio Node", "Picture", "Point Light", "Directional Light"});
                 } else {
                     jList1.setListData(new String[]{"Point Light", "Directional Light"});
@@ -419,7 +418,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         //TODO: handle request change
         this.currentRequest = request;
         this.currentFileObject = file;
-        request.setWindowTitle("SceneComposer - " + request.getRootNode().getName());
+        request.setWindowTitle("SceneViewer - " + request.getRootNode().getName() + " (SceneComposer)");
         SceneApplication.getApplication().requestScene(request);
     }
 

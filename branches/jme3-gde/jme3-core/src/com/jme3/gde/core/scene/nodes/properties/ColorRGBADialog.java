@@ -53,6 +53,7 @@ public class ColorRGBADialog extends javax.swing.JDialog {
         super(parent, modal);
         this.editor = editor;
         initComponents();
+        alphaSlider.setValue(Math.round(((ColorRGBA)editor.getValue()).getAlpha()*100));
     }
 
     public ColorRGBA setColor() {
@@ -60,7 +61,7 @@ public class ColorRGBADialog extends javax.swing.JDialog {
         ColorRGBA color = new ColorRGBA();
         float[] floats = new float[4];
         cColor.getComponents(floats);
-        color.set(floats[0], floats[1], floats[2], floats[3]);
+        color.set(floats[0], floats[1], floats[2], ((float)alphaSlider.getValue())/100.0f);
         ColorRGBA color2 = new ColorRGBA((ColorRGBA) editor.getValue());
         editor.setValue(color);
         editor.notifyListeners(color2, color);
@@ -79,6 +80,9 @@ public class ColorRGBADialog extends javax.swing.JDialog {
         jColorChooser1 = new javax.swing.JColorChooser();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        jToolBar1 = new javax.swing.JToolBar();
+        alphaLabel = new javax.swing.JLabel();
+        alphaSlider = new javax.swing.JSlider();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -96,12 +100,22 @@ public class ColorRGBADialog extends javax.swing.JDialog {
             }
         });
 
+        jToolBar1.setFloatable(false);
+        jToolBar1.setRollover(true);
+
+        alphaLabel.setText(org.openide.util.NbBundle.getMessage(ColorRGBADialog.class, "ColorRGBADialog.alphaLabel.text")); // NOI18N
+        jToolBar1.add(alphaLabel);
+
+        alphaSlider.setValue(100);
+        jToolBar1.add(alphaSlider);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(308, 308, 308)
+                .add(jToolBar1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jButton2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jButton1))
@@ -112,9 +126,11 @@ public class ColorRGBADialog extends javax.swing.JDialog {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(jColorChooser1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jButton1)
-                    .add(jButton2)))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(jButton1)
+                        .add(jButton2))
+                    .add(jToolBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
 
         pack();
@@ -129,8 +145,11 @@ public class ColorRGBADialog extends javax.swing.JDialog {
         dispose();
     }//GEN-LAST:event_jButton2ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel alphaLabel;
+    private javax.swing.JSlider alphaSlider;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JColorChooser jColorChooser1;
+    private javax.swing.JToolBar jToolBar1;
     // End of variables declaration//GEN-END:variables
 }

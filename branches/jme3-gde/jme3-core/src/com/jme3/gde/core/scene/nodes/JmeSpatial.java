@@ -124,7 +124,7 @@ public class JmeSpatial extends AbstractNode {
 
     @Override
     public boolean canRename() {
-        return super.canRename();
+        return true;
     }
 
     @Override
@@ -251,7 +251,7 @@ public class JmeSpatial extends AbstractNode {
         if (obj == null) {
             return sheet;
         }
-        set.put(makeProperty(obj, String.class, "getName", "setName", "name"));
+//        set.put(makeProperty(obj, String.class, "getName", "setName", "name"));
 
         set.put(makeProperty(obj, int.class, "getVertexCount", "vertexes"));
         set.put(makeProperty(obj, int.class, "getTriangleCount", "triangles"));

@@ -78,17 +78,17 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
         OgreMaterialList matList = (OgreMaterialList) assetManager.loadAsset("Scene.material");
         OgreMeshKey key = new OgreMeshKey("main.meshxml", matList);
         gameLevel = (Spatial) assetManager.loadAsset(key);
-        gameLevel.updateGeometricState();
+        gameLevel.setLocalScale(0.1f);
 
         CompoundCollisionShape levelShape=CollisionShapeFactory.createMeshCompoundShape((Node)gameLevel);
 
-        //TODO: values are too high, level is too large,
-        //      scaling not supported yet with CollisionShapeFactory.createMeshCompoundShape
         PhysicsNode levelNode=new PhysicsNode(gameLevel, levelShape,0);
-        player=new PhysicsCharacterNode(new SphereCollisionShape(60), 0.1f);
-        player.setGravity(100);
+        player=new PhysicsCharacterNode(new SphereCollisionShape(5), 1f);
+        player.setJumpSpeed(30);
+        player.setFallSpeed(30);
+        player.setGravity(30);
 
-        player.setLocalTranslation(new Vector3f(600,100,-600));
+        player.setLocalTranslation(new Vector3f(60,10,-60));
         player.updateGeometricState();
 
         rootNode.attachChild(levelNode);
@@ -122,17 +122,17 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
     public void onBinding(String binding, float value) {
         if(binding.equals("Lefts")){
             Quaternion quat=new Quaternion(0, 1, 0, FastMath.QUARTER_PI);
-            walkDirection.addLocal(quat.mult(cam.getDirection().mult(2)));
+            walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.6f)));
         }
         else if(binding.equals("Rights")){
             Quaternion quat=new Quaternion(0, 1, 0, -FastMath.QUARTER_PI);
-            walkDirection.addLocal(quat.mult(cam.getDirection().mult(2)));
+            walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.6f)));
         }
         else if(binding.equals("Ups")){
-            walkDirection.addLocal(cam.getDirection().mult(2));
+            walkDirection.addLocal(cam.getDirection().mult(0.6f));
         }
         else if(binding.equals("Downs")){
-            walkDirection.addLocal(cam.getDirection().mult(-2));
+            walkDirection.addLocal(cam.getDirection().mult(-0.6f));
         }
         else if(binding.equals("Space")){
             player.jump();

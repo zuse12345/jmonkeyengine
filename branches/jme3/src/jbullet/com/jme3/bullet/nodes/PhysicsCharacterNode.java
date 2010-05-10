@@ -92,16 +92,36 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
         character.setUpAxis(axis);
     }
 
+    public void setFallSpeed(float fallSpeed) {
+        character.setFallSpeed(fallSpeed);
+    }
+
+    public void setJumpSpeed(float jumpSpeed) {
+        character.setJumpSpeed(jumpSpeed);
+    }
+
     public void setMaxJumpHeight(float height) {
         character.setMaxJumpHeight(height);
     }
 
-    public void setGravity(float value){
+    public void setGravity(float value) {
         character.setGravity(value);
     }
 
-    public float getGravity(){
+    public float getGravity() {
         return character.getGravity();
+    }
+
+    public void setMaxSlope(float slopeRadians) {
+        character.setMaxSlope(slopeRadians);
+    }
+
+    public float getMaxSlope() {
+        return character.getMaxSlope();
+    }
+
+    public boolean onGround() {
+        return character.onGround();
     }
 
     public void jump() {

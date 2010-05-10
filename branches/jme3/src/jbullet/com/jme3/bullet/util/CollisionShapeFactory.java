@@ -47,20 +47,19 @@ import java.util.List;
  */
 public class CollisionShapeFactory {
 
-    private static CompoundCollisionShape createMeshCompoundShape(Node rootNode, CompoundCollisionShape shape, Vector3f location) {
+    private static CompoundCollisionShape createMeshCompoundShape(Node rootNode, CompoundCollisionShape shape) {
         List<Spatial> children = rootNode.getChildren();
         for (Iterator<Spatial> it = children.iterator(); it.hasNext();) {
             Spatial spatial = it.next();
             if (spatial instanceof Node) {
-                location.addLocal(spatial.getLocalTranslation());
-                createMeshCompoundShape((Node) spatial, shape, location);
-                location.subtractLocal(spatial.getLocalTranslation());
+                createMeshCompoundShape((Node) spatial, shape);
             } else if (spatial instanceof Geometry) {
                 Geometry geom = (Geometry) spatial;
                 Mesh mesh = geom.getMesh();
                 if (mesh != null) {
                     MeshCollisionShape mColl = new MeshCollisionShape(mesh);
-                    shape.addChildShape(mColl, location.add(geom.getLocalTranslation()));
+                    mColl.setScale(geom.getWorldScale());
+                    shape.addChildShape(mColl, geom.getWorldTranslation(),geom.getWorldRotation().toRotationMatrix());
                 }
             }
         }
@@ -68,6 +67,7 @@ public class CollisionShapeFactory {
     }
 
     public static CompoundCollisionShape createMeshCompoundShape(Node rootNode){
-        return createMeshCompoundShape(rootNode, new CompoundCollisionShape(), new Vector3f(0,0,0));
+        rootNode.updateGeometricState();
+        return createMeshCompoundShape(rootNode, new CompoundCollisionShape());
     }
 }

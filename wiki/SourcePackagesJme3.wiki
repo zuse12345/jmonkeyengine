@@ -1,5 +1,5 @@
 #summary Description of the various source packages in the jme3/src folder
-#labels Featured,Phase-Implementation
+#labels Phase-Implementation
 
 = Introduction =
 

@@ -22,6 +22,8 @@ import com.jme3.scene.plugins.ogre.MeshLoader;
 import com.jme3.scene.plugins.ogre.OgreMaterialList;
 import com.jme3.scene.plugins.ogre.OgreMeshKey;
 import com.jme3.scene.shape.Sphere;
+import java.io.File;
+import javax.swing.JOptionPane;
 
 public class TestQ3 extends SimpleBulletApplication implements BindingListener{
 
@@ -32,6 +34,11 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
     private Vector3f walkDirection=new Vector3f();
 
     public static void main(String[] args){
+        File file=new File("quake3level.zip");
+        if(!file.exists()){
+            JOptionPane.showMessageDialog(null, "Error opening quake3level.zip\nPlease download at:\nhttp://jmonkeyengine.googlecode.com/svn/branches/jme3/quake3level.zip");
+            return;
+        }
         TestQ3 app = new TestQ3();
         app.start();
     }

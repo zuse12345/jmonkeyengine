@@ -1,0 +1,5 @@
+Material Monkey Head : Common/MatDefs/Light/Lighting.j3md {
+    MaterialParameters {
+	   m_Shininess   : 4.0
+    }
+}

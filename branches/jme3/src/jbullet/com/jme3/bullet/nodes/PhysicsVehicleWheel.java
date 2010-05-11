@@ -37,13 +37,13 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import com.jme3.bullet.collision.CollisionObject;
 import com.jme3.bullet.util.Converter;
+import com.jme3.scene.Node;
 
 /**
  * Stores info about one wheel of a PhysicsVehicleNode
  * @author normenhansen
  */
-public class PhysicsVehicleWheel {
-    private PhysicsVehicleNode parent;
+public class PhysicsVehicleWheel extends Node{
     private com.bulletphysics.dynamics.vehicle.WheelInfo wheelInfo;
     private Spatial spatial;
     private boolean frontWheel;
@@ -67,9 +67,9 @@ public class PhysicsVehicleWheel {
     private com.jme3.math.Quaternion tempRotation=new com.jme3.math.Quaternion();
     private com.jme3.math.Matrix3f tempMatrix=new com.jme3.math.Matrix3f();
     
-    public PhysicsVehicleWheel(PhysicsVehicleNode parent, Spatial spat, Vector3f location, Vector3f direction, Vector3f axle,
+    public PhysicsVehicleWheel(Spatial spat, Vector3f location, Vector3f direction, Vector3f axle,
             float restLength, float radius, boolean frontWheel) {
-        this.parent=parent;
+        this.attachChild(spat);
         this.spatial = spat;
         this.location.set(location);
         this.direction.set(direction);
@@ -79,26 +79,24 @@ public class PhysicsVehicleWheel {
         this.radius=radius;
     }
 
-    public void updateGeometricState(){
-        spatial.getLocalTranslation().set( wheelWorldLocation ).subtractLocal( parent.getWorldTranslation() );
-        spatial.getLocalTranslation().divideLocal( parent.getWorldScale() );
-        tempRotation.set( parent.getWorldRotation()).inverseLocal().multLocal( spatial.getLocalTranslation() );
+    @Override
+    public synchronized void updateGeometricState(){
 
-        tempRotation.set(parent.getWorldRotation()).inverseLocal().mult(wheelWorldRotation,spatial.getLocalRotation());
+        getLocalTranslation().set( wheelWorldLocation ).subtractLocal( parent.getWorldTranslation() );
+        getLocalTranslation().divideLocal( parent.getWorldScale() );
+        tempRotation.set( parent.getWorldRotation()).inverseLocal().multLocal( getLocalTranslation() );
 
-        //notify spatial of change
-        spatial.setLocalTranslation(spatial.getLocalTranslation());
-        spatial.setLocalRotation(spatial.getLocalRotation());
+        tempRotation.set(parent.getWorldRotation()).inverseLocal().mult(wheelWorldRotation,getLocalRotation());
+
+        updateWorldTransforms();
+        
+        super.updateGeometricState();
     }
 
-    public void updatePhysicsState(){
+    public synchronized void updatePhysicsState(){
         Converter.convert(wheelInfo.worldTransform.origin,wheelWorldLocation);
         Converter.convert(wheelInfo.worldTransform.basis,tempMatrix);
         wheelWorldRotation.fromRotationMatrix(tempMatrix);
-    }
-
-    public PhysicsVehicleNode getParent() {
-        return parent;
     }
 
     public void setParent(PhysicsVehicleNode parent) {

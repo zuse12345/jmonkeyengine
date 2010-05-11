@@ -122,7 +122,6 @@ public class PhysicsNodeState implements MotionState{
     public synchronized boolean applyTransform(PhysicsNode spatial){
         if(!physicsLocationDirty) return false;
         if(spatial.getParent()!=null){
-            spatial.updateWorldTrans();
             localLocation.set(worldLocation).subtractLocal( spatial.getParent().getWorldTranslation() );
             localLocation.divideLocal( spatial.getParent().getWorldScale() );
             tmp_inverseWorldRotation.set(spatial.getParent().getWorldRotation()).inverseLocal().multLocal( localLocation );

@@ -56,13 +56,12 @@ public class PhysicsGhostNode extends CollisionObject {
 
     protected PairCachingGhostObject gObject;
     protected CollisionShape cShape;
-    private boolean physicsDirty = false;
-    private boolean jmeDirty = false;
+    protected boolean locationDirty = false;
     //TEMP VARIABLES
-    private final Quaternion tmp_inverseWorldRotation = new Quaternion();
-    private Transform tempTrans = new Transform(Converter.convert(new Matrix3f()));
-    private com.jme3.math.Transform jmeTrans = new com.jme3.math.Transform();
-    private javax.vecmath.Quat4f tempRot = new javax.vecmath.Quat4f();
+    protected final Quaternion tmp_inverseWorldRotation = new Quaternion();
+    protected Transform tempTrans = new Transform(Converter.convert(new Matrix3f()));
+    protected com.jme3.math.Transform jmeTrans = new com.jme3.math.Transform();
+    protected javax.vecmath.Quat4f tempRot = new javax.vecmath.Quat4f();
 
     public PhysicsGhostNode() {
         cShape = new SphereCollisionShape(0.5f);
@@ -89,46 +88,46 @@ public class PhysicsGhostNode extends CollisionObject {
     }
 
     @Override
-    protected void setTransformRefresh() {
-        super.setTransformRefresh();
-        jmeDirty = true;
-    }
-
-    @Override
-    public void setLocalScale(float localScale) {
-        super.setLocalScale(localScale);
-        jmeDirty = true;
-    }
-
-    @Override
-    public void setLocalScale(Vector3f localScale) {
-        super.setLocalScale(localScale);
-        jmeDirty = true;
-    }
-
-    @Override
     public synchronized void updateGeometricState() {
-        if (jmeDirty) {
-            super.updateGeometricState();
+        if ((refreshFlags & RF_LIGHTLIST) != 0){
+            updateWorldLightList();
+        }
+
+        if ((refreshFlags & RF_TRANSFORM) != 0){
+            // combine with parent transforms- same for all spatial
+            // subclasses.
+            updateWorldTransforms();
             jmeTrans.set(getWorldTransform());
-            jmeDirty = false;
-            physicsDirty = true;
-        } else {
+            locationDirty = true;
+        }else{
             setWorldTranslation(jmeTrans.getTranslation());
             setWorldRotation(jmeTrans.getRotation());
-            super.setTransformRefresh();
-            super.updateGeometricState();
         }
+
+        // the important part- make sure child geometric state is refreshed
+        // first before updating own world bound. This saves
+        // a round-trip later on.
+        // NOTE 9/19/09
+        // Although it does save a round trip,
+        for (int i = 0, cSize = children.size(); i < cSize; i++) {
+            Spatial child = children.get(i);
+            child.updateGeometricState();
+        }
+
+        if ((refreshFlags & RF_BOUND) != 0){
+            updateWorldBound();
+        }
+
     }
 
     @Override
     public synchronized void updatePhysicsState() {
-        if (physicsDirty) {
+        if (locationDirty) {
             Converter.convert(jmeTrans.getTranslation(), tempTrans.origin);
             tempTrans.setRotation(Converter.convert(jmeTrans.getRotation()));
             gObject.setWorldTransform(tempTrans);
             cShape.setScale(getWorldScale());
-            physicsDirty = false;
+            locationDirty = false;
         } else {
             gObject.getWorldTransform(tempTrans);
             Converter.convert(tempTrans.origin, jmeTrans.getTranslation());

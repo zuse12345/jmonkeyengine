@@ -76,7 +76,7 @@ public class PhysicsNode extends CollisionObject{
     protected boolean applyForce=false;
     protected boolean applyTorque=false;
 
-    protected boolean dirty=true;
+//    protected boolean dirty=true;
 
     public PhysicsNode(){
         collisionShape=new BoxCollisionShape(new Vector3f(0.5f,0.5f,0.5f));
@@ -191,28 +191,34 @@ public class PhysicsNode extends CollisionObject{
     }
 
     @Override
-    protected void setTransformRefresh() {
-        super.setTransformRefresh();
-        setDirty(true);
-    }
-
-    @Override
     public synchronized void updateGeometricState() {
-        //apply user input, dirty flag for physics is set in motionstate
-        if(isDirty()){
-            super.updateGeometricState();
-            motionState.setWorldTransform(getWorldTranslation(), getWorldRotation());
-            setDirty(false);
+        if ((refreshFlags & RF_LIGHTLIST) != 0){
+            updateWorldLightList();
         }
-        //apply physics input, nothing is done if physics did not change
-        else {
-            motionState.applyTransform(this);
-            super.updateGeometricState();
-        }
-    }
 
-    public void updateWorldTrans(){
-        updateWorldTransforms();
+        if ((refreshFlags & RF_TRANSFORM) != 0){
+            // combine with parent transforms- same for all spatial
+            // subclasses.
+            updateWorldTransforms();
+            motionState.setWorldTransform(getWorldTranslation(), getWorldRotation());
+        }else if(motionState.applyTransform(this)){
+            updateWorldTransforms();
+        }
+
+        // the important part- make sure child geometric state is refreshed
+        // first before updating own world bound. This saves
+        // a round-trip later on.
+        // NOTE 9/19/09
+        // Although it does save a round trip,
+        for (int i = 0, cSize = children.size(); i < cSize; i++) {
+            Spatial child = children.get(i);
+            child.updateGeometricState();
+        }
+
+        if ((refreshFlags & RF_BOUND) != 0){
+            updateWorldBound();
+        }
+
     }
 
     /**
@@ -663,20 +669,6 @@ public class PhysicsNode extends CollisionObject{
      */
     public void destroy(){
         rBody.destroy();
-    }
-
-    /**
-     * @return the dirty
-     */
-    public boolean isDirty() {
-        return dirty;
-    }
-
-    /**
-     * @param dirty the dirty to set
-     */
-    public void setDirty(boolean dirty) {
-        this.dirty = dirty;
     }
 
 }

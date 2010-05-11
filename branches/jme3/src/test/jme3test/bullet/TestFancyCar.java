@@ -21,10 +21,6 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.shadow.BasicShadowRenderer;
 import com.jme3.texture.Texture.WrapMode;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class TestFancyCar extends SimpleBulletApplication implements BindingListener {
     
@@ -62,13 +58,12 @@ public class TestFancyCar extends SimpleBulletApplication implements BindingList
     }
 
     public void onPreUpdate(float tpf) {
-        float carSpeed = player.getLinearVelocity().length() / wheelRadius;
-
         player.accelerate(0);
         player.brake(0);
         player.steer(0);
-
+        
         //XXX: hack alert: physics wheels do not rotate atm, force them
+        float carSpeed = player.getLinearVelocity().length() / wheelRadius;
         node_bl.rotate(-carSpeed * tpf, 0, 0);
         node_br.rotate(-carSpeed * tpf, 0, 0);
         node_fl.rotate(-carSpeed * tpf, 0, 0);

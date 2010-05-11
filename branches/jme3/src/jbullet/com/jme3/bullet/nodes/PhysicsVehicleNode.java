@@ -82,10 +82,6 @@ public class PhysicsVehicleNode extends PhysicsNode{
 
     @Override
     public synchronized void updateGeometricState() {
-        if(wheels!=null)
-        for (int i = 0; i < wheels.size(); i++) {
-            wheels.get(i).updateGeometricState();
-        }
         super.updateGeometricState();
     }
 
@@ -94,7 +90,7 @@ public class PhysicsVehicleNode extends PhysicsNode{
         super.updatePhysicsState();
         if(wheels!=null)
         for (int i = 0; i < wheels.size(); i++) {
-            vehicle.updateWheelTransform(i);
+            vehicle.updateWheelTransform(i,true);
             wheels.get(i).updatePhysicsState();
         }
     }
@@ -131,8 +127,7 @@ public class PhysicsVehicleNode extends PhysicsNode{
      * @return the PhysicsVehicleWheel object to get/set infos on the wheel
      */
     public PhysicsVehicleWheel addWheel(Spatial spat, Vector3f connectionPoint, Vector3f direction, Vector3f axle, float suspensionRestLength, float wheelRadius, boolean isFrontWheel){
-        this.attachChild(spat);
-        PhysicsVehicleWheel wheel=new PhysicsVehicleWheel(this,spat,connectionPoint,direction,axle,suspensionRestLength,wheelRadius,isFrontWheel);
+        PhysicsVehicleWheel wheel=new PhysicsVehicleWheel(spat,connectionPoint,direction,axle,suspensionRestLength,wheelRadius,isFrontWheel);
         WheelInfo info=vehicle.addWheel(Converter.convert(connectionPoint), Converter.convert(direction), Converter.convert(axle),
                                         suspensionRestLength, wheelRadius, tuning, isFrontWheel);
         wheel.setWheelInfo(info);
@@ -144,6 +139,8 @@ public class PhysicsVehicleNode extends PhysicsNode{
         wheel.setWheelsDampingRelaxation(tuning.suspensionDamping);
         wheel.applyInfo();
         wheels.add(wheel);
+//        this.attachChild(spat);
+        this.attachChild(wheel);
         return wheel;
     }
 

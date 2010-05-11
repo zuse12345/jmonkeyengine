@@ -27,7 +27,6 @@ public class TestMonkeyHead extends SimpleApplication {
     @Override
     public void simpleInitApp() {
         Spatial bumpy = (Spatial) assetManager.loadModel("Models/MonkeyHead/MonkeyHead.mesh.xml");
-        bumpy.setMaterial( (Material) assetManager.loadAsset(new AssetKey("Models/MonkeyHead/MonkeyHead.j3m")));
         rootNode.attachChild(bumpy);
 
         lightMdl = new Geometry("Light", new Sphere(10, 10, 0.1f));

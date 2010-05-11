@@ -13,18 +13,19 @@ import com.jme3.input.KeyInput;
 import com.jme3.input.binding.BindingListener;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.FastMath;
-import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.plugins.ogre.MeshLoader;
 import com.jme3.scene.plugins.ogre.OgreMaterialList;
 import com.jme3.scene.plugins.ogre.OgreMeshKey;
+import com.jme3.scene.shape.Sphere;
 import java.io.File;
 
 public class TestQ3 extends SimpleBulletApplication implements BindingListener{
 
+    private Sphere sphereMesh = new Sphere(32, 32, 10f, false, true);
+    private Geometry sphere = new Geometry("Sky", sphereMesh);
     private Spatial gameLevel;
     private PhysicsCharacterNode player;
     private Vector3f walkDirection=new Vector3f();
@@ -41,7 +42,7 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
 
     public void simpleInitApp() {
         inputManager.removeBindingListener(flyCam);
-        MeshLoader.AUTO_INTERLEAVE = false;
+//        MeshLoader.AUTO_INTERLEAVE = false;
         FirstPersonCamera fps = new FirstPersonCamera(cam, new Vector3f(0, -10, 0));
         fps.registerWithDispatcher(inputManager);
         fps.setMoveSpeed(100);
@@ -77,7 +78,7 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
 
         PhysicsNode levelNode=new PhysicsNode(gameLevel, levelShape,0);
         player=new PhysicsCharacterNode(new SphereCollisionShape(5), 1f);
-        player.setJumpSpeed(30);
+        player.setJumpSpeed(15);
         player.setFallSpeed(30);
         player.setGravity(30);
 
@@ -110,19 +111,38 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
     }
 
     public void onBinding(String binding, float value) {
+        Vector3f camDir  = cam.getDirection().clone();
+        Vector3f camLeft = cam.getLeft().clone();
+
+        value *= 30f;
+
         if(binding.equals("Lefts")){
-            Quaternion quat=new Quaternion(0, 1, 0, FastMath.QUARTER_PI);
-            walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.2f)));
+            // lets add some good ol' framerate independence
+            camLeft.multLocal(value);
+            walkDirection.addLocal(camLeft);
+
+            // WTF is this magic trickery??
+            //Quaternion quat=new Quaternion(0, 1, 0, FastMath.QUARTER_PI);
+            //walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.2f)));
         }
         else if(binding.equals("Rights")){
-            Quaternion quat=new Quaternion(0, 1, 0, -FastMath.QUARTER_PI);
-            walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.2f)));
+            camLeft.negateLocal();
+            camLeft.multLocal(value);
+            walkDirection.addLocal(camLeft);
+
+            //Quaternion quat=new Quaternion(0, 1, 0, -FastMath.QUARTER_PI);
+            //walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.2f)));
         }
         else if(binding.equals("Ups")){
-            walkDirection.addLocal(cam.getDirection().mult(0.4f));
+            camDir.multLocal(value);
+            walkDirection.addLocal(camDir);
+            //walkDirection.addLocal(cam.getDirection().mult(0.4f));
         }
         else if(binding.equals("Downs")){
-            walkDirection.addLocal(cam.getDirection().mult(-0.4f));
+            camDir.negateLocal();
+            camDir.multLocal(value);
+            walkDirection.addLocal(camDir);
+            //walkDirection.addLocal(cam.getDirection().mult(-0.4f));
         }
         else if(binding.equals("Space")){
             player.jump();

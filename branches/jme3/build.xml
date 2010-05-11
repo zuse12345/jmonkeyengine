@@ -25,7 +25,7 @@
     <!-- convenience target to transfer jme3 libraries to jme3-gde (jMonkeyPlatform) -->
     <target name="update-gde" depends="jar, javadoc">
         <antcall target="-do-update-gde" inheritall="true">
-            <param name="jmp_dir" value="../jMonkeyPlatform/"/>
+            <param name="jmp_dir" value="../jme3-gde/"/>
         </antcall>
     </target>
 

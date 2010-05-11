@@ -7,39 +7,10 @@ This pages is intended to list the features we are working on, in order to help 
 
 For "official" info about jMonkeyPlatform and its features look at the [http://www.jmonkeyengine.com/wiki/doku.php/jme3:jmonkeyplatform jMonkeyEngine wiki].
 
-
-= Scene Viewer =
-
-The Scene Viewer is the central part of the jMP. It's purpose is displaying stuff. It is not and editor. The rest of the plugins should add jME nodes to be rendered. It should just provide general features and simplify interactions with the jME scenegraph.
-
-== Features ==
-
-Features to be implemented:
-
-  * Load & display model
-  * Display node tree from plugin
-  * Select object callbacks
-  * Grid
-  * Views - Normal, Wire Frame, Lighting
-
-= Scene Explorer =
-
-Displays the list of Nodes currently displayed in the SceneViewer providing access to it's properties. This is available all the time in addition to the editing possibilities of the plugin that loaded the scene.
-
-= Scene Editor =
-
-Features to be implemented:
-
-  * Load scene and add to SceneViewer
-  * Add models to scene
-  * Basic models interactions - Translate, Rotate and Scale widgets
-  * Add Lights
-  * Save scene
-
 = Cinematics Editor =
 
 Creates sequences that will affect the scene content in time. Sequences are bound to a scene, multiple sequences can be defined per scene and must be triggered by code.
 
   * Load scene and add to SceneViewer
   * Create scene movement script or controllers
-  * Save script/scene
+  * Save script+scene

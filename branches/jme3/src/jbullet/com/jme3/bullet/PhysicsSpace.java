@@ -106,7 +106,7 @@ public class PhysicsSpace implements Savable {
     private static ThreadLocal<PhysicsSpace> physicsSpaceTL = new ThreadLocal<PhysicsSpace>();
     private DynamicsWorld dynamicsWorld = null;
     private BroadphaseInterface broadphase;
-    private int broadphaseType = BroadphaseTypes.DBVT;
+    private BroadphaseType broadphaseType = BroadphaseType.DBVT;
     private CollisionDispatcher dispatcher;
     private ConstraintSolver solver;
     private DefaultCollisionConfiguration collisionConfiguration;
@@ -129,18 +129,18 @@ public class PhysicsSpace implements Savable {
     }
 
     public PhysicsSpace() {
-        this(new Vector3f(-10000f, -10000f, -10000f), new Vector3f(10000f, 10000f, 10000f), BroadphaseTypes.DBVT);
+        this(new Vector3f(-10000f, -10000f, -10000f), new Vector3f(10000f, 10000f, 10000f), BroadphaseType.DBVT);
     }
 
-    public PhysicsSpace(int broadphaseType) {
+    public PhysicsSpace(BroadphaseType broadphaseType) {
         this(new Vector3f(-10000f, -10000f, -10000f), new Vector3f(10000f, 10000f, 10000f), broadphaseType);
     }
 
     public PhysicsSpace(Vector3f worldMin, Vector3f worldMax) {
-        this(worldMin, worldMax, BroadphaseTypes.AXIS_SWEEP_3);
+        this(worldMin, worldMax, BroadphaseType.AXIS_SWEEP_3);
     }
 
-    public PhysicsSpace(Vector3f worldMin, Vector3f worldMax, int broadphaseType) {
+    public PhysicsSpace(Vector3f worldMin, Vector3f worldMax, BroadphaseType broadphaseType) {
         this.worldMin.set(worldMin);
         this.worldMax.set(worldMax);
         this.broadphaseType = broadphaseType;
@@ -157,16 +157,16 @@ public class PhysicsSpace implements Savable {
         collisionConfiguration = new DefaultCollisionConfiguration();
         dispatcher = new CollisionDispatcher(collisionConfiguration);
         switch (broadphaseType) {
-            case BroadphaseTypes.SIMPLE:
+            case SIMPLE:
                 broadphase = new SimpleBroadphase();
                 break;
-            case BroadphaseTypes.AXIS_SWEEP_3:
+            case AXIS_SWEEP_3:
                 broadphase = new AxisSweep3(Converter.convert(worldMin), Converter.convert(worldMax));
                 break;
-            case BroadphaseTypes.AXIS_SWEEP_3_32:
+            case AXIS_SWEEP_3_32:
                 broadphase = new AxisSweep3_32(Converter.convert(worldMin), Converter.convert(worldMax));
                 break;
-            case BroadphaseTypes.DBVT:
+            case DBVT:
                 broadphase = new DbvtBroadphase();
                 break;
         }
@@ -490,11 +490,11 @@ public class PhysicsSpace implements Savable {
         return dynamicsWorld;
     }
 
-    public int getBroadphaseType() {
+    public BroadphaseType getBroadphaseType() {
         return broadphaseType;
     }
 
-    public void setBroadphaseType(int broadphaseType) {
+    public void setBroadphaseType(BroadphaseType broadphaseType) {
         this.broadphaseType = broadphaseType;
     }
 
@@ -541,23 +541,23 @@ public class PhysicsSpace implements Savable {
     /**
      * interface with Broadphase types
      */
-    public interface BroadphaseTypes {
+    public enum BroadphaseType {
 
         /**
          * basic Broadphase
          */
-        public static final int SIMPLE = 0;
+        SIMPLE,
         /**
          * better Broadphase, needs worldBounds , max Object number = 16384
          */
-        public static final int AXIS_SWEEP_3 = 1;
+        AXIS_SWEEP_3,
         /**
          * better Broadphase, needs worldBounds , max Object number = 65536
          */
-        public static final int AXIS_SWEEP_3_32 = 2;
+        AXIS_SWEEP_3_32,
         /**
          * Broadphase allowing quicker adding/removing of physics objects
          */
-        public static final int DBVT = 3;
+        DBVT;
     }
 }

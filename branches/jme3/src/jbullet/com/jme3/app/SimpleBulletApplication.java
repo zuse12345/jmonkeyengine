@@ -32,6 +32,7 @@
 package com.jme3.app;
 
 import com.jme3.bullet.PhysicsSpace;
+import com.jme3.bullet.PhysicsSpace.BroadphaseType;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.input.BindingAdapter;
@@ -72,7 +73,10 @@ public abstract class SimpleBulletApplication extends Application {
     protected StatsView statsView;
     protected FlyByCamera flyCam;
     protected boolean showSettings = true;
-    private ThreadingType threadingType = ThreadingType.SEQUENTIAL;
+    protected ThreadingType threadingType = ThreadingType.SEQUENTIAL;
+    public BroadphaseType broadphaseType = BroadphaseType.DBVT;
+    public Vector3f worldMin = new Vector3f(-10000f, -10000f, -10000f);
+    public Vector3f worldMax = new Vector3f(10000f, 10000f, 10000f);
 
     public SimpleBulletApplication() {
         super();
@@ -96,12 +100,16 @@ public abstract class SimpleBulletApplication extends Application {
         super.start();
     }
 
-    private boolean startPhysics() {
+    private boolean startPhysicsOnExecutor() {
+        if (executor != null) {
+            executor.shutdown();
+        }
+        executor = new ScheduledThreadPoolExecutor(1);
         Callable<Boolean> call = new Callable<Boolean>() {
 
             public Boolean call() throws Exception {
                 detachedPhysicsLastUpdate = System.currentTimeMillis();
-                pSpace = new PhysicsSpace();
+                pSpace = new PhysicsSpace(worldMin, worldMax, broadphaseType);
                 return true;
             }
         };
@@ -131,7 +139,7 @@ public abstract class SimpleBulletApplication extends Application {
             pSpace.update(getPhysicsSpace().getAccuracy() * speed);
             long update = System.currentTimeMillis() - detachedPhysicsLastUpdate;
             detachedPhysicsLastUpdate = System.currentTimeMillis();
-            executor.schedule(detachedPhysicsUpdate, Math.round(getPhysicsSpace().getAccuracy() * 1000000.0f) - (update*1000), TimeUnit.MICROSECONDS);
+            executor.schedule(detachedPhysicsUpdate, Math.round(getPhysicsSpace().getAccuracy() * 1000000.0f) - (update * 1000), TimeUnit.MICROSECONDS);
             return true;
         }
     };
@@ -145,6 +153,7 @@ public abstract class SimpleBulletApplication extends Application {
         super.destroy();
         if (executor != null) {
             executor.shutdown();
+            executor = null;
         }
     }
 
@@ -189,14 +198,12 @@ public abstract class SimpleBulletApplication extends Application {
         super.initialize();
         //start physics thread(pool)
         if (threadingType == ThreadingType.PARALLEL) {
-            executor = new ScheduledThreadPoolExecutor(1);
-            startPhysics();
+            startPhysicsOnExecutor();
         } else if (threadingType == ThreadingType.DETACHED) {
-            executor = new ScheduledThreadPoolExecutor(1);
-            startPhysics();
+            startPhysicsOnExecutor();
             executor.submit(detachedPhysicsUpdate);
         } else {
-            pSpace = new PhysicsSpace();
+            pSpace = new PhysicsSpace(worldMin, worldMax, broadphaseType);
         }
 
         // enable depth test and back-face culling for performance
@@ -316,6 +323,18 @@ public abstract class SimpleBulletApplication extends Application {
      */
     public void setThreadingType(ThreadingType threadingType) {
         this.threadingType = threadingType;
+    }
+
+    public void setBroadphaseType(BroadphaseType broadphaseType) {
+        this.broadphaseType = broadphaseType;
+    }
+
+    public void setWorldMin(Vector3f worldMin) {
+        this.worldMin = worldMin;
+    }
+
+    public void setWorldMax(Vector3f worldMax) {
+        this.worldMax = worldMax;
     }
 
     public enum ThreadingType {

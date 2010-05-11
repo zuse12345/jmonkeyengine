@@ -1,7 +1,0 @@
-Material Monkey Head : Common/MatDefs/Light/Lighting.j3md {
-    MaterialParameters {
-	   m_Shininess   : 4.0
-	   m_NormalMap   : Models/MonkeyHead/MonkeyHead_normal.jpg
-	   m_SpecularMap : Models/MonkeyHead/MonkeyHead_spec.jpg
-    }
-}

@@ -3,6 +3,7 @@ package jme3test.bullet;
 import com.jme3.app.SimpleBulletApplication;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
+import com.jme3.bullet.collision.shapes.GImpactCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.nodes.PhysicsVehicleNode;
@@ -18,8 +19,10 @@ import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.control.LodControl;
 import com.jme3.scene.shape.Box;
 import com.jme3.shadow.BasicShadowRenderer;
+import com.jme3.system.AppSettings;
 import com.jme3.texture.Texture.WrapMode;
 
 public class TestFancyCar extends SimpleBulletApplication implements BindingListener {
@@ -84,6 +87,7 @@ public class TestFancyCar extends SimpleBulletApplication implements BindingList
 
         setupKeys();
         setupFloor();
+        setupGImpact();
         buildPlayer();
 
         DirectionalLight dl = new DirectionalLight();
@@ -97,10 +101,11 @@ public class TestFancyCar extends SimpleBulletApplication implements BindingList
 
 
     public void setupFloor() {
-        Material mat = assetManager.loadMaterial("Textures/Terrain/Pond/Pond.j3m");
+        Material mat = assetManager.loadMaterial("Textures/Terrain/BrickWall/BrickWall.j3m");
         mat.getTextureParam("m_DiffuseMap").getTextureValue().setWrap(WrapMode.Repeat);
         mat.getTextureParam("m_NormalMap").getTextureValue().setWrap(WrapMode.Repeat);
-
+        mat.getTextureParam("m_ParallaxMap").getTextureValue().setWrap(WrapMode.Repeat);
+        
         Box floor = new Box(Vector3f.ZERO, 40, 1f, 40);
         floor.scaleTextureCoordinates(new Vector2f(12.0f, 12.0f));
         Geometry floorGeom = new Geometry("Floor", floor);
@@ -113,6 +118,21 @@ public class TestFancyCar extends SimpleBulletApplication implements BindingList
         tb.setLocalTranslation(new Vector3f(0f,-6,0f));
         tb.updateModelBound();
         tb.updateGeometricState();
+        getPhysicsSpace().add(tb);
+    }
+
+    public void setupGImpact() {
+        Node gimpact = (Node) assetManager.loadModel("Models/MonkeyHead/MonkeyHead.mesh.xml");
+        
+
+        Geometry geom = (Geometry) gimpact.getChild(0);
+        geom.setShadowMode(ShadowMode.CastAndRecieve);
+        
+//        rootNode.attachChild(geom);
+
+        PhysicsNode tb=new PhysicsNode(geom, new GImpactCollisionShape(geom.getMesh()), 0.4f);
+        tb.setLocalTranslation(new Vector3f(4,6,0f));
+        rootNode.attachChild(tb);
         getPhysicsSpace().add(tb);
     }
 

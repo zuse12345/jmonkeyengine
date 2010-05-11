@@ -211,8 +211,8 @@ public class PhysicsNode extends CollisionObject{
         }
     }
 
-    public void superUpdateGeometric(){
-        super.updateGeometricState();
+    public void updateWorldTrans(){
+        updateWorldTransforms();
     }
 
     /**

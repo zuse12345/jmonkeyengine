@@ -12,26 +12,19 @@ import com.jme3.input.FirstPersonCamera;
 import com.jme3.input.KeyInput;
 import com.jme3.input.binding.BindingListener;
 import com.jme3.light.DirectionalLight;
-import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.plugins.ogre.MeshLoader;
 import com.jme3.scene.plugins.ogre.OgreMaterialList;
 import com.jme3.scene.plugins.ogre.OgreMeshKey;
-import com.jme3.scene.shape.Sphere;
-import com.jme3.texture.Texture;
 import java.io.File;
 
 public class TestQ3 extends SimpleBulletApplication implements BindingListener{
 
-    private Sphere sphereMesh = new Sphere(32, 32, 10f, false, true);
-    private Geometry sphere = new Geometry("Sky", sphereMesh);
     private Spatial gameLevel;
     private PhysicsCharacterNode player;
     private Vector3f walkDirection=new Vector3f();

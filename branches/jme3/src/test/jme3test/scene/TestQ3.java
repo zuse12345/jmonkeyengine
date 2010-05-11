@@ -119,11 +119,11 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
     public void onBinding(String binding, float value) {
         if(binding.equals("Lefts")){
             Quaternion quat=new Quaternion(0, 1, 0, FastMath.QUARTER_PI);
-            walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.4f)));
+            walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.2f)));
         }
         else if(binding.equals("Rights")){
             Quaternion quat=new Quaternion(0, 1, 0, -FastMath.QUARTER_PI);
-            walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.4f)));
+            walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.2f)));
         }
         else if(binding.equals("Ups")){
             walkDirection.addLocal(cam.getDirection().mult(0.4f));

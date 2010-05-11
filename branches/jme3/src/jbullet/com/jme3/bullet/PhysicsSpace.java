@@ -324,6 +324,7 @@ public class PhysicsSpace implements Savable {
 
     /**
      * adds an object to the physics space
+     * <br>this is normally only needed for detached physics
      * @param obj the PhyiscsNode, PhysicsGhostNode or PhysicsJoint to add
      */
     public void addQueued(final Object obj) {
@@ -346,6 +347,7 @@ public class PhysicsSpace implements Savable {
 
     /**
      * adds an object to the physics space
+     * <br>this is normally only needed for detached physics
      * @param obj the PhyiscsNode, PhysicsGhostNode or PhysicsJoint to remove
      */
     public void removeQueued(final Object obj) {

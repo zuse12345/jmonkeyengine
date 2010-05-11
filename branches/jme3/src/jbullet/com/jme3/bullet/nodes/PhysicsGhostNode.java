@@ -88,20 +88,24 @@ public class PhysicsGhostNode extends CollisionObject {
     }
 
     @Override
-    public synchronized void updateGeometricState() {
-        if ((refreshFlags & RF_LIGHTLIST) != 0){
+    public void updateGeometricState() {
+        if ((refreshFlags & RF_LIGHTLIST) != 0) {
             updateWorldLightList();
         }
 
-        if ((refreshFlags & RF_TRANSFORM) != 0){
+        if ((refreshFlags & RF_TRANSFORM) != 0) {
             // combine with parent transforms- same for all spatial
             // subclasses.
             updateWorldTransforms();
-            jmeTrans.set(getWorldTransform());
-            locationDirty = true;
-        }else{
-            setWorldTranslation(jmeTrans.getTranslation());
-            setWorldRotation(jmeTrans.getRotation());
+            synchronized (jmeTrans) {
+                jmeTrans.set(getWorldTransform());
+                locationDirty = true;
+            }
+        } else {
+            synchronized (jmeTrans) {
+                setWorldTranslation(jmeTrans.getTranslation());
+                setWorldRotation(jmeTrans.getRotation());
+            }
         }
 
         // the important part- make sure child geometric state is refreshed
@@ -114,24 +118,28 @@ public class PhysicsGhostNode extends CollisionObject {
             child.updateGeometricState();
         }
 
-        if ((refreshFlags & RF_BOUND) != 0){
+        if ((refreshFlags & RF_BOUND) != 0) {
             updateWorldBound();
         }
 
     }
 
     @Override
-    public synchronized void updatePhysicsState() {
+    public void updatePhysicsState() {
         if (locationDirty) {
-            Converter.convert(jmeTrans.getTranslation(), tempTrans.origin);
-            tempTrans.setRotation(Converter.convert(jmeTrans.getRotation()));
-            gObject.setWorldTransform(tempTrans);
-            cShape.setScale(getWorldScale());
-            locationDirty = false;
+            synchronized (jmeTrans) {
+                Converter.convert(jmeTrans.getTranslation(), tempTrans.origin);
+                tempTrans.setRotation(Converter.convert(jmeTrans.getRotation()));
+                gObject.setWorldTransform(tempTrans);
+                cShape.setScale(getWorldScale());
+                locationDirty = false;
+            }
         } else {
-            gObject.getWorldTransform(tempTrans);
-            Converter.convert(tempTrans.origin, jmeTrans.getTranslation());
-            Converter.convert(tempTrans.getRotation(tempRot), jmeTrans.getRotation());
+            synchronized (jmeTrans) {
+                gObject.getWorldTransform(tempTrans);
+                Converter.convert(tempTrans.origin, jmeTrans.getTranslation());
+                Converter.convert(tempTrans.getRotation(tempRot), jmeTrans.getRotation());
+            }
         }
     }
 

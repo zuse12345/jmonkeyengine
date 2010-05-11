@@ -81,12 +81,7 @@ public class PhysicsVehicleNode extends PhysicsNode{
     }
 
     @Override
-    public synchronized void updateGeometricState() {
-        super.updateGeometricState();
-    }
-
-    @Override
-    public synchronized void updatePhysicsState() {
+    public void updatePhysicsState() {
         super.updatePhysicsState();
         if(wheels!=null)
         for (int i = 0; i < wheels.size(); i++) {

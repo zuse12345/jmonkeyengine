@@ -191,7 +191,7 @@ public class PhysicsNode extends CollisionObject{
     }
 
     @Override
-    public synchronized void updateGeometricState() {
+    public void updateGeometricState() {
         if ((refreshFlags & RF_LIGHTLIST) != 0){
             updateWorldLightList();
         }
@@ -225,7 +225,7 @@ public class PhysicsNode extends CollisionObject{
      * only to be called from physics thread!!
      */
     @Override
-    public synchronized void updatePhysicsState(){
+    public void updatePhysicsState(){
         if(rebuildBody){
             rebuildRigidBody();
         }

@@ -226,17 +226,42 @@ public class PhysicsNode extends CollisionObject{
         motionState.applyTransform(rBody);
     }
 
-    //TODO: set physics location directly for multithreaded games
+    /**
+     * this is normally only needed when using detached physics
+     * @param location the location of the actual physics object
+     */
     public void setPhysicsLocation(Vector3f location){
         rBody.getWorldTransform(tempTrans);
         Converter.convert(location,tempTrans.origin);
         rBody.setWorldTransform(tempTrans);
     }
 
+    /**
+     * this is normally only needed when using detached physics
+     * @param rotation the rotation of the actual physics object
+     */
     public void setPhysicsRotation(Matrix3f rotation){
         rBody.getWorldTransform(tempTrans);
         Converter.convert(rotation,tempTrans.basis);
         rBody.setWorldTransform(tempTrans);
+    }
+
+    /**
+     * this is normally only needed when using detached physics
+     * @param location the location of the actual physics object is stored in this Vector3f
+     */
+    public void getPhysicsLocation(Vector3f location){
+        rBody.getWorldTransform(tempTrans);
+        Converter.convert(tempTrans.origin,location);
+    }
+
+    /**
+     * this is normally only needed when using detached physics
+     * @param rotation the rotation of the actual physics object is stored in this Matrix3f
+     */
+    public void getPhysicsRotation(Matrix3f rotation){
+        rBody.getWorldTransform(tempTrans);
+        Converter.convert(tempTrans.basis,rotation);
     }
 
     public void setKinematic(boolean kinematic){

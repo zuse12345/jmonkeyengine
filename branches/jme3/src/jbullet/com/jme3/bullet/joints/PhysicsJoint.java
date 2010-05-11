@@ -104,9 +104,17 @@ public abstract class PhysicsJoint implements Savable {
 
     public void read(JmeImporter im) throws IOException {
         InputCapsule capsule = im.getCapsule(this);
-        this.nodeA = (PhysicsNode) capsule.readSavable("nodeA", new PhysicsNode());
+        this.nodeA = ((PhysicsNode) capsule.readSavable("nodeA", new PhysicsNode()));
         this.nodeB = (PhysicsNode) capsule.readSavable("nodeB", new PhysicsNode());
         this.pivotA = (Vector3f) capsule.readSavable("pivotA", new Vector3f());
         this.pivotB = (Vector3f) capsule.readSavable("pivotB", new Vector3f());
+    }
+
+    public PhysicsNode getNodeA() {
+        return nodeA;
+    }
+
+    public PhysicsNode getNodeB() {
+        return nodeB;
     }
 }

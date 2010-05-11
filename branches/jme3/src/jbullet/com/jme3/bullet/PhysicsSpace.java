@@ -272,9 +272,6 @@ public class PhysicsSpace implements Savable {
             task = pQueue.poll();
         }
 
-        //step simulation
-        getDynamicsWorld().stepSimulation(time, maxSteps, accuracy);
-
         //sync physicsNodes
         for (PhysicsNode physicsNode : physicsNodes.values()) {
             physicsNode.updatePhysicsState();
@@ -283,6 +280,9 @@ public class PhysicsSpace implements Savable {
         for (PhysicsGhostNode node : physicsGhostNodes.values()) {
             node.updatePhysicsState();
         }
+        //step simulation
+        getDynamicsWorld().stepSimulation(time, maxSteps, accuracy);
+
         //distribute events
         distributeEvents();
     }

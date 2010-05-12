@@ -15,13 +15,17 @@ import java.util.logging.Logger;
  * Helper class for extracting the natives (dll, so) from the jars.
  * This class should only be used internally.
  */
-class Natives {
+public class Natives {
 
     private static final Logger logger = Logger.getLogger(Natives.class.getName());
     private static final byte[] buf = new byte[1024];
-    private static final File workingDir = new File("").getAbsoluteFile();
+    private static File workingDir = new File("").getAbsoluteFile();
 
-    public static void extractNativeLib(String sysName, String name, boolean load) throws IOException{
+    public static void setExtractionDir(String name){
+        workingDir = new File(name).getAbsoluteFile();
+    }
+
+    protected static void extractNativeLib(String sysName, String name, boolean load) throws IOException{
         String fullname = System.mapLibraryName(name);
 
         String path = "native/"+sysName+"/" + fullname;
@@ -66,7 +70,7 @@ class Natives {
         return null;
     }
 
-    public static void extractNativeLibs(Platform platform, AppSettings settings) throws IOException{
+    protected static void extractNativeLibs(Platform platform, AppSettings settings) throws IOException{
         String renderer = settings.getRenderer();
         String audioRenderer = settings.getAudioRenderer();
         boolean needLWJGL = false;

@@ -2,6 +2,7 @@ package jme3test.scene;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.TextureKey;
+import com.jme3.asset.plugins.HttpZipLocator;
 import com.jme3.asset.plugins.ZipLocator;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
@@ -12,13 +13,19 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
+import java.io.File;
 
 public class TestSceneLoading extends SimpleApplication {
 
     private Sphere sphereMesh = new Sphere(32, 32, 10, false, true);
     private Geometry sphere = new Geometry("Sky", sphereMesh);
+    private static boolean useHttp = false;
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
+        File file = new File("wildhouse.zip");
+        if (!file.exists()) {
+            useHttp = true;
+        }
         TestSceneLoading app = new TestSceneLoading();
         app.start();
     }
@@ -45,7 +52,12 @@ public class TestSceneLoading extends SimpleApplication {
         rootNode.attachChild(sphere);
 
         // create the geometry and attach it
-        assetManager.registerLocator("wildhouse.zip", ZipLocator.class.getName());
+        // load the level from zip or http zip
+        if (useHttp) {
+            assetManager.registerLocator("http://jmonkeyengine.googlecode.com/files/wildhouse.zip", HttpZipLocator.class.getName());
+        } else {
+            assetManager.registerLocator("wildhouse.zip", ZipLocator.class.getName());
+        }
         Spatial scene = assetManager.loadModel("main.scene");
 
         DirectionalLight sun = new DirectionalLight();

@@ -113,14 +113,15 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener {
         Vector3f camDir = cam.getDirection().clone();
         Vector3f camLeft = cam.getLeft().clone();
 
-        value *= 30f;
-
         if (binding.equals("Lefts")) {
             // lets add some good ol' framerate independence
-            camLeft.multLocal(value);
+            // - not needed.. bullet is not framerate dependent, the vector is
+            //   constant anyway. actually this made it framerate dependent..
             walkDirection.addLocal(camLeft);
 
             // WTF is this magic trickery??
+            // - its the good old art of quickndirty hacking when you dont know
+            //   theres cam.left :D
             //Quaternion quat=new Quaternion(0, 1, 0, FastMath.QUARTER_PI);
             //walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.2f)));
         } else if (binding.equals("Rights")) {
@@ -128,17 +129,13 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener {
             camLeft.multLocal(value);
             walkDirection.addLocal(camLeft);
 
-            //Quaternion quat=new Quaternion(0, 1, 0, -FastMath.QUARTER_PI);
-            //walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.2f)));
         } else if (binding.equals("Ups")) {
             camDir.multLocal(value);
             walkDirection.addLocal(camDir);
-            //walkDirection.addLocal(cam.getDirection().mult(0.4f));
         } else if (binding.equals("Downs")) {
             camDir.negateLocal();
             camDir.multLocal(value);
             walkDirection.addLocal(camDir);
-            //walkDirection.addLocal(cam.getDirection().mult(-0.4f));
         } else if (binding.equals("Space")) {
             if (player.onGround()) {
                 player.jump();

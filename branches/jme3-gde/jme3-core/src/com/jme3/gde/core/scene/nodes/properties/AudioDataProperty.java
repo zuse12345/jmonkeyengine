@@ -52,7 +52,7 @@ public class AudioDataProperty extends PropertySupport.ReadWrite<String> {
     private AudioNode node;
 
     public AudioDataProperty(AudioNode node) {
-        super("audio data", String.class, "audio data", "");
+        super("Audio Data", String.class, "Audio Data", "");
         this.node = node;
     }
 

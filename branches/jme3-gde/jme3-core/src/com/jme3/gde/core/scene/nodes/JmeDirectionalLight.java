@@ -65,7 +65,7 @@ public class JmeDirectionalLight extends JmeLight{
             return sheet;
         }
 
-        set.put(makeProperty(obj, Vector3f.class, "getDirection", "setDirection", "direction"));
+        set.put(makeProperty(obj, Vector3f.class, "getDirection", "setDirection", "Direction"));
 
         sheet.put(set);
         return sheet;

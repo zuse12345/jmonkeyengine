@@ -253,27 +253,27 @@ public class JmeSpatial extends AbstractNode {
         }
 //        set.put(makeProperty(obj, String.class, "getName", "setName", "name"));
 
-        set.put(makeProperty(obj, int.class, "getVertexCount", "vertexes"));
-        set.put(makeProperty(obj, int.class, "getTriangleCount", "triangles"));
+        set.put(makeProperty(obj, int.class, "getVertexCount", "Vertexes"));
+        set.put(makeProperty(obj, int.class, "getTriangleCount", "Triangles"));
 
 //        set.put(makeProperty(obj, Transform.class,"getWorldTransform","world transform"));
-        set.put(makeProperty(obj, Vector3f.class, "getWorldTranslation", "world translation"));
-        set.put(makeProperty(obj, Quaternion.class, "getWorldRotation", "world rotation"));
-        set.put(makeProperty(obj, Vector3f.class, "getWorldScale", "world scale"));
+        set.put(makeProperty(obj, Vector3f.class, "getWorldTranslation", "World Translation"));
+        set.put(makeProperty(obj, Quaternion.class, "getWorldRotation", "World Totation"));
+        set.put(makeProperty(obj, Vector3f.class, "getWorldScale", "World Scale"));
 
-        set.put(makeProperty(obj, Vector3f.class, "getLocalTranslation", "setLocalTranslation", "local translation"));
-        set.put(makeProperty(obj, Quaternion.class, "getLocalRotation", "setLocalRotation", "local rotation"));
-        set.put(makeProperty(obj, Vector3f.class, "getLocalScale", "setLocalScale", "local scale"));
+        set.put(makeProperty(obj, Vector3f.class, "getLocalTranslation", "setLocalTranslation", "Local Translation"));
+        set.put(makeProperty(obj, Quaternion.class, "getLocalRotation", "setLocalRotation", "Local Rotation"));
+        set.put(makeProperty(obj, Vector3f.class, "getLocalScale", "setLocalScale", "Local Scale"));
 
-        set.put(makeProperty(obj, BoundingVolume.class, "getWorldBound", "world bound"));
+        set.put(makeProperty(obj, BoundingVolume.class, "getWorldBound", "World Bound"));
 
-        set.put(makeProperty(obj, CullHint.class, "getCullHint", "setCullHint", "cull hint"));
-        set.put(makeProperty(obj, CullHint.class, "getLocalCullHint", "local cull hint"));
-        set.put(makeProperty(obj, ShadowMode.class, "getShadowMode", "setShadowMode", "shadow mode"));
-        set.put(makeProperty(obj, ShadowMode.class, "getLocalShadowMode", "local shadow mode"));
-        set.put(makeProperty(obj, LightList.class, "getWorldLightList", "world light list"));
+        set.put(makeProperty(obj, CullHint.class, "getCullHint", "setCullHint", "Cull Hint"));
+        set.put(makeProperty(obj, CullHint.class, "getLocalCullHint", "Local Cull Hint"));
+        set.put(makeProperty(obj, ShadowMode.class, "getShadowMode", "setShadowMode", "Shadow Mode"));
+        set.put(makeProperty(obj, ShadowMode.class, "getLocalShadowMode", "Local Shadow Mode"));
+        set.put(makeProperty(obj, LightList.class, "getWorldLightList", "World Light List"));
 
-        set.put(makeProperty(obj, RenderQueue.Bucket.class, "getQueueBucket", "setQueueBucket", "queue bucket"));
+        set.put(makeProperty(obj, RenderQueue.Bucket.class, "getQueueBucket", "setQueueBucket", "Queue Bucket"));
 
         sheet.put(set);
         return sheet;

@@ -83,27 +83,27 @@ public class JmeAudioNode extends JmeNode {
         obj.setAudioData(null, null);
 
         set.put(new AudioDataProperty(obj));
-        set.put(makeProperty(obj, int.class, "getChannel", "setChannel", "channel"));
-        set.put(makeProperty(obj, Vector3f.class, "getDirection", "setDirection", "direction"));
-        set.put(makeProperty(obj, boolean.class, "isDirectional", "setDirectional", "directional"));
-        set.put(makeProperty(obj, float.class, "getInnerAngle", "setInnerAngle", "inner angle"));
-        set.put(makeProperty(obj, float.class, "getOuterAngle", "setOuterAngle", "outer angle"));
-        set.put(makeProperty(obj, Filter.class, "getDryFilter", "setDryFilter", "dry filter"));
-        set.put(makeProperty(obj, boolean.class, "isLooping", "setLooping", "looping"));
-        set.put(makeProperty(obj, float.class, "getMaxDistance", "setMaxDistance", "max distance"));
+        set.put(makeProperty(obj, int.class, "getChannel", "setChannel", "Channel"));
+        set.put(makeProperty(obj, Vector3f.class, "getDirection", "setDirection", "Direction"));
+        set.put(makeProperty(obj, boolean.class, "isDirectional", "setDirectional", "Directional"));
+        set.put(makeProperty(obj, float.class, "getInnerAngle", "setInnerAngle", "Inner Angle"));
+        set.put(makeProperty(obj, float.class, "getOuterAngle", "setOuterAngle", "Outer Angle"));
+        set.put(makeProperty(obj, Filter.class, "getDryFilter", "setDryFilter", "Dry Filter"));
+        set.put(makeProperty(obj, boolean.class, "isLooping", "setLooping", "Looping"));
+        set.put(makeProperty(obj, float.class, "getMaxDistance", "setMaxDistance", "Max Distance"));
 
-        set.put(makeProperty(obj, float.class, "getPitch", "setPitch", "audio pitch"));
-        set.put(makeProperty(obj, boolean.class, "isPositional", "setPositional", "positional"));
+        set.put(makeProperty(obj, float.class, "getPitch", "setPitch", "Audio Pitch"));
+        set.put(makeProperty(obj, boolean.class, "isPositional", "setPositional", "Positional"));
 
-        set.put(makeProperty(obj, boolean.class, "isReverbEnabled", "setReverbEnabled", "reverb"));
-        set.put(makeProperty(obj, Filter.class, "getReverbFilter", "setReverbFilter", "reverb filter"));
-        set.put(makeProperty(obj, float.class, "getRefDistance", "setRefDistance", "ref distance"));
-        set.put(makeProperty(obj, float.class, "getTimeOffset", "setTimeOffset", "time offset"));
+        set.put(makeProperty(obj, boolean.class, "isReverbEnabled", "setReverbEnabled", "Reverb"));
+        set.put(makeProperty(obj, Filter.class, "getReverbFilter", "setReverbFilter", "Reverb Filter"));
+        set.put(makeProperty(obj, float.class, "getRefDistance", "setRefDistance", "Ref Distance"));
+        set.put(makeProperty(obj, float.class, "getTimeOffset", "setTimeOffset", "Time Offset"));
 
-        set.put(makeProperty(obj, Status.class, "getStatus", "setStatus", "status"));
+        set.put(makeProperty(obj, Status.class, "getStatus", "setStatus", "Status"));
 
-        set.put(makeProperty(obj, float.class, "getVolume", "setVolume", "volume"));
-        set.put(makeProperty(obj, Vector3f.class, "getVelocity", "setVelocity", "velocity"));
+        set.put(makeProperty(obj, float.class, "getVolume", "setVolume", "Volume"));
+        set.put(makeProperty(obj, Vector3f.class, "getVelocity", "setVelocity", "Velocity"));
         sheet.put(set);
         return sheet;
 

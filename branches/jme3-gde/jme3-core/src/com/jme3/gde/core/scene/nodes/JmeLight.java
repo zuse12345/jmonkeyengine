@@ -97,8 +97,8 @@ public class JmeLight extends AbstractNode {
             return sheet;
         }
 
-        set.put(makeProperty(obj, ColorRGBA.class, "getColor", "setColor", "color"));
-        set.put(makeProperty(obj, float.class, "getLastDistance", "setLastDistance", "last distance"));
+        set.put(makeProperty(obj, ColorRGBA.class, "getColor", "setColor", "Color"));
+        set.put(makeProperty(obj, float.class, "getLastDistance", "setLastDistance", "Last Distance"));
 
         sheet.put(set);
         return sheet;

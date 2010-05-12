@@ -80,9 +80,9 @@ public class JmeGeometry extends JmeSpatial {
             return sheet;
         }
 
-        set.put(makeProperty(obj, int.class, "getLodLevel", "setLodLevel", "lod level"));
-        set.put(makeProperty(obj, Material.class, "getMaterial", "setMaterial", "material"));
-        set.put(makeProperty(obj, Mesh.class, "getMesh", "mesh"));
+        set.put(makeProperty(obj, int.class, "getLodLevel", "setLodLevel", "Lod Level"));
+        set.put(makeProperty(obj, Material.class, "getMaterial", "setMaterial", "Material"));
+        set.put(makeProperty(obj, Mesh.class, "getMesh", "Mesh"));
 
         sheet.put(set);
         return sheet;

@@ -65,8 +65,8 @@ public class JmePointLight extends JmeLight{
             return sheet;
         }
 
-        set.put(makeProperty(obj, Vector3f.class, "getPosition", "setPosition", "position"));
-        set.put(makeProperty(obj, float.class, "getRadius", "setRadius", "radius"));
+        set.put(makeProperty(obj, Vector3f.class, "getPosition", "setPosition", "Position"));
+        set.put(makeProperty(obj, float.class, "getRadius", "setRadius", "Radius"));
 
         sheet.put(set);
         return sheet;

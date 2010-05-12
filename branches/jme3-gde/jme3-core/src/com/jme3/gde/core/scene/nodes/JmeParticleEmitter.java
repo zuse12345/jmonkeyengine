@@ -80,26 +80,26 @@ public class JmeParticleEmitter extends JmeGeometry {
             return sheet;
         }
 
-        set.put(makeProperty(obj, boolean.class, "isEnabled", "setEnabled", "enabled"));
-        set.put(makeProperty(obj, EmitterShape.class, "getShape", "setShape", "emitter shape"));
-        set.put(makeProperty(obj, int.class, "getNumVisibleParticles", "setNumParticles", "num particles"));
-        set.put(makeProperty(obj, float.class, "getParticlesPerSec", "setParticlesPerSec", "particles per sec"));
-        set.put(makeProperty(obj, ColorRGBA.class, "getStartColor", "setStartColor", "start color"));
-        set.put(makeProperty(obj, ColorRGBA.class, "getEndColor", "setEndColor", "end color"));
-        set.put(makeProperty(obj, float.class, "getStartSize", "setStartSize", "start size"));
-        set.put(makeProperty(obj, float.class, "getEndSize", "setEndSize", "end size"));
-        set.put(makeProperty(obj, float.class, "getHighLife", "setHighLife", "high life"));
-        set.put(makeProperty(obj, float.class, "getLowLife", "setLowLife", "low life"));
-        set.put(makeProperty(obj, float.class, "getGravity", "setGravity", "gravity"));
-        set.put(makeProperty(obj, Vector3f.class, "getStartVel", "setStartVel", "start velocity"));
-        set.put(makeProperty(obj, Vector3f.class, "getFaceNormal", "setFaceNormal", "face normal"));
-        set.put(makeProperty(obj, float.class, "getVariation", "setVariation", "variation"));
-        set.put(makeProperty(obj, boolean.class, "isFacingVelocity", "setFacingVelocity", "facing velocity"));
-        set.put(makeProperty(obj, boolean.class, "isRandomAngle", "setRandomAngle", "random angle"));
-        set.put(makeProperty(obj, float.class, "getRotateSpeed", "setRotateSpeed", "rotate speed"));
-        set.put(makeProperty(obj, boolean.class, "isSelectRandomImage", "setSelectRandomImage", "select random image"));
-        set.put(makeProperty(obj, int.class, "getImagesX", "setImagesX", "images x"));
-        set.put(makeProperty(obj, int.class, "getImagesY", "setImagesY", "images y"));
+        set.put(makeProperty(obj, boolean.class, "isEnabled", "setEnabled", "Enabled"));
+        set.put(makeProperty(obj, EmitterShape.class, "getShape", "setShape", "Emitter Shape"));
+        set.put(makeProperty(obj, int.class, "getNumVisibleParticles", "setNumParticles", "Num Particles"));
+        set.put(makeProperty(obj, float.class, "getParticlesPerSec", "setParticlesPerSec", "Particles Per Sec"));
+        set.put(makeProperty(obj, ColorRGBA.class, "getStartColor", "setStartColor", "Start Color"));
+        set.put(makeProperty(obj, ColorRGBA.class, "getEndColor", "setEndColor", "End Color"));
+        set.put(makeProperty(obj, float.class, "getStartSize", "setStartSize", "Start Size"));
+        set.put(makeProperty(obj, float.class, "getEndSize", "setEndSize", "End Size"));
+        set.put(makeProperty(obj, float.class, "getHighLife", "setHighLife", "High Life"));
+        set.put(makeProperty(obj, float.class, "getLowLife", "setLowLife", "Low Life"));
+        set.put(makeProperty(obj, float.class, "getGravity", "setGravity", "Gravity"));
+        set.put(makeProperty(obj, Vector3f.class, "getStartVel", "setStartVel", "Start Velocity"));
+        set.put(makeProperty(obj, Vector3f.class, "getFaceNormal", "setFaceNormal", "Face Normal"));
+        set.put(makeProperty(obj, float.class, "getVariation", "setVariation", "Variation"));
+        set.put(makeProperty(obj, boolean.class, "isFacingVelocity", "setFacingVelocity", "Facing Velocity"));
+        set.put(makeProperty(obj, boolean.class, "isRandomAngle", "setRandomAngle", "Random Angle"));
+        set.put(makeProperty(obj, float.class, "getRotateSpeed", "setRotateSpeed", "Rotate Speed"));
+        set.put(makeProperty(obj, boolean.class, "isSelectRandomImage", "setSelectRandomImage", "Select Random Image"));
+        set.put(makeProperty(obj, int.class, "getImagesX", "setImagesX", "Images X"));
+        set.put(makeProperty(obj, int.class, "getImagesY", "setImagesY", "Images Y"));
 
 //        set.put(makeProperty(obj, EmitterShape.class, "getShape", "setShape", "shape"));
 

@@ -80,9 +80,9 @@ public class JmeBitmapText extends JmeGeometry {
             return sheet;
         }
 
-        set.put(makeProperty(obj, String.class, "getText", "setText", "text"));
-        set.put(makeProperty(obj, ColorRGBA.class, "getColor", "setColor", "color"));
-        set.put(makeProperty(obj, BitmapFont.class, "getFont", "font"));
+        set.put(makeProperty(obj, String.class, "getText", "setText", "Text"));
+        set.put(makeProperty(obj, ColorRGBA.class, "getColor", "setColor", "Color"));
+        set.put(makeProperty(obj, BitmapFont.class, "getFont", "Font"));
 
         sheet.put(set);
         return sheet;

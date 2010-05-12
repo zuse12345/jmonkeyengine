@@ -22,19 +22,19 @@ import com.jme3.scene.plugins.ogre.OgreMeshKey;
 import com.jme3.scene.shape.Sphere;
 import java.io.File;
 
-public class TestQ3 extends SimpleBulletApplication implements BindingListener{
+public class TestQ3 extends SimpleBulletApplication implements BindingListener {
 
     private Sphere sphereMesh = new Sphere(32, 32, 10f, false, true);
     private Geometry sphere = new Geometry("Sky", sphereMesh);
     private Spatial gameLevel;
     private PhysicsCharacterNode player;
-    private Vector3f walkDirection=new Vector3f();
-    private static boolean useHttp=false;
+    private Vector3f walkDirection = new Vector3f();
+    private static boolean useHttp = false;
 
-    public static void main(String[] args){
-        File file=new File("quake3level.zip");
-        if(!file.exists()){
-            useHttp=true;
+    public static void main(String[] args) {
+        File file = new File("quake3level.zip");
+        if (!file.exists()) {
+            useHttp = true;
         }
         TestQ3 app = new TestQ3();
         app.start();
@@ -59,12 +59,11 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
         dl.setColor(ColorRGBA.White);
         dl.setDirection(new Vector3f(1, -1, 1).normalize());
         rootNode.addLight(dl);
-        
+
         // load the level from zip or http zip
-        if(useHttp){
+        if (useHttp) {
             assetManager.registerLocator("http://jmonkeyengine.googlecode.com/files/quake3level.zip", HttpZipLocator.class.getName());
-        }
-        else{
+        } else {
             assetManager.registerLocator("quake3level.zip", ZipLocator.class.getName());
         }
 
@@ -74,15 +73,15 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
         gameLevel = (Spatial) assetManager.loadAsset(key);
         gameLevel.setLocalScale(0.1f);
 
-        CompoundCollisionShape levelShape=CollisionShapeFactory.createMeshCompoundShape((Node)gameLevel);
+        CompoundCollisionShape levelShape = CollisionShapeFactory.createMeshCompoundShape((Node) gameLevel);
 
-        PhysicsNode levelNode=new PhysicsNode(gameLevel, levelShape,0);
-        player=new PhysicsCharacterNode(new SphereCollisionShape(5), 1f);
-        player.setJumpSpeed(15);
+        PhysicsNode levelNode = new PhysicsNode(gameLevel, levelShape, 0);
+        player = new PhysicsCharacterNode(new SphereCollisionShape(5), .01f);
+        player.setJumpSpeed(20);
         player.setFallSpeed(30);
         player.setGravity(30);
 
-        player.setLocalTranslation(new Vector3f(60,10,-60));
+        player.setLocalTranslation(new Vector3f(60, 10, -60));
         player.updateGeometricState();
 
         rootNode.attachChild(levelNode);
@@ -94,7 +93,7 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
     }
 
     @Override
-    public void simpleUpdate(float tpf){
+    public void simpleUpdate(float tpf) {
         player.setWalkDirection(walkDirection);
         cam.setLocation(player.getLocalTranslation());
     }
@@ -111,12 +110,12 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
     }
 
     public void onBinding(String binding, float value) {
-        Vector3f camDir  = cam.getDirection().clone();
+        Vector3f camDir = cam.getDirection().clone();
         Vector3f camLeft = cam.getLeft().clone();
 
         value *= 30f;
 
-        if(binding.equals("Lefts")){
+        if (binding.equals("Lefts")) {
             // lets add some good ol' framerate independence
             camLeft.multLocal(value);
             walkDirection.addLocal(camLeft);
@@ -124,33 +123,31 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener{
             // WTF is this magic trickery??
             //Quaternion quat=new Quaternion(0, 1, 0, FastMath.QUARTER_PI);
             //walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.2f)));
-        }
-        else if(binding.equals("Rights")){
+        } else if (binding.equals("Rights")) {
             camLeft.negateLocal();
             camLeft.multLocal(value);
             walkDirection.addLocal(camLeft);
 
             //Quaternion quat=new Quaternion(0, 1, 0, -FastMath.QUARTER_PI);
             //walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.2f)));
-        }
-        else if(binding.equals("Ups")){
+        } else if (binding.equals("Ups")) {
             camDir.multLocal(value);
             walkDirection.addLocal(camDir);
             //walkDirection.addLocal(cam.getDirection().mult(0.4f));
-        }
-        else if(binding.equals("Downs")){
+        } else if (binding.equals("Downs")) {
             camDir.negateLocal();
             camDir.multLocal(value);
             walkDirection.addLocal(camDir);
             //walkDirection.addLocal(cam.getDirection().mult(-0.4f));
-        }
-        else if(binding.equals("Space")){
-            player.jump();
+        } else if (binding.equals("Space")) {
+            if (player.onGround()) {
+                player.jump();
+            }
         }
     }
 
     public void onPreUpdate(float tpf) {
-        walkDirection.set(0,0,0);
+        walkDirection.set(0, 0, 0);
     }
 
     public void onPostUpdate(float tpf) {

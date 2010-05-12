@@ -30,6 +30,21 @@
         </pathconvert>
     </target>
 
+    <!--this target overrides the webstart jnlp copy process to insert the assets jar file-->
+    <target name="-strip-empty-lines">
+        <copy file="${jnlp.dest.dir}/${jnlp.file}_" tofile="${jnlp.dest.dir}/${jnlp.file}" overwrite="true" encoding="UTF-8">
+            <filterchain>
+                <linecontainsregexp>
+                    <regexp pattern=".+"/>
+                </linecontainsregexp>
+            </filterchain>
+            <filterchain>
+                <replacestring from="$${assets.jar.name}" to="${assets.jar.name}"/>
+            </filterchain>
+        </copy>
+        <delete file="${jnlp.dest.dir}/${jnlp.file}_" failonerror="false"/>
+    </target>
+    
     <!--
 
     There exist several targets which are by default empty and which can be 

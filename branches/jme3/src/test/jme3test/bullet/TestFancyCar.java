@@ -87,7 +87,7 @@ public class TestFancyCar extends SimpleBulletApplication implements BindingList
 
         setupKeys();
         setupFloor();
-        setupGImpact();
+//        setupGImpact();
         buildPlayer();
 
         DirectionalLight dl = new DirectionalLight();

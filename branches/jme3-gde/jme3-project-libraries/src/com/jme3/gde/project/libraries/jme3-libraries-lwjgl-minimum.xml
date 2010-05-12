@@ -14,7 +14,6 @@ and open the template in the editor.
         <resource>jar:nbinst://com.jme3.gde.project.libraries/libs/j-ogg-vorbisd.jar!/</resource>
         <resource>jar:nbinst://com.jme3.gde.project.libraries/libs/jME3-lwjgl-natives-2.4.jar!/</resource>
         <resource>jar:nbinst://com.jme3.gde.project.libraries/libs/jME3-natives-joal.jar!/</resource>
-        <resource>jar:nbinst://com.jme3.gde.project.libraries/libs/jMonkeyEngine3.jar!/</resource>
         <resource>jar:nbinst://com.jme3.gde.project.libraries/libs/jinput.jar!/</resource>
         <resource>jar:nbinst://com.jme3.gde.project.libraries/libs/joal.jar!/</resource>
         <resource>jar:nbinst://com.jme3.gde.project.libraries/libs/lwjgl.jar!/</resource>

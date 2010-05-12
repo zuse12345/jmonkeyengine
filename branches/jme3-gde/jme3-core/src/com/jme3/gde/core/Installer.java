@@ -34,6 +34,7 @@ package com.jme3.gde.core;
 import com.jme3.gde.core.scene.SceneApplication;
 import java.io.File;
 import org.openide.modules.ModuleInstall;
+import org.openide.util.Utilities;
 
 /**
  * Manages a module's lifecycle. Remember that an installer is optional and
@@ -50,18 +51,25 @@ public class Installer extends ModuleInstall {
 
     @Override
     public void restored() {
-       SceneApplication.getApplication();
-        // By default, do nothing.
-        // Put your startup code here.
+        //start scene app
+        SceneApplication.getApplication();
     }
 
-    static{
-       File userDir = new File(System.getProperty("user.home"));
-       File myProjectsDir = new File(userDir, "jMonkeyProjects");
-       if (! myProjectsDir.exists()) {
-           myProjectsDir.mkdirs ();
-       }
+    static {
+        //set default projects directory
+        File userDir = new File(System.getProperty("user.home"));
+        File myProjectsDir = new File(userDir, "jMonkeyProjects");
+        if (!myProjectsDir.exists()) {
+            myProjectsDir.mkdirs();
+        }
+        System.setProperty("netbeans.projects.dir", myProjectsDir.getAbsolutePath());
 
-       System.setProperty("netbeans.projects.dir", myProjectsDir.getAbsolutePath());
+        //set extraction dir for platform natives
+        if (Utilities.isMac()) {
+            String jmpDir = System.getProperty("user.home") + "/Library/Application Support/jmonkeyplatform/";
+            File file=new File(jmpDir);
+            file.mkdirs();
+            com.jme3.system.Natives.setExtractionDir(jmpDir);
+        }
     }
 }

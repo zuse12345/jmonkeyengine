@@ -61,6 +61,7 @@ import com.jme3.util.BufferUtils;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.LinkedList;

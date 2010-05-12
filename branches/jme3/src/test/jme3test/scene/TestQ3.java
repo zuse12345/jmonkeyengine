@@ -42,7 +42,6 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener {
 
     public void simpleInitApp() {
         inputManager.removeBindingListener(flyCam);
-//        MeshLoader.AUTO_INTERLEAVE = false;
         FirstPersonCamera fps = new FirstPersonCamera(cam, new Vector3f(0, -10, 0));
         fps.registerWithDispatcher(inputManager);
         fps.setMoveSpeed(100);
@@ -110,31 +109,19 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener {
     }
 
     public void onBinding(String binding, float value) {
-        Vector3f camDir = cam.getDirection().clone();
-        Vector3f camLeft = cam.getLeft().clone();
+        Vector3f camDir = cam.getDirection().clone().multLocal(0.6f);
+        Vector3f camLeft = cam.getLeft().clone().multLocal(0.4f);
 
         if (binding.equals("Lefts")) {
-            // lets add some good ol' framerate independence
-            // - not needed.. bullet is not framerate dependent, the vector is
-            //   constant anyway. actually this made it framerate dependent..
             walkDirection.addLocal(camLeft);
-
-            // WTF is this magic trickery??
-            // - its the good old art of quickndirty hacking when you dont know
-            //   theres cam.left :D
-            //Quaternion quat=new Quaternion(0, 1, 0, FastMath.QUARTER_PI);
-            //walkDirection.addLocal(quat.mult(cam.getDirection().mult(0.2f)));
         } else if (binding.equals("Rights")) {
             camLeft.negateLocal();
-            camLeft.multLocal(value);
             walkDirection.addLocal(camLeft);
 
         } else if (binding.equals("Ups")) {
-            camDir.multLocal(value);
             walkDirection.addLocal(camDir);
         } else if (binding.equals("Downs")) {
             camDir.negateLocal();
-            camDir.multLocal(value);
             walkDirection.addLocal(camDir);
         } else if (binding.equals("Space")) {
             if (player.onGround()) {
@@ -144,6 +131,9 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener {
     }
 
     public void onPreUpdate(float tpf) {
+        //TODO! the walkdirection of bullet characters is actually
+        //constant w/o (re)setting the direction vector each frame,
+        //better use keypress/release listener!
         walkDirection.set(0, 0, 0);
     }
 

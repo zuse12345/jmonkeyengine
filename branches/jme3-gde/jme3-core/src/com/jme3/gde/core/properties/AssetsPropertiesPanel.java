@@ -151,6 +151,9 @@ public class AssetsPropertiesPanel extends javax.swing.JPanel implements ActionL
     private FileLock lock;
 
     private void loadSettings() {
+        if (propertiesFile == null) {
+            return;
+        }
         properties = new Properties();
         try {
             lock = propertiesFile.lock();
@@ -165,6 +168,7 @@ public class AssetsPropertiesPanel extends javax.swing.JPanel implements ActionL
             } else {
                 jCheckBox1.setSelected(false);
             }
+            lock.releaseLock();
         } catch (IOException ex) {
             jTextField1.setText("");
             jTextField2.setText("");
@@ -173,6 +177,9 @@ public class AssetsPropertiesPanel extends javax.swing.JPanel implements ActionL
     }
 
     private void saveSettings() {
+        if (propertiesFile == null) {
+            return;
+        }
         try {
             //TODO: lock problems? properties that are loaded are not set -> assets.folder.name
 
@@ -184,6 +191,7 @@ public class AssetsPropertiesPanel extends javax.swing.JPanel implements ActionL
             } else {
                 properties.setProperty("assets.compress", "false");
             }
+            lock = propertiesFile.lock();
             OutputStream stream = propertiesFile.getOutputStream(lock);
             properties.store(stream, "This file contains properties for building the assets jar file");
             stream.close();

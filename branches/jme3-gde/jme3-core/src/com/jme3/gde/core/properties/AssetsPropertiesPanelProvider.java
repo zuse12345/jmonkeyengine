@@ -75,7 +75,7 @@ public class AssetsPropertiesPanelProvider implements ProjectCustomizer.Composit
     public JComponent createComponent(Category category, Lookup lkp) {
         String nm = category.getName();
         AssetsPropertiesPanel panel=new AssetsPropertiesPanel(project.getProjectDirectory().getFileObject("nbproject/assets.properties"));
-        category.setOkButtonListener(panel);
+        category.setStoreListener(panel);
         return panel;
     }
 }

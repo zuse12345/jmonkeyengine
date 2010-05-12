@@ -45,6 +45,8 @@ import com.jme3.bullet.nodes.infos.PhysicsNodeState;
 import com.jme3.bullet.util.Converter;
 import com.jme3.math.Matrix3f;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * <p>PhysicsNode - Basic jbullet-jme physics object</p>
@@ -163,20 +165,6 @@ public class PhysicsNode extends CollisionObject{
         else{
             rBody.setCollisionFlags( rBody.getCollisionFlags() & ~CollisionFlags.STATIC_OBJECT );
         }
-    }
-
-    @Override
-    public int attachChild(Spatial child) {
-        if(child instanceof PhysicsNode)
-            throw(new IllegalArgumentException("PhysicsNodes cannot have other PhysicsNodes as children!"));
-        return super.attachChild(child);
-    }
-
-    @Override
-    public int attachChildAt(Spatial child, int index) {
-        if(child instanceof PhysicsNode)
-            throw(new IllegalArgumentException("PhysicsNodes cannot have other PhysicsNodes as children!"));
-        return super.attachChildAt(child, index);
     }
 
     //TODO:scale

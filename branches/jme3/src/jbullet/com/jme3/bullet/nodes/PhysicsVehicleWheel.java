@@ -81,6 +81,9 @@ public class PhysicsVehicleWheel extends Node{
 
     @Override
     public synchronized void updateGeometricState(){
+        if ((refreshFlags & RF_LIGHTLIST) != 0){
+            updateWorldLightList();
+        }
 
         getLocalTranslation().set( wheelWorldLocation ).subtractLocal( parent.getWorldTranslation() );
         getLocalTranslation().divideLocal( parent.getWorldScale() );
@@ -89,8 +92,21 @@ public class PhysicsVehicleWheel extends Node{
         tempRotation.set(parent.getWorldRotation()).inverseLocal().mult(wheelWorldRotation,getLocalRotation());
 
         updateWorldTransforms();
+
+        // the important part- make sure child geometric state is refreshed
+        // first before updating own world bound. This saves
+        // a round-trip later on.
+        // NOTE 9/19/09
+        // Although it does save a round trip,
+        for (int i = 0, cSize = children.size(); i < cSize; i++) {
+            Spatial child = children.get(i);
+            child.updateGeometricState();
+        }
+
+        if ((refreshFlags & RF_BOUND) != 0){
+            updateWorldBound();
+        }
         
-        super.updateGeometricState();
     }
 
     public synchronized void updatePhysicsState(){

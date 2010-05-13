@@ -152,6 +152,9 @@ public class AssetsPropertiesPanel extends javax.swing.JPanel implements ActionL
 
     private void loadSettings() {
         if (propertiesFile == null) {
+            jTextField1.setText("");
+            jTextField2.setText("");
+            jTextField3.setText("");
             return;
         }
         properties = new Properties();
@@ -172,6 +175,7 @@ public class AssetsPropertiesPanel extends javax.swing.JPanel implements ActionL
         } catch (IOException ex) {
             jTextField1.setText("");
             jTextField2.setText("");
+            jTextField3.setText("");
             Exceptions.printStackTrace(ex);
         }
     }

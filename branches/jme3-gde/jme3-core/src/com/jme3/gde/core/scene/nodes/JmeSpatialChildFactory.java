@@ -39,6 +39,7 @@ import com.jme3.light.Light;
 import com.jme3.light.LightList;
 import com.jme3.light.PointLight;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
 import com.jme3.scene.Spatial;
 import com.jme3.ui.Picture;
 import java.util.List;
@@ -56,6 +57,7 @@ public class JmeSpatialChildFactory extends ChildFactory<Object> {
 
     private com.jme3.scene.Spatial spatial;
     private boolean doLights = true;
+    private boolean doMesh = true;
 
     public JmeSpatialChildFactory(com.jme3.scene.Spatial spatial) {
         this.spatial = spatial;
@@ -80,7 +82,14 @@ public class JmeSpatialChildFactory extends ChildFactory<Object> {
                         toPopulate.addAll(((com.jme3.scene.Node) spatial).getChildren());
                         return true;
                     }
-                    if(doLights){
+                    if (spatial instanceof Geometry && doMesh) {
+                        Geometry geom = (Geometry) spatial;
+                        Mesh mesh = geom.getMesh();
+                        if (mesh != null) {
+                            toPopulate.add(new MeshGeometryPair(mesh, geom));
+                        }
+                    }
+                    if (doLights) {
                         LightList lights = spatial.getWorldLightList();
                         for (int i = 0; i < lights.size(); i++) {
                             Light light = lights.get(i);
@@ -134,6 +143,9 @@ public class JmeSpatialChildFactory extends ChildFactory<Object> {
                 return new JmeDirectionalLight(pair.getSpatial(), (DirectionalLight) pair.getLight());
             }
             return new JmeLight(pair.getSpatial(), pair.getLight());
+        } else if (key instanceof MeshGeometryPair) {
+            MeshGeometryPair pair = (MeshGeometryPair) key;
+            return new JmeMesh(pair.getGeometry(),pair.getMesh());
         }
         return null;
     }

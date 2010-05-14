@@ -15,6 +15,7 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial.CullHint;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Dome;
 import java.util.logging.Level;
@@ -27,9 +28,10 @@ public class CubeField extends SimpleApplication implements BindingListener {
 
     public static void main(String[] args) {
         CubeField app = new CubeField();
-        
         app.start();
     }
+
+    private BitmapFont defaultFont;
 
     private boolean START;
     private int difficulty, Score, colorInt, highCap, lowCap,diffHelp;
@@ -53,15 +55,16 @@ public class CubeField extends SimpleApplication implements BindingListener {
         Logger.getLogger("com.jme3").setLevel(Level.WARNING);
 
         flyCam.setEnabled(false);
+        statsView.setCullHint(CullHint.Always);
 
         Keys();
 
-        BitmapFont font = assetManager.loadFont("cooper.fnt");
-        pressStart = new BitmapText(font, false);
-        fpsScoreText = new BitmapText(font, false);
+        defaultFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
+        pressStart = new BitmapText(defaultFont, false);
+        fpsScoreText = new BitmapText(defaultFont, false);
 
-        loadText(fpsScoreText, "Current Score: 0", font, 0, 2, 0);
-        loadText(pressStart, "PRESS ENTER", font, 0, 5, 0);
+        loadText(fpsScoreText, "Current Score: 0", defaultFont, 0, 2, 0);
+        loadText(pressStart, "PRESS ENTER", defaultFont, 0, 5, 0);
         
         player = createPlayer();
         rootNode.attachChild(player);
@@ -95,7 +98,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
         obstacleColors.add(ColorRGBA.Red);
         obstacleColors.add(ColorRGBA.Yellow);
         renderer.setBackgroundColor(ColorRGBA.White);
-        boxSolid = "solid_color.j3md";
+        boxSolid = "Common/MatDefs/Misc/SolidColor.j3md";
         speed = lowCap / 400f;
         coreTime = 20.0f;
         coreTime2 = 10.0f;
@@ -163,7 +166,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
         Box b = new Box(loc, 1, 1, 1);
 
         Geometry geom = new Geometry("Box", b);
-        Material mat = new Material(assetManager, "solid_color.j3md");
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/SolidColor.j3md");
         mat.setColor("m_Color", ColorRGBA.Blue);
         geom.setMaterial(mat);
 
@@ -175,7 +178,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
         Geometry playerMesh = new Geometry("Box", b);
         playerMesh.updateModelBound();
 
-        playerMaterial = new Material(assetManager, "solid_color.j3md");
+        playerMaterial = new Material(assetManager, "Common/MatDefs/Misc/SolidColor.j3md");
         playerMaterial.setColor("m_Color", ColorRGBA.Red);
         playerMesh.setMaterial(playerMaterial);
         playerMesh.setName("player");
@@ -185,7 +188,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
         Geometry floorMesh = new Geometry("Box", floor);
         floorMesh.updateModelBound();
 
-        floorMaterial = new Material(assetManager, "solid_color.j3md");
+        floorMaterial = new Material(assetManager, "Common/MatDefs/Misc/SolidColor.j3md");
         floorMaterial.setColor("m_Color", ColorRGBA.LightGray);
         floorMesh.setMaterial(floorMaterial);
         floorMesh.setName("floor");
@@ -202,8 +205,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
      */
     private void gameLost(){
         START = false;
-        BitmapFont font = assetManager.loadFont("cooper.fnt");
-        loadText(pressStart, "You lost! Press enter to try again.", font, 0, 5, 0);
+        loadText(pressStart, "You lost! Press enter to try again.", defaultFont, 0, 5, 0);
         gameReset();
     }
     
@@ -390,9 +392,9 @@ public class CubeField extends SimpleApplication implements BindingListener {
      */
     private void boxSolid(boolean solid) {
         if (solid == false){
-            boxSolid = "wire_color.j3md";
+            boxSolid = "Common/MatDefs/Misc/WireColor.j3md";
         }else{
-            boxSolid = "solid_color.j3md";
+            boxSolid = "Common/MatDefs/Misc/SolidColor.j3md";
         }
     }
 

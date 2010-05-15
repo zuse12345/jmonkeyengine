@@ -13,19 +13,44 @@
     </taskdef>
 
     <!--creates linux/win and osx zip distributions of jMonkeyPlatform-->
-    <target name="dist-gde" depends="suite.clean, -create-netbeans-config, zip-templates, -set-impl-version, suite.build-zip, build-mac, unset-impl-version">
-        <exec executable="zip" dir="dist/">
-            <arg value="-yr"/>
-            <arg value="jmonkeyplatform-osx.zip"/>
-            <arg value="jmonkeyplatform.app"/>
-        </exec>
+    <target name="dist-gde" depends="suite.clean, -create-netbeans-config, zip-templates, -set-impl-version, build-zip, build-mac, unset-impl-version">
     </target>
 
     <!--creates update center version via hudson build server-->
     <target name="dist-gde-hudson" depends="suite.clean, zip-templates, -set-impl-version-hudson, suite.nbms, unset-impl-version-hudson">
     </target>
 
-    <!--replaces default values in config file-->
+    <target name="build-zip" depends="build,build-launchers" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
+        <mkdir dir="${dist.dir}"/>
+        <!-- pathfileset does not support 'prefix' and 'filemode' parameters,
+             we have to copy them to temp location -->
+        <tempfile property="temp.dir.nbexec" destdir="${basedir}/build" deleteonexit="true"/>
+        <tempfile property="temp.dir.rest" destdir="${basedir}/build" deleteonexit="delete"/>
+        <subant genericantfile="${harness.dir}/suite.xml" target="copy-cluster" inheritrefs="true">
+            <property name="dest.dir" value="${temp.dir.rest}"/>
+            <property name="nbexec.dir" value="${temp.dir.nbexec}"/>
+            <property name="build.dir" value="${basedir}/build"/>
+            <resources refid="zip.platform.clusters"/>
+        </subant>
+        <zip destfile="${dist.dir}/${app.release.name}.zip">
+            <zipfileset dir="${build.launcher.dir}/bin/" filemode="755" prefix="${app.name}/bin"/>
+            <zipfileset dir="${build.launcher.dir}/etc/" prefix="${app.name}/etc"/>
+            <zipfileset dir="${temp.dir.nbexec}" filemode="755" prefix="${app.name}"/>
+            <zipfileset dir="${temp.dir.rest}" prefix="${app.name}"/>
+
+            <!-- Yes, the doubled app.name is a bit ugly, but better than the alternative; cf. #66441: -->
+            <zipfileset dir="${cluster}" prefix="${app.name}/${app.name}">
+                <exclude name="config/Modules/*.xml_hidden"/>
+            </zipfileset>
+
+            <!--add README.TXT-->
+            <zipfileset dir="${basedir}" prefix="${app.name}">
+                <include name="README.TXT"/>
+            </zipfileset>
+        </zip>
+    </target>
+
+    <!--replaces default values in jmonkeyplatform.conf file with run.args.extra from project.properties-->
     <target name="-create-netbeans-config">
         <mkdir dir="build/launcher/etc"/>
         <copy file="${harness.dir}/etc/app.conf" tofile="build/launcher/etc/${app.name}.conf">
@@ -34,12 +59,17 @@
                 <replacestring from="-J-Xmx64m" to="${run.args.extra}"/>
             </filterchain>
         </copy>
-        <!--<copy file="./TestChooser.exe" todir="build/launcher/bin/"/>
-        <copy file="./README" todir="build/launcher/"/>-->
     </target>
 
     <!--overriding mac build target to copy icon-->
     <target name="build-mac" depends="suite.build-mac, -copy-mac-icon" description="Build Mac OS X Application">
+        <replace file="${dist.dir}/${app.name}.app/Contents/Info.plist" token="0.1" value="${app.release.version}"/>
+        <exec executable="zip" dir="dist/">
+            <arg value="-yr"/>
+            <arg value="${app.release.name}-MacOSX.zip"/>
+            <arg value="jmonkeyplatform.app"/>
+            <arg value="../README.TXT"/>
+        </exec>
     </target>
 
     <!--copy mac icon-->

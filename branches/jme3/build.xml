@@ -22,6 +22,47 @@
         </pathconvert>
     </target>
 
+    <!-- puts jme3 jars, libs and javadoc in a dated zip file -->
+    <target name="dist" depends="clean, jar, javadoc">
+        <!-- create date in the format MM-dd-yyyy -->
+        <tstamp>
+            <format property="date" pattern="MM-dd-yyyy" locale="en,US"/>
+        </tstamp>
+        <property name="jme3zip" value="jME3_${date}.zip"/>
+
+        <!-- make zip file -->
+        <zip destfile="${jme3zip}">
+            <fileset dir=".">
+                <include name="TestChooser.exe"/>
+                <include name="README.TXT"/>
+            </fileset>
+            <fileset dir="dist/">
+                <include name="jMonkeyEngine3.jar"/>
+            </fileset>
+            <zipfileset dir="dist/lib" prefix="lib"/>
+            <zipfileset dir="dist/javadoc" prefix="javadoc"/>
+            <zipfileset dir="${src.core.dir}" prefix="source"/>
+            <zipfileset dir="${src.core-data.dir}" prefix="source"/>
+            <zipfileset dir="${src.core-plugins.dir}" prefix="source"/>
+            <zipfileset dir="${src.desktop.dir}" prefix="source"/>
+            <zipfileset dir="${src.desktop-fx.dir}" prefix="source"/>
+            <zipfileset dir="${src.games.dir}" prefix="source"/>
+            <zipfileset dir="${src.jbullet.dir}" prefix="source"/>
+            <zipfileset dir="${src.niftygui.dir}" prefix="source"/>
+            <zipfileset dir="${src.joal.dir}" prefix="source"/>
+            <zipfileset dir="${src.jogg.dir}" prefix="source"/>
+            <zipfileset dir="${src.jogl.dir}" prefix="source"/>
+            <zipfileset dir="${src.lwjgl-oal.dir}" prefix="source"/>
+            <zipfileset dir="${src.lwjgl-ogl.dir}" prefix="source"/>
+            <zipfileset dir="${src.ogre.dir}" prefix="source"/>
+            <zipfileset dir="${src.pack.dir}" prefix="source"/>
+            <zipfileset dir="${src.jheora.dir}" prefix="source"/>
+            <zipfileset dir="${src.test.dir}" prefix="source"/>
+            <zipfileset dir="${src.tools.dir}" prefix="source"/>
+            <zipfileset dir="${src.xml.dir}" prefix="source"/>
+        </zip>
+    </target>
+    
     <!-- convenience target to transfer jme3 libraries to jme3-gde (jMonkeyPlatform) -->
     <target name="update-gde" depends="jar, javadoc">
         <antcall target="-do-update-gde" inheritall="true">
@@ -109,27 +150,6 @@
                 <exclude name=".svn"/>
             </fileset>
         </copy>
-    </target>
-
-    <!-- puts jme3 jars, libs and javadoc in a dated zip file -->
-    <target name="dist" depends="clean, jar, javadoc">
-        <!-- create date in the format MM-dd-yyyy -->
-        <tstamp>
-            <format property="date" pattern="MM-dd-yyyy" locale="en,US"/>
-        </tstamp>
-        <property name="jme3zip" value="jME3_${date}.zip"/>
-
-        <!-- make zip file -->
-        <zip destfile="${jme3zip}">
-            <fileset dir=".">
-                <include name="TestChooser.exe"/>
-            </fileset>
-            <fileset dir="dist/">
-                <include name="jMonkeyEngine3.jar"/>
-            </fileset>
-            <zipfileset dir="dist/lib" prefix="lib"/>
-            <zipfileset dir="dist/javadoc" prefix="javadoc"/>
-        </zip>
     </target>
 
     <!-- upload jme3 zip to jmonkeyengine.com/nightly -->

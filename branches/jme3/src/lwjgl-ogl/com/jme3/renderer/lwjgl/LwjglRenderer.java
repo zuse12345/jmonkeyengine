@@ -17,6 +17,7 @@ import com.jme3.scene.VertexBuffer.Format;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.scene.VertexBuffer.Usage;
 import com.jme3.renderer.RenderContext;
+import com.jme3.renderer.RendererException;
 import com.jme3.renderer.Statistics;
 import com.jme3.scene.Mesh.Mode;
 import com.jme3.shader.Attribute;
@@ -655,7 +656,9 @@ public class LwjglRenderer implements Renderer {
         if (id == -1){
             // create id
             id = glCreateShader(convertShaderType(source.getType()));
-            assert id > 0;
+            if (id <= 0)
+                throw new RendererException("Invalid ID recieved when trying to create shader.");
+
             source.setId(id);
         }
 
@@ -708,7 +711,7 @@ public class LwjglRenderer implements Renderer {
             }else{
                 logger.warning(source.getName()+" compile error: ?");
             }
-            System.err.println(source.getDefines() + source.getSource() );
+            logger.warning(source.getDefines() + source.getSource() );
         }
 
         source.clearUpdateNeeded();
@@ -730,7 +733,9 @@ public class LwjglRenderer implements Renderer {
         if (id == -1){
             // create program
             id = glCreateProgram();
-            assert id > 0;
+            if (id <= 0)
+                throw new RendererException("Invalid ID recieved when trying to create shader program.");
+
             shader.setId(id);
             needRegister = true;
         }

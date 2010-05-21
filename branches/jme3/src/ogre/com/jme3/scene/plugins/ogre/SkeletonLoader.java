@@ -58,15 +58,6 @@ public class SkeletonLoader extends DefaultHandler implements AssetLoader {
     private float angle;
     private Vector3f axis;
 
-    public static void main(String[] args) throws IOException{
-        File f = new File("E:\\jME3\\src\\models\\ninja.skeletonxml");
-        for (int i = 0; i < 100; i++){
-            FileInputStream fis = new FileInputStream(f);
-            new SkeletonLoader().load(fis);
-            fis.close();
-        }
-    }
-
     public void startElement(String uri, String localName, String qName, Attributes attribs) throws SAXException{
         if (qName.equals("position") || qName.equals("translate")){
             position = SAXUtil.parseVector3(attribs);

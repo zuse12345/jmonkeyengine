@@ -25,7 +25,7 @@ public class Natives {
         workingDir = new File(name).getAbsoluteFile();
     }
 
-    protected static void extractNativeLib(String sysName, String name, boolean load) throws IOException{
+    protected static void extractNativeLib(String sysName, String name) throws IOException{
         String fullname = System.mapLibraryName(name);
 
         String path = "native/"+sysName+"/" + fullname;
@@ -44,10 +44,6 @@ public class Natives {
         }
         in.close();
         out.close();
-
-//        if (load){
-//            System.loadLibrary(name);
-//        }
 
         logger.log(Level.FINE, "Copied {0} to {1}", new Object[]{fullname, targetFile});
     }
@@ -113,174 +109,180 @@ public class Natives {
         switch (platform){
             case Windows64:
                 if (needLWJGL){
-                    extractNativeLib("windows", "lwjgl64", true);
+                    extractNativeLib("windows", "lwjgl64");
                 }
                 if (needJOGL){
-                    extractNativeLib("win64", "jogl_awt", false);
-                    extractNativeLib("win64", "jogl", true);
+                    extractNativeLib("win64", "jogl_awt");
+                    extractNativeLib("win64", "jogl");
                 }
 
                 if (needJOAL)
-                    extractNativeLib("win64", "joal_native", true);
+                    extractNativeLib("win64", "joal_native");
 
                 if (needGG)
-                    extractNativeLib("win64", "gluegen-rt", false);
+                    extractNativeLib("win64", "gluegen-rt");
 
                 if (needOAL)
-                    extractNativeLib("windows", "OpenAL64", true);
+                    extractNativeLib("windows", "OpenAL64");
                 
                 if (needJInput){
-                    extractNativeLib("windows", "jinput-dx8_64", true);
-                    extractNativeLib("windows", "jinput-raw_64", true);
+                    extractNativeLib("windows", "jinput-dx8_64");
+                    extractNativeLib("windows", "jinput-raw_64");
                 }
                 break;
             case Windows32:
                 if (needLWJGL){
-                    extractNativeLib("windows", "lwjgl", true);
+                    extractNativeLib("windows", "lwjgl");
                 }
                 if (needJOGL){
-                    extractNativeLib("win32", "jogl_awt", false);
-                    extractNativeLib("win32", "jogl", true);
+                    extractNativeLib("win32", "jogl_awt");
+                    extractNativeLib("win32", "jogl");
                 }
 
                 if (needJOAL)
-                    extractNativeLib("win32", "joal_native", true);
+                    extractNativeLib("win32", "joal_native");
 
                 if (needGG)
-                    extractNativeLib("win32", "gluegen-rt", false);
+                    extractNativeLib("win32", "gluegen-rt");
 
                 if (needOAL)
-                    extractNativeLib("windows", "OpenAL32", true);
+                    extractNativeLib("windows", "OpenAL32");
 
                 if (needJInput){
-                    extractNativeLib("windows", "jinput-dx8", true);
-                    extractNativeLib("windows", "jinput-raw", true);
+                    extractNativeLib("windows", "jinput-dx8");
+                    extractNativeLib("windows", "jinput-raw");
                 }
                 break;
             case Linux64:
                 if (needLWJGL){
-                    extractNativeLib("linux", "lwjgl64", true);
+                    extractNativeLib("linux", "lwjgl64");
                 }
                 if (needJOGL){
-                    extractNativeLib("linux64", "jogl_awt", false);
-                    extractNativeLib("linux64", "jogl", true);
+                    extractNativeLib("linux64", "jogl_awt");
+                    extractNativeLib("linux64", "jogl");
                 }
 
                 if (needJOAL)
-                    extractNativeLib("linux64", "joal_native", true);
+                    extractNativeLib("linux64", "joal_native");
 
                 if (needGG)
-                    extractNativeLib("linux64", "gluegen-rt", false);
+                    extractNativeLib("linux64", "gluegen-rt");
 
                 if (needJInput)
-                    extractNativeLib("linux", "jinput-linux64", true);
+                    extractNativeLib("linux", "jinput-linux64");
+
+                if (needOAL)    
+                    extractNativeLib("linux", "openal64");
 
                 break;
             case Linux32:
                 if (needLWJGL){
-                    extractNativeLib("linux", "lwjgl", true);
+                    extractNativeLib("linux", "lwjgl");
                 }
                 if (needJOGL){
-                    extractNativeLib("linux32", "jogl_awt", false);
-                    extractNativeLib("linux32", "jogl", true);
+                    extractNativeLib("linux32", "jogl_awt");
+                    extractNativeLib("linux32", "jogl");
                 }
 
                 if (needJOAL)
-                    extractNativeLib("linux32", "joal_native", true);
+                    extractNativeLib("linux32", "joal_native");
 
                 if (needGG)
-                    extractNativeLib("linux32", "gluegen-rt", false);
+                    extractNativeLib("linux32", "gluegen-rt");
 
                 if (needJInput)
-                    extractNativeLib("linux", "jinput-linux", true);
+                    extractNativeLib("linux", "jinput-linux");
+
+                if (needOAL)
+                    extractNativeLib("linux", "openal");
 
                 break;
             case MacOSX_PPC32:
                 if (needLWJGL){
-                    extractNativeLib("macosx", "lwjgl", true);
+                    extractNativeLib("macosx", "lwjgl");
                 }
                 if (needJOGL){
-                    extractNativeLib("macosx_ppc", "jogl_awt", false);
-                    extractNativeLib("macosx_ppc", "jogl", true);
+                    extractNativeLib("macosx_ppc", "jogl_awt");
+                    extractNativeLib("macosx_ppc", "jogl");
                 }
 
                 if (needJOAL)
                     throw new UnsupportedOperationException("JOAL not available on Mac OS PPC");
 
                 if (needGG)
-                    extractNativeLib("macosx_ppc", "gluegen-rt", false);
+                    extractNativeLib("macosx_ppc", "gluegen-rt");
 
-                if (needOAL)
-                    extractNativeLib("macosx", "openal", true);
+//                if (needOAL)
+//                    extractNativeLib("macosx", "openal");
 
                 if (needJInput)
-                    extractNativeLib("macosx", "jinput-osx", true);
+                    extractNativeLib("macosx", "jinput-osx");
 
                 break;
             case MacOSX32:
                 if (needLWJGL){
-                    extractNativeLib("macosx", "lwjgl", true);
+                    extractNativeLib("macosx", "lwjgl");
                 }
                 if (needJOGL){
-                    extractNativeLib("macosx_universal", "jogl_awt", false);
-                    extractNativeLib("macosx_universal", "jogl", true);
+                    extractNativeLib("macosx_universal", "jogl_awt");
+                    extractNativeLib("macosx_universal", "jogl");
                 }
 
                 if (needJOAL)
-                    extractNativeLib("macosx_universal", "joal_native", true);
+                    extractNativeLib("macosx_universal", "joal_native");
 
                 if (needGG)
-                    extractNativeLib("macosx_universal", "gluegen-rt", false);
+                    extractNativeLib("macosx_universal", "gluegen-rt");
 
-                if (needOAL)
-                    extractNativeLib("macosx", "openal", true);
+//                if (needOAL)
+//                    extractNativeLib("macosx", "openal");
 
                 if (needJInput)
-                    extractNativeLib("macosx", "jinput-osx", true);
+                    extractNativeLib("macosx", "jinput-osx");
 
                 break;
             case MacOSX_PPC64:
                 if (needLWJGL){
-                    extractNativeLib("macosx", "lwjgl", true);
+                    extractNativeLib("macosx", "lwjgl");
                 }
                 if (needJOGL){
-                    extractNativeLib("macosx_ppc", "jogl_awt", false);
-                    extractNativeLib("macosx_ppc", "jogl", true);
+                    extractNativeLib("macosx_ppc", "jogl_awt");
+                    extractNativeLib("macosx_ppc", "jogl");
                 }
 
                 if (needJOAL)
                     throw new UnsupportedOperationException("JOAL not available on Mac OS 64 bit");
 
                 if (needGG)
-                    extractNativeLib("macosx_ppc", "gluegen-rt", false);
+                    extractNativeLib("macosx_ppc", "gluegen-rt");
 
-                if (needOAL)
-                    extractNativeLib("macosx", "openal", true);
+//                if (needOAL)
+//                    extractNativeLib("macosx", "openal");
 
                 if (needJInput)
-                    extractNativeLib("macosx", "jinput-osx", true);
+                    extractNativeLib("macosx", "jinput-osx");
 
                 break;
             case MacOSX64:
                 if (needLWJGL){
-                    extractNativeLib("macosx", "lwjgl", true);
+                    extractNativeLib("macosx", "lwjgl");
                 }
                 if (needJOGL){
-                    extractNativeLib("macosx_universal", "jogl_awt", false);
-                    extractNativeLib("macosx_universal", "jogl", true);
+                    extractNativeLib("macosx_universal", "jogl_awt");
+                    extractNativeLib("macosx_universal", "jogl");
                 }
 
                 if (needJOAL)
                     throw new UnsupportedOperationException("JOAL not available on Mac OS 64 bit");
 
                 if (needGG)
-                    extractNativeLib("macosx_universal", "gluegen-rt", false);
+                    extractNativeLib("macosx_universal", "gluegen-rt");
 
-                if (needOAL)
-                    extractNativeLib("macosx", "openal", true);
+//                if (needOAL)
+//                    extractNativeLib("macosx", "openal");
 
                 if (needJInput)
-                    extractNativeLib("macosx", "jinput-osx", true);
+                    extractNativeLib("macosx", "jinput-osx");
 
                 break;
             

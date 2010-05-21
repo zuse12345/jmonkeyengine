@@ -24,7 +24,7 @@ public class MaterialLoader implements AssetLoader {
     private String folderName;
     private AssetManager assetManager;
     private Scanner scan;
-    private ColorRGBA diffuse, specular;
+    private ColorRGBA ambient, diffuse, specular;
     private Texture texture;
     private String texName;
     private String matName;
@@ -155,6 +155,8 @@ public class MaterialLoader implements AssetLoader {
             }else{
                 diffuse = readColor();
             }
+        }else if(keyword.equals("ambient")) {
+            ambient = readColor();
         }else if (keyword.equals("specular")){
             specular = new ColorRGBA();
             specular.r = scan.nextFloat();
@@ -281,6 +283,19 @@ public class MaterialLoader implements AssetLoader {
 
         if (texture != null)
             mat.setTexture("m_DiffuseMap", texture);
+
+        if(diffuse  != null){
+            mat.setColor("m_Diffuse",  diffuse);
+            mat.setBoolean("m_UseMaterialColors", true);
+        }
+        if(ambient  != null){
+            mat.setColor("m_Ambient",  ambient);
+            mat.setBoolean("m_UseMaterialColors", true);
+        }
+        if(specular != null){
+            mat.setColor("m_Specular", specular);
+            mat.setBoolean("m_UseMaterialColors", true);
+        }
 
         texture = null;
         diffuse = null;

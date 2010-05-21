@@ -222,11 +222,18 @@ public class LwjglRenderer implements Renderer {
         maxCubeTexSize = intBuf16.get(0);
         logger.log(Level.FINER, "Maximum CubeMap Resolution: {0}", maxCubeTexSize);
 
-        if (ctxCaps.GL_ARB_color_buffer_float)
-            caps.add(Caps.FloatColorBuffer);
 
-        if (ctxCaps.GL_ARB_depth_buffer_float)
+
+        if (ctxCaps.GL_ARB_color_buffer_float){
+            // XXX: Require both 16 and 32 bit float support for FloatColorBuffer.
+            if (ctxCaps.GL_ARB_half_float_pixel){
+                caps.add(Caps.FloatColorBuffer);
+            }
+        }
+
+        if (ctxCaps.GL_ARB_depth_buffer_float){
             caps.add(Caps.FloatDepthBuffer);
+        }
 
         if (ctxCaps.GL_ARB_draw_instanced)
             caps.add(Caps.MeshInstancing);
@@ -237,8 +244,11 @@ public class LwjglRenderer implements Renderer {
         if (ctxCaps.GL_ARB_texture_buffer_object)
             caps.add(Caps.TextureBuffer);
 
-        if (ctxCaps.GL_ARB_texture_float)
-            caps.add(Caps.FloatTexture);
+        if (ctxCaps.GL_ARB_texture_float){
+            if (ctxCaps.GL_ARB_half_float_pixel){
+                caps.add(Caps.FloatTexture);
+            }
+        }
 
         if (ctxCaps.GL_ARB_vertex_array_object)
             caps.add(Caps.VertexBufferArray);
@@ -253,8 +263,12 @@ public class LwjglRenderer implements Renderer {
         }
 
         if (ctxCaps.GL_EXT_packed_float){
-            caps.add(Caps.PackedFloatTexture);
             caps.add(Caps.PackedFloatColorBuffer);
+            if (ctxCaps.GL_ARB_half_float_pixel){
+                // because textures are usually uploaded as RGB16F
+                // need half-float pixel
+                caps.add(Caps.PackedFloatTexture);
+            }
         }
 
         if (ctxCaps.GL_EXT_texture_array)

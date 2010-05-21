@@ -29281,5 +29281,5 @@
 			</boneassignments>
 		</submesh>
 	</submeshes>
-	<skeletonlink name="OTO.skeleton"/>
+	<skeletonlink name="Oto.skeleton"/>
 </mesh>

@@ -111,14 +111,15 @@ void main(){
      lightComputeDir(wvPosition, g_LightColor, wvLightPos, vLightDir);
    #endif
 
+   vec4 lightColor = vec4(g_LightColor.rgb, 1.0);
    #ifdef MATERIAL_COLORS
-      AmbientSum  = m_Ambient  * g_LightColor;
-      DiffuseSum  = m_Diffuse  * g_LightColor;
-      SpecularSum = m_Specular * g_LightColor;
+      AmbientSum  = m_Ambient  * lightColor;
+      DiffuseSum  = m_Diffuse  * lightColor;
+      SpecularSum = m_Specular * lightColor;
     #else
       AmbientSum  = vec4(0.0); //= g_LightColor;
-      DiffuseSum  = g_LightColor;
-      SpecularSum = g_LightColor;
+      DiffuseSum  = lightColor;
+      SpecularSum = lightColor;
     #endif
 
     #ifdef VERTEX_COLOR

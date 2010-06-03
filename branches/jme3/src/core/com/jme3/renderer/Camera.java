@@ -1192,15 +1192,22 @@ public class Camera implements Savable, Cloneable {
             store = new Vector3f();
         }
 
-        assert TempVars.get().lock();
-        Quaternion tmp_quat = TempVars.get().quat1;
-        tmp_quat.set( worldPosition.x, worldPosition.y, worldPosition.z, 1 );
-        viewProjectionMatrix.mult(tmp_quat, tmp_quat);
-        tmp_quat.multLocal( 1.0f / tmp_quat.getW() );
-        store.x = ( ( tmp_quat.getX() + 1 ) * ( viewPortRight - viewPortLeft ) / 2 + viewPortLeft ) * getWidth();
-        store.y = ( ( tmp_quat.getY() + 1 ) * ( viewPortTop - viewPortBottom ) / 2 + viewPortBottom ) * getHeight();
-        store.z = ( tmp_quat.getZ() + 1 ) / 2;
-        assert TempVars.get().unlock();
+//        assert TempVars.get().lock();
+//        Quaternion tmp_quat = TempVars.get().quat1;
+//        tmp_quat.set( worldPosition.x, worldPosition.y, worldPosition.z, 1 );
+//        viewProjectionMatrix.mult(tmp_quat, tmp_quat);
+//        tmp_quat.multLocal( 1.0f / tmp_quat.getW() );
+//        store.x = ( ( tmp_quat.getX() + 1 ) * ( viewPortRight - viewPortLeft ) / 2 + viewPortLeft ) * getWidth();
+//        store.y = ( ( tmp_quat.getY() + 1 ) * ( viewPortTop - viewPortBottom ) / 2 + viewPortBottom ) * getHeight();
+//        store.z = ( tmp_quat.getZ() + 1 ) / 2;
+//        assert TempVars.get().unlock();
+
+        float w = viewProjectionMatrix.multProj(worldPosition, store);
+        store.divideLocal(w);
+
+        store.x = ( ( store.x + 1f ) * ( viewPortRight - viewPortLeft ) / 2f + viewPortLeft ) * getWidth();
+        store.y = ( ( store.y + 1f ) * ( viewPortTop - viewPortBottom ) / 2f + viewPortBottom ) * getHeight();
+        store.z = ( store.z + 1f ) / 2f;
 
         return store;
     }

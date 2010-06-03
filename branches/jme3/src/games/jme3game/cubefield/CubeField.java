@@ -47,6 +47,8 @@ public class CubeField extends SimpleApplication implements BindingListener {
     private Material playerMaterial;
     private Material floorMaterial;
 
+    private float fpsRate = 1000f / 1f;
+
     /**
      * Initializes game 
      */
@@ -110,7 +112,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
     public void simpleUpdate(float tpf) {
         camTakeOver(tpf);
         if (START){
-            gameLogic();
+            gameLogic(tpf);
         }
         colorLogic();
     }
@@ -125,7 +127,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
         Quaternion rot = new Quaternion();
         rot.fromAngleNormalAxis(camAngle, Vector3f.UNIT_Z);
         cam.setRotation(cam.getRotation().mult(rot));
-        camAngle *= (.99f + tpf * .01f);
+        camAngle *= FastMath.pow(.99f, fpsRate * tpf);
     }
 
     @Override
@@ -212,7 +214,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
     /**
      * Core Game Logic
      */
-    private void gameLogic(){
+    private void gameLogic(float tpf){
     	//Subtract difficulty level in accordance to speed every 10 seconds
     	if(timer.getTimeInSeconds()>=coreTime2){
 			coreTime2=timer.getTimeInSeconds()+10;
@@ -226,10 +228,10 @@ public class CubeField extends SimpleApplication implements BindingListener {
 		}
     	
         if(speed<.1f){
-            speed+=.000001f;
+            speed+=.000001f*tpf*fpsRate;
         }
 
-        player.move(speed, 0, 0);
+        player.move(speed * tpf * fpsRate, 0, 0);
         if (cubeField.size() > difficulty){
             cubeField.remove(0);
         }else if (cubeField.size() != difficulty){
@@ -262,7 +264,7 @@ public class CubeField extends SimpleApplication implements BindingListener {
             }
         }
 
-        Score++;
+        Score += fpsRate * tpf;
         fpsScoreText.setText("Current Score: "+Score);
     }
     /**
@@ -283,10 +285,10 @@ public class CubeField extends SimpleApplication implements BindingListener {
             guiNode.detachChild(pressStart);
             System.out.println("START");
         }else if (START == true && binding.equals("Left")){
-            player.move(0, 0, -speed / 2);
+            player.move(0, 0, -(speed / 2f) * value * fpsRate);
             camAngle -= value;
         }else if (START == true && binding.equals("Right")){
-            player.move(0, 0, speed / 2);
+            player.move(0, 0, (speed / 2f) * value * fpsRate);
             camAngle += value;
         }
     }

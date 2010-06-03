@@ -120,8 +120,8 @@ void main(){
        lightDir.xyz = normalize(lightDir.xyz);
 
        vec2 light = computeLighting(vPosition, normal, vViewDir.xyz, lightDir.xyz);
-       gl_FragColor = (AmbientSum + DiffuseSum * light.x) * diffuseColor;
-                   //  + SpecularSum * light.y * specularColor;
+       gl_FragColor = (AmbientSum + DiffuseSum * light.x) * diffuseColor
+                     + SpecularSum * light.y * specularColor;
     #endif
     #ifdef USE_ALPHA
        gl_FragColor.a = diffuseColor.a;

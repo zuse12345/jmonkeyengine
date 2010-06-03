@@ -24,15 +24,16 @@ public class TestSimpleLighting extends SimpleApplication {
     @Override
     public void simpleInitApp() {
         Spatial teapot = assetManager.loadModel("Models/Teapot/Teapot.obj");
-        if (teapot instanceof Geometry){
-            Geometry g = (Geometry) teapot;
-            //TangentBinormalGenerator.generate(g.getMesh());
-        }else{
-            throw new RuntimeException();
-        }
-//        teapot.setLocalScale(2f);
+       
+        teapot.setLocalScale(2f);
         Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
         mat.setFloat("m_Shininess", 32f);
+        mat.setBoolean("m_UseMaterialColors", true);
+
+        mat.setColor("m_Ambient",  ColorRGBA.Black);
+        mat.setColor("m_Diffuse",  ColorRGBA.Green);
+        mat.setColor("m_Specular", ColorRGBA.Red);
+        
         teapot.setMaterial(mat);
         rootNode.attachChild(teapot);
 

@@ -157,7 +157,8 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
             Mesh mesh = targets[i];
             if (targets[i].getBuffer(Type.BindPosePosition) != null){
                 VertexBuffer bi = mesh.getBuffer(Type.BoneIndex);
-                if (!bi.getData().hasArray())
+                ByteBuffer bib = (ByteBuffer) bi.getData();
+                if (!bib.hasArray())
                     mesh.prepareForAnim(true);
                     
                 VertexBuffer bindPos = mesh.getBuffer(Type.BindPosePosition);

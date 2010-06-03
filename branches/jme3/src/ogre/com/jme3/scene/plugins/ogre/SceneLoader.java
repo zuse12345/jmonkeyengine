@@ -4,6 +4,9 @@ import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetLoader;
 import com.jme3.asset.AssetManager;
+import com.jme3.light.DirectionalLight;
+import com.jme3.light.Light;
+import com.jme3.light.PointLight;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
@@ -12,6 +15,7 @@ import com.jme3.util.xml.SAXUtil;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Stack;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -34,6 +38,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
     private Node root;
     private Node node;
     private Node entityNode;
+    private Light light;
     private int nodeIdx = 0;
     private static volatile int sceneIdx = 0;
 
@@ -48,8 +53,6 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
     @Override
     public void endDocument() {
     }
-
-    
 
     private Quaternion parseQuat(Attributes attribs) throws SAXException{
         if (attribs.getValue("x") != null){
@@ -79,6 +82,48 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
         }
     }
 
+    private void parseLightNormal(Attributes attribs) throws SAXException {
+        assert elementStack.peek().equals("light");
+        
+        // SpotLight will be supporting a direction-normal, too.
+        if (light instanceof DirectionalLight)
+            ((DirectionalLight) light).setDirection(parseVector3(attribs));
+    }
+
+    private void parseLightAttenuation(Attributes attribs) throws SAXException {
+        // NOTE: Only radius is supported atm ( for pointlights only, since there are no spotlights, yet).
+        assert elementStack.peek().equals("light");
+
+        // SpotLight will be supporting a direction-normal, too.
+        if (light instanceof PointLight)
+            ((PointLight) light).setRadius(parseFloat(attribs.getValue("range")));
+
+    }
+
+    private void parseLight(Attributes attribs) throws SAXException {
+        assert node != null;
+        assert node.getParent() != null;
+        assert elementStack.peek().equals("node");
+        
+        String lightType = attribs.getValue("type");
+        if(lightType.equals("point")) {
+            light = new PointLight();
+        } else if(lightType.equals("directional")) {
+            light = new DirectionalLight();
+        } else if(lightType.equals("spotLight")) {
+            // TODO: SpotLight class.
+            logger.warning("No SpotLight class atm, using Pointlight instead.");
+            light = new PointLight();
+        } else {
+            logger.log(Level.WARNING, "No matching jME3 LightType found for OGRE LightType: {0}", lightType);
+        }
+        logger.finest(light + " created.");
+
+        // "attach" it to the parent of this node
+        if (light != null)
+            node.getParent().addLight(light);
+    }
+
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attribs) throws SAXException{
         if (qName.equals("scene")){
@@ -96,6 +141,14 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             node = root;
         }else if (qName.equals("externals")){
             assert elementStack.peek().equals("scene");
+
+        }else if (qName.equals("item")){
+            assert elementStack.peek().equals("externals");
+        }else if (qName.equals("file")){
+            assert elementStack.peek().equals("item");
+            materialList = (OgreMaterialList)
+            assetManager.loadAsset(folderName+attribs.getValue("name"));
+
         }else if (qName.equals("node")){
             String curElement = elementStack.peek();
             assert curElement.equals("nodes") || curElement.equals("node");
@@ -147,8 +200,18 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             node.setLocalRotation(parseQuat(attribs));
         }else if (qName.equals("scale")){
             node.setLocalScale(SAXUtil.parseVector3(attribs));
+        } else if (qName.equals("light")) {
+            parseLight(attribs);
+        } else if (qName.equals("colourDiffuse")) {
+            assert elementStack.peek().equals("light");
+            light.setColor(parseColor(attribs));
+        } else if (qName.equals("normal")) {
+            parseLightNormal(attribs);
+        } else if (qName.equals("lightAttenuation")) {
+            parseLightAttenuation(attribs);
         }
-        elementStack.add(qName);
+
+        elementStack.push(qName);
     }
 
     @Override
@@ -160,6 +223,8 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
         }else if (qName.equals("entity")){
             node = entityNode.getParent();
             entityNode = null;
+        }else if (qName.equals("light")){
+            light = null;
         }
         assert elementStack.peek().equals(qName);
         elementStack.pop();

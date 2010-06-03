@@ -1,5 +1,6 @@
 package com.jme3.util;
 
+import com.jme3.collision.bih.BIHNode.BIHStackData;
 import com.jme3.math.Eigen3f;
 import com.jme3.math.Matrix4f;
 import com.jme3.math.Matrix3f;
@@ -10,6 +11,7 @@ import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 
 /**
  * Temporary variables assigned to each thread. Engine classes may access
@@ -150,5 +152,6 @@ public class TempVars {
      * BIHTree
      */
     public final float[] bihSwapTmp = new float[9];
+    public final ArrayList<BIHStackData> bihStack = new ArrayList<BIHStackData>();
 
 }

@@ -74,6 +74,37 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
         distToOwner[listSize++] = Float.NEGATIVE_INFINITY;
     }
 
+    public static void main(String[] args){
+        LightList ll = new LightList(null);
+        ll.add(new PointLight());
+        ll.remove(1);
+    }
+
+    /**
+     * Remove the light at the given index.
+     * 
+     * @param index
+     */
+    public void remove(int index){
+        if (index >= listSize || index < 0)
+            throw new IndexOutOfBoundsException();
+
+        listSize --;
+        if (index == listSize){
+            list[listSize] = null;
+            return;
+        }
+
+        for (int i = index; i < listSize; i++){
+            list[i] = list[i+1];
+        }
+        list[listSize] = null;
+    }
+
+    public void remove(Light l){
+
+    }
+
     /**
      * @return The size of the list.
      */
@@ -86,7 +117,7 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
      * @throws IndexOutOfBoundsException If the given index is outside bounds.
      */
     public Light get(int num){
-        if (num > listSize || num < 0)
+        if (num >= listSize || num < 0)
             throw new IndexOutOfBoundsException();
 
         return list[num];
@@ -220,11 +251,10 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
         InputCapsule ic = im.getCapsule(this);
         owner = (Spatial) ic.readSavable("owner", null);
 
-        list = new Light[DEFAULT_SIZE];
-        distToOwner = new float[DEFAULT_SIZE];
-        
         List<Light> lights = ic.readSavableArrayList("lights", null);
         listSize = lights.size();
+        list = new Light[listSize];
+        distToOwner = new float[listSize];
         for (int i = 0; i < listSize; i++){
             list[i] = lights.get(i);
         }

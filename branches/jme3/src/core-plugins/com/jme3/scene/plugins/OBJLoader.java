@@ -67,6 +67,19 @@ public class OBJLoader implements AssetLoader {
     public OBJLoader(){
     }
 
+    public void reset(){
+        verts.clear();
+        texCoords.clear();
+        norms.clear();
+        faces.clear();
+
+        vertIndexMap.clear();
+        indexVertMap.clear();
+
+        curIndex = 0;
+        scan = null;
+    }
+
     protected void loadVertexIndex(Vertex vert){
         Integer index = vertIndexMap.get(vert);
         if (index != null){
@@ -255,6 +268,9 @@ public class OBJLoader implements AssetLoader {
         scan.useLocale(Locale.US);
         while (readLine());
         Mesh m = constructMesh();
+
+        reset();
+
         try{
             in.close();
         }catch (IOException ex){

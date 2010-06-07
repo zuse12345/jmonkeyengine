@@ -80,7 +80,7 @@ public class BIHNode implements Savable {
         right = (BIHNode) ic.readSavable("right_node", null);
     }
 
-    private static class BIHStackData {
+    public static class BIHStackData {
 
         private final BIHNode node;
         private final float min, max;

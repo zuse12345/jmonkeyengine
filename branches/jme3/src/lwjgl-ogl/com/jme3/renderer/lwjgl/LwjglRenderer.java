@@ -145,27 +145,37 @@ public class LwjglRenderer implements Renderer {
             caps.add(Caps.OpenGL30);
         }
 
-        String version = glGetString(GL_SHADING_LANGUAGE_VERSION);
-        if (version == null || version.equals("")){
+        String versionStr = glGetString(GL_SHADING_LANGUAGE_VERSION);
+        if (versionStr == null || versionStr.equals("")){
             glslVer = -1;
             throw new UnsupportedOperationException("GLSL and OpenGL2 is " +
                                                     "required for the LWJGL " +
                                                     "renderer!");
-        }else if (version.startsWith("1.4")){
-            glslVer = 140;
-        }else if (version.startsWith("1.3")){
-            glslVer = 130;
-        }else if (version.startsWith("1.2")){
-            glslVer = 120;
-        }else if (version.startsWith("1.1")){
-            glslVer = 110;
-        }else if (version.startsWith("1.")){
-            glslVer = 100;
         }
+
+
+        int spaceIdx = versionStr.indexOf(" ");
+        if (spaceIdx >= 1)
+            versionStr = versionStr.substring(0, spaceIdx);
+
+        float version = Float.parseFloat(versionStr);
+        glslVer = (int) (version * 100);
+        
         switch (glslVer){
+            default:
+                if (glslVer < 400)
+                    break;
+
+                // so that future OpenGL revisions wont break jme3
+
+                // fall through intentional
+            case 400:
+            case 330:
+            case 150:
+                caps.add(Caps.GLSL150);
             case 140:
                 caps.add(Caps.GLSL140);
-            case 130: // fall intentional
+            case 130:
                 caps.add(Caps.GLSL130);
             case 120:
                 caps.add(Caps.GLSL120);

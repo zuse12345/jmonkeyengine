@@ -43,6 +43,8 @@ import com.jme3.bullet.collision.CollisionObject;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.util.Converter;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * <i>From Bullet manual:</i><br>
@@ -62,6 +64,9 @@ public class PhysicsGhostNode extends CollisionObject {
     protected Transform tempTrans = new Transform(Converter.convert(new Matrix3f()));
     protected com.jme3.math.Transform jmeTrans = new com.jme3.math.Transform();
     protected javax.vecmath.Quat4f tempRot = new javax.vecmath.Quat4f();
+
+    // Linked list should be fine, because it won't grow big and Arraylist would acquire a new array each update
+    private List<CollisionObject> overlappingObjects = new LinkedList<CollisionObject>();
 
     public PhysicsGhostNode() {
         cShape = new SphereCollisionShape(0.5f);
@@ -190,5 +195,32 @@ public class PhysicsGhostNode extends CollisionObject {
      * destroys this PhysicsGhostNode and removes it from memory
      */
     public void destroy() {
+    }
+
+    /**
+     * Another Object is overlapping with this GhostNode,
+     * if and if only there CollisionShapes overlaps.
+     * They could be both regular PhysicsNodes or PhysicsGhostNode.
+     * @return All CollisionObjects overlapping with this GhostNode.
+     */
+    public List<CollisionObject> getOverlappingObjects() {
+        return overlappingObjects;
+}
+
+    /**
+     *
+     * @return With how many other CollisionObjects this GhostNode is currently overlapping.
+     */
+    public int getOverlappingCount() {
+        return overlappingObjects.size();
+    }
+
+    /**
+     *
+     * @param index The index of the overlapping Node to retrieve.
+     * @return The Overlapping CollisionObject at the given index.
+     */
+    public CollisionObject getOverlapping(int index) {
+        return overlappingObjects.get(index);
     }
 }

@@ -71,6 +71,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -235,9 +236,9 @@ public class PhysicsSpace implements Savable {
      * @param time the current time value
      */
     public void update(float time) {
-        int subSteps=1;
-        if(time>accuracy){
-            subSteps=(int) (Math.ceil(time / accuracy));
+        int subSteps = 1;
+        if (time > accuracy) {
+            subSteps = (int) (Math.ceil(time / accuracy));
         }
         update(time, subSteps);
     }
@@ -277,7 +278,21 @@ public class PhysicsSpace implements Savable {
             physicsNode.updatePhysicsState();
         }
         //sync ghostnodes TODO!
-        for (PhysicsGhostNode node : physicsGhostNodes.values()) {
+
+        //sync ghostnodes, with overlapping Objects.
+        for (Entry<GhostObject, PhysicsGhostNode> entry : physicsGhostNodes.entrySet()) {
+            PhysicsGhostNode node = entry.getValue();
+            List<CollisionObject> overlappingObjs = node.getOverlappingObjects();
+            overlappingObjs.clear(); // <-- clear from old values.
+            for (com.bulletphysics.collision.dispatch.CollisionObject collObj : entry.getKey().getOverlappingPairs()) {
+                if (collObj instanceof GhostObject) {
+                    overlappingObjs.add(physicsGhostNodes.get(collObj));
+                } else if (collObj instanceof RigidBody) {
+                    overlappingObjs.add(physicsNodes.get(collObj));
+                }
+            }
+
+            // finally update
             node.updatePhysicsState();
         }
         //step simulation

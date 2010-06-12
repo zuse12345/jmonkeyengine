@@ -31,43 +31,120 @@
  */
 package com.jme3.bullet.util;
 
+import com.jme3.bounding.BoundingBox;
+import com.jme3.bullet.collision.shapes.BoxCollisionShape;
+import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
+import com.jme3.bullet.collision.shapes.GImpactCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  *
- * @author normenhansen
+ * @author normenhansen, tim8dev
  */
 public class CollisionShapeFactory {
-
-    private static CompoundCollisionShape createMeshCompoundShape(Node rootNode, CompoundCollisionShape shape) {
-        List<Spatial> children = rootNode.getChildren();
-        for (Iterator<Spatial> it = children.iterator(); it.hasNext();) {
-            Spatial spatial = it.next();
+    
+    private static CompoundCollisionShape createCompoundShape(
+            Node rootNode, CompoundCollisionShape shape, boolean meshAccurate, boolean dynamic) {
+        for (Spatial spatial : rootNode.getChildren()) {
             if (spatial instanceof Node) {
-                createMeshCompoundShape((Node) spatial, shape);
+                createCompoundShape((Node) spatial, shape, meshAccurate);
             } else if (spatial instanceof Geometry) {
-                Geometry geom = (Geometry) spatial;
-                Mesh mesh = geom.getMesh();
-                if (mesh != null) {
-                    MeshCollisionShape mColl = new MeshCollisionShape(mesh);
-                    mColl.setScale(geom.getWorldScale());
-                    shape.addChildShape(mColl, geom.getWorldTranslation(),geom.getWorldRotation().toRotationMatrix());
+                if(meshAccurate) {
+                    CollisionShape childShape = dynamic ?
+                            createSingleMeshShape((Geometry) spatial) :
+                            createSingleDynamicMeshShape((Geometry) spatial);
+                    if(childShape != null)
+                        shape.addChildShape(childShape,
+                            spatial.getWorldTranslation(),
+                            spatial.getWorldRotation().toRotationMatrix());
+                } else {
+                    shape.addChildShape(createSingleBoxShape(spatial),
+                            spatial.getWorldTranslation(),
+                            spatial.getWorldRotation().toRotationMatrix());
                 }
             }
         }
         return shape;
     }
 
+    public static CompoundCollisionShape createCompoundShape(
+            Node rootNode, CompoundCollisionShape shape, boolean meshAccurate) {
+        return createCompoundShape(rootNode, shape, meshAccurate, false);
+    }
+
     public static CompoundCollisionShape createMeshCompoundShape(Node rootNode){
         rootNode.updateGeometricState();
-        return createMeshCompoundShape(rootNode, new CompoundCollisionShape());
+        return createCompoundShape(rootNode, new CompoundCollisionShape(), true);
+    }
+
+
+    public static CompoundCollisionShape createBoxCompoundShape(Node rootNode) {
+        rootNode.updateGeometricState();
+        return createCompoundShape(rootNode, new CompoundCollisionShape(), false);
+    }
+
+    public static CollisionShape createMeshShape(Spatial spatial) {
+        if(spatial instanceof Geometry)
+            return createSingleMeshShape((Geometry) spatial);
+        else if (spatial instanceof Node)
+            return createMeshCompoundShape((Node) spatial);
+        else
+            throw new IllegalArgumentException("Supplied spatial must either be Node or Geometry!");
+    }
+
+    public static CollisionShape createDynamicMeshShape(Spatial spatial) {
+        if(spatial instanceof Geometry)
+            return createSingleDynamicMeshShape((Geometry) spatial);
+        else if (spatial instanceof Node)
+            return createCompoundShape((Node)spatial, new CompoundCollisionShape(), true, true);
+        else
+            throw new IllegalArgumentException("Supplied spatial must either be Node or Geometry!");
+
+    }
+
+    public static CollisionShape createBoxShape(Spatial spatial) {
+        if(spatial instanceof Geometry)
+            return createSingleBoxShape((Geometry) spatial);
+        else if (spatial instanceof Node)
+            return createBoxCompoundShape((Node) spatial);
+        else
+            throw new IllegalArgumentException("Supplied spatial must either be Node or Geometry!");
+    }
+
+    public static MeshCollisionShape createSingleMeshShape(Geometry geom) {
+        Mesh mesh = geom.getMesh();
+        if (mesh != null) {
+            MeshCollisionShape mColl = new MeshCollisionShape(mesh);
+            mColl.setScale(geom.getWorldScale());
+            return mColl;
+        } else {
+            return null;
+        }
+    }
+
+    public static BoxCollisionShape createSingleBoxShape(Spatial spatial) {
+        spatial.setModelBound(new BoundingBox());
+        spatial.updateGeometricState();
+        spatial.updateModelBound();
+        BoxCollisionShape shape = new BoxCollisionShape(
+                ((BoundingBox) spatial.getWorldBound()).getExtent(new Vector3f()));
+        return shape;
+    }
+
+    public static GImpactCollisionShape createSingleDynamicMeshShape(Geometry geom) {
+        Mesh mesh = geom.getMesh();
+        if(mesh != null) {
+            GImpactCollisionShape dynamicShape = new GImpactCollisionShape(mesh);
+            dynamicShape.setScale(geom.getWorldScale());
+            return dynamicShape;
+        } else {
+            return null;
+        }
     }
 }

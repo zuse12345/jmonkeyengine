@@ -383,7 +383,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
      */
     public void requestScene(final SceneRequest request) {
         setWindowTitle(request.getWindowTitle());
-        setMimeType(request.getMimeType());
+//        setMimeType(request.getMimeType());
         enqueue(new Callable() {
 
             public Object call() throws Exception {
@@ -398,6 +398,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                     camController.disable();
                 }
                 currentSceneRequest = request;
+                setSaveNode(request.getSaveNode());
                 getCurrentSceneRequest().setDisplayed(true);
                 Node model = request.getLookup().lookup(Node.class);
                 if (model == null) {
@@ -412,6 +413,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     }
 
     private void closeCurrentScene() {
+        setSaveNode(null);
         if (currentSceneRequest != null) {
             currentSceneRequest.setDisplayed(false);
         }
@@ -433,8 +435,16 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         });
     }
 
-    //TODO: mime type
-    private void setMimeType(String string) {
+    private void setSaveNode(final org.openide.nodes.Node node) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                if (node == null) {
+                    SceneViewerTopComponent.findInstance().setActivatedNodes(new org.openide.nodes.Node[]{});
+                } else {
+                    SceneViewerTopComponent.findInstance().setActivatedNodes(new org.openide.nodes.Node[]{node});
+                }
+            }
+        });
     }
 
     public void enableCamLight(final boolean enabled) {

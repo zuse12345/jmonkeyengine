@@ -14,6 +14,7 @@ import com.jme3.effect.EmitterSphereShape;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
 import com.jme3.export.binary.BinaryExporter;
+import com.jme3.gde.core.assets.nodes.SaveNode;
 import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
@@ -47,6 +48,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.awt.StatusDisplayer;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.LookupListener;
@@ -69,6 +71,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     private JmeSpatial selectedSpat;
     private Spatial selected;
     ComposerCameraController camController;
+    private SaveNode saveNode=new SaveNode(new SaveCookieImpl());
 
     public SceneComposerTopComponent() {
         initComponents();
@@ -419,6 +422,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         this.currentRequest = request;
         this.currentFileObject = file;
         request.setWindowTitle("SceneViewer - " + request.getRootNode().getName() + " (SceneComposer)");
+        request.setSaveNode(saveNode);
         SceneApplication.getApplication().requestScene(request);
     }
 
@@ -489,6 +493,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
      * SceneListener
      */
     public void sceneRequested(SceneRequest request) {
+        saveNode.fire(true);
         if (request.equals(currentRequest)) {
             setLoadedState(currentRequest.getRootNode().getName(), true);
             if (camController != null) {
@@ -515,6 +520,29 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     }
 
     public void previewRequested(PreviewRequest request) {
+    }
+
+    private class SaveCookieImpl implements SaveCookie {
+
+        public void save() throws IOException {
+
+//            Confirmation msg = new NotifyDescriptor.Confirmation("This plugin can not save!",
+//                    NotifyDescriptor.OK_CANCEL_OPTION,
+//                    NotifyDescriptor.QUESTION_MESSAGE);
+//
+//            Object result = DialogDisplayer.getDefault().notify(msg);
+
+            //When user clicks "Yes", indicating they really want to save,
+            //we need to disable the Save button and Save menu item,
+            //so that it will only be usable when the next change is made
+            //to the text field:
+            saveRequest();
+            /*if (NotifyDescriptor.YES_OPTION.equals(result)) {
+                saveNode.fire(false);
+                //Implement your save functionality here.
+            }*/
+
+        }
     }
 
     /*

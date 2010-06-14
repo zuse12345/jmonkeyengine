@@ -71,8 +71,8 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
         setName(NbBundle.getMessage(SceneViewerTopComponent.class, "CTL_SceneViewerTopComponent"));
         setToolTipText(NbBundle.getMessage(SceneViewerTopComponent.class, "HINT_SceneViewerTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-        lookup = new AbstractLookup(lookupContents);
-        associateLookup(lookup);
+//        lookup = new AbstractLookup(lookupContents);
+//        associateLookup(lookup);
         putClientProperty(TopComponent.PROP_CLOSING_DISABLED, Boolean.TRUE);
         app = SceneApplication.getApplication();
         app.addSceneListener(this);

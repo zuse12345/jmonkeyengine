@@ -11,6 +11,29 @@
                 <attr name="noIconInMenu" boolvalue="false"/>
             </file>
         </folder>
+        <folder name="OgreXML">
+            <file name="com-jme3-gde-ogretools-convert-AdvOgreXMLConvertAction.instance">
+                <attr name="delegate" methodvalue="org.openide.awt.Actions.inject"/>
+                <attr name="displayName" bundlevalue="com.jme3.gde.ogretools.convert.Bundle#CTL_AdvOgreXMLConvert"/>
+                <attr name="injectable" stringvalue="com.jme3.gde.ogretools.convert.AdvOgreXMLConvertAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
+                <attr name="noIconInMenu" boolvalue="false"/>
+                <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
+                <attr name="type" stringvalue="org.openide.loaders.DataObject"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="ogrexml+xml">
+                <folder name="Actions">
+                    <file name="com-jme3-gde-ogretools-convert-AdvOgreXMLConvert.shadow">
+                        <attr name="originalFile" stringvalue="Actions/OgreXML/com-jme3-gde-ogretools-convert-AdvOgreXMLConvertAction.instance"/>
+                        <attr name="position" intvalue="5"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
     </folder>
     <folder name="Menu">
         <folder name="Tools">

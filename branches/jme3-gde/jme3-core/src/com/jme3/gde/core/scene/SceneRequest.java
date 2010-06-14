@@ -32,7 +32,9 @@
 package com.jme3.gde.core.scene;
 
 import com.jme3.gde.core.assets.ProjectAssetManager;
+import com.jme3.gde.core.assets.nodes.SaveNode;
 import com.jme3.gde.core.scene.nodes.JmeNode;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -47,6 +49,7 @@ public class SceneRequest {
     private JmeNode rootNode;
     private ProjectAssetManager manager;
     private boolean displayed = false;
+    private Node saveNode=new SaveNode();
 
     public SceneRequest(Object requester, JmeNode rootNode, ProjectAssetManager manager) {
         this.requester = requester;
@@ -119,5 +122,13 @@ public class SceneRequest {
      */
     public ProjectAssetManager getManager() {
         return manager;
+    }
+
+    public Node getSaveNode() {
+        return saveNode;
+    }
+
+    public void setSaveNode(Node saveNode) {
+        this.saveNode = saveNode;
     }
 }

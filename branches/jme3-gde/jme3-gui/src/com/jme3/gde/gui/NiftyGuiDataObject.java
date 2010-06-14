@@ -23,8 +23,8 @@ public class NiftyGuiDataObject extends XmlMultiViewDataObject {
 
     public NiftyGuiDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+//        CookieSet cookies = getCookieSet();
+//        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
     }
 
     @Override

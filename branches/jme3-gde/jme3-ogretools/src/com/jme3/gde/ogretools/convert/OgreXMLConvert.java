@@ -34,14 +34,16 @@ public class OgreXMLConvert {
         if (!checkTools()) {
             return false;
         }
-        handle.progress("Optimizing Mesh / Creating LOD meshes", 0);
+        handle.progress("Optimizing Mesh / Creating LOD meshes", 1);
         //convert to binary + modify
         String[] cmdOptions = getCommandString(options);
         Process proc = null;
         try {
             proc = Runtime.getRuntime().exec(cmdOptions);
             OutputReader outReader = new OutputReader(proc.getInputStream());
+            outReader.setProgress(handle);
             OutputReader errReader = new OutputReader(proc.getErrorStream());
+            errReader.setProgress(handle);
             outReader.start();
             errReader.start();
             try {
@@ -58,13 +60,15 @@ public class OgreXMLConvert {
             return false;
         }
 
-        handle.progress("Converting Binary Mesh", 1);
+        handle.progress("Converting Binary Mesh", 2);
         //convert back to xml
         cmdOptions = getBackCommandString(options);
         try {
             proc = Runtime.getRuntime().exec(cmdOptions);
             OutputReader outReader = new OutputReader(proc.getInputStream());
+            outReader.setProgress(handle);
             OutputReader errReader = new OutputReader(proc.getErrorStream());
+            errReader.setProgress(handle);
             outReader.start();
             errReader.start();
             try {

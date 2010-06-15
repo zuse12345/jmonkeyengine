@@ -133,6 +133,7 @@ public class OgreXMLConvert {
             strings.add(linux_path + "OgreXMLConverter.log");
         }
 
+        strings.add("-gl");
 
         if (options.isGenerateTangents()) {
             strings.add("-t");

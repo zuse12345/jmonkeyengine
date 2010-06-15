@@ -40,9 +40,15 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import com.jme3.bullet.collision.CollisionObject;
+import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.util.Converter;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -64,13 +70,10 @@ public class PhysicsGhostNode extends CollisionObject {
     protected Transform tempTrans = new Transform(Converter.convert(new Matrix3f()));
     protected com.jme3.math.Transform jmeTrans = new com.jme3.math.Transform();
     protected javax.vecmath.Quat4f tempRot = new javax.vecmath.Quat4f();
-
     // Linked list should be fine, because it won't grow big and Arraylist would acquire a new array each update
     private List<CollisionObject> overlappingObjects = new LinkedList<CollisionObject>();
 
     public PhysicsGhostNode() {
-        cShape = new SphereCollisionShape(0.5f);
-        buildObject();
     }
 
     public PhysicsGhostNode(CollisionShape shape) {
@@ -205,7 +208,7 @@ public class PhysicsGhostNode extends CollisionObject {
      */
     public List<CollisionObject> getOverlappingObjects() {
         return overlappingObjects;
-}
+    }
 
     /**
      *
@@ -223,4 +226,21 @@ public class PhysicsGhostNode extends CollisionObject {
     public CollisionObject getOverlapping(int index) {
         return overlappingObjects.get(index);
     }
+
+    @Override
+    public void write(JmeExporter e) throws IOException {
+        super.write(e);
+        OutputCapsule capsule = e.getCapsule(this);
+        capsule.write(cShape, "collisionShape", null);
+    }
+
+    @Override
+    public void read(JmeImporter e) throws IOException {
+        super.read(e);
+        InputCapsule capsule = e.getCapsule(this);
+        CollisionShape shape = (CollisionShape) capsule.readSavable("collisionShape", new SphereCollisionShape(1));
+        cShape = shape;
+        buildObject();
+    }
+
 }

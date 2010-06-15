@@ -37,7 +37,10 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import com.jme3.bullet.collision.CollisionObject;
 import com.jme3.bullet.util.Converter;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.scene.Node;
+import java.io.IOException;
 
 /**
  * Stores info about one wheel of a PhysicsVehicleNode
@@ -325,6 +328,20 @@ public class PhysicsVehicleWheel extends Node{
      */
     public float getSkidInfo(){
         return wheelInfo.skidInfo;
+    }
+
+    @Override
+    public void read(JmeImporter im) throws IOException {
+        super.read(im);
+        //TODO
+//        throw new UnsupportedOperationException("vehicle saving not working yet");
+    }
+
+    @Override
+    public void write(JmeExporter ex) throws IOException {
+        super.write(ex);
+        //TODO
+//        throw new UnsupportedOperationException("vehicle saving not working yet");
     }
 
 }

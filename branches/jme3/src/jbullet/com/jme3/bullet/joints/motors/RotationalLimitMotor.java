@@ -36,10 +36,11 @@ package com.jme3.bullet.joints.motors;
  * @author normenhansen
  */
 public class RotationalLimitMotor {
+
     private com.bulletphysics.dynamics.constraintsolver.RotationalLimitMotor motor;
 
     public RotationalLimitMotor(com.bulletphysics.dynamics.constraintsolver.RotationalLimitMotor motor) {
-        this.motor=motor;
+        this.motor = motor;
     }
 
     public com.bulletphysics.dynamics.constraintsolver.RotationalLimitMotor getMotor() {
@@ -125,5 +126,4 @@ public class RotationalLimitMotor {
     public void setEnableMotor(boolean enableMotor) {
         motor.enableMotor = enableMotor;
     }
-    
 }

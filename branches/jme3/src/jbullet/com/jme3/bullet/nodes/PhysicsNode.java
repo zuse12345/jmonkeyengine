@@ -41,47 +41,49 @@ import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.CollisionObject;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
+import com.jme3.bullet.joints.PhysicsJoint;
 import com.jme3.bullet.nodes.infos.PhysicsNodeState;
 import com.jme3.bullet.util.Converter;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
 import com.jme3.math.Matrix3f;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * <p>PhysicsNode - Basic jbullet-jme physics object</p>
  * @see com.jmex.jbullet.PhysicsSpace
  * @author normenhansen
  */
-public class PhysicsNode extends CollisionObject{
+public class PhysicsNode extends CollisionObject {
+
     protected RigidBodyConstructionInfo constructionInfo;
     protected RigidBody rBody;
     protected CollisionShape collisionShape;
-    protected PhysicsNodeState motionState=new PhysicsNodeState();
-
-    protected boolean rebuildBody=true;
-    protected float mass=1.0f;
-    protected boolean kinematic=false;
-
-    protected javax.vecmath.Vector3f tempVec=new javax.vecmath.Vector3f();
-    protected Transform tempTrans=new Transform(new javax.vecmath.Matrix3f());
-    protected javax.vecmath.Matrix3f tempMatrix=new javax.vecmath.Matrix3f();
-
+    protected PhysicsNodeState motionState = new PhysicsNodeState();
+    protected boolean rebuildBody = true;
+    protected float mass = 1.0f;
+    protected boolean kinematic = false;
+    protected javax.vecmath.Vector3f tempVec = new javax.vecmath.Vector3f();
+    protected Transform tempTrans = new Transform(new javax.vecmath.Matrix3f());
+    protected javax.vecmath.Matrix3f tempMatrix = new javax.vecmath.Matrix3f();
     //jme-specific
-    protected Vector3f continuousForce=new Vector3f();
-    protected Vector3f continuousForceLocation=new Vector3f();
-    protected Vector3f continuousTorque=new Vector3f();
-
+    protected Vector3f continuousForce = new Vector3f();
+    protected Vector3f continuousForceLocation = new Vector3f();
+    protected Vector3f continuousTorque = new Vector3f();
     //TEMP VARIABLES
-    private javax.vecmath.Vector3f localInertia=new javax.vecmath.Vector3f();
-
-    protected boolean applyForce=false;
-    protected boolean applyTorque=false;
+    private javax.vecmath.Vector3f localInertia = new javax.vecmath.Vector3f();
+    protected boolean applyForce = false;
+    protected boolean applyTorque = false;
+    private ArrayList<PhysicsJoint> joints = new ArrayList<PhysicsJoint>();
 
 //    protected boolean dirty=true;
-
-    public PhysicsNode(){
-        collisionShape=new BoxCollisionShape(new Vector3f(0.5f,0.5f,0.5f));
+    public PhysicsNode() {
+        collisionShape = new BoxCollisionShape(new Vector3f(0.5f, 0.5f, 0.5f));
         rebuildRigidBody();
     }
 
@@ -90,14 +92,14 @@ public class PhysicsNode extends CollisionObject{
      * @param child
      * @param shape
      */
-    public PhysicsNode(CollisionShape shape){
-        collisionShape=shape;
+    public PhysicsNode(CollisionShape shape) {
+        collisionShape = shape;
         rebuildRigidBody();
     }
 
-    public PhysicsNode(CollisionShape shape, float mass){
-        collisionShape=shape;
-        this.mass=mass;
+    public PhysicsNode(CollisionShape shape, float mass) {
+        collisionShape = shape;
+        this.mass = mass;
         rebuildRigidBody();
     }
 
@@ -107,8 +109,8 @@ public class PhysicsNode extends CollisionObject{
      * @param child
      * @param shape
      */
-    public PhysicsNode(Spatial child, CollisionShape shape){
-        this(child,shape,1.0f);
+    public PhysicsNode(Spatial child, CollisionShape shape) {
+        this(child, shape, 1.0f);
     }
 
     /**
@@ -117,53 +119,53 @@ public class PhysicsNode extends CollisionObject{
      * @param child
      * @param shape
      */
-    public PhysicsNode(Spatial child, CollisionShape shape, float mass){
-        if (child != null)
+    public PhysicsNode(Spatial child, CollisionShape shape, float mass) {
+        if (child != null) {
             this.attachChild(child);
-        this.mass=mass;
-        this.collisionShape=shape;
+        }
+        this.mass = mass;
+        this.collisionShape = shape;
         rebuildRigidBody();
     }
 
     /**
      * builds/rebuilds the phyiscs body when parameters have changed
      */
-    protected void rebuildRigidBody(){
-        boolean removed=false;
-        if(rBody!=null){
-            if(rBody.isInWorld()){
+    protected void rebuildRigidBody() {
+        boolean removed = false;
+        if (rBody != null) {
+            if (rBody.isInWorld()) {
                 PhysicsSpace.getPhysicsSpace().remove(this);
-                removed=true;
+                removed = true;
             }
             rBody.destroy();
         }
         preRebuild();
-        rBody=new RigidBody(constructionInfo);
+        rBody = new RigidBody(constructionInfo);
         postRebuild();
-        if(removed){
+        if (removed) {
             PhysicsSpace.getPhysicsSpace().add(this);
         }
-        rebuildBody=false;
+        rebuildBody = false;
     }
 
-    protected void preRebuild(){
+    protected void preRebuild() {
         collisionShape.calculateLocalInertia(mass, localInertia);
-        if(constructionInfo==null)
-            constructionInfo=new RigidBodyConstructionInfo(mass, motionState, collisionShape.getCShape(), localInertia);
-        else{
-            constructionInfo.mass=mass;
-            constructionInfo.collisionShape=collisionShape.getCShape();
-            constructionInfo.motionState=motionState;
+        if (constructionInfo == null) {
+            constructionInfo = new RigidBodyConstructionInfo(mass, motionState, collisionShape.getCShape(), localInertia);
+        } else {
+            constructionInfo.mass = mass;
+            constructionInfo.collisionShape = collisionShape.getCShape();
+            constructionInfo.motionState = motionState;
         }
     }
 
-    protected void postRebuild(){
+    protected void postRebuild() {
         rBody.setUserPointer(this);
-        if(mass==0.0f){
-            rBody.setCollisionFlags( rBody.getCollisionFlags() | CollisionFlags.STATIC_OBJECT );
-        }
-        else{
-            rBody.setCollisionFlags( rBody.getCollisionFlags() & ~CollisionFlags.STATIC_OBJECT );
+        if (mass == 0.0f) {
+            rBody.setCollisionFlags(rBody.getCollisionFlags() | CollisionFlags.STATIC_OBJECT);
+        } else {
+            rBody.setCollisionFlags(rBody.getCollisionFlags() & ~CollisionFlags.STATIC_OBJECT);
         }
     }
 
@@ -180,16 +182,16 @@ public class PhysicsNode extends CollisionObject{
 
     @Override
     public void updateGeometricState() {
-        if ((refreshFlags & RF_LIGHTLIST) != 0){
+        if ((refreshFlags & RF_LIGHTLIST) != 0) {
             updateWorldLightList();
         }
 
-        if ((refreshFlags & RF_TRANSFORM) != 0){
+        if ((refreshFlags & RF_TRANSFORM) != 0) {
             // combine with parent transforms- same for all spatial
             // subclasses.
             updateWorldTransforms();
             motionState.setWorldTransform(getWorldTranslation(), getWorldRotation());
-        }else if(motionState.applyTransform(this)){
+        } else if (motionState.applyTransform(this)) {
             updateWorldTransforms();
         }
 
@@ -203,7 +205,7 @@ public class PhysicsNode extends CollisionObject{
             child.updateGeometricState();
         }
 
-        if ((refreshFlags & RF_BOUND) != 0){
+        if ((refreshFlags & RF_BOUND) != 0) {
             updateWorldBound();
         }
 
@@ -213,8 +215,8 @@ public class PhysicsNode extends CollisionObject{
      * only to be called from physics thread!!
      */
     @Override
-    public void updatePhysicsState(){
-        if(rebuildBody){
+    public void updatePhysicsState() {
+        if (rebuildBody) {
             rebuildRigidBody();
         }
         motionState.applyTransform(rBody);
@@ -224,9 +226,9 @@ public class PhysicsNode extends CollisionObject{
      * this is normally only needed when using detached physics
      * @param location the location of the actual physics object
      */
-    public void setPhysicsLocation(Vector3f location){
+    public void setPhysicsLocation(Vector3f location) {
         rBody.getWorldTransform(tempTrans);
-        Converter.convert(location,tempTrans.origin);
+        Converter.convert(location, tempTrans.origin);
         rBody.setWorldTransform(tempTrans);
     }
 
@@ -234,9 +236,9 @@ public class PhysicsNode extends CollisionObject{
      * this is normally only needed when using detached physics
      * @param rotation the rotation of the actual physics object
      */
-    public void setPhysicsRotation(Matrix3f rotation){
+    public void setPhysicsRotation(Matrix3f rotation) {
         rBody.getWorldTransform(tempTrans);
-        Converter.convert(rotation,tempTrans.basis);
+        Converter.convert(rotation, tempTrans.basis);
         rBody.setWorldTransform(tempTrans);
     }
 
@@ -244,33 +246,38 @@ public class PhysicsNode extends CollisionObject{
      * this is normally only needed when using detached physics
      * @param location the location of the actual physics object is stored in this Vector3f
      */
-    public void getPhysicsLocation(Vector3f location){
+    public void getPhysicsLocation(Vector3f location) {
         rBody.getWorldTransform(tempTrans);
-        Converter.convert(tempTrans.origin,location);
+        Converter.convert(tempTrans.origin, location);
     }
 
     /**
      * this is normally only needed when using detached physics
      * @param rotation the rotation of the actual physics object is stored in this Matrix3f
      */
-    public void getPhysicsRotation(Matrix3f rotation){
+    public void getPhysicsRotation(Matrix3f rotation) {
         rBody.getWorldTransform(tempTrans);
-        Converter.convert(tempTrans.basis,rotation);
+        Converter.convert(tempTrans.basis, rotation);
     }
 
-    public void setKinematic(boolean kinematic){
-        this.kinematic=kinematic;
-        if(kinematic){
+    /**
+     * sets the node to kinematic mode. in this mode the node is not affected by physics
+     * but affects other physics objects. its kinetic force is calculated by the amount
+     * of movement it is exposed to and its weight.
+     * @param kinematic
+     */
+    public void setKinematic(boolean kinematic) {
+        this.kinematic = kinematic;
+        if (kinematic) {
             rBody.setCollisionFlags(rBody.getCollisionFlags() | CollisionFlags.KINEMATIC_OBJECT);
             rBody.setActivationState(com.bulletphysics.collision.dispatch.CollisionObject.DISABLE_DEACTIVATION);
-        }
-        else{
+        } else {
             rBody.setCollisionFlags(rBody.getCollisionFlags() & ~CollisionFlags.KINEMATIC_OBJECT);
             rBody.setActivationState(com.bulletphysics.collision.dispatch.CollisionObject.ACTIVE_TAG);
         }
     }
 
-    public boolean isKinematic(){
+    public boolean isKinematic() {
         return kinematic;
     }
 
@@ -282,12 +289,12 @@ public class PhysicsNode extends CollisionObject{
      * sets the mass of this PhysicsNode, objects with mass=0 are static.
      * @param mass
      */
-    public void setMass(float mass){
-        this.mass=mass;
-        rebuildBody=true;
+    public void setMass(float mass) {
+        this.mass = mass;
+        rebuildBody = true;
     }
 
-    public void getGravity(Vector3f gravity){
+    public void getGravity(Vector3f gravity) {
         //TODO: gravity
         rBody.setGravity(Converter.convert(gravity));
     }
@@ -296,9 +303,9 @@ public class PhysicsNode extends CollisionObject{
      * set the gravity of this PhysicsNode
      * @param gravity the gravity vector to set
      */
-    public void setGravity(Vector3f gravity){
+    public void setGravity(Vector3f gravity) {
         rBody.getGravity(tempVec);
-        Converter.convert(tempVec,gravity);
+        Converter.convert(tempVec, gravity);
     }
 
     public float getFriction() {
@@ -309,14 +316,14 @@ public class PhysicsNode extends CollisionObject{
      * sets the friction of this physics object
      * @param friction the friction of this physics object
      */
-    public void setFriction(float friction){
-        constructionInfo.friction=friction;
+    public void setFriction(float friction) {
+        constructionInfo.friction = friction;
         rBody.setFriction(friction);
     }
 
-    public void setDamping(float linearDamping,float angularDamping){
-        constructionInfo.linearDamping=linearDamping;
-        constructionInfo.angularDamping=angularDamping;
+    public void setDamping(float linearDamping, float angularDamping) {
+        constructionInfo.linearDamping = linearDamping;
+        constructionInfo.angularDamping = angularDamping;
         rBody.setDamping(linearDamping, angularDamping);
     }
 
@@ -330,7 +337,7 @@ public class PhysicsNode extends CollisionObject{
      * @param restitution
      */
     public void setRestitution(float restitution) {
-        constructionInfo.restitution=restitution;
+        constructionInfo.restitution = restitution;
         rBody.setRestitution(restitution);
     }
 
@@ -338,7 +345,7 @@ public class PhysicsNode extends CollisionObject{
      * get the current angular velocity of this PhysicsNode
      * @return the current linear velocity
      */
-    public Vector3f getAngularVelocity(){
+    public Vector3f getAngularVelocity() {
         return Converter.convert(rBody.getAngularVelocity(tempVec));
     }
 
@@ -346,15 +353,15 @@ public class PhysicsNode extends CollisionObject{
      * get the current angular velocity of this PhysicsNode
      * @param vec the vector to store the velocity in
      */
-    public void getAngularVelocity(Vector3f vec){
-        Converter.convert(rBody.getAngularVelocity(tempVec),vec);
+    public void getAngularVelocity(Vector3f vec) {
+        Converter.convert(rBody.getAngularVelocity(tempVec), vec);
     }
 
     /**
      * sets the angular velocity of this PhysicsNode
      * @param vec the angular velocity of this PhysicsNode
      */
-    public void setAngularVelocity(Vector3f vec){
+    public void setAngularVelocity(Vector3f vec) {
         rBody.setAngularVelocity(Converter.convert(vec));
         rBody.activate();
     }
@@ -363,7 +370,7 @@ public class PhysicsNode extends CollisionObject{
      * get the current linear velocity of this PhysicsNode
      * @return the current linear velocity
      */
-    public Vector3f getLinearVelocity(){
+    public Vector3f getLinearVelocity() {
         return Converter.convert(rBody.getLinearVelocity(tempVec));
     }
 
@@ -371,15 +378,15 @@ public class PhysicsNode extends CollisionObject{
      * get the current linear velocity of this PhysicsNode
      * @param vec the vector to store the velocity in
      */
-    public void getLinearVelocity(Vector3f vec){
-        Converter.convert(rBody.getLinearVelocity(tempVec),vec);
+    public void getLinearVelocity(Vector3f vec) {
+        Converter.convert(rBody.getLinearVelocity(tempVec), vec);
     }
 
     /**
      * sets the linear velocity of this PhysicsNode
      * @param vec the linear velocity of this PhysicsNode
      */
-    public void setLinearVelocity(Vector3f vec){
+    public void setLinearVelocity(Vector3f vec) {
         rBody.setLinearVelocity(Converter.convert(vec));
         rBody.activate();
     }
@@ -389,33 +396,36 @@ public class PhysicsNode extends CollisionObject{
      * @param vec the vector to store the continuous force in
      * @return null if no force is applied
      */
-    public Vector3f getContinuousForce(Vector3f vec){
-        if(applyForce)
+    public Vector3f getContinuousForce(Vector3f vec) {
+        if (applyForce) {
             return vec.set(continuousForce);
-        else
+        } else {
             return null;
+        }
     }
 
     /**
      * get the currently applied continuous force
      * @return null if no force is applied
      */
-    public Vector3f getContinuousForce(){
-        if(applyForce)
+    public Vector3f getContinuousForce() {
+        if (applyForce) {
             return continuousForce;
-        else
+        } else {
             return null;
+        }
     }
 
     /**
      * get the currently applied continuous force location
      * @return null if no force is applied
      */
-    public Vector3f getContinuousForceLocation(){
-        if(applyForce)
+    public Vector3f getContinuousForceLocation() {
+        if (applyForce) {
             return continuousForceLocation;
-        else
+        } else {
             return null;
+        }
     }
 
     /**
@@ -425,12 +435,15 @@ public class PhysicsNode extends CollisionObject{
      * @param apply true if the force should be applied each physics tick
      * @param force the vector of the force to apply
      */
-    public void applyContinuousForce(boolean apply, Vector3f force){
-        if(force!=null) continuousForce.set(force);
-        continuousForceLocation.set(0,0,0);
-        if(!applyForce&&apply)
+    public void applyContinuousForce(boolean apply, Vector3f force) {
+        if (force != null) {
+            continuousForce.set(force);
+        }
+        continuousForceLocation.set(0, 0, 0);
+        if (!applyForce && apply) {
             PhysicsSpace.enqueueOnThisThread(doApplyContinuousForce);
-        applyForce=apply;
+        }
+        applyForce = apply;
 
     }
 
@@ -441,12 +454,17 @@ public class PhysicsNode extends CollisionObject{
      * @param apply true if the force should be applied each physics tick
      * @param force the offset of the force
      */
-    public void applyContinuousForce(boolean apply, Vector3f force, Vector3f location){
-        if(force!=null) continuousForce.set(force);
-        if(location!=null) continuousForceLocation.set(location);
-        if(!applyForce&&apply)
+    public void applyContinuousForce(boolean apply, Vector3f force, Vector3f location) {
+        if (force != null) {
+            continuousForce.set(force);
+        }
+        if (location != null) {
+            continuousForceLocation.set(location);
+        }
+        if (!applyForce && apply) {
             PhysicsSpace.enqueueOnThisThread(doApplyContinuousForce);
-        applyForce=apply;
+        }
+        applyForce = apply;
 
     }
 
@@ -454,35 +472,35 @@ public class PhysicsNode extends CollisionObject{
      * use to enable/disable continuous force
      * @param apply set to false to disable
      */
-    public void applyContinuousForce(boolean apply){
-        if(!applyForce&&apply)
+    public void applyContinuousForce(boolean apply) {
+        if (!applyForce && apply) {
             PhysicsSpace.enqueueOnThisThread(doApplyContinuousForce);
-        applyForce=apply;
+        }
+        applyForce = apply;
     }
+    private Callable doApplyContinuousForce = new Callable() {
 
-    private Callable doApplyContinuousForce=new Callable(){
         public Object call() throws Exception {
             //TODO: reuse vector
-            rBody.applyForce(Converter.convert(continuousForce)
-                    ,Converter.convert(continuousForceLocation));
+            rBody.applyForce(Converter.convert(continuousForce), Converter.convert(continuousForceLocation));
             rBody.activate();
-            if(applyForce){
+            if (applyForce) {
                 PhysicsSpace.requeueOnThisThread(doApplyContinuousForce);
             }
             return null;
         }
-
     };
 
     /**
      * get the currently applied continuous torque
      * @return null if no torque is applied
      */
-    public Vector3f getContinuousTorque(){
-        if(applyTorque)
+    public Vector3f getContinuousTorque() {
+        if (applyTorque) {
             return continuousTorque;
-        else
+        } else {
             return null;
+        }
     }
 
     /**
@@ -490,11 +508,12 @@ public class PhysicsNode extends CollisionObject{
      * @param vec the vector to store the continuous torque in
      * @return null if no torque is applied
      */
-    public Vector3f getContinuousTorque(Vector3f vec){
-        if(applyTorque)
+    public Vector3f getContinuousTorque(Vector3f vec) {
+        if (applyTorque) {
             return vec.set(continuousTorque);
-        else
+        } else {
             return null;
+        }
     }
 
     /**
@@ -504,46 +523,47 @@ public class PhysicsNode extends CollisionObject{
      * @param apply true if the force should be applied each physics tick
      * @param vec the vector of the force to apply
      */
-    public void applyContinuousTorque(boolean apply, Vector3f vec){
-        if(vec!=null) continuousTorque.set(vec);
-        if(!applyTorque&&apply){
+    public void applyContinuousTorque(boolean apply, Vector3f vec) {
+        if (vec != null) {
+            continuousTorque.set(vec);
+        }
+        if (!applyTorque && apply) {
             PhysicsSpace.enqueueOnThisThread(doApplyContinuousTorque);
         }
-        applyTorque=apply;
+        applyTorque = apply;
     }
 
     /**
      * use to enable/disable continuous torque
      * @param apply set to false to disable
      */
-    public void applyContinuousTorque(boolean apply){
-        if(!applyTorque&&apply){
+    public void applyContinuousTorque(boolean apply) {
+        if (!applyTorque && apply) {
             PhysicsSpace.enqueueOnThisThread(doApplyContinuousTorque);
         }
-        applyTorque=apply;
+        applyTorque = apply;
     }
+    private Callable doApplyContinuousTorque = new Callable() {
 
-    private Callable doApplyContinuousTorque=new Callable(){
         public Object call() throws Exception {
             //TODO: reuse vector
             rBody.applyTorque(Converter.convert(continuousTorque));
             rBody.activate();
-            if(applyTorque){
+            if (applyTorque) {
                 PhysicsSpace.requeueOnThisThread(doApplyContinuousTorque);
             }
             return null;
         }
-
     };
 
     /**
      * apply a force to the PhysicsNode, only applies force in the next physics tick,
      * use applyContinuousForce to apply continuous force
-     * <p><i>not threadsafe - call from physics thread</i></p>
+     * 
      * @param force the force
      * @param location the location of the force
      */
-    public void applyForce(final Vector3f force, final Vector3f location){
+    public void applyForce(final Vector3f force, final Vector3f location) {
         //TODO: reuse vector!
         rBody.applyForce(Converter.convert(force), Converter.convert(location));
         rBody.activate();
@@ -552,10 +572,10 @@ public class PhysicsNode extends CollisionObject{
     /**
      * apply a force to the PhysicsNode, only applies force in the next physics tick,
      * use applyContinuousForce to apply continuous force
-     * <p><i>not threadsafe - call from physics thread</i></p>
+     * 
      * @param force the force
      */
-    public void applyCentralForce(final Vector3f force){
+    public void applyCentralForce(final Vector3f force) {
         //TODO: reuse vector!
         rBody.applyCentralForce(Converter.convert(force));
         rBody.activate();
@@ -564,10 +584,10 @@ public class PhysicsNode extends CollisionObject{
     /**
      * apply a torque to the PhysicsNode, only applies force in the next physics tick,
      * use applyContinuousTorque to apply continuous torque
-     * <p><i>not threadsafe - call from physics thread</i></p>
+     * 
      * @param torque the torque
      */
-    public void applyTorque(final Vector3f torque){
+    public void applyTorque(final Vector3f torque) {
         //TODO: reuse vector!
         rBody.applyTorque(Converter.convert(torque));
         rBody.activate();
@@ -575,11 +595,11 @@ public class PhysicsNode extends CollisionObject{
 
     /**
      * apply an impulse to the PhysicsNode
-     * <p><i>not threadsafe - call from physics thread</i></p>
+     * 
      * @param vec
      * @param vec2
      */
-    public void applyImpulse(final Vector3f vec, final Vector3f vec2){
+    public void applyImpulse(final Vector3f vec, final Vector3f vec2) {
         //TODO: reuse vector!
         rBody.applyImpulse(Converter.convert(vec), Converter.convert(vec2));
         rBody.activate();
@@ -587,10 +607,10 @@ public class PhysicsNode extends CollisionObject{
 
     /**
      * apply a torque impulse to the PhysicsNode
-     * <p><i>not threadsafe - call from physics thread</i></p>
+     * 
      * @param vec
      */
-    public void applyTorqueImpulse(final Vector3f vec){
+    public void applyTorqueImpulse(final Vector3f vec) {
         //TODO: reuse vector!
         rBody.applyTorqueImpulse(Converter.convert(vec));
         rBody.activate();
@@ -598,9 +618,9 @@ public class PhysicsNode extends CollisionObject{
 
     /**
      * clear all forces from the PhysicsNode
-     * <p><i>not threadsafe - call from physics thread</i></p>
+     * 
      */
-    public void clearForces(){
+    public void clearForces() {
         rBody.clearForces();
     }
 
@@ -618,18 +638,17 @@ public class PhysicsNode extends CollisionObject{
      */
     public void setCollisionShape(CollisionShape collisionShape) {
         this.collisionShape = collisionShape;
-        rebuildBody=true;
+        rebuildBody = true;
     }
 
     /**
      * reactivates this PhysicsNode when it has been deactivated because it was not moving
-     * <p><i>not threadsafe - call from physics thread</i></p>
      */
-    public void activate(){
+    public void activate() {
         rBody.activate();
     }
 
-    public boolean isActive(){
+    public boolean isActive() {
         return rBody.isActive();
     }
 
@@ -639,10 +658,35 @@ public class PhysicsNode extends CollisionObject{
      * @param linear the linear sleeping threshold
      * @param angular the angular sleeping threshold
      */
-    public void setSleepingThresholds(float linear, float angular){
-        constructionInfo.linearSleepingThreshold=linear;
-        constructionInfo.angularSleepingThreshold=angular;
+    public void setSleepingThresholds(float linear, float angular) {
+        constructionInfo.linearSleepingThreshold = linear;
+        constructionInfo.angularSleepingThreshold = angular;
         rBody.setSleepingThresholds(linear, angular);
+    }
+
+    /**
+     * do not use manually, joints are added automatically
+     */
+    public void addJoint(PhysicsJoint joint) {
+        if (!joints.contains(joint)) {
+            joints.add(joint);
+        }
+    }
+
+    /**
+     * do not use manually, joints are removed automatically
+     */
+    public void removeJoint(PhysicsJoint joint) {
+        joints.remove(joint);
+    }
+
+    /**
+     * Returns a list of connected joints. This list is only filled when
+     * the PhysicsNode is actually added to the physics space or loaded from disk.
+     * @return list of active joints connected to this physicsnode
+     */
+    public List<PhysicsJoint> getJoints(){
+        return joints;
     }
 
     /**
@@ -655,8 +699,67 @@ public class PhysicsNode extends CollisionObject{
     /**
      * destroys this PhysicsNode and removes it from memory
      */
-    public void destroy(){
+    public void destroy() {
         rBody.destroy();
     }
 
+    @Override
+    public void write(JmeExporter e) throws IOException {
+        super.write(e);
+        OutputCapsule capsule = e.getCapsule(this);
+
+        capsule.write(getMass(), "mass", 1.0f);
+
+        Vector3f store = new Vector3f();
+        getGravity(store);
+
+        capsule.write(store, "gravity", Vector3f.ZERO);
+        capsule.write(getFriction(), "friction", 0);
+        capsule.write(getRestitution(), "restitution", 0);
+        capsule.write(constructionInfo.linearDamping, "linearDamping", 0);
+        capsule.write(constructionInfo.angularDamping, "angularDamping", 0);
+
+        capsule.write(kinematic, "kinematic", false);
+        capsule.write(continuousForce, "continuousForce", Vector3f.ZERO);
+        capsule.write(continuousForceLocation, "continuousForceLocation", Vector3f.ZERO);
+        capsule.write(continuousTorque, "continuousTorque", Vector3f.ZERO);
+        capsule.write(applyForce, "applyForce", false);
+        capsule.write(applyTorque, "applyTorque", false);
+
+        capsule.write(collisionShape, "collisionShape", null);
+
+        capsule.writeSavableArrayList(joints, "joints", null);
+    }
+
+    @Override
+    public void read(JmeImporter e) throws IOException {
+        super.read(e);
+
+        InputCapsule capsule = e.getCapsule(this);
+        float mass = capsule.readFloat("mass", 1.0f);
+        this.mass = mass;
+        CollisionShape shape = (CollisionShape) capsule.readSavable("collisionShape", new BoxCollisionShape(Vector3f.UNIT_XYZ));
+        collisionShape = shape;
+        rebuildRigidBody();
+        setGravity((Vector3f) capsule.readSavable("gravity", Vector3f.ZERO));
+        setFriction(capsule.readFloat("friction", 0));
+        float linearDamping = capsule.readFloat("linearDamping", 0);
+        float angularDamping = capsule.readFloat("angularDamping", 0);
+        setDamping(linearDamping, angularDamping);
+        float restitution = capsule.readFloat("restitution", 0);
+        setRestitution(restitution);
+
+        kinematic = capsule.readBoolean("kinematic", false);
+        setKinematic(kinematic);
+        Vector3f continuousForce = (Vector3f) capsule.readSavable("continuousForce", Vector3f.ZERO);
+        Vector3f continuousForceLocation = (Vector3f) capsule.readSavable("continuousForceLocation", Vector3f.ZERO);
+        boolean applyForce = capsule.readBoolean("applyForce", false);
+        applyContinuousForce(applyForce, continuousForce, continuousForceLocation);
+
+        Vector3f continuousTorque = (Vector3f) capsule.readSavable("continuousTorque", Vector3f.ZERO);
+        boolean applyTorque = capsule.readBoolean("applyTorque", false);
+        applyContinuousTorque(applyTorque, continuousTorque);
+
+        joints = capsule.readSavableArrayList("joints", null);
+    }
 }

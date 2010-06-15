@@ -117,7 +117,7 @@ public class CompoundCollisionShape extends CollisionShape {
         }
     }
 
-    public class ChildCollisionShape implements Savable {
+    private class ChildCollisionShape implements Savable {
 
         public Vector3f location;
         public Matrix3f rotation;

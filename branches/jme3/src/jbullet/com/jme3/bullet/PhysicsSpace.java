@@ -67,7 +67,10 @@ import com.jme3.bullet.nodes.PhysicsVehicleNode;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.util.Converter;
 import com.jme3.export.Savable;
+import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -415,6 +418,44 @@ public class PhysicsSpace implements Savable {
         }
     }
 
+    /**
+     * adds all physics subnodes and joints in the given root node to the physics space
+     * (e.g. after loading from disk)
+     * @param node the rootnode containing the physics objects
+     */
+    public void addAll(Node node){
+        if(node instanceof PhysicsNode){
+            PhysicsNode physicsNode=(PhysicsNode)node;
+            if(!physicsNodes.containsValue(physicsNode)){
+                addNode(physicsNode);
+            }
+            //add joints
+            List<PhysicsJoint> joints=((PhysicsNode)node).getJoints();
+            for (Iterator<PhysicsJoint> it1 = joints.iterator(); it1.hasNext();) {
+                PhysicsJoint physicsJoint = it1.next();
+                //add connected physicsnodes if they are not already added
+                if(!physicsNodes.containsValue(physicsJoint.getNodeA())){
+                    addNode(physicsJoint.getNodeA());
+                }
+                if(!physicsNodes.containsValue(physicsJoint.getNodeB())){
+                    addNode(physicsJoint.getNodeB());
+                }
+                addJoint(physicsJoint);
+            }
+        }
+        if(node instanceof PhysicsGhostNode){
+            addGhostNode((PhysicsGhostNode)node);
+        }
+        //recursion
+        List<Spatial> children=node.getChildren();
+        for (Iterator<Spatial> it = children.iterator(); it.hasNext();) {
+            Spatial spatial = it.next();
+            if(spatial instanceof Node){
+                addAll((Node)spatial);
+            }
+        }
+    }
+
     private void addGhostNode(PhysicsGhostNode node) {
         physicsGhostNodes.put(node.getGhostObject(), node);
         if (node instanceof PhysicsCharacterNode) {
@@ -453,11 +494,15 @@ public class PhysicsSpace implements Savable {
 
     private void addJoint(PhysicsJoint joint) {
         physicsJoints.add(joint);
+        joint.getNodeA().addJoint(joint);
+        joint.getNodeB().addJoint(joint);
         getDynamicsWorld().addConstraint(joint.getConstraint(), !joint.isCollisionBetweenLinkedBodys());
     }
 
     private void removeJoint(PhysicsJoint joint) {
         physicsJoints.remove(joint);
+        joint.getNodeA().removeJoint(joint);
+        joint.getNodeB().removeJoint(joint);
         getDynamicsWorld().removeConstraint(joint.getConstraint());
     }
 

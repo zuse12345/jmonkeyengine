@@ -34,11 +34,17 @@ package com.jme3.bullet.nodes;
 import com.bulletphysics.collision.dispatch.CollisionFlags;
 import com.bulletphysics.collision.shapes.ConvexShape;
 import com.bulletphysics.dynamics.character.KinematicCharacterController;
+import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.util.Converter;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
+import java.io.IOException;
 
 /**
  *
@@ -49,6 +55,13 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
     private KinematicCharacterController character;
     private float stepHeight;
     private Vector3f walkDirection = new Vector3f();
+    private float fallSpeed=55.0f;
+    private float jumpSpeed=10.0f;
+    private int upAxis=1;
+
+
+    public PhysicsCharacterNode() {
+    }
 
     public PhysicsCharacterNode(CollisionShape shape, float stepHeight) {
         super(shape);
@@ -89,20 +102,24 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
     }
 
     public void setUpAxis(int axis) {
+        upAxis=axis;
         character.setUpAxis(axis);
     }
 
     public void setFallSpeed(float fallSpeed) {
+        this.fallSpeed=fallSpeed;
         character.setFallSpeed(fallSpeed);
     }
 
     public void setJumpSpeed(float jumpSpeed) {
+        this.jumpSpeed=fallSpeed;
         character.setJumpSpeed(jumpSpeed);
     }
-
-    public void setMaxJumpHeight(float height) {
-        character.setMaxJumpHeight(height);
-    }
+    
+    //does nothing..
+//    public void setMaxJumpHeight(float height) {
+//        character.setMaxJumpHeight(height);
+//    }
 
     public void setGravity(float value) {
         character.setGravity(value);
@@ -139,4 +156,30 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
     public void destroy() {
         super.destroy();
     }
+
+    @Override
+    public void write(JmeExporter e) throws IOException {
+        super.write(e);
+        OutputCapsule capsule = e.getCapsule(this);
+        capsule.write(stepHeight, "stepHeight",1.0f);
+        capsule.write(getGravity(), "gravity",9.8f);
+        capsule.write(getMaxSlope(), "maxSlope", 1.0f);
+        capsule.write(fallSpeed, "fallSpeed", 55.0f);
+        capsule.write(jumpSpeed, "jumpSpeed", 10.0f);
+        capsule.write(upAxis, "upAxis", 1);
+    }
+
+    @Override
+    public void read(JmeImporter e) throws IOException {
+        super.read(e);
+        InputCapsule capsule = e.getCapsule(this);
+        stepHeight=capsule.readFloat("stepHeight", 1.0f);
+        character = new KinematicCharacterController(gObject, (ConvexShape) cShape.getCShape(), stepHeight);
+        setGravity(capsule.readFloat("gravity", 9.8f));
+        setMaxSlope(capsule.readFloat("maxSlope", 1.0f));
+        setFallSpeed(capsule.readFloat("fallSpeed", 1.0f));
+        setJumpSpeed(capsule.readFloat("jumpSpeed", 1.0f));
+        setUpAxis(capsule.readInt("upAxis", 1));
+    }
+
 }

@@ -39,6 +39,7 @@ import com.jme3.bullet.util.Converter;
  * @author normenhansen
  */
 public class TranslationalLimitMotor {
+
     private com.bulletphysics.dynamics.constraintsolver.TranslationalLimitMotor motor;
 
     public TranslationalLimitMotor(com.bulletphysics.dynamics.constraintsolver.TranslationalLimitMotor motor) {
@@ -54,7 +55,7 @@ public class TranslationalLimitMotor {
     }
 
     public void setLowerLimit(Vector3f lowerLimit) {
-        Converter.convert(lowerLimit,motor.lowerLimit);
+        Converter.convert(lowerLimit, motor.lowerLimit);
     }
 
     public Vector3f getUpperLimit() {
@@ -62,7 +63,7 @@ public class TranslationalLimitMotor {
     }
 
     public void setUpperLimit(Vector3f upperLimit) {
-        Converter.convert(upperLimit,motor.upperLimit);
+        Converter.convert(upperLimit, motor.upperLimit);
     }
 
     public Vector3f getAccumulatedImpulse() {
@@ -70,7 +71,7 @@ public class TranslationalLimitMotor {
     }
 
     public void setAccumulatedImpulse(Vector3f accumulatedImpulse) {
-        Converter.convert(accumulatedImpulse,motor.accumulatedImpulse);
+        Converter.convert(accumulatedImpulse, motor.accumulatedImpulse);
     }
 
     public float getLimitSoftness() {
@@ -87,7 +88,7 @@ public class TranslationalLimitMotor {
 
     public void setDamping(float damping) {
         motor.damping = damping;
-   }
+    }
 
     public float getRestitution() {
         return motor.restitution;
@@ -96,5 +97,4 @@ public class TranslationalLimitMotor {
     public void setRestitution(float restitution) {
         motor.restitution = restitution;
     }
-
 }

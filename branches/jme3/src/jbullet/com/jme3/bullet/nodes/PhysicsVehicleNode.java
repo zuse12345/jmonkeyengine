@@ -37,11 +37,14 @@ import com.bulletphysics.dynamics.vehicle.RaycastVehicle;
 import com.bulletphysics.dynamics.vehicle.VehicleRaycaster;
 import com.bulletphysics.dynamics.vehicle.VehicleTuning;
 import com.bulletphysics.dynamics.vehicle.WheelInfo;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.util.Converter;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -375,6 +378,20 @@ public class PhysicsVehicleNode extends PhysicsNode{
     @Override
     public void destroy() {
         super.destroy();
+    }
+
+    @Override
+    public void read(JmeImporter im) throws IOException {
+        super.read(im);
+        //TODO
+        throw new UnsupportedOperationException("vehicle saving not working yet");
+    }
+
+    @Override
+    public void write(JmeExporter ex) throws IOException {
+        super.write(ex);
+        //TODO
+        throw new UnsupportedOperationException("vehicle saving not working yet");
     }
 
 }

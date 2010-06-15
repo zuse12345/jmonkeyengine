@@ -33,12 +33,15 @@ package com.jme3.bullet.joints;
 
 import com.bulletphysics.dynamics.constraintsolver.Generic6DofConstraint;
 import com.bulletphysics.linearmath.Transform;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Vector3f;
 import com.jme3.bullet.joints.motors.RotationalLimitMotor;
 import com.jme3.bullet.joints.motors.TranslationalLimitMotor;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.util.Converter;
+import java.io.IOException;
 import java.util.LinkedList;
 
 /**
@@ -125,6 +128,16 @@ public class Physics6DofJoint extends PhysicsJoint{
 
     public void setAngularLowerLimit(Vector3f vector){
         ((Generic6DofConstraint)constraint).setAngularLowerLimit(Converter.convert(vector));
+    }
+
+    @Override
+    public void read(JmeImporter im) throws IOException {
+        throw new UnsupportedOperationException("6dof joint saving not working yet");
+    }
+
+    @Override
+    public void write(JmeExporter ex) throws IOException {
+        throw new UnsupportedOperationException("6dof joint saving not working yet");
     }
     
 }

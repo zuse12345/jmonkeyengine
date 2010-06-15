@@ -318,6 +318,7 @@ public class MaterialLoader implements AssetLoader {
             Material mat = compileMaterial();
             list.put(matName, mat);
         }
+        scan.close();
         return list;
     }
 

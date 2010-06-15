@@ -304,6 +304,9 @@ public class RenderManager {
         }else if (scene instanceof Geometry){
             // add to the render queue
             Geometry gm = (Geometry) scene;
+            if (gm.getMaterial() == null)
+                throw new IllegalStateException("No material is set for Geometry: "+ gm.getName());
+
             vp.getQueue().addToQueue(gm, scene.getQueueBucket());
 
             // add to shadow queue if needed

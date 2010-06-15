@@ -215,6 +215,9 @@ public class SkeletonLoader extends DefaultHandler implements AssetLoader {
             xr.setErrorHandler(this);
             InputStreamReader r = new InputStreamReader(in);
             xr.parse(new InputSource(r));
+            if (animations == null){
+                animations = new ArrayList<BoneAnimation>();
+            }
             AnimData data = new AnimData(skeleton, animations);
             skeleton = null;
             animations = null;

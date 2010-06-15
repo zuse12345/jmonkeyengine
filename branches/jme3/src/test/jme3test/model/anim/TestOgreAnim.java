@@ -3,18 +3,20 @@ package jme3test.model.anim;
 import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.animation.AnimEventListener;
+import com.jme3.animation.LoopMode;
 import com.jme3.app.SimpleApplication;
+import com.jme3.input.KeyInput;
+import com.jme3.input.binding.BindingListener;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 
-/**
- *
- * @author lex
- */
-public class TestOgreAnim extends SimpleApplication implements AnimEventListener {
+public class TestOgreAnim extends SimpleApplication implements AnimEventListener, BindingListener {
+
+    private AnimChannel channel;
+    private AnimControl control;
 
     public static void main(String[] args) {
         TestOgreAnim app = new TestOgreAnim();
@@ -36,23 +38,46 @@ public class TestOgreAnim extends SimpleApplication implements AnimEventListener
 
         model.center();
 
-        AnimControl control = model.getControl(AnimControl.class);
+        control = model.getControl(AnimControl.class);
         control.addListener(this);
-        AnimChannel channel = control.createChannel();
+        channel = control.createChannel();
 
-        channel.setAnim("Walk");
+        for (String anim : control.getAnimationNames())
+            System.out.println(anim);
 
-//        float scale = 1.00f;
+        channel.setAnim("stand");
+
         rootNode.attachChild(model);
 
-//        model.setAnimation("Walk");
+        inputManager.addBindingListener(this);
+        inputManager.registerKeyBinding("Attack", KeyInput.KEY_SPACE);
     }
 
     public void onAnimCycleDone(AnimControl control, AnimChannel channel, String animName) {
-        System.out.println("AnimDone: "+animName);
+        if (animName.equals("Dodge")){
+            channel.setAnim("stand", 0.50f);
+            channel.setLoopMode(LoopMode.DontLoop);
+            channel.setSpeed(1f);
+        }
     }
 
     public void onAnimChange(AnimControl control, AnimChannel channel, String animName) {
+    }
+
+    public void onBinding(String binding, float value) {
+        if (binding.equals("Attack")){
+            if (!channel.getAnimationName().equals("Dodge")){
+                channel.setAnim("Dodge", 0.50f);
+                channel.setLoopMode(LoopMode.Cycle);
+                channel.setSpeed(0.10f);
+            }
+        }
+    }
+
+    public void onPreUpdate(float tpf) {
+    }
+
+    public void onPostUpdate(float tpf) {
     }
 
 }

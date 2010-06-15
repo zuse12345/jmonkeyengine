@@ -21,7 +21,7 @@ public class OgreXMLConvertOptions {
     private int lodPercent = 20;
     private String lodStrategy = "Distance";
     private boolean generateTangents = true;
-    private boolean generateEdgeLists = true;
+    private boolean generateEdgeLists = false;
 
     private boolean generate=false;
 

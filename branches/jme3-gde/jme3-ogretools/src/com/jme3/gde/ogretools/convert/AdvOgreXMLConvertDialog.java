@@ -28,18 +28,14 @@ public class AdvOgreXMLConvertDialog extends javax.swing.JDialog {
 
     private void loadSettings(OgreXMLConvertOptions options){
         jSpinner1.setValue(options.getLodLevels());
-        jSpinner2.setValue(options.getLodValue());
         jSlider1.setValue(options.getLodPercent());
-        jComboBox1.setSelectedItem(options.getLodStrategy());
         jCheckBox1.setSelected(options.isGenerateTangents());
         jCheckBox2.setSelected(options.isGenerateEdgeLists());
     }
 
     private void saveSettings(OgreXMLConvertOptions options){
         options.setLodLevels((Integer)jSpinner1.getValue());
-        options.setLodValue((Integer)jSpinner2.getValue());
         options.setLodPercent(jSlider1.getValue());
-        options.setLodStrategy((String)jComboBox1.getSelectedItem());
         options.setGenerateTangents(jCheckBox1.isSelected());
         options.setGenerateEdgeLists(jCheckBox2.isSelected());
         options.setGenerate(true);
@@ -58,15 +54,9 @@ public class AdvOgreXMLConvertDialog extends javax.swing.JDialog {
         jToolBar1 = new javax.swing.JToolBar();
         jLabel1 = new javax.swing.JLabel();
         jSpinner1 = new javax.swing.JSpinner();
-        jToolBar2 = new javax.swing.JToolBar();
-        jLabel2 = new javax.swing.JLabel();
-        jSpinner2 = new javax.swing.JSpinner();
         jToolBar3 = new javax.swing.JToolBar();
         jLabel3 = new javax.swing.JLabel();
         jSlider1 = new javax.swing.JSlider();
-        jToolBar4 = new javax.swing.JToolBar();
-        jLabel4 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
@@ -86,13 +76,6 @@ public class AdvOgreXMLConvertDialog extends javax.swing.JDialog {
         jSpinner1.setToolTipText(org.openide.util.NbBundle.getMessage(AdvOgreXMLConvertDialog.class, "AdvOgreXMLConvertDialog.jSpinner1.toolTipText")); // NOI18N
         jToolBar1.add(jSpinner1);
 
-        jToolBar2.setFloatable(false);
-        jToolBar2.setRollover(true);
-
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(AdvOgreXMLConvertDialog.class, "AdvOgreXMLConvertDialog.jLabel2.text")); // NOI18N
-        jToolBar2.add(jLabel2);
-        jToolBar2.add(jSpinner2);
-
         jToolBar3.setFloatable(false);
         jToolBar3.setRollover(true);
 
@@ -103,16 +86,6 @@ public class AdvOgreXMLConvertDialog extends javax.swing.JDialog {
         jSlider1.setValue(20);
         jToolBar3.add(jSlider1);
 
-        jToolBar4.setFloatable(false);
-        jToolBar4.setRollover(true);
-
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(AdvOgreXMLConvertDialog.class, "AdvOgreXMLConvertDialog.jLabel4.text")); // NOI18N
-        jToolBar4.add(jLabel4);
-
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Distance" }));
-        jComboBox1.setToolTipText(org.openide.util.NbBundle.getMessage(AdvOgreXMLConvertDialog.class, "AdvOgreXMLConvertDialog.jComboBox1.toolTipText")); // NOI18N
-        jToolBar4.add(jComboBox1);
-
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -120,10 +93,8 @@ public class AdvOgreXMLConvertDialog extends javax.swing.JDialog {
             .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jToolBar4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
-                    .add(jToolBar3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
                     .add(jToolBar1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
-                    .add(jToolBar2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jToolBar3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -131,11 +102,8 @@ public class AdvOgreXMLConvertDialog extends javax.swing.JDialog {
             .add(jPanel1Layout.createSequentialGroup()
                 .add(jToolBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jToolBar2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jToolBar3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jToolBar4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
 
         jButton1.setText(org.openide.util.NbBundle.getMessage(AdvOgreXMLConvertDialog.class, "AdvOgreXMLConvertDialog.jButton1.text")); // NOI18N
@@ -180,15 +148,15 @@ public class AdvOgreXMLConvertDialog extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
                         .add(jButton2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(jButton1))
-                    .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -223,20 +191,14 @@ public class AdvOgreXMLConvertDialog extends javax.swing.JDialog {
     private javax.swing.JButton jButton2;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JCheckBox jCheckBox2;
-    private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JSlider jSlider1;
     private javax.swing.JSpinner jSpinner1;
-    private javax.swing.JSpinner jSpinner2;
     private javax.swing.JToolBar jToolBar1;
-    private javax.swing.JToolBar jToolBar2;
     private javax.swing.JToolBar jToolBar3;
-    private javax.swing.JToolBar jToolBar4;
     // End of variables declaration//GEN-END:variables
 
 }

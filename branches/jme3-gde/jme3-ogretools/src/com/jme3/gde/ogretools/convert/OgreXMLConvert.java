@@ -144,12 +144,12 @@ public class OgreXMLConvert {
         if (options.getLodLevels() > 0) {
             strings.add("-l");
             strings.add(options.getLodLevels() + "");
-            strings.add("-v");
-            strings.add(options.getLodValue() + "");
+//            strings.add("-v");
+//            strings.add(options.getLodValue() + "");
             strings.add("-p");
             strings.add(options.getLodPercent() + "");
-            strings.add("-s");
-            strings.add(options.getLodStrategy());
+//            strings.add("-s");
+//            strings.add(options.getLodStrategy());
         }
 
         strings.add(options.getSourceFile());

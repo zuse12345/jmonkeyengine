@@ -595,13 +595,12 @@ public class PhysicsNode extends CollisionObject {
 
     /**
      * apply an impulse to the PhysicsNode
-     * 
-     * @param vec
-     * @param vec2
+     * @param impulse applied impulse
+     * @param rel_pos location relative to object
      */
-    public void applyImpulse(final Vector3f vec, final Vector3f vec2) {
+    public void applyImpulse(final Vector3f impulse, final Vector3f rel_pos) {
         //TODO: reuse vector!
-        rBody.applyImpulse(Converter.convert(vec), Converter.convert(vec2));
+        rBody.applyImpulse(Converter.convert(impulse), Converter.convert(rel_pos));
         rBody.activate();
     }
 
@@ -746,11 +745,9 @@ public class PhysicsNode extends CollisionObject {
         float linearDamping = capsule.readFloat("linearDamping", 0);
         float angularDamping = capsule.readFloat("angularDamping", 0);
         setDamping(linearDamping, angularDamping);
-        float restitution = capsule.readFloat("restitution", 0);
-        setRestitution(restitution);
+        setRestitution(capsule.readFloat("restitution", 0));
+        setKinematic(capsule.readBoolean("kinematic", false));
 
-        kinematic = capsule.readBoolean("kinematic", false);
-        setKinematic(kinematic);
         Vector3f continuousForce = (Vector3f) capsule.readSavable("continuousForce", Vector3f.ZERO);
         Vector3f continuousForceLocation = (Vector3f) capsule.readSavable("continuousForceLocation", Vector3f.ZERO);
         boolean applyForce = capsule.readBoolean("applyForce", false);

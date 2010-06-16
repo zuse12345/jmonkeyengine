@@ -57,8 +57,8 @@ public class CollisionShapeFactory {
             } else if (spatial instanceof Geometry) {
                 if(meshAccurate) {
                     CollisionShape childShape = dynamic ?
-                            createSingleMeshShape((Geometry) spatial) :
-                            createSingleDynamicMeshShape((Geometry) spatial);
+                            createSingleDynamicMeshShape((Geometry) spatial) :
+                            createSingleMeshShape((Geometry) spatial);
                     if(childShape != null)
                         shape.addChildShape(childShape,
                             spatial.getWorldTranslation(),

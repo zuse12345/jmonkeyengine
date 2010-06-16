@@ -53,7 +53,7 @@ public class CollisionShapeFactory {
             Node rootNode, CompoundCollisionShape shape, boolean meshAccurate, boolean dynamic) {
         for (Spatial spatial : rootNode.getChildren()) {
             if (spatial instanceof Node) {
-                createCompoundShape((Node) spatial, shape, meshAccurate);
+                createCompoundShape((Node) spatial, shape, meshAccurate, dynamic);
             } else if (spatial instanceof Geometry) {
                 if(meshAccurate) {
                     CollisionShape childShape = dynamic ?

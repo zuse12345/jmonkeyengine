@@ -36,6 +36,7 @@ import com.jme3.input.MouseInput;
 import com.jme3.input.RawInputListener;
 import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
+import de.lessvoid.nifty.input.mouse.MouseInputEvent;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Point;
@@ -47,6 +48,9 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,6 +78,7 @@ public class AwtMouseInput implements MouseInput, MouseListener, MouseWheelListe
 
     private Component component;
 
+    private ArrayList<MouseButtonEvent> eventQueue = new ArrayList<MouseButtonEvent>();
     private int lastEventX;
     private int lastEventY;
     private int lastEventWheel;
@@ -81,6 +86,7 @@ public class AwtMouseInput implements MouseInput, MouseListener, MouseWheelListe
     private Cursor transparentCursor;
 
     private Robot robot;
+    private int wheelPos;
     private Point location;
     private Point centerLocation;
     private Point centerLocationOnScreen;
@@ -141,16 +147,24 @@ public class AwtMouseInput implements MouseInput, MouseListener, MouseWheelListe
     public void update() {
         int newX = location.x;
         int newY = location.y;
+        int newWheel = wheelPos;
 
         // invert DY
         MouseMotionEvent evt = new MouseMotionEvent(newX, newY,
                                                     newX - lastEventX,
                                                     lastEventY - newY,
-                                                    lastEventWheel, 0);
+                                                    wheelPos, lastEventWheel - wheelPos);
         listener.onMouseMotionEvent(evt);
+
+        int size = eventQueue.size();
+        for (int i = 0; i < size; i++){
+            listener.onMouseButtonEvent(eventQueue.get(i));
+        }
+        eventQueue.clear();
         
         lastEventX = newX;
         lastEventY = newY;
+        lastEventWheel = newWheel;
     }
 
     private final Cursor getTransparentCursor() {
@@ -186,12 +200,14 @@ public class AwtMouseInput implements MouseInput, MouseListener, MouseWheelListe
 
     public void mousePressed(MouseEvent arg0) {
         MouseButtonEvent evt = new MouseButtonEvent(getJMEButtonIndex(arg0), true);
-        listener.onMouseButtonEvent(evt);
+        evt.setTime(arg0.getWhen());
+        eventQueue.add(evt);
     }
 
     public void mouseReleased(MouseEvent arg0) {
         MouseButtonEvent evt = new MouseButtonEvent(getJMEButtonIndex(arg0), false);
-        listener.onMouseButtonEvent(evt);
+        evt.setTime(arg0.getWhen());
+        eventQueue.add(evt);
     }
 
     public void mouseEntered(MouseEvent arg0) {
@@ -206,11 +222,7 @@ public class AwtMouseInput implements MouseInput, MouseListener, MouseWheelListe
 
     public void mouseWheelMoved(MouseWheelEvent arg0) {
         int dwheel = arg0.getUnitsToScroll();
-        MouseMotionEvent evt = new MouseMotionEvent(arg0.getX(), arg0.getY(),
-                                                    0, 0,
-                                                    lastEventWheel - dwheel, dwheel);
-        listener.onMouseMotionEvent(evt);
-        lastEventWheel -= dwheel;
+        wheelPos -= dwheel;
     }
 
     public void mouseDragged(MouseEvent arg0) {

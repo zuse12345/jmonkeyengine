@@ -1,13 +1,19 @@
 package jme3test.awt;
 
 import com.jme3.app.Application;
+import com.jme3.app.SimpleApplication;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeCanvasContext;
 import com.jme3.system.JmeSystem;
 import java.awt.Canvas;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.concurrent.Callable;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 public class TestCanvas2 {
@@ -21,6 +27,32 @@ public class TestCanvas2 {
         frame = new JFrame("Test");
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        JMenuBar menuBar = new JMenuBar();
+        frame.setJMenuBar(menuBar);
+
+        JMenu menuFile = new JMenu("File");
+        menuBar.add(menuFile);
+        JMenuItem itemExit = new JMenuItem("Exit");
+        menuFile.add(itemExit);
+        itemExit.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                frame.dispose();
+            }
+        });
+
+        JMenu menuEdit = new JMenu("Edit");
+        menuBar.add(menuEdit);
+        JMenuItem itemDelete = new JMenuItem("Delete");
+        menuEdit.add(itemDelete);
+
+        JMenu menuView = new JMenu("View");
+        menuBar.add(menuView);
+        JMenuItem itemSetting = new JMenuItem("Settings");
+        menuView.add(itemSetting);
+
+        JMenu menuHelp = new JMenu("Help");
+        menuBar.add(menuHelp);
     }
 
     public static void createCanvas(String appClass){
@@ -41,8 +73,10 @@ public class TestCanvas2 {
             ex.printStackTrace();
         }
 
+        app.setPauseOnLostFocus(false);
         app.setSettings(settings);
         app.createCanvas();
+
         context = (JmeCanvasContext) app.getContext();
         canvas = context.getCanvas();
         canvas.setSize(settings.getWidth(), settings.getHeight());
@@ -50,51 +84,32 @@ public class TestCanvas2 {
 
     public static void startApp(){
         app.startCanvas();
+        app.enqueue(new Callable<Void>(){
+            public Void call(){
+                if (app instanceof SimpleApplication){
+                    SimpleApplication simpleApp = (SimpleApplication) app;
+                    simpleApp.getFlyByCamera().setDragToRotate(true);
+                }
+                return null;
+            }
+        });
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
-    public void freezeApp(){
-        frame.getContentPane().remove(canvas);
-    }
-
-    public void unfreezeApp(){
-        frame.getContentPane().add(canvas);
-    }
-
     public static void main(String[] args){
+
+
         SwingUtilities.invokeLater(new Runnable(){
             public void run(){
+                JPopupMenu.setDefaultLightWeightPopupEnabled(false);
+
                 String appClass = "jme3test.model.shape.TestBox";
                 createCanvas(appClass);
                 createFrame();
                 frame.getContentPane().add(canvas);
                 frame.pack();
                 startApp();
-            }
-        });
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException ex) {
-        }
-        SwingUtilities.invokeLater(new Runnable(){
-            public void run(){
-                frame.dispose();
-            }
-        });
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(TestCanvas2.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        SwingUtilities.invokeLater(new Runnable(){
-            public void run(){
-                createFrame();
-                frame.getContentPane().add(canvas);
-                frame.pack();
-                frame.setLocationRelativeTo(null);
-                frame.setVisible(true);
-                frame.requestFocus();
             }
         });
     }

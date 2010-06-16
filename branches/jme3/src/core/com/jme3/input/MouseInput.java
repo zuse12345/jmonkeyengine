@@ -5,6 +5,10 @@ package com.jme3.input;
  */
 public interface MouseInput extends Input {
 
+    public static final int AXIS_X = 0,
+                            AXIS_Y = 1,
+                            AXIS_WHEEL = 2;
+
     /**
      * @param visible Whether the mouse cursor should be visible or not.
      */

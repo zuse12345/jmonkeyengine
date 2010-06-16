@@ -1,7 +1,6 @@
 package com.jme3.input.dummy;
 
 import com.jme3.input.Input;
-import com.jme3.input.MouseInput;
 import com.jme3.input.RawInputListener;
 
 public class DummyInput implements Input {

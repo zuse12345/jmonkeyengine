@@ -9,12 +9,24 @@ import com.jme3.input.event.JoyButtonEvent;
 import com.jme3.input.event.KeyInputEvent;
 import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
+import com.jme3.system.Timer;
 import com.jme3.util.IntMap;
 import com.jme3.util.IntMap.Entry;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
-import org.lwjgl.Sys;
+import org.lwjgl.opengl.Display;
 
+/**
+ * The <code>InputManager</code> is responsible for converting input events
+ * recieved from the Key, Mouse and Joy Input implementations into an
+ * abstract, input device independent representation that user code can use.
+ *
+ * By default a dispatcher is included with every Application instance for use
+ * in user code to query input, unless the Application is created as headless
+ * or with input explicitly disabled.
+ */
 public class Controls implements RawInputListener {
 
     private final KeyInput keys;
@@ -24,8 +36,11 @@ public class Controls implements RawInputListener {
     private float frameTPF;
     private long lastLastUpdateTime = 0;
     private long lastUpdateTime = 0;
+    private long frameDelta = 0;
     private long firstTime = 0;
     private boolean eventsPermitted = false;
+    private boolean mouseVisible = true;
+    private boolean safeMode = false;
 
     private float axisDeadZone = 0.05f;
 
@@ -46,6 +61,7 @@ public class Controls implements RawInputListener {
 
     /**
      * Create a Controls representation for the given inputs.
+     *
      * @param keys KeyInput implementation
      * @param mouse MouseInput implementation
      * @param joystick JoyInput implementation, may be null.
@@ -63,7 +79,8 @@ public class Controls implements RawInputListener {
         mouse.setInputListener(this);
         if (joystick != null) joystick.setInputListener(this);
 
-        firstTime = Sys.getTime() * 1000000;
+        // get the conversion rate from timer resolution to nano seconds.
+        firstTime = keys.getInputTimeNanos();
     }
 
     static final int joyButtonHash(int joyButton){
@@ -105,6 +122,13 @@ public class Controls implements RawInputListener {
         }
     }
 
+    private float computeAnalogValue(long timeDelta){
+        if (safeMode)
+            return 1f;
+        else
+            return (float)timeDelta / (float)frameDelta;
+    }
+
     private void invokeTimedActions(int hash, long time, boolean pressed){
         if (!bindings.containsKey(hash))
             return;
@@ -114,11 +138,14 @@ public class Controls implements RawInputListener {
             pressedButtons.put(hash, time);
         }else{
             long pressTime   = pressedButtons.remove(hash);
-            long lastUpdate  = lastUpdateTime;
+            long lastUpdate  = lastLastUpdateTime;
             long releaseTime = time;
-            float timeDelta = releaseTime - Math.max(pressTime, lastUpdate);
-            float frameDelta = frameTPF * 1000000000f;
-            invokeAnalogs(hash, timeDelta / frameDelta);
+            long timeDelta = releaseTime - Math.max(pressTime, lastUpdate);
+
+//            System.out.println(hash + " press time " + ((pressTime-firstTime)/1000000) + " release time " + ((releaseTime-firstTime)/1000000) + " last update " + ((lastUpdate-firstTime)/1000000));
+
+            if (timeDelta > 0)
+                invokeAnalogs(hash, computeAnalogValue(timeDelta) );
         }
     }
 
@@ -128,13 +155,13 @@ public class Controls implements RawInputListener {
             long pressTime   = pressedButton.getValue();
             long lastLast = lastLastUpdateTime;
             long lastUpdate  = lastUpdateTime;
-            float timeDelta = lastUpdateTime - Math.max(lastLastUpdateTime, pressTime);
-            float frameDelta = frameTPF * 1000000000f;
+            long timeDelta = lastUpdateTime - Math.max(lastLastUpdateTime, pressTime);
+
 //            System.out.println(hash + " updated at " + ((lastUpdateTime-firstTime)/1000000)
 //                                    + " last up " + ((lastLastUpdateTime-firstTime)/1000000)
 //                                    + " press time " + (  (pressTime-firstTime)/1000000));
             if (timeDelta > 0)
-                invokeAnalogs(hash, timeDelta / frameDelta);
+                invokeAnalogs(hash, computeAnalogValue(timeDelta) );
         }
     }
 
@@ -236,6 +263,9 @@ public class Controls implements RawInputListener {
         if (!eventsPermitted)
             throw new UnsupportedOperationException("KeyInput has raised an event at an illegal time.");
 
+        if (evt.isRepeating())
+            return; // repeat events not used for bindings
+
         int hash = keyHash(evt.getKeyCode());
         invokeActions(hash, evt.isPressed());
         invokeTimedActions(hash, evt.getTime(), evt.isPressed());
@@ -294,12 +324,31 @@ public class Controls implements RawInputListener {
         }
     }
 
+    /**
+     * Called to reset pressed keys or buttons when focus is restored.
+     */
+    public void reset(){
+        pressedButtons.clear();
+    }
+
+    /**
+     * @param visible whether the mouse cursor should be visible or not.
+     */
+    public void setCursorVisible(boolean visible){
+        if (mouseVisible != visible){
+            mouseVisible = visible;
+            mouse.setCursorVisible(mouseVisible);
+        }
+    }
+
     public void update(float tpf){
         frameTPF = tpf;
-        long currentTime = Sys.getTime() * 1000000;
+        safeMode = tpf < 0.005f;
+        long currentTime = keys.getInputTimeNanos();
+        frameDelta = currentTime - lastUpdateTime;
 
         eventsPermitted = true;
-
+        
         keys.update();
         mouse.update();
         if (joystick != null) joystick.update();

@@ -45,7 +45,7 @@ public class InputManager implements RawInputListener {
     private boolean[][] joyButtons;
 
     /**
-     * Initializes the Dispatcher.
+     * Initializes the InputManager.
      *
      * @param mouseInput
      * @param keyInput

@@ -135,6 +135,10 @@ public class AwtMouseInput implements MouseInput, MouseListener, MouseWheelListe
         this.listener = listener;
     }
 
+    public long getInputTimeNanos() {
+        return System.nanoTime();
+    }
+
     public void setCursorVisible(boolean visible){
         if (this.visible != visible){
             component.setCursor(visible ? null : getTransparentCursor());

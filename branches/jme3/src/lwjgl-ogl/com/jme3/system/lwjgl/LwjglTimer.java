@@ -63,9 +63,11 @@ public class LwjglTimer extends Timer {
 
     private int smoothIndex;
 
-    private final static long timerRez = Sys.getTimerResolution();
-    private final static float invTimerRez = ( 1f / timerRez );
+    private final static long LWJGL_TIMER_RES = Sys.getTimerResolution();
+    private final static float INV_LWJGL_TIMER_RES = ( 1f / LWJGL_TIMER_RES );
     private static float invTimerRezSmooth;
+
+    public final static long LWJGL_TIME_TO_NANOS = (1000000000 / LWJGL_TIMER_RES);
 
     private long startTime;
 
@@ -79,7 +81,7 @@ public class LwjglTimer extends Timer {
         reset();
 
         //print timer resolution info
-        logger.info("Timer resolution: " + timerRez + " ticks per second");
+        logger.info("Timer resolution: " + LWJGL_TIMER_RES + " ticks per second");
     }
 
     public void reset() {
@@ -94,7 +96,7 @@ public class LwjglTimer extends Timer {
 
         tpf = new long[TIMER_SMOOTHNESS];
         smoothIndex = TIMER_SMOOTHNESS - 1;
-        invTimerRezSmooth = ( 1f / (timerRez * TIMER_SMOOTHNESS));
+        invTimerRezSmooth = ( 1f / (LWJGL_TIMER_RES * TIMER_SMOOTHNESS));
 
         // set tpf... -1 values will not be used for calculating the average in update()
         for ( int i = tpf.length; --i >= 0; ) {
@@ -113,7 +115,7 @@ public class LwjglTimer extends Timer {
      * @see com.jme.util.Timer#getResolution()
      */
     public long getResolution() {
-        return timerRez;
+        return LWJGL_TIMER_RES;
     }
 
     /**
@@ -170,7 +172,7 @@ public class LwjglTimer extends Timer {
             }
             if (smoothCount == tpf.length)
                 allSmooth  = true;
-            lastTPF *= ( invTimerRez / smoothCount );
+            lastTPF *= ( INV_LWJGL_TIMER_RES / smoothCount );
         } else {
             for ( int i = tpf.length; --i >= 0; ) {
                 if ( tpf[i] != -1 ) {

@@ -36,6 +36,10 @@ public class AwtKeyInput implements KeyInput, KeyListener {
         logger.info("Key input initialized.");
     }
 
+    public long getInputTimeNanos() {
+        return System.nanoTime();
+    }
+
     public int getKeyCount() {
         return KeyEvent.KEY_LAST+1;
     }

@@ -265,10 +265,11 @@ public final class Vector3f implements Savable, Cloneable {
      * @param add
      *            the value to add
      */
-    public void scaleAdd(float scalar, Vector3f add) {
+    public Vector3f scaleAdd(float scalar, Vector3f add) {
         x = x * scalar + add.x;
         y = y * scalar + add.y;
         z = z * scalar + add.z;
+        return this;
     }
 
     /**
@@ -283,10 +284,11 @@ public final class Vector3f implements Savable, Cloneable {
      * @param add
      *            the value to add
      */
-    public void scaleAdd(float scalar, Vector3f mult, Vector3f add) {
+    public Vector3f scaleAdd(float scalar, Vector3f mult, Vector3f add) {
         this.x = mult.x * scalar + add.x;
         this.y = mult.y * scalar + add.y;
         this.z = mult.z * scalar + add.z;
+        return this;
     }
 
     /**
@@ -795,8 +797,9 @@ public final class Vector3f implements Savable, Cloneable {
     /**
      * <code>zero</code> resets this vector's data to zero internally.
      */
-    public void zero() {
+    public Vector3f zero() {
         x = y = z = 0;
+        return this;
     }
 
     /**
@@ -819,10 +822,11 @@ public final class Vector3f implements Savable, Cloneable {
      * @param changeAmnt An amount between 0.0 - 1.0 representing a precentage
      *  change from this towards finalVec
      */
-    public void interpolate(Vector3f finalVec, float changeAmnt) {
+    public Vector3f interpolate(Vector3f finalVec, float changeAmnt) {
         this.x=(1-changeAmnt)*this.x + changeAmnt*finalVec.x;
         this.y=(1-changeAmnt)*this.y + changeAmnt*finalVec.y;
         this.z=(1-changeAmnt)*this.z + changeAmnt*finalVec.z;
+        return this;
     }
 
     /**
@@ -833,10 +837,11 @@ public final class Vector3f implements Savable, Cloneable {
      * @param changeAmnt An amount between 0.0 - 1.0 representing a precentage
      *  change from beginVec towards finalVec
      */
-    public void interpolate(Vector3f beginVec,Vector3f finalVec, float changeAmnt) {
+    public Vector3f interpolate(Vector3f beginVec,Vector3f finalVec, float changeAmnt) {
         this.x=(1-changeAmnt)*beginVec.x + changeAmnt*finalVec.x;
         this.y=(1-changeAmnt)*beginVec.y + changeAmnt*finalVec.y;
         this.z=(1-changeAmnt)*beginVec.z + changeAmnt*finalVec.z;
+        return this;
     }
 
     /**
@@ -1007,24 +1012,27 @@ public final class Vector3f implements Savable, Cloneable {
         return x;
     }
 
-    public void setX(float x) {
+    public Vector3f setX(float x) {
         this.x = x;
+        return this;
     }
 
     public float getY() {
         return y;
     }
 
-    public void setY(float y) {
+    public Vector3f setY(float y) {
         this.y = y;
+        return this;
     }
 
     public float getZ() {
         return z;
     }
 
-    public void setZ(float z) {
+    public Vector3f setZ(float z) {
         this.z = z;
+        return this;
     }
     
     /**

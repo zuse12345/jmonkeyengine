@@ -9,7 +9,6 @@ import com.jme3.audio.AudioStream;
 import com.jme3.audio.Environment;
 import com.jme3.audio.Listener;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.Camera;
 import com.jme3.util.BufferUtils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -21,11 +20,9 @@ import java.util.logging.Logger;
 import net.java.games.joal.ALC;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.openal.AL;
-import org.lwjgl.openal.AL10;
 
 import org.lwjgl.openal.AL11;
 import org.lwjgl.openal.ALC10;
-import org.lwjgl.openal.ALC11;
 import org.lwjgl.openal.ALCcontext;
 import org.lwjgl.openal.ALCdevice;
 
@@ -87,21 +84,21 @@ public class LwjglAudioRenderer implements AudioRenderer {
         }
         logger.log(Level.FINE, "OpenAL device successfully opened");
 
-        try {
-            context = ALC10.alcCreateContext(device, createAttribs(44100, 60, false));
-            ALC10.alcMakeContextCurrent(context);
-
-            logger.log(Level.FINE, "OpenAL context created with default settings.");
-        } catch (Throwable ex){
-            logger.log(Level.WARNING, "Failed to create OpenAL context. Trying fallback settings...");
-        } finally {
-            if (context == null && ALC10.alcGetCurrentContext() == null){
+//        try {
+//            context = ALC10.alcCreateContext(device, createAttribs(44100, 60, false));
+//            ALC10.alcMakeContextCurrent(context);
+//
+//            logger.log(Level.FINE, "OpenAL context created with default settings.");
+//        } catch (Throwable ex){
+//            logger.log(Level.WARNING, "Failed to create OpenAL context. Trying fallback settings...");
+//        } finally {
+//            if (context == null && ALC10.alcGetCurrentContext() == null){
                 context = ALC10.alcCreateContext(device, null);
                 ALC10.alcMakeContextCurrent(context);
 
                 logger.log(Level.FINE, "OpenAL context created with fallback settings.");
-            }
-        }
+//            }
+//        }
 
         logger.finer("Audio Vendor: "+alGetString(AL_VENDOR));
         logger.finer("Audio Renderer: "+alGetString(AL_RENDERER));

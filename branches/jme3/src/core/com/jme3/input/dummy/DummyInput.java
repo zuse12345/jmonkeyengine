@@ -33,4 +33,8 @@ public class DummyInput implements Input {
     public void setInputListener(RawInputListener listener) {
     }
 
+    public long getInputTimeNanos() {
+        return System.currentTimeMillis() * 1000000;
+    }
+
 }

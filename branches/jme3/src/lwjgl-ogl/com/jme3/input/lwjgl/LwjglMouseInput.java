@@ -4,9 +4,11 @@ import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
 import com.jme3.input.MouseInput;
 import com.jme3.input.RawInputListener;
+import com.jme3.system.lwjgl.LwjglTimer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.lwjgl.LWJGLException;
+import org.lwjgl.Sys;
 import org.lwjgl.input.Cursor;
 import org.lwjgl.input.Mouse;
 
@@ -86,6 +88,10 @@ public class LwjglMouseInput implements MouseInput {
 
     public void setInputListener(RawInputListener listener) {
         this.listener = listener;
+    }
+
+    public long getInputTimeNanos() {
+        return Sys.getTime() * LwjglTimer.LWJGL_TIME_TO_NANOS;
     }
 
 }

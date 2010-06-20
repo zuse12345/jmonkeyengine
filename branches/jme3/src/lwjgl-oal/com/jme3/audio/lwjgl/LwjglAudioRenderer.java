@@ -60,6 +60,19 @@ public class LwjglAudioRenderer implements AudioRenderer {
         nativeBuf.order(ByteOrder.nativeOrder());
     }
 
+    private IntBuffer createAttribs(int freq, int refresh, boolean sync){
+        ib.clear();
+        ib.put(ALC10.ALC_FREQUENCY);
+        ib.put(freq);
+        ib.put(ALC10.ALC_REFRESH);
+        ib.put(refresh);
+        ib.put(ALC10.ALC_SYNC);
+        ib.put(sync ? ALC.ALC_TRUE : ALC.ALC_FALSE);
+        ib.put(0);
+        ib.flip();
+        return ib;
+    }
+
     public boolean attemptOpenDevice(){
         if (deviceBlockedDelay == -2)
             return false;
@@ -72,19 +85,23 @@ public class LwjglAudioRenderer implements AudioRenderer {
             deviceBlockedDelay = 10;
             return false;
         }
+        logger.log(Level.FINE, "OpenAL device successfully opened");
 
-        ib.clear();
-        ib.put(ALC10.ALC_FREQUENCY);
-        ib.put(44100);
-        ib.put(ALC10.ALC_REFRESH);
-        ib.put(30);
-        ib.put(ALC10.ALC_SYNC);
-        ib.put(ALC.ALC_FALSE);
-        ib.put(0);
-        ib.flip();
+        try {
+            context = ALC10.alcCreateContext(device, createAttribs(44100, 60, false));
+            ALC10.alcMakeContextCurrent(context);
 
-        context = ALC10.alcCreateContext(device, ib);
-        ALC10.alcMakeContextCurrent(context);
+            logger.log(Level.FINE, "OpenAL context created with default settings.");
+        } catch (Throwable ex){
+            logger.log(Level.WARNING, "Failed to create OpenAL context. Trying fallback settings...");
+        } finally {
+            if (context == null && ALC10.alcGetCurrentContext() == null){
+                context = ALC10.alcCreateContext(device, null);
+                ALC10.alcMakeContextCurrent(context);
+
+                logger.log(Level.FINE, "OpenAL context created with fallback settings.");
+            }
+        }
 
         logger.finer("Audio Vendor: "+alGetString(AL_VENDOR));
         logger.finer("Audio Renderer: "+alGetString(AL_RENDERER));
@@ -107,6 +124,10 @@ public class LwjglAudioRenderer implements AudioRenderer {
         // Load OpenAL library.
         try{
             AL.create(null, 44100, 30, false, false);
+            if (!AL.isCreated())
+                throw new LWJGLException("AL not created");
+
+            logger.log(Level.FINE, "OpenAL library successfuly loaded.");
         }catch (LWJGLException ex){
             logger.log(Level.SEVERE, "Failed to load audio library", ex);
             deviceBlocked = true;
@@ -121,13 +142,16 @@ public class LwjglAudioRenderer implements AudioRenderer {
     }
 
     public void cleanup(){
-        // delete channel-based sources
-        ib.clear();
-        ib.put(channels);
-        ib.flip();
-        alDeleteSources(ib);
-
+        if (!AL.isCreated())
+            return;
+        
         if (context != null) {
+            // delete channel-based sources
+            ib.clear();
+            ib.put(channels);
+            ib.flip();
+            alDeleteSources(ib);
+
             ALC10.alcMakeContextCurrent(null);
             ALC10.alcDestroyContext(context);
             context = null;
@@ -144,6 +168,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
         AL.destroy();
 
         logger.log(Level.INFO, "Audio destroyed");
+
     }
 
     private void setListenerParams(Vector3f pos, Vector3f vel, Vector3f dir, Vector3f up){

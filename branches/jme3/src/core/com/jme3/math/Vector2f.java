@@ -242,9 +242,10 @@ public final class Vector2f implements Savable, Cloneable {
      *            An amount between 0.0 - 1.0 representing a percentage change
      *            from this towards finalVec
      */
-    public void interpolate(Vector2f finalVec, float changeAmnt) {
+    public Vector2f interpolate(Vector2f finalVec, float changeAmnt) {
         this.x = (1 - changeAmnt) * this.x + changeAmnt * finalVec.x;
         this.y = (1 - changeAmnt) * this.y + changeAmnt * finalVec.y;
+        return this;
     }
 
     /**
@@ -259,10 +260,11 @@ public final class Vector2f implements Savable, Cloneable {
      *            An amount between 0.0 - 1.0 representing a precentage change
      *            from beginVec towards finalVec
      */
-    public void interpolate(Vector2f beginVec, Vector2f finalVec,
+    public Vector2f interpolate(Vector2f beginVec, Vector2f finalVec,
             float changeAmnt) {
         this.x = (1 - changeAmnt) * beginVec.x + changeAmnt * finalVec.x;
         this.y = (1 - changeAmnt) * beginVec.y + changeAmnt * finalVec.y;
+        return this;
     }
 
     /**
@@ -599,16 +601,18 @@ public final class Vector2f implements Savable, Cloneable {
         return x;
     }
 
-    public void setX(float x) {
+    public Vector2f setX(float x) {
         this.x = x;
+        return this;
     }
 
     public float getY() {
         return y;
     }
 
-    public void setY(float y) {
+    public Vector2f setY(float y) {
         this.y = y;
+        return this;
     }
     /**
      * <code>getAngle</code> returns (in radians) the angle represented by
@@ -624,8 +628,9 @@ public final class Vector2f implements Savable, Cloneable {
     /**
      * <code>zero</code> resets this vector's data to zero internally.
      */
-    public void zero() {
+    public Vector2f zero() {
         x = y = 0;
+        return this;
     }
 
     /**

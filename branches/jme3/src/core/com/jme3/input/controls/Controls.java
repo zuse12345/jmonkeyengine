@@ -13,6 +13,7 @@ import com.jme3.util.IntMap;
 import com.jme3.util.IntMap.Entry;
 import java.util.ArrayList;
 import java.util.HashMap;
+import org.lwjgl.Sys;
 
 public class Controls implements RawInputListener {
 
@@ -21,7 +22,9 @@ public class Controls implements RawInputListener {
     private final JoyInput joystick;
 
     private float frameTPF;
+    private long lastLastUpdateTime = 0;
     private long lastUpdateTime = 0;
+    private long firstTime = 0;
     private boolean eventsPermitted = false;
 
     private float axisDeadZone = 0.05f;
@@ -30,9 +33,8 @@ public class Controls implements RawInputListener {
     private final HashMap<String, Mapping> mappings = new HashMap<String, Mapping>();
     private final IntMap<Long> pressedButtons = new IntMap<Long>();
 
-//    private final ArrayList<Trigger> triggers = new ArrayList<Trigger>();
-
     private static class Mapping {
+        
         private final String name;
         private final ArrayList<Integer> triggers = new ArrayList<Integer>();
         private final ArrayList<InputListener> listeners = new ArrayList<InputListener>();
@@ -60,6 +62,8 @@ public class Controls implements RawInputListener {
         keys.setInputListener(this);
         mouse.setInputListener(this);
         if (joystick != null) joystick.setInputListener(this);
+
+        firstTime = Sys.getTime() * 1000000;
     }
 
     static final int joyButtonHash(int joyButton){
@@ -92,7 +96,7 @@ public class Controls implements RawInputListener {
             Mapping mapping = maps.get(i);
             ArrayList<InputListener> listeners = mapping.listeners;
             int listenerSize = listeners.size();
-            for (int j = listenerSize - 1; i >= 0; i--){
+            for (int j = listenerSize - 1; j >= 0; j--){
                 InputListener listener = listeners.get(j);
                 if (listener instanceof ActionListener){
                     ((ActionListener)listener).onAction(mapping.name, pressed, frameTPF);
@@ -105,24 +109,30 @@ public class Controls implements RawInputListener {
         if (!bindings.containsKey(hash))
             return;
 
-        if (pressed)
+//        System.out.println(hash + " " + (pressed ? "pressed" : "releasd") + " at " + ((time-firstTime)/1000000));
+        if (pressed){
             pressedButtons.put(hash, time);
-        else{
-            long pressTime   = pressedButtons.get(hash);
+        }else{
+            long pressTime   = pressedButtons.remove(hash);
             long lastUpdate  = lastUpdateTime;
             long releaseTime = time;
             float timeDelta = releaseTime - Math.max(pressTime, lastUpdate);
-            float frameDelta = frameTPF * 1000f;
+            float frameDelta = frameTPF * 1000000000f;
             invokeAnalogs(hash, timeDelta / frameDelta);
         }
     }
 
-    private void invokeUpdateActions(long currentTime){
+    private void invokeUpdateActions(){
         for (Entry<Long> pressedButton : pressedButtons){
             int hash = pressedButton.getKey();
             long pressTime   = pressedButton.getValue();
-            float timeDelta = currentTime - pressTime;
-            float frameDelta = frameTPF * 1000f;
+            long lastLast = lastLastUpdateTime;
+            long lastUpdate  = lastUpdateTime;
+            float timeDelta = lastUpdateTime - Math.max(lastLastUpdateTime, pressTime);
+            float frameDelta = frameTPF * 1000000000f;
+//            System.out.println(hash + " updated at " + ((lastUpdateTime-firstTime)/1000000)
+//                                    + " last up " + ((lastLastUpdateTime-firstTime)/1000000)
+//                                    + " press time " + (  (pressTime-firstTime)/1000000));
             if (timeDelta > 0)
                 invokeAnalogs(hash, timeDelta / frameDelta);
         }
@@ -138,7 +148,7 @@ public class Controls implements RawInputListener {
             Mapping mapping = maps.get(i);
             ArrayList<InputListener> listeners = mapping.listeners;
             int listenerSize = listeners.size();
-            for (int j = listenerSize - 1; i >= 0; i--){
+            for (int j = listenerSize - 1; j >= 0; j--){
                 InputListener listener = listeners.get(j);
                 if (listener instanceof AnalogListener){
                     ((AnalogListener)listener).onAnalog(mapping.name, value, frameTPF);
@@ -162,7 +172,7 @@ public class Controls implements RawInputListener {
             Mapping mapping = maps.get(i);
             ArrayList<InputListener> listeners = mapping.listeners;
             int listenerSize = listeners.size();
-            for (int j = listenerSize - 1; i >= 0; i--){
+            for (int j = listenerSize - 1; j >= 0; j--){
                 InputListener listener = listeners.get(j);
                 if (listener instanceof ActionListener){
                     ((ActionListener)listener).onAction(mapping.name, true, frameTPF);
@@ -286,6 +296,7 @@ public class Controls implements RawInputListener {
 
     public void update(float tpf){
         frameTPF = tpf;
+        long currentTime = Sys.getTime() * 1000000;
 
         eventsPermitted = true;
 
@@ -295,9 +306,9 @@ public class Controls implements RawInputListener {
         
         eventsPermitted = false;
 
-        long currentTime = System.currentTimeMillis();
-        invokeUpdateActions(currentTime);
+        invokeUpdateActions();
 
+        lastLastUpdateTime = lastUpdateTime;
         lastUpdateTime = currentTime;
     }
 

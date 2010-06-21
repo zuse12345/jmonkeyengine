@@ -8,6 +8,8 @@ import com.jme3.system.JmeSystem;
 import java.awt.Canvas;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.concurrent.Callable;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -16,7 +18,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
-public class TestCanvas2 {
+public class TestCanvas {
 
     private static JmeCanvasContext context;
     private static Canvas canvas;
@@ -27,6 +29,12 @@ public class TestCanvas2 {
         frame = new JFrame("Test");
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.addWindowListener(new WindowAdapter(){
+            @Override
+            public void windowClosed(WindowEvent e) {
+                app.stop();
+            }
+        });
 
         JMenuBar menuBar = new JMenuBar();
         frame.setJMenuBar(menuBar);
@@ -98,8 +106,6 @@ public class TestCanvas2 {
     }
 
     public static void main(String[] args){
-
-
         SwingUtilities.invokeLater(new Runnable(){
             public void run(){
                 JPopupMenu.setDefaultLightWeightPopupEnabled(false);

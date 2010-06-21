@@ -21,6 +21,7 @@ import com.jme3.scene.VertexBuffer.Usage;
 import com.jme3.util.BufferUtils;
 import com.jme3.util.IntMap;
 import com.jme3.util.IntMap.Entry;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.Buffer;
@@ -164,6 +165,9 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             }
         }
         
+        if (mat == null)
+            throw new RuntimeException("Cannot locate material named " + matName);
+
         if (mat.isTransparent())
             geom.setQueueBucket(Bucket.Transparent);
 //        else

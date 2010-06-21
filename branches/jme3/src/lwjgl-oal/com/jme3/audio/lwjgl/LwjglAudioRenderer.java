@@ -105,11 +105,12 @@ public class LwjglAudioRenderer implements AudioRenderer {
         logger.finer("Audio Version: "+alGetString(AL_VERSION));
 
         // Create channel sources
-        ib.rewind();
+        ib.clear();
+        ib.limit(channels.length);
         alGenSources(ib);
         ib.clear();
         ib.get(channels);
-        ib.rewind();
+        ib.clear();
 
         deviceBlocked = false;
         deviceBlockedDelay = -1;

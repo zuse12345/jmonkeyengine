@@ -282,6 +282,29 @@ public class J3MLoader implements AssetLoader {
         }
     }
 
+    private void readAdditionalRenderState() throws IOException{
+        nextStatement();
+
+        String word = scan.next();
+        throwIfNequal("{", word);
+
+        nextStatement();
+
+        renderState = material.getAdditionalRenderState();
+
+        while (true){
+            if (scan.hasNext("\\}")){
+                scan.next();
+                break;
+            }
+
+            readRenderStateStatement();
+            nextStatement();
+        }
+
+        renderState = null;
+    }
+
     private void readRenderState() throws IOException{
         nextStatement();
 
@@ -503,6 +526,9 @@ public class J3MLoader implements AssetLoader {
             if (extending){
                 if (word.equals("MaterialParameters")){
                     readExtendingMaterialParams();
+                    nextStatement();
+                }else if (word.equals("AdditionalRenderState")){
+                    readAdditionalRenderState();
                     nextStatement();
                 }
             }else{

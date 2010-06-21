@@ -23,7 +23,7 @@ public interface AssetManager {
     public void registerLoader(String loaderClassName, String ... extensions);
     public void registerLocator(String rootPath, String locatorClassName);
 
-    public Object loadAsset(AssetKey key);
+    public <T> T loadAsset(AssetKey<T> key);
     public Object loadAsset(String name);
     public Texture loadTexture(TextureKey key);
     public Texture loadTexture(String name);

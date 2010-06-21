@@ -30,7 +30,6 @@ public class TestOnlineJar extends SimpleApplication {
         quadMesh.updateGeometry(1, 1, true);
 
         Geometry quad = new Geometry("Textured Quad", quadMesh);
-        quad.updateModelBound();
 
         AssetManager am = new DesktopAssetManager(false);
         am.registerLocator("http://www.jmonkeyengine.com/applet/jme3testdata.jar",

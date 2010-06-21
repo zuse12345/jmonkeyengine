@@ -109,7 +109,7 @@ public class DesktopAssetManager implements AssetManager {
      * @param name
      * @return
      */
-    public Object loadAsset(AssetKey key){
+    public <T> T loadAsset(AssetKey<T> key){
         Object o = key.shouldCache() ? cache.getFromCache(key) : null;
         if (o == null){
             AssetLoader loader = handler.aquireLoader(key);
@@ -155,7 +155,7 @@ public class DesktopAssetManager implements AssetManager {
 
         // object o is the asset
         // create an instance for user
-        return key.createClonedInstance(o);
+        return (T) key.createClonedInstance(o);
     }
 
     public Object loadAsset(String name){

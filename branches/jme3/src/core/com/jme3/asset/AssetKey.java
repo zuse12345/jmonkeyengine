@@ -12,7 +12,7 @@ import java.io.IOException;
  * look up a resource from a cache. 
  * This class should be immutable.
  */
-public class AssetKey implements Savable {
+public class AssetKey<T> implements Savable {
 
     protected String name;
     protected transient String folder;

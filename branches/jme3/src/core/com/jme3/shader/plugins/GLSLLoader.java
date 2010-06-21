@@ -52,10 +52,11 @@ public class GLSLLoader implements AssetLoader {
 
     }
 
-    private class GlslDependKey extends AssetKey {
+    private class GlslDependKey extends AssetKey<InputStream> {
         public GlslDependKey(String name){
             super(name);
         }
+        @Override
         public boolean shouldCache(){
             return false;
         }

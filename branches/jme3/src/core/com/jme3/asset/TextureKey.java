@@ -11,7 +11,7 @@ import com.jme3.texture.TextureCubeMap;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class TextureKey extends AssetKey {
+public class TextureKey extends AssetKey<Texture> {
 
     private boolean generateMips;
     private boolean flipY;

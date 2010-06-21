@@ -8,7 +8,7 @@ public class TestAssetCache {
     private static class MyAsset {
         
         private String name;
-        private byte[] bytes = new byte[1024];
+        private byte[] bytes = new byte[100];
 
         public MyAsset(String name) {
             this.name = name;
@@ -34,7 +34,7 @@ public class TestAssetCache {
 
         long startMem = Runtime.getRuntime().freeMemory();
 
-        for (int i = 0; i < 100000; i++){
+        for (int i = 0; i < 10000; i++){
             MyAsset asset = new MyAsset("asset"+i);
             AssetKey key = new AssetKey(asset.getName());
         }
@@ -51,7 +51,7 @@ public class TestAssetCache {
         System.out.println("No cache gc diff:\t"+(startMem-endMem));
         startMem = endMem;
 
-        for (int i = 0; i < 100000; i++){
+        for (int i = 0; i < 10000; i++){
             MyAsset asset = new MyAsset("asset"+i);
             AssetKey key = new AssetKey(asset.getName());
             cache.addToCache(key, asset);

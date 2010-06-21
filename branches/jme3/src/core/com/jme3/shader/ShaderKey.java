@@ -2,7 +2,7 @@ package com.jme3.shader;
 
 import com.jme3.asset.AssetKey;
 
-public class ShaderKey extends AssetKey {
+public class ShaderKey extends AssetKey<Shader> {
 
     protected final String fragName;
     protected final DefineList defines;

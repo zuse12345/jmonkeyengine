@@ -277,6 +277,8 @@ public class MaterialLoader implements AssetLoader {
 
         if (shinines > 0f)
             mat.setFloat("m_Shininess", shinines);
+        else
+            mat.setFloat("m_Shininess", 1f); // set shininess to some value anyway..
         
         if (vcolor)
             mat.setBoolean("m_UseVertexColor", true);

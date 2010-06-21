@@ -12,7 +12,7 @@ import java.io.IOException;
  *
  * @author Kirill
  */
-public class AudioKey extends AssetKey {
+public class AudioKey extends AssetKey<AudioData> {
 
     private boolean stream;
 

@@ -19,10 +19,8 @@ import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.control.LodControl;
 import com.jme3.scene.shape.Box;
 import com.jme3.shadow.BasicShadowRenderer;
-import com.jme3.system.AppSettings;
 import com.jme3.texture.Texture.WrapMode;
 
 public class TestFancyCar extends SimpleBulletApplication implements BindingListener {
@@ -87,7 +85,6 @@ public class TestFancyCar extends SimpleBulletApplication implements BindingList
 
         setupKeys();
         setupFloor();
-//        setupGImpact();
         buildPlayer();
 
         DirectionalLight dl = new DirectionalLight();
@@ -118,21 +115,6 @@ public class TestFancyCar extends SimpleBulletApplication implements BindingList
         tb.setLocalTranslation(new Vector3f(0f,-6,0f));
         tb.updateModelBound();
         tb.updateGeometricState();
-        getPhysicsSpace().add(tb);
-    }
-
-    public void setupGImpact() {
-        Node gimpact = (Node) assetManager.loadModel("Models/MonkeyHead/MonkeyHead.mesh.xml");
-        
-
-        Geometry geom = (Geometry) gimpact.getChild(0);
-        geom.setShadowMode(ShadowMode.CastAndRecieve);
-        
-//        rootNode.attachChild(geom);
-
-        PhysicsNode tb=new PhysicsNode(geom, new GImpactCollisionShape(geom.getMesh()), 0.4f);
-        tb.setLocalTranslation(new Vector3f(4,6,0f));
-        rootNode.attachChild(tb);
         getPhysicsSpace().add(tb);
     }
 

@@ -28,8 +28,12 @@ public class ParticleEmitter extends Geometry implements Control {
     private ParticleMesh particleMesh;
     private ParticleMesh.Type meshType;
     private Particle[] particles;
-    private int next = 0;
-    private ArrayList<Integer> unusedIndices = new ArrayList<Integer>();
+
+    private int firstUnUsed;
+    private int lastUsed;
+
+//    private int next = 0;
+//    private ArrayList<Integer> unusedIndices = new ArrayList<Integer>();
 
     private boolean randomAngle = false;
     private boolean selectRandomImage = false;
@@ -99,7 +103,8 @@ public class ParticleEmitter extends Geometry implements Control {
     }
 
     public int getNumVisibleParticles(){
-        return unusedIndices.size() + next;
+//        return unusedIndices.size() + next;
+        return lastUsed + 1;
     }
 
     /**
@@ -112,6 +117,8 @@ public class ParticleEmitter extends Geometry implements Control {
         for (int i = 0; i < numParticles; i++){
             particles[i] = new Particle();
         }
+        firstUnUsed = 0;
+        lastUsed = -1;
     }
 
     public Vector3f getFaceNormal() {
@@ -256,24 +263,37 @@ public class ParticleEmitter extends Geometry implements Control {
         this.variation = variation;
     }
 
-    private int newIndex(){
-        if (unusedIndices.size() > 0)
-            return unusedIndices.remove(0);
-        else
-            return next++;
-    }
+//    private int newIndex(){
+//        liveParticles ++;
+//        return unusedIndices.remove(0);
+//        if (unusedIndices.size() > 0){
+//            liveParticles++;
+//            return unusedIndices.remove(0);
+//        }else if (next < particles.length){
+//            liveParticles++;
+//            return next++;
+//        }else{
+//            return -1;
+//        }
+//    }
 
-    private void freeIndex(int index){
-        if (index == next-1)
-            next--;
-        else
-            unusedIndices.add(index);
-    }
+//    private void freeIndex(int index){
+//        liveParticles--;
+//        if (index == next-1)
+//            next--;
+//        else
+//        assert !unusedIndices.contains(index);
+//        unusedIndices.add(index);
+//    }
 
     private boolean emitParticle(){
-        int idx = newIndex();
-        if (idx >= particles.length)
+//        int idx = newIndex();
+//        if (idx == -1)
+//            return false;
+        int idx = lastUsed + 1;
+        if (idx >= particles.length) {
             return false;
+        }
 
         Particle p = particles[idx];
         if (selectRandomImage)
@@ -302,6 +322,9 @@ public class ParticleEmitter extends Geometry implements Control {
         p.velocity.interpolate(temp, variation);
         assert TempVars.get().unlock();
 
+        lastUsed++;
+        firstUnUsed = idx + 1;
+
         return true;
     }
 
@@ -325,17 +348,34 @@ public class ParticleEmitter extends Geometry implements Control {
         p.imageIndex = 0;
         p.angle = 0;
         p.rotateSpeed = 0;
-        freeIndex(idx);
+
+//        freeIndex(idx);
+
+        if (idx == lastUsed) {
+            while (lastUsed >= 0 && particles[lastUsed].life == 0) {
+                lastUsed--;
+            }
+        }
+        if (idx < firstUnUsed) {
+            firstUnUsed = idx;
+        }
+    }
+
+     private void swap(int idx1, int idx2) {
+        Particle p1 = particles[idx1];
+        particles[idx1] = particles[idx2];
+        particles[idx2] = p1;
     }
 
     private void updateParticleState(float tpf){
         assert TempVars.get().lock();
         Vector3f temp = TempVars.get().vect1;
-
         for (int i = 0; i < particles.length; i++){
             Particle p = particles[i];
             if (p.life == 0){ // particle is dead
-                p.color.set(0,0,0,0);
+//                p.color.set(0,0,0,0);
+//                assert unusedIndices.contains(i);
+                assert i < firstUnUsed;
                 continue;
             }
 
@@ -344,7 +384,7 @@ public class ParticleEmitter extends Geometry implements Control {
                 freeParticle(i);
                 continue;
             }
-            
+
             // position += velocity * tpf
             float g = gravity * tpf;
             p.velocity.y -= g;
@@ -358,6 +398,14 @@ public class ParticleEmitter extends Geometry implements Control {
 
             if (!selectRandomImage) // use animated effect
                 p.imageIndex = (int) (b * imagesX * imagesY);
+            
+             if (firstUnUsed < i) {
+                swap(firstUnUsed, i);
+                if (i == lastUsed) {
+                    lastUsed = firstUnUsed;
+                }
+                firstUnUsed++;
+            }
         }
 
         assert TempVars.get().unlock();
@@ -365,11 +413,16 @@ public class ParticleEmitter extends Geometry implements Control {
         float particlesToEmitF = particlesPerSec * tpf;
         int particlesToEmit = (int) (particlesToEmitF);
         emitCarry += particlesToEmitF - particlesToEmit;
-        
-        if (emitCarry > 1f){
+
+        while (emitCarry > 1f){
             particlesToEmit ++;
-            emitCarry = 0f;
+            emitCarry -= 1f;
         }
+
+//        if (emitCarry > 1f){
+//            particlesToEmit ++;
+//            emitCarry = 0f;
+//        }
 
         for (int i = 0; i < particlesToEmit; i++){
             emitParticle();

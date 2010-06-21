@@ -20,11 +20,10 @@ public class TestAmbient extends AudioApp {
 
     @Override
     public void initAudioApp(){
-        waves  = new AudioNode(manager, "Sound/Environment/Ocean Waves.ogg", true);
+        waves  = new AudioNode(manager, "Sound/Environment/Ocean Waves.ogg", false);
+        waves.setPositional(true);
 
         nature = new AudioNode(manager, "Sound/Environment/Nature.ogg", true);
-        nature.setPositional(true);
-        
 //        river  = new AudioSource(manager, "sounds/river.ogg");
 
 //        float[] eax = new float[]
@@ -35,11 +34,11 @@ public class TestAmbient extends AudioApp {
 //        ar.setEnvironment(env);
 
         waves.setLocalTranslation(new Vector3f(4, -1, 30));
-//        waves.setReverbEnabled(true);
-        waves.setMaxDistance(10);
-        waves.setRefDistance(5);
-        nature.setVolume(2);
-        ar.playSource(waves);
+        waves.setMaxDistance(5);
+        waves.setRefDistance(1);
+        
+        nature.setVolume(3);
+        ar.playSourceInstance(waves);
         ar.playSource(nature);
     }
 

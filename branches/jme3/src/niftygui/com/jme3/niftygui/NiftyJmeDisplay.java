@@ -48,6 +48,8 @@ public class NiftyJmeDisplay extends TimeProvider implements SceneProcessor {
         inited = true;
         this.vp = vp;
         this.renderer = rm.getRenderer();
+        
+        inputSys.setHeight(vp.getCamera().getHeight());
     }
 
     public Nifty getNifty() {
@@ -81,6 +83,7 @@ public class NiftyJmeDisplay extends TimeProvider implements SceneProcessor {
     public void reshape(ViewPort vp, int w, int h) {
         this.w = w;
         this.h = h;
+        inputSys.setHeight(h);
     }
 
     public boolean isInitialized() {

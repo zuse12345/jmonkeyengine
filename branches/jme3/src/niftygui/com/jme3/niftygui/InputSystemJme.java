@@ -7,23 +7,20 @@ import com.jme3.input.event.JoyButtonEvent;
 import com.jme3.input.event.KeyInputEvent;
 import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
-import de.lessvoid.nifty.Nifty;
+import de.lessvoid.nifty.NiftyInputConsumer;
 import de.lessvoid.nifty.input.keyboard.KeyboardInputEvent;
 import de.lessvoid.nifty.input.mouse.MouseInputEvent;
 import de.lessvoid.nifty.spi.input.InputSystem;
 import java.util.ArrayList;
-import java.util.List;
 
 public class InputSystemJme implements InputSystem, RawInputListener {
 
     private final ArrayList<MouseInputEvent> mouseEvents = new ArrayList<MouseInputEvent>();
-    private final ArrayList<MouseInputEvent> mouseEventsCopy = new ArrayList<MouseInputEvent>();
-
     private final ArrayList<KeyboardInputEvent> keyEvents     = new ArrayList<KeyboardInputEvent>();
-    private final ArrayList<KeyboardInputEvent> keyEventsCopy = new ArrayList<KeyboardInputEvent>();
 
     private boolean pressed = false;
     private int x, y;
+    private int height;
 
     private boolean shiftDown = false;
     private boolean ctrlDown  = false;
@@ -31,22 +28,12 @@ public class InputSystemJme implements InputSystem, RawInputListener {
     public InputSystemJme(){
     }
 
-    public List<MouseInputEvent> getMouseEvents() {
-        synchronized (mouseEvents){
-            mouseEventsCopy.clear();
-            mouseEventsCopy.addAll(mouseEvents);
-            mouseEvents.clear();
-            return mouseEventsCopy;
-        }
-    }
-
-    public List<KeyboardInputEvent> getKeyboardEvents() {
-        synchronized (keyEvents){
-            keyEventsCopy.clear();
-            keyEventsCopy.addAll(keyEvents);
-            keyEvents.clear();
-            return keyEventsCopy;
-        }
+    /**
+     * @param height The height of the viewport. Used to convert
+     * buttom-left origin to upper-left origin.
+     */
+    public void setHeight(int height){
+        this.height = height;
     }
 
     public void onJoyAxisEvent(JoyAxisEvent evt) {
@@ -58,7 +45,7 @@ public class InputSystemJme implements InputSystem, RawInputListener {
     public void onMouseMotionEvent(MouseMotionEvent evt) {
         synchronized (mouseEvents){
             x = evt.getX();
-            y = evt.getY();
+            y = height - evt.getY();
             mouseEvents.add(new MouseInputEvent(x, y, pressed));
         }
     }
@@ -89,6 +76,21 @@ public class InputSystemJme implements InputSystem, RawInputListener {
 
 
             keyEvents.add(keyEvt);
+        }
+    }
+
+    public void forwardEvents(NiftyInputConsumer nic) {
+        synchronized (mouseEvents){
+            for (MouseInputEvent evt : mouseEvents){
+                nic.processMouseEvent(evt);
+            }
+            mouseEvents.clear();
+        }
+        synchronized (keyEvents){
+            for (KeyboardInputEvent evt : keyEvents){
+                nic.processKeyboardEvent(evt);
+            }
+            keyEvents.clear();
         }
     }
 }

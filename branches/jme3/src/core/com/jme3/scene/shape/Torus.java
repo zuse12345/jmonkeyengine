@@ -243,6 +243,8 @@ public class Torus extends Mesh {
         this.outerRadius = outerRadius;
         setGeometryData();
         setIndexData();
+        updateBound();
+        updateCounts();
     }
 
     @Override

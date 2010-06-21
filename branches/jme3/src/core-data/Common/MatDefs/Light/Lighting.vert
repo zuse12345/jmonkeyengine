@@ -1,10 +1,5 @@
-// ********************
-// * Defines	      *
-// ********************
-//#define VERTEX_LIGHTING
-//#define MATERIAL_COLORS
-//#define DIFFUSEMAP
-//#define NORMALMAP
+#define ATTENUATION
+//#define HQ_ATTENUATION
 
 uniform mat4 g_WorldViewProjectionMatrix;
 uniform mat4 g_WorldViewMatrix;
@@ -29,6 +24,10 @@ attribute vec3 inPosition;
 attribute vec2 inTexCoord;
 attribute vec3 inNormal;
 
+#ifdef HQ_ATTENUATION
+  varying vec3 lightVec;
+#endif
+
 #ifdef VERTEX_COLOR
   attribute vec4 inColor;
 #endif
@@ -51,7 +50,10 @@ void lightComputeDir(in vec3 worldPos, in vec4 color, in vec4 position, out vec4
     #ifdef ATTENUATION
      float dist = length(tempVec);
      lightDir.w = clamp(1.0 - position.w * dist * posLight, 0.0, 1.0);
-     lightDir.xyz = tempVec / dist;
+     lightDir.xyz = tempVec / vec3(dist);
+     #ifdef HQ_ATTENUATION
+       lightVec = tempVec;
+     #endif
     #else
      lightDir = vec4(normalize(tempVec), 1.0);
     #endif
@@ -63,21 +65,22 @@ void lightComputeDir(in vec3 worldPos, in vec4 color, in vec4 position, out vec4
   }
 
   float lightComputeSpecular(vec3 norm, vec3 viewdir, vec3 lightdir, float shiny){
-      vec3 H = (viewdir + lightdir) * vec3(0.5);
-      //vec3 H = normalize(viewdir + lightdir);
-      return pow(max(dot(H, norm), 0.0), shiny);
-
-      //vec3 refdir = reflect(-lightdir, norm);
-      //return pow(max(dot(refdir, viewdir), 0.0), shiny);
+      #ifndef LOW_QUALITY
+        vec3 H = (viewdir + lightdir) * vec3(0.5);
+        return pow(max(dot(H, norm), 0.0), shiny);
+      #else
+        return 0.0;
+      #endif
   }
 
-  vec2 computeLighting(in vec3 wvPos, in vec3 wvNorm, in vec3 vDir){
+vec2 computeLighting(in vec3 wvPos, in vec3 wvNorm, in vec3 wvViewDir, in vec4 wvLightPos){
      vec4 lightDir;
-     lightComputeDir(wvPos, g_LightColor, g_LightPosition, lightDir);
+     lightComputeDir(wvPos, g_LightColor, wvLightPos, lightDir);
+
      float diffuseFactor = lightComputeDiffuse(wvNorm, lightDir.xyz);
-     float specularFactor = lightComputeSpecular(wvNorm, vDir, lightDir.xyz, m_Shininess);
+     float specularFactor = lightComputeSpecular(wvNorm, wvViewDir, lightDir.xyz, m_Shininess);
      //specularFactor *= step(0.01, diffuseFactor);
-     return vec2(diffuseFactor, specularFactor);
+     return vec2(diffuseFactor, specularFactor) * vec2(lightDir.w);
   }
 #endif
 
@@ -127,7 +130,7 @@ void main(){
     #endif
 
     #ifdef VERTEX_LIGHTING
-       vec2 light = computeLighting(wvPosition, wvNormal, viewDir);
+       vec2 light = computeLighting(wvPosition, wvNormal, viewDir, wvLightPos);
        DiffuseSum *= light.x;
        SpecularSum *= light.y;
     #endif

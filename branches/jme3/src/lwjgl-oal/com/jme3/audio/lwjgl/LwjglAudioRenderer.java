@@ -85,18 +85,18 @@ public class LwjglAudioRenderer implements AudioRenderer {
         logger.log(Level.FINE, "OpenAL device successfully opened");
 
 //        try {
-//            context = ALC10.alcCreateContext(device, createAttribs(44100, 60, false));
-//            ALC10.alcMakeContextCurrent(context);
+            context = ALC10.alcCreateContext(device, createAttribs(-666, -60, false));
+            ALC10.alcMakeContextCurrent(context);
 //
 //            logger.log(Level.FINE, "OpenAL context created with default settings.");
 //        } catch (Throwable ex){
 //            logger.log(Level.WARNING, "Failed to create OpenAL context. Trying fallback settings...");
 //        } finally {
 //            if (context == null && ALC10.alcGetCurrentContext() == null){
-                context = ALC10.alcCreateContext(device, null);
-                ALC10.alcMakeContextCurrent(context);
-
-                logger.log(Level.FINE, "OpenAL context created with fallback settings.");
+//                context = ALC10.alcCreateContext(device, null);
+//                ALC10.alcMakeContextCurrent(context);
+//
+//                logger.log(Level.FINE, "OpenAL context created with fallback settings.");
 //            }
 //        }
 

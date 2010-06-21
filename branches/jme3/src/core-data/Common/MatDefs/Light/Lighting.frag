@@ -1,14 +1,5 @@
-// ********************
-// * Defines	      *
-// ********************
-//#define VERTEX_LIGHTING
-//#define MATERIAL_COLORS
-//#define DIFFUSEMAP
-//#define NORMALMAP
-//#define LOW_QUALITY
-//#define SPECULARMAP
-//#define PARALLAXMAP
-//#define NORMALMAP_PARALLAX
+#define ATTENUATION
+//#define HQ_ATTENUATION
 
 varying vec2 texCoord;
 
@@ -43,6 +34,11 @@ varying vec4 SpecularSum;
 #ifndef VERTEX_LIGHTING
 uniform float m_Shininess;
 
+#ifdef HQ_ATTENUATION
+uniform vec4 g_LightPosition;
+varying vec3 lightVec;
+#endif
+
 float lightComputeDiffuse(vec3 norm, vec3 lightdir){
     return max(0.0, dot(norm, lightdir));
 }
@@ -61,9 +57,16 @@ float lightComputeSpecular(vec3 norm, vec3 viewdir, vec3 lightdir, float shiny){
 vec2 computeLighting(in vec3 wvPos, in vec3 wvNorm, in vec3 wvViewDir, in vec3 wvLightDir){
    float diffuseFactor = lightComputeDiffuse(wvNorm, wvLightDir);
    float specularFactor = 1.0;
-   specularFactor = step(0.01, diffuseFactor)
+   specularFactor = step(0.05, diffuseFactor*m_Shininess)
                   * lightComputeSpecular(wvNorm, wvViewDir, wvLightDir, m_Shininess);
-   return vec2(diffuseFactor, specularFactor);
+
+   #ifdef HQ_ATTENUATION
+    float att = clamp(1.0 - g_LightPosition.w * length(lightVec), 0.0, 1.0);
+   #else
+    float att = vLightDir.w;
+   #endif
+
+   return vec2(diffuseFactor, specularFactor) * vec2(att);
 }
 #endif
 
@@ -113,7 +116,7 @@ void main(){
     #endif
 
     #ifdef VERTEX_LIGHTING
-       gl_FragColor = (AmbientSum + DiffuseSum + SpecularSum) * diffuseColor
+       gl_FragColor = (AmbientSum + DiffuseSum) * diffuseColor
                      + SpecularSum * specularColor;
     #else
        vec4 lightDir = vLightDir;

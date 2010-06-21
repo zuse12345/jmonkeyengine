@@ -122,7 +122,7 @@ public class Controls implements RawInputListener {
         }
     }
 
-    private float computeAnalogValue(long timeDelta){
+    private final float computeAnalogValue(long timeDelta){
         if (safeMode)
             return 1f;
         else

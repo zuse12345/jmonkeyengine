@@ -224,6 +224,15 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             node = entityNode.getParent();
             entityNode = null;
         }else if (qName.equals("light")){
+            // apply the node's world transform on the light..
+            root.updateGeometricState();
+            if (light instanceof DirectionalLight){
+                DirectionalLight dl = (DirectionalLight) light;
+                Quaternion q = node.getWorldRotation();
+                Vector3f dir = dl.getDirection();
+                q.multLocal(dir);
+                dl.setDirection(dir);
+            }
             light = null;
         }
         assert elementStack.peek().equals(qName);

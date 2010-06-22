@@ -18,6 +18,7 @@ import com.jme3.shader.VarType;
 import com.jme3.texture.Image;
 import com.jme3.texture.Image.Format;
 import com.jme3.texture.Texture;
+import com.jme3.texture.Texture.WrapMode;
 import com.jme3.util.BufferUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -149,9 +150,17 @@ public class J3MLoader implements AssetLoader {
 //            String texturePath = readString("[\n;(//)(\\})]");
             String texturePath = readString("[\n;(\\})]");
             boolean flipY = false;
-            if (texturePath.startsWith("Flip ")){
+            boolean repeat = false;
+            if (texturePath.startsWith("Flip Repeat ")){
+                texturePath = texturePath.substring(12).trim();
+                flipY = true;
+                repeat = true;
+            }else if (texturePath.startsWith("Flip ")){
                 texturePath = texturePath.substring(5).trim();
                 flipY = true;
+            }else if (texturePath.startsWith("Repeat ")){
+                texturePath = texturePath.substring(7).trim();
+                repeat = true;
             }
 
             TextureKey key = new TextureKey(texturePath, flipY);
@@ -159,6 +168,9 @@ public class J3MLoader implements AssetLoader {
             key.setGenerateMips(true);
 
             Texture tex = owner.loadTexture(key);
+            if (repeat)
+                tex.setWrap(WrapMode.Repeat);
+            
             material.setTextureParam(name, type, tex);
         }else{
             switch (type){

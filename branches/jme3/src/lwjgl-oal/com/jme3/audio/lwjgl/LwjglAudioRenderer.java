@@ -9,6 +9,7 @@ import com.jme3.audio.AudioStream;
 import com.jme3.audio.Environment;
 import com.jme3.audio.Listener;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.Camera;
 import com.jme3.util.BufferUtils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -17,14 +18,10 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.java.games.joal.ALC;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.openal.AL;
 
 import org.lwjgl.openal.AL11;
-import org.lwjgl.openal.ALC10;
-import org.lwjgl.openal.ALCcontext;
-import org.lwjgl.openal.ALCdevice;
 
 import static org.lwjgl.openal.AL10.*;
 
@@ -47,126 +44,39 @@ public class LwjglAudioRenderer implements AudioRenderer {
 
     private Listener listener;
 
-    private boolean deviceBlocked = false;
-    private float deviceBlockedDelay = -1;
-
-    private ALCdevice  device;
-    private ALCcontext context;
-
     public LwjglAudioRenderer(){
         nativeBuf.order(ByteOrder.nativeOrder());
     }
 
-    private IntBuffer createAttribs(int freq, int refresh, boolean sync){
-        ib.clear();
-        ib.put(ALC10.ALC_FREQUENCY);
-        ib.put(freq);
-        ib.put(ALC10.ALC_REFRESH);
-        ib.put(refresh);
-        ib.put(ALC10.ALC_SYNC);
-        ib.put(sync ? ALC.ALC_TRUE : ALC.ALC_FALSE);
-        ib.put(0);
-        ib.flip();
-        return ib;
-    }
 
-    public boolean attemptOpenDevice(){
-        if (deviceBlockedDelay == -2)
-            return false;
-
-        // Attempt to create OpenAL device manually, to detect creation error.
-        device = ALC10.alcOpenDevice(null);
-        if (device == null) {
-            logger.log(Level.SEVERE, "Cannot open audio device!");
-            deviceBlocked = true;
-            deviceBlockedDelay = 10;
-            return false;
+    public void initialize(){
+        try{
+            AL.create();
+        }catch (LWJGLException ex){
+            logger.log(Level.SEVERE, "Failed to load audio library", ex);
         }
-        logger.log(Level.FINE, "OpenAL device successfully opened");
-
-//        try {
-            context = ALC10.alcCreateContext(device, createAttribs(-666, -60, false));
-            ALC10.alcMakeContextCurrent(context);
-//
-//            logger.log(Level.FINE, "OpenAL context created with default settings.");
-//        } catch (Throwable ex){
-//            logger.log(Level.WARNING, "Failed to create OpenAL context. Trying fallback settings...");
-//        } finally {
-//            if (context == null && ALC10.alcGetCurrentContext() == null){
-//                context = ALC10.alcCreateContext(device, null);
-//                ALC10.alcMakeContextCurrent(context);
-//
-//                logger.log(Level.FINE, "OpenAL context created with fallback settings.");
-//            }
-//        }
 
         logger.finer("Audio Vendor: "+alGetString(AL_VENDOR));
         logger.finer("Audio Renderer: "+alGetString(AL_RENDERER));
         logger.finer("Audio Version: "+alGetString(AL_VERSION));
 
         // Create channel sources
-        ib.clear();
-        ib.limit(channels.length);
+        ib.rewind();
         alGenSources(ib);
         ib.clear();
         ib.get(channels);
-        ib.clear();
-
-        deviceBlocked = false;
-        deviceBlockedDelay = -1;
-
-        return true;
-    }
-
-    public void initialize(){
-        // Load OpenAL library.
-        try{
-            AL.create(null, 44100, 30, false, false);
-            if (!AL.isCreated())
-                throw new LWJGLException("AL not created");
-
-            logger.log(Level.FINE, "OpenAL library successfuly loaded.");
-        }catch (LWJGLException ex){
-            logger.log(Level.SEVERE, "Failed to load audio library", ex);
-            deviceBlocked = true;
-
-            // indicates that sound is unavailable indefinetly
-            // as OpenAL native library cannot be loaded
-            deviceBlockedDelay = -2;
-            return;
-        }
-
-        attemptOpenDevice();
+        ib.rewind();
     }
 
     public void cleanup(){
-        if (!AL.isCreated())
-            return;
-        
-        if (context != null) {
-            // delete channel-based sources
-            ib.clear();
-            ib.put(channels);
-            ib.flip();
-            alDeleteSources(ib);
-
-            ALC10.alcMakeContextCurrent(null);
-            ALC10.alcDestroyContext(context);
-            context = null;
-        }
-        
-        if (device != null) {
-            boolean result = ALC10.alcCloseDevice(device);
-            device = null;
-            if (!result)
-                logger.log(Level.WARNING, "Failed to close audio device");
-        }
+        // delete channel-based sources
+        ib.clear();
+        ib.put(channels);
+        ib.flip();
+        alDeleteSources(ib);
 
         // XXX: Delete other buffers/sources
         AL.destroy();
-
-        logger.log(Level.INFO, "Audio destroyed");
-
     }
 
     private void setListenerParams(Vector3f pos, Vector3f vel, Vector3f dir, Vector3f up){
@@ -236,9 +146,6 @@ public class LwjglAudioRenderer implements AudioRenderer {
     }
     
     public void setEnvironment(Environment env){
-        if (deviceBlocked)
-            return;
-
         logger.warning("Reverb not supported by LWJGL renderer");
     }
 
@@ -342,17 +249,6 @@ public class LwjglAudioRenderer implements AudioRenderer {
     }
 
     public void update(float tpf){
-        if (deviceBlocked){
-            deviceBlockedDelay -= tpf;
-            if (deviceBlockedDelay <= 0){
-                deviceBlockedDelay = 0;
-                if (!attemptOpenDevice())
-                    return;
-            }else{
-                return;
-            }
-        }
-
         for (int i = 0; i < channels.length; i++){
             AudioNode src = chanSrcs[i];
             if (src == null)
@@ -423,9 +319,6 @@ public class LwjglAudioRenderer implements AudioRenderer {
     }
 
     public void playSourceInstance(AudioNode src){
-        if (deviceBlocked)
-            return;
-
         if (src.getAudioData() instanceof AudioStream)
             throw new UnsupportedOperationException(
                     "Cannot play instances " +
@@ -448,13 +341,12 @@ public class LwjglAudioRenderer implements AudioRenderer {
 
         // play the channel
         alSourcePlay(sourceId);
+
+        System.out.println("Playing on "+index);
     }
 
     
     public void playSource(AudioNode src) {
-        if (deviceBlocked)
-            return;
-
         assert src.getStatus() == Status.Stopped || src.getChannel() == -1;
 
         if (src.getStatus() == Status.Playing){
@@ -481,9 +373,6 @@ public class LwjglAudioRenderer implements AudioRenderer {
 
     
     public void pauseSource(AudioNode src) {
-        if (deviceBlocked)
-            return;
-
         if (src.getStatus() == Status.Playing){
             assert src.getChannel() != -1;
 
@@ -494,9 +383,6 @@ public class LwjglAudioRenderer implements AudioRenderer {
 
     
     public void stopSource(AudioNode src) {
-        if (deviceBlocked)
-            return;
-
         if (src.getStatus() != Status.Stopped){
             int chan = src.getChannel();
             assert chan != -1; // if it's not stopped, must have id
@@ -565,9 +451,6 @@ public class LwjglAudioRenderer implements AudioRenderer {
     }
 
     public void deleteAudioData(AudioData ad){
-        if (deviceBlocked)
-            return;
-
         if (ad instanceof AudioBuffer){
             AudioBuffer ab = (AudioBuffer) ad;
             int id = ab.getId();

@@ -110,6 +110,13 @@ public class Box extends AbstractBox {
     }
 
     /**
+     * Empty constructor for serialization only. Do not use.
+     */
+    public Box(){
+        super();
+    }
+
+    /**
      * Creates a clone of this box.
      * <p>
      * The cloned box will have ‘_clone’ appended to it’s name, but all other

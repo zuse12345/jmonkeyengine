@@ -1,6 +1,6 @@
 #import "Common/ShaderLib/Common.glsllib"
 
-vec3 Texture_GetNormal(in sampler2D normalMap, vec2 texCoord){
+vec3 Texture_GetNormal(in sampler2D normalMap, in vec2 texCoord){
     #ifdef NORMAL_LATC
         return Common_UnpackNormalLA( texture2D(normalMap, texCoord) );
     #else
@@ -15,7 +15,7 @@ const mat4 ycocg_mat = mat4( 1.0, -1.0,  0.0,                 1.0,
                              0.0,  0.0,  0.0,                 0.0 );
 #endif
 
-vec4 Texture_GetColor(in sampler2D colorMap, vec2 texCoord){
+vec4 Texture_GetColor(in sampler2D colorMap, in vec2 texCoord){
     #ifdef DXT_YCOCG
         vec4 color = texture2D(colorMap, texCoord);
         // fast YCoCg decode:

@@ -26,7 +26,9 @@ public class DesktopAssetManager implements AssetManager {
 
     private final AssetCache cache = new AssetCache();
     private final ImplHandler handler = new ImplHandler(this);
-    
+
+    private AssetEventListener eventListener = null;
+
 //    private final ThreadingManager threadingMan = new ThreadingManager(this);
 //    private final Set<AssetKey> alreadyLoadingSet = new HashSet<AssetKey>();
 
@@ -52,6 +54,10 @@ public class DesktopAssetManager implements AssetManager {
             }
         }
         logger.info("DesktopAssetManager created.");
+    }
+
+    public void setAssetEventListener(AssetEventListener listener){
+        eventListener = listener;
     }
 
     public void registerLoader(Class<?> loader, String ... extensions){
@@ -110,6 +116,9 @@ public class DesktopAssetManager implements AssetManager {
      * @return
      */
     public <T> T loadAsset(AssetKey<T> key){
+        if (eventListener != null)
+            eventListener.assetRequested(key);
+
         Object o = key.shouldCache() ? cache.getFromCache(key) : null;
         if (o == null){
             AssetLoader loader = handler.aquireLoader(key);
@@ -144,6 +153,9 @@ public class DesktopAssetManager implements AssetManager {
             }else{
                 logger.finer("Loaded "+key+" with "+
                              loader.getClass().getSimpleName());
+
+                if (eventListener != null)
+                    eventListener.assetLoaded(key);
 
                 // do processing on asset before caching
                 o = key.postProcess(o);

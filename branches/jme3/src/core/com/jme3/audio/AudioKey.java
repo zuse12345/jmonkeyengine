@@ -36,6 +36,11 @@ public class AudioKey extends AssetKey<AudioData> {
     public AudioKey(){
     }
 
+    @Override
+    public String toString(){
+        return name + (stream ? "/S" : "");
+    }
+
     public boolean isStream() {
         return stream;
     }

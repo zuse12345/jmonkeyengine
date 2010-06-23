@@ -1,12 +1,20 @@
 package com.jme3.shader;
 
 import com.jme3.asset.AssetKey;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
+import java.io.IOException;
 
 public class ShaderKey extends AssetKey<Shader> {
 
-    protected final String fragName;
-    protected final DefineList defines;
-    protected final String language;
+    protected String fragName;
+    protected DefineList defines;
+    protected String language;
+
+    public ShaderKey(){
+    }
 
     public ShaderKey(String vertName, String fragName, DefineList defines, String lang){
         super(vertName);
@@ -17,7 +25,7 @@ public class ShaderKey extends AssetKey<Shader> {
 
     @Override
     public String toString(){
-        return name + ":" + fragName;
+        return "V="+name + " F=" + fragName + (defines != null ? defines : "");
     }
 
     @Override
@@ -66,5 +74,21 @@ public class ShaderKey extends AssetKey<Shader> {
     public String getLanguage() {
         return language;
     }
-    
+
+    @Override
+    public void write(JmeExporter ex) throws IOException{
+        super.write(ex);
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(fragName, "fragment_name", null);
+        oc.write(language, "language", null);
+    }
+
+    @Override
+    public void read(JmeImporter im) throws IOException{
+        super.read(im);
+        InputCapsule ic = im.getCapsule(this);
+        fragName = ic.readString("fragment_name", null);
+        language = ic.readString("language", null);
+    }
+
 }

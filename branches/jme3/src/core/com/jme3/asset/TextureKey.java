@@ -31,6 +31,11 @@ public class TextureKey extends AssetKey<Texture> {
     public TextureKey(){
     }
 
+    @Override
+    public String toString(){
+        return name + (flipY ? "/F" : "") + (asCube ? "/C" : "") + (generateMips ? "/MIP" : "");
+    }
+
     public Object createClonedInstance(Object asset){
         Texture tex = (Texture) asset;
         return tex.createSimpleClone();

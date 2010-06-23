@@ -17,14 +17,34 @@ public class DefineList implements Savable {
 
     public void write(JmeExporter ex) throws IOException{
         OutputCapsule oc = ex.getCapsule(this);
-        // TODO: Fix exporting of defines
-        getCompiled();
+
+        String[] keys = new String[defines.size()];
+        String[] vals = new String[defines.size()];
+
+        int i = 0;
+        for (Map.Entry<String, String> define : defines.entrySet()){
+            keys[i] = define.getKey();
+            vals[i] = define.getValue();
+            i++;
+        }
+
+        oc.write(keys, "keys", null);
+        oc.write(vals, "vals", null);
+
+        // for compatability only with older versions
         oc.write(compiled, "compiled", null);
     }
 
     public void read(JmeImporter im) throws IOException{
         InputCapsule ic = im.getCapsule(this);
-        compiled = ic.readString(compiled, null);
+
+        String[] keys = ic.readStringArray("keys", null);
+        String[] vals = ic.readStringArray("vals", null);
+        for (int i = 0; i < keys.length; i++){
+            defines.put(keys[i], vals[i]);
+        }
+
+        compiled = ic.readString("compiled", null);
     }
 
     public void clear() {
@@ -87,6 +107,20 @@ public class DefineList implements Savable {
             compiled = sb.toString();
         }
         return compiled;
+    }
+
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        for (Map.Entry<String, String> entry : defines.entrySet()) {
+            sb.append(entry.getKey());
+            if (i != defines.size() - 1)
+                sb.append(", ");
+
+            i++;
+        }
+        return sb.toString();
     }
 
 }

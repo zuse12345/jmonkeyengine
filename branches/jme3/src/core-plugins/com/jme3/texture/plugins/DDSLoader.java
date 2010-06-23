@@ -33,18 +33,15 @@ package com.jme3.texture.plugins;
 
 import com.jme3.asset.*;
 import com.jme3.util.*;
-import com.jme3.math.FastMath;
 import com.jme3.asset.AssetLoader;
 import com.jme3.texture.Image;
 import com.jme3.texture.Image.Format;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.logging.Logger;
 
 /**
@@ -373,12 +370,13 @@ public class DDSLoader implements AssetLoader {
         int mipHeight = height;
 
         sizes = new int[mipMapCount];
+        int outBpp = pixelFormat.getBitsPerPixel();
         for (int i = 0; i < mipMapCount; i++) {
             int size;
             if (compressed) {
-                size = ((mipWidth + 3) / 4) * ((mipHeight + 3) / 4) * bpp * 2;
+                size = ((mipWidth + 3) / 4) * ((mipHeight + 3) / 4) * outBpp * 2;
             } else {
-                size = mipWidth * mipHeight * bpp / 8;
+                size = mipWidth * mipHeight * outBpp / 8;
             }
 
             sizes[i] = ((size + 3) / 4) * 4;
@@ -472,10 +470,10 @@ public class DDSLoader implements AssetLoader {
         int mipHeight = height;
 
         int offset = 0;
+        byte[] b = new byte[sourcebytesPP];
         for (int mip = 0; mip < mipMapCount; mip++) {
             for (int y = 0; y < mipHeight; y++) {
                 for (int x = 0; x < mipWidth; x++) {
-                    byte[] b = new byte[sourcebytesPP];
                     in.readFully(b);
 
                     int i = byte2int(b);

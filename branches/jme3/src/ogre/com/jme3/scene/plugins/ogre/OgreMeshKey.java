@@ -1,8 +1,6 @@
 package com.jme3.scene.plugins.ogre;
 
-import com.jme3.asset.AssetKey;
 import com.jme3.asset.ModelKey;
-import com.jme3.scene.Spatial;
 
 public class OgreMeshKey extends ModelKey {
 
@@ -13,8 +11,12 @@ public class OgreMeshKey extends ModelKey {
         this.materialList = materialList;
     }
 
+    public OgreMeshKey(){
+        super();
+    }
+
     public OgreMaterialList getMaterialList() {
         return materialList;
     }
-    
+
 }

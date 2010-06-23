@@ -39,11 +39,11 @@ uniform vec4 g_LightPosition;
 varying vec3 lightVec;
 #endif
 
-float lightComputeDiffuse(vec3 norm, vec3 lightdir){
+float lightComputeDiffuse(in vec3 norm, in vec3 lightdir){
     return max(0.0, dot(norm, lightdir));
 }
 
-float lightComputeSpecular(vec3 norm, vec3 viewdir, vec3 lightdir, float shiny){
+float lightComputeSpecular(in vec3 norm, in vec3 viewdir, in vec3 lightdir, in float shiny){
     #ifdef LOW_QUALITY // Use Blinn-Phong instead
        // Note: preferably, H should be computed in the vertex shader
        vec3 H = (viewdir + lightdir) * vec3(0.5);

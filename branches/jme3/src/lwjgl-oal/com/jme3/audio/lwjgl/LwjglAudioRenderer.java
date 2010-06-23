@@ -43,17 +43,19 @@ public class LwjglAudioRenderer implements AudioRenderer {
     private ArrayList<Integer> freeChans = new ArrayList<Integer>();
 
     private Listener listener;
+    private boolean audioDisabled = false;
 
     public LwjglAudioRenderer(){
         nativeBuf.order(ByteOrder.nativeOrder());
     }
-
 
     public void initialize(){
         try{
             AL.create();
         }catch (LWJGLException ex){
             logger.log(Level.SEVERE, "Failed to load audio library", ex);
+            audioDisabled = true;
+            return;
         }
 
         logger.finer("Audio Vendor: "+alGetString(AL_VENDOR));
@@ -61,14 +63,18 @@ public class LwjglAudioRenderer implements AudioRenderer {
         logger.finer("Audio Version: "+alGetString(AL_VERSION));
 
         // Create channel sources
-        ib.rewind();
+        ib.clear();
+        ib.limit(channels.length);
         alGenSources(ib);
         ib.clear();
         ib.get(channels);
-        ib.rewind();
+        ib.clear();
     }
 
     public void cleanup(){
+        if (audioDisabled)
+            return;
+
         // delete channel-based sources
         ib.clear();
         ib.put(channels);
@@ -146,6 +152,9 @@ public class LwjglAudioRenderer implements AudioRenderer {
     }
     
     public void setEnvironment(Environment env){
+        if (audioDisabled)
+            return;
+
         logger.warning("Reverb not supported by LWJGL renderer");
     }
 
@@ -249,6 +258,9 @@ public class LwjglAudioRenderer implements AudioRenderer {
     }
 
     public void update(float tpf){
+        if (audioDisabled)
+            return;
+
         for (int i = 0; i < channels.length; i++){
             AudioNode src = chanSrcs[i];
             if (src == null)
@@ -319,6 +331,9 @@ public class LwjglAudioRenderer implements AudioRenderer {
     }
 
     public void playSourceInstance(AudioNode src){
+        if (audioDisabled)
+            return;
+
         if (src.getAudioData() instanceof AudioStream)
             throw new UnsupportedOperationException(
                     "Cannot play instances " +
@@ -347,6 +362,9 @@ public class LwjglAudioRenderer implements AudioRenderer {
 
     
     public void playSource(AudioNode src) {
+        if (audioDisabled)
+            return;
+
         assert src.getStatus() == Status.Stopped || src.getChannel() == -1;
 
         if (src.getStatus() == Status.Playing){
@@ -373,6 +391,9 @@ public class LwjglAudioRenderer implements AudioRenderer {
 
     
     public void pauseSource(AudioNode src) {
+        if (audioDisabled)
+            return;
+
         if (src.getStatus() == Status.Playing){
             assert src.getChannel() != -1;
 
@@ -383,6 +404,9 @@ public class LwjglAudioRenderer implements AudioRenderer {
 
     
     public void stopSource(AudioNode src) {
+        if (audioDisabled)
+            return;
+
         if (src.getStatus() != Status.Stopped){
             int chan = src.getChannel();
             assert chan != -1; // if it's not stopped, must have id
@@ -451,6 +475,9 @@ public class LwjglAudioRenderer implements AudioRenderer {
     }
 
     public void deleteAudioData(AudioData ad){
+        if (audioDisabled)
+            return;
+        
         if (ad instanceof AudioBuffer){
             AudioBuffer ab = (AudioBuffer) ad;
             int id = ab.getId();

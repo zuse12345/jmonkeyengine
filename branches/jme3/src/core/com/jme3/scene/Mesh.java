@@ -585,7 +585,7 @@ public class Mesh implements Savable, Cloneable {
         meshBound = modelBound;
     }
 
-    public IntMap getBuffers(){
+    public IntMap<VertexBuffer> getBuffers(){
         return buffers;
     }
 

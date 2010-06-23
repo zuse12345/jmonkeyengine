@@ -21,10 +21,13 @@ import com.jme3.renderer.Caps;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.Renderer;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
+import com.jme3.scene.VertexBuffer;
 import com.jme3.shader.Shader;
 import com.jme3.shader.Uniform;
 import com.jme3.shader.VarType;
 import com.jme3.texture.Texture;
+import com.jme3.util.IntMap.Entry;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -390,12 +393,7 @@ public class Material implements Cloneable, Savable {
         }
     }
 
-    /**
-     * Should be called after selectTechnique()
-     * @param geom
-     * @param r
-     */
-    public void render(Geometry geom, RenderManager rm){
+    private void autoSelectTechnique(RenderManager rm){
         if (technique == null){
             // XXX: hack warning, choose "FixedFunc" if GLSL100
             // not supported by renderer
@@ -407,6 +405,45 @@ public class Material implements Cloneable, Savable {
         }else if (technique.isNeedReload()){
             technique.makeCurrent(def.getAssetManager());
         }
+    }
+
+    /**
+     * "Pre-load" the material, including textures and shaders, to the 
+     * renderer.
+     */
+    public void preload(RenderManager rm){
+        autoSelectTechnique(rm);
+
+        Renderer r = rm.getRenderer();
+        TechniqueDef techDef = technique.getDef();
+        
+        Collection<MatParam> params = paramValues.values();
+        for (MatParam param : params){
+            if (param instanceof MatParamTexture){
+                MatParamTexture texParam = (MatParamTexture) param;
+                r.setTexture(0, texParam.getTextureValue());
+            }else{
+                if (!techDef.isUsingShaders())
+                    continue;
+                
+                technique.updateUniformParam(param.getName(),
+                                             param.getVarType(),
+                                             param.getValue(), true);
+            }
+        }
+
+        Shader shader = technique.getShader();
+        if (techDef.isUsingShaders())
+            r.setShader(shader);
+    }
+
+    /**
+     * Should be called after selectTechnique()
+     * @param geom
+     * @param r
+     */
+    public void render(Geometry geom, RenderManager rm){
+        autoSelectTechnique(rm);
 
         Renderer r = rm.getRenderer();
         TechniqueDef techDef = technique.getDef();
@@ -421,7 +458,6 @@ public class Material implements Cloneable, Savable {
                 r.applyRenderState(RenderState.DEFAULT);
         }
 
-        
         // update camera and world matrices
         // NOTE: setWorldTransform should have been called already
         // XXX:

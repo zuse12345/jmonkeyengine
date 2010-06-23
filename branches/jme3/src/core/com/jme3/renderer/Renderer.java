@@ -132,6 +132,13 @@ public interface Renderer {
     public void deleteTexture(Texture tex);
 
     /**
+     * Uploads a vertex buffer to the GPU.
+     * 
+     * @param vb The vertex buffer to upload
+     */
+    public void updateBufferData(VertexBuffer vb);
+
+    /**
      * Deletes a vertex buffer from the GPU.
      * @param vb The vertex buffer to delete
      */

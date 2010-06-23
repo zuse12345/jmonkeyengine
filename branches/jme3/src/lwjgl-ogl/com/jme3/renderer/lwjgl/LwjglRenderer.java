@@ -577,6 +577,9 @@ public class LwjglRenderer implements Renderer {
             loc = uniform.getLocation();
         }
 
+        if (uniform.getVarType() == null)
+            return; // value not set yet..
+
         statistics.onUniformSet();
 
         uniform.clearUpdateNeeded();

@@ -11,11 +11,14 @@ import com.jme3.renderer.queue.GeometryList;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.VertexBuffer;
 import com.jme3.shader.Uniform;
 import com.jme3.shader.VarType;
 import com.jme3.system.Timer;
+import com.jme3.util.IntMap.Entry;
 import com.jme3.util.TempVars;
 import java.util.ArrayList;
 import java.util.List;
@@ -273,6 +276,30 @@ public class RenderManager {
             RenderQueue.ShadowMode shadowMode = s.getShadowMode();
             if (shadowMode != RenderQueue.ShadowMode.Off){
                 rq.addToShadowQueue(gm, shadowMode);
+            }
+        }
+    }
+
+    public void preloadScene(Spatial scene){
+        if (scene instanceof Node){
+            // recurse for all children
+            Node n = (Node) scene;
+            List<Spatial> children = n.getChildren();
+            for (int i = 0; i < children.size(); i++){
+                preloadScene(children.get(i));
+            }
+        }else if (scene instanceof Geometry){
+            // add to the render queue
+            Geometry gm = (Geometry) scene;
+            if (gm.getMaterial() == null)
+                throw new IllegalStateException("No material is set for Geometry: "+ gm.getName());
+
+            gm.getMaterial().preload(this);
+            Mesh mesh = gm.getMesh();
+            for (Entry<VertexBuffer> entry : mesh.getBuffers()){
+                VertexBuffer buf = entry.getValue();
+                if (buf.getData() != null)
+                    renderer.updateBufferData(buf);
             }
         }
     }

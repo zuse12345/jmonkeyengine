@@ -6,11 +6,11 @@
 package com.jme3.gde.gui.multiview;
 
 import com.jme3.gde.gui.NiftyGuiDataObject;
-import de.lessvoid.nifty.Nifty;
-import de.lessvoid.nifty.java2d.input.InputSystemAwtImpl;
-import de.lessvoid.nifty.java2d.renderer.RenderDeviceJava2dImpl;
-import de.lessvoid.nifty.nulldevice.NullSoundDevice;
-import de.lessvoid.nifty.tools.TimeProvider;
+//import de.lessvoid.nifty.Nifty;
+//import de.lessvoid.nifty.java2d.input.InputSystemAwtImpl;
+//import de.lessvoid.nifty.java2d.renderer.RenderDeviceJava2dImpl;
+//import de.lessvoid.nifty.nulldevice.NullSoundDevice;
+//import de.lessvoid.nifty.tools.TimeProvider;
 import java.awt.Canvas;
 import java.util.Iterator;
 import java.util.Set;
@@ -27,8 +27,8 @@ import org.openide.util.Exceptions;
  * @author normenhansen
  */
 public class NiftyPreviewPanel extends PanelView{
-    private Nifty nifty;
-    private RenderDeviceJava2dImpl dev;
+//    private Nifty nifty;
+//    private RenderDeviceJava2dImpl dev;
     private NiftyGuiDataObject niftyObject;
     private FileObject file=null;
     private Thread thread;
@@ -44,10 +44,8 @@ public class NiftyPreviewPanel extends PanelView{
         super.initComponents();
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.LINE_AXIS));
         Canvas can=new Canvas();
-        dev=new RenderDeviceJava2dImpl(can);
-//        dev.
+//        dev=new RenderDeviceJava2dImpl(can);
         add(can);
-//        add(dev.);
         fileName="assets/gui/StartGui.xml";
         if(niftyObject!=null){
             Set<FileObject> files = niftyObject.files();
@@ -58,18 +56,19 @@ public class NiftyPreviewPanel extends PanelView{
             fileName=file.getPath();
             Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Could not find niftyObject");
         }
-        InputSystemAwtImpl awtInput=new InputSystemAwtImpl();
-        can.addMouseListener(awtInput);
-        can.addMouseMotionListener(awtInput);
-        nifty = new Nifty(dev,
-                    new NullSoundDevice(),
-                    awtInput,
-                    new TimeProvider());
+//        InputSystemAwtImpl awtInput=new InputSystemAwtImpl();
+//        can.addMouseListener(awtInput);
+//        can.addMouseMotionListener(awtInput);
+//        nifty = new Nifty(dev,
+//                    new NullSoundDevice(),
+//                    awtInput,
+//                    new TimeProvider());
         Logger.getLogger(this.getClass().getName()).log(Level.FINE, "nify started");
     }
 
     public void start(){
         if(running) stop();
+//            running=true;
 //        thread=new Thread(run);
 //        thread.start();
     }
@@ -86,13 +85,12 @@ public class NiftyPreviewPanel extends PanelView{
     private boolean running=false;
     private Runnable run=new Runnable() {
         public void run() {
-            running=true;
-            nifty.fromXml(fileName,"start");//
-            while(running){
-                if(nifty.render(true)){
-                    running=false;
-                }
-            }
+//            nifty.fromXml(fileName,"start");//
+//            while(running){
+//                if(nifty.render(true)){
+//                    running=false;
+//                }
+//            }
         }
     };
 

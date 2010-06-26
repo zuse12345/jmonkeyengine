@@ -21,7 +21,7 @@ public class TestColoredTexture extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        Quad quadMesh = new Quad(cam.getWidth(), cam.getHeight());
+        Quad quadMesh = new Quad(512,512);
         Geometry quad = new Geometry("Quad", quadMesh);
         quad.setQueueBucket(Bucket.Gui);
 

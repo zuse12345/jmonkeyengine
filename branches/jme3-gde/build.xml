@@ -214,11 +214,11 @@
             <arg value="update" />
         </exec>
         <!--remove changes from jMP (old version numbers)-->
-        <!--<exec executable="svn" dir=".">
+        <exec executable="svn" dir=".">
             <arg value="revert" />
             <arg value="." />
             <arg value="-R" />
-        </exec>-->
+        </exec>
         <!--update gde svn revision-->
         <exec executable="svn" dir=".">
             <arg value="update" />

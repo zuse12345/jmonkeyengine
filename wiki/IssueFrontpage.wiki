@@ -1,6 +1,8 @@
 #summary Overview and links for issue tracker
 == Issue tracker filters ==
 
+Please only enter new issues in this issue tracker for defined bugs with hints at solutions, this is no user support page. For general troubleshooting, please go to the [http://jmonkeyengine.com/forum forum].
+
 The issues in this googlecode repository are divided by the project they belong to.
 
   * [http://code.google.com/p/jmonkeyengine/issues/list?can=2&q=label%3AProduct-jME2 jMonkeyEngine 2]

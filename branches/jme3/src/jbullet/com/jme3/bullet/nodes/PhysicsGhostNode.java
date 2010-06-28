@@ -114,6 +114,7 @@ public class PhysicsGhostNode extends CollisionObject {
                 setWorldTranslation(jmeTrans.getTranslation());
                 setWorldRotation(jmeTrans.getRotation());
             }
+            updateWorldTransforms();
         }
 
         // the important part- make sure child geometric state is refreshed

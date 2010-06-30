@@ -33,7 +33,6 @@
 package com.jme3.math;
 
 import java.util.Random;
-import java.util.Scanner;
 
 /**
  * <code>FastMath</code> provides 'fast' math approximations and float equivalents of Math

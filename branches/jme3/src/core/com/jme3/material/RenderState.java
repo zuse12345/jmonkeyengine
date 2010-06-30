@@ -12,6 +12,17 @@ public class RenderState implements Cloneable, Savable {
     public static final RenderState DEFAULT = new RenderState();
     public static final RenderState NULL = new RenderState();
 
+    public enum TestFunc {
+        Never,
+        Equal,
+        Less,
+        LessOrEqual,
+        Greater,
+        GreaterOrEqual,
+        NotEqual,
+        Always,
+    }
+
     public enum BlendMode {
 
         /**

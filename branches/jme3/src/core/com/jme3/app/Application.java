@@ -376,15 +376,6 @@ public class Application implements SystemListener {
         timer.update();
 
         if (inputEnabled){
-            if (mouseInput != null)
-                mouseInput.update();
-
-            if (keyInput != null)
-                keyInput.update();
-
-            if (joyInput != null)
-                joyInput.update();
-
             inputManager.update(timer.getTimePerFrame());
         }
 

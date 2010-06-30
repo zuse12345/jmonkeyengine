@@ -1,6 +1,7 @@
 package com.jme3.util;
 
 import com.jme3.util.IntMap.Entry;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 
 /**
@@ -167,9 +168,20 @@ public final class IntMap<T> implements Iterable<Entry>, Cloneable {
 
     final class IntMapIterator implements Iterator<Entry> {
 
+        /**
+         * Current entry.
+         */
         private Entry cur;
-        private int idx;
-        private int el;
+
+        /**
+         * Entry in the table
+         */
+        private int idx = 0;
+
+        /**
+         * Element in the entry
+         */
+        private int el  = 0;
 
         public IntMapIterator() {
             cur = table[0];
@@ -183,17 +195,28 @@ public final class IntMap<T> implements Iterable<Entry>, Cloneable {
             if (el >= size)
                 throw new IllegalStateException("No more elements!");
 
-            if (cur != null && cur.next != null){
+            if (cur != null){
+                Entry e = cur;
                 cur = cur.next;
                 el++;
-                return cur;
+                return e;
             }
+//            if (cur != null && cur.next != null){
+                // if we have a current entry, continue to the next entry in the list
+//                cur = cur.next;
+//                el++;
+//                return cur;
+//            }
 
             do {
-                cur = table[idx++];
+                // either we exhausted the current entry list, or
+                // the entry was null. find another non-null entry.
+                cur = table[++idx];
             } while (cur == null);
+            Entry e = cur;
+            cur = cur.next;
             el ++;
-            return cur;
+            return e;
         }
 
         public void remove() {

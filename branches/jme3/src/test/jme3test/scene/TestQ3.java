@@ -41,7 +41,7 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener {
     }
 
     public void simpleInitApp() {
-        inputManager.removeBindingListener(flyCam);
+        inputManager.removeListener(flyCam);
         FirstPersonCamera fps = new FirstPersonCamera(cam, new Vector3f(0, -10, 0));
         fps.registerWithDispatcher(inputManager);
         fps.setMoveSpeed(100);

@@ -8,6 +8,8 @@ import com.jme3.export.Savable;
 import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Spatial;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Abstract class for representing a light source.
@@ -56,6 +58,15 @@ public abstract class Light implements Savable, Cloneable {
 
     public void setColor(ColorRGBA color){
         this.color.set(color);
+    }
+
+    @Override
+    public Light clone(){
+        try {
+            return (Light) super.clone();
+        } catch (CloneNotSupportedException ex) {
+            throw new AssertionError();
+        }
     }
 
     public void write(JmeExporter ex) throws IOException {

@@ -144,6 +144,9 @@ public class Geometry extends Spatial {
     @Override
     protected void updateWorldBound() {
         super.updateWorldBound();
+        if (mesh == null)
+            throw new NullPointerException("Geometry: "+getName()+" has null mesh");
+
         if (mesh.getBound() != null) {
             worldBound = mesh.getBound().transform(worldTransform, worldBound);
         }

@@ -209,37 +209,6 @@ public class Cylinder extends Mesh {
     }
 
     /**
-     * Set the radius of this cylinder.
-     * <p>
-     * This will also reset any second radius value on the cylinder.
-     * <p>
-     * <strong>Note:</strong> this method causes the tri-mesh geometry data
-     * to be recalculated, see <a href="package-summary.html#mutator-methods">
-     * the package description</a> for more information about this.
-     *
-     * @param radius the new radius.
-     * @deprecated use {@link #recomputeGeometry(int, int, float, float, boolean, boolean)}.
-     */
-    public void setRadius(float radius) {
-        updateGeometry(axisSamples, radialSamples, radius, radius, height, closed, inverted);
-    }
-
-    /**
-     * Set the top radius of the 'cylinder' to differ from the bottom radius.
-     * <p>
-     * <strong>Note:</strong> this method causes the tri-mesh geometry data
-     * to be recalculated, see <a href="package-summary.html#mutator-methods">
-     * the package description</a> for more information about this.
-     *
-     * @param radius the first radius to set.
-     * @see {@link Cone}
-     * @deprecated use {@link #recomputeGeometry(int, int, float, float, boolean, boolean)}.
-     */
-    public void setRadius1(float radius) {
-        updateGeometry(axisSamples, radialSamples, radius, radius2, height, closed, inverted);
-    }
-
-    /**
      * Set the bottom radius of the 'cylinder' to differ from the top radius.
      * This makes the Geometry be a frustum of pyramid, or if set to 0, a cone.
      * <p>
@@ -419,6 +388,9 @@ public class Cylinder extends Mesh {
                 }
             }
         }
+
+        updateBound();
+        updateCounts();
     }
 
     public void read(JmeImporter e) throws IOException {

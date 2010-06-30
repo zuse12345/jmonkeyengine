@@ -154,14 +154,14 @@ public class DesktopAssetManager implements AssetManager {
                 logger.finer("Loaded "+key+" with "+
                              loader.getClass().getSimpleName());
 
-                if (eventListener != null)
-                    eventListener.assetLoaded(key);
-
                 // do processing on asset before caching
                 o = key.postProcess(o);
 
                 if (key.shouldCache())
                     cache.addToCache(key, o);
+
+                if (eventListener != null)
+                    eventListener.assetLoaded(key);
             }
         }
 

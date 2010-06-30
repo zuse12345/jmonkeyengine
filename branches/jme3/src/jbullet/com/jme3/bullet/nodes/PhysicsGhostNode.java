@@ -124,7 +124,12 @@ public class PhysicsGhostNode extends CollisionObject {
         // Although it does save a round trip,
         for (int i = 0, cSize = children.size(); i < cSize; i++) {
             Spatial child = children.get(i);
+            if (!locationDirty){
+                // force children to update transform from this physics node
+                child.setLocalScale(child.getLocalScale());
+            }
             child.updateGeometricState();
+
         }
 
         if ((refreshFlags & RF_BOUND) != 0) {

@@ -1,13 +1,11 @@
 package com.jme3.input;
 
-import com.jme3.input.event.JoyAxisEvent;
-import com.jme3.input.event.JoyButtonEvent;
-import com.jme3.input.event.KeyInputEvent;
-import com.jme3.input.event.MouseButtonEvent;
-import com.jme3.input.event.MouseMotionEvent;
 import com.jme3.input.binding.BindingListener;
-import com.jme3.util.IntMap;
-import com.jme3.util.IntMap.Entry;
+import com.jme3.input.controls.AnalogListener;
+import com.jme3.input.controls.Controls;
+import com.jme3.input.controls.KeyTrigger;
+import com.jme3.input.controls.MouseAxisTrigger;
+import com.jme3.input.controls.MouseButtonTrigger;
 import java.util.ArrayList;
 
 /**
@@ -19,30 +17,26 @@ import java.util.ArrayList;
  * in user code to query input, unless the Application is created as headless
  * or with input explicitly disabled.
  */
-public class InputManager implements RawInputListener {
-
-    private MouseInput mouseInput;
-    private KeyInput keyInput;
-    private JoyInput joyInput;
-
-    private IntMap<String> keyBindings = new IntMap<String>();
-    private IntMap<String> mouseBtnBindings = new IntMap<String>();
-    private IntMap<String> mouseAxisBindings = new IntMap<String>();
-    private IntMap<String> joyAxisBindings = new IntMap<String>();
-    private IntMap<String> joyButtonBindings = new IntMap<String>();
+public class InputManager extends Controls {
 
     private ArrayList<BindingListener> listeners = new ArrayList<BindingListener>();
-    private ArrayList<RawInputListener> rawListeners = new ArrayList<RawInputListener>();
 
-    private MouseButtonEvent lastButtonEvent = null;
-    private KeyInputEvent lastKeyEvent = null;
-    private float frameTPF = -1f;
-    private boolean mouseVisible = true;
+    private final BindingTranslator translator = new BindingTranslator();
 
-    private boolean[] keyboard;
-    private boolean[] mouse;
-    private float[][] joyAxes;
-    private boolean[][] joyButtons;
+    /**
+     * Listener responsible for converting axis analog events
+     * to bindings. Will not multiply by TPF for absolute delta.
+     */
+    private class BindingTranslator implements AnalogListener {
+        public void onAnalog(String name, float value, float tpf) {
+            if (name == null)
+                return;
+
+            for (int i = 0; i < listeners.size(); i++){
+                listeners.get(i).onBinding(name, value);
+            }
+        }
+    }
 
     /**
      * Initializes the InputManager.
@@ -53,155 +47,7 @@ public class InputManager implements RawInputListener {
      * @throws IllegalArgumentException If either mouseInput or keyInput are null.
      */
     public InputManager(MouseInput mouseInput, KeyInput keyInput, JoyInput joyInput){
-        if (mouseInput == null || keyInput == null)
-            throw new IllegalArgumentException("Mouse and key input cannot be null");
-
-        this.keyInput = keyInput;
-        keyboard = new boolean[255];
-        keyInput.setInputListener(this);
-
-        this.mouseInput = mouseInput;
-        mouse = new boolean[mouseInput.getButtonCount()];
-        mouseInput.setInputListener(this);
-        
-        if (joyInput != null){
-            this.joyInput = joyInput;
-            joyInput.setInputListener(this);
-            joyAxes = new float[joyInput.getJoyCount()][];
-            joyButtons = new boolean[joyInput.getJoyCount()][];
-            for (int i = 0; i < joyAxes.length; i++){
-                joyAxes[i] = new float[7]; // because using virtual axes
-                joyButtons[i] = new boolean[joyInput.getButtonCount(i)];
-            }
-        }
-    }
-
-    private void notifyListeners(String name, float value){
-        if (name == null)
-            return;
-
-        for (int i = 0; i < listeners.size(); i++){
-            listeners.get(i).onBinding(name, value);
-        }
-    }
-
-    /**
-     * Called to reset pressed keys or buttons when focus is restored.
-     */
-    public void reset(){
-    }
-
-    /**
-     * @param visible whether the mouse cursor should be visible or not.
-     */
-    public void setCursorVisible(boolean visible){
-        if (mouseVisible != visible){
-            mouseVisible = visible;
-            mouseInput.setCursorVisible(mouseVisible);
-        }
-    }
-
-    public void onMouseMotionEvent(MouseMotionEvent evt) {
-        for (int i = 0; i < rawListeners.size(); i++){
-            rawListeners.get(i).onMouseMotionEvent(evt);
-        }
-
-        if (evt.getDX() > 0){
-            // positive X axis
-            String name = mouseAxisBindings.get(1);
-            float value = evt.getDX() / 1024f;
-            notifyListeners(name, value);
-        }else if (evt.getDX() < 0){
-            String name = mouseAxisBindings.get(-1);
-            float value = evt.getDX() / -1024f;
-            notifyListeners(name, value);
-        }
-        if (evt.getDY() > 0){
-            String name = mouseAxisBindings.get(2);
-            float value = evt.getDY() / 1024f;
-            notifyListeners(name, value);
-        }else if (evt.getDY() < 0){
-            String name = mouseAxisBindings.get(-2);
-            float value = evt.getDY() / -1024f;
-            notifyListeners(name, value);
-        }
-        if (evt.getDeltaWheel() > 0){
-            String name = mouseAxisBindings.get(3);
-            float value = evt.getDeltaWheel() / 100f;
-            notifyListeners(name, value);
-        }else if (evt.getDeltaWheel() < 0){
-            String name = mouseAxisBindings.get(-3);
-            float value = evt.getDeltaWheel() / -100f;
-            notifyListeners(name, value);
-        }
-    }
-
-    public void onMouseButtonEvent(MouseButtonEvent evt) {
-        for (int i = 0; i < rawListeners.size(); i++){
-            rawListeners.get(i).onMouseButtonEvent(evt);
-        }
-        mouse[evt.getButtonIndex()] = evt.isPressed();
-        
-        String name = mouseBtnBindings.get(evt.getButtonIndex());
-        if (name == null)
-            return;
-
-        if (lastButtonEvent != null
-         && lastButtonEvent.getButtonIndex() == evt.getButtonIndex()
-         && lastButtonEvent.isPressed() && evt.isReleased()){
-            long delta = evt.getTime() - lastButtonEvent.getTime();
-            float seconds = delta / (1000000000f); // convert nanoseconds to seconds
-
-            // for how long was the key pressed relative to the current
-            // frame time? deltaSeconds / frameSeconds
-            notifyListeners(name, seconds);
-        }
-        lastButtonEvent = evt;
-    }
-
-    public void onKeyEvent(KeyInputEvent evt) {
-        for (int i = 0; i < rawListeners.size(); i++){
-            rawListeners.get(i).onKeyEvent(evt);
-        }
-
-        if (evt.isRepeating())
-            return; // repeat events not used for bindings
-
-        // update keyboard state
-        keyboard[evt.getKeyCode()] = evt.isPressed();
-        
-        // check if binding set for key
-        String name = keyBindings.get(evt.getKeyCode());
-        if (name == null)
-            return;
-
-        // this part is used for really short key presses (less than
-        // one frame long).
-        if (lastKeyEvent != null
-         && lastKeyEvent.getKeyCode() == evt.getKeyCode()
-         && lastKeyEvent.isPressed() && evt.isReleased()){
-            long delta = evt.getTime() - lastKeyEvent.getTime();
-            float seconds = delta / (1000000000f); // convert nanoseconds to seconds
-
-            // for how long was the key pressed relative to the current
-            // frame time? deltaSeconds / frameSeconds
-            notifyListeners(name, seconds);
-        }
-        lastKeyEvent = evt;
-    }
-
-    public void onJoyAxisEvent(JoyAxisEvent evt) {
-        for (int i = 0; i < rawListeners.size(); i++){
-            rawListeners.get(i).onJoyAxisEvent(evt);
-        }
-
-        joyAxes[evt.getJoyIndex()][evt.getAxisIndex()] = evt.getValue();
-    }
-
-    public void onJoyButtonEvent(JoyButtonEvent evt) {
-        for (int i = 0; i < rawListeners.size(); i++){
-            rawListeners.get(i).onJoyButtonEvent(evt);
-        }
+        super(keyInput, mouseInput, joyInput);
     }
 
     /**
@@ -210,81 +56,41 @@ public class InputManager implements RawInputListener {
      *
      * @param tpf Time per frame value.
      */
+    @Override
     public void update(float tpf){
-        lastButtonEvent = null;
-        lastKeyEvent = null;
-        frameTPF = tpf;
-
-        for (int i = 0; i < listeners.size(); i++){
+        for (int i = 0; i < listeners.size(); i++)
             listeners.get(i).onPreUpdate(tpf);
-        }
 
-        // query current keyboard state for all bindings
-        for (Entry<String> entry : keyBindings){
-            if (entry.getKey() >= keyboard.length)
-                continue;
+        super.update(tpf);
 
-            if (keyboard[entry.getKey()]){
-                // key is currently down
-                notifyListeners(entry.getValue(), tpf);
-            }
-        }
-
-        // query current mouse button state for all bindings
-        for (Entry<String> entry : mouseBtnBindings){
-            if (entry.getKey() >= mouse.length)
-                continue;
-            
-            if (mouse[entry.getKey()]){
-                // mouse is currently down
-                notifyListeners(entry.getValue(), tpf);
-            }
-        }
-
-        if (joyInput != null){
-            for (Entry<String> entry : joyAxisBindings){
-                int axisId = entry.getKey();
-                boolean negative = false;
-                if (axisId < 0){
-                    axisId = -axisId;
-                    negative = true;
-                }
-                int joyIndex = (axisId & 0xFFFF) - 1;
-                int axisIndex = ((axisId & 0xFFFF0000) >> 16) - 1;
-                if (joyIndex >= joyAxes.length)
-                    continue;
-
-                float value = joyAxes[joyIndex][axisIndex];
-                if (value > 0 && !negative){
-                    // key is currently down
-                    notifyListeners(entry.getValue(), tpf * value);
-                }else if (value < 0 && negative){
-                    notifyListeners(entry.getValue(), -tpf * value);
-                }
-            }
-        }
-
-        for (int i = 0; i < listeners.size(); i++){
+        for (int i = 0; i < listeners.size(); i++)
             listeners.get(i).onPostUpdate(tpf);
-        }
     }
 
     /**
      * Registers a keyboard key binding.
      * @param name
      * @param keyCode
+     *
+     * @deprecated Use the new addMapping method to register key bindings
      */
+    @Deprecated
     public void registerKeyBinding(String name, int keyCode){
-        keyBindings.put(keyCode, name);
+        addMapping(name, new KeyTrigger(keyCode));
+        addListener(translator, name);
     }
 
     /**
      * Registers a mouse button binding.
      * @param name
      * @param btnIndex
+     *
+     * @deprecated Use the new addMapping method to register mouse bindings
      */
+    @Deprecated
     public void registerMouseButtonBinding(String name, int btnIndex){
-        mouseBtnBindings.put(btnIndex, name);
+        addMapping(name, new MouseButtonTrigger(btnIndex));
+        addListener(translator, name);
     }
 
     /**
@@ -293,26 +99,18 @@ public class InputManager implements RawInputListener {
      * @param mouseAxis 0 is X axis, 1 is Y axis, 2 is wheel
      * @param negative If true, the event will be invoked when the axis is in
      * the negative direction, otherwise it will be invoked on positive direction.
+     *
+     * @deprecated Use the new addMapping method to register mouse bindings
      */
+    @Deprecated
     public void registerMouseAxisBinding(String name, int mouseAxis, boolean negative){
-        mouseAxis ++; // makes axis 0 (X) become 1 & axis 1 (Y) become 2
-        if (negative)
-            mouseAxis = -mouseAxis;
-
-        mouseAxisBindings.put(mouseAxis, name);
+        addMapping(name, new MouseAxisTrigger(mouseAxis, negative));
+        addListener(translator, name);
     }
 
+    @Deprecated
     public void registerJoystickAxisBinding(String name, int joyIndex, int axisIndex, boolean negative){
-        if (joyInput == null)
-            return;
-
-        axisIndex ++;
-        joyIndex ++;
-        int axisId = joyIndex | (axisIndex << 16);
-        if (negative)
-            axisId = -axisId;
-        
-        joyAxisBindings.put(axisId, name);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -320,7 +118,10 @@ public class InputManager implements RawInputListener {
      * value is greater than zero.
      *
      * @param listener
+     *
+     * @deprecated Use the new addListener method to register listeners for bindings
      */
+    @Deprecated
     public void addBindingListener(BindingListener listener){
         listeners.add(listener);
     }
@@ -328,28 +129,22 @@ public class InputManager implements RawInputListener {
     /**
      * Remove a previously added trigger listener.
      * @param listener
+     *
+     * @deprecated Use the new addListener method to register listeners for bindings
      */
+    @Deprecated
     public void removeBindingListener(BindingListener listener){
         listeners.remove(listener);
     }
 
     /**
      * Removes all trigger listeners from the list of registered listnerers.
+     *
+     * @deprecated Use the new addListener method to register listeners for bindings
      */
+    @Deprecated
     public void clearBindingListeners(){
         listeners.clear();
-    }
-
-    public void addRawInputListener(RawInputListener listener){
-        rawListeners.add(listener);
-    }
-
-    public void removeRawInputListener(RawInputListener listener){
-        rawListeners.remove(listener);
-    }
-
-    public void clearRawInputListeners(){
-        rawListeners.clear();
     }
 
 }

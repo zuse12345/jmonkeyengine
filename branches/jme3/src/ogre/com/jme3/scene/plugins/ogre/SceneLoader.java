@@ -63,6 +63,12 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             float z = parseFloat(attribs.getValue("z"));
             float w = parseFloat(attribs.getValue("w"));
             return new Quaternion(x,y,z,w);
+        }else if (attribs.getValue("qx") != null){
+            float x = parseFloat(attribs.getValue("qx"));
+            float y = parseFloat(attribs.getValue("qy"));
+            float z = parseFloat(attribs.getValue("qz"));
+            float w = parseFloat(attribs.getValue("qw"));
+            return new Quaternion(x,y,z,w);
         }else if (attribs.getValue("angle") != null){
             // defined as angle + axis
             float angle = parseFloat(attribs.getValue("angle"));
@@ -196,7 +202,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             node = null;
         }else if (qName.equals("position")){
             node.setLocalTranslation(SAXUtil.parseVector3(attribs));
-        }else if (qName.equals("quaternion")){
+        }else if (qName.equals("quaternion") || qName.equals("rotation")){
             node.setLocalRotation(parseQuat(attribs));
         }else if (qName.equals("scale")){
             node.setLocalScale(SAXUtil.parseVector3(attribs));

@@ -9,14 +9,10 @@ import com.jme3.input.event.JoyButtonEvent;
 import com.jme3.input.event.KeyInputEvent;
 import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
-import com.jme3.system.Timer;
 import com.jme3.util.IntMap;
 import com.jme3.util.IntMap.Entry;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
-import org.lwjgl.opengl.Display;
 
 /**
  * The <code>InputManager</code> is responsible for converting input events
@@ -47,6 +43,8 @@ public class Controls implements RawInputListener {
     private final IntMap<ArrayList<Mapping>> bindings = new IntMap<ArrayList<Mapping>>();
     private final HashMap<String, Mapping> mappings = new HashMap<String, Mapping>();
     private final IntMap<Long> pressedButtons = new IntMap<Long>();
+
+    private ArrayList<RawInputListener> rawListeners = new ArrayList<RawInputListener>();
 
     private static class Mapping {
         
@@ -79,7 +77,6 @@ public class Controls implements RawInputListener {
         mouse.setInputListener(this);
         if (joystick != null) joystick.setInputListener(this);
 
-        // get the conversion rate from timer resolution to nano seconds.
         firstTime = keys.getInputTimeNanos();
     }
 
@@ -133,7 +130,6 @@ public class Controls implements RawInputListener {
         if (!bindings.containsKey(hash))
             return;
 
-//        System.out.println(hash + " " + (pressed ? "pressed" : "releasd") + " at " + ((time-firstTime)/1000000));
         if (pressed){
             pressedButtons.put(hash, time);
         }else{
@@ -142,33 +138,30 @@ public class Controls implements RawInputListener {
             long releaseTime = time;
             long timeDelta = releaseTime - Math.max(pressTime, lastUpdate);
 
-//            System.out.println(hash + " press time " + ((pressTime-firstTime)/1000000) + " release time " + ((releaseTime-firstTime)/1000000) + " last update " + ((lastUpdate-firstTime)/1000000));
-
             if (timeDelta > 0)
-                invokeAnalogs(hash, computeAnalogValue(timeDelta) );
+                invokeAnalogs(hash, computeAnalogValue(timeDelta), false );
         }
     }
 
     private void invokeUpdateActions(){
         for (Entry<Long> pressedButton : pressedButtons){
             int hash = pressedButton.getKey();
+
             long pressTime   = pressedButton.getValue();
-            long lastLast = lastLastUpdateTime;
-            long lastUpdate  = lastUpdateTime;
             long timeDelta = lastUpdateTime - Math.max(lastLastUpdateTime, pressTime);
 
-//            System.out.println(hash + " updated at " + ((lastUpdateTime-firstTime)/1000000)
-//                                    + " last up " + ((lastLastUpdateTime-firstTime)/1000000)
-//                                    + " press time " + (  (pressTime-firstTime)/1000000));
             if (timeDelta > 0)
-                invokeAnalogs(hash, computeAnalogValue(timeDelta) );
+                invokeAnalogs(hash, computeAnalogValue(timeDelta), false );
         }
     }
 
-    private void invokeAnalogs(int hash, float value){
+    private void invokeAnalogs(int hash, float value, boolean isAxis){
         ArrayList<Mapping> maps = bindings.get(hash);
         if (maps == null)
             return;
+
+        if (!isAxis)
+            value *= frameTPF;
 
         int size = maps.size();
         for (int i = size - 1; i >= 0; i--){
@@ -178,6 +171,7 @@ public class Controls implements RawInputListener {
             for (int j = listenerSize - 1; j >= 0; j--){
                 InputListener listener = listeners.get(j);
                 if (listener instanceof AnalogListener){
+                    // NOTE: multiply by TPF for any button bindings
                     ((AnalogListener)listener).onAnalog(mapping.name, value, frameTPF);
                 }
             }
@@ -186,7 +180,7 @@ public class Controls implements RawInputListener {
 
     private void invokeAnalogsAndActions(int hash, float value){
         if (value < axisDeadZone){
-            invokeAnalogs(hash, value);
+            invokeAnalogs(hash, value, true);
             return;
         }
 
@@ -201,11 +195,13 @@ public class Controls implements RawInputListener {
             int listenerSize = listeners.size();
             for (int j = listenerSize - 1; j >= 0; j--){
                 InputListener listener = listeners.get(j);
-                if (listener instanceof ActionListener){
+                
+                if (listener instanceof ActionListener)
                     ((ActionListener)listener).onAction(mapping.name, true, frameTPF);
-                }else if (listener instanceof AnalogListener){
+
+                if (listener instanceof AnalogListener)
                     ((AnalogListener)listener).onAnalog(mapping.name, value, frameTPF);
-                }
+                
             }
         }
     }
@@ -213,6 +209,10 @@ public class Controls implements RawInputListener {
     public void onJoyAxisEvent(JoyAxisEvent evt) {
         if (!eventsPermitted)
             throw new UnsupportedOperationException("JoyInput has raised an event at an illegal time.");
+
+        for (int i = 0; i < rawListeners.size(); i++){
+            rawListeners.get(i).onJoyAxisEvent(evt);
+        }
 
         int axis    = evt.getAxisIndex();
         float value = evt.getValue();
@@ -227,6 +227,10 @@ public class Controls implements RawInputListener {
         if (!eventsPermitted)
             throw new UnsupportedOperationException("JoyInput has raised an event at an illegal time.");
 
+        for (int i = 0; i < rawListeners.size(); i++){
+            rawListeners.get(i).onJoyButtonEvent(evt);
+        }
+
         int hash = joyButtonHash(evt.getButtonIndex());
         invokeActions(hash, evt.isPressed());
         invokeTimedActions(hash, evt.getTime(), evt.isPressed());
@@ -235,6 +239,10 @@ public class Controls implements RawInputListener {
     public void onMouseMotionEvent(MouseMotionEvent evt) {
         if (!eventsPermitted)
             throw new UnsupportedOperationException("MouseInput has raised an event at an illegal time.");
+
+        for (int i = 0; i < rawListeners.size(); i++){
+            rawListeners.get(i).onMouseMotionEvent(evt);
+        }
 
         if (evt.getDX() != 0){
             float val = Math.abs(evt.getDX()) / 1024f;
@@ -254,6 +262,10 @@ public class Controls implements RawInputListener {
         if (!eventsPermitted)
             throw new UnsupportedOperationException("MouseInput has raised an event at an illegal time.");
 
+        for (int i = 0; i < rawListeners.size(); i++){
+            rawListeners.get(i).onMouseButtonEvent(evt);
+        }
+
         int hash = mouseButtonHash(evt.getButtonIndex());
         invokeActions(hash, evt.isPressed());
         invokeTimedActions(hash, evt.getTime(), evt.isPressed());
@@ -262,6 +274,10 @@ public class Controls implements RawInputListener {
     public void onKeyEvent(KeyInputEvent evt){
         if (!eventsPermitted)
             throw new UnsupportedOperationException("KeyInput has raised an event at an illegal time.");
+
+        for (int i = 0; i < rawListeners.size(); i++){
+            rawListeners.get(i).onKeyEvent(evt);
+        }
 
         if (evt.isRepeating())
             return; // repeat events not used for bindings
@@ -339,6 +355,18 @@ public class Controls implements RawInputListener {
             mouseVisible = visible;
             mouse.setCursorVisible(mouseVisible);
         }
+    }
+
+    public void addRawInputListener(RawInputListener listener){
+        rawListeners.add(listener);
+    }
+
+    public void removeRawInputListener(RawInputListener listener){
+        rawListeners.remove(listener);
+    }
+
+    public void clearRawInputListeners(){
+        rawListeners.clear();
     }
 
     public void update(float tpf){

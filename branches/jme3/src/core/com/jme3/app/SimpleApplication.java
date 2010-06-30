@@ -5,6 +5,7 @@ import com.jme3.font.BitmapText;
 import com.jme3.input.BindingAdapter;
 import com.jme3.input.FlyByCamera;
 import com.jme3.input.KeyInput;
+import com.jme3.input.controls.ActionListener;
 import com.jme3.material.RenderState;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
@@ -34,6 +35,11 @@ public abstract class SimpleApplication extends Application {
 
     protected FlyByCamera flyCam;
     protected boolean showSettings = true;
+
+    private class AppActionListener implements ActionListener {
+        public void onAction(String name, boolean value, float tpf) {
+        }
+    }
 
     public SimpleApplication(){
         super();

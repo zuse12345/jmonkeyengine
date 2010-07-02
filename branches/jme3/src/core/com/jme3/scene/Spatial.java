@@ -423,6 +423,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      */
     public void addControl(Control control){
         controls.add(control);
+        control.setSpatial(this);
     }
 
     /**
@@ -433,9 +434,27 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
     public void removeControl(Class<? extends Control> controlType){
         for (int i = 0; i < controls.size(); i++){
             if (controlType.isAssignableFrom(controls.get(i).getClass())){
-                controls.remove(i);
+                Control control = controls.remove(i);
+                control.setSpatial(null);
             }
         }
+    }
+
+    /**
+     * Removes the given control from this spatial's controls.
+     * 
+     * @param control The control to remove
+     * @return True if the control was successfuly removed. False if 
+     * the control is not assigned to this spatial.
+     * 
+     * @see Spatial#addControl(com.jme3.scene.control.Control) 
+     */
+    public boolean removeControl(Control control){
+        boolean result = controls.remove(control);
+        if (result)
+            control.setSpatial(null);
+        
+        return result;
     }
 
     /**
@@ -752,6 +771,17 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      */
     public void addLight(Light light){
         localLights.add(light);
+        setLightListRefresh();
+    }
+
+    /**
+     * <code>removeLight</code> removes the given light from the Spatial.
+     * 
+     * @param light The light to remove.
+     * @see Spatial#addLight(com.jme3.light.Light) 
+     */
+    public void removeLight(Light light){
+        localLights.remove(light);
         setLightListRefresh();
     }
 

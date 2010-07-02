@@ -21,13 +21,10 @@ import com.jme3.renderer.Caps;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.Renderer;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
-import com.jme3.scene.VertexBuffer;
 import com.jme3.shader.Shader;
 import com.jme3.shader.Uniform;
 import com.jme3.shader.VarType;
 import com.jme3.texture.Texture;
-import com.jme3.util.IntMap.Entry;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,8 +32,14 @@ import java.util.HashMap;
 public class Material implements Cloneable, Savable {
 
     private static final RenderState additiveLight = new RenderState();
+    private static final RenderState depthOnly = new RenderState();
 
     static {
+        depthOnly.setDepthTest(true);
+        depthOnly.setDepthWrite(true);
+        depthOnly.setFaceCullMode(RenderState.FaceCullMode.Back);
+        depthOnly.setColorWrite(false);
+
         additiveLight.setBlendMode(RenderState.BlendMode.Additive);
     }
 
@@ -307,7 +310,7 @@ public class Material implements Cloneable, Savable {
      * @param shader
      * @param lightList
      */
-    public void updateLightListUniforms(Shader shader, Geometry g, int numLights){
+    protected void updateLightListUniforms(Shader shader, Geometry g, int numLights){
         if (numLights == 0) // this shader does not do lighting, ignore.
             return;
 
@@ -351,46 +354,58 @@ public class Material implements Cloneable, Savable {
         }
     }
 
-    private void renderMultipassLighting(Shader shader, Geometry g, Renderer r){
-        LightList lightList = g.getWorldLightList();
-        Uniform lightColor = shader.getUniform("g_LightColor");
-        Uniform lightPos = shader.getUniform("g_LightPosition");
+    protected void renderMultipassLighting(Shader shader, Geometry g, Renderer r){
+//        if (r.getCaps().contains(Caps.MeshInstancing)){
+//            r.applyRenderState(depthOnly);
+//            r.setShader(shader);
+//            r.renderMesh(g.getMesh(), g.getLodLevel(), 1);
+//
+//            int numLights = g.getWorldLightList().size();
+//            updateLightListUniforms(shader, g, numLights);
+//            r.applyRenderState(additiveLight);
+//            r.setShader(shader);
+//            r.renderMesh(g.getMesh(), g.getLodLevel(), numLights);
+//        }else{
+            LightList lightList = g.getWorldLightList();
+            Uniform lightColor = shader.getUniform("g_LightColor");
+            Uniform lightPos = shader.getUniform("g_LightPosition");
 
-        for (int i = 0; i < lightList.size(); i++){
-            if (i == 1){
-                r.applyRenderState(additiveLight);
+            for (int i = 0; i < lightList.size(); i++){
+                if (i == 1){
+                    r.applyRenderState(additiveLight);
+                }
+
+                Light l = lightList.get(i);
+                ColorRGBA color = l.getColor();
+                ColorRGBA color2 = new ColorRGBA(color);
+                color2.a = l.getType().getId();
+                lightColor.setValue(VarType.Vector4, color2);
+
+                switch (l.getType()){
+                    case Directional:
+                        DirectionalLight dl = (DirectionalLight) l;
+                        Vector3f dir = dl.getDirection();
+                        Quaternion q1 = new Quaternion(dir.getX(), dir.getY(), dir.getZ(), -1);
+                        lightPos.setValue(VarType.Vector4, q1);
+                        break;
+                    case Point:
+                        PointLight pl = (PointLight) l;
+                        Vector3f pos = pl.getPosition();
+                        float invRadius = pl.getRadius();
+                        if (invRadius != 0){
+                            invRadius = 1f / invRadius;
+                        }
+                        Quaternion q2 = new Quaternion(pos.getX(), pos.getY(), pos.getZ(), invRadius);
+                        lightPos.setValue(VarType.Vector4, q2);
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("Unknown type of light: "+l.getType());
+                }
+
+                r.setShader(shader);
+                r.renderMesh(g.getMesh(), g.getLodLevel(), 1);
             }
-
-            Light l = lightList.get(i);
-            ColorRGBA color = l.getColor();
-            ColorRGBA color2 = new ColorRGBA(color);
-            color2.a = l.getType().getId();
-            lightColor.setValue(VarType.Vector4, color2);
-
-            switch (l.getType()){
-                case Directional:
-                    DirectionalLight dl = (DirectionalLight) l;
-                    Vector3f dir = dl.getDirection();
-                    Quaternion q1 = new Quaternion(dir.getX(), dir.getY(), dir.getZ(), -1);
-                    lightPos.setValue(VarType.Vector4, q1);
-                    break;
-                case Point:
-                    PointLight pl = (PointLight) l;
-                    Vector3f pos = pl.getPosition();
-                    float invRadius = pl.getRadius();
-                    if (invRadius != 0){
-                        invRadius = 1f / invRadius;
-                    }
-                    Quaternion q2 = new Quaternion(pos.getX(), pos.getY(), pos.getZ(), invRadius);
-                    lightPos.setValue(VarType.Vector4, q2);
-                    break;
-                default:
-                    throw new UnsupportedOperationException("Unknown type of light: "+l.getType());
-            }
-
-            r.setShader(shader);
-            r.renderMesh(g.getMesh(), g.getLodLevel(), 1);
-        }
+//        }
     }
 
     private void autoSelectTechnique(RenderManager rm){

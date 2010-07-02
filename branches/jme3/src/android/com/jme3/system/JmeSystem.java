@@ -43,7 +43,7 @@ public class JmeSystem {
     }
 
     public static String getFullName(){
-        return "jMonkey Engine 3 ALPHA 0.30";
+        return "jMonkey Engine 3 ALPHA 0.50";
     }
     
     public static JmeContext newContext(AppSettings settings, Type contextType) {

@@ -3,13 +3,14 @@ package com.jme3.texture;
 import com.jme3.renderer.GLObject;
 import com.jme3.renderer.Renderer;
 import com.jme3.texture.Image.Format;
+import java.util.ArrayList;
 
 public class FrameBuffer extends GLObject {
 
     private int width = 0;
     private int height = 0;
     private int samples = 0;
-    private RenderBuffer colorBuf = null;
+    private ArrayList<RenderBuffer> colorBufs = new ArrayList<RenderBuffer>();
     private RenderBuffer depthBuf = null;
 
     public class RenderBuffer {
@@ -60,7 +61,7 @@ public class FrameBuffer extends GLObject {
 
     protected FrameBuffer(FrameBuffer src){
         super(Type.FrameBuffer, src.id);
-        this.colorBuf = src.colorBuf;
+        this.colorBufs.addAll(src.colorBufs);
         this.depthBuf = src.depthBuf;
     }
 
@@ -83,9 +84,12 @@ public class FrameBuffer extends GLObject {
         if (format.isDepthFormat())
             throw new IllegalArgumentException("Color buffer format must be color/luminance.");
         
-        colorBuf = new RenderBuffer();
+        RenderBuffer colorBuf = new RenderBuffer();
         colorBuf.slot = 0;
         colorBuf.format = format;
+        
+        colorBufs.clear();
+        colorBufs.add(colorBuf);
     }
 
     private void checkSetTexture(Texture tex, boolean depth){
@@ -114,10 +118,13 @@ public class FrameBuffer extends GLObject {
         Image img = tex.getImage();
         checkSetTexture(tex, false);
 
-        colorBuf = new RenderBuffer();
+        RenderBuffer colorBuf = new RenderBuffer();
         colorBuf.slot = 0;
         colorBuf.tex = tex;
         colorBuf.format = img.getFormat();
+
+        colorBufs.clear();
+        colorBufs.add(colorBuf);
     }
 
     public void setDepthTexture(Texture2D tex){
@@ -133,8 +140,19 @@ public class FrameBuffer extends GLObject {
         depthBuf.format = img.getFormat();
     }
 
+    public int getNumColorBuffers(){
+        return colorBufs.size();
+    }
+
+    public RenderBuffer getColorBuffer(int index){
+        return colorBufs.get(index);
+    }
+
     public RenderBuffer getColorBuffer() {
-        return colorBuf;
+        if (colorBufs.size() == 0)
+            return null;
+        
+        return colorBufs.get(0);
     }
 
     public RenderBuffer getDepthBuffer() {
@@ -156,8 +174,9 @@ public class FrameBuffer extends GLObject {
     @Override
     public void resetObject() {
         this.id = -1;
-        if (colorBuf != null)
-            colorBuf.resetObject();
+        for (int i = 0; i < colorBufs.size(); i++) {
+            colorBufs.get(i).resetObject();
+        }
         
         if (depthBuf != null)
             depthBuf.resetObject();

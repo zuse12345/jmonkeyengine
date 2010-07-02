@@ -6,10 +6,9 @@ import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.VertexBuffer.Type;
-import java.nio.Buffer;
+import com.jme3.scene.mesh.IndexBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,46 +32,11 @@ public class TangentBinormalGenerator {
         setToleranceAngle(45);
     }
 
-    private static interface IndexWrapper {
-        public int get(int i);
-        public int size();
-    }
-    
-    private static IndexWrapper getIndexWrapper(final Buffer buff) {
-        if (buff instanceof ShortBuffer) {
-            return new IndexWrapper() {
-                private ShortBuffer buf = (ShortBuffer) buff;
-                public int get(int i) {
-                    return ((int) buf.get(i))&(0x0000FFFF);
-                }
-                public int size() {
-                    return buf.capacity();
-                }
-            };
-        }
-        else if (buff instanceof IntBuffer) {
-            return new IndexWrapper() {
-                private IntBuffer buf = (IntBuffer) buff;
-                public int get(int i) {
-                    return buf.get(i);
-                }
-                public int size() {
-                    return buf.capacity();
-                }
-            };
-        } else {
-            throw new IllegalArgumentException();
-        }
-    }
-
     private static class VertexData {
-        public final Vector3f tangent = new Vector3f();
-        public final Vector3f binormal = new Vector3f();
         public final List<TriangleData> triangles =
                     new ArrayList<TriangleData>();
 
         public VertexData() {
-            
         }
     }
 
@@ -80,21 +44,13 @@ public class TangentBinormalGenerator {
         public final Vector3f tangent;
         public final Vector3f binormal;
         public final Vector3f normal;
-        public int index0;
-        public int index1;
-        public int index2;
 
         public TriangleData(Vector3f tangent, Vector3f binormal,
                         Vector3f normal,
-                        int index0, int index1, int index2)
-        {
+                        int index0, int index1, int index2){
             this.tangent = tangent;
             this.binormal = binormal;
             this.normal = normal;
-            
-            this.index0 = index0;
-            this.index1 = index1;
-            this.index2 = index2;
         }
     }
 
@@ -135,9 +91,9 @@ public class TangentBinormalGenerator {
     }
 
     private static VertexData[] processTriangles(Mesh mesh,
-            int[] index, Vector3f[] v, Vector2f[] t)
-    {
-        IndexWrapper indexBuffer =  getIndexWrapper(mesh.getBuffer(Type.Index).getData());
+            int[] index, Vector3f[] v, Vector2f[] t){
+        IndexBuffer indexBuffer = mesh.getIndexBuffer();
+        //IndexWrapper indexBuffer =  getIndexWrapper(mesh.getBuffer(Type.Index).getData());
         FloatBuffer vertexBuffer = (FloatBuffer) mesh.getBuffer(Type.Position).getData();
         FloatBuffer textureBuffer = (FloatBuffer) mesh.getBuffer(Type.TexCoord).getData();
 
@@ -160,10 +116,11 @@ public class TangentBinormalGenerator {
         
         return vertices;
     }
+
     private static VertexData[] processTriangleStrip(Mesh mesh,
-            int[] index, Vector3f[] v, Vector2f[] t)
-    {
-        IndexWrapper indexBuffer =  getIndexWrapper(mesh.getBuffer(Type.Index).getData());
+            int[] index, Vector3f[] v, Vector2f[] t){
+        IndexBuffer indexBuffer = mesh.getIndexBuffer();
+        //IndexWrapper indexBuffer =  getIndexWrapper(mesh.getBuffer(Type.Index).getData());
         FloatBuffer vertexBuffer = (FloatBuffer) mesh.getBuffer(Type.Position).getData();
         FloatBuffer textureBuffer = (FloatBuffer) mesh.getBuffer(Type.TexCoord).getData();
 
@@ -207,9 +164,9 @@ public class TangentBinormalGenerator {
         return vertices;
     }
     private static VertexData[] processTriangleFan(Mesh mesh,
-            int[] index, Vector3f[] v, Vector2f[] t)
-    {
-        IndexWrapper indexBuffer =  getIndexWrapper(mesh.getBuffer(Type.Index).getData());
+            int[] index, Vector3f[] v, Vector2f[] t){
+        IndexBuffer indexBuffer = mesh.getIndexBuffer();
+        //IndexWrapper indexBuffer =  getIndexWrapper(mesh.getBuffer(Type.Index).getData());
         FloatBuffer vertexBuffer = (FloatBuffer) mesh.getBuffer(Type.Position).getData();
         FloatBuffer textureBuffer = (FloatBuffer) mesh.getBuffer(Type.TexCoord).getData();
 
@@ -251,8 +208,7 @@ public class TangentBinormalGenerator {
     }
 
     private static TriangleData processTriangle(int[] index,
-            Vector3f[] v, Vector2f[] t)
-    {
+            Vector3f[] v, Vector2f[] t){
         Vector3f edge1 = new Vector3f();
         Vector3f edge2 = new Vector3f();
         Vector2f edge1uv = new Vector2f();

@@ -102,7 +102,12 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
     }
 
     public void remove(Light l){
-
+        for (int i = 0; i < listSize; i++){
+            if (list[i] == l){
+                remove(i);
+                return;
+            }
+        }
     }
 
     /**

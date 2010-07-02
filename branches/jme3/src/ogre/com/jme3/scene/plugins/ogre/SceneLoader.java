@@ -101,8 +101,16 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
         assert elementStack.peek().equals("light");
 
         // SpotLight will be supporting a direction-normal, too.
-        if (light instanceof PointLight)
-            ((PointLight) light).setRadius(parseFloat(attribs.getValue("range")));
+        if (light instanceof PointLight){
+            float range = parseFloat(attribs.getValue("range"));
+            float constant = parseFloat(attribs.getValue("constant"));
+            float linear = parseFloat(attribs.getValue("linear"));
+            float quadratic = parseFloat(attribs.getValue("quadratic"));
+            if (constant == 1 && quadratic == 0 && linear > 0){
+                range = 1f / linear;
+            }
+            ((PointLight) light).setRadius(range);
+        }
 
     }
 
@@ -238,6 +246,10 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
                 Vector3f dir = dl.getDirection();
                 q.multLocal(dir);
                 dl.setDirection(dir);
+            }else if (light instanceof PointLight){
+                PointLight pl = (PointLight) light;
+                Vector3f pos = node.getWorldTranslation();
+                pl.setPosition(pos);
             }
             light = null;
         }

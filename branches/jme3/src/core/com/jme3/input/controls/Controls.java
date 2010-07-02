@@ -9,6 +9,7 @@ import com.jme3.input.event.JoyButtonEvent;
 import com.jme3.input.event.KeyInputEvent;
 import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
+import com.jme3.math.FastMath;
 import com.jme3.util.IntMap;
 import com.jme3.util.IntMap.Entry;
 import java.util.ArrayList;
@@ -120,10 +121,10 @@ public class Controls implements RawInputListener {
     }
 
     private final float computeAnalogValue(long timeDelta){
-        if (safeMode)
+        if (safeMode || frameDelta == 0)
             return 1f;
         else
-            return (float)timeDelta / (float)frameDelta;
+            return FastMath.clamp((float)timeDelta / (float)frameDelta, 0, 1);
     }
 
     private void invokeTimedActions(int hash, long time, boolean pressed){
@@ -371,7 +372,7 @@ public class Controls implements RawInputListener {
 
     public void update(float tpf){
         frameTPF = tpf;
-        safeMode = tpf < 0.005f;
+        safeMode = tpf < 0.015f;
         long currentTime = keys.getInputTimeNanos();
         frameDelta = currentTime - lastUpdateTime;
 

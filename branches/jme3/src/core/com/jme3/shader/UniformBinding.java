@@ -56,6 +56,14 @@ public enum UniformBinding {
      * Type: vec4
      */
     ViewPort,
+
+    /**
+     * The near and far values for the camera frustum.
+     * X = Near
+     * Y = Far.
+     * Type: vec2
+     */
+    FrustumNearFar,
     
     /**
      * The width and height of the camera.

@@ -22,12 +22,14 @@ public class AppStateManager {
      * was already attached.
      */
     public boolean attach(AppState state){
-        if (!states.contains(state)){
-            state.stateAttached(this);
-            states.add(state);
-            return true;
-        }else{
-            return false;
+        synchronized (states){
+            if (!states.contains(state)){
+                state.stateAttached(this);
+                states.add(state);
+                return true;
+            }else{
+                return false;
+            }
         }
     }
 
@@ -39,12 +41,14 @@ public class AppStateManager {
      * if the state was not attached in the first place.
      */
     public boolean detach(AppState state){
-        if (states.contains(state)){
-            state.stateDetached(this);
-            states.remove(state);
-            return true;
-        }else{
-            return false;
+        synchronized (states){
+            if (states.contains(state)){
+                state.stateDetached(this);
+                states.remove(state);
+                return true;
+            }else{
+                return false;
+            }
         }
     }
 
@@ -57,7 +61,9 @@ public class AppStateManager {
      * @see AppStateManager#attach(com.jme3.app.state.AppState)
      */
     public boolean hasState(AppState state){
-        return states.contains(state);
+        synchronized (states){
+            return states.contains(state);
+        }
     }
 
     /**
@@ -67,11 +73,13 @@ public class AppStateManager {
      * @return First attached state that is an instance of stateClass
      */
     public <T extends AppState> T getState(Class<T> stateClass){
-        int num = states.size();
-        for (int i = 0; i < num; i++){
-            AppState state = states.get(i);
-            if (stateClass.isAssignableFrom(state.getClass())){
-                return (T) state;
+        synchronized (states){
+            int num = states.size();
+            for (int i = 0; i < num; i++){
+                AppState state = states.get(i);
+                if (stateClass.isAssignableFrom(state.getClass())){
+                    return (T) state;
+                }
             }
         }
         return null;
@@ -91,8 +99,7 @@ public class AppStateManager {
 
                 state.update(tpf);
             }
-        }
-        
+        } 
     }
 
     /**

@@ -692,6 +692,7 @@ public class LwjglRenderer implements Renderer {
         // upload shader source
         // merge the defines and source code
         byte[] versionData = new byte[]{};//"#version 140\n".getBytes();
+//        versionData = "#define INSTANCING 1\n".getBytes();
         byte[] definesCodeData = source.getDefines().getBytes();
         byte[] sourceCodeData = source.getSource().getBytes();
         ByteBuffer codeBuf = BufferUtils.createByteBuffer(versionData.length
@@ -1725,14 +1726,7 @@ public class LwjglRenderer implements Renderer {
         }
 
         int vertCount = mesh.getVertexCount();
-        if (count > 1 && caps.contains(Caps.MeshInstancing)){
-            ARBDrawInstanced.
-            glDrawElementsInstancedARB(convertElementMode(mesh.getMode()),
-                                       indexBuf.getData().capacity(),
-                                       convertFormat(indexBuf.getFormat()),
-                                       0,
-                                       count);
-        }
+        boolean useInstancing = count > 1 && caps.contains(Caps.MeshInstancing);
 
         if (mesh.getMode() == Mode.Hybrid){
             int[] modeStart      = mesh.getModeStart();
@@ -1752,21 +1746,41 @@ public class LwjglRenderer implements Renderer {
                     elMode = convertElementMode(Mode.TriangleStrip);
                 }
                 int elementLength = elementLengths[i];
-                glDrawRangeElements(elMode,
-                                    0,
-                                    vertCount,
-                                    elementLength,
-                                    fmt,
-                                    curOffset);
+
+                if (useInstancing){
+                    ARBDrawInstanced.
+                    glDrawElementsInstancedARB(elMode,
+                                               elementLength,
+                                               fmt,
+                                               curOffset,
+                                               count);
+                }else{
+                    glDrawRangeElements(elMode,
+                                        0,
+                                        vertCount,
+                                        elementLength,
+                                        fmt,
+                                        curOffset);
+                }
+
                 curOffset += elementLength * elSize;
             }
         }else{
-            glDrawRangeElements(convertElementMode(mesh.getMode()),
-                                0,
-                                vertCount,
-                                indexBuf.getData().capacity(),
-                                convertFormat(indexBuf.getFormat()),
-                                0);
+            if (useInstancing){
+                ARBDrawInstanced.
+                glDrawElementsInstancedARB(convertElementMode(mesh.getMode()),
+                                           indexBuf.getData().capacity(),
+                                           convertFormat(indexBuf.getFormat()),
+                                           0,
+                                           count);
+            }else{
+                glDrawRangeElements(convertElementMode(mesh.getMode()),
+                                    0,
+                                    vertCount,
+                                    indexBuf.getData().capacity(),
+                                    convertFormat(indexBuf.getFormat()),
+                                    0);
+            }
         }
     }
 

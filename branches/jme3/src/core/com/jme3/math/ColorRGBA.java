@@ -339,6 +339,17 @@ public final class ColorRGBA implements Savable, Cloneable {
     }
 
     /**
+     * Multiplies each r/g/b/a of this color by the given scalar and
+     * returns the result as a new ColorRGBA.  Used as a way of making colors dimmer
+     * or brighter..
+     * @param scalar The scalar to multiply.
+     * @return The new ColorRGBA.  this*scalar
+     */
+    public ColorRGBA mult(float scalar) {
+        return new ColorRGBA(scalar * r, scalar * g, scalar * b, scalar * a);
+    }
+
+    /**
      * Multiplies each r/g/b/a of this color by the r/g/b/a of the given color and
      * returns the result as a new ColorRGBA.  Used as a way of combining colors and lights.
      * @param scalar scalar to multiply with

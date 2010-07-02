@@ -48,6 +48,7 @@ public class RenderManager {
     private final boolean shader;
 
     private int viewX, viewY, viewWidth, viewHeight;
+    private float near, far;
     private Matrix4f orthoMatrix = new Matrix4f();
     private Matrix4f viewMatrix = new Matrix4f();
     private Matrix4f projMatrix = new Matrix4f();
@@ -188,6 +189,10 @@ public class RenderManager {
                 case Aspect:
                     float aspect = ((float) viewWidth) / viewHeight;
                     u.setValue(VarType.Float, aspect);
+                    break;
+                case FrustumNearFar:
+                    tempVec2.set(near, far);
+                    u.setValue(VarType.Vector2, tempVec2);
                     break;
                 case CameraPosition:
                     u.setValue(VarType.Vector3, camLoc);
@@ -431,6 +436,9 @@ public class RenderManager {
             cam.getLeft(camLeft);
             cam.getUp(camUp);
             cam.getDirection(camDir);
+
+            near = cam.getFrustumNear();
+            far  = cam.getFrustumFar();
         }else{
             if (ortho){
                 renderer.setViewProjectionMatrices(Matrix4f.IDENTITY, orthoMatrix);

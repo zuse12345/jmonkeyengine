@@ -23,7 +23,11 @@ import java.util.HashMap;
  * By default a dispatcher is included with every Application instance for use
  * in user code to query input, unless the Application is created as headless
  * or with input explicitly disabled.
+ *
+ * @deprecated Please use the InputManager class instead, as this
+ * class will be removed in the future.
  */
+@Deprecated
 public class Controls implements RawInputListener {
 
     private final KeyInput keys;
@@ -299,7 +303,9 @@ public class Controls implements RawInputListener {
                 mapping = new Mapping(mappingName);
                 mappings.put(mappingName, mapping);
             }
-            mapping.listeners.add(listener);
+            if (!mapping.listeners.contains(listener)){
+                mapping.listeners.add(listener);
+            }
         }
     }
 
@@ -323,8 +329,10 @@ public class Controls implements RawInputListener {
                 names = new ArrayList<Mapping>();
                 bindings.put(hash, names);
             }
-            names.add(mapping);
-            mapping.triggers.add(hash);
+            if (!names.contains(mapping)){
+                names.add(mapping);
+                mapping.triggers.add(hash);
+            }
         }
     }
 

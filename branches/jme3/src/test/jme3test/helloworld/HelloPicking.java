@@ -78,8 +78,8 @@ public class HelloPicking extends SimpleApplication {
         if (results.size() > 0){
           // The closest collision point is what was truly hit:
           CollisionResult closest = results.getClosestCollision();
-          mark.setLocalTranslation(closest.getContactPoint());
           // Let's interact - we mark the hit with a red dot.
+          mark.setLocalTranslation(closest.getContactPoint());
           rootNode.attachChild(mark);
         } else {
         // No hits? Then remove the red mark.

@@ -1,6 +1,7 @@
 package jme3test.helloworld;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
 import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
@@ -63,7 +64,7 @@ public class HelloPicking extends SimpleApplication {
         Ray ray = new Ray(cam.getLocation(), cam.getDirection());
         // 3. Collect intersections between Ray and Shootables in results list.
         shootables.collideWith(ray, results);
-        // 4. Use results. (We print them and mark the hit with a red dot.)
+        // 4. Print the results
         System.out.println("----- Collisions? " + results.size() + "-----");
         for (int i = 0; i < results.size(); i++) {
           // For each hit, we know distance, impact point, name of geometry.
@@ -72,12 +73,16 @@ public class HelloPicking extends SimpleApplication {
           String hit = results.getCollision(i).getGeometry().getName();
           System.out.println("* Collision #" + i);
           System.out.println("  You shot " + hit + " at " + pt + ", " + dist + " wu away.");
-          // The closest collision point is what was truly hit - let's mark it.
-          mark.setLocalTranslation(results.getClosestCollision().getContactPoint());
-          rootNode.attachChild(mark);
         }
+        // 5. Use the results (we mark the hit object)
+        if (results.size() > 0){
+          // The closest collision point is what was truly hit:
+          CollisionResult closest = results.getClosestCollision();
+          mark.setLocalTranslation(closest.getContactPoint());
+          // Let's interact - we mark the hit with a red dot.
+          rootNode.attachChild(mark);
+        } else {
         // No hits? Then remove the red mark.
-        if (results.size() == 0) {
           rootNode.detachChild(mark);
         }
       }

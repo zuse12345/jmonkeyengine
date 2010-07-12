@@ -7,6 +7,7 @@ import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 
+/** Sample 11 - how to create fire, water, and explosion effects. */
 public class HelloEffects extends SimpleApplication {
 
   public static void main(String[] args) {
@@ -47,22 +48,22 @@ public class HelloEffects extends SimpleApplication {
     rootNode.attachChild(debris);
     debris.emitAllParticles();
 
-    ParticleEmitter water = new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 30);
-    Material mat_blue = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
-    mat_blue.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/flame.png"));
-    water.setMaterial(mat_blue);
-    water.setImagesX(2); water.setImagesY(2); // 2x2 texture animation
-    water.setStartColor(new ColorRGBA(0f, 0f, 1f, 1f)); // blue
-    water.setEndColor(  new ColorRGBA(0f, 1f, 1f, 1f)); // turquois
-    water.setStartVel(new Vector3f(0, -2, 0));
-    water.setStartSize(1f);
-    water.setEndSize(1.5f);
-    water.setGravity(1);
-    water.setLowLife(1f);
-    water.setHighLife(3f);
-    water.setVariation(0.3f);
-    water.setLocalTranslation(0, 5, 0);
-    rootNode.attachChild(water);
+//    ParticleEmitter water = new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 30);
+//    Material mat_blue = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+//    mat_blue.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/flame.png"));
+//    water.setMaterial(mat_blue);
+//    water.setImagesX(2); water.setImagesY(2); // 2x2 texture animation
+//    water.setStartColor(new ColorRGBA(0f, 0f, 1f, 1f)); // blue
+//    water.setEndColor(  new ColorRGBA(0f, 1f, 1f, 1f)); // turquois
+//    water.setStartVel(new Vector3f(0, -2, 0));
+//    water.setStartSize(1f);
+//    water.setEndSize(1.5f);
+//    water.setGravity(1);
+//    water.setLowLife(1f);
+//    water.setHighLife(3f);
+//    water.setVariation(0.3f);
+//    water.setLocalTranslation(0, 5, 0);
+//    rootNode.attachChild(water);
 
   }
 }

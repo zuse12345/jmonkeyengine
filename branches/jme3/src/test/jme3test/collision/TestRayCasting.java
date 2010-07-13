@@ -2,90 +2,65 @@ package jme3test.collision;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.AssetKey;
-import com.jme3.collision.CollisionResults;
-import com.jme3.input.RawInputListener;
-import com.jme3.input.event.JoyAxisEvent;
-import com.jme3.input.event.JoyButtonEvent;
-import com.jme3.input.event.KeyInputEvent;
-import com.jme3.input.event.MouseButtonEvent;
-import com.jme3.input.event.MouseMotionEvent;
+import com.jme3.bounding.BoundingSphere;
 import com.jme3.material.Material;
-import com.jme3.math.Ray;
-import com.jme3.math.Vector2f;
+import com.jme3.math.FastMath;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.VertexBuffer.Type;
 
-public class TestRayCasting extends SimpleApplication implements RawInputListener {
+public class TestRayCasting extends SimpleApplication {
 
-    private Ray ray = new Ray();
-    private CollisionResults results = new CollisionResults();
+    private RayTrace tracer;
 
     public static void main(String[] args){
         TestRayCasting app = new TestRayCasting();
+        app.setPauseOnLostFocus(false);
         app.start();
     }
 
     @Override
     public void simpleInitApp() {
-        flyCam.setEnabled(false);
+//        flyCam.setEnabled(false);
 
         // load material
         Material mat = (Material) assetManager.loadAsset(new AssetKey("Interface/Logo/Logo.j3m"));
 
-        // attach objects
-//        Geometry sphere = new Geometry("Sphere", new Sphere(10, 10, 1));
-//        sphere.rotate(FastMath.HALF_PI / 2f, FastMath.HALF_PI / 2f, 0);
-//        sphere.setMaterial(mat);
-//        rootNode.attachChild(sphere);
-
-//        Geometry box = new Geometry("Box", new Box(Vector3f.ZERO, .75f, .75f, .75f));
-//        box.setLocalTranslation(3f, 0, 0);
-//        box.rotate(FastMath.HALF_PI / 2f, FastMath.HALF_PI / 2f, 0);
-//        box.setMaterial(mat);
-//        rootNode.attachChild(box);
+        Mesh q = new Mesh();
+        q.setBuffer(Type.Position, 3, new float[]
+        {
+            1, 0, 0,
+            0, 1.5f, 0,
+            -1, 0, 0
+        }
+        );
+        q.setBuffer(Type.Index, 3, new int[]{ 0, 1, 2 });
+        q.setBound(new BoundingSphere());
+        q.updateBound();
+//        Geometry teapot = new Geometry("MyGeom", q);
 
         Spatial teapot = assetManager.loadModel("Models/Teapot/Teapot.meshxml");
-//        teapot.move(-3f, 0, 0);
-//        teapot.setLocalScale(0.5f);
+        teapot.scale(2f, 2f, 2f);
+//        teapot.move(2f, 2f, -.5f);
+        teapot.rotate(FastMath.HALF_PI, FastMath.HALF_PI, FastMath.HALF_PI);
         teapot.setMaterial(mat);
         rootNode.attachChild(teapot);
         rootNode.updateGeometricState();
 
-        cam.setLocation(cam.getLocation().add(0,1,0));
+//        cam.setLocation(cam.getLocation().add(0,1,0));
 //        cam.lookAt(teapot.getWorldBound().getCenter(), Vector3f.UNIT_Y);
 
-        inputManager.addRawInputListener(this);
-        
-        new RayTrace(rootNode, cam, 640, 480).trace();
+        tracer = new RayTrace(rootNode, cam, 160, 128);
+        tracer.show();
+        tracer.update();
     }
 
-    public void onJoyAxisEvent(JoyAxisEvent evt) {
-    }
-
-    public void onJoyButtonEvent(JoyButtonEvent evt) {
-    }
-
-    public void onMouseMotionEvent(MouseMotionEvent evt) {
-        int x = evt.getX();
-        int y = evt.getY();
-
-        Vector3f pos = cam.getWorldCoordinates(new Vector2f(x,y), 0.0f);
-        Vector3f dir = cam.getWorldCoordinates(new Vector2f(x,y), 0.3f);
-        dir.subtractLocal(pos).normalizeLocal();
-        
-        ray.setOrigin(pos);
-        ray.setDirection(dir);
-    }
-
-    public void onMouseButtonEvent(MouseButtonEvent evt) {
-        if (evt.isPressed()){
-            results.clear();
-            rootNode.collideWith(ray, results);
-            System.out.println(results.size());
-        }
-    }
-
-    public void onKeyEvent(KeyInputEvent evt) {
+    @Override
+    public void simpleUpdate(float tpf){
+        tracer.update();
     }
 
 }

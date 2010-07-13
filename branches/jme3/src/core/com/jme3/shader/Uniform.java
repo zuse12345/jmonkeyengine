@@ -231,8 +231,19 @@ public class Uniform extends ShaderVariable {
 //                break;
             case Matrix4Array:
                 Matrix4f[] m4a = (Matrix4f[]) value;
-                throw new UnsupportedOperationException();
-//                break;
+
+                if (multiData == null)
+                    multiData = BufferUtils.createFloatBuffer(m4a.length * 16);
+                else{
+                    multiData = BufferUtils.ensureLargeEnough(multiData, m4a.length * 16);
+                }
+
+                multiData.clear();
+                for (int i = 0; i < m4a.length; i++)
+                    m4a[i].fillFloatBuffer(multiData, true);
+                
+                multiData.clear();
+                break;
             default:
                 this.value = value;
                 break;

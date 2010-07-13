@@ -19,6 +19,7 @@ import com.jme3.scene.CollisionData;
 import com.jme3.scene.Mesh;
 
 import com.jme3.scene.VertexBuffer.Type;
+import com.jme3.scene.mesh.IndexBuffer;
 import com.jme3.util.TempVars;
 import java.io.IOException;
 import java.nio.FloatBuffer;
@@ -58,7 +59,8 @@ public class BIHTree implements CollisionData {
         mesh.updateBound();
 
         FloatBuffer vb = (FloatBuffer) mesh.getBuffer(Type.Position).getData();
-        ShortBuffer ib = (ShortBuffer) mesh.getBuffer(Type.Index).getData();
+//        ShortBuffer ib = (ShortBuffer) mesh.getBuffer(Type.Index).getData();
+        IndexBuffer ib = mesh.getIndexBuffer();
        
         numTris = mesh.getTriangleCount();
         pointData = new float[numTris * 3 * 3];
@@ -317,17 +319,17 @@ public class BIHTree implements CollisionData {
     public void getTriangle(int index, Vector3f v1, Vector3f v2, Vector3f v3){
         int pointIndex = index * 9;
 
-        v1.set(pointData[pointIndex++],
-               pointData[pointIndex++],
-               pointData[pointIndex++]);
+        v1.x = pointData[pointIndex++];
+        v1.y = pointData[pointIndex++];
+        v1.z = pointData[pointIndex++];
 
-        v2.set(pointData[pointIndex++],
-               pointData[pointIndex++],
-               pointData[pointIndex++]);
-        
-        v3.set(pointData[pointIndex++],
-               pointData[pointIndex++],
-               pointData[pointIndex++]);
+        v2.x = pointData[pointIndex++];
+        v2.y = pointData[pointIndex++];
+        v2.z = pointData[pointIndex++];
+
+        v3.x = pointData[pointIndex++];
+        v3.y = pointData[pointIndex++];
+        v3.z = pointData[pointIndex++];
     }
 
     public void swapTriangles(int index1, int index2){
@@ -370,7 +372,8 @@ public class BIHTree implements CollisionData {
             if (r.getLimit() < Float.POSITIVE_INFINITY){
                 tMax = Math.min(tMax, r.getLimit());
             }
-
+            
+//            return root.intersectBrute(r, worldMatrix, this, tMin, tMax, results);
             return root.intersectWhere(r, worldMatrix, this, tMin, tMax, results);
         }
         return 0;

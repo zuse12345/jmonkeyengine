@@ -292,9 +292,6 @@ public final class Ray implements Savable, Cloneable, Collidable {
 
         float dirDotNorm = direction.x * normX + direction.y * normY + direction.z * normZ;
 
-        if (dirDotNorm > 0)
-            return Float.POSITIVE_INFINITY;
-
         float diffX = origin.x - v0.x;
         float diffY = origin.y - v0.y;
         float diffZ = origin.z - v0.z;

@@ -88,9 +88,9 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
     /**
      * LightList
      */
-    protected LightList localLights = new LightList(this);
+    protected LightList localLights;
 
-    protected LightList worldLights = new LightList(this);
+    protected transient LightList worldLights;
 
     /** 
      * This spatial's name.
@@ -129,6 +129,10 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
     public Spatial() {
         localTransform = new Transform();
         worldTransform = new Transform();
+
+        localLights = new LightList(this);
+        worldLights = new LightList(this);
+
         refreshFlags |= RF_BOUND;
     }
 
@@ -1020,9 +1024,6 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         capsule.write(localTransform, "transform", new Transform());
         capsule.write(localLights, "lights", null);
         capsule.writeSavableArrayList(controls, "controlsList", null);
-
-//        capsule.writeStringSavableMap(UserDataManager.getInstance().getAllData(
-//                this), "userData", null);
     }
 
     public void read(JmeImporter im) throws IOException {
@@ -1037,20 +1038,15 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
                                     ShadowMode.Inherit);
 
         localTransform = (Transform) ic.readSavable("transform", Transform.Identity);
+        
         localLights = (LightList) ic.readSavable("lights", null);
+        localLights.setOwner(this);
+
         controls = ic.readSavableArrayList("controlsList", null);
 
         if (ic.readIntSavableMap("controls", null) != null){
-            logger.log(Level.WARNING, "You're attempting to read an outdated");
+            logger.log(Level.WARNING, "You're attempting to read an outdated file");
         }
-
-//        HashMap<String, Savable> map = (HashMap<String, Savable>) capsule
-//                .readStringSavableMap("userData", null);
-//        if (map != null) {
-//            UserDataManager.getInstance().setAllData(this, map);
-//        }
-
-        
     }
 
     /**

@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class LightList implements Iterable<Light>, Savable, Cloneable {
 
@@ -51,6 +52,10 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
         this.owner = owner;
     }
 
+    public void setOwner(Spatial owner){
+        this.owner = owner;
+    }
+
     private void doubleSize(){
         Light[] temp = new Light[list.length * 2];
         float[] temp2 = new float[list.length * 2];
@@ -72,12 +77,6 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
         }
         list[listSize] = l;
         distToOwner[listSize++] = Float.NEGATIVE_INFINITY;
-    }
-
-    public static void main(String[] args){
-        LightList ll = new LightList(null);
-        ll.add(new PointLight());
-        ll.remove(1);
     }
 
     /**
@@ -193,22 +192,23 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
         }
 
         // add the lights from the local list
+        System.arraycopy(local.list, 0, list, 0, local.listSize);
         for (int i = 0; i < local.listSize; i++){
-            list[i] = local.list[i];
             distToOwner[i] = Float.NEGATIVE_INFINITY;
         }
 
         // if the spatial has a parent node, add the lights
         // from the parent list as well
         if (parent != null){
+            int p = local.listSize + parent.listSize;
+            while (list.length <= p)
+                doubleSize();
+
             for (int i = 0; i < parent.listSize; i++){
-                int p = i + local.listSize;
-                if (list.length <= p)
-                    doubleSize();
-                
                 list[p] = parent.list[i];
                 distToOwner[p] = Float.NEGATIVE_INFINITY;
             }
+            
             listSize = local.listSize + parent.listSize;
         }else{
             listSize = local.listSize;
@@ -217,17 +217,22 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
 
     public Iterator<Light> iterator() {
         return new Iterator<Light>(){
-            LightList l;
+
             int index = 0;
 
             public boolean hasNext() {
-                return index <= l.listSize;
+                return index < size();
             }
+
             public Light next() {
-                return l.list[index++];
+                if (!hasNext())
+                    throw new NoSuchElementException();
+                
+                return list[index++];
             }
+            
             public void remove() {
-                throw new UnsupportedOperationException();
+                LightList.this.remove(--index);
             }
         };
     }
@@ -243,7 +248,7 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
 
     public void write(JmeExporter ex) throws IOException {
         OutputCapsule oc = ex.getCapsule(this);
-        oc.write(owner, "owner", null);
+//        oc.write(owner, "owner", null);
 
         ArrayList<Light> lights = new ArrayList<Light>();
         for (int i = 0; i < listSize; i++){
@@ -254,7 +259,7 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
 
     public void read(JmeImporter im) throws IOException {
         InputCapsule ic = im.getCapsule(this);
-        owner = (Spatial) ic.readSavable("owner", null);
+//        owner = (Spatial) ic.readSavable("owner", null);
 
         List<Light> lights = ic.readSavableArrayList("lights", null);
         listSize = lights.size();

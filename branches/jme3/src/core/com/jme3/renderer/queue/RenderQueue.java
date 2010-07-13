@@ -88,7 +88,7 @@ public class RenderQueue {
         }
     }
 
-    private void renderGeometryList(GeometryList list, RenderManager rm, Camera cam){
+    private void renderGeometryList(GeometryList list, RenderManager rm, Camera cam, boolean clear){
         list.setCamera(cam); // select camera for sorting
         list.sort();
         for (int i = 0; i < list.size(); i++){
@@ -107,13 +107,13 @@ public class RenderQueue {
         list.clear();
     }
 
-    public void renderShadowQueue(ShadowMode shadBucket, RenderManager rm, Camera cam){
+    public void renderShadowQueue(ShadowMode shadBucket, RenderManager rm, Camera cam, boolean clear){
         switch (shadBucket){
             case Cast:
-                renderGeometryList(shadowCast, rm, cam);
+                renderGeometryList(shadowCast, rm, cam, clear);
                 break;
             case Recieve:
-                renderGeometryList(shadowRecv, rm, cam);
+                renderGeometryList(shadowRecv, rm, cam, clear);
                 break;
         }
     }
@@ -136,16 +136,16 @@ public class RenderQueue {
     public void renderQueue(Bucket bucket, RenderManager rm, Camera cam){
         switch (bucket){
             case Gui:
-                renderGeometryList(guiList, rm, cam);
+                renderGeometryList(guiList, rm, cam, true);
                 break;
             case Opaque:
-                renderGeometryList(opaqueList, rm, cam);
+                renderGeometryList(opaqueList, rm, cam, true);
                 break;
             case Sky:
-                renderGeometryList(skyList, rm, cam);
+                renderGeometryList(skyList, rm, cam, true);
                 break;
             case Transparent:
-                renderGeometryList(transparentList, rm, cam);
+                renderGeometryList(transparentList, rm, cam, true);
                 break;
             default:
                 throw new UnsupportedOperationException("Unsupported bucket type: "+bucket);

@@ -637,10 +637,16 @@ public class LwjglRenderer implements Renderer {
                 fb = (FloatBuffer)uniform.getValue();
                 glUniform4(loc, fb);
                 break;
+            case Matrix4Array:
+                fb = (FloatBuffer)uniform.getValue();
+                glUniformMatrix4(loc, false, fb);
+                break;
             case Int:
                 Integer i = (Integer)uniform.getValue();
                 glUniform1i(loc, i.intValue());
                 break;
+            default:
+                throw new UnsupportedOperationException("Unsupported uniform type: "+uniform.getVarType());
         }
     }
 

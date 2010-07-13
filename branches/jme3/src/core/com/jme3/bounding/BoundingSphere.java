@@ -260,7 +260,9 @@ public class BoundingSphere extends BoundingVolume {
                     BufferUtils.setInBuffer(tempC, points, j + ap);
                     BufferUtils.setInBuffer(tempB, points, j - 1 + ap);
                 }
+                assert vars.unlock();
                 recurseMini(points, i, b + 1, ap + 1);
+                assert vars.lock();
             }
         }
         assert vars.unlock();

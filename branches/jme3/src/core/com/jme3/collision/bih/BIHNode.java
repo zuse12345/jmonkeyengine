@@ -13,6 +13,7 @@ import com.jme3.math.Matrix4f;
 import com.jme3.math.Ray;
 import com.jme3.math.Triangle;
 import com.jme3.math.Vector3f;
+import com.jme3.util.TempVars;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -93,13 +94,15 @@ public class BIHNode implements Savable {
 
     }
 
-    private static final ArrayList<BIHStackData> stack = new ArrayList<BIHStackData>();
+//    private static final ArrayList<BIHStackData> stack = new ArrayList<BIHStackData>();
 
     public final int intersectWhere(Collidable col,
                                     BoundingBox box,
                                     Matrix4f worldMatrix,
                                     BIHTree tree,
                                     CollisionResults results){
+
+        ArrayList<BIHStackData> stack = TempVars.get().bihStack;
         stack.clear();
 
         float[] minExts  = { box.getCenter().x - box.getXExtent(),
@@ -178,21 +181,93 @@ public class BIHNode implements Savable {
         return cols;
     }
 
+    public final int intersectBrute(Ray r,
+                                    Matrix4f worldMatrix,
+                                    BIHTree tree,
+                                    float sceneMin,
+                                    float sceneMax,
+                                    CollisionResults results){
+        float tHit = Float.POSITIVE_INFINITY;
+
+        Vector3f v1 = new Vector3f(),
+                 v2 = new Vector3f(),
+                 v3 = new Vector3f();
+        
+        int cols = 0;
+
+        ArrayList<BIHStackData> stack = TempVars.get().bihStack;
+        stack.clear();
+        stack.add(new BIHStackData(this, 0, 0));
+        stackloop: while (stack.size() > 0){
+
+            BIHStackData data = stack.remove(stack.size()-1);
+            BIHNode node = data.node;
+
+            leafloop: while (node.axis != 3){ // while node is not a leaf
+                BIHNode nearNode, farNode;
+                nearNode = node.left;
+                farNode  = node.right;
+
+                stack.add(new BIHStackData(farNode,  0, 0));
+                node = nearNode;
+            }
+
+            // a leaf
+            for (int i = node.leftIndex; i <= node.rightIndex; i++){
+                tree.getTriangle(i, v1,v2,v3);
+
+                if (worldMatrix != null){
+                    worldMatrix.mult(v1, v1);
+                    worldMatrix.mult(v2, v2);
+                    worldMatrix.mult(v3, v3);
+                }
+
+                float t = r.intersects(v1,v2,v3);
+                if (t < tHit){
+                    tHit = t;
+                    Vector3f contactPoint = new Vector3f(r.direction)
+                                                .multLocal(tHit)
+                                                .addLocal(r.origin);
+                    CollisionResult cr = new CollisionResult(contactPoint, tHit);
+                    cr.setTriangleIndex(tree.getTriangleIndex(i));
+                    results.addCollision(cr);
+                    cols ++;
+                }
+            }
+        }
+
+        return cols;
+    }
+
     public final int intersectWhere(Ray r,
                                     Matrix4f worldMatrix,
                                     BIHTree tree,
                                     float sceneMin,
                                     float sceneMax,
                                     CollisionResults results){
+        
+        ArrayList<BIHStackData> stack = TempVars.get().bihStack;
         stack.clear();
 
         float tHit = Float.POSITIVE_INFINITY;
+
+        Vector3f o = r.getOrigin().clone();
+        Vector3f d = r.getDirection().clone();
+
+        Matrix4f inv = worldMatrix.invert();
+
+        inv.mult(r.getOrigin(), r.getOrigin());
+        inv.multNormalAcross(r.getDirection(), r.getDirection());
+
         float[] origins = { r.getOrigin().x,
                             r.getOrigin().y,
                             r.getOrigin().z };
+        
         float[] invDirections = { 1f / r.getDirection().x,
                                   1f / r.getDirection().y,
                                   1f / r.getDirection().z };
+//
+        r.getDirection().normalizeLocal();
 
         Vector3f v1 = new Vector3f(),
                  v2 = new Vector3f(),
@@ -263,11 +338,11 @@ public class BIHNode implements Savable {
             for (int i = node.leftIndex; i <= node.rightIndex; i++){
                 tree.getTriangle(i, v1,v2,v3);
 
-                if (worldMatrix != null){
-                    worldMatrix.mult(v1);
-                    worldMatrix.mult(v2);
-                    worldMatrix.mult(v3);
-                }
+//                if (worldMatrix != null){
+//                    worldMatrix.mult(v1, v1);
+//                    worldMatrix.mult(v2, v2);
+//                    worldMatrix.mult(v3, v3);
+//                }
 
                 float t = r.intersects(v1,v2,v3);
                 if (t < tHit){
@@ -283,8 +358,11 @@ public class BIHNode implements Savable {
                 }
             }
 //            if (results.size() > 0)
-//                return;
+//                return cols;
         }
+
+        r.setOrigin(o);
+        r.setDirection(d);
 
         return cols;
     }

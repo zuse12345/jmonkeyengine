@@ -33,9 +33,15 @@ import static java.lang.Math.*;
 public class ShadowUtil {
 
     public static void main(String[] args){
-        float[] splits = new float[4];
+        float[] splits = new float[5];
+        float[] splitsShader = new float[3];
         updateFrustumSplits(splits, 1, 1000, 0.5f);
-        System.out.println(Arrays.toString(splits));
+        System.arraycopy(splits, 1, splitsShader, 0, splitsShader.length);
+        System.out.println(Arrays.toString(splitsShader));
+
+        for (int i = 0; i < splits.length-1; i++){
+            System.out.println(splits[i] + " - " + splits[i+1]);
+        }
     }
 
     /**
@@ -340,6 +346,7 @@ public class ShadowUtil {
                                            0f,      scaleY,  0f,      offsetY,
                                            0f,      0f,      scaleZ,  offsetZ,
                                            0f,      0f,      0f,      1f);
+
 //        cropMatrix.transposeLocal();
 //        Matrix4f cropMatrix = new Matrix4f();
 //        cropMatrix.setScale(new Vector3f(scaleX, scaleY, 1f));

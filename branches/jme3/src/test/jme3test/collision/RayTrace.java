@@ -8,13 +8,9 @@ import com.jme3.renderer.Camera;
 import com.jme3.scene.Spatial;
 import java.awt.FlowLayout;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 public class RayTrace {
 
@@ -22,6 +18,8 @@ public class RayTrace {
     private Camera cam;
     private Spatial scene;
     private CollisionResults results = new CollisionResults();
+    private JFrame frame;
+    private JLabel label;
 
     public RayTrace(Spatial scene, Camera cam, int width, int height){
         image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
@@ -29,11 +27,25 @@ public class RayTrace {
         this.cam = cam;
     }
 
-    public void trace(){
+    public void show(){
+        frame = new JFrame("HDR View");
+        label = new JLabel(new ImageIcon(image));
+        frame.getContentPane().add(label);
+        frame.setLayout(new FlowLayout());
+        frame.pack();
+        frame.setVisible(true);
+    }
+
+    public void update(){
+        int w = image.getWidth();
         int h = image.getHeight();
-        for (int y = 0; y < image.getHeight(); y++){
-            for (int x = 0; x < image.getWidth(); x++){
-                Vector2f v = new Vector2f(x,y);
+
+        float wr = (float) cam.getWidth()  / image.getWidth();
+        float hr = (float) cam.getHeight() / image.getHeight();
+
+        for (int y = 0; y < h; y++){
+            for (int x = 0; x < w; x++){
+                Vector2f v = new Vector2f(x * wr,y * hr);
                 Vector3f pos = cam.getWorldCoordinates(v, 0.0f);
                 Vector3f dir = cam.getWorldCoordinates(v, 0.3f);
                 dir.subtractLocal(pos).normalizeLocal();
@@ -49,15 +61,8 @@ public class RayTrace {
                 }
             }
         }
-        
-        JFrame frame = new JFrame("HDR View");
-        JLabel label = new JLabel(new ImageIcon(image));
-        frame.getContentPane().add(label);
-        frame.setLayout(new FlowLayout());
-        frame.pack();
-        frame.setVisible(true);
 
-//            ImageIO.write(image, "png", new File("C:\\hello.png"));
+        label.repaint();
     }
 
 }

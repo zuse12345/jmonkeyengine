@@ -311,7 +311,7 @@ public class JmeSystem {
     }
 
     public static String getFullName(){
-        return "jMonkey Engine 3 ALPHA 0.50";
+        return "jMonkey Engine 3 Alpha 0.6";
     }
     
 }

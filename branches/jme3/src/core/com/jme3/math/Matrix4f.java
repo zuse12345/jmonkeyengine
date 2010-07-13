@@ -1042,6 +1042,27 @@ public final class Matrix4f implements Savable, Cloneable {
     }
 
     /**
+     * <code>multNormal</code> multiplies a vector about a rotation matrix, but
+     * does not add translation. The resulting vector is returned.
+     *
+     * @param vec
+     *            vec to multiply against.
+     * @param store
+     *            a vector to store the result in. Created if null is passed.
+     * @return the rotated vector.
+     */
+    public Vector3f multNormalAcross(Vector3f vec, Vector3f store) {
+        if (store == null) store = new Vector3f();
+
+        float vx = vec.x, vy = vec.y, vz = vec.z;
+        store.x = m00 * vx + m10 * vy + m20 * vz;
+        store.y = m01 * vx + m11 * vy + m21 * vz;
+        store.z = m02 * vx + m12 * vy + m22 * vz;
+
+        return store;
+    }
+
+    /**
      * <code>mult</code> multiplies a vector about a rotation matrix and adds
      * translation. The w value is returned as a result of
      * multiplying the last column of the matrix by 1.0

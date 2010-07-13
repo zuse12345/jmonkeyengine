@@ -14,6 +14,8 @@ import com.jme3.util.IntMap;
 import com.jme3.util.IntMap.Entry;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The <code>InputManager</code> is responsible for converting input events
@@ -29,6 +31,8 @@ import java.util.HashMap;
  */
 @Deprecated
 public class Controls implements RawInputListener {
+
+    private static final Logger logger = Logger.getLogger(Controls.class.getName());
 
     private final KeyInput keys;
     private final MouseInput mouse;
@@ -332,6 +336,8 @@ public class Controls implements RawInputListener {
             if (!names.contains(mapping)){
                 names.add(mapping);
                 mapping.triggers.add(hash);
+            }else{
+                logger.log(Level.WARNING, "Attempted to add mapping '" + mappingName + "' twice to trigger.");
             }
         }
     }

@@ -54,6 +54,8 @@ public class BasicShadowRenderer implements SceneProcessor {
     public void initialize(RenderManager rm, ViewPort vp){
         renderManager = rm;
         viewPort = vp;
+
+        reshape(vp, vp.getCamera().getWidth(), vp.getCamera().getHeight());
     }
 
     public boolean isInitialized(){
@@ -121,34 +123,24 @@ public class BasicShadowRenderer implements SceneProcessor {
 
         r.setFrameBuffer(shadowFB);
         r.clearBuffers(false,true,false);
-        viewPort.getQueue().renderShadowQueue(ShadowMode.Cast, renderManager, shadowCam);
+        viewPort.getQueue().renderShadowQueue(ShadowMode.Cast, renderManager, shadowCam, true);
         r.setFrameBuffer(viewPort.getOutputFrameBuffer());
 
         renderManager.setForcedMaterial(null);
         renderManager.setCamera(viewCam, false);
     }
 
-    public void displayShadowMap(Renderer r){
-        Camera cam = viewPort.getCamera();
-        int w = cam.getWidth();
-        int h = cam.getHeight();
-
-        dispPic.setPosition(w / 20f, h / 20f);
-        dispPic.setWidth(w / 5f);
-        dispPic.setHeight(h / 5f);
-        dispPic.updateGeometricState();
-        renderManager.renderGeometry(dispPic);
+    public Picture getDisplayPicture(){
+        return dispPic;
     }
 
     public void postFrame(FrameBuffer out){
         if (!noOccluders){
             postshadowMat.setMatrix4("m_LightViewProjectionMatrix", shadowCam.getViewProjectionMatrix());
             renderManager.setForcedMaterial(postshadowMat);
-            viewPort.getQueue().renderShadowQueue(ShadowMode.Recieve, renderManager, viewPort.getCamera());
+            viewPort.getQueue().renderShadowQueue(ShadowMode.Recieve, renderManager, viewPort.getCamera(), true);
             renderManager.setForcedMaterial(null);
         }
-
-//        displayShadowMap(renderManager.getRenderer());
     }
 
     public void preFrame(float tpf) {
@@ -158,6 +150,10 @@ public class BasicShadowRenderer implements SceneProcessor {
     }
 
     public void reshape(ViewPort vp, int w, int h) {
+        dispPic.setPosition(w / 20f, h / 20f);
+        dispPic.setWidth(w / 5f);
+        dispPic.setHeight(h / 5f);
+        dispPic.updateGeometricState();
     }
 
 }

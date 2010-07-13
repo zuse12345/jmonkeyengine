@@ -192,9 +192,9 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
         }
 
         // add the lights from the local list
-//        System.arraycopy(local.list, 0, list, 0, local.listSize);
+        System.arraycopy(local.list, 0, list, 0, local.listSize);
         for (int i = 0; i < local.listSize; i++){
-            list[i] = local.list[i];
+//            list[i] = local.list[i];
             distToOwner[i] = Float.NEGATIVE_INFINITY;
         }
 

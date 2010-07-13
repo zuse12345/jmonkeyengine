@@ -5,20 +5,12 @@
 package com.jme3.shadow;
 
 import com.jme3.bounding.BoundingBox;
-import com.jme3.bounding.BoundingVolume;
-import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.math.FastMath;
 import com.jme3.math.Matrix4f;
-import com.jme3.math.Transform;
-import com.jme3.math.Vector2f;
-import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.queue.GeometryList;
 
-import com.jme3.scene.Geometry;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import static java.lang.Math.*;
 
@@ -59,27 +51,6 @@ public final class PssmShadowUtil {
         // of the camera always stay the same, no matter what happens.
         splits[0] = near;
         splits[splits.length - 1] = far;
-    }
-
-    public static void updateFrustumPoints2(Camera viewCam,
-            float nearOverride,
-            float farOverride,
-            float scale,
-            Vector3f[] points) {
-        int w = viewCam.getWidth();
-        int h = viewCam.getHeight();
-        float n = viewCam.getFrustumNear();
-        float f = viewCam.getFrustumFar();
-
-        points[0].set(viewCam.getWorldCoordinates(new Vector2f(0, 0), n));
-        points[1].set(viewCam.getWorldCoordinates(new Vector2f(0, h), n));
-        points[2].set(viewCam.getWorldCoordinates(new Vector2f(w, h), n));
-        points[3].set(viewCam.getWorldCoordinates(new Vector2f(w, 0), n));
-
-        points[4].set(viewCam.getWorldCoordinates(new Vector2f(0, 0), f));
-        points[5].set(viewCam.getWorldCoordinates(new Vector2f(0, h), f));
-        points[6].set(viewCam.getWorldCoordinates(new Vector2f(w, h), f));
-        points[7].set(viewCam.getWorldCoordinates(new Vector2f(w, 0), f));
     }
 
     /**

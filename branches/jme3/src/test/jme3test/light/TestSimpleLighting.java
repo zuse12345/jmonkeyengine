@@ -9,7 +9,6 @@ import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Spatial.CullHint;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.util.TangentBinormalGenerator;
 
@@ -26,27 +25,27 @@ public class TestSimpleLighting extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-//        guiNode.setCullHint(CullHint.Always);
-
-//        Geometry teapot = new Geometry("sphere", new Sphere(32, 32, 0.5f, true, false));
         Geometry teapot = (Geometry) assetManager.loadModel("Models/Teapot/Teapot.obj");
         TangentBinormalGenerator.generate(teapot.getMesh(), true);
 
         teapot.setLocalScale(2f);
         Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        mat.selectTechnique("GBuf");
+//        mat.selectTechnique("GBuf");
         mat.setFloat("m_Shininess", 12);
         mat.setBoolean("m_UseMaterialColors", true);
 
-        mat.setTexture("m_ColorRamp", assetManager.loadTexture("Textures/ColorRamp/cloudy.png"));
-
+//        mat.setTexture("m_ColorRamp", assetManager.loadTexture("Textures/ColorRamp/cloudy.png"));
+//
 //        mat.setBoolean("m_VTangent", true);
 //        mat.setBoolean("m_Minnaert", true);
 //        mat.setBoolean("m_WardIso", true);
+//        mat.setBoolean("m_VertexLighting", true);
+//        mat.setBoolean("m_LowQuality", true);
+//        mat.setBoolean("m_HighQuality", true);
 
         mat.setColor("m_Ambient",  ColorRGBA.Black);
         mat.setColor("m_Diffuse",  ColorRGBA.Gray);
-        mat.setColor("m_Specular", ColorRGBA.White);
+        mat.setColor("m_Specular", ColorRGBA.Gray);
         
         teapot.setMaterial(mat);
         rootNode.attachChild(teapot);
@@ -58,19 +57,19 @@ public class TestSimpleLighting extends SimpleApplication {
 
         pl = new PointLight();
         pl.setColor(ColorRGBA.White);
-        //pl.setRadius(3f);
+        pl.setRadius(4f);
         rootNode.addLight(pl);
 
         DirectionalLight dl = new DirectionalLight();
         dl.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
-        dl.setColor(ColorRGBA.White);
+        dl.setColor(ColorRGBA.Green);
         rootNode.addLight(dl);
     }
 
     @Override
     public void simpleUpdate(float tpf){
-        cam.setLocation(new Vector3f(2.0632997f, 1.9493936f, 2.6885238f));
-        cam.setRotation(new Quaternion(-0.053555284f, 0.9407851f, -0.17754152f, -0.28378546f));
+//        cam.setLocation(new Vector3f(2.0632997f, 1.9493936f, 2.6885238f));
+//        cam.setRotation(new Quaternion(-0.053555284f, 0.9407851f, -0.17754152f, -0.28378546f));
 
         angle += tpf;
         angle %= FastMath.TWO_PI;

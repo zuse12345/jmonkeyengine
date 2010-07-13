@@ -9,6 +9,9 @@ MaterialDef Phong Lighting {
         // Use more efficent algorithms to improve performance
         Boolean m_LowQuality
 
+        // Improve quality at the cost of performance
+        Boolean m_HighQuality
+
         // Output alpha from the diffuse map
         Boolean m_UseAlpha
 
@@ -80,6 +83,7 @@ MaterialDef Phong Lighting {
             MINNAERT  : m_Minnaert
             WARDISO   : m_WardIso
             LOW_QUALITY : m_LowQuality
+            HQ_ATTENUATION : m_HighQuality
 
             DIFFUSEMAP : m_DiffuseMap
             NORMALMAP : m_NormalMap

@@ -30,16 +30,12 @@ import static java.lang.Math.*;
  */
 public class ShadowUtil {
 
-    public static void updateFrustumPoints2(Camera viewCam,
-                                     float nearOverride,
-                                     float farOverride,
-                                     float scale,
-                                     Vector3f[] points){
+    public static void updateFrustumPoints2(Camera viewCam, Vector3f[] points){
         int w = viewCam.getWidth();
         int h = viewCam.getHeight();
         float n = viewCam.getFrustumNear();
         float f = viewCam.getFrustumFar();
-        
+
         points[0].set(viewCam.getWorldCoordinates(new Vector2f(0, 0), n));
         points[1].set(viewCam.getWorldCoordinates(new Vector2f(0, h), n));
         points[2].set(viewCam.getWorldCoordinates(new Vector2f(w, h), n));

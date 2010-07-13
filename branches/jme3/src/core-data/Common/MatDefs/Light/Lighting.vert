@@ -121,7 +121,7 @@ void main(){
 
      #ifdef V_TANGENT
         vNormal = normalize(g_NormalMatrix * inTangent);
-        vNormal = -cross(cross(vLightDir, vNormal), vNormal);
+        vNormal = -cross(cross(vLightDir.xyz, vNormal), vNormal);
      #endif
    #endif
 

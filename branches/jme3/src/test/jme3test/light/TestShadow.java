@@ -79,11 +79,7 @@ public class TestShadow extends SimpleApplication {
     @Override
     public void simpleUpdate(float tpf){
         Camera shadowCam = bsr.getShadowCamera();
-        ShadowUtil.updateFrustumPoints2(shadowCam, shadowCam.getFrustumNear(),
-                                       shadowCam.getFrustumFar(),
-                                       1.0f,
-                                       points);
-
+        ShadowUtil.updateFrustumPoints2(shadowCam, points);
 
         frustum.update(points);
         frustumMdl.updateModelBound();

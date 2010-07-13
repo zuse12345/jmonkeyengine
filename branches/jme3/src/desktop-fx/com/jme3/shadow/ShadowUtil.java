@@ -7,7 +7,6 @@ package com.jme3.shadow;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bounding.BoundingVolume;
-import com.jme3.math.FastMath;
 import com.jme3.math.Matrix4f;
 import com.jme3.math.Transform;
 import com.jme3.math.Vector2f;
@@ -17,7 +16,6 @@ import com.jme3.renderer.queue.GeometryList;
 
 import com.jme3.scene.Geometry;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static java.lang.Math.*;
@@ -31,35 +29,6 @@ import static java.lang.Math.*;
  * for more info.
  */
 public class ShadowUtil {
-
-    public static void main(String[] args){
-        float[] splits = new float[5];
-        float[] splitsShader = new float[3];
-        updateFrustumSplits(splits, 1, 1000, 0.5f);
-        System.arraycopy(splits, 1, splitsShader, 0, splitsShader.length);
-        System.out.println(Arrays.toString(splitsShader));
-
-        for (int i = 0; i < splits.length-1; i++){
-            System.out.println(splits[i] + " - " + splits[i+1]);
-        }
-    }
-
-    /**
-     * Updates the frustum splits stores in <code>splits</code> using PSSM.
-     */
-    public static void updateFrustumSplits(float[] splits, float near, float far, float lambda){
-        for(int i = 0; i < splits.length; i++){
-            float IDM = i / (float)splits.length;
-            float log = near * FastMath.pow((far / near), IDM);
-            float uniform = near + (far - near) * IDM;
-            splits[i] = log * lambda + uniform * (1.0f - lambda);
-        }
-
-        // This is used to improve the correctness of the calculations. Our main near- and farplane
-        // of the camera always stay the same, no matter what happens.
-        splits[0] = near;
-        splits[splits.length-1] = far;
-    }
 
     public static void updateFrustumPoints2(Camera viewCam,
                                      float nearOverride,
@@ -164,42 +133,49 @@ public class ShadowUtil {
         }
     }
 
-    private static BoundingBox computeUnionBound(GeometryList list, Transform transform){
+    public static BoundingBox computeUnionBound(GeometryList list, Transform transform) {
         BoundingBox bbox = new BoundingBox();
-        for (int i = 0; i < list.size(); i++){
+        for (int i = 0; i < list.size(); i++) {
             BoundingVolume vol = list.get(i).getWorldBound();
             BoundingVolume newVol = vol.transform(transform);
-            bbox.mergeLocal(newVol);
+            //Nehon : prevent NaN and infinity values to screw the final bounding box
+            if (newVol.getCenter().x != Float.NaN && newVol.getCenter().x != Float.POSITIVE_INFINITY && newVol.getCenter().x != Float.NEGATIVE_INFINITY) {
+                bbox.mergeLocal(newVol);
+            }
         }
         return bbox;
     }
 
-    private static BoundingBox computeUnionBound(GeometryList list, Matrix4f mat){
+    public static BoundingBox computeUnionBound(GeometryList list, Matrix4f mat) {
         BoundingBox bbox = new BoundingBox();
         BoundingVolume store = null;
-        for (int i = 0; i < list.size(); i++){
+        for (int i = 0; i < list.size(); i++) {
             BoundingVolume vol = list.get(i).getWorldBound();
             store = vol.clone().transform(mat, null);
-            bbox.mergeLocal(store);
+            //Nehon : prevent NaN and infinity values to screw the final bounding box
+            if (store.getCenter().x != Float.NaN && store.getCenter().x != Float.POSITIVE_INFINITY && store.getCenter().x != Float.NEGATIVE_INFINITY) {
+                bbox.mergeLocal(store);
+            }
         }
         return bbox;
     }
 
-    private static BoundingBox computeUnionBound(List<BoundingVolume> bv){
+    public static BoundingBox computeUnionBound(List<BoundingVolume> bv) {
         BoundingBox bbox = new BoundingBox();
-        for (int i = 0; i < bv.size(); i++){
+        for (int i = 0; i < bv.size(); i++) {
             BoundingVolume vol = bv.get(i);
             bbox.mergeLocal(vol);
         }
         return bbox;
     }
 
-    private static BoundingBox computeBoundForPoints(Vector3f[] pts, Transform transform){
+    public static BoundingBox computeBoundForPoints(Vector3f[] pts, Transform transform) {
         Vector3f min = new Vector3f(Vector3f.POSITIVE_INFINITY);
         Vector3f max = new Vector3f(Vector3f.NEGATIVE_INFINITY);
         Vector3f temp = new Vector3f();
-        for (int i = 0; i < pts.length; i++){
+        for (int i = 0; i < pts.length; i++) {
             transform.transformVector(pts[i], temp);
+
             min.minLocal(temp);
             max.maxLocal(temp);
         }
@@ -208,16 +184,17 @@ public class ShadowUtil {
         return new BoundingBox(center, extent.x, extent.y, extent.z);
     }
 
-    private static BoundingBox computeBoundForPoints(Vector3f[] pts, Matrix4f mat){
+    public static BoundingBox computeBoundForPoints(Vector3f[] pts, Matrix4f mat) {
         Vector3f min = new Vector3f(Vector3f.POSITIVE_INFINITY);
         Vector3f max = new Vector3f(Vector3f.NEGATIVE_INFINITY);
         Vector3f temp = new Vector3f();
-        
-        for (int i = 0; i < pts.length; i++){
+
+        for (int i = 0; i < pts.length; i++) {
             float w = mat.multProj(pts[i], temp);
+
             temp.x /= w;
             temp.y /= w;
-            
+
             min.minLocal(temp);
             max.maxLocal(temp);
         }
@@ -225,6 +202,57 @@ public class ShadowUtil {
         Vector3f center = min.add(max).multLocal(0.5f);
         Vector3f extent = max.subtract(min).multLocal(0.5f);
         return new BoundingBox(center, extent.x, extent.y, extent.z);
+    }
+
+    /**
+     * Updates the shadow camera to properly contain the given
+     * points (which contain the eye camera frustum corners)
+     *
+     * @param occluders
+     * @param lightCam
+     * @param points
+     */
+    public static void updateShadowCamera(Camera shadowCam, Vector3f[] points){
+        boolean ortho = shadowCam.isParallelProjection();
+        shadowCam.setProjectionMatrix(null);
+
+        if (ortho) {
+            shadowCam.setFrustum(-1, 1, -1, 1, 1, -1);
+        } else {
+            shadowCam.setFrustumPerspective(45, 1, 1, 150);
+        }
+
+        Matrix4f viewProjMatrix = shadowCam.getViewProjectionMatrix();
+        Matrix4f projMatrix = shadowCam.getProjectionMatrix();
+
+        BoundingBox splitBB = computeBoundForPoints(points, viewProjMatrix);
+
+        Vector3f splitMin = splitBB.getMin(null);
+        Vector3f splitMax = splitBB.getMax(null);
+
+        // Create the crop matrix.
+        float scaleX, scaleY, scaleZ;
+        float offsetX, offsetY, offsetZ;
+
+
+        scaleX = 2.0f / (splitMax.x - splitMin.x);
+        scaleY = 2.0f / (splitMax.y - splitMin.y);
+        offsetX = -0.5f * (splitMax.x + splitMin.x) * scaleX;
+        offsetY = -0.5f * (splitMax.y + splitMin.y) * scaleY;
+        scaleZ = 1.0f / (splitMax.z - splitMin.z);
+        offsetZ = -splitMin.z * scaleZ;
+
+        Matrix4f cropMatrix = new Matrix4f(scaleX, 0f, 0f, offsetX,
+                0f, scaleY, 0f, offsetY,
+                0f, 0f, scaleZ, offsetZ,
+                0f, 0f, 0f, 1f);
+
+
+        Matrix4f result = new Matrix4f();
+        result.set(cropMatrix);
+        result.multLocal(projMatrix);
+
+        shadowCam.setProjectionMatrix(result);
     }
 
     /**

@@ -192,19 +192,21 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
         }
 
         // add the lights from the local list
-        System.arraycopy(local.list, 0, list, 0, local.listSize);
+//        System.arraycopy(local.list, 0, list, 0, local.listSize);
         for (int i = 0; i < local.listSize; i++){
+            list[i] = local.list[i];
             distToOwner[i] = Float.NEGATIVE_INFINITY;
         }
 
         // if the spatial has a parent node, add the lights
         // from the parent list as well
         if (parent != null){
-            int p = local.listSize + parent.listSize;
-            while (list.length <= p)
+            int sz = local.listSize + parent.listSize;
+            while (list.length <= sz)
                 doubleSize();
 
             for (int i = 0; i < parent.listSize; i++){
+                int p = i + local.listSize;
                 list[p] = parent.list[i];
                 distToOwner[p] = Float.NEGATIVE_INFINITY;
             }

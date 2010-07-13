@@ -18,7 +18,6 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.control.Control;
 import com.jme3.util.TempVars;
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class ParticleEmitter extends Geometry implements Control {
 

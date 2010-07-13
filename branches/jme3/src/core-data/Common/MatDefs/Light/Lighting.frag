@@ -1,5 +1,3 @@
-#extension GL_ARB_draw_instanced : enable
-
 #define ATTENUATION
 //#define HQ_ATTENUATION
 

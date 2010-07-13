@@ -36,7 +36,7 @@ attribute vec3 inNormal;
   attribute vec3 inTangent;
 
   #ifndef NORMALMAP
-  varying vec3 vNormal;
+    varying vec3 vNormal;
   #endif
   varying vec3 vPosition;
   varying vec3 vViewDir;
@@ -93,8 +93,14 @@ void main(){
    vec3 wvNormal  = normalize(g_NormalMatrix * inNormal);
    vec3 viewDir = normalize(-wvPosition);
 
+       //vec4 lightColor = g_LightColor[gl_InstanceID];
+       //vec4 lightPos   = g_LightPosition[gl_InstanceID];
+       //vec4 wvLightPos = (g_ViewMatrix * vec4(lightPos.xyz, lightColor.w));
+       //wvLightPos.w = lightPos.w;
+
    vec4 wvLightPos = (g_ViewMatrix * vec4(g_LightPosition.xyz, g_LightColor.w));
    wvLightPos.w = g_LightPosition.w;
+   vec4 lightColor = g_LightColor;
 
    #if defined(NORMALMAP) && !defined(VERTEX_LIGHTING)
      vec3 wvTangent = normalize(g_NormalMatrix * inTangent);
@@ -103,7 +109,7 @@ void main(){
 
      vPosition = wvPosition * tbnMat;
      vViewDir  = viewDir * tbnMat;
-     lightComputeDir(wvPosition, g_LightColor, wvLightPos, vLightDir);
+     lightComputeDir(wvPosition, lightColor, wvLightPos, vLightDir);
      vLightDir.xyz = (vLightDir.xyz * tbnMat).xyz;
    #elif !defined(VERTEX_LIGHTING)
      vNormal = wvNormal;
@@ -111,10 +117,15 @@ void main(){
      vPosition = wvPosition;
      vViewDir = viewDir;
 
-     lightComputeDir(wvPosition, g_LightColor, wvLightPos, vLightDir);
+     lightComputeDir(wvPosition, lightColor, wvLightPos, vLightDir);
+
+     #ifdef V_TANGENT
+        vNormal = normalize(g_NormalMatrix * inTangent);
+        vNormal = -cross(cross(vLightDir, vNormal), vNormal);
+     #endif
    #endif
 
-   vec4 lightColor = vec4(g_LightColor.rgb, 1.0);
+   lightColor.w = 1.0;
    #ifdef MATERIAL_COLORS
       AmbientSum  = m_Ambient  * lightColor;
       DiffuseSum  = m_Diffuse  * lightColor;

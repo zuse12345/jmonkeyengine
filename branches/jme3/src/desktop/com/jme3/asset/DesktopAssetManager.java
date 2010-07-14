@@ -106,6 +106,20 @@ public class DesktopAssetManager implements AssetManager {
         cache.deleteAllAssets();
     }
 
+    /**
+     * Delete an asset from the cache, returns true if it was deleted successfuly.
+     * <br/><br/>
+     * <font color="red">Thread-safe.</font>
+     */
+    public boolean deleteFromCache(AssetKey key){
+        return cache.deleteFromCache(key);
+    }
+
+    /**
+     * Adds a resource to the cache.
+     * <br/><br/>
+     * <font color="red">Thread-safe.</font>
+     */
     public void addToCache(AssetKey key, Object asset){
         cache.addToCache(key, asset);
     }
@@ -114,6 +128,8 @@ public class DesktopAssetManager implements AssetManager {
      * This method is thread-safe.
      * @param name
      * @return
+     *
+     * <font color="red">Thread-safe.</font>
      */
     public <T> T loadAsset(AssetKey<T> key){
         if (eventListener != null)

@@ -15,7 +15,6 @@ public class AssetCache {
     private final WeakHashMap<AssetKey, Asset> smartCache = new WeakHashMap<AssetKey, Asset>();
     private final HashMap<AssetKey, Object> regularCache = new HashMap<AssetKey, Object>();
 
-
     /**
      * Adds a resource to the cache.
      * <br/><br/>
@@ -33,6 +32,21 @@ public class AssetCache {
                 // put in regular cache
                 regularCache.put(key, obj);
             }
+        }
+    }
+
+    /**
+     * Delete an asset from the cache, returns true if it was deleted successfuly.
+     * <br/><br/>
+     * <font color="red">Thread-safe.</font>
+     */
+    public boolean deleteFromCache(AssetKey key){
+        if (key.useSmartCache()){
+            throw new UnsupportedOperationException("You cannot delete from the smart cache");
+        }
+
+        synchronized (regularCache){
+            return regularCache.remove(key) != null;
         }
     }
 

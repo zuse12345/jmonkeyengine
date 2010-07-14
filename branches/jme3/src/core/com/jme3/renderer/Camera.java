@@ -302,8 +302,8 @@ public class Camera implements Savable, Cloneable {
 
             return cam;
         } catch (CloneNotSupportedException ex) {
+            throw new AssertionError();
         }
-        return null;
     }
 
     /**

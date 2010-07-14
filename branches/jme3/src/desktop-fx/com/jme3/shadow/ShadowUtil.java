@@ -7,6 +7,7 @@ package com.jme3.shadow;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bounding.BoundingVolume;
+import com.jme3.math.FastMath;
 import com.jme3.math.Matrix4f;
 import com.jme3.math.Transform;
 import com.jme3.math.Vector2f;
@@ -53,19 +54,22 @@ public class ShadowUtil {
      * to override the camera's near/far values with own values.
      *
      * TODO: Reduce creation of new vectors
-     * 
+     *
      * @param viewCam
      * @param nearOverride
      * @param farOverride
      */
     public static void updateFrustumPoints(Camera viewCam,
-                                     float nearOverride,
-                                     float farOverride,
-                                     float scale,
-                                     Vector3f[] points){
+                                           float nearOverride,
+                                           float farOverride,
+                                           float scale,
+                                           Vector3f[] points) {
+
         Vector3f pos = viewCam.getLocation();
         Vector3f dir = viewCam.getDirection();
         Vector3f up = viewCam.getUp();
+
+        float depthHeightRatio = viewCam.getFrustumTop() / viewCam.getFrustumNear();
         float near = nearOverride;
         float far = farOverride;
         float ftop = viewCam.getFrustumTop();
@@ -77,15 +81,15 @@ public class ShadowUtil {
         float far_height;
         float far_width;
 
-        if (viewCam.isParallelProjection()){
+        if (viewCam.isParallelProjection()) {
             near_height = ftop;
             near_width = near_height * ratio;
             far_height = ftop;
             far_width = far_height * ratio;
-        }else{
-            near_height = ftop;
+        } else {
+            near_height = depthHeightRatio * near;
             near_width = near_height * ratio;
-            far_height = (ftop / near) * far;
+            far_height = depthHeightRatio * far;
             far_width = far_height * ratio;
         }
 
@@ -112,16 +116,16 @@ public class ShadowUtil {
         points[6].set(farCenter).addLocal(farUp).addLocal(farRight);
         points[7].set(farCenter).subtractLocal(farUp).addLocal(farRight);
 
-        if (scale != 1.0f){
+        if (scale != 1.0f) {
             // find center of frustum
             Vector3f center = new Vector3f();
-            for (Vector3f pt : points){
+            for (Vector3f pt : points) {
                 center.addLocal(pt);
             }
             center.divideLocal(8f);
 
             Vector3f cDir = new Vector3f();
-            for (Vector3f pt : points){
+            for (Vector3f pt : points) {
                 cDir.set(pt).subtractLocal(center);
                 cDir.multLocal(scale - 1.0f);
                 pt.addLocal(cDir);
@@ -190,10 +194,16 @@ public class ShadowUtil {
 
             temp.x /= w;
             temp.y /= w;
+//            temp.z /= w;
 
             min.minLocal(temp);
             max.maxLocal(temp);
         }
+
+//        min.x = FastMath.clamp(min.x, -1f, 1f);
+//        max.y = FastMath.clamp(max.y, -1f, 1f);
+//        min.x = FastMath.clamp(min.x, -1f, 1f);
+//        max.y = FastMath.clamp(max.y, -1f, 1f);
 
         Vector3f center = min.add(max).multLocal(0.5f);
         Vector3f extent = max.subtract(min).multLocal(0.5f);
@@ -225,11 +235,12 @@ public class ShadowUtil {
 
         Vector3f splitMin = splitBB.getMin(null);
         Vector3f splitMax = splitBB.getMax(null);
+        
+//        splitMin.z = 0;
 
         // Create the crop matrix.
         float scaleX, scaleY, scaleZ;
         float offsetX, offsetY, offsetZ;
-
 
         scaleX = 2.0f / (splitMax.x - splitMin.x);
         scaleY = 2.0f / (splitMax.y - splitMin.y);
@@ -239,9 +250,9 @@ public class ShadowUtil {
         offsetZ = -splitMin.z * scaleZ;
 
         Matrix4f cropMatrix = new Matrix4f(scaleX, 0f, 0f, offsetX,
-                0f, scaleY, 0f, offsetY,
-                0f, 0f, scaleZ, offsetZ,
-                0f, 0f, 0f, 1f);
+                                           0f, scaleY, 0f, offsetY,
+                                           0f, 0f, scaleZ, offsetZ,
+                                           0f, 0f, 0f, 1f);
 
 
         Matrix4f result = new Matrix4f();

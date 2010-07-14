@@ -48,6 +48,7 @@
                 <package>com.jme3.input</package>
                 <package>com.jme3.input.awt</package>
                 <package>com.jme3.input.binding</package>
+                <package>com.jme3.input.controls</package>
                 <package>com.jme3.input.dummy</package>
                 <package>com.jme3.input.event</package>
                 <package>com.jme3.input.lwjgl</package>

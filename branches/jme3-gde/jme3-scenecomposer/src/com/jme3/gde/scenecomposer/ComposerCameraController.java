@@ -31,15 +31,12 @@
  */
 package com.jme3.gde.scenecomposer;
 
+import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
-import com.jme3.input.RawInputListener;
-import com.jme3.input.binding.BindingListener;
-import com.jme3.input.event.JoyAxisEvent;
-import com.jme3.input.event.JoyButtonEvent;
-import com.jme3.input.event.KeyInputEvent;
-import com.jme3.input.event.MouseButtonEvent;
-import com.jme3.input.event.MouseMotionEvent;
+import com.jme3.input.InputManager;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.AnalogListener;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Ray;
@@ -54,7 +51,7 @@ import org.openide.awt.StatusDisplayer;
  *
  * @author normenhansen
  */
-public class ComposerCameraController implements BindingListener, RawInputListener {
+public class ComposerCameraController implements ActionListener, AnalogListener {
 
     private boolean leftMouse, rightMouse, middleMouse;
     private float deltaX, deltaY, deltaZ, deltaWheel;
@@ -65,10 +62,12 @@ public class ComposerCameraController implements BindingListener, RawInputListen
     private Vector3f focus = new Vector3f();
     private Camera cam;
     private Node rootNode;
+    private InputManager inputManager;
 
     public ComposerCameraController(Camera cam, Node rootNode) {
         this.cam = cam;
         this.rootNode = rootNode;
+        inputManager = SceneApplication.getApplication().getInputManager();
     }
 
     public Geometry checkClick() {
@@ -88,91 +87,86 @@ public class ComposerCameraController implements BindingListener, RawInputListen
         return null;
     }
 
-    public void onBinding(String binding, float value) {
-        if (binding.equals("UPDATE")) {
-        } else if (binding.equals("Up")) {
-            deltaZ = 10;
-        } else if (binding.equals("Down")) {
-            deltaZ = -10;
-        } else if (binding.equals("MOUSE_LEFT")) {
-            leftMouse = value > 0f;
-        } else if (binding.equals("MOUSE_RIGHT")) {
-            rightMouse = value > 0f;
-        } else if (binding.equals("MOUSE_MIDDLE")) {
-            middleMouse = value > 0f;
-        } else if (binding.equals("MOUSE_X+")) {
-            deltaX = value;
-        } else if (binding.equals("MOUSE_X-")) {
-            deltaX = -value;
-        } else if (binding.equals("MOUSE_Y+")) {
-            deltaY = value;
-        } else if (binding.equals("MOUSE_Y-")) {
-            deltaY = -value;
-        } else if (binding.equals("MOUSE_W+")) {
-            deltaWheel = value;
-        } else if (binding.equals("MOUSE_W-")) {
-            deltaWheel = -value;
+    public void enable() {
+        inputManager.addListener(this, "MouseAxisX");
+        inputManager.addListener(this, "MouseAxisY");
+        inputManager.addListener(this, "MouseAxisX-");
+        inputManager.addListener(this, "MouseAxisY-");
+        inputManager.addListener(this, "MouseWheel");
+        inputManager.addListener(this, "MouseWheel-");
+        inputManager.addListener(this, "MouseButtonLeft");
+        inputManager.addListener(this, "MouseButtonMiddle");
+        inputManager.addListener(this, "MouseButtonRight");
+    }
+
+    public void disable() {
+        inputManager.removeListener(this);
+    }
+
+    public void onAction(String string, boolean bln, float f) {
+        if ("MouseButtonLeft".equals(string)) {
+            if (bln) {
+                leftMouse = true;
+            } else {
+                leftMouse = false;
+            }
+        }
+        if ("MouseButtonRight".equals(string)) {
+            if (bln) {
+                rightMouse = true;
+            } else {
+                rightMouse = false;
+            }
         }
     }
 
-    public void onPreUpdate(float f) {
-        if (leftMouse) {
-            rotateCamera(Vector3f.UNIT_Y, -deltaX * 5);
-            rotateCamera(cam.getLeft(), -deltaY * 5);
+    public void onAnalog(String string, float f, float f1) {
+        if ("MouseAxisX".equals(string)) {
+            //deltaX=f1*100.0f;
+//            mouseX=f;
+            if (leftMouse) {
+                rotateCamera(Vector3f.UNIT_Y, -f1 * 1);
+            }
+            if (rightMouse) {
+                panCamera(deltaX * 10, -deltaY * 10);
+            }
+        } else if ("MouseAxisY".equals(string)) {
+//            mouseY=f;
+            //deltaY=f1*100.0f;
+            if (leftMouse) {
+                rotateCamera(cam.getLeft(), -f1 * 1);
+            }
+            if (rightMouse) {
+                panCamera(deltaX * 10, -deltaY * 10);
+            }
+        } else if ("MouseAxisX-".equals(string)) {
+            //deltaX=f1*100.0f;
+//            mouseX=f;
+            if (leftMouse) {
+                rotateCamera(Vector3f.UNIT_Y, f1 * 1);
+            }
+            if (rightMouse) {
+                panCamera(deltaX * 10, -deltaY * 10);
+            }
+        } else if ("MouseAxisY-".equals(string)) {
+//            mouseY=f;
+            //deltaY=f1*100.0f;
+            if (leftMouse) {
+                rotateCamera(cam.getLeft(), f1 * 1);
+            }
+            if (rightMouse) {
+                panCamera(deltaX * 10, -deltaY * 10);
+            }
+        } else if ("MouseWheel".equals(string)) {
+            zoomCamera(.1f);
+        } else if ("MouseWheel-".equals(string)) {
+            zoomCamera(-.1f);
         }
-        if (deltaWheel != 0) {
-            zoomCamera(deltaWheel * 10);
-        }
-        if (rightMouse) {
-            panCamera(deltaX * 10, -deltaY * 10);
-        }
-
-        moveCamera(deltaZ);
-
-        leftMouse = false;
-        rightMouse = false;
-        middleMouse = false;
-        deltaX = 0;
-        deltaY = 0;
-        deltaZ = 0;
-        deltaWheel = 0;
-    }
-
-    public void onPostUpdate(float f) {
-        //TODO: wrong, gotta call checkClick() from application after update
-//        rootNode.updateGeometricState();
-//        Geometry geom = checkClick();
-//        if (geom != null) {
-//            StatusDisplayer.getDefault().setStatusText("Clicked Geometry: " + geom.toString());
-//        }
-    }
-
-    public void onJoyAxisEvent(JoyAxisEvent jae) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void onJoyButtonEvent(JoyButtonEvent jbe) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void onMouseMotionEvent(MouseMotionEvent mme) {
-        mouseX = mme.getX();
-        mouseY = mme.getY();
-    }
-
-    public void onMouseButtonEvent(MouseButtonEvent mbe) {
-//        mbe.
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void onKeyEvent(KeyInputEvent kie) {
-//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     /*
      * methods to move camera
      */
-    
     private void rotateCamera(Vector3f axis, float amount) {
         if (axis.equals(cam.getLeft())) {
             float elevation = -FastMath.asin(cam.getDirection().y);

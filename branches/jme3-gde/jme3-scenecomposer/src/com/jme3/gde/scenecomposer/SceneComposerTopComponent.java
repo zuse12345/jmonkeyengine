@@ -497,17 +497,14 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         if (request.equals(currentRequest)) {
             setLoadedState(currentRequest.getRootNode().getName(), true);
             if (camController != null) {
-                SceneApplication.getApplication().getInputManager().removeRawInputListener(camController);
-                SceneApplication.getApplication().getInputManager().removeBindingListener(camController);
+                camController.disable();
             }
             camController = new ComposerCameraController(SceneApplication.getApplication().getCamera(), request.getRootNode().getLookup().lookup(Node.class));
-            SceneApplication.getApplication().getInputManager().addRawInputListener(camController);
-            SceneApplication.getApplication().getInputManager().addBindingListener(camController);
+            camController.enable();
         } else {
             setLoadedState("no scene loaded", false);
             if (camController != null) {
-                SceneApplication.getApplication().getInputManager().removeRawInputListener(camController);
-                SceneApplication.getApplication().getInputManager().removeBindingListener(camController);
+                camController.disable();
                 camController = null;
             }
         }

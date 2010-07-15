@@ -8,7 +8,8 @@ import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.nodes.PhysicsCharacterNode;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.input.KeyInput;
-import com.jme3.input.binding.BindingListener;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
@@ -21,7 +22,7 @@ import com.jme3.texture.Texture;
  *
  * @author normenhansen
  */
-public class TestPhysicsCharacter extends SimpleBulletApplication implements BindingListener{
+public class TestPhysicsCharacter extends SimpleBulletApplication implements ActionListener{
     private PhysicsCharacterNode physicsCharacter;
     private Vector3f walkDirection=new Vector3f();
 
@@ -31,41 +32,18 @@ public class TestPhysicsCharacter extends SimpleBulletApplication implements Bin
     }
 
     private void setupKeys() {
-        inputManager.registerKeyBinding("Lefts", KeyInput.KEY_H);
-        inputManager.registerKeyBinding("Rights", KeyInput.KEY_K);
-        inputManager.registerKeyBinding("Ups", KeyInput.KEY_U);
-        inputManager.registerKeyBinding("Downs", KeyInput.KEY_J);
-        inputManager.registerKeyBinding("Space", KeyInput.KEY_SPACE);
-        //used with method onBinding in BindingListener interface
-        //in order to add function to keys
-        inputManager.addBindingListener(this);
+        inputManager.addMapping("Lefts", new KeyTrigger(KeyInput.KEY_H));
+        inputManager.addMapping("Rights", new KeyTrigger(KeyInput.KEY_K));
+        inputManager.addMapping("Ups", new KeyTrigger(KeyInput.KEY_U));
+        inputManager.addMapping("Downs", new KeyTrigger(KeyInput.KEY_J));
+        inputManager.addMapping("Space", new KeyTrigger(KeyInput.KEY_SPACE));
+        inputManager.addListener(this,"Lefts");
+        inputManager.addListener(this,"Rights");
+        inputManager.addListener(this,"Ups");
+        inputManager.addListener(this,"Downs");
+        inputManager.addListener(this,"Space");
     }
 
-    public void onBinding(String binding, float value) {
-        if(binding.equals("Lefts")){
-            walkDirection.addLocal(new Vector3f(-.1f,0,0));
-        }
-        else if(binding.equals("Rights")){
-            walkDirection.addLocal(new Vector3f(.1f,0,0));
-        }
-        else if(binding.equals("Ups")){
-            walkDirection.addLocal(new Vector3f(0,0,-.1f));
-        }
-        else if(binding.equals("Downs")){
-            walkDirection.addLocal(new Vector3f(0,0,.1f));
-        }
-        else if(binding.equals("Space")){
-            physicsCharacter.jump();
-        }
-    }
-
-    public void onPreUpdate(float tpf) {
-        walkDirection.set(0,0,0);
-    }
-
-    public void onPostUpdate(float tpf) {
-    }
-    
     @Override
     public void simpleInitApp() {
 
@@ -129,11 +107,41 @@ public class TestPhysicsCharacter extends SimpleBulletApplication implements Bin
     @Override
     public void simplePhysicsUpdate(float tpf) {
         physicsCharacter.setWalkDirection(walkDirection);
-   }
+    }
 
     @Override
     public void simpleRender(RenderManager rm) {
         //TODO: add render code
+    }
+
+    public void onAction(String binding, boolean value, float tpf) {
+        if(binding.equals("Lefts")){
+            if(value)
+                walkDirection.addLocal(new Vector3f(-.1f,0,0));
+            else
+                walkDirection.addLocal(new Vector3f(.1f,0,0));
+        }
+        else if(binding.equals("Rights")){
+            if(value)
+                walkDirection.addLocal(new Vector3f(.1f,0,0));
+            else
+                walkDirection.addLocal(new Vector3f(-.1f,0,0));
+        }
+        else if(binding.equals("Ups")){
+            if(value)
+                walkDirection.addLocal(new Vector3f(0,0,-.1f));
+            else
+                walkDirection.addLocal(new Vector3f(0,0,.1f));
+        }
+        else if(binding.equals("Downs")){
+            if(value)
+                walkDirection.addLocal(new Vector3f(0,0,.1f));
+            else
+                walkDirection.addLocal(new Vector3f(0,0,-.1f));
+        }
+        else if(binding.equals("Space")){
+            physicsCharacter.jump();
+        }
     }
 
 }

@@ -7,7 +7,8 @@ import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.nodes.PhysicsVehicleNode;
 import com.jme3.input.KeyInput;
-import com.jme3.input.binding.BindingListener;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
@@ -17,8 +18,10 @@ import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Cylinder;
 import com.jme3.texture.Texture;
 
-public class TestPhysicsCar extends SimpleBulletApplication implements BindingListener {
+public class TestPhysicsCar extends SimpleBulletApplication implements ActionListener {
     private PhysicsVehicleNode player;
+    private float steeringValue=0;
+    private float accelerationValue=0;
 
     public static void main(String[] args) {
         TestPhysicsCar app = new TestPhysicsCar();
@@ -26,37 +29,17 @@ public class TestPhysicsCar extends SimpleBulletApplication implements BindingLi
     }
 
     private void setupKeys() {
-        inputManager.registerKeyBinding("Lefts", KeyInput.KEY_H);
-        inputManager.registerKeyBinding("Rights", KeyInput.KEY_K);
-        inputManager.registerKeyBinding("Ups", KeyInput.KEY_U);
-        inputManager.registerKeyBinding("Downs", KeyInput.KEY_J);
-        inputManager.registerKeyBinding("Space", KeyInput.KEY_SPACE);
-        //used with method onBinding in BindingListener interface
-        //in order to add function to keys
-        inputManager.addBindingListener(this);
+        inputManager.addMapping("Lefts", new KeyTrigger(KeyInput.KEY_H));
+        inputManager.addMapping("Rights", new KeyTrigger(KeyInput.KEY_K));
+        inputManager.addMapping("Ups", new KeyTrigger(KeyInput.KEY_U));
+        inputManager.addMapping("Downs", new KeyTrigger(KeyInput.KEY_J));
+        inputManager.addMapping("Space", new KeyTrigger(KeyInput.KEY_SPACE));
+        inputManager.addListener(this,"Lefts");
+        inputManager.addListener(this,"Rights");
+        inputManager.addListener(this,"Ups");
+        inputManager.addListener(this,"Downs");
+        inputManager.addListener(this,"Space");
     }
-
-    public void onBinding(String binding, float value) {
-        if (binding.equals("Lefts")) {
-            player.steer(.5f);
-        } else if (binding.equals("Rights")) {
-            player.steer(-.5f);
-        } else if (binding.equals("Ups")) {
-            player.accelerate(300f * value);
-        } else if (binding.equals("Downs")) {
-            player.brake(60f * value);
-        }
-    }
-
-    public void onPreUpdate(float tpf) {
-        player.accelerate(0);
-        player.brake(0);
-        player.steer(0);
-    }
-
-    public void onPostUpdate(float tpf) {
-    }
-
 
     @Override
     public void simpleInitApp() {
@@ -158,10 +141,31 @@ public class TestPhysicsCar extends SimpleBulletApplication implements BindingLi
         getPhysicsSpace().add(player);
     }
 
-    @Override
-    public void simpleUpdate(float tpf) {
-        
+    public void onAction(String binding, boolean value, float tpf) {
+        if (binding.equals("Lefts")) {
+            if(value)
+                steeringValue+=.5f;
+            else
+                steeringValue+=-.5f;
+            player.steer(steeringValue);
+        } else if (binding.equals("Rights")) {
+            if(value)
+                steeringValue+=-.5f;
+            else
+                steeringValue+=.5f;
+            player.steer(steeringValue);
+        } else if (binding.equals("Ups")) {
+            if(value)
+                accelerationValue+=2;
+            else
+                accelerationValue-=2;
+            player.accelerate(accelerationValue);
+        } else if (binding.equals("Downs")) {
+            if(value)
+                player.brake(60f);
+            else
+                player.brake(0f);
+        }
     }
-
 
 }

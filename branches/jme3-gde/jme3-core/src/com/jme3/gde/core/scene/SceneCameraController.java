@@ -183,10 +183,10 @@ public class SceneCameraController implements ActionListener, AnalogListener {
                 panCamera(deltaX * 10, -deltaY * 10);
             }
         }
-        else if ("MouseAxisWheel".equals(string)) {
+        else if ("MouseWheel".equals(string)) {
             zoomCamera(.1f);
         }
-        else if ("MouseAxisWheel-".equals(string)) {
+        else if ("MouseWheel-".equals(string)) {
             zoomCamera(-.1f);
         }
     }

@@ -93,6 +93,7 @@ public class PhysicsGhostNode extends CollisionObject {
             gObject.setCollisionFlags(gObject.getCollisionFlags() | CollisionFlags.NO_CONTACT_RESPONSE);
         }
         gObject.setCollisionShape(cShape.getCShape());
+        gObject.setUserPointer(this);
     }
 
     @Override

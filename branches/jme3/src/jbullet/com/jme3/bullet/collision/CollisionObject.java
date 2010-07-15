@@ -31,13 +31,109 @@
  */
 package com.jme3.bullet.collision;
 
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
 import com.jme3.scene.Node;
+import java.io.IOException;
 
 /**
  * Base class for collision objects (PhysicsNode, PhysicsGhostNode)
  * @author normenhansen
  */
-public abstract class CollisionObject extends Node{
-    public void updatePhysicsState(){
+public abstract class CollisionObject extends Node {
+
+    public static final int COLLISION_GROUP_NONE = 0x00000000;
+    public static final int COLLISION_GROUP_01 = 0x00000001;
+    public static final int COLLISION_GROUP_02 = 0x00000002;
+    public static final int COLLISION_GROUP_03 = 0x00000004;
+    public static final int COLLISION_GROUP_04 = 0x00000008;
+    public static final int COLLISION_GROUP_05 = 0x00000010;
+    public static final int COLLISION_GROUP_06 = 0x00000020;
+    public static final int COLLISION_GROUP_07 = 0x00000040;
+    public static final int COLLISION_GROUP_08 = 0x00000080;
+    public static final int COLLISION_GROUP_09 = 0x00000100;
+    public static final int COLLISION_GROUP_10 = 0x00000200;
+    public static final int COLLISION_GROUP_11 = 0x00000400;
+    public static final int COLLISION_GROUP_12 = 0x00000800;
+    public static final int COLLISION_GROUP_13 = 0x00001000;
+    public static final int COLLISION_GROUP_14 = 0x00002000;
+    public static final int COLLISION_GROUP_15 = 0x00004000;
+    public static final int COLLISION_GROUP_16 = 0x00008000;
+    
+    protected int collisionGroup = 0x00000001;
+    protected int collisionGroupsMask = 0x00000001;
+
+    public void updatePhysicsState() {
     }
+
+    /**
+     * @return the collisionGroup
+     */
+    public int getCollisionGroup() {
+        return collisionGroup;
+    }
+
+    /**
+     * Sets the collision group number for this physics object. <br>
+     * The groups are integer bit masks and some pre-made variables are available in CollisionObject.
+     * All physics objects are by default in COLLISION_GROUP_01.
+     * @param collisionGroup the collisionGroup to set
+     */
+    public void setCollisionGroup(int collisionGroup) {
+        this.collisionGroup = collisionGroup;
+    }
+
+    /**
+     * Add a group that this object will collide with.
+     * @param collisionGroup
+     */
+    public void addCollideWithGroup(int collisionGroup) {
+        this.collisionGroupsMask = this.collisionGroupsMask | collisionGroup;
+    }
+
+    /**
+     * Remove a group from the list this object collides with.
+     * @param collisionGroup
+     */
+    public void removeCollideWithGroup(int collisionGroup) {
+        this.collisionGroupsMask = this.collisionGroupsMask & ~collisionGroup;
+    }
+
+    /**
+     * Directly set the bitmask for collision groups that this object collides with.
+     * @param collisionGroup
+     */
+    public void setCollideWithGroups(int collisionGroup) {
+        this.collisionGroupsMask = collisionGroup;
+    }
+
+    /**
+     * Gets the bitmask of collision groups that this object collides with.
+     * @return
+     */
+    public int getCollideWithGroups() {
+        return collisionGroupsMask;
+    }
+
+    @Override
+    public void write(JmeExporter e) throws IOException {
+        super.write(e);
+        OutputCapsule capsule = e.getCapsule(this);
+        capsule.write(collisionGroup, "collisionGroup", 0x00000001);
+        capsule.write(collisionGroupsMask, "collisionGroupsMask", 0x00000001);
+
+    }
+
+    @Override
+    public void read(JmeImporter e) throws IOException {
+        super.read(e);
+        InputCapsule capsule = e.getCapsule(this);
+        collisionGroup = capsule.readInt("collisionGroup", 0x00000001);
+        collisionGroupsMask = capsule.readInt("collisionGroupsMask", 0x00000001);
+    }
+
+
+
 }

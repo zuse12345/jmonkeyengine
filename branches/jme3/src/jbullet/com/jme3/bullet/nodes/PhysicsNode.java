@@ -169,12 +169,21 @@ public class PhysicsNode extends CollisionObject {
         }
     }
 
-    //TODO:scale
+    /**
+     * Note that the CollisionShape of a PhysicsNode does not scale with the Node
+     * as it could be used by other PhysicsNodes. Scale the CollisionShape separately.
+     * @param localScale
+     */
     @Override
     public void setLocalScale(float localScale) {
         super.setLocalScale(localScale);
     }
 
+    /**
+     * Note that the CollisionShape of a PhysicsNode does not scale with the Node
+     * as it could be used by other PhysicsNodes. Scale the CollisionShape separately.
+     * @param localScale
+     */
     @Override
     public void setLocalScale(Vector3f localScale) {
         super.setLocalScale(localScale);
@@ -291,7 +300,8 @@ public class PhysicsNode extends CollisionObject {
      */
     public void setMass(float mass) {
         this.mass = mass;
-        rebuildBody = true;
+        rebuildRigidBody();
+//        rebuildBody = true;
     }
 
     public void getGravity(Vector3f gravity) {
@@ -637,7 +647,8 @@ public class PhysicsNode extends CollisionObject {
      */
     public void setCollisionShape(CollisionShape collisionShape) {
         this.collisionShape = collisionShape;
-        rebuildBody = true;
+        rebuildRigidBody();
+//        rebuildBody = true;
     }
 
     /**
@@ -684,7 +695,7 @@ public class PhysicsNode extends CollisionObject {
      * the PhysicsNode is actually added to the physics space or loaded from disk.
      * @return list of active joints connected to this physicsnode
      */
-    public List<PhysicsJoint> getJoints(){
+    public List<PhysicsJoint> getJoints() {
         return joints;
     }
 

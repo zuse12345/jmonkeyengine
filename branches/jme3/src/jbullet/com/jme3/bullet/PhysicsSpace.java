@@ -38,7 +38,9 @@ import com.bulletphysics.ContactProcessedCallback;
 import com.bulletphysics.collision.broadphase.AxisSweep3;
 import com.bulletphysics.collision.broadphase.AxisSweep3_32;
 import com.bulletphysics.collision.broadphase.BroadphaseInterface;
+import com.bulletphysics.collision.broadphase.BroadphaseProxy;
 import com.bulletphysics.collision.broadphase.DbvtBroadphase;
+import com.bulletphysics.collision.broadphase.OverlapFilterCallback;
 import com.bulletphysics.collision.broadphase.SimpleBroadphase;
 import com.bulletphysics.collision.dispatch.CollisionDispatcher;
 import com.bulletphysics.collision.dispatch.DefaultCollisionConfiguration;
@@ -58,6 +60,7 @@ import com.jme3.math.Vector3f;
 //import com.jme3.util.GameTaskQueue;
 //import com.jme3.util.GameTaskQueueManager;
 import com.jme3.bullet.collision.CollisionEvent;
+import com.jme3.bullet.collision.CollisionGroupListener;
 import com.jme3.bullet.collision.CollisionListener;
 import com.jme3.bullet.collision.CollisionObject;
 import com.jme3.bullet.joints.PhysicsJoint;
@@ -87,7 +90,7 @@ import java.util.logging.Logger;
  * @see com.jmex.jbullet.nodes.PhysicsNode
  * @author normenhansen
  */
-public class PhysicsSpace implements Savable {
+public class PhysicsSpace implements Savable, OverlapFilterCallback {
 
     public static ThreadLocal<ConcurrentLinkedQueue<AppTask<?>>> rQueueTL =
             new ThreadLocal<ConcurrentLinkedQueue<AppTask<?>>>() {
@@ -119,6 +122,7 @@ public class PhysicsSpace implements Savable {
     private List<PhysicsJoint> physicsJoints = new LinkedList<PhysicsJoint>();
     private List<CollisionListener> collisionListeners = new LinkedList<CollisionListener>();
     private List<CollisionEvent> collisionEvents = new LinkedList<CollisionEvent>();
+    private Map<Integer, CollisionGroupListener> collisionGroupListeners = new ConcurrentHashMap<Integer, CollisionGroupListener>();
     private Vector3f worldMin = new Vector3f(-10000f, -10000f, -10000f);
     private Vector3f worldMax = new Vector3f(10000f, 10000f, 10000f);
     private float accuracy = 1f / 60f;
@@ -180,6 +184,9 @@ public class PhysicsSpace implements Savable {
         dynamicsWorld = new DiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
         dynamicsWorld.setGravity(new javax.vecmath.Vector3f(0, -9.81f, 0));
 
+        //register filter callback for groups / collision decision
+        dynamicsWorld.getPairCache().setOverlapFilterCallback(this);
+
         broadphase.getOverlappingPairCache().setInternalGhostPairCallback(new GhostPairCallback());
         GImpactCollisionAlgorithm.registerAlgorithm(dispatcher);
 
@@ -232,6 +239,37 @@ public class PhysicsSpace implements Savable {
                 return true;
             }
         });
+    }
+
+    public boolean needBroadphaseCollision(BroadphaseProxy bp, BroadphaseProxy bp1) {
+        boolean collides = (bp.collisionFilterGroup & bp1.collisionFilterMask) != 0;
+        if (collides) {
+            if (bp.clientObject instanceof com.bulletphysics.collision.dispatch.CollisionObject && bp.clientObject instanceof com.bulletphysics.collision.dispatch.CollisionObject) {
+                com.bulletphysics.collision.dispatch.CollisionObject colOb = (com.bulletphysics.collision.dispatch.CollisionObject) bp.clientObject;
+                com.bulletphysics.collision.dispatch.CollisionObject colOb1 = (com.bulletphysics.collision.dispatch.CollisionObject) bp1.clientObject;
+                if(colOb.getUserPointer() instanceof CollisionObject && colOb1.getUserPointer() instanceof CollisionObject){
+                    CollisionObject collisionObject = (CollisionObject)colOb.getUserPointer();
+                    CollisionObject collisionObject1 = (CollisionObject)colOb1.getUserPointer();
+                    if((collisionObject.getCollideWithGroups()&collisionObject1.getCollisionGroup())>0 ||
+                       (collisionObject1.getCollideWithGroups()&collisionObject.getCollisionGroup())>0){
+                        CollisionGroupListener listener=collisionGroupListeners.get(collisionObject.getCollisionGroup());
+                        CollisionGroupListener listener1=collisionGroupListeners.get(collisionObject1.getCollisionGroup());
+                        if(listener!=null){
+                            boolean listenerValue=listener.collide(collisionObject, collisionObject1);
+                            if(listener1!=null){
+                                listenerValue=listener1.collide(collisionObject, collisionObject1);
+                            }
+                            return listenerValue;
+                        }
+                        return true;
+                    }
+                    else{
+                        return false;
+                    }
+                }
+            }
+        }
+        return collides;
     }
 
     /**
@@ -423,35 +461,35 @@ public class PhysicsSpace implements Savable {
      * (e.g. after loading from disk)
      * @param node the rootnode containing the physics objects
      */
-    public void addAll(Node node){
-        if(node instanceof PhysicsNode){
-            PhysicsNode physicsNode=(PhysicsNode)node;
-            if(!physicsNodes.containsValue(physicsNode)){
+    public void addAll(Node node) {
+        if (node instanceof PhysicsNode) {
+            PhysicsNode physicsNode = (PhysicsNode) node;
+            if (!physicsNodes.containsValue(physicsNode)) {
                 addNode(physicsNode);
             }
             //add joints
-            List<PhysicsJoint> joints=((PhysicsNode)node).getJoints();
+            List<PhysicsJoint> joints = ((PhysicsNode) node).getJoints();
             for (Iterator<PhysicsJoint> it1 = joints.iterator(); it1.hasNext();) {
                 PhysicsJoint physicsJoint = it1.next();
                 //add connected physicsnodes if they are not already added
-                if(!physicsNodes.containsValue(physicsJoint.getNodeA())){
+                if (!physicsNodes.containsValue(physicsJoint.getNodeA())) {
                     addNode(physicsJoint.getNodeA());
                 }
-                if(!physicsNodes.containsValue(physicsJoint.getNodeB())){
+                if (!physicsNodes.containsValue(physicsJoint.getNodeB())) {
                     addNode(physicsJoint.getNodeB());
                 }
                 addJoint(physicsJoint);
             }
         }
-        if(node instanceof PhysicsGhostNode){
-            addGhostNode((PhysicsGhostNode)node);
+        if (node instanceof PhysicsGhostNode) {
+            addGhostNode((PhysicsGhostNode) node);
         }
         //recursion
-        List<Spatial> children=node.getChildren();
+        List<Spatial> children = node.getChildren();
         for (Iterator<Spatial> it = children.iterator(); it.hasNext();) {
             Spatial spatial = it.next();
-            if(spatial instanceof Node){
-                addAll((Node)spatial);
+            if (spatial instanceof Node) {
+                addAll((Node) spatial);
             }
         }
     }
@@ -515,7 +553,7 @@ public class PhysicsSpace implements Savable {
     }
 
     /**
-     * adds a CollisionListener that will be informed about collision events
+     * Adds a CollisionListener that will be informed about collision events
      * @param listener the CollisionListener to add
      */
     public void addCollisionListener(CollisionListener listener) {
@@ -523,11 +561,24 @@ public class PhysicsSpace implements Savable {
     }
 
     /**
-     * removes a CollisionListener from the list
+     * Removes a CollisionListener from the list
      * @param listener the CollisionListener to remove
      */
     public void removeCollisionListener(CollisionListener listener) {
         collisionListeners.remove(listener);
+    }
+
+    /**
+     * Adds a listener for a specific collision group, such a listener can check collisions before they happen.
+     * @param listener
+     * @param collisionGroup
+     */
+    public void addCollisionGroupListener(CollisionGroupListener listener, int collisionGroup){
+        collisionGroupListeners.put(collisionGroup, listener);
+    }
+
+    public void removeCollisionGroupListener(int collisionGroup){
+        collisionGroupListeners.remove(collisionGroup);
     }
 
     /**

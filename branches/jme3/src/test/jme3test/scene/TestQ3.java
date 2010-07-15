@@ -10,7 +10,8 @@ import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.input.FirstPersonCamera;
 import com.jme3.input.KeyInput;
-import com.jme3.input.binding.BindingListener;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
@@ -22,7 +23,7 @@ import com.jme3.scene.plugins.ogre.OgreMeshKey;
 import com.jme3.scene.shape.Sphere;
 import java.io.File;
 
-public class TestQ3 extends SimpleBulletApplication implements BindingListener {
+public class TestQ3 extends SimpleBulletApplication implements ActionListener {
 
     private Sphere sphereMesh = new Sphere(32, 32, 10f, false, true);
     private Geometry sphere = new Geometry("Sky", sphereMesh);
@@ -30,6 +31,7 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener {
     private PhysicsCharacterNode player;
     private Vector3f walkDirection = new Vector3f();
     private static boolean useHttp = false;
+    private boolean left=false,right=false,up=false,down=false;
 
     public static void main(String[] args) {
         File file = new File("quake3level.zip");
@@ -93,50 +95,58 @@ public class TestQ3 extends SimpleBulletApplication implements BindingListener {
 
     @Override
     public void simpleUpdate(float tpf) {
+        Vector3f camDir = cam.getDirection().clone().multLocal(0.6f);
+        Vector3f camLeft = cam.getLeft().clone().multLocal(0.4f);
+        walkDirection.set(0,0,0);
+        if(left)
+            walkDirection.addLocal(camLeft);
+        if(right)
+            walkDirection.addLocal(camLeft.negate());
+        if(up)
+            walkDirection.addLocal(camDir);
+        if(down)
+            walkDirection.addLocal(camDir.negate());
         player.setWalkDirection(walkDirection);
         cam.setLocation(player.getLocalTranslation());
     }
 
     private void setupKeys() {
-        inputManager.registerKeyBinding("Lefts", KeyInput.KEY_A);
-        inputManager.registerKeyBinding("Rights", KeyInput.KEY_D);
-        inputManager.registerKeyBinding("Ups", KeyInput.KEY_W);
-        inputManager.registerKeyBinding("Downs", KeyInput.KEY_S);
-        inputManager.registerKeyBinding("Space", KeyInput.KEY_SPACE);
-        //used with method onBinding in BindingListener interface
-        //in order to add function to keys
-        inputManager.addBindingListener(this);
+        inputManager.addMapping("Lefts", new KeyTrigger(KeyInput.KEY_A));
+        inputManager.addMapping("Rights", new KeyTrigger(KeyInput.KEY_D));
+        inputManager.addMapping("Ups", new KeyTrigger(KeyInput.KEY_W));
+        inputManager.addMapping("Downs", new KeyTrigger(KeyInput.KEY_S));
+        inputManager.addMapping("Space", new KeyTrigger(KeyInput.KEY_SPACE));
+        inputManager.addListener(this,"Lefts");
+        inputManager.addListener(this,"Rights");
+        inputManager.addListener(this,"Ups");
+        inputManager.addListener(this,"Downs");
+        inputManager.addListener(this,"Space");
     }
 
-    public void onBinding(String binding, float value) {
-        Vector3f camDir = cam.getDirection().clone().multLocal(0.6f);
-        Vector3f camLeft = cam.getLeft().clone().multLocal(0.4f);
+    public void onAction(String binding, boolean value, float tpf) {
 
         if (binding.equals("Lefts")) {
-            walkDirection.addLocal(camLeft);
+            if(value)
+                left=true;
+            else
+                left=false;
         } else if (binding.equals("Rights")) {
-            camLeft.negateLocal();
-            walkDirection.addLocal(camLeft);
-
+            if(value)
+                right=true;
+            else
+                right=false;
         } else if (binding.equals("Ups")) {
-            walkDirection.addLocal(camDir);
+            if(value)
+                up=true;
+            else
+                up=false;
         } else if (binding.equals("Downs")) {
-            camDir.negateLocal();
-            walkDirection.addLocal(camDir);
+            if(value)
+                down=true;
+            else
+                down=false;
         } else if (binding.equals("Space")) {
-            if (player.onGround()) {
-                player.jump();
-            }
+            player.jump();
         }
-    }
-
-    public void onPreUpdate(float tpf) {
-        //TODO! the walkdirection of bullet characters is actually
-        //constant w/o (re)setting the direction vector each frame,
-        //better use keypress/release listener!
-        walkDirection.set(0, 0, 0);
-    }
-
-    public void onPostUpdate(float tpf) {
     }
 }

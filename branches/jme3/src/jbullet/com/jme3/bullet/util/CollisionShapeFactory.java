@@ -80,6 +80,11 @@ public class CollisionShapeFactory {
         return createCompoundShape(rootNode, shape, meshAccurate, false);
     }
 
+    /**
+     * This type of collision shape is mesh-accurate and meant for immovable "world objects".
+     * Examples include terrain, houses or whole shooter levels.<br>
+     * Objects with "mesh" type collision shape will not collide with each other.
+     */
     public static CompoundCollisionShape createMeshCompoundShape(Node rootNode) {
         rootNode.updateGeometricState();
         return createCompoundShape(rootNode, new CompoundCollisionShape(), true);

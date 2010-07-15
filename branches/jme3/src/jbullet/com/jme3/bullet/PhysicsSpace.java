@@ -244,28 +244,27 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
     public boolean needBroadphaseCollision(BroadphaseProxy bp, BroadphaseProxy bp1) {
         boolean collides = (bp.collisionFilterGroup & bp1.collisionFilterMask) != 0;
         if (collides) {
-            if (bp.clientObject instanceof com.bulletphysics.collision.dispatch.CollisionObject && bp.clientObject instanceof com.bulletphysics.collision.dispatch.CollisionObject) {
-                com.bulletphysics.collision.dispatch.CollisionObject colOb = (com.bulletphysics.collision.dispatch.CollisionObject) bp.clientObject;
-                com.bulletphysics.collision.dispatch.CollisionObject colOb1 = (com.bulletphysics.collision.dispatch.CollisionObject) bp1.clientObject;
-                if(colOb.getUserPointer() instanceof CollisionObject && colOb1.getUserPointer() instanceof CollisionObject){
-                    CollisionObject collisionObject = (CollisionObject)colOb.getUserPointer();
-                    CollisionObject collisionObject1 = (CollisionObject)colOb1.getUserPointer();
-                    if((collisionObject.getCollideWithGroups()&collisionObject1.getCollisionGroup())>0 ||
-                       (collisionObject1.getCollideWithGroups()&collisionObject.getCollisionGroup())>0){
-                        CollisionGroupListener listener=collisionGroupListeners.get(collisionObject.getCollisionGroup());
-                        CollisionGroupListener listener1=collisionGroupListeners.get(collisionObject1.getCollisionGroup());
-                        if(listener!=null){
-                            return listener.collide(collisionObject, collisionObject1);
-                        }
-                        else if(listener1!=null){
-                            return listener1.collide(collisionObject, collisionObject1);
-                        }
-                        return true;
-                    }
-                    else{
-                        return false;
-                    }
+            collides = (bp1.collisionFilterGroup & bp.collisionFilterMask) != 0;
+        }
+        if (collides) {
+            assert (bp.clientObject instanceof com.bulletphysics.collision.dispatch.CollisionObject && bp.clientObject instanceof com.bulletphysics.collision.dispatch.CollisionObject);
+            com.bulletphysics.collision.dispatch.CollisionObject colOb = (com.bulletphysics.collision.dispatch.CollisionObject) bp.clientObject;
+            com.bulletphysics.collision.dispatch.CollisionObject colOb1 = (com.bulletphysics.collision.dispatch.CollisionObject) bp1.clientObject;
+            assert (colOb.getUserPointer() != null && colOb1.getUserPointer() != null);
+            CollisionObject collisionObject = (CollisionObject) colOb.getUserPointer();
+            CollisionObject collisionObject1 = (CollisionObject) colOb1.getUserPointer();
+            if ((collisionObject.getCollideWithGroups() & collisionObject1.getCollisionGroup()) > 0
+                    || (collisionObject1.getCollideWithGroups() & collisionObject.getCollisionGroup()) > 0) {
+                CollisionGroupListener listener = collisionGroupListeners.get(collisionObject.getCollisionGroup());
+                CollisionGroupListener listener1 = collisionGroupListeners.get(collisionObject1.getCollisionGroup());
+                if (listener != null) {
+                    return listener.collide(collisionObject, collisionObject1);
+                } else if (listener1 != null) {
+                    return listener1.collide(collisionObject, collisionObject1);
                 }
+                return true;
+            } else {
+                return false;
             }
         }
         return collides;
@@ -572,11 +571,11 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
      * @param listener
      * @param collisionGroup
      */
-    public void addCollisionGroupListener(CollisionGroupListener listener, int collisionGroup){
+    public void addCollisionGroupListener(CollisionGroupListener listener, int collisionGroup) {
         collisionGroupListeners.put(collisionGroup, listener);
     }
 
-    public void removeCollisionGroupListener(int collisionGroup){
+    public void removeCollisionGroupListener(int collisionGroup) {
         collisionGroupListeners.remove(collisionGroup);
     }
 

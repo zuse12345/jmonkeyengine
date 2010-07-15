@@ -100,6 +100,10 @@ public class CollisionShapeFactory {
         }
     }
 
+    /**
+     * Note that mesh-sccurate dynamic shapes are very expensive and you should consider
+     * using a compound shape of standard shapes instead.
+     */
     public static CollisionShape createDynamicMeshShape(Spatial spatial) {
         if (spatial instanceof Geometry) {
             return createSingleDynamicMeshShape((Geometry) spatial);
@@ -142,6 +146,10 @@ public class CollisionShapeFactory {
         return shape;
     }
 
+    /**
+     * Note that mesh-sccurate dynamic shapes are very expensive and you should consider
+     * using a compound shape of standard shapes instead.
+     */
     public static GImpactCollisionShape createSingleDynamicMeshShape(Geometry geom) {
         Mesh mesh = geom.getMesh();
         if (mesh != null) {

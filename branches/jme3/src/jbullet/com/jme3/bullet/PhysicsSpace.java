@@ -90,7 +90,7 @@ import java.util.logging.Logger;
  * @see com.jmex.jbullet.nodes.PhysicsNode
  * @author normenhansen
  */
-public class PhysicsSpace implements Savable, OverlapFilterCallback {
+public class PhysicsSpace extends OverlapFilterCallback implements Savable {
 
     public static ThreadLocal<ConcurrentLinkedQueue<AppTask<?>>> rQueueTL =
             new ThreadLocal<ConcurrentLinkedQueue<AppTask<?>>>() {

@@ -45,7 +45,7 @@ import com.jme3.math.Matrix3f;
  * allow multithreaded access from the jme scenegraph and the bullet physicsspace
  * @author normenhansen
  */
-public class PhysicsNodeState implements MotionState{
+public class PhysicsNodeState extends MotionState{
     //stores the bullet transform
     private Transform motionStateTrans=new Transform(Converter.convert(new Matrix3f()));
     

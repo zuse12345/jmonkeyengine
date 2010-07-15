@@ -255,11 +255,10 @@ public class PhysicsSpace implements Savable, OverlapFilterCallback {
                         CollisionGroupListener listener=collisionGroupListeners.get(collisionObject.getCollisionGroup());
                         CollisionGroupListener listener1=collisionGroupListeners.get(collisionObject1.getCollisionGroup());
                         if(listener!=null){
-                            boolean listenerValue=listener.collide(collisionObject, collisionObject1);
-                            if(listener1!=null){
-                                listenerValue=listener1.collide(collisionObject, collisionObject1);
-                            }
-                            return listenerValue;
+                            return listener.collide(collisionObject, collisionObject1);
+                        }
+                        else if(listener1!=null){
+                            return listener1.collide(collisionObject, collisionObject1);
                         }
                         return true;
                     }

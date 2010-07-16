@@ -110,6 +110,19 @@ public class ProjectAssetManager {
         return list.toArray(new String[list.size()]);
     }
 
+    public String[] getTextures() {
+        FileObject assetsFolder = project.getProjectDirectory().getFileObject(folderName + "/");
+        Enumeration<FileObject> assets = (Enumeration<FileObject>) assetsFolder.getChildren(true);
+        ArrayList<String> list = new ArrayList<String>();
+        while (assets.hasMoreElements()) {
+            FileObject asset = assets.nextElement();
+            if (asset.hasExt("jpg")||asset.hasExt("jpeg")||asset.hasExt("gif")||asset.hasExt("png")||asset.hasExt("dds")||asset.hasExt("pfm")||asset.hasExt("hdr")||asset.hasExt("tga")) {
+                list.add(getRelativeAssetPath(asset.getPath()));
+            }
+        }
+        return list.toArray(new String[list.size()]);
+    }
+
     /**
      * @return the folderName
      */

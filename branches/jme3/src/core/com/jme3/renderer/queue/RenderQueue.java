@@ -104,7 +104,8 @@ public class RenderQueue {
             if (obj != null)
                 obj.queueDistance = Float.NEGATIVE_INFINITY;
         }
-        list.clear();
+        if (clear)
+            list.clear();
     }
 
     public void renderShadowQueue(ShadowMode shadBucket, RenderManager rm, Camera cam, boolean clear){
@@ -134,18 +135,22 @@ public class RenderQueue {
     }
 
     public void renderQueue(Bucket bucket, RenderManager rm, Camera cam){
+        renderQueue(bucket, rm, cam, true);
+    }
+
+    public void renderQueue(Bucket bucket, RenderManager rm, Camera cam, boolean clear){
         switch (bucket){
             case Gui:
-                renderGeometryList(guiList, rm, cam, true);
+                renderGeometryList(guiList, rm, cam, clear);
                 break;
             case Opaque:
-                renderGeometryList(opaqueList, rm, cam, true);
+                renderGeometryList(opaqueList, rm, cam, clear);
                 break;
             case Sky:
-                renderGeometryList(skyList, rm, cam, true);
+                renderGeometryList(skyList, rm, cam, clear);
                 break;
             case Transparent:
-                renderGeometryList(transparentList, rm, cam, true);
+                renderGeometryList(transparentList, rm, cam, clear);
                 break;
             default:
                 throw new UnsupportedOperationException("Unsupported bucket type: "+bucket);

@@ -1,38 +1,64 @@
 package com.jme3.scene.plugins;
 
 import com.jme3.asset.*;
+import com.jme3.material.Material;
+import com.jme3.material.MaterialList;
+import com.jme3.math.FastMath;
 import com.jme3.util.*;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
+import com.jme3.scene.Mesh.Mode;
+import com.jme3.scene.Node;
 import com.jme3.scene.VertexBuffer;
+import com.jme3.scene.mesh.IndexBuffer;
+import com.jme3.scene.mesh.IndexIntBuffer;
+import com.jme3.scene.mesh.IndexShortBuffer;
+import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Sphere;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jme3tools.converters.model.ModelConverter;
+import jme3tools.converters.model.strip.TriStrip;
 
 /**
  * Reads OBJ format models.
  */
-public class OBJLoader implements AssetLoader {
+public final class OBJLoader implements AssetLoader {
 
-    protected List<Vector3f> verts = new ArrayList<Vector3f>();
-    protected List<Vector2f> texCoords = new ArrayList<Vector2f>();
-    protected List<Vector3f> norms = new ArrayList<Vector3f>();
-    protected List<Face> faces = new ArrayList<Face>();
+    private static final Logger logger = Logger.getLogger(OBJLoader.class.getName());
 
-    protected Map<Vertex, Integer> vertIndexMap = new HashMap<Vertex, Integer>();
-    protected Map<Integer, Vertex> indexVertMap = new HashMap<Integer, Vertex>();
-    protected int curIndex = 0;
+    protected final ArrayList<Vector3f> verts = new ArrayList<Vector3f>();
+    protected final ArrayList<Vector2f> texCoords = new ArrayList<Vector2f>();
+    protected final ArrayList<Vector3f> norms = new ArrayList<Vector3f>();
+    protected final ArrayList<Face> faces = new ArrayList<Face>();
+    protected final HashMap<String, ArrayList<Face>> matFaces = new HashMap<String, ArrayList<Face>>();
+    protected String currentMatName;
+
+    protected final HashMap<Vertex, Integer> vertIndexMap = new HashMap<Vertex, Integer>();
+    protected IntMap<Vertex> indexVertMap = new IntMap<Vertex>();
+    protected int curIndex  = 0;
+    protected int geomIndex = 0;
 
     protected Scanner scan;
+    protected ModelKey key;
+    protected AssetManager assetManager;
+    protected MaterialList matList;
+
+    protected String objName;
+    protected Node objNode;
 
     protected static class Vertex {
 
@@ -42,12 +68,27 @@ public class OBJLoader implements AssetLoader {
         int index;
 
         @Override
+        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
         public boolean equals(Object o){
-            if (!(o instanceof Vertex))
-                return false;
-
             Vertex other = (Vertex) o;
-            return v == other.v && vt == other.vt && vn == other.vn;
+//            return v == other.v && vt == other.vt && vn == other.vn;
+            boolean vq = false, tq = false, nq = false;
+            if (v != null)
+                vq = v.equals(other.v);
+            else if (other.v == null)
+                vq = true;
+
+            if (vt != null)
+                tq = vt.equals(other.vt);
+            else if (other.vt == null)
+                tq = true;
+
+            if (vn != null)
+                nq = vn.equals(other.vn);
+            else if (other.vn == null)
+                nq = true;
+
+            return vq && tq && nq;
         }
 
         @Override
@@ -61,7 +102,7 @@ public class OBJLoader implements AssetLoader {
     }
 
     protected static class Face {
-        int[] vertIndexes;
+        Vertex[] verticies;
     }
 
     public OBJLoader(){
@@ -72,19 +113,22 @@ public class OBJLoader implements AssetLoader {
         texCoords.clear();
         norms.clear();
         faces.clear();
+        matFaces.clear();
 
         vertIndexMap.clear();
         indexVertMap.clear();
 
+        currentMatName = null;
         curIndex = 0;
+        geomIndex = 0;
         scan = null;
     }
 
-    protected void loadVertexIndex(Vertex vert){
+    protected void findVertexIndex(Vertex vert){
         Integer index = vertIndexMap.get(vert);
         if (index != null){
             vert.index = index.intValue();
-            indexVertMap.put(index, vert);
+//            indexVertMap.put(index, vert);
         }else{
             vert.index = curIndex++;
             vertIndexMap.put(vert, vert.index);
@@ -92,9 +136,56 @@ public class OBJLoader implements AssetLoader {
         }
     }
 
-    protected Face readFace(){
+    protected Face[] quadToTriangle(Face f){
+        if (f.verticies.length == 4){
+            Face[] t = new Face[]{ new Face(), new Face() };
+            t[0].verticies = new Vertex[3];
+            t[1].verticies = new Vertex[3];
+
+            Vertex v0 = f.verticies[0];
+            Vertex v1 = f.verticies[1];
+            Vertex v2 = f.verticies[2];
+            Vertex v3 = f.verticies[3];
+
+            // find the pair of verticies that is closest to each over
+            // v0 and v2
+            // OR
+            // v1 and v3
+            float d1 = v0.v.distanceSquared(v2.v);
+            float d2 = v1.v.distanceSquared(v3.v);
+            if (d1 < d2){
+                // put an edge in v0, v2
+                t[0].verticies[0] = v0;
+                t[0].verticies[1] = v1;
+                t[0].verticies[2] = v3;
+
+                t[1].verticies[0] = v1;
+                t[1].verticies[1] = v2;
+                t[1].verticies[2] = v3;
+            }else{
+                // put an edge in v1, v3
+                t[0].verticies[0] = v0;
+                t[0].verticies[1] = v1;
+                t[0].verticies[2] = v2;
+
+                t[1].verticies[0] = v0;
+                t[1].verticies[1] = v2;
+                t[1].verticies[2] = v3;
+            }
+
+            return t;
+        }else if (f.verticies.length == 3){
+            return new Face[]{ f };
+        }else{
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private ArrayList<Vertex> vertList = new ArrayList<Vertex>();
+
+    protected void readFace(){
         Face f = new Face();
-        List<Vertex> vertList = new ArrayList<Vertex>();
+        vertList.clear();
 
         String line = scan.nextLine().trim();
         String[] verticies = line.split(" ");
@@ -127,29 +218,34 @@ public class OBJLoader implements AssetLoader {
             if (vn > 0)
                 vx.vn = norms.get(vn - 1);
 
-            loadVertexIndex(vx);
             vertList.add(vx);
         }
 
-        if (vertList.size() == 0)
-            return null; // error
+        if (vertList.size() > 4 || vertList.size() <= 2)
+            System.out.println("POLYGON/EDGE/POINT DETECTED!!");
 
-        f.vertIndexes = new int[vertList.size()];
+        f.verticies = new Vertex[vertList.size()];
         for (int i = 0; i < vertList.size(); i++){
-            f.vertIndexes[i] = vertList.get(i).index;
+            f.verticies[i] = vertList.get(i);
         }
-        return f;
+
+        if (currentMatName != null){
+            matFaces.get(currentMatName).add(f);
+        }else{
+            faces.add(f); // faces that belong to the default material
+        }
     }
+
+//    Pattern nl = Pattern.compile("\n");
+//    Pattern ws = Pattern.compile("\\p{javaWhitespace}+");
 
     protected Vector3f readVector3(){
         Vector3f v = new Vector3f();
-        v.setX(scan.nextFloat());
-        if (scan.hasNextFloat()){
-            v.setY(scan.nextFloat());
-            if (scan.hasNextFloat()){
-                v.setZ(scan.nextFloat());
-            }
-        }
+
+        v.set(Float.parseFloat(scan.next()),
+              Float.parseFloat(scan.next()),
+              Float.parseFloat(scan.next()));
+
         return v;
     }
 
@@ -158,67 +254,140 @@ public class OBJLoader implements AssetLoader {
         v.setX(scan.nextFloat());
         if (scan.hasNextFloat()){
             v.setY(scan.nextFloat());
+            if (scan.hasNextFloat()){
+                scan.nextFloat(); // ignore
+            }
         }
         return v;
     }
 
-    protected boolean readLine(){
+    protected void loadMtlLib(String name) throws IOException{
+        if (!name.toLowerCase().endsWith(".mtl"))
+            throw new IOException("Expected .mtl file! Got: " + name);
+
+        matList = (MaterialList) assetManager.loadAsset(key.getFolder() + name);
+        // create face lists for every material
+        for (String matName : matList.keySet()){
+            matFaces.put(matName, new ArrayList<Face>());
+        }
+    }
+
+    protected void nextStatement(){
+        scan.useDelimiter("\n");
+        scan.next();
+        scan.useDelimiter("\\p{javaWhitespace}+");
+    }
+
+    protected boolean readLine() throws IOException{
         if (!scan.hasNext()){
             return false;
         }
 
         String cmd = scan.next();
         if (cmd.startsWith("#")){
-            scan.useDelimiter("\n");
-            scan.next(); // skip entire comment until next line
-            scan.useDelimiter("\\p{javaWhitespace}+");
+            // skip entire comment until next line
+            nextStatement();
         }else if (cmd.equals("v")){
+            // vertex position
             verts.add(readVector3());
         }else if (cmd.equals("vn")){
+            // vertex normal
             norms.add(readVector3());
         }else if (cmd.equals("vt")){
+            // texture coordinate
             texCoords.add(readVector2());
         }else if (cmd.equals("f")){
-            faces.add(readFace());
+            // face, can be triangle, quad, or polygon (unsupported)
+            readFace();
         }else if (cmd.equals("usemtl")){
-            // TODO: Material support
-            String matName = scan.next();
+            if (faces.size() > 0){
+                // have faces from previous material, generate geometry.
+//                Geometry geom = createGeometry(true);
+//                objNode.attachChild(geom);
+            }
+            // use material from MTL lib for the following faces
+            currentMatName = scan.next();
         }else if (cmd.equals("mtllib")){
+            // specify MTL lib to use for this OBJ file
             String mtllib = scan.next();
-        }else if (cmd.equals("s")){
-            boolean on = scan.next().equals("on");
-        }else if (cmd.equals("o")){
-            // object name
-            scan.next();
-        }else if (cmd.equals("g")){
-            // group name
-            scan.useDelimiter("\n");
-            scan.next(); // will retrieve entire group list
-            scan.useDelimiter("\\p{javaWhitespace}+");
+            loadMtlLib(mtllib);
+        }else if (cmd.equals("s") || cmd.equals("g")){
+            nextStatement();
         }else{
+            // skip entire command until next line
             System.out.println("Unknown statement in OBJ! "+cmd);
-            scan.useDelimiter("\n");
-            scan.next(); // skip entire command until next line
-            scan.useDelimiter("\\p{javaWhitespace}+");
-        }
+            nextStatement();
+        }     
 
         return true;
     }
 
-    protected Mesh constructMesh(){
+    protected Geometry createGeometry(ArrayList<Face> faceList, String matName) throws IOException{
+        if (faceList.size() == 0)
+            throw new IOException("No geometry data to generate mesh");
+
+        Mesh mesh = constructMesh(faceList);
+        Geometry geom = new Geometry(objName + "-geom-" + (geomIndex++), mesh);
+        Material material = null;
+        if (matName != null && matList != null){
+            material = matList.get(matName);
+        }
+        if (material == null){
+            // create default material
+            material = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        }
+        geom.setMaterial(material);
+        if (material.isTransparent())
+            geom.setQueueBucket(Bucket.Transparent);
+        else
+            geom.setQueueBucket(Bucket.Opaque);
+        
+        return geom;
+    }
+
+    protected Mesh constructMesh(ArrayList<Face> faceList){
         Mesh m = new Mesh();
+        m.setMode(Mode.Triangles);
+
+        ArrayList<Face> newFaces = new ArrayList<Face>(faceList.size());
+        for (Face f : faceList){
+            if (f.verticies.length == 4){
+                Face[] t = quadToTriangle(f);
+                newFaces.add(t[0]);
+                newFaces.add(t[1]);
+            }else{
+                newFaces.add(f);
+            }
+            for (Vertex v : f.verticies){
+                findVertexIndex(v);
+            }
+        }
 
         FloatBuffer posBuf = BufferUtils.createFloatBuffer(vertIndexMap.size() * 3);
         FloatBuffer normBuf = norms.size() > 0 ? BufferUtils.createFloatBuffer(vertIndexMap.size() * 3) : null;
         FloatBuffer tcBuf = texCoords.size() > 0 ? BufferUtils.createFloatBuffer(vertIndexMap.size() * 2) : null;
 
-        // only use Shortbuffer if faces.size() * 3 > Short.MAX_VALUE
-        ShortBuffer indexBuf = BufferUtils.createShortBuffer(faces.size() * 3);
+        // TODO: only use Shortbuffer if faces.size() * 3 > Short.MAX_VALUE
+        IndexBuffer indexBuf = null;
+        if (newFaces.size() * 3 >= 65536){
+            // use intbuffer
+            IntBuffer ib = BufferUtils.createIntBuffer(newFaces.size() * 3);
+            m.setBuffer(VertexBuffer.Type.Index, 3, ib);
+            indexBuf = new IndexIntBuffer(ib);
+        }else{
+            ShortBuffer sb = BufferUtils.createShortBuffer(newFaces.size() * 3);
+            m.setBuffer(VertexBuffer.Type.Index, 3, sb);
+            indexBuf = new IndexShortBuffer(sb);
+        }
 
-        for (Face f : faces){
-            Vertex v0 = indexVertMap.get(f.vertIndexes[0]);
-            Vertex v1 = indexVertMap.get(f.vertIndexes[1]);
-            Vertex v2 = indexVertMap.get(f.vertIndexes[2]);
+        int i = 0;
+        for (Face f : newFaces){
+            if (f.verticies.length != 3)
+                continue;
+
+            Vertex v0 = f.verticies[0];
+            Vertex v1 = f.verticies[1];
+            Vertex v2 = f.verticies[2];
 
             posBuf.position(v0.index * 3);
             posBuf.put(v0.v.x).put(v0.v.y).put(v0.v.z);
@@ -245,29 +414,72 @@ public class OBJLoader implements AssetLoader {
                 tcBuf.put(v2.vt.x).put(v2.vt.y);
             }
 
-            indexBuf.put((short)v0.index);
-            indexBuf.put((short)v1.index);
-            indexBuf.put((short)v2.index);
+            indexBuf.put(i,   v0.index);
+            indexBuf.put(i+1, v1.index);
+            indexBuf.put(i+2, v2.index);
+            i+=3;
+
+//            indexBuf.put((short)v0.index);
+//            indexBuf.put((short)v1.index);
+//            indexBuf.put((short)v2.index);
         }
 
         m.setBuffer(VertexBuffer.Type.Position, 3, posBuf);
         m.setBuffer(VertexBuffer.Type.Normal,   3, normBuf);
         m.setBuffer(VertexBuffer.Type.TexCoord, 2, tcBuf);
-        m.setBuffer(VertexBuffer.Type.Index,    3, indexBuf);
+        // index buffer was set on creation
+
+        Logger log = Logger.getLogger(TangentBinormalGenerator.class.getName());
+        Level lvl = log.getLevel();
+        log.setLevel(Level.OFF);
+        TangentBinormalGenerator.generate(m);
+        log.setLevel(lvl);
 
         m.setStatic();
         m.updateBound();
+        m.updateCounts();
+        //m.setInterleaved();
+
+        // clear data generated face statements
+        // to prepare for next mesh
+        vertIndexMap.clear();
+        indexVertMap.clear();
+        curIndex = 0;
 
         return m;
     }
 
     @SuppressWarnings("empty-statement")
-    public Object load(AssetInfo info){
+    public Object load(AssetInfo info) throws IOException{
+        key = (ModelKey) info.getKey();
+        assetManager = info.getManager();
+
         InputStream in = info.openStream();
         scan = new Scanner(in);
         scan.useLocale(Locale.US);
+
+        objName    = key.getName();
+        String folderName = key.getFolder();
+        String ext        = key.getExtension();
+        objName = objName.substring(0, objName.length() - ext.length() - 1);
+        if (folderName != null && folderName.length() > 0){
+            objName = objName.substring(folderName.length());
+        }
+
+        objNode = new Node(objName + "-objnode");
+
         while (readLine());
-        Mesh m = constructMesh();
+
+        if (matFaces.size() > 0){
+            for (Entry<String, ArrayList<Face>> entry : matFaces.entrySet()){
+                Geometry geom = createGeometry(entry.getValue(), entry.getKey());
+                objNode.attachChild(geom);
+            }
+        }else if (faces.size() > 0){
+            // generate final geometry
+            Geometry geom = createGeometry(faces, null);
+            objNode.attachChild(geom);
+        }
 
         reset();
 
@@ -275,7 +487,12 @@ public class OBJLoader implements AssetLoader {
             in.close();
         }catch (IOException ex){
         }
-        return new Geometry(info.getKey().getName(), m);
+        
+        if (objNode.getQuantity() == 1)
+            // only 1 geometry, so no need to send node
+            return objNode.getChild(0); 
+        else
+            return objNode;
     }
 
 }

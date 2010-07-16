@@ -475,6 +475,8 @@ public class Material implements Cloneable, Savable {
             else
                 r.applyRenderState(RenderState.DEFAULT);
         }
+        if (rm.getForcedRenderState() != null)
+            r.applyRenderState(rm.getForcedRenderState());
 
         // update camera and world matrices
         // NOTE: setWorldTransform should have been called already

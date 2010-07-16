@@ -50,7 +50,7 @@ public class MTLLoader implements AssetLoader {
         material.setColor("m_Ambient",  ColorRGBA.Black);
         material.setColor("m_Diffuse",  ColorRGBA.White);
         material.setColor("m_Specular", ColorRGBA.Black);
-        material.getAdditionalRenderState().setFaceCullMode(FaceCullMode.Off);
+//        material.getAdditionalRenderState().setFaceCullMode(FaceCullMode.Off);
         matList.put(name, material);
     }
 
@@ -80,20 +80,20 @@ public class MTLLoader implements AssetLoader {
             material.setFloat("m_Shininess", scan.nextFloat() /* (128f / 1000f)*/ );
         }else if (cmd.equals("d")){
             float alpha = scan.nextFloat();
-            if (alpha < 1f){
-                MatParam param = material.getParam("m_Diffuse");
-                ColorRGBA color;
-                if (param != null)
-                    color = (ColorRGBA) param.getValue();
-                else
-                    color = new ColorRGBA(ColorRGBA.White);
-
-                color.a = scan.nextFloat();
-                material.setColor("m_Diffuse", color);
-                material.setBoolean("m_UseAlpha", true);
-                material.setTransparent(true);
-                material.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
-            }
+//            if (alpha < 1f){
+//                MatParam param = material.getParam("m_Diffuse");
+//                ColorRGBA color;
+//                if (param != null)
+//                    color = (ColorRGBA) param.getValue();
+//                else
+//                    color = new ColorRGBA(ColorRGBA.White);
+//
+//                color.a = scan.nextFloat();
+//                material.setColor("m_Diffuse", color);
+//                material.setBoolean("m_UseAlpha", true);
+//                material.setTransparent(true);
+//                material.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+//            }
         }else if (cmd.equals("map_Ka")){
             // ignore it for now
         }else if (cmd.equals("map_Kd")){
@@ -146,6 +146,8 @@ public class MTLLoader implements AssetLoader {
                 material.setTexture("m_AlphaMap", texture);
                 material.setTransparent(true);
                 material.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+                material.getAdditionalRenderState().setAlphaTest(true);
+                material.getAdditionalRenderState().setAlphaFallOff(0.01f);
             }
         }else{
             System.out.println("Unknown statement in MTL! "+cmd);

@@ -1,6 +1,7 @@
 package com.jme3.renderer;
 
 import com.jme3.material.Material;
+import com.jme3.material.RenderState;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Matrix4f;
 import com.jme3.math.Quaternion;
@@ -45,6 +46,7 @@ public class RenderManager {
     private ArrayList<ViewPort> postViewPorts = new ArrayList<ViewPort>();
     private Camera prevCam = null;
     private Material forcedMaterial = null;
+    private RenderState forcedRenderState = null;
     private final boolean shader;
 
     private int viewX, viewY, viewWidth, viewHeight;
@@ -233,6 +235,14 @@ public class RenderManager {
         forcedMaterial = mat;
     }
 
+    public RenderState getForcedRenderState() {
+        return forcedRenderState;
+    }
+
+    public void setForcedRenderState(RenderState forcedRenderState) {
+        this.forcedRenderState = forcedRenderState;
+    }
+    
     public void setWorldMatrix(Matrix4f mat){
         if (shader)
             worldMatrix.set(mat);

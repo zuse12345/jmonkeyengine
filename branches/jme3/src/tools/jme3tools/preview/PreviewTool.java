@@ -539,7 +539,7 @@ public class PreviewTool extends javax.swing.JFrame {
                 Spatial s = display.getModel();
                 if (chkAndroid.isSelected()){
                     s = s.deepClone();
-                    ModelConverter.optimize(s);
+                    ModelConverter.optimize(s, true);
                 }
 
                 if (ext.equals("j3o")){

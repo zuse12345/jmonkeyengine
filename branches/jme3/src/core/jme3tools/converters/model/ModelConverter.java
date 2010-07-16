@@ -85,7 +85,7 @@ public class ModelConverter {
         mesh.setModeStart(modeStart);
     }
 
-    public static void optimize(Mesh mesh){
+    public static void optimize(Mesh mesh, boolean toFixed){
         // update any data that need updating
         mesh.updateBound();
         mesh.updateCounts();
@@ -111,7 +111,8 @@ public class ModelConverter {
                 if (vb.getBufferType() == Type.Color){
                     // convert the color buffer to UByte
                     vb = FloatToFixed.convertToUByte(vb);
-                }else{
+                    vb.setNormalized(true);
+                }else if (toFixed){
                     // convert normals, positions, and texcoords
                     // to fixed-point (16.16)
                     vb = FloatToFixed.convertToFixed(vb);
@@ -124,22 +125,22 @@ public class ModelConverter {
         mesh.setInterleaved();
     }
 
-    private static void optimizeScene(Spatial source){
+    private static void optimizeScene(Spatial source, boolean toFixed){
         if (source instanceof Geometry){
             Geometry geom = (Geometry) source;
             Mesh mesh = geom.getMesh();
-            optimize(mesh);
+            optimize(mesh, toFixed);
         }else if (source instanceof Node){
             Node node = (Node) source;
             for (int i = node.getQuantity() - 1; i >= 0; i--){
                 Spatial child = node.getChild(i);
-                optimizeScene(child);
+                optimizeScene(child, toFixed);
             }
         }
     }
 
-    public static void optimize(Spatial source){
-        optimizeScene(source);
+    public static void optimize(Spatial source, boolean toFixed){
+        optimizeScene(source, toFixed);
         source.updateLogicalState(0);
         source.updateGeometricState();
     }

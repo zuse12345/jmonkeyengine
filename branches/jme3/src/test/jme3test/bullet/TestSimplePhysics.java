@@ -56,7 +56,6 @@ import com.jme3.scene.shape.Cylinder;
  * @author normenhansen
  */
 public class TestSimplePhysics extends SimpleBulletApplication{
-//    private PhysicsSpace pSpace=PhysicsSpace.getPhysicsSpace();
 
     public static void main(String[] args){
         TestSimplePhysics app = new TestSimplePhysics();

@@ -40,34 +40,21 @@ import com.jme3.gde.core.scene.processors.WireProcessor;
 import com.jme3.gde.core.sceneviewer.SceneViewerTopComponent;
 import com.jme3.input.FlyByCamera;
 import com.jme3.light.PointLight;
-import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
-import com.jme3.post.SceneProcessor;
-import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
-import com.jme3.renderer.ViewPort;
-import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
 import com.jme3.system.AppSettings;
-import com.jme3.texture.FrameBuffer;
-import com.jme3.texture.Image.Format;
-import com.jme3.util.BufferUtils;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.WritableRaster;
-import java.io.File;
-import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -84,7 +71,7 @@ import org.openide.util.lookup.Lookups;
  * - unbloat this file by outsourcing stuff to other classes
  * @author normenhansen
  */
-public class SceneApplication extends Application implements LookupProvider, LookupListener, SceneProcessor {
+public class SceneApplication extends Application implements LookupProvider, LookupListener {
 
     private PointLight camLight;
     private static SceneApplication application;
@@ -99,25 +86,26 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     protected Node guiNode = new Node("Gui Node");
     private SceneCameraController camController;
     //preview variables
-    private static final int width = 120, height = 120;
-    private final ByteBuffer cpuBuf = BufferUtils.createByteBuffer(width * height * 4);
-    private final byte[] cpuArray = new byte[width * height * 4];
-    protected Node previewNode = new Node("Preview Node");
-    protected JmeSpatial previewSpat = null;
     protected float secondCounter = 0.0f;
     protected BitmapText fpsText;
     protected StatsView statsView;
     protected FlyByCamera flyCam;
     protected boolean showSettings = true;
-    private Lookup.Result nodeSelectionResult;
-    private ApplicationLogHandler logHandler = new ApplicationLogHandler();
-    private WireProcessor wireProcessor;
-    private FrameBuffer offBuffer;
-    private ViewPort offView;
-    private ConcurrentLinkedQueue<PreviewRequest> previewQueue = new ConcurrentLinkedQueue<PreviewRequest>();
     private SceneRequest currentSceneRequest;
-    private PreviewRequest currentPreviewRequest;
+
+    private LinkedList<SceneListener> listeners = new LinkedList<SceneListener>();
+
+    private ScenePreviewProcessor previewProcessor;
+
+    private Lookup.Result nodeSelectionResult;
+    
+    private ApplicationLogHandler logHandler = new ApplicationLogHandler();
+
+    private WireProcessor wireProcessor;
+
     private ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Opening SceneViewer..");
+
+    private boolean sceneActive=false;
 
     public SceneApplication() {
         progressHandle.start(7);
@@ -166,7 +154,9 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         camController = new SceneCameraController(cam, inputManager);
         //create preview view
         progressHandle.progress("Setup Preview Scene", 3);
-        setupPreviewView();
+        
+        previewProcessor=new ScenePreviewProcessor();
+        previewProcessor.setupPreviewView();
 
         // enable depth test and back-face culling for performance
         renderer.applyRenderState(RenderState.DEFAULT);
@@ -191,14 +181,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         progressHandle.finish();
     }
 
-    private void doPreviews() {
-        currentPreviewRequest = previewQueue.poll();
-        if (currentPreviewRequest != null) {
-            previewNode.detachAllChildren();
-            previewNode.attachChild(currentPreviewRequest.getSpatial());
-        }
-    }
-
     @Override
     public void update() {
         if (speed == 0) {
@@ -207,10 +189,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 
         super.update();
         float tpf = timer.getTimePerFrame();
-        doPreviews();
-//        Vector3f temp = camLight.getPosition();
-//        temp.set(cam.getLeft()).multLocal(5.0f);
-//        temp.addLocal(cam.getLocation());
+
         camLight.setPosition(cam.getLocation());
 
         secondCounter += tpf;
@@ -225,12 +204,52 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             rootNode.updateGeometricState();
             guiNode.updateGeometricState();
 
-            previewNode.updateLogicalState(tpf);
-            previewNode.updateGeometricState();
+//            previewProcessor.doPreviews();
 
             renderManager.render(tpf);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public <V> Future<V> enqueue(Callable<V> callable) {
+        if(sceneActive)
+            return super.enqueue(callable);
+        else{
+            try {
+                final V value=callable.call();
+                return new Future<V>(){
+
+                    //Attempts to cancel execution of this task.
+                    public boolean cancel(boolean mayInterruptIfRunning){
+                        return true;
+                    }
+
+                    public boolean isCancelled(){
+                        return false;
+                    }
+
+                    public boolean isDone(){
+                        return true;
+                    }
+
+                    // Waits if necessary for the computation to complete,
+                    //  and then retrieves its result.
+                    public V get() throws InterruptedException, ExecutionException{
+                        return value;
+                    }
+
+                    // Waits if necessary for at most the given time for the computation
+                    // to complete, and then retrieves its result, if available.
+                    public V get(long timeout, TimeUnit unit){
+                        return value;
+                    }
+                };
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
         }
     }
 
@@ -244,112 +263,17 @@ public class SceneApplication extends Application implements LookupProvider, Loo
      * @param ev
      */
     public void resultChanged(LookupEvent ev) {
-//        Collection collection = nodeSelectionResult.allInstances();
-//        for (Iterator it = collection.iterator(); it.hasNext();) {
-//            Object object = it.next();
-//            if(object instanceof JmeSpatial){
-//                notifySceneListeners((JmeSpatial)object);
-//                return;
-//            }
-//        }
-    }
-
-    private void setupPreviewView() {
-        Camera offCamera = new Camera(width, height);
-        Geometry offBox;
-
-        // create a pre-view. a view that is rendered before the main view
-        offView = renderManager.createPreView("Offscreen View", offCamera);
-        offView.setBackgroundColor(ColorRGBA.DarkGray);
-        offView.addProcessor(this);
-
-        // create offscreen framebuffer
-        offBuffer = new FrameBuffer(width, height, 0);
-
-        //setup framebuffer's cam
-        offCamera.setFrustumPerspective(45f, 1f, 1f, 1000f);
-        offCamera.setLocation(new Vector3f(0f, 1f, 40f));
-        offCamera.lookAt(new Vector3f(0f, 0f, 0f), Vector3f.UNIT_Y);
-
-        //setup framebuffer to use texture
-        offBuffer.setDepthBuffer(Format.Depth);
-        offBuffer.setColorBuffer(Format.RGBA8);
-
-        //set viewport to render to offscreen framebuffer
-        offView.setOutputFrameBuffer(offBuffer);
-
-        // setup framebuffer's scene
-        PointLight light = new PointLight();
-        light.setPosition(offCamera.getLocation());
-        light.setColor(ColorRGBA.White);
-        previewNode.addLight(light);
-
-        // attach the scene to the viewport to be rendered
-        offView.attachScene(previewNode);
-
-    }
-
-    private void updateImageContents() {
-        cpuBuf.clear();
-        renderer.readFrameBuffer(offBuffer, cpuBuf);
-
-        // copy native memory to java memory
-        cpuBuf.clear();
-        cpuBuf.get(cpuArray);
-        cpuBuf.clear();
-
-        // flip the components the way AWT likes them
-        for (int i = 0; i < width * height * 4; i += 4) {
-            byte b = cpuArray[i + 0];
-            byte g = cpuArray[i + 1];
-            byte r = cpuArray[i + 2];
-            byte a = cpuArray[i + 3];
-
-            cpuArray[i + 0] = a;
-            cpuArray[i + 1] = b;
-            cpuArray[i + 2] = g;
-            cpuArray[i + 3] = r;
-        }
-
-        BufferedImage image = new BufferedImage(width, height,
-                BufferedImage.TYPE_4BYTE_ABGR);
-//        synchronized (image) {
-        WritableRaster wr = image.getRaster();
-        DataBufferByte db = (DataBufferByte) wr.getDataBuffer();
-        System.arraycopy(cpuArray, 0, db.getData(), 0, cpuArray.length);
-//        }
-        currentPreviewRequest.setImage(image);
-        notifySceneListeners(currentPreviewRequest);
-        currentPreviewRequest = null;
-    }
-
-    public void initialize(RenderManager rm, ViewPort vp) {
-    }
-
-    public void reshape(ViewPort vp, int i, int i1) {
-    }
-
-    public boolean isInitialized() {
-        return true;
-    }
-
-    public void preFrame(float f) {
-    }
-
-    public void postQueue(RenderQueue rq) {
-    }
-    boolean mooPreview = false;
-
-    public void postFrame(FrameBuffer fb) {
-        if (currentPreviewRequest != null) {
-            updateImageContents();
+        Collection collection = nodeSelectionResult.allInstances();
+        for (Iterator it = collection.iterator(); it.hasNext();) {
+            Object object = it.next();
+            if(object instanceof JmeSpatial){
+                setSaveNode((JmeSpatial)object);
+                return;
+            }
         }
     }
 
-    public void cleanup() {
-    }
     //TODO: replace with Lookup functionality
-    private LinkedList<SceneListener> listeners = new LinkedList<SceneListener>();
 
     public void addSceneListener(SceneListener listener) {
         listeners.add(listener);
@@ -366,7 +290,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         }
     }
 
-    private void notifySceneListeners(PreviewRequest request) {
+    public void notifySceneListeners(PreviewRequest request) {
         for (Iterator<SceneListener> it = listeners.iterator(); it.hasNext();) {
             SceneListener sceneViewerListener = it.next();
             sceneViewerListener.previewRequested(request);
@@ -374,7 +298,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     }
 
     public void createPreview(final PreviewRequest request) {
-        previewQueue.add(request);
+        previewProcessor.addRequest(request);
     }
 
     /**
@@ -398,7 +322,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                     camController.disable();
                 }
                 currentSceneRequest = request;
-                setSaveNode(request.getSaveNode());
+                setSaveNode(request.getRootNode());
                 getCurrentSceneRequest().setDisplayed(true);
                 Node model = request.getLookup().lookup(Node.class);
                 if (model == null) {
@@ -428,9 +352,9 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 
     private void setWindowTitle(final String string) {
         java.awt.EventQueue.invokeLater(new Runnable() {
-
             public void run() {
                 SceneViewerTopComponent.findInstance().setDisplayName(string);
+                SceneViewerTopComponent.findInstance().requestActive();
             }
         });
     }
@@ -477,36 +401,28 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     }
 
     /**
-     * get list of materials used in this scene, those are the ones that
-     * will be saved with the scene.
-     * @return
-     */
-    private LinkedList<Material> getMaterialList(Node node, LinkedList<Material> materials) {
-        List<Spatial> children = node.getChildren();
-        for (Spatial spatial : children) {
-            if (spatial instanceof Geometry) {
-                Geometry geometry = (Geometry) spatial;
-                Material material = geometry.getMaterial();
-                if (!materials.contains(material)) {
-                    materials.add(material);
-                }
-            }
-            if (spatial instanceof Node) {
-                getMaterialList((Node) spatial, materials);
-            }
-        }
-        return materials;
-    }
-
-    @Deprecated
-    public LinkedList<Material> getMaterialList() {
-        return getMaterialList(rootNode, new LinkedList<Material>());
-    }
-
-    /**
      * @return the currentSceneRequest
      */
     public SceneRequest getCurrentSceneRequest() {
         return currentSceneRequest;
     }
+
+    /**
+     * @return the sceneActive
+     */
+    public boolean isSceneActive() {
+        return sceneActive;
+    }
+
+    /**
+     * @param sceneActive the sceneActive to set
+     */
+    public void setSceneActive(boolean sceneActive) {
+        this.sceneActive = sceneActive;
+    }
+
+    public RenderManager getRenderManager(){
+        return renderManager;
+    }
+
 }

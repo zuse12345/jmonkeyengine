@@ -33,6 +33,7 @@ package com.jme3.gde.core.scene.nodes;
 
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import org.openide.cookies.SaveCookie;
 
 /**
  *
@@ -52,8 +53,23 @@ public class NodeUtility {
         return jmeNode;
     }
 
-    public static JmeSpatial createSpatial(Spatial node) {
+    public static JmeNode createNode(Node node, SaveCookie cookie) {
         JmeSpatialChildFactory factory = new JmeSpatialChildFactory(node);
+        factory.setCookie(cookie);
+        JmeNode jmeNode = new JmeNode(node, factory);
+        return jmeNode;
+    }
+
+    public static JmeNode createNode(Node node, boolean includeLights, SaveCookie cookie) {
+        JmeSpatialChildFactory factory = new JmeSpatialChildFactory(node, includeLights);
+        factory.setCookie(cookie);
+        JmeNode jmeNode = new JmeNode(node, factory);
+        return jmeNode;
+    }
+
+    public static JmeSpatial createSpatial(Spatial node, SaveCookie cookie) {
+        JmeSpatialChildFactory factory = new JmeSpatialChildFactory(node);
+        factory.setCookie(cookie);
         JmeSpatial jmeSpatial = new JmeSpatial(node, factory);
         return jmeSpatial;
     }

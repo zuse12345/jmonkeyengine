@@ -50,31 +50,14 @@ public final class OpenSceneComposer implements ActionListener {
                     ((DesktopAssetManager) manager.getManager()).clearCache();
                     file.lock();
                     spat = manager.getManager().loadModel(assetName);
-                    if (spat instanceof Node) {
-                        //TODO: change scenecomposer to not depend on awt thread (move stuff from TopComponent)
-                        java.awt.EventQueue.invokeLater(new Runnable() {
+                    //TODO: change scenecomposer to not depend on awt thread (move stuff from TopComponent)
+                    java.awt.EventQueue.invokeLater(new Runnable() {
 
-                            public void run() {
-                                JmeNode jmeNode = NodeUtility.createNode((Node) spat);
-                                SceneComposerTopComponent composer = SceneComposerTopComponent.findInstance();
-                                SceneRequest request = new SceneRequest(composer, jmeNode, manager);
-                                composer.loadRequest(request, file);
-                            }
-                        });
-                    } else {
-                        java.awt.EventQueue.invokeLater(new Runnable() {
-
-                            public void run() {
-                                Node node = new Node();
-                                node.attachChild(spat);
-                                JmeNode jmeNode = NodeUtility.createNode(node);
-                                SceneComposerTopComponent composer = SceneComposerTopComponent.findInstance();
-                                SceneRequest request = new SceneRequest(composer, jmeNode, manager);
-                                composer.loadRequest(request, file);
-                            }
-                        });
-                    }
-
+                        public void run() {
+                            SceneComposerTopComponent composer = SceneComposerTopComponent.findInstance();
+                            composer.loadModel(spat, file, manager);
+                        }
+                    });
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                     Confirmation msg = new NotifyDescriptor.Confirmation(

@@ -184,6 +184,7 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     @Override
     public void componentOpened() {
         super.componentOpened();
+        app.setSceneActive(true);
         oGLPanel.add(((JmeCanvasContext) app.getContext()).getCanvas());
     }
 
@@ -200,6 +201,7 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     @Override
     public void componentClosed() {
         super.componentClosed();
+        app.setSceneActive(false);
         oGLPanel.removeAll();
     }
 

@@ -4,16 +4,43 @@
  */
 package com.jme3.gde.materials.multiview;
 
+import com.jme3.asset.AssetKey;
+import com.jme3.asset.DesktopAssetManager;
+import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.assets.nodes.SaveNode;
+import com.jme3.gde.core.scene.PreviewRequest;
+import com.jme3.gde.core.scene.SceneApplication;
+import com.jme3.gde.core.scene.SceneListener;
+import com.jme3.gde.core.scene.SceneRequest;
+import com.jme3.gde.materials.MaterialProperties;
+import com.jme3.gde.materials.MaterialProperty;
+import com.jme3.material.Material;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.shape.Sphere;
+import com.jme3.util.TangentBinormalGenerator;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 //import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.CloneableTopComponent;
 
@@ -22,26 +49,58 @@ import org.openide.windows.CloneableTopComponent;
  */
 @ConvertAsProperties(dtd = "-//com.jme3.gde.materials.multiview//MaterialEditor//EN",
 autostore = false)
-public final class MaterialEditorTopComponent extends CloneableTopComponent {
+public final class MaterialEditorTopComponent extends CloneableTopComponent implements SceneListener {
 
     private static MaterialEditorTopComponent instance;
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
     private static final String PREFERRED_ID = "MaterialEditorTopComponent";
-
     private Lookup lookup;
     private final InstanceContent lookupContents = new InstanceContent();
-    private SaveNode saveNode=new SaveNode();
+    private SaveNode saveNode;
+    private DataObject dataObject;
+    private MaterialProperties properties;
+    private String materialFileName;
+    private ProjectAssetManager manager;
+    private Sphere sphMesh;
 
     public MaterialEditorTopComponent() {
+    }
+
+    public MaterialEditorTopComponent(DataObject dataObject) {
+        this.dataObject = dataObject;
+        materialFileName = dataObject.getPrimaryFile().getPath();
+        initWindow();
+    }
+
+    private void initWindow() {
+        this.manager = dataObject.getLookup().lookup(ProjectAssetManager.class);
+        properties = new MaterialProperties(dataObject.getPrimaryFile(), dataObject.getLookup().lookup(ProjectAssetManager.class));
+        properties.read();
         initComponents();
         setName(NbBundle.getMessage(MaterialEditorTopComponent.class, "CTL_MaterialEditorTopComponent"));
         setToolTipText(NbBundle.getMessage(MaterialEditorTopComponent.class, "HINT_MaterialEditorTopComponent"));
-//        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-//        lookup = new AbstractLookup(lookupContents);
-//        associateLookup(lookup);
-        
+        saveNode = new SaveNode(new SaveCookieImpl());
+
+        try {
+            jTextArea1.setText(dataObject.getPrimaryFile().asText());
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        jTextArea1.getDocument().addDocumentListener(new DocumentChangeListener());
+
+        SceneApplication.getApplication().addSceneListener(this);
+
+        updateProperties();
+
         setActivatedNodes(new Node[]{saveNode});
+        
+        sphMesh = new Sphere(32, 32, 2.5f);
+        sphMesh.setTextureMode(Sphere.TextureMode.Projected);
+        sphMesh.updateGeometry(32, 32, 2.5f, false, false);
+        TangentBinormalGenerator.generate(sphMesh);
+        showMaterial();
     }
 
     /** This method is called from within the constructor to
@@ -52,18 +111,38 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jButton1 = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
+        jButton2 = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        jPanel3 = new javax.swing.JPanel();
         jToolBar1 = new javax.swing.JToolBar();
         jLabel1 = new javax.swing.JLabel();
         jComboBox1 = new javax.swing.JComboBox();
-        jPanel1 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(MaterialEditorTopComponent.class, "MaterialEditorTopComponent.jButton1.text")); // NOI18N
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 100, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 100, Short.MAX_VALUE)
+        );
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButton2, org.openide.util.NbBundle.getMessage(MaterialEditorTopComponent.class, "MaterialEditorTopComponent.jButton2.text")); // NOI18N
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                jButton2ActionPerformed(evt);
             }
         });
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(MaterialEditorTopComponent.class, "MaterialEditorTopComponent.jLabel2.text")); // NOI18N
+
+        jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.PAGE_AXIS));
 
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
@@ -74,42 +153,54 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent {
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         jToolBar1.add(jComboBox1);
 
-        jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.PAGE_AXIS));
+        jPanel3.add(jToolBar1);
+
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(MaterialEditorTopComponent.class, "MaterialEditorTopComponent.jPanel3.TabConstraints.tabTitle"), jPanel3); // NOI18N
+
+        jTextArea1.setColumns(20);
+        jTextArea1.setRows(5);
+        jScrollPane1.setViewportView(jTextArea1);
+
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(MaterialEditorTopComponent.class, "MaterialEditorTopComponent.jScrollPane1.TabConstraints.tabTitle"), jScrollPane1); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jToolBar1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(286, Short.MAX_VALUE)
-                .add(jButton1)
-                .addContainerGap())
-            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(jLabel2)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 150, Short.MAX_VALUE)
+                .add(jButton2))
+            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(jToolBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jButton1)
-                .addContainerGap())
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(jButton2)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        saveNode.fire(true);
-    }//GEN-LAST:event_jButton1ActionPerformed
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        showMaterial();
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JToolBar jToolBar1;
     // End of variables declaration//GEN-END:variables
+
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
@@ -143,7 +234,7 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent {
 
     @Override
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
+        return TopComponent.PERSISTENCE_NEVER;//ALWAYS;
     }
 
     @Override
@@ -160,6 +251,7 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent {
         // better to version settings since initial version as advocated at
         // http://wiki.apidesign.org/wiki/PropertyFiles
         p.setProperty("version", "1.0");
+        p.setProperty("MaterialFileName", materialFileName);
         // TODO store your settings
     }
 
@@ -172,12 +264,86 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent {
     }
 
     private void readPropertiesImpl(java.util.Properties p) {
-        String version = p.getProperty("version");
-        // TODO read your settings according to their version
+        try {
+            String version = p.getProperty("version");
+            materialFileName = p.getProperty("MaterialFileName");
+            // TODO read your settings according to their version
+            dataObject = DataObject.find(FileUtil.toFileObject(new File(materialFileName)));
+            initWindow();
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     @Override
     protected String preferredID() {
         return PREFERRED_ID;
+    }
+
+    private class DocumentChangeListener implements DocumentListener {
+        String newline = "\n";
+
+        public void insertUpdate(DocumentEvent e) {
+            saveNode.fire(true);
+        }
+        public void removeUpdate(DocumentEvent e) {
+            saveNode.fire(true);
+        }
+        public void changedUpdate(DocumentEvent e) {
+            saveNode.fire(true);
+        }
+
+        public void updateLog(DocumentEvent e, String action) {
+            saveNode.fire(true);
+        }
+    }
+
+    private class SaveCookieImpl implements SaveCookie {
+
+        public void save() throws IOException {
+            FileObject file=dataObject.getPrimaryFile();
+            String text=jTextArea1.getText();
+            OutputStreamWriter out=new OutputStreamWriter(file.getOutputStream());
+            out.write(text, 0, text.length());
+            out.close();
+            saveNode.fire(false);
+            properties.read();
+            updateProperties();
+            showMaterial();
+        }
+    }
+
+    private void updateProperties(){
+        jPanel3.removeAll();
+        jPanel3.add(new JLabel(properties.getName() + " - " + properties.getMatDefName() + "\n"));
+        for (Iterator<Entry<String, MaterialProperty>> it = properties.getMap().entrySet().iterator(); it.hasNext();) {
+            Entry<String, MaterialProperty> entry = it.next();
+            jPanel3.add(new JLabel(entry.getValue().getType() + " " + entry.getValue().getName() + ": " + entry.getValue().getValue() + "\n"));
+        }
+        setDisplayName(properties.getName()+" - "+properties.getMatDefName());
+    }
+
+    private void showMaterial() {
+        AssetKey key = new AssetKey(manager.getRelativeAssetPath(materialFileName));
+        Geometry geom = new Geometry("TestSphere", sphMesh);
+        ((DesktopAssetManager) manager.getManager()).deleteFromCache(key);
+        geom.setMaterial((Material) manager.getManager().loadAsset(key));
+        PreviewRequest request = new PreviewRequest(this, geom);
+        SceneApplication.getApplication().createPreview(request);
+    }
+
+    public void sceneRequested(SceneRequest request) {
+    }
+
+    public void previewRequested(PreviewRequest request) {
+        if (request.getRequester() == this) {
+            final ImageIcon icon = new ImageIcon(request.getImage());
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                public void run() {
+                    jLabel2.setIcon(icon);
+                }
+            });
+        }
     }
 }

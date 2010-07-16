@@ -14,12 +14,15 @@ import com.jme3.effect.EmitterSphereShape;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
 import com.jme3.export.binary.BinaryExporter;
+import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.assets.nodes.SaveNode;
 import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
 import com.jme3.gde.core.scene.SceneRequest;
+import com.jme3.gde.core.scene.nodes.JmeNode;
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
+import com.jme3.gde.core.scene.nodes.NodeUtility;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.PointLight;
 import com.jme3.material.Material;
@@ -71,7 +74,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     private JmeSpatial selectedSpat;
     private Spatial selected;
     ComposerCameraController camController;
-    private SaveNode saveNode=new SaveNode(new SaveCookieImpl());
+    private SaveCookie saveCookie=new SaveCookieImpl();
 
     public SceneComposerTopComponent() {
         initComponents();
@@ -92,7 +95,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        saveButton = new javax.swing.JButton();
         sceneNameLabel = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         selectedSpatialLabel = new javax.swing.JLabel();
@@ -102,31 +104,19 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        org.openide.awt.Mnemonics.setLocalizedText(saveButton, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.saveButton.text")); // NOI18N
-        saveButton.setEnabled(false);
-        saveButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveButtonActionPerformed(evt);
-            }
-        });
-
         org.openide.awt.Mnemonics.setLocalizedText(sceneNameLabel, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.sceneNameLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .addContainerGap(191, Short.MAX_VALUE)
-                .add(saveButton))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, sceneNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+            .add(jPanel1Layout.createSequentialGroup()
                 .add(sceneNameLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 94, Short.MAX_VALUE)
-                .add(saveButton))
+                .addContainerGap(123, Short.MAX_VALUE))
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(selectedSpatialLabel, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.selectedSpatialLabel.text")); // NOI18N
@@ -187,16 +177,12 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 
     }//GEN-LAST:event_addObjectButtonActionPerformed
 
-    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        saveRequest();
-    }//GEN-LAST:event_saveButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addObjectButton;
     private javax.swing.JList jList1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JButton saveButton;
     private javax.swing.JLabel sceneNameLabel;
     private javax.swing.JLabel selectedSpatialLabel;
     // End of variables declaration//GEN-END:variables
@@ -234,7 +220,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 
     @Override
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
+        return TopComponent.PERSISTENCE_NEVER;
     }
 
     @Override
@@ -329,6 +315,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     private void addSpatial(final String name) {
         if (currentRequest != null && currentRequest.isDisplayed()) {
             try {
+                selectedSpat.fireSave(true);
                 SceneApplication.getApplication().enqueue(new Callable() {
 
                     public Object call() throws Exception {
@@ -393,6 +380,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     public void addModel(final AssetManager manager, final String assetName) {
 
         if (currentRequest != null && currentRequest.isDisplayed() && selected != null && selected instanceof Node) {
+            selectedSpat.fireSave(true);
             SceneApplication.getApplication().enqueue(new Callable() {
 
                 public Object call() throws Exception {
@@ -417,13 +405,22 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         }
     }
 
-    public void loadRequest(SceneRequest request, FileObject file) {
+    public void loadModel(Spatial spat, FileObject file, ProjectAssetManager manager) {
         //TODO: handle request change
+        Node node;
+        if(spat instanceof Node){
+            node=(Node)spat;
+        }else{
+            node=new Node();
+            node.attachChild(spat);
+        }
+        JmeNode jmeNode = NodeUtility.createNode(node, saveCookie);
+        SceneRequest request = new SceneRequest(this, jmeNode, manager);
         this.currentRequest = request;
         this.currentFileObject = file;
         request.setWindowTitle("SceneViewer - " + request.getRootNode().getName() + " (SceneComposer)");
-        request.setSaveNode(saveNode);
         SceneApplication.getApplication().requestScene(request);
+        selectSpatial(currentRequest.getRootNode());
     }
 
     public void saveRequest() {
@@ -458,11 +455,9 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             public void run() {
                 sceneNameLabel.setText(name);
                 if (!active) {
-                    saveButton.setEnabled(false);
                     addObjectButton.setEnabled(false);
                     close();
                 } else {
-                    saveButton.setEnabled(true);
                     open();
                     requestActive();
                 }
@@ -475,25 +470,37 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
      */
     public void resultChanged(LookupEvent ev) {
         if (currentRequest == null || !currentRequest.isDisplayed()) {
-            setSelectedObjectText(null);
-            setSelectionData(null);
+            selectSpatial(null);
             return;
         }
         Collection<JmeSpatial> items = (Collection<JmeSpatial>) result.allInstances();
         for (JmeSpatial spatial : items) {
-            selectedSpat = spatial;
-            selected = spatial.getLookup().lookup(Spatial.class);
-            setSelectedObjectText(spatial.getName());
-            setSelectionData(selected instanceof Node);
+            selectSpatial(spatial);
             return;
         }
+    }
+
+    private void selectSpatial(JmeSpatial spatial){
+        if(spatial==null){
+            setSelectedObjectText(null);
+            setSelectionData(null);
+            selectedSpat=null;
+            selected=null;
+            return;
+        }
+        selectedSpat = spatial;
+        //TODO: remove
+        selectedSpat.fireSave(true);
+        setActivatedNodes(new org.openide.nodes.Node[]{selectedSpat});
+        selected = spatial.getLookup().lookup(Spatial.class);
+        setSelectedObjectText(spatial.getName());
+        setSelectionData(selected instanceof Node);
     }
 
     /*
      * SceneListener
      */
     public void sceneRequested(SceneRequest request) {
-        saveNode.fire(true);
         if (request.equals(currentRequest)) {
             setLoadedState(currentRequest.getRootNode().getName(), true);
             if (camController != null) {
@@ -508,9 +515,9 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 camController = null;
             }
         }
-        selected = null;
-        selectedSpat = null;
-        setSelectedObjectText(null);
+//        selected = null;
+//        selectedSpat = null;
+//        setSelectedObjectText(null);
     }
 
     public void nodeSelected(JmeSpatial spatial) {
@@ -529,15 +536,11 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 //
 //            Object result = DialogDisplayer.getDefault().notify(msg);
 
-            //When user clicks "Yes", indicating they really want to save,
-            //we need to disable the Save button and Save menu item,
-            //so that it will only be usable when the next change is made
-            //to the text field:
             saveRequest();
-            /*if (NotifyDescriptor.YES_OPTION.equals(result)) {
-                saveNode.fire(false);
-                //Implement your save functionality here.
-            }*/
+//            if (NotifyDescriptor.YES_OPTION.equals(result)) {
+            //selectedSpat.fireSave(false);
+//              }
+//            }
 
         }
     }

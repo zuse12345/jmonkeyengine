@@ -124,10 +124,12 @@ public class SceneRequest {
         return manager;
     }
 
+    @Deprecated
     public Node getSaveNode() {
         return saveNode;
     }
 
+    @Deprecated
     public void setSaveNode(Node saveNode) {
         this.saveNode = saveNode;
     }

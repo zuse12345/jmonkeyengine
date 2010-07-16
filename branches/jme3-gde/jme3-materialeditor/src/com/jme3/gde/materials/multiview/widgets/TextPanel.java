@@ -15,10 +15,10 @@ package com.jme3.gde.materials.multiview.widgets;
  *
  * @author normenhansen
  */
-public class NumberPanel extends javax.swing.JPanel {
+public class TextPanel extends javax.swing.JPanel {
 
     /** Creates new form NumberPanel */
-    public NumberPanel() {
+    public TextPanel() {
         initComponents();
     }
 
@@ -38,10 +38,10 @@ public class NumberPanel extends javax.swing.JPanel {
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(NumberPanel.class, "NumberPanel.jLabel1.text")); // NOI18N
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(TextPanel.class, "TextPanel.jLabel1.text")); // NOI18N
         jToolBar1.add(jLabel1);
 
-        jTextField1.setText(org.openide.util.NbBundle.getMessage(NumberPanel.class, "NumberPanel.jTextField1.text")); // NOI18N
+        jTextField1.setText(org.openide.util.NbBundle.getMessage(TextPanel.class, "TextPanel.jTextField1.text")); // NOI18N
         jToolBar1.add(jTextField1);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);

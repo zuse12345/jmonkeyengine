@@ -31,6 +31,7 @@
  */
 package com.jme3.gde.core.filetypes.actions;
 
+import com.jme3.asset.AssetKey;
 import com.jme3.asset.DesktopAssetManager;
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.scene.SceneApplication;

@@ -46,8 +46,8 @@ public class JMEMaterialDataObject extends AssetDataObject {
     public JMEMaterialDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
-//        cookies.add((Node.Cookie) new MaterialOpenSupport(getPrimaryEntry()));
+//        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+        cookies.add((Node.Cookie) new MaterialOpenSupport(getPrimaryEntry()));
     }
 
 }

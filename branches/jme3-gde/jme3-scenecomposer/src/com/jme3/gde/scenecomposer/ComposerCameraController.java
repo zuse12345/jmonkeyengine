@@ -55,8 +55,8 @@ public class ComposerCameraController implements ActionListener, AnalogListener 
 
     private boolean leftMouse, rightMouse, middleMouse;
     private float deltaX, deltaY, deltaZ, deltaWheel;
-    private int mouseX = 0;
-    private int mouseY = 0;
+    private float mouseX = 0;
+    private float mouseY = 0;
     private Quaternion rot = new Quaternion();
     private Vector3f vector = new Vector3f();
     private Vector3f focus = new Vector3f();
@@ -72,7 +72,6 @@ public class ComposerCameraController implements ActionListener, AnalogListener 
 
     public Geometry checkClick() {
         if (leftMouse) {
-            StatusDisplayer.getDefault().setStatusText("Do click check");
             CollisionResults results = new CollisionResults();
             Ray ray = new Ray();
             ray.setOrigin(cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0));
@@ -81,6 +80,7 @@ public class ComposerCameraController implements ActionListener, AnalogListener 
             rootNode.collideWith(ray, results);
             CollisionResult result = results.getClosestCollision();
             if (result != null) {
+                StatusDisplayer.getDefault().setStatusText("found geometry: "+result.getGeometry().getName());
                 return result.getGeometry();
             }
         }
@@ -107,6 +107,7 @@ public class ComposerCameraController implements ActionListener, AnalogListener 
         if ("MouseButtonLeft".equals(string)) {
             if (bln) {
                 leftMouse = true;
+                checkClick();
             } else {
                 leftMouse = false;
             }
@@ -123,7 +124,7 @@ public class ComposerCameraController implements ActionListener, AnalogListener 
     public void onAnalog(String string, float f, float f1) {
         if ("MouseAxisX".equals(string)) {
             //deltaX=f1*100.0f;
-//            mouseX=f;
+            mouseX=f;
             if (leftMouse) {
                 rotateCamera(Vector3f.UNIT_Y, -f1 * 1);
             }
@@ -131,7 +132,7 @@ public class ComposerCameraController implements ActionListener, AnalogListener 
                 panCamera(deltaX * 10, -deltaY * 10);
             }
         } else if ("MouseAxisY".equals(string)) {
-//            mouseY=f;
+            mouseY=f;
             //deltaY=f1*100.0f;
             if (leftMouse) {
                 rotateCamera(cam.getLeft(), -f1 * 1);
@@ -141,7 +142,7 @@ public class ComposerCameraController implements ActionListener, AnalogListener 
             }
         } else if ("MouseAxisX-".equals(string)) {
             //deltaX=f1*100.0f;
-//            mouseX=f;
+            mouseX=f;
             if (leftMouse) {
                 rotateCamera(Vector3f.UNIT_Y, f1 * 1);
             }
@@ -149,7 +150,7 @@ public class ComposerCameraController implements ActionListener, AnalogListener 
                 panCamera(deltaX * 10, -deltaY * 10);
             }
         } else if ("MouseAxisY-".equals(string)) {
-//            mouseY=f;
+            mouseY=f;
             //deltaY=f1*100.0f;
             if (leftMouse) {
                 rotateCamera(cam.getLeft(), f1 * 1);

@@ -31,6 +31,8 @@
  */
 package com.jme3.gde.core.scene.nodes.properties;
 
+import com.jme3.asset.AssetKey;
+import com.jme3.asset.DesktopAssetManager;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneRequest;
 import com.jme3.material.Material;
@@ -88,6 +90,7 @@ public class MaterialPropertyEditor implements PropertyEditor {
 
                 public Void call() throws Exception {
                     SceneRequest request = SceneApplication.getApplication().getCurrentSceneRequest();
+                    ((DesktopAssetManager) request.getManager().getManager()).deleteFromCache(new AssetKey(text));
                     Material localMaterial = (Material) request.getManager().getManager().loadAsset(text);
                     if (localMaterial != null) {
                         material = localMaterial;

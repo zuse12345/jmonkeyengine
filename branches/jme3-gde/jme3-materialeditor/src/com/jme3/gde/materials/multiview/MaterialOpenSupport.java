@@ -23,7 +23,7 @@ public class MaterialOpenSupport extends OpenSupport implements OpenCookie, Clos
 
     protected CloneableTopComponent createCloneableTopComponent() {
         JMEMaterialDataObject dobj = (JMEMaterialDataObject) entry.getDataObject();
-        MaterialEditorTopComponent tc = new MaterialEditorTopComponent();
+        MaterialEditorTopComponent tc = new MaterialEditorTopComponent(dobj);
         return tc;
     }
 

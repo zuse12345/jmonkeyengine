@@ -45,6 +45,7 @@ import com.jme3.ui.Picture;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import org.openide.cookies.SaveCookie;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -58,6 +59,7 @@ public class JmeSpatialChildFactory extends ChildFactory<Object> {
     private com.jme3.scene.Spatial spatial;
     private boolean doLights = true;
     private boolean doMesh = true;
+    private SaveCookie cookie;
 
     public JmeSpatialChildFactory(com.jme3.scene.Spatial spatial) {
         this.spatial = spatial;
@@ -115,25 +117,26 @@ public class JmeSpatialChildFactory extends ChildFactory<Object> {
         //      best via registering some object in the global lookup
         if (key instanceof Spatial) {
             JmeSpatialChildFactory factory = new JmeSpatialChildFactory((Spatial) key);
+            factory.setCookie(cookie);
             if (key instanceof com.jme3.audio.AudioNode) {
-                return new JmeAudioNode((com.jme3.audio.AudioNode) key, factory);
+                return new JmeAudioNode((com.jme3.audio.AudioNode) key, factory).setSaveCookie(cookie);
             }
             if (key instanceof com.jme3.scene.Node) {
-                return new JmeNode((com.jme3.scene.Node) key, factory);
+                return new JmeNode((com.jme3.scene.Node) key, factory).setSaveCookie(cookie);
             }
             if (key instanceof BitmapText) {
-                return new JmeBitmapText((BitmapText) key, factory);
+                return new JmeBitmapText((BitmapText) key, factory).setSaveCookie(cookie);
             }
             if (key instanceof Picture) {
-                return new JmePicture((Picture) key, factory);
+                return new JmePicture((Picture) key, factory).setSaveCookie(cookie);
             }
             if (key instanceof ParticleEmitter) {
-                return new JmeParticleEmitter((ParticleEmitter) key, factory);
+                return new JmeParticleEmitter((ParticleEmitter) key, factory).setSaveCookie(cookie);
             }
             if (key instanceof com.jme3.scene.Geometry) {
-                return new JmeGeometry((Geometry) key, factory);
+                return new JmeGeometry((Geometry) key, factory).setSaveCookie(cookie);
             }
-            return new JmeSpatial((Spatial) key, factory);
+            return new JmeSpatial((Spatial) key, factory).setSaveCookie(cookie);
         } else if (key instanceof LightSpatialPair) {
             LightSpatialPair pair = (LightSpatialPair) key;
             if (pair.getLight() instanceof PointLight) {
@@ -155,5 +158,12 @@ public class JmeSpatialChildFactory extends ChildFactory<Object> {
         Node[] nodes = new Node[1];
         nodes[0] = createNodeForKey(key);
         return nodes;
+    }
+
+    /**
+     * @param cookie the cookie to set
+     */
+    public void setCookie(SaveCookie cookie) {
+        this.cookie = cookie;
     }
 }

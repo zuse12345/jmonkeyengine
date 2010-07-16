@@ -7,6 +7,7 @@ import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetLoader;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
+import com.jme3.material.MaterialList;
 import com.jme3.math.ColorRGBA;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
@@ -55,7 +56,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
     private String meshName;
     private String folderName;
     private AssetManager assetManager;
-    private OgreMaterialList materialList;
+    private MaterialList materialList;
 
     private ShortBuffer sb;
     private IntBuffer ib;
@@ -80,16 +81,6 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
 
     public MeshLoader(){
         super();
-    }
-
-    @Deprecated
-    public static Spatial loadModel(AssetManager manager,
-                                    String meshName, String materialName){
-        OgreMaterialList matList = materialName != null ?
-                        (OgreMaterialList) manager.loadAsset(materialName)
-                        : null;
-        OgreMeshKey key = new OgreMeshKey(meshName, matList);
-        return (Spatial) manager.loadAsset(key);
     }
 
     @Override
@@ -717,7 +708,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
                 meshKey = (OgreMeshKey) key;
                 materialList = meshKey.getMaterialList();
             }else{
-                materialList = (OgreMaterialList) assetManager.loadAsset(folderName + meshName + ".material");
+                materialList = (MaterialList) assetManager.loadAsset(folderName + meshName + ".material");
             }
 
             XMLReader xr = XMLReaderFactory.createXMLReader();

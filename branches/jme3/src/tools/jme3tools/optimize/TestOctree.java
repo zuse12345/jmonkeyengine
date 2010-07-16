@@ -3,6 +3,7 @@ package jme3tools.optimize;
 import com.jme3.app.SimpleApplication;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
+import com.jme3.material.MaterialList;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Matrix4f;
 import com.jme3.math.Vector3f;
@@ -14,6 +15,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.debug.WireBox;
 import com.jme3.scene.plugins.ogre.MeshLoader;
+import com.jme3.scene.plugins.ogre.OgreMeshKey;
 import com.jme3.texture.FrameBuffer;
 import java.util.HashSet;
 import java.util.Set;
@@ -52,7 +54,9 @@ public class TestOctree extends SimpleApplication implements SceneProcessor {
         rootNode.addLight(dl);
 
         assetManager.registerLocator("quake3level.zip", "com.jme3.asset.plugins.ZipLocator");
-        Spatial scene = MeshLoader.loadModel(assetManager, "main.meshxml","Scene.material");
+        MaterialList matList = (MaterialList) assetManager.loadAsset("Scene.material");
+        OgreMeshKey key = new OgreMeshKey("main.meshxml", matList);
+        Spatial scene = assetManager.loadModel(key);
         scene.setMaterial(mat2);
 //        scene.setLocalScale(0.2f);
 //        Spatial scene = manager.loadModel("models/teapot.obj");

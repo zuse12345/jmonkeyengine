@@ -641,8 +641,8 @@ public abstract class Texture extends GLObject implements Savable, Cloneable {
         anisotropicFilter = capsule.readInt("anisotropicFilter", 1);
         minificationFilter = capsule.readEnum("minificationFilter",
                 MinFilter.class,
-                MinFilter.NearestNoMipMaps);
+                MinFilter.BilinearNoMipMaps);
         magnificationFilter = capsule.readEnum("magnificationFilter",
-                MagFilter.class, MagFilter.Nearest);
+                MagFilter.class, MagFilter.Bilinear);
     }
 }

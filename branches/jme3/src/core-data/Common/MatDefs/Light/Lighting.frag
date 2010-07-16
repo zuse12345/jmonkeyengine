@@ -31,6 +31,10 @@ varying vec4 SpecularSum;
   varying vec3 vNormal;
 #endif
 
+#ifdef ALPHAMAP
+  uniform sampler2D m_AlphaMap;
+#endif
+
 #ifdef COLORRAMP
   uniform sampler2D m_ColorRamp;
 #endif
@@ -126,6 +130,9 @@ void main(){
     #if defined(NORMALMAP) && !defined(VERTEX_LIGHTING)
       vec4 normalHeight = texture2D(m_NormalMap, newTexCoord);
       vec3 normal = (normalHeight.xyz * vec3(2.0) - vec3(1.0));
+      #ifdef LATC
+        normal.z = sqrt(1.0 - (normal.x * normal.x) - (normal.y * normal.y));
+      #endif
       normal.y = -normal.y;
     #elif !defined(VERTEX_LIGHTING)
       vec3 normal = vNormal;
@@ -146,9 +153,17 @@ void main(){
       vec4 specularColor = vec4(1.0);
     #endif
 
+    float alpha = 1.0;
+    #ifdef USE_ALPHA
+       alpha = DiffuseSum.a * diffuseColor.a;
+    #elif defined(ALPHAMAP)
+       alpha = texture2D(m_AlphaMap, newTexCoord).r;
+    #endif
     #ifdef VERTEX_LIGHTING
        gl_FragColor = (AmbientSum + DiffuseSum) * diffuseColor
                      + SpecularSum * specularColor;
+
+       
     #else
        vec4 lightDir = vLightDir;
        lightDir.xyz = normalize(lightDir.xyz);
@@ -161,7 +176,5 @@ void main(){
        gl_FragColor = (AmbientSum + DiffuseSum * light.x) * diffuseColor
                      + SpecularSum * light.y * specularColor;
     #endif
-    #ifdef USE_ALPHA
-       gl_FragColor.a = diffuseColor.a;
-    #endif
+    gl_FragColor.a = alpha;
 }

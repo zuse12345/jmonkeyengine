@@ -183,13 +183,16 @@ public class DXTFlipper {
             case LATC:
                 type = 4;
                 break;
+            case LTC:
+                type = 5;
+                break;
             default:
                 throw new IllegalArgumentException();
         }
 
         // DXT1 uses 8 bytes per block,
         // DXT3, DXT5, LATC use 16 bytes per block
-        int bpb = type == 1 ? 8 : 16;
+        int bpb = type == 1 || type == 5 ? 8 : 16;
 
         ByteBuffer retImg = BufferUtils.createByteBuffer(blocksX * blocksY * bpb);
 
@@ -199,7 +202,7 @@ public class DXTFlipper {
             return retImg;
         }else if (h == 2){
             byte[] colorBlock = new byte[8];
-            byte[] alphaBlock = type != 1 ? new byte[8] : null;
+            byte[] alphaBlock = type != 1 && type != 5 ? new byte[8] : null;
             for (int x = 0; x < blocksX; x++){
                 // prepeare for block reading
                 int blockByteOffset = x * bpb;
@@ -207,7 +210,7 @@ public class DXTFlipper {
                 img.limit(blockByteOffset + bpb);
 
                 img.get(colorBlock);
-                if (type == 4)
+                if (type == 4 || type == 5)
                     flipDXT5Block(colorBlock, h);
                 else
                     flipDXT1Block(colorBlock, h);
@@ -233,7 +236,7 @@ public class DXTFlipper {
             return retImg;
         }else if (h >= 4){
             byte[] colorBlock = new byte[8];
-            byte[] alphaBlock = type != 1 ? new byte[8] : null;
+            byte[] alphaBlock = type != 1 && type != 5 ? new byte[8] : null;
             for (int y = 0; y < blocksY; y++){
                 for (int x = 0; x < blocksX; x++){
                     // prepeare for block reading
@@ -264,7 +267,7 @@ public class DXTFlipper {
                     }
 
                     img.get(colorBlock);
-                    if (type == 4)
+                    if (type == 4 || type == 5)
                         flipDXT5Block(colorBlock, h);
                     else
                         flipDXT1Block(colorBlock, h);

@@ -1,12 +1,13 @@
 package com.jme3.scene.plugins.ogre;
 
 import com.jme3.asset.ModelKey;
+import com.jme3.material.MaterialList;
 
 public class OgreMeshKey extends ModelKey {
 
-    private OgreMaterialList materialList;
+    private MaterialList materialList;
 
-    public OgreMeshKey(String name, OgreMaterialList materialList){
+    public OgreMeshKey(String name, MaterialList materialList){
         super(name);
         this.materialList = materialList;
     }
@@ -15,7 +16,7 @@ public class OgreMeshKey extends ModelKey {
         super();
     }
 
-    public OgreMaterialList getMaterialList() {
+    public MaterialList getMaterialList() {
         return materialList;
     }
 

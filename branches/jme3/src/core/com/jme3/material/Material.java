@@ -242,6 +242,9 @@ public class Material implements Cloneable, Savable {
     }
 
     public void setTexture(String name, Texture value){
+        if (value == null)
+            throw new NullPointerException();
+
         VarType paramType = null;
         switch (value.getType()){
             case TwoDimensional:
@@ -547,7 +550,6 @@ public class Material implements Cloneable, Savable {
         for (MatParam param : paramValues.values()){
             if (param instanceof MatParamTexture){
                 MatParamTexture texVal = (MatParamTexture) param;
-//                texVal.tryLoadFromKey(im.getAssetManager());
                 if (nextTexUnit < texVal.getUnit()+1){
                     nextTexUnit = texVal.getUnit()+1;
                 }

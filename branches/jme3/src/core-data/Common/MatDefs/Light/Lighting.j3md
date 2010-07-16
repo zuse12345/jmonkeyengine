@@ -15,6 +15,9 @@ MaterialDef Phong Lighting {
         // Output alpha from the diffuse map
         Boolean m_UseAlpha
 
+        // Normal map is in BC5/ATI2n/LATC/3Dc compression format
+        Boolean m_LATC
+
         // Use the provided ambient, diffuse, and specular colors
         Boolean m_UseMaterialColors
 
@@ -55,6 +58,9 @@ MaterialDef Phong Lighting {
         // Parallax/height map
         Texture2D m_ParallaxMap
 
+        // Texture that specifies alpha values
+        Texture2D m_AlphaMap
+
         // Color ramp, will map diffuse and specular values through it.
         Texture2D m_ColorRamp
     }
@@ -75,6 +81,7 @@ MaterialDef Phong Lighting {
 
         Defines {
             USE_ALPHA : m_UseAlpha
+            LATC : m_LATC
             VERTEX_COLOR : m_UseVertexColor
             VERTEX_LIGHTING : m_VertexLighting
             ATTENUATION : m_Attenuation
@@ -89,6 +96,7 @@ MaterialDef Phong Lighting {
             NORMALMAP : m_NormalMap
             SPECULARMAP : m_SpecularMap
             PARALLAXMAP : m_ParallaxMap
+            ALPHAMAP : m_AlphaMap
             COLORRAMP : m_ColorRamp
         }
     }

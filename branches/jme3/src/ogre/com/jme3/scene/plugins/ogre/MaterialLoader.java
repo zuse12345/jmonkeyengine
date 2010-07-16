@@ -5,6 +5,7 @@ import com.jme3.asset.AssetLoader;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.TextureKey;
 import com.jme3.material.Material;
+import com.jme3.material.MaterialList;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.texture.Image;
@@ -312,7 +313,9 @@ public class MaterialLoader implements AssetLoader {
     public Object load(AssetInfo info) throws IOException {
         folderName = info.getKey().getFolder();
         assetManager = info.getManager();
-        OgreMaterialList list = new OgreMaterialList();
+
+        // create an OgreMaterialList type for backward compat.
+        MaterialList list = new OgreMaterialList();
         scan = new Scanner(info.openStream());
         scan.useLocale(Locale.US);
         while (scan.hasNext("material")){

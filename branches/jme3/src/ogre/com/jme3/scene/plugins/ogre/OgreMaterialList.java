@@ -1,7 +1,10 @@
 package com.jme3.scene.plugins.ogre;
 
-import com.jme3.material.Material;
-import java.util.HashMap;
+import com.jme3.material.MaterialList;
 
-public class OgreMaterialList extends HashMap<String, Material> {
+/**
+ * @deprecated Use the class <code>MaterialList</code> instead of this.
+ */
+@Deprecated
+public class OgreMaterialList extends MaterialList {
 }

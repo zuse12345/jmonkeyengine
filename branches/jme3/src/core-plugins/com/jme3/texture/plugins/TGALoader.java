@@ -38,6 +38,7 @@ import com.jme3.texture.Image;
 import com.jme3.util.BufferUtils;
 import com.jme3.asset.AssetInfo;
 import com.jme3.asset.TextureKey;
+import com.jme3.texture.Image.Format;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -184,6 +185,7 @@ public final class TGALoader implements AssetLoader {
         
         
         // Allocate image data array
+        Format format = null;
         byte[] rawData = null;
         int dl;
         if (pixelDepth == 32) {
@@ -223,23 +225,32 @@ public final class TGALoader implements AssetLoader {
                         }
                     }
                 }
-            } else if (pixelDepth == 24)
-                for (int i = 0; i <= (height - 1); i++) {
+
+                format = dl == 4 ? Format.RGBA8 : Format.RGB8;
+            } else if (pixelDepth == 24){
+                for (int y = 0; y < height; y++) {
                     if (!flip)
-                        rawDataIndex = (height - 1 - i) * width * dl;
-                    for (int j = 0; j < width; j++) {
-                        blue = dis.readByte();
-                        green = dis.readByte();
-                        red = dis.readByte();
-                        rawData[rawDataIndex++] = red;
-                        rawData[rawDataIndex++] = green;
-                        rawData[rawDataIndex++] = blue;
-                    }
+                        rawDataIndex = (height - 1 - y) * width * dl;
+                    else
+                        rawDataIndex = y * width * dl;
+
+                    dis.readFully(rawData, rawDataIndex, width * dl);
+//                    for (int x = 0; x < width; x++) {
+                        //read scanline
+//                        blue = dis.readByte();
+//                        green = dis.readByte();
+//                        red = dis.readByte();
+//                        rawData[rawDataIndex++] = red;
+//                        rawData[rawDataIndex++] = green;
+//                        rawData[rawDataIndex++] = blue;
+//                    }
                 }
-            else if (pixelDepth == 32)
+                format = Format.BGR8;
+            } else if (pixelDepth == 32){
                 for (int i = 0; i <= (height - 1); i++) {
                     if (!flip)
                         rawDataIndex = (height - 1 - i) * width * dl;
+
                     for (int j = 0; j < width; j++) {
                         blue = dis.readByte();
                         green = dis.readByte();
@@ -251,11 +262,11 @@ public final class TGALoader implements AssetLoader {
                         rawData[rawDataIndex++] = alpha;
                     }
                 }
-            else 
+                format = Format.RGBA8;
+            }else{
                 throw new IOException("Unsupported TGA true color depth: "+pixelDepth);
-
-
-        } else if( imageType == TYPE_TRUECOLOR_RLE ){
+            }
+        } else if( imageType == TYPE_TRUECOLOR_RLE ) {
             byte red = 0;
             byte green = 0;
             byte blue = 0;
@@ -301,6 +312,7 @@ public final class TGALoader implements AssetLoader {
                         }
                     }
                 }
+                format = Format.RGBA8;
             } else if( pixelDepth == 24 ){
                 for( int i = 0; i <= ( height - 1 ); i++ ){
                     if( !flip ){
@@ -335,6 +347,7 @@ public final class TGALoader implements AssetLoader {
                         }
                     }
                 }
+                format = Format.RGB8;
             } else if( pixelDepth == 16 ){
                 byte[] data = new byte[ 2 ];
                 float scalar = 255f / 31f;
@@ -375,6 +388,7 @@ public final class TGALoader implements AssetLoader {
                         }
                     }
                 }
+                format = Format.RGB8;
             } else{
                 throw new IOException( "Unsupported TGA true color depth: " + pixelDepth );
             }
@@ -422,6 +436,8 @@ public final class TGALoader implements AssetLoader {
             } else {
                 throw new IOException("TGA: unknown colormap indexing size used: "+bytesPerIndex);
             }
+
+            format = dl == 4 ? Format.RGBA8 : Format.RGB8;
         }
         
         
@@ -433,11 +449,7 @@ public final class TGALoader implements AssetLoader {
         scratch.rewind();
         // Create the Image object
         Image textureImage = new Image();
-        if (dl == 4)
-            textureImage.setFormat(Image.Format.RGBA8);
-        else
-            textureImage.setFormat(Image.Format.RGB8);
-        
+        textureImage.setFormat(format);
         textureImage.setWidth(width);
         textureImage.setHeight(height);
         textureImage.setData(scratch);

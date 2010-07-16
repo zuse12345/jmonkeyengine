@@ -101,7 +101,9 @@ public class Image implements Savable, Cloneable {
         RGB9E5(32,true),
         
         RGB16F(48,true),
-        RGB32F(96,true);
+        RGB32F(96,true),
+
+        LTC(4, false, true, false);
 
         private int bpp;
         private boolean isDepth;

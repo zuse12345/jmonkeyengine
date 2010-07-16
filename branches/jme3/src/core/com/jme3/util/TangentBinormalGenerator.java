@@ -209,14 +209,18 @@ public class TangentBinormalGenerator {
 
     private static TriangleData processTriangle(int[] index,
             Vector3f[] v, Vector2f[] t){
-        Vector3f edge1 = new Vector3f();
-        Vector3f edge2 = new Vector3f();
-        Vector2f edge1uv = new Vector2f();
-        Vector2f edge2uv = new Vector2f();
 
-        Vector3f tangent = new Vector3f();
-        Vector3f binormal = new Vector3f();
-        Vector3f normal = new Vector3f();
+        TempVars vars = TempVars.get();
+        assert vars.lock();
+
+        Vector3f edge1 = vars.vect1;
+        Vector3f edge2 = vars.vect2;
+        Vector2f edge1uv = vars.vect2d;
+        Vector2f edge2uv = vars.vect2d2;
+
+        Vector3f tangent = vars.vect3;
+        Vector3f binormal = vars.vect4;
+        Vector3f normal = vars.vect5;
 
         t[1].subtract(t[0], edge1uv);
         t[2].subtract(t[0], edge2uv);
@@ -262,6 +266,8 @@ public class TangentBinormalGenerator {
 
         tangent.cross(binormal, normal);
         normal.normalizeLocal();
+        
+        assert vars.unlock();
 
         return new TriangleData(
                         tangent,

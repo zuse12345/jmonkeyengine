@@ -828,6 +828,9 @@ public class NVCompress extends javax.swing.JFrame {
         if (texToolsPath == null || !verifyTexToolsPath(texToolsPath)){
             while (true){
                 File f = showToolsPathChooser(texToolsPath);
+                if (f == null)
+                    return;
+
                 if (verifyTexToolsPath(f)){
                     texToolsPath = f;
                     pref.put("NVTextureToolsPath", texToolsPath.toString());

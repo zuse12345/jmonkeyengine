@@ -159,6 +159,12 @@ public class TextureUtil {
                 format = GL_LUMINANCE_ALPHA;
                 dataType = GL_UNSIGNED_BYTE;
                 break;
+            case LTC:
+                compress = true;
+                internalFormat = GL_COMPRESSED_LUMINANCE_LATC1_EXT;
+                format = GL_LUMINANCE_ALPHA;
+                dataType = GL_UNSIGNED_BYTE;
+                break;
             case Depth:
                 internalFormat = GL_DEPTH_COMPONENT;
                 format = GL_DEPTH_COMPONENT;

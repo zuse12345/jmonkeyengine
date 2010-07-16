@@ -88,7 +88,8 @@ public class DDSLoader implements AssetLoader {
     private static final int PF_DXT1 = 0x31545844;
     private static final int PF_DXT3 = 0x33545844;
     private static final int PF_DXT5 = 0x35545844;
-    private static final int PF_ATI2 = 0x41544932;
+    private static final int PF_ATI1 = 0x31495441;
+    private static final int PF_ATI2 = 0x32495441; // 0x41544932;
     private static final int PF_DX10 = 0x30315844; // a DX10 format
     
     private static final int DX10DIM_BUFFER = 0x1,
@@ -263,6 +264,10 @@ public class DDSLoader implements AssetLoader {
                         normal = true;
                     }
                     break;
+                case PF_ATI1:
+                    bpp = 4;
+                    pixelFormat = Image.Format.LTC;
+                    break;
                 case PF_ATI2:
                     bpp = 8;
                     pixelFormat = Image.Format.LATC;
@@ -274,7 +279,7 @@ public class DDSLoader implements AssetLoader {
                     // the real format will be available in the DX10 header
                     return;
                 default:
-                    throw new IOException("Unknown fourcc: " + string(fourcc));
+                    throw new IOException("Unknown fourcc: " + string(fourcc) + ", " + Integer.toHexString(fourcc));
             }
 
             int size = ((width + 3) / 4) * ((height + 3) / 4) * bpp * 2;

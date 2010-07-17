@@ -8,20 +8,18 @@
  *
  * Created on 14.06.2010, 16:42:25
  */
-
 package com.jme3.gde.materials.multiview.widgets;
 
-import java.lang.reflect.InvocationTargetException;
-import org.openide.util.Exceptions;
+import com.jme3.gde.materials.MaterialProperty;
 
 /**
  *
  * @author normenhansen
  */
-public class TextPanel extends MaterialPropertyWidget {
+public class BooleanPanel extends MaterialPropertyWidget {
 
     /** Creates new form NumberPanel */
-    public TextPanel() {
+    public BooleanPanel() {
         initComponents();
     }
 
@@ -36,22 +34,27 @@ public class TextPanel extends MaterialPropertyWidget {
 
         jToolBar1 = new javax.swing.JToolBar();
         jLabel1 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        jCheckBox1 = new javax.swing.JCheckBox();
 
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
+        jToolBar1.setPreferredSize(new java.awt.Dimension(81, 27));
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(TextPanel.class, "TextPanel.jLabel1.text")); // NOI18N
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(BooleanPanel.class, "BooleanPanel.jLabel1.text")); // NOI18N
+        jLabel1.setMaximumSize(new java.awt.Dimension(220, 16));
         jLabel1.setPreferredSize(new java.awt.Dimension(220, 16));
         jToolBar1.add(jLabel1);
 
-        jTextField1.setText(org.openide.util.NbBundle.getMessage(TextPanel.class, "TextPanel.jTextField1.text")); // NOI18N
-        jTextField1.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                textChanged(evt);
+        jCheckBox1.setText(org.openide.util.NbBundle.getMessage(BooleanPanel.class, "BooleanPanel.jCheckBox1.text")); // NOI18N
+        jCheckBox1.setFocusable(false);
+        jCheckBox1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jCheckBox1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                valueChanged(evt);
             }
         });
-        jToolBar1.add(jTextField1);
+        jToolBar1.add(jCheckBox1);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -65,10 +68,15 @@ public class TextPanel extends MaterialPropertyWidget {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void textChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textChanged
-        property.setValue(jTextField1.getText());
+    private void valueChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_valueChanged
+        // TODO add your handling code here:
+        if (jCheckBox1.isSelected()) {
+            property.setValue("true");
+        } else {
+            property.setValue("false");
+        }
         fireChanged();
-    }//GEN-LAST:event_textChanged
+    }//GEN-LAST:event_valueChanged
 
     @Override
     protected void readProperty() {
@@ -76,15 +84,20 @@ public class TextPanel extends MaterialPropertyWidget {
 
             public void run() {
                 jLabel1.setText(property.getName() + " (" + property.getType() + ")");
-                jTextField1.setText(property.getValue());
+                MaterialProperty prop = property;
+                property = null;
+                if ("true".equals(prop.getValue())) {
+                    jCheckBox1.setSelected(true);
+                } else {
+                    jCheckBox1.setSelected(false);
+                }
+                property = prop;
             }
         });
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JTextField jTextField1;
     private javax.swing.JToolBar jToolBar1;
     // End of variables declaration//GEN-END:variables
-
 }

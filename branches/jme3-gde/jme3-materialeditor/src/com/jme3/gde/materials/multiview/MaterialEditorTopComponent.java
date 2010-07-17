@@ -14,10 +14,14 @@ import com.jme3.gde.core.scene.SceneListener;
 import com.jme3.gde.core.scene.SceneRequest;
 import com.jme3.gde.materials.MaterialProperties;
 import com.jme3.gde.materials.MaterialProperty;
+import com.jme3.gde.materials.multiview.widgets.MaterialPropertyWidget;
+import com.jme3.gde.materials.multiview.widgets.MaterialWidgetListener;
+import com.jme3.gde.materials.multiview.widgets.WidgetFactory;
 import com.jme3.material.Material;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.util.TangentBinormalGenerator;
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -26,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -49,7 +54,7 @@ import org.openide.windows.CloneableTopComponent;
  */
 @ConvertAsProperties(dtd = "-//com.jme3.gde.materials.multiview//MaterialEditor//EN",
 autostore = false)
-public final class MaterialEditorTopComponent extends CloneableTopComponent implements SceneListener {
+public final class MaterialEditorTopComponent extends CloneableTopComponent implements SceneListener, MaterialWidgetListener {
 
     private static MaterialEditorTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -95,7 +100,7 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
         updateProperties();
 
         setActivatedNodes(new Node[]{saveNode});
-        
+
         sphMesh = new Sphere(32, 32, 2.5f);
         sphMesh.setTextureMode(Sphere.TextureMode.Projected);
         sphMesh.updateGeometry(32, 32, 2.5f, false, false);
@@ -112,15 +117,16 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
     private void initComponents() {
 
         jPanel2 = new javax.swing.JPanel();
-        jButton2 = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
+        jScrollPane2 = new javax.swing.JScrollPane();
         jPanel3 = new javax.swing.JPanel();
-        jToolBar1 = new javax.swing.JToolBar();
-        jLabel1 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
+        jToolBar1 = new javax.swing.JToolBar();
+        jLabel2 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jComboBox1 = new javax.swing.JComboBox();
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -133,29 +139,10 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
             .add(0, 100, Short.MAX_VALUE)
         );
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton2, org.openide.util.NbBundle.getMessage(MaterialEditorTopComponent.class, "MaterialEditorTopComponent.jButton2.text")); // NOI18N
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(MaterialEditorTopComponent.class, "MaterialEditorTopComponent.jLabel2.text")); // NOI18N
-
         jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.PAGE_AXIS));
+        jScrollPane2.setViewportView(jPanel3);
 
-        jToolBar1.setFloatable(false);
-        jToolBar1.setRollover(true);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MaterialEditorTopComponent.class, "MaterialEditorTopComponent.jLabel1.text")); // NOI18N
-        jToolBar1.add(jLabel1);
-
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        jToolBar1.add(jComboBox1);
-
-        jPanel3.add(jToolBar1);
-
-        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(MaterialEditorTopComponent.class, "MaterialEditorTopComponent.jPanel3.TabConstraints.tabTitle"), jPanel3); // NOI18N
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(MaterialEditorTopComponent.class, "MaterialEditorTopComponent.jScrollPane2.TabConstraints.tabTitle"), jScrollPane2); // NOI18N
 
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
@@ -163,39 +150,80 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(MaterialEditorTopComponent.class, "MaterialEditorTopComponent.jScrollPane1.TabConstraints.tabTitle"), jScrollPane1); // NOI18N
 
+        jToolBar1.setFloatable(false);
+        jToolBar1.setRollover(true);
+        jToolBar1.setMinimumSize(new java.awt.Dimension(200, 120));
+        jToolBar1.setPreferredSize(new java.awt.Dimension(600, 120));
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(MaterialEditorTopComponent.class, "MaterialEditorTopComponent.jLabel2.text")); // NOI18N
+        jLabel2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                reloadPreview(evt);
+            }
+        });
+        jToolBar1.add(jLabel2);
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 70, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 116, Short.MAX_VALUE)
+        );
+
+        jToolBar1.add(jPanel1);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MaterialEditorTopComponent.class, "MaterialEditorTopComponent.jLabel1.text")); // NOI18N
+        jToolBar1.add(jLabel1);
+
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { " ", "Common/MatDefs/Misc/SolidColor.j3md", "Common/MatDefs/Misc/VertexColor.j3md", "Common/MatDefs/Misc/SimpleTextured.j3md", "Common/MatDefs/Misc/ColoredTextured.j3md", "Common/MatDefs/Misc/Particle.j3md", "Common/MatDefs/Misc/Sky.j3md", "Common/MatDefs/Gui/Gui.j3md", "Common/MatDefs/Light/Lighting.j3md", "Common/MatDefs/Light/Reflection.j3md", "Common/MatDefs/Misc/ShowNormals.j3md", "Common/MatDefs/Hdr/LogLum.j3md", "Common/MatDefs/Hdr/ToneMap.j3md", "Common/MatDefs/Shadow/PreShadow.j3md", "Common/MatDefs/Shadow/PostShadow.j3md" }));
+        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBox1ActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(jComboBox1);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(jLabel2)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 150, Short.MAX_VALUE)
-                .add(jButton2))
-            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jToolBar1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(jToolBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
-                    .add(jButton2)))
+                .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
+        if(properties!=null){
+            properties.setMatDefName((String)jComboBox1.getSelectedItem());
+            String string=properties.getUpdatedContent();
+            jTextArea1.setText(string);
+        }
+    }//GEN-LAST:event_jComboBox1ActionPerformed
+
+    private void reloadPreview(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_reloadPreview
         showMaterial();
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_reloadPreview
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton2;
     private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JToolBar jToolBar1;
@@ -281,14 +309,17 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
     }
 
     private class DocumentChangeListener implements DocumentListener {
+
         String newline = "\n";
 
         public void insertUpdate(DocumentEvent e) {
             saveNode.fire(true);
         }
+
         public void removeUpdate(DocumentEvent e) {
             saveNode.fire(true);
         }
+
         public void changedUpdate(DocumentEvent e) {
             saveNode.fire(true);
         }
@@ -301,9 +332,9 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
     private class SaveCookieImpl implements SaveCookie {
 
         public void save() throws IOException {
-            FileObject file=dataObject.getPrimaryFile();
-            String text=jTextArea1.getText();
-            OutputStreamWriter out=new OutputStreamWriter(file.getOutputStream());
+            FileObject file = dataObject.getPrimaryFile();
+            String text = jTextArea1.getText();
+            OutputStreamWriter out = new OutputStreamWriter(file.getOutputStream());
             out.write(text, 0, text.length());
             out.close();
             saveNode.fire(false);
@@ -313,23 +344,70 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
         }
     }
 
-    private void updateProperties(){
+    public void setMatDefList(final String[] strings, String selected){
+        MaterialProperties prop=properties;
+        properties=null;
+        jComboBox1.removeAllItems();
+        jComboBox1.addItem("");
+
+        for (int i = 0; i < strings.length; i++) {
+            String string = strings[i];
+            jComboBox1.addItem(string);
+        }
+
+        jComboBox1.addItem("Common/MatDefs/Misc/SolidColor.j3md");
+        jComboBox1.addItem("Common/MatDefs/Misc/VertexColor.j3md");
+        jComboBox1.addItem("Common/MatDefs/Misc/SimpleTextured.j3md");
+        jComboBox1.addItem("Common/MatDefs/Misc/ColoredTextured.j3md");
+        jComboBox1.addItem("Common/MatDefs/Misc/Particle.j3md");
+        jComboBox1.addItem("Common/MatDefs/Misc/Sky.j3md");
+        jComboBox1.addItem("Common/MatDefs/Gui/Gui.j3md");
+        jComboBox1.addItem("Common/MatDefs/Light/Lighting.j3md");
+        jComboBox1.addItem("Common/MatDefs/Light/Reflection.j3md");
+        jComboBox1.addItem("Common/MatDefs/Misc/ShowNormals.j3md");
+        jComboBox1.addItem("Common/MatDefs/Hdr/LogLum.j3md");
+        jComboBox1.addItem("Common/MatDefs/Hdr/ToneMap.j3md");
+        jComboBox1.addItem("Common/MatDefs/Shadow/PreShadow.j3md");
+        jComboBox1.addItem("Common/MatDefs/Shadow/PostShadow.j3md");
+        jComboBox1.setSelectedItem(selected);
+
+        properties=prop;
+    }
+
+    private void updateProperties() {
+        setMatDefList(manager.getMatDefs(),properties.getMatDefName());
+        
+        for (int i = 0; i < jPanel3.getComponents().length; i++) {
+            Component component = jPanel3.getComponents()[i];
+            if (component instanceof MaterialPropertyWidget) {
+                ((MaterialPropertyWidget) component).registerChangeListener(null);
+            }
+        }
+        
         jPanel3.removeAll();
-        jPanel3.add(new JLabel(properties.getName() + " - " + properties.getMatDefName() + "\n"));
         for (Iterator<Entry<String, MaterialProperty>> it = properties.getMap().entrySet().iterator(); it.hasNext();) {
             Entry<String, MaterialProperty> entry = it.next();
-            jPanel3.add(new JLabel(entry.getValue().getType() + " " + entry.getValue().getName() + ": " + entry.getValue().getValue() + "\n"));
+            MaterialPropertyWidget widget = WidgetFactory.getWidget(entry.getValue(), manager);
+            widget.registerChangeListener(this);
+            jPanel3.add(widget);
         }
-        setDisplayName(properties.getName()+" - "+properties.getMatDefName());
+        jScrollPane2.repaint();
+        setDisplayName(properties.getName() + " - " + properties.getMaterialPath());
     }
 
     private void showMaterial() {
-        AssetKey key = new AssetKey(manager.getRelativeAssetPath(materialFileName));
-        Geometry geom = new Geometry("TestSphere", sphMesh);
-        ((DesktopAssetManager) manager.getManager()).deleteFromCache(key);
-        geom.setMaterial((Material) manager.getManager().loadAsset(key));
-        PreviewRequest request = new PreviewRequest(this, geom);
-        SceneApplication.getApplication().createPreview(request);
+        try {
+
+            AssetKey key = new AssetKey(manager.getRelativeAssetPath(materialFileName));
+            Geometry geom = new Geometry("TestSphere", sphMesh);
+            ((DesktopAssetManager) manager.getManager()).deleteFromCache(key);
+            geom.setMaterial((Material) manager.getManager().loadAsset(key));
+            if(geom.getMaterial()!=null){
+                PreviewRequest request = new PreviewRequest(this, geom);
+                SceneApplication.getApplication().createPreview(request);
+            }
+        } catch (Exception e) {
+        }
     }
 
     public void sceneRequested(SceneRequest request) {
@@ -345,5 +423,10 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
                 }
             });
         }
+    }
+
+    public void propertyChanged(MaterialProperty property) {
+        String string=properties.getUpdatedContent();
+        jTextArea1.setText(string);
     }
 }

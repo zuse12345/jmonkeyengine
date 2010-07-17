@@ -9,7 +9,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -27,7 +31,10 @@ public class MaterialProperties {
     FileObject material;
     FileObject matDef;
     Map<String, MaterialProperty> values = new HashMap<String, MaterialProperty>();
+//    List<String> matDefNames = new LinkedList<String>();
     ProjectAssetManager manager;
+    FileSystem fs;
+    public static final String[] variableTypes = new String[]{"Int", "Boolean", "Float", "Vector2", "Vector3", "Vector4", "Color", "Texture2D", "TextureCubeMap"};
 
     public MaterialProperties(FileObject material, ProjectAssetManager manager) {
         this.material = material;
@@ -36,6 +43,7 @@ public class MaterialProperties {
 
     public void read() {
         values.clear();
+//        matDefNames.clear();
         int level = 0;
         boolean params = false;
         try {
@@ -63,7 +71,9 @@ public class MaterialProperties {
                         String[] lines = line.split(":");
                         MaterialProperty prop = new MaterialProperty();
                         prop.setName(lines[0].trim());
-                        prop.setValue(lines[1].trim());
+                        if (lines.length > 1) {
+                            prop.setValue(lines[1].trim());
+                        }
                         values.put(prop.getName(), prop);
                     }
                 }
@@ -85,19 +95,20 @@ public class MaterialProperties {
                         }
                     }
                     if (level == 2 && params) {
-                        int colonIdx = line.indexOf(":");
-                        if (colonIdx != -1) {
-                            String[] lines = line.split(":");
-                            String type = lines[0].trim();
-                            String name = lines[1].trim();
-                            MaterialProperty prop = values.get(name);
-                            if (prop == null) {
-                                prop = new MaterialProperty();
-                                prop.setName(name);
-                                prop.setValue("");
-                                values.put(prop.getName(), prop);
+                        for (int i = 0; i < variableTypes.length; i++) {
+                            String string = variableTypes[i];
+                            if (line.startsWith(string)) {
+                                String name = line.replaceAll(string, "").trim();
+                                MaterialProperty prop = values.get(name);
+                                if (prop == null) {
+                                    prop = new MaterialProperty();
+                                    prop.setName(name);
+                                    prop.setValue("");
+                                    values.put(prop.getName(), prop);
+                                }
+                                prop.setType(string);
+//                                matDefNames.add(prop.getName());
                             }
-                            prop.setType(type);
                         }
                     }
                 }
@@ -119,9 +130,10 @@ public class MaterialProperties {
             //try to read from classpath if not in assets folder
             if (matDef == null || !matDef.isValid()) {
                 try {
-                    FileSystem fs = FileUtil.createMemoryFileSystem();
+                    fs = FileUtil.createMemoryFileSystem();
                     matDef = fs.getRoot().createData(name, "j3md");
                     OutputStream out = matDef.getOutputStream();
+                    System.out.println("read " + "/" + getMatDefName());
                     InputStream in = getClass().getResourceAsStream("/" + getMatDefName());
                     if (in != null) {
                         int input = in.read();
@@ -139,7 +151,73 @@ public class MaterialProperties {
         }
     }
 
-    public void write() {
+    public String getUpdatedContent() {
+        boolean params = false;
+        int level = 0;
+        try {
+            List<String> matLines = material.asLines();
+            StringWriter out = new StringWriter();
+            List<String> setValues = new LinkedList<String>();
+            for (String line : matLines) {
+                String newLine = line;
+                line = line.trim();
+                if (line.startsWith("Material ") || line.startsWith("Material\t") && level == 0) {
+                    String suffix = "";
+                    if (line.indexOf("{") > -1) {
+                        suffix = "{";
+                    }
+                    newLine = "Material " + getName() + " : " + matDefName +" "+ suffix;
+                    //readMaterialProperties(line);
+                }
+                if (line.startsWith("MaterialParameters ") || line.startsWith("MaterialParameters\t") || line.startsWith("MaterialParameters{") && level == 1) {
+                    params = true;
+                }
+                if (line.indexOf("{") != -1) {
+                    level++;
+                }
+                if (line.indexOf("}") != -1) {
+                    level--;
+                    if (params) {
+                        //find and write parameters we did not replace yet at end of parameters section
+                        for (Iterator<Map.Entry<String, MaterialProperty>> it = values.entrySet().iterator(); it.hasNext();) {
+                            Map.Entry<String, MaterialProperty> entry = it.next();
+                            if (!setValues.contains(entry.getKey())) {
+                                MaterialProperty prop = entry.getValue();
+                                if (prop.getValue() != null && prop.getValue().length() > 0) {
+                                    String myLine = "        " + prop.getName() + " : " + prop.getValue() + "\n";
+                                    out.write(myLine, 0, myLine.length());
+                                }
+                            }
+                        }
+                        params = false;
+                    }
+                }
+                if (level == 2 && params) {
+                    int colonIdx = newLine.indexOf(":");
+                    if (colonIdx != -1) {
+                        String[] lines = newLine.split(":");
+                        String myName = lines[0].trim();
+                        if (values.containsKey(myName)) {
+                            setValues.add(myName);
+                            MaterialProperty prop = values.get(myName);
+                            if (prop.getValue() != null && prop.getValue().length() > 0 && prop.getType()!=null) {
+                                newLine = lines[0] + ": " + prop.getValue();
+                            } else {
+                                newLine = null;
+                            }
+                        }
+                    }
+                }
+                if (newLine != null) {
+                    out.write(newLine + "\n", 0, newLine.length() + 1);
+                }
+            }
+            out.close();
+            return out.toString();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return "";
     }
 
     public Map<String, MaterialProperty> getMap() {
@@ -176,5 +254,9 @@ public class MaterialProperties {
      */
     public void setMatDefName(String matDefName) {
         this.matDefName = matDefName;
+    }
+
+    public String getMaterialPath() {
+        return manager.getRelativeAssetPath(material.getPath());
     }
 }

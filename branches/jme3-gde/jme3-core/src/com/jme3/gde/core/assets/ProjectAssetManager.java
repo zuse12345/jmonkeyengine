@@ -123,6 +123,19 @@ public class ProjectAssetManager {
         return list.toArray(new String[list.size()]);
     }
 
+    public String[] getMatDefs() {
+        FileObject assetsFolder = project.getProjectDirectory().getFileObject(folderName + "/");
+        Enumeration<FileObject> assets = (Enumeration<FileObject>) assetsFolder.getChildren(true);
+        ArrayList<String> list = new ArrayList<String>();
+        while (assets.hasMoreElements()) {
+            FileObject asset = assets.nextElement();
+            if (asset.hasExt("j3md")) {
+                list.add(getRelativeAssetPath(asset.getPath()));
+            }
+        }
+        return list.toArray(new String[list.size()]);
+    }
+
     /**
      * @return the folderName
      */

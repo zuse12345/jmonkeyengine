@@ -11,15 +11,33 @@
 
 package com.jme3.gde.materials.multiview.widgets;
 
+import com.jme3.gde.materials.MaterialProperty;
+
 /**
  *
  * @author normenhansen
  */
-public class SelectionPanel extends javax.swing.JPanel {
+public class SelectionPanel extends MaterialPropertyWidget {
 
     /** Creates new form SelectionPanel */
     public SelectionPanel() {
         initComponents();
+    }
+
+    public void setSelectionList(final String[] strings){
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                MaterialProperty prop=property;
+                property=null;
+                jComboBox1.removeAllItems();
+                jComboBox1.addItem("");
+                for (int i = 0; i < strings.length; i++) {
+                    String string = strings[i];
+                    jComboBox1.addItem(string);
+                }
+                property=prop;
+            }
+        });
     }
 
     /** This method is called from within the constructor to
@@ -37,11 +55,19 @@ public class SelectionPanel extends javax.swing.JPanel {
 
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
+        jToolBar1.setMinimumSize(new java.awt.Dimension(212, 32));
+        jToolBar1.setPreferredSize(new java.awt.Dimension(212, 32));
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "SelectionPanel.jLabel1.text")); // NOI18N
+        jLabel1.setPreferredSize(new java.awt.Dimension(220, 16));
         jToolBar1.add(jLabel1);
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectTexture(evt);
+            }
+        });
         jToolBar1.add(jComboBox1);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -52,10 +78,29 @@ public class SelectionPanel extends javax.swing.JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jToolBar1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(jToolBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 32, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void selectTexture(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectTexture
+        if(property!=null){
+            property.setValue((String)jComboBox1.getSelectedItem());
+            fireChanged();
+        }
+    }//GEN-LAST:event_selectTexture
+
+    @Override
+    protected void readProperty() {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                jLabel1.setText(property.getName() + " (" + property.getType() + ")");
+                MaterialProperty prop=property;
+                property=null;
+                jComboBox1.setSelectedItem(prop.getValue());
+                property=prop;
+            }
+        });
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox jComboBox1;

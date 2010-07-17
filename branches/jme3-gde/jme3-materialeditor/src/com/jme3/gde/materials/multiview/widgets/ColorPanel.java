@@ -11,17 +11,16 @@
 
 package com.jme3.gde.materials.multiview.widgets;
 
-import java.lang.reflect.InvocationTargetException;
-import org.openide.util.Exceptions;
+import javax.swing.JFrame;
 
 /**
  *
  * @author normenhansen
  */
-public class TextPanel extends MaterialPropertyWidget {
+public class ColorPanel extends MaterialPropertyWidget {
 
     /** Creates new form NumberPanel */
-    public TextPanel() {
+    public ColorPanel() {
         initComponents();
     }
 
@@ -36,16 +35,28 @@ public class TextPanel extends MaterialPropertyWidget {
 
         jToolBar1 = new javax.swing.JToolBar();
         jLabel1 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
         jTextField1 = new javax.swing.JTextField();
 
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(TextPanel.class, "TextPanel.jLabel1.text")); // NOI18N
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(ColorPanel.class, "ColorPanel.jLabel1.text")); // NOI18N
         jLabel1.setPreferredSize(new java.awt.Dimension(220, 16));
         jToolBar1.add(jLabel1);
 
-        jTextField1.setText(org.openide.util.NbBundle.getMessage(TextPanel.class, "TextPanel.jTextField1.text")); // NOI18N
+        jButton1.setText(org.openide.util.NbBundle.getMessage(ColorPanel.class, "ColorPanel.jButton1.text")); // NOI18N
+        jButton1.setFocusable(false);
+        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(jButton1);
+
+        jTextField1.setText(org.openide.util.NbBundle.getMessage(ColorPanel.class, "ColorPanel.jTextField1.text")); // NOI18N
         jTextField1.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 textChanged(evt);
@@ -70,6 +81,19 @@ public class TextPanel extends MaterialPropertyWidget {
         fireChanged();
     }//GEN-LAST:event_textChanged
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        ColorRGBADialog dialog=new ColorRGBADialog(new JFrame(), true);
+        dialog.setLocationRelativeTo(null);
+        dialog.setVisible(true);
+        if(dialog.getColor()!=null){
+            jTextField1.setText(dialog.getColor());
+            property.setValue(jTextField1.getText());
+            fireChanged();
+        }
+
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     @Override
     protected void readProperty() {
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -82,6 +106,7 @@ public class TextPanel extends MaterialPropertyWidget {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JToolBar jToolBar1;

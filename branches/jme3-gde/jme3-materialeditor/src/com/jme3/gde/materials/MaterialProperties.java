@@ -98,7 +98,7 @@ public class MaterialProperties {
                         for (int i = 0; i < variableTypes.length; i++) {
                             String string = variableTypes[i];
                             if (line.startsWith(string)) {
-                                String name = line.replaceAll(string, "").trim();
+                                String name = line.replaceFirst(string, "").trim();
                                 MaterialProperty prop = values.get(name);
                                 if (prop == null) {
                                     prop = new MaterialProperty();

@@ -121,39 +121,31 @@ public class ComposerCameraController implements ActionListener, AnalogListener 
         }
     }
 
-    public void onAnalog(String string, float f, float f1) {
+    public void onAnalog(String string, float f1, float f) {
         if ("MouseAxisX".equals(string)) {
-            //deltaX=f1*100.0f;
-            mouseX=f;
             if (leftMouse) {
-                rotateCamera(Vector3f.UNIT_Y, -f1 * 1);
+                rotateCamera(Vector3f.UNIT_Y, -f1 * 2.5f);
             }
             if (rightMouse) {
                 panCamera(deltaX * 10, -deltaY * 10);
             }
         } else if ("MouseAxisY".equals(string)) {
-            mouseY=f;
-            //deltaY=f1*100.0f;
             if (leftMouse) {
-                rotateCamera(cam.getLeft(), -f1 * 1);
+                rotateCamera(cam.getLeft(), -f1 * 2.5f);
             }
             if (rightMouse) {
                 panCamera(deltaX * 10, -deltaY * 10);
             }
         } else if ("MouseAxisX-".equals(string)) {
-            //deltaX=f1*100.0f;
-            mouseX=f;
             if (leftMouse) {
-                rotateCamera(Vector3f.UNIT_Y, f1 * 1);
+                rotateCamera(Vector3f.UNIT_Y, f1 * 2.5f);
             }
             if (rightMouse) {
                 panCamera(deltaX * 10, -deltaY * 10);
             }
         } else if ("MouseAxisY-".equals(string)) {
-            mouseY=f;
-            //deltaY=f1*100.0f;
             if (leftMouse) {
-                rotateCamera(cam.getLeft(), f1 * 1);
+                rotateCamera(cam.getLeft(), f1 * 2.5f);
             }
             if (rightMouse) {
                 panCamera(deltaX * 10, -deltaY * 10);

@@ -72,7 +72,7 @@ public class ProjectAssetManager {
         String prefix = project.getProjectDirectory().getFileObject(folderName + "/").getPath();
         int idx = absolutePath.indexOf(prefix);
         if (idx == 0) {
-            return absolutePath.substring(prefix.length());
+            return absolutePath.substring(prefix.length()+1);
         }
         return absolutePath;
     }

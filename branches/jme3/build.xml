@@ -88,7 +88,7 @@
 
         <!--jme3 base libs-->
         <copy file="${dist.jar}" toDir="${jmp_dir}/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
-        <copy file="dist/lib/jME3-lwjgl-natives-2.4.jar" toDir="${jmp_dir}/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
+        <copy file="dist/lib/jME3-lwjgl-natives-2.5.jar" toDir="${jmp_dir}/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
         <copy file="dist/lib/jME3-jogl-natives.jar" toDir="${jmp_dir}/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
         <copy file="dist/lib/jME3-natives-joal.jar" toDir="${jmp_dir}/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
 
@@ -99,7 +99,7 @@
             <!--exclude jme3 test data from core-->
             <fileset dir="dist/lib/">
                 <exclude name="jme3testdata.jar"/>
-                <exclude name="jME3-lwjgl-natives-2.4.jar"/>
+                <exclude name="jME3-lwjgl-natives-2.5.jar"/>
                 <exclude name="jME3-jogl-natives.jar"/>
                 <exclude name="jME3-natives-joal.jar"/>
             </fileset>

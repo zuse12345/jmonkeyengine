@@ -104,7 +104,7 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
         sphMesh = new Sphere(32, 32, 2.5f);
         sphMesh.setTextureMode(Sphere.TextureMode.Projected);
         sphMesh.updateGeometry(32, 32, 2.5f, false, false);
-        TangentBinormalGenerator.generate(sphMesh);
+//        TangentBinormalGenerator.generate(sphMesh);
         showMaterial();
     }
 

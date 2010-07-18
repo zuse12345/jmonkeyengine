@@ -46,8 +46,6 @@ import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CylinderCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
-import com.jme3.bullet.joints.PhysicsHingeJoint;
-import com.jme3.bullet.joints.PhysicsPoint2PointJoint;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.math.ColorRGBA;
 import com.jme3.scene.shape.Cylinder;
@@ -124,19 +122,11 @@ public class TestSimplePhysics extends SimpleBulletApplication{
         physicsCylinder.attachDebugShape(getAssetManager());
         rootNode.attachChild(physicsCylinder);
         getPhysicsSpace().add(physicsCylinder);
-//
-//        Capsule capGeom=new Capsule(16,16,16,0.5f,2f);
-//        PhysicsNode physicsCapsule=new PhysicsNode(capGeom, CollisionShape.ShapeTypes.CAPSULE);
-//        physicsCapsule.setFriction(0.1f);
-//        physicsCapsule.setLocalTranslation(new Vector3f(-8,4,0));
-//        rootNode.attachChild(physicsCapsule);
-//        pSpace.add(physicsCapsule);
-//        physicsCapsule.setMass(10f);
 
         // Join the physics objects with a Point2Point joint
-        PhysicsPoint2PointJoint joint=new PhysicsPoint2PointJoint(physicsSphere, physicsBox, new Vector3f(-2,0,0), new Vector3f(2,0,0));
+//        PhysicsPoint2PointJoint joint=new PhysicsPoint2PointJoint(physicsSphere, physicsBox, new Vector3f(-2,0,0), new Vector3f(2,0,0));
 //        PhysicsHingeJoint joint=new PhysicsHingeJoint(physicsSphere, physicsBox, new Vector3f(-2,0,0), new Vector3f(2,0,0), Vector3f.UNIT_Z,Vector3f.UNIT_Z);
-        getPhysicsSpace().add(joint);
+//        getPhysicsSpace().add(joint);
 
         // an obstacle mesh, does not move (mass=0)
         Geometry geom4=new Geometry("node2",new Sphere(16,16,1.2f));

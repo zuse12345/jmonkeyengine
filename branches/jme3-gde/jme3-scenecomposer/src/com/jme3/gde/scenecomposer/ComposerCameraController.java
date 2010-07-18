@@ -79,25 +79,23 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
     }
 
     public void checkClick() {
-        if (leftMouse) {
-            CollisionResults results = new CollisionResults();
-            Ray ray = new Ray();
-            Vector3f pos = cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0).clone();
-            Vector3f dir = cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0.3f).clone();
-            dir.subtractLocal(pos).normalizeLocal();
-            ray.setOrigin(pos);
-            ray.setDirection(dir);
-            rootNode.collideWith(ray, results);
-            final CollisionResult result = results.getClosestCollision();
-            java.awt.EventQueue.invokeLater(new Runnable() {
+        CollisionResults results = new CollisionResults();
+        Ray ray = new Ray();
+        Vector3f pos = cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0).clone();
+        Vector3f dir = cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0.3f).clone();
+        dir.subtractLocal(pos).normalizeLocal();
+        ray.setOrigin(pos);
+        ray.setDirection(dir);
+        rootNode.collideWith(ray, results);
+        final CollisionResult result = results.getClosestCollision();
+        java.awt.EventQueue.invokeLater(new Runnable() {
 
-                public void run() {
-                    if (result != null && result.getGeometry() != null) {
-                        SceneApplication.getApplication().setSelectedNode(jmeNode.getChild(result.getGeometry()));
-                    }
+            public void run() {
+                if (result != null && result.getGeometry() != null) {
+                    SceneApplication.getApplication().setSelectedNode(jmeNode.getChild(result.getGeometry()));
                 }
-            });
-        }
+            }
+        });
     }
 
     public void enable() {
@@ -161,9 +159,9 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
         if ("MouseButtonLeft".equals(string)) {
             if (bln) {
                 leftMouse = true;
-                checkClick();
             } else {
                 leftMouse = false;
+                checkClick();
             }
         }
         if ("MouseButtonRight".equals(string)) {

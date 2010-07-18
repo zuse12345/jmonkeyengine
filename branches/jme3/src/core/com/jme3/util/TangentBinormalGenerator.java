@@ -4,7 +4,10 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
+import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.scene.mesh.IndexBuffer;
 import java.nio.FloatBuffer;
@@ -62,6 +65,18 @@ public class TangentBinormalGenerator {
         return vertices;
     }
 
+    public static void generate(Spatial scene){
+        if (scene instanceof Node){
+            Node node = (Node) scene;
+            for (Spatial child : node.getChildren()){
+                generate(child);
+            }
+        }else if (scene instanceof Geometry){
+            Geometry geom = (Geometry) scene;
+            generate(geom.getMesh());
+        }
+    }
+
     public static void generate(Mesh mesh) {
         generate(mesh, true);
     }
@@ -92,8 +107,8 @@ public class TangentBinormalGenerator {
 
     private static VertexData[] processTriangles(Mesh mesh,
             int[] index, Vector3f[] v, Vector2f[] t){
+        
         IndexBuffer indexBuffer = mesh.getIndexBuffer();
-        //IndexWrapper indexBuffer =  getIndexWrapper(mesh.getBuffer(Type.Index).getData());
         FloatBuffer vertexBuffer = (FloatBuffer) mesh.getBuffer(Type.Position).getData();
         FloatBuffer textureBuffer = (FloatBuffer) mesh.getBuffer(Type.TexCoord).getData();
 
@@ -119,8 +134,8 @@ public class TangentBinormalGenerator {
 
     private static VertexData[] processTriangleStrip(Mesh mesh,
             int[] index, Vector3f[] v, Vector2f[] t){
+        
         IndexBuffer indexBuffer = mesh.getIndexBuffer();
-        //IndexWrapper indexBuffer =  getIndexWrapper(mesh.getBuffer(Type.Index).getData());
         FloatBuffer vertexBuffer = (FloatBuffer) mesh.getBuffer(Type.Position).getData();
         FloatBuffer textureBuffer = (FloatBuffer) mesh.getBuffer(Type.TexCoord).getData();
 
@@ -227,7 +242,7 @@ public class TangentBinormalGenerator {
         float det = edge1uv.x*edge2uv.y - edge1uv.y*edge2uv.x;
 
         boolean normalize = false;
-        if (Math.abs(det) < ZERO_TOLERANCE) {
+        if (Math.abs(det) < ZERO_TOLERANCE && log.isLoggable(Level.WARNING)) {
             log.log(Level.WARNING, "Colinear uv coordinates for triangle " +
                     "[{0}, {1}, {2}]; tex0 = [{3}, {4}], " +
                     "tex1 = [{5}, {6}], tex2 = [{7}, {8}]",
@@ -246,7 +261,7 @@ public class TangentBinormalGenerator {
         binormal.normalizeLocal();
 
         if (Math.abs(Math.abs(tangent.dot(binormal)) - 1)
-                        < ZERO_TOLERANCE)
+                        < ZERO_TOLERANCE && log.isLoggable(Level.WARNING))
         {
             log.log(Level.WARNING, "Vertecies are on the same line " +
                     "for triangle [{0}, {1}, {2}].",
@@ -321,7 +336,7 @@ public class TangentBinormalGenerator {
 
                 tangentUnit.set(triangleData.tangent);
                 tangentUnit.normalizeLocal();
-                if (tangent.dot(tangentUnit) < toleranceDot) {
+                if (tangent.dot(tangentUnit) < toleranceDot && log.isLoggable(Level.WARNING)) {
                     log.log(Level.WARNING,
                         "Angle between tangents exceeds tolerance " +
                         "for vertex {0}.", i);
@@ -331,7 +346,7 @@ public class TangentBinormalGenerator {
                 if (!approxTangent) {
                     binormalUnit.set(triangleData.binormal);
                     binormalUnit.normalizeLocal();
-                    if (binormal.dot(binormalUnit) < toleranceDot) {
+                    if (binormal.dot(binormalUnit) < toleranceDot && log.isLoggable(Level.WARNING)) {
                         log.log(Level.WARNING,
                                 "Angle between binormals exceeds tolerance " +
                                 "for vertex {0}.", i);
@@ -354,14 +369,14 @@ public class TangentBinormalGenerator {
                     flippedNormal = true;
                 }
             }
-            if (flippedNormal && approxTangent) {
+            if (flippedNormal && approxTangent && log.isLoggable(Level.WARNING)) {
                 // Generated normal is flipped for this vertex,
                 // so binormal = normal.cross(tangent) will be flipped in the shader
                 log.log(Level.WARNING,
                         "Binormal is flipped for vertex {0}.", i);
             }
 
-            if (tangent.length() < ZERO_TOLERANCE) {
+            if (tangent.length() < ZERO_TOLERANCE && log.isLoggable(Level.WARNING)) {
                 log.log(Level.WARNING,
                         "Shared tangent is zero for vertex {0}.", i);
                 // attempt to fix from binormal
@@ -381,7 +396,7 @@ public class TangentBinormalGenerator {
             tangentUnit.set(tangent);
             tangentUnit.normalizeLocal();
             if (Math.abs(Math.abs(tangentUnit.dot(givenNormal)) - 1)
-                        < ZERO_TOLERANCE)
+                        < ZERO_TOLERANCE && log.isLoggable(Level.WARNING))
             {
                 log.log(Level.WARNING,
                         "Normal and tangent are parallel for vertex {0}.", i);
@@ -390,11 +405,11 @@ public class TangentBinormalGenerator {
             
             if (!approxTangent) {
 
-                if (binormal.length() < ZERO_TOLERANCE) {
+                if (binormal.length() < ZERO_TOLERANCE && log.isLoggable(Level.WARNING)) {
                     log.log(Level.WARNING,
                             "Shared binormal is zero for vertex {0}.", i);
                     // attempt to fix from tangent
-                    if (tangent.length() >= ZERO_TOLERANCE) {
+                    if (tangent.length() >= ZERO_TOLERANCE && log.isLoggable(Level.WARNING)) {
                         givenNormal.cross(tangent, binormal);
                         binormal.normalizeLocal();
                     }
@@ -410,14 +425,14 @@ public class TangentBinormalGenerator {
                 binormalUnit.set(binormal);
                 binormalUnit.normalizeLocal();
                 if (Math.abs(Math.abs(binormalUnit.dot(givenNormal)) - 1)
-                            < ZERO_TOLERANCE)
+                            < ZERO_TOLERANCE && log.isLoggable(Level.WARNING))
                 {
                     log.log(Level.WARNING,
                             "Normal and binormal are parallel for vertex {0}.", i);
                 }
                 
                 if (Math.abs(Math.abs(binormalUnit.dot(tangentUnit)) - 1)
-                            < ZERO_TOLERANCE)
+                            < ZERO_TOLERANCE && log.isLoggable(Level.WARNING))
                 {
                     log.log(Level.WARNING,
                             "Tangent and binormal are parallel for vertex {0}.", i);

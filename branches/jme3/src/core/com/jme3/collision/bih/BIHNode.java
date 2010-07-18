@@ -27,15 +27,15 @@ import static java.lang.Math.max;
  * Instant Ray Tracing: The Bounding Interval Hierarchy
  * By Carsten Wächter and Alexander Keller
  */
-public class BIHNode implements Savable {
+public final class BIHNode implements Savable {
 
-    int leftIndex, rightIndex;
+    private int leftIndex, rightIndex;
 
-    BIHNode left;
-    BIHNode right;
-    float leftPlane;
-    float rightPlane;
-    int axis;
+    private BIHNode left;
+    private BIHNode right;
+    private float leftPlane;
+    private float rightPlane;
+    private int axis;
 
     public BIHNode(int l, int r){
         leftIndex = l;
@@ -50,14 +50,37 @@ public class BIHNode implements Savable {
     public BIHNode(){
     }
 
-    /*
-     * int leftIndex, rightIndex;
+    public BIHNode getLeftChild() {
+        return left;
+    }
 
-    BIHNode left;
-    BIHNode right;
-    float leftPlane;
-    float rightPlane;
-    int axis;*/
+    public void setLeftChild(BIHNode left) {
+        this.left = left;
+    }
+
+    public float getLeftPlane() {
+        return leftPlane;
+    }
+
+    public void setLeftPlane(float leftPlane) {
+        this.leftPlane = leftPlane;
+    }
+
+    public BIHNode getRightChild() {
+        return right;
+    }
+
+    public void setRightChild(BIHNode right) {
+        this.right = right;
+    }
+
+    public float getRightPlane() {
+        return rightPlane;
+    }
+
+    public void setRightPlane(float rightPlane) {
+        this.rightPlane = rightPlane;
+    }
 
     public void write(JmeExporter ex) throws IOException {
         OutputCapsule oc = ex.getCapsule(this);
@@ -86,15 +109,13 @@ public class BIHNode implements Savable {
         private final BIHNode node;
         private final float min, max;
 
-        public BIHStackData(BIHNode node, float min, float max) {
+        BIHStackData(BIHNode node, float min, float max) {
             this.node = node;
             this.min = min;
             this.max = max;
         }
 
     }
-
-//    private static final ArrayList<BIHStackData> stack = new ArrayList<BIHStackData>();
 
     public final int intersectWhere(Collidable col,
                                     BoundingBox box,

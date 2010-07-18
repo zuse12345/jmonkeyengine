@@ -150,6 +150,4 @@ public class Statistics {
         memoryTextures = 0;
     }
 
-    
-
 }

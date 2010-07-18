@@ -7,6 +7,7 @@ import org.lwjgl.opengl.DisplayMode;
 import com.jme3.system.AppSettings;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.lwjgl.opengl.ContextAttribs;
 import org.lwjgl.opengl.PixelFormat;
 
 public class LwjglDisplay extends LwjglAbstractDisplay {
@@ -57,7 +58,14 @@ public class LwjglDisplay extends LwjglAbstractDisplay {
                                          settings.getDepthBits(),
                                          settings.getStencilBits(),
                                          settings.getSamples());
-        Display.create(pf);
+
+        if (settings.getBoolean("GraphicsDebug")){
+            ContextAttribs attr = new ContextAttribs();
+            attr = attr.withDebug(true);
+            Display.create(pf, attr);
+        }else{
+            Display.create(pf);
+        }
     }
 
     public void create(boolean waitFor){

@@ -38,8 +38,6 @@ import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
 import java.io.IOException;
-import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.BitSet;
 
 /**

@@ -2,10 +2,10 @@ package com.jme3.app;
 
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
-import com.jme3.input.BindingAdapter;
 import com.jme3.input.FlyByCamera;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.RenderState;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
@@ -36,8 +36,27 @@ public abstract class SimpleApplication extends Application {
     protected FlyByCamera flyCam;
     protected boolean showSettings = true;
 
+    private AppActionListener actionListener = new AppActionListener();
+
     private class AppActionListener implements ActionListener {
         public void onAction(String name, boolean value, float tpf) {
+            if (!value)
+                return;
+
+            if (name.equals("SIMPLEAPP_Exit")){
+                    stop();
+                }else if (name.equals("SIMPLEAPP_CameraPos")){
+                    if (cam != null){
+                        Vector3f loc = cam.getLocation();
+                        Quaternion rot = cam.getRotation();
+                        System.out.println("Camera Position: ("+
+                                loc.x+", "+loc.y+", "+loc.z+")");
+                        System.out.println("Camera Rotation: "+rot);
+                        System.out.println("Camera Direction: "+cam.getDirection());
+                    }
+                }else if (name.equals("SIMPLEAPP_Memory")){
+                    BufferUtils.printCurrentDirectMemory(null);
+                }
         }
     }
 
@@ -116,31 +135,13 @@ public abstract class SimpleApplication extends Application {
             flyCam.setMoveSpeed(1f);
             flyCam.registerWithInput(inputManager);
 
-            if (context.getType() == Type.Display){
-                inputManager.registerKeyBinding("SIMPLEAPP_Exit", KeyInput.KEY_ESCAPE);
-            }
-
-            inputManager.registerKeyBinding("SIMPLEAPP_CameraPos", KeyInput.KEY_C);
-            inputManager.registerKeyBinding("SIMPLEAPP_Memory",    KeyInput.KEY_M);
-            inputManager.addBindingListener(new BindingAdapter() {
-                @Override
-                public void onBinding(String binding, float value) {
-                    if (binding.equals("SIMPLEAPP_Exit")){
-                        stop();
-                    }else if (binding.equals("SIMPLEAPP_CameraPos")){
-                        if (cam != null){
-                            Vector3f loc = cam.getLocation();
-                            Quaternion rot = cam.getRotation();
-                            System.out.println("Camera Position: ("+
-                                    loc.x+", "+loc.y+", "+loc.z+")");
-                            System.out.println("Camera Rotation: "+rot);
-                            System.out.println("Camera Direction: "+cam.getDirection());
-                        }
-                    }else if (binding.equals("SIMPLEAPP_Memory")){
-                        BufferUtils.printCurrentDirectMemory(null);
-                    }
-                }
-            });
+            if (context.getType() == Type.Display)
+                inputManager.addMapping("SIMPLEAPP_Exit", new KeyTrigger(KeyInput.KEY_ESCAPE));
+            
+            inputManager.addMapping("SIMPLEAPP_CameraPos", new KeyTrigger(KeyInput.KEY_C));
+            inputManager.addMapping("SIMPLEAPP_Memory", new KeyTrigger(KeyInput.KEY_M));
+            inputManager.addListener(actionListener, "SIMPLEAPP_Exit",
+                                     "SIMPLEAPP_CameraPos", "SIMPLEAPP_Memory");
         }
 
         // call user code
@@ -161,12 +162,19 @@ public abstract class SimpleApplication extends Application {
             fpsText.setText("Frames per second: "+fps);
             secondCounter = 0.0f;
         }
-        
+
+        // update states
+        stateManager.update(tpf);
+
+        // simple update and root node
         simpleUpdate(tpf);
         rootNode.updateLogicalState(tpf);
         guiNode.updateLogicalState(tpf);
         rootNode.updateGeometricState();
         guiNode.updateGeometricState();
+
+        // render states
+        stateManager.render(renderManager);
 
         renderManager.render(tpf);
         simpleRender(renderManager);

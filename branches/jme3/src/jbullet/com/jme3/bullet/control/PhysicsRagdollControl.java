@@ -48,8 +48,8 @@ public class PhysicsRagdollControl implements Control {
         for (Iterator<Bone> it = children.iterator(); it.hasNext();) {
             Bone childBone = it.next();
             Bone parentBone = bone;
-            Vector3f parentPos = parentBone.getWorldPosition();
-            Vector3f childPos = childBone.getWorldPosition();
+            Vector3f parentPos = parentBone.getModelSpacePosition();
+            Vector3f childPos = childBone.getModelSpacePosition();
             //get location between the two bones (physicscapsule center)
             Vector3f jointCenter = parentPos.add(childPos).multLocal(0.5f);
             Quaternion jointRotation = new Quaternion();
@@ -204,7 +204,7 @@ public class PhysicsRagdollControl implements Control {
             Bone childBone = skeleton.getBone(i);
             childBone.setUserControl(true);
             if (childBone.getParent() == null) {
-                Vector3f parentPos = childBone.getWorldPosition();
+                Vector3f parentPos = childBone.getModelSpacePosition();
                 logger.log(Level.INFO, "Found root bone in skeleton {0}", skeleton);
                 PhysicsNode shapeNode = new PhysicsNode(null, new SphereCollisionShape(.1f), 1);
                 shapeNode.setLocalTranslation(parentPos);

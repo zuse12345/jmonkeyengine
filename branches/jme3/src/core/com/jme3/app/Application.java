@@ -36,18 +36,11 @@ public class Application implements SystemListener {
     private static final Logger logger = Logger.getLogger(Application.class.getName());
 
     /**
-     * The content manager. Typically initialized outside the GL thread
+     * The asset manager. Typically initialized outside the GL thread
      * to allow offline loading of content.
      */
     protected AssetManager assetManager;
     
-    @Deprecated
-    /**
-     * If you're still using this variable, please switch to using
-     * "<code>assetManager</code>" instead. 
-     */
-    protected AssetManager manager;
-
     protected AudioRenderer audioRenderer;
     protected Renderer renderer;
     protected RenderManager renderManager;

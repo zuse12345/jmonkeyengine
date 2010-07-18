@@ -25,6 +25,26 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
+/**
+ * <code>AnimControl</code> is a Spatial control that allows manipulation
+ * of skeletal animation.
+ *
+ * The control currently supports:
+ * 1) Animation blending/transitions
+ * 2) Multiple animation channels
+ * 3) Multiple skins
+ * 4) Animation event listeners
+ * 5) Animated model cloning
+ * 6) Animated model binary import/export
+ *
+ * Planned:
+ * 1) Hardware skinning
+ * 2) Morph/Pose animation
+ * 3) Attachments
+ * 4) Add/remove skins
+ *
+ * @author Kirill Vainer
+ */
 public class AnimControl extends AbstractControl implements Savable, Cloneable {
 
     /**
@@ -51,8 +71,20 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
     transient ArrayList<AnimEventListener> listeners
             = new ArrayList<AnimEventListener>();
 
+    /**
+     * Create a new <code>AnimControl</code> that will animate the given skins
+     * using the skeleton and provided animations.
+     *
+     * @param model The root node of all the skins specified in
+     * <code>meshes</code> argument.
+     * @param meshes The skins, or meshes, to animate. Should have
+     * properly set BoneIndex and BoneWeight buffers.
+     * @param skeleton The skeleton structure represents a bone heirarchy
+     * to be animated.
+     */
     public AnimControl(Node model, Mesh[] meshes, Skeleton skeleton){
         super(model);
+
         this.skeleton = skeleton;
         this.targets = meshes;
         reset();
@@ -83,52 +115,132 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
         }
     }
 
+    /**
+     * @param animations Set the animations that this <code>AnimControl</code>
+     * will be capable of playing. The animations should be compatible
+     * with the skeleton given in the constructor.
+     */
     public void setAnimations(HashMap<String, BoneAnimation> animations){
         animationMap = animations;
     }
 
+    /**
+     * Retrieve an animation from the list of animations.
+     * @param name The name of the animation to retrieve.
+     * @return The animation corresponding to the given name, or null, if no
+     * such named animation exists.
+     */
     public BoneAnimation getAnim(String name){
         return animationMap.get(name);
     }
 
+    /**
+     * Adds an animation to be available for playing to this
+     * <code>AnimControl</code>.
+     * @param anim The animation to add.
+     */
     public void addAnim(BoneAnimation anim){
         animationMap.put(anim.getName(), anim);
     }
 
+    /**
+     * Remove an animation so that it is no longer available for playing.
+     * @param anim The animation to remove.
+     */
     public void removeAnim(BoneAnimation anim){
+        if (!animationMap.containsKey(anim.getName()))
+            throw new IllegalArgumentException("Given animation does not exist " +
+                                               "in this AnimControl");
+
         animationMap.remove(anim.getName());
     }
 
+    /**
+     * Create a new animation channel, by default assigned to all bones
+     * in the skeleton.
+     * 
+     * @return A new animation channel for this <code>AnimControl</code>.
+     */
     public AnimChannel createChannel(){
         AnimChannel channel = new AnimChannel(this);
         channels.add(channel);
         return channel;
     }
 
+    /**
+     * Return the animation channel at the given index.
+     * @param index The index, starting at 0, to retrieve the <code>AnimChannel</code>.
+     * @return The animation channel at the given index, or throws an exception
+     * if the index is out of bounds.
+     *
+     * @throws IndexOutOfBoundsException If no channel exists at the given index.
+     */
     public AnimChannel getChannel(int index){
         return channels.get(index);
     }
 
+    /**
+     * @return The number of channels that are controlled by this
+     * <code>AnimControl</code>.
+     *
+     * @see AnimControl#createChannel()
+     */
+    public int getNumChannels(){
+        return channels.size();
+    }
+
+    /**
+     * Clears all the channels that were created.
+     *
+     * @see AnimControl#createChannel()
+     */
     public void clearChannels(){
         channels.clear();
     }
 
+    /**
+     * @return The skeleton of this <code>AnimControl</code>.
+     */
     public Skeleton getSkeleton() {
         return skeleton;
     }
 
+    /**
+     * @return The targets, or skins, being influenced by this
+     * <code>AnimControl</code>.
+     */
     public Mesh[] getTargets() {
         return targets;
     }
 
+    /**
+     * Adds a new listener to recieve animation related events.
+     * @param listener The listener to add.
+     */
     public void addListener(AnimEventListener listener){
+        if (listeners.contains(listener))
+            throw new IllegalArgumentException("The given listener is already " +
+                                               "registed at this AnimControl");
+
         listeners.add(listener);
     }
 
+    /**
+     * Removes the given listener from listening to events.
+     * @param listener
+     * @see AnimControl#addListener(com.jme3.animation.AnimEventListener)
+     */
     public void removeListener(AnimEventListener listener){
-        listeners.remove(listener);
+        if (!listeners.remove(listener))
+            throw new IllegalArgumentException("The given listener is not " +
+                                               "registed at this AnimControl");
     }
 
+    /**
+     * Clears all the listeners added to this <code>AnimControl</code>
+     *
+     * @see AnimControl#addListener(com.jme3.animation.AnimEventListener)
+     */
     public void clearListeners(){
         listeners.clear();
     }
@@ -179,14 +291,24 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
         }
     }
 
+    /**
+     * @return The names of all animations that this <code>AnimControl</code>
+     * can play.
+     */
     public Collection<String> getAnimationNames(){
         return animationMap.keySet();
     }
 
+    /**
+     * Returns the length of the given named animation.
+     * @param name The name of the animation
+     * @return The length of time, in seconds, of the named animation.
+     */
     public float getAnimationLength(String name){
         BoneAnimation a = animationMap.get(name);
         if (a == null)
-            return -1;
+            throw new IllegalArgumentException("The animation " + name +
+                                               " does not exist in this AnimControl");
 
         return a.getLength();
     }
@@ -266,17 +388,9 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
 
                 float rx=0, ry=0, rz=0, rnx=0, rny=0, rnz=0;
 
-    //            float vtx = fvb.get();
-    //            float vty = fvb.get();
-    //            float vtz = fvb.get();
-    //            float nmx = fnb.get();
-    //            float nmy = fnb.get();
-    //            float nmz = fnb.get();
-    //            float rx=0, ry=0, rz=0, rnx=0, rny=0, rnz=0;
-
                 for (int w = maxWeightsPerVert - 1; w >= 0; w--){
-                    float weight = weights[idxWeights];//wb.get();
-                    Matrix4f mat = offsetMatrices[indices[idxWeights++]];//offsetMatrices[ib.get()];
+                    float weight = weights[idxWeights];
+                    Matrix4f mat = offsetMatrices[indices[idxWeights++]];
 
                     rx += (mat.m00 * vtx + mat.m01 * vty + mat.m02 * vtz + mat.m03) * weight;
                     ry += (mat.m10 * vtx + mat.m11 * vty + mat.m12 * vtz + mat.m13) * weight;
@@ -288,8 +402,6 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
                 }
 
                 idxWeights += fourMinusMaxWeights;
-    //            ib.position(ib.position()+fourMinusMaxWeights);
-    //            wb.position(wb.position()+fourMinusMaxWeights);
 
                 idxPositions -= 3;
                 normBuf[idxPositions] = rnx;
@@ -298,13 +410,6 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
                 posBuf[idxPositions++] = ry;
                 normBuf[idxPositions] = rnz;
                 posBuf[idxPositions++] = rz;
-
-                // overwrite vertex with transformed pos
-    //            fvb.position(fvb.position()-3);
-    //            fvb.put(rx).put(ry).put(rz);
-    //
-    //            fnb.position(fnb.position()-3);
-    //            fnb.put(rnx).put(rny).put(rnz);
             }
 
 

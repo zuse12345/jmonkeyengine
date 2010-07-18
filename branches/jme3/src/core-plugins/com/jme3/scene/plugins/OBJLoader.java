@@ -3,7 +3,6 @@ package com.jme3.scene.plugins;
 import com.jme3.asset.*;
 import com.jme3.material.Material;
 import com.jme3.material.MaterialList;
-import com.jme3.math.FastMath;
 import com.jme3.util.*;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
@@ -16,8 +15,6 @@ import com.jme3.scene.VertexBuffer;
 import com.jme3.scene.mesh.IndexBuffer;
 import com.jme3.scene.mesh.IndexIntBuffer;
 import com.jme3.scene.mesh.IndexShortBuffer;
-import com.jme3.scene.shape.Box;
-import com.jme3.scene.shape.Sphere;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.FloatBuffer;
@@ -30,8 +27,7 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jme3tools.converters.model.ModelConverter;
-import jme3tools.converters.model.strip.TriStrip;
+import java.util.regex.Pattern;
 
 /**
  * Reads OBJ format models.
@@ -48,7 +44,7 @@ public final class OBJLoader implements AssetLoader {
     protected String currentMatName;
 
     protected final HashMap<Vertex, Integer> vertIndexMap = new HashMap<Vertex, Integer>();
-    protected IntMap<Vertex> indexVertMap = new IntMap<Vertex>();
+    protected final IntMap<Vertex> indexVertMap = new IntMap<Vertex>();
     protected int curIndex  = 0;
     protected int geomIndex = 0;
 
@@ -68,27 +64,24 @@ public final class OBJLoader implements AssetLoader {
         int index;
 
         @Override
-        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-        public boolean equals(Object o){
-            Vertex other = (Vertex) o;
-//            return v == other.v && vt == other.vt && vn == other.vn;
-            boolean vq = false, tq = false, nq = false;
-            if (v != null)
-                vq = v.equals(other.v);
-            else if (other.v == null)
-                vq = true;
-
-            if (vt != null)
-                tq = vt.equals(other.vt);
-            else if (other.vt == null)
-                tq = true;
-
-            if (vn != null)
-                nq = vn.equals(other.vn);
-            else if (other.vn == null)
-                nq = true;
-
-            return vq && tq && nq;
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Vertex other = (Vertex) obj;
+            if (this.v != other.v && (this.v == null || !this.v.equals(other.v))) {
+                return false;
+            }
+            if (this.vt != other.vt && (this.vt == null || !this.vt.equals(other.vt))) {
+                return false;
+            }
+            if (this.vn != other.vn && (this.vn == null || !this.vn.equals(other.vn))) {
+                return false;
+            }
+            return true;
         }
 
         @Override
@@ -103,9 +96,6 @@ public final class OBJLoader implements AssetLoader {
 
     protected static class Face {
         Vertex[] verticies;
-    }
-
-    public OBJLoader(){
     }
 
     public void reset(){
@@ -128,7 +118,6 @@ public final class OBJLoader implements AssetLoader {
         Integer index = vertIndexMap.get(vert);
         if (index != null){
             vert.index = index.intValue();
-//            indexVertMap.put(index, vert);
         }else{
             vert.index = curIndex++;
             vertIndexMap.put(vert, vert.index);
@@ -137,48 +126,44 @@ public final class OBJLoader implements AssetLoader {
     }
 
     protected Face[] quadToTriangle(Face f){
-        if (f.verticies.length == 4){
-            Face[] t = new Face[]{ new Face(), new Face() };
-            t[0].verticies = new Vertex[3];
-            t[1].verticies = new Vertex[3];
+        assert f.verticies.length == 4;
 
-            Vertex v0 = f.verticies[0];
-            Vertex v1 = f.verticies[1];
-            Vertex v2 = f.verticies[2];
-            Vertex v3 = f.verticies[3];
+        Face[] t = new Face[]{ new Face(), new Face() };
+        t[0].verticies = new Vertex[3];
+        t[1].verticies = new Vertex[3];
 
-            // find the pair of verticies that is closest to each over
-            // v0 and v2
-            // OR
-            // v1 and v3
-            float d1 = v0.v.distanceSquared(v2.v);
-            float d2 = v1.v.distanceSquared(v3.v);
-            if (d1 < d2){
-                // put an edge in v0, v2
-                t[0].verticies[0] = v0;
-                t[0].verticies[1] = v1;
-                t[0].verticies[2] = v3;
+        Vertex v0 = f.verticies[0];
+        Vertex v1 = f.verticies[1];
+        Vertex v2 = f.verticies[2];
+        Vertex v3 = f.verticies[3];
 
-                t[1].verticies[0] = v1;
-                t[1].verticies[1] = v2;
-                t[1].verticies[2] = v3;
-            }else{
-                // put an edge in v1, v3
-                t[0].verticies[0] = v0;
-                t[0].verticies[1] = v1;
-                t[0].verticies[2] = v2;
+        // find the pair of verticies that is closest to each over
+        // v0 and v2
+        // OR
+        // v1 and v3
+        float d1 = v0.v.distanceSquared(v2.v);
+        float d2 = v1.v.distanceSquared(v3.v);
+        if (d1 < d2){
+            // put an edge in v0, v2
+            t[0].verticies[0] = v0;
+            t[0].verticies[1] = v1;
+            t[0].verticies[2] = v3;
 
-                t[1].verticies[0] = v0;
-                t[1].verticies[1] = v2;
-                t[1].verticies[2] = v3;
-            }
-
-            return t;
-        }else if (f.verticies.length == 3){
-            return new Face[]{ f };
+            t[1].verticies[0] = v1;
+            t[1].verticies[1] = v2;
+            t[1].verticies[2] = v3;
         }else{
-            throw new UnsupportedOperationException();
+            // put an edge in v1, v3
+            t[0].verticies[0] = v0;
+            t[0].verticies[1] = v1;
+            t[0].verticies[2] = v2;
+
+            t[1].verticies[0] = v0;
+            t[1].verticies[1] = v2;
+            t[1].verticies[2] = v3;
         }
+
+        return t;
     }
 
     private ArrayList<Vertex> vertList = new ArrayList<Vertex>();
@@ -222,7 +207,7 @@ public final class OBJLoader implements AssetLoader {
         }
 
         if (vertList.size() > 4 || vertList.size() <= 2)
-            System.out.println("POLYGON/EDGE/POINT DETECTED!!");
+            logger.warning("Edge or polygon detected in OBJ. Ignored.");
 
         f.verticies = new Vertex[vertList.size()];
         for (int i = 0; i < vertList.size(); i++){
@@ -236,9 +221,6 @@ public final class OBJLoader implements AssetLoader {
         }
     }
 
-//    Pattern nl = Pattern.compile("\n");
-//    Pattern ws = Pattern.compile("\\p{javaWhitespace}+");
-
     protected Vector3f readVector3(){
         Vector3f v = new Vector3f();
 
@@ -251,13 +233,20 @@ public final class OBJLoader implements AssetLoader {
 
     protected Vector2f readVector2(){
         Vector2f v = new Vector2f();
-        v.setX(scan.nextFloat());
-        if (scan.hasNextFloat()){
-            v.setY(scan.nextFloat());
-            if (scan.hasNextFloat()){
-                scan.nextFloat(); // ignore
-            }
-        }
+
+        String line = scan.nextLine().trim();
+        String[] split = line.split(" ");
+        v.setX( Float.parseFloat(split[0]) );
+        v.setY( Float.parseFloat(split[1]) );
+
+//        v.setX(scan.nextFloat());
+//        if (scan.hasNextFloat()){
+//            v.setY(scan.nextFloat());
+//            if (scan.hasNextFloat()){
+//                scan.nextFloat(); // ignore
+//            }
+//        }
+
         return v;
     }
 
@@ -272,10 +261,13 @@ public final class OBJLoader implements AssetLoader {
         }
     }
 
+    private static final Pattern nl = Pattern.compile("\n");
+    private static final Pattern ws = Pattern.compile("\\p{javaWhitespace}+");
+
     protected void nextStatement(){
-        scan.useDelimiter("\n");
+        scan.useDelimiter(nl);
         scan.next();
-        scan.useDelimiter("\\p{javaWhitespace}+");
+        scan.useDelimiter(ws);
     }
 
     protected boolean readLine() throws IOException{
@@ -300,11 +292,6 @@ public final class OBJLoader implements AssetLoader {
             // face, can be triangle, quad, or polygon (unsupported)
             readFace();
         }else if (cmd.equals("usemtl")){
-            if (faces.size() > 0){
-                // have faces from previous material, generate geometry.
-//                Geometry geom = createGeometry(true);
-//                objNode.attachChild(geom);
-            }
             // use material from MTL lib for the following faces
             currentMatName = scan.next();
         }else if (cmd.equals("mtllib")){
@@ -326,10 +313,14 @@ public final class OBJLoader implements AssetLoader {
         if (faceList.size() == 0)
             throw new IOException("No geometry data to generate mesh");
 
+        // Create mesh from the faces
         Mesh mesh = constructMesh(faceList);
+        
         Geometry geom = new Geometry(objName + "-geom-" + (geomIndex++), mesh);
+        
         Material material = null;
         if (matName != null && matList != null){
+            // Get material from material list
             material = matList.get(matName);
         }
         if (material == null){
@@ -350,7 +341,13 @@ public final class OBJLoader implements AssetLoader {
         m.setMode(Mode.Triangles);
 
         ArrayList<Face> newFaces = new ArrayList<Face>(faceList.size());
-        for (Face f : faceList){
+        for (int i = 0; i < faceList.size(); i++){
+            Face f = faceList.get(i);
+
+            for (Vertex v : f.verticies){
+                findVertexIndex(v);
+            }
+
             if (f.verticies.length == 4){
                 Face[] t = quadToTriangle(f);
                 newFaces.add(t[0]);
@@ -358,19 +355,22 @@ public final class OBJLoader implements AssetLoader {
             }else{
                 newFaces.add(f);
             }
-            for (Vertex v : f.verticies){
-                findVertexIndex(v);
-            }
         }
 
-        FloatBuffer posBuf = BufferUtils.createFloatBuffer(vertIndexMap.size() * 3);
-        FloatBuffer normBuf = norms.size() > 0 ? BufferUtils.createFloatBuffer(vertIndexMap.size() * 3) : null;
-        FloatBuffer tcBuf = texCoords.size() > 0 ? BufferUtils.createFloatBuffer(vertIndexMap.size() * 2) : null;
+        FloatBuffer posBuf  = BufferUtils.createFloatBuffer(vertIndexMap.size() * 3);
+        FloatBuffer normBuf = null;
+        FloatBuffer tcBuf   = null;
 
-        // TODO: only use Shortbuffer if faces.size() * 3 > Short.MAX_VALUE
+        if (norms.size() > 0){
+            normBuf = BufferUtils.createFloatBuffer(vertIndexMap.size() * 3);
+        }
+        if (texCoords.size() > 0){
+            tcBuf = BufferUtils.createFloatBuffer(vertIndexMap.size() * 2);
+        }
+
         IndexBuffer indexBuf = null;
-        if (newFaces.size() * 3 >= 65536){
-            // use intbuffer
+        if (vertIndexMap.size() >= 65536){
+            // too many verticies: use intbuffer instead of shortbuffer
             IntBuffer ib = BufferUtils.createIntBuffer(newFaces.size() * 3);
             m.setBuffer(VertexBuffer.Type.Index, 3, ib);
             indexBuf = new IndexIntBuffer(ib);
@@ -380,8 +380,9 @@ public final class OBJLoader implements AssetLoader {
             indexBuf = new IndexShortBuffer(sb);
         }
 
-        int i = 0;
-        for (Face f : newFaces){
+        int numFaces = newFaces.size();
+        for (int i = 0; i < numFaces; i++){
+            Face f = newFaces.get(i);
             if (f.verticies.length != 3)
                 continue;
 
@@ -414,26 +415,16 @@ public final class OBJLoader implements AssetLoader {
                 tcBuf.put(v2.vt.x).put(v2.vt.y);
             }
 
-            indexBuf.put(i,   v0.index);
-            indexBuf.put(i+1, v1.index);
-            indexBuf.put(i+2, v2.index);
-            i+=3;
-
-//            indexBuf.put((short)v0.index);
-//            indexBuf.put((short)v1.index);
-//            indexBuf.put((short)v2.index);
+            int index = i * 3; // current face * 3 = current index
+            indexBuf.put(index,   v0.index);
+            indexBuf.put(index+1, v1.index);
+            indexBuf.put(index+2, v2.index);
         }
 
         m.setBuffer(VertexBuffer.Type.Position, 3, posBuf);
         m.setBuffer(VertexBuffer.Type.Normal,   3, normBuf);
         m.setBuffer(VertexBuffer.Type.TexCoord, 2, tcBuf);
         // index buffer was set on creation
-
-        Logger log = Logger.getLogger(TangentBinormalGenerator.class.getName());
-        Level lvl = log.getLevel();
-        log.setLevel(Level.OFF);
-        TangentBinormalGenerator.generate(m);
-        log.setLevel(lvl);
 
         m.setStatic();
         m.updateBound();

@@ -536,13 +536,19 @@ public class Mesh implements Savable, Cloneable {
     }
 
     public IndexBuffer getIndexBuffer() {
-        Buffer buf = getBuffer(Type.Index).getData();
+        VertexBuffer vb = getBuffer(Type.Index);
+        if (vb == null)
+            return null;
+        
+        Buffer buf = vb.getData();
         if (buf instanceof ByteBuffer) {
             return new IndexByteBuffer((ByteBuffer) buf);
         } else if (buf instanceof ShortBuffer) {
             return new IndexShortBuffer((ShortBuffer) buf);
-        } else {
+        } else if (buf instanceof IntBuffer) {
             return new IndexIntBuffer((IntBuffer) buf);
+        } else {
+            throw new UnsupportedOperationException("Index buffer type unsupported: "+ buf.getClass());
         }
     }
 

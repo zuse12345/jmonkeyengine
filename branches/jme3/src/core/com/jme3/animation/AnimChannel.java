@@ -1,7 +1,19 @@
 package com.jme3.animation;
 
+import com.jme3.math.FastMath;
 import java.util.BitSet;
 
+/**
+ * <code>AnimChannel</code> provides controls, such as play, pause,
+ * fast forward, etc, for an animation. The animation
+ * channel may influence the entire model or specific bones of the model's
+ * skeleton. A single model may have multiple animation channels influencing
+ * various parts of its body. For example, a character model may have an
+ * animation channel for its feet, and another for its torso, and
+ * the animations for each channel are controlled independently.
+ * 
+ * @author Kirill Vainer
+ */
 public class AnimChannel {
 
     private AnimControl control;
@@ -50,34 +62,99 @@ public class AnimChannel {
         this.control = control;
     }
 
+    /**
+     * @return The name of the currently playing animation, or null if
+     * none is assigned.
+     *
+     * @see AnimChannel#setAnim(java.lang.String) 
+     */
     public String getAnimationName() {
         return animation != null ? animation.getName() : null;
     }
 
+    /**
+     * @return The loop mode currently set for the animation. The loop mode
+     * determines what will happen to the animation once it finishes
+     * playing.
+     * 
+     * For more information, see the LoopMode enum class.
+     * @see LoopMode
+     * @see AnimChannel#setLoopMode(com.jme3.animation.LoopMode)
+     */
     public LoopMode getLoopMode() {
         return loopMode;
     }
 
+    /**
+     * @param loopMode Set the loop mode for the channel. The loop mode
+     * determines what will happen to the animation once it finishes
+     * playing.
+     *
+     * For more information, see the LoopMode enum class.
+     * @see LoopMode
+     */
     public void setLoopMode(LoopMode loopMode) {
         this.loopMode = loopMode;
     }
 
+    /**
+     * @return The speed that is assigned to the animation channel. The speed
+     * is a scale value starting from 0.0, at 1.0 the animation will play
+     * at its default speed.
+     *
+     * @see AnimChannel#setSpeed(float)
+     */
     public float getSpeed() {
         return speed;
     }
 
+    /**
+     * @param speed Set the speed of the animation channel. The speed
+     * is a scale value starting from 0.0, at 1.0 the animation will play
+     * at its default speed.
+     */
     public void setSpeed(float speed) {
         this.speed = speed;
     }
 
+    /**
+     * @return The time of the currently playing animation. The time
+     * starts at 0 and continues on until getAnimMaxTime().
+     *
+     * @see AnimChannel#setTime(float)
+     */
     public float getTime() {
         return time;
     }
 
+    /**
+     * @param time Set the time of the currently playing animation, the time
+     * is clamped from 0 to getAnimMaxTime().
+     */
     public void setTime(float time) {
-        this.time = time;
+        this.time = FastMath.clamp(time, 0, getAnimMaxTime());
     }
 
+    /**
+     * @return The length of the currently playing animation, or zero
+     * if no animation is playing.
+     *
+     * @see AnimChannel#getTime()
+     */
+    public float getAnimMaxTime(){
+        return animation != null ? animation.getLength() : 0f;
+    }
+
+    /**
+     * Set the current animation that is played by this AnimChannel.
+     * This resets the time to zero, and optionally blends the animation
+     * over <code>blendTime</code> seconds with the currently playing animation.
+     *
+     * @param name The name of the animation to play
+     * @param blendTime The blend time over which to blend the new animation
+     * with the old one. If zero, then no blending will occur and the new
+     * animation will be applied instantly.
+     */
     public void setAnim(String name, float blendTime){
         if (name == null)
             throw new NullPointerException();
@@ -107,37 +184,34 @@ public class AnimChannel {
         loopMode = LoopMode.Loop;
     }
 
+    /**
+     *
+     * @param name
+     */
     public void setAnim(String name){
         setAnim(name, defaultBlendTime);
     }
 
     /**
-     * Add all the bones to the animation channel.
+     * Add all the bones of the model's skeleton to be
+     * influenced by this animation channel.
      */
     public void addAllBones() {
         affectedBones = null;
     }
 
     /**
-     * Add a single Bone to the Channel,
-     * and don't have multiple instances of the same in the list.
+     * Add a single bone to be influenced by this animation channel.
      */
     public void addBone(String name) {
         addBone(control.getSkeleton().getBone(name));
     }
 
     /**
-     * Add a single Bone to the Channel,
-     * and don't have multiple instances of the same in the list.
+     * Add a single bone to be influenced by this animation channel.
      */
     public void addBone(Bone bone) {
         int boneIndex = control.getSkeleton().getBoneIndex(bone);
-//        if(affectedBones == null) {
-//            affectedBones = new ArrayList<Integer>();
-//            affectedBones.add(boneIndex);
-//        } else if(!affectedBones.contains(boneIndex)) {
-//            affectedBones.add(boneIndex);
-//        }
         if(affectedBones == null) {
             affectedBones = new BitSet(control.getSkeleton().getBoneCount());
         }
@@ -145,14 +219,16 @@ public class AnimChannel {
     }
 
     /**
-     * Add Bones to the Channel going toward the root bone. (i.e. parents)
+     * Add bones to be influenced by this animation channel starting from the
+     * given bone name and going toward the root bone.
      */
     public void addToRootBone(String name) {
         addToRootBone(control.getSkeleton().getBone(name));
     }
 
     /**
-     * Add Bones to the Channel going toward the root bone. (i.e. parents)
+     * Add bones to be influenced by this animation channel starting from the
+     * given bone and going toward the root bone.
      */
     public void addToRootBone(Bone bone) {
         addBone(bone);
@@ -163,14 +239,16 @@ public class AnimChannel {
     }
 
     /**
-     * Add Bones to the Channel going away from the root bone. (i.e. children)
+     * Add bones to be influenced by this animation channel, starting
+     * from the given named bone and going toward its children.
      */
     public void addFromRootBone(String name) {
         addFromRootBone(control.getSkeleton().getBone(name));
     }
 
     /**
-     * Add Bones to the Channel going away from the root bone. (i.e. children)
+     * Add bones to be influenced by this animation channel, starting
+     * from the given bone and going toward its children.
      */
     public void addFromRootBone(Bone bone) {
         addBone(bone);

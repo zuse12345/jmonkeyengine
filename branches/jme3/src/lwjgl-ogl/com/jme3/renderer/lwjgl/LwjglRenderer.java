@@ -232,8 +232,6 @@ public class LwjglRenderer implements Renderer {
         maxCubeTexSize = intBuf16.get(0);
         logger.log(Level.FINER, "Maximum CubeMap Resolution: {0}", maxCubeTexSize);
 
-
-
         if (ctxCaps.GL_ARB_color_buffer_float){
             // XXX: Require both 16 and 32 bit float support for FloatColorBuffer.
             if (ctxCaps.GL_ARB_half_float_pixel){

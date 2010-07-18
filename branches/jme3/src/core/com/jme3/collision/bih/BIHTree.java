@@ -302,15 +302,15 @@ public class BIHTree implements CollisionData {
             setMinMax(lbbox, false, axis, split);
 
             //The left node right border is the plane most right
-            node.leftPlane = getMinMax(createBox(l, max(l, pivot - 1)), false, axis);
-            node.left = createNode(l, max(l, pivot - 1), lbbox, depth+1); //Recursive call
+            node.setLeftPlane( getMinMax(createBox(l, max(l, pivot - 1)), false, axis) );
+            node.setLeftChild( createNode(l, max(l, pivot - 1), lbbox, depth+1) ); //Recursive call
 
             //Right Child
             BoundingBox rbbox = new BoundingBox(currentBox);
             setMinMax(rbbox, true, axis, split);
             //The right node left border is the plane most left
-            node.rightPlane = getMinMax(createBox(pivot, r), true, axis);
-            node.right = createNode(pivot, r, rbbox, depth+1); //Recursive call
+            node.setRightPlane( getMinMax(createBox(pivot, r), true, axis) );
+            node.setRightChild( createNode(pivot, r, rbbox, depth+1) ); //Recursive call
 
             return node;
         }

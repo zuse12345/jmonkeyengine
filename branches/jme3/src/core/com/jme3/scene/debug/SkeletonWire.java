@@ -66,7 +66,7 @@ public class SkeletonWire extends Mesh {
         posBuf.clear();
         for (int i = 0; i < skeleton.getBoneCount(); i++){
             Bone bone = skeleton.getBone(i);
-            Vector3f bonePos = bone.getWorldPosition();
+            Vector3f bonePos = bone.getModelSpacePosition();
 
             posBuf.put(bonePos.getX()).put(bonePos.getY()).put(bonePos.getZ());
         }

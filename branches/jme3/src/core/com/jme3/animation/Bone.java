@@ -46,7 +46,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * TODO: Add better documentation to this class.
+ * <code>Bone</code> describes a bone in the bone-weight skeletal animation
+ * system. A bone contains a name and an index, as well as relevant
+ * transformation data.
+ *
  * @author Kirill Vainer
  */
 public final class Bone implements Savable {
@@ -94,7 +97,8 @@ public final class Bone implements Savable {
     private Quaternion worldRot = new Quaternion();
 
     /**
-     * Creates a new bone
+     * Creates a new bone with the given name.
+     * 
      * @param name Name to give to this bone
      */
     public Bone(String name){
@@ -133,32 +137,70 @@ public final class Bone implements Savable {
     public Bone() {
     }
 
+    /**
+     * @return The name of the bone, set in the constructor.
+     */
     public String getName(){
         return name;
     }
 
+    /**
+     * @return The parent bone of this bone, or null if it is a root bone.
+     */
     public Bone getParent(){
         return parent;
     }
 
+    /**
+     * @return All the children bones of this bone.
+     */
     public ArrayList<Bone> getChildren(){
         return children;
     }
 
+    /**
+     * @return The local position of the bone, relative to the parent bone.
+     */
     public Vector3f getLocalPosition() {
         return localPos;
     }
 
+    /**
+     * @return The local rotation of the bone, relative to the parent bone.
+     */
     public Quaternion getLocalRotation() {
         return localRot;
     }
 
-    public Vector3f getWorldPosition() {
+    /**
+     * @return The position of the bone in model space.
+     */
+    public Vector3f getModelSpacePosition() {
         return worldPos;
     }
 
-    public Quaternion getWorldRotation() {
+    /**
+     * @return The rotation of the bone in model space.
+     */
+    public Quaternion getModelSpaceRotation() {
         return worldRot;
+    }
+
+
+    /**
+     * @deprecated Please use {@link Bone#getModelSpacePosition()} instead.
+     */
+    @Deprecated
+    public Vector3f getWorldPosition(){
+        return getModelSpacePosition();
+    }
+
+    /**
+     * @deprecated Please use {@link Bone#getModelSpaceRotation()} instead.
+     */
+    @Deprecated
+    public Quaternion getWorldRotation(){
+        return getModelSpaceRotation();
     }
 
     /**
@@ -169,6 +211,11 @@ public final class Bone implements Savable {
         userControl = enable;
     }
 
+    /**
+     * Add a new child to this bone. Shouldn't be used by user code.
+     * Can corrupt skeleton.
+     * @param bone
+     */
     public void addChild(Bone bone) {
         children.add(bone);
         bone.parent = this;
@@ -368,6 +415,7 @@ public final class Bone implements Savable {
         return sb.toString();
     }
 
+    @Override
     public String toString(){
         return toString(0);
     }

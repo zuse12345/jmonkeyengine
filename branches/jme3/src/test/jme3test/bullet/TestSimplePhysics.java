@@ -33,20 +33,16 @@ package jme3test.bullet;
 
 
 import com.jme3.app.SimpleBulletApplication;
-import com.jme3.material.Material;
 
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
-import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.collision.shapes.CylinderCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.nodes.PhysicsNode;
-import com.jme3.math.ColorRGBA;
 
 /**
  * This is a basic Test of jbullet-jme functions
@@ -62,8 +58,6 @@ public class TestSimplePhysics extends SimpleBulletApplication{
 
     @Override
     public void simpleInitApp() {
-        Material mat = new Material(getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
-        mat.setColor("m_Color", ColorRGBA.Blue);
 
 //         Add a physics sphere to the world
         PhysicsNode physicsSphere=new PhysicsNode(new SphereCollisionShape(1),1);
@@ -93,6 +87,7 @@ public class TestSimplePhysics extends SimpleBulletApplication{
         rootNode.attachChild(physicsBox);
         getPhysicsSpace().add(physicsBox);
 
+        // Add a physics cylinder to the world
         PhysicsNode physicsCylinder=new PhysicsNode(new CylinderCollisionShape(new Vector3f(1f,1f,1.5f)));
         physicsCylinder.setLocalTranslation(new Vector3f(2,2,0));
         physicsCylinder.attachDebugShape(getAssetManager());
@@ -100,19 +95,14 @@ public class TestSimplePhysics extends SimpleBulletApplication{
         getPhysicsSpace().add(physicsCylinder);
 
         // an obstacle mesh, does not move (mass=0)
-        Geometry geom4=new Geometry("node2",new Sphere(16,16,1.2f));
-        geom4.setMaterial(mat);
-        PhysicsNode node2=new PhysicsNode(geom4,new MeshCollisionShape(geom4.getMesh()),0);
+        PhysicsNode node2=new PhysicsNode(new MeshCollisionShape(new Sphere(16,16,1.2f)),0);
         node2.setLocalTranslation(new Vector3f(2.5f,-4,0f));
         node2.attachDebugShape(getAssetManager());
         rootNode.attachChild(node2);
         getPhysicsSpace().add(node2);
 
         // the floor mesh, does not move (mass=0)
-        Geometry geom5=new Geometry("box2",new Box(Vector3f.ZERO,100f,0.2f,100f));
-        geom5.setMaterial(mat);
-        geom5.updateGeometricState();
-        PhysicsNode node3=new PhysicsNode(geom5,new MeshCollisionShape(geom5.getMesh()),0);
+        PhysicsNode node3=new PhysicsNode(new MeshCollisionShape(new Box(Vector3f.ZERO,100f,0.2f,100f)),0);
         node3.setLocalTranslation(new Vector3f(0f,-6,0f));
         node3.attachDebugShape(getAssetManager());
         rootNode.attachChild(node3);

@@ -308,26 +308,24 @@ public abstract class CollisionObject extends Node {
             Vector3f scale = cylinderCollisionShape.getScale();
             Vector3f halfExtents = cylinderCollisionShape.getHalfExtents();
             int axis = cylinderCollisionShape.getAxis();
-            Box cylinder = new Box(Vector3f.ZERO, halfExtents.x, halfExtents.y, halfExtents.z);
-//            Cylinder cylinder = null;
-//            switch (axis) {
-//                case 0:
-//                    cylinder = new Cylinder(8, 8, halfExtents.y, halfExtents.x * 2);
-//                    Quaternion rot = new Quaternion().fromAngleAxis(FastMath.PI / 2, new Vector3f(0, 1, 0));
-//                    break;
-//                case 1:
-//                    cylinder = new Cylinder(8, 8, halfExtents.x, halfExtents.y * 2);
-//                    break;
-//                case 2:
-//                    cylinder = new Cylinder(8, 8, halfExtents.x, halfExtents.z * 2);
-//                    break;
-//            }
+            Mesh cylinder = null;
+            switch (axis) {
+                case 0:
+                    cylinder = new Box(Vector3f.ZERO, halfExtents.x, halfExtents.y, halfExtents.z);
+                    break;
+                case 1:
+                    cylinder = new Box(Vector3f.ZERO, halfExtents.x, halfExtents.y, halfExtents.z);
+                    break;
+                case 2:
+                    cylinder = new Cylinder(16, 16, halfExtents.x, halfExtents.z * 2);
+                    break;
 
+            }
             geom.setMesh(cylinder);
             geom.setLocalScale(scale);
 
         } else if (shape instanceof CapsuleCollisionShape) {
-            geom.setName("CylinderDebugShape");
+            geom.setName("CapsuleDebugShape");
             CapsuleCollisionShape capsuleCollisionShape = (CapsuleCollisionShape) shape;
 
             Vector3f scale = capsuleCollisionShape.getScale();
@@ -335,19 +333,21 @@ public abstract class CollisionObject extends Node {
             int axis = capsuleCollisionShape.getAxis();
             float height = capsuleCollisionShape.getHeight();
             float radius = capsuleCollisionShape.getRadius();
-
+            Mesh cylinder = null;
             switch (axis) {
                 case 0:
                     halfExtents = new Vector3f(height / 2.0f, radius, radius);
+                    cylinder = new Box(Vector3f.ZERO, halfExtents.x, halfExtents.y, halfExtents.z);
                     break;
                 case 1:
                     halfExtents = new Vector3f(radius, height / 2.0f, radius);
+                    cylinder = new Box(Vector3f.ZERO, halfExtents.x, halfExtents.y, halfExtents.z);
                     break;
                 case 2:
-                    halfExtents = new Vector3f(radius, radius, height / 2.0f);
+//                    halfExtents = new Vector3f(radius, radius, height / 2.0f);
+                    cylinder = new Cylinder(16, 16, radius, height);
                     break;
             }
-            Box cylinder = new Box(Vector3f.ZERO, halfExtents.x, halfExtents.y, halfExtents.z);
 
             geom.setMesh(cylinder);
             geom.setLocalScale(scale);

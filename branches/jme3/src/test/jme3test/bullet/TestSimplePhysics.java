@@ -33,7 +33,6 @@ package jme3test.bullet;
 
 
 import com.jme3.app.SimpleBulletApplication;
-import com.jme3.asset.TextureKey;
 import com.jme3.material.Material;
 
 import com.jme3.math.Vector3f;
@@ -41,15 +40,13 @@ import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
-import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
+import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.collision.shapes.CylinderCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.math.ColorRGBA;
-import com.jme3.scene.shape.Cylinder;
-import com.jme3.texture.Texture;
 
 /**
  * This is a basic Test of jbullet-jme functions
@@ -96,14 +93,9 @@ public class TestSimplePhysics extends SimpleBulletApplication{
         rootNode.attachChild(physicsBox);
         getPhysicsSpace().add(physicsBox);
 
-        Cylinder cylGeom=new Cylinder(16,16,1f,3f);
-        Geometry geom6=new Geometry("box",cylGeom);
-        geom6.updateModelBound();
-        BoundingBox box=(BoundingBox)geom6.getModelBound();
-        geom6.setMaterial(mat);
-        PhysicsNode physicsCylinder=new PhysicsNode(geom6, new CylinderCollisionShape(box.getExtent(null)));
+        PhysicsNode physicsCylinder=new PhysicsNode(new CylinderCollisionShape(new Vector3f(1f,1f,1.5f)));
         physicsCylinder.setLocalTranslation(new Vector3f(2,2,0));
-//        physicsCylinder.attachDebugShape(getAssetManager());
+        physicsCylinder.attachDebugShape(getAssetManager());
         rootNode.attachChild(physicsCylinder);
         getPhysicsSpace().add(physicsCylinder);
 

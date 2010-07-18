@@ -83,7 +83,7 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
             CollisionResults results = new CollisionResults();
             Ray ray = new Ray();
             Vector3f pos = cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0).clone();
-            Vector3f dir = cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0.3f);
+            Vector3f dir = cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0.3f).clone();
             dir.subtractLocal(pos).normalizeLocal();
             ray.setOrigin(pos);
             ray.setDirection(dir);

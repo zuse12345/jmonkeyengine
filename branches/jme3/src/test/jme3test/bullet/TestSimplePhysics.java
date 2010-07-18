@@ -65,21 +65,11 @@ public class TestSimplePhysics extends SimpleBulletApplication{
 
     @Override
     public void simpleInitApp() {
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
-        TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);
-        key.setGenerateMips(true);
-        Texture tex = assetManager.loadTexture(key);
-        tex.setMinFilter(Texture.MinFilter.Trilinear);
-        mat.setTexture("m_ColorMap", tex);
-
-        Material debugMat = new Material(getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
-        debugMat.setColor("m_Color", ColorRGBA.Blue);
+        Material mat = new Material(getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
+        mat.setColor("m_Color", ColorRGBA.Blue);
 
 //         Add a physics sphere to the world
-        Sphere sphere=new Sphere(16,16,1f);
-        Geometry geom=new Geometry("sphere",sphere);
-        geom.setMaterial(mat);
-        PhysicsNode physicsSphere=new PhysicsNode(geom,new SphereCollisionShape(1),1);
+        PhysicsNode physicsSphere=new PhysicsNode(new SphereCollisionShape(1),1);
         physicsSphere.setLocalTranslation(new Vector3f(3,6,0));
         physicsSphere.attachDebugShape(getAssetManager());
         physicsSphere.updateGeometricState();
@@ -88,10 +78,7 @@ public class TestSimplePhysics extends SimpleBulletApplication{
         getPhysicsSpace().add(physicsSphere);
 
         // Add a physics sphere to the world using the collision shape from sphere one
-        Sphere sphere2=new Sphere(16,16,1f);
-        Geometry geom2=new Geometry("sphere2",sphere2);
-        geom2.setMaterial(mat);
-        PhysicsNode physicsSphere2=new PhysicsNode(geom2,physicsSphere.getCollisionShape(),1);
+        PhysicsNode physicsSphere2=new PhysicsNode(physicsSphere.getCollisionShape(),1);
         physicsSphere2.setLocalTranslation(new Vector3f(4,8,0));
         physicsSphere2.attachDebugShape(getAssetManager());
         physicsSphere2.updateGeometricState();
@@ -100,10 +87,7 @@ public class TestSimplePhysics extends SimpleBulletApplication{
         getPhysicsSpace().add(physicsSphere2);
 
         // Add a physics box to the world
-        Box boxGeom=new Box(Vector3f.ZERO,1f,1f,1f);
-        Geometry geom3=new Geometry("box",boxGeom);
-        geom3.setMaterial(mat);
-        PhysicsNode physicsBox=new PhysicsNode(geom3,new BoxCollisionShape(new Vector3f(1,1,1)),1);
+        PhysicsNode physicsBox=new PhysicsNode(new BoxCollisionShape(new Vector3f(1,1,1)),1);
         physicsBox.setFriction(0.1f);
         physicsBox.setLocalTranslation(new Vector3f(.6f,4,.5f));
         physicsBox.attachDebugShape(getAssetManager());
@@ -119,14 +103,9 @@ public class TestSimplePhysics extends SimpleBulletApplication{
         geom6.setMaterial(mat);
         PhysicsNode physicsCylinder=new PhysicsNode(geom6, new CylinderCollisionShape(box.getExtent(null)));
         physicsCylinder.setLocalTranslation(new Vector3f(2,2,0));
-        physicsCylinder.attachDebugShape(getAssetManager());
+//        physicsCylinder.attachDebugShape(getAssetManager());
         rootNode.attachChild(physicsCylinder);
         getPhysicsSpace().add(physicsCylinder);
-
-        // Join the physics objects with a Point2Point joint
-//        PhysicsPoint2PointJoint joint=new PhysicsPoint2PointJoint(physicsSphere, physicsBox, new Vector3f(-2,0,0), new Vector3f(2,0,0));
-//        PhysicsHingeJoint joint=new PhysicsHingeJoint(physicsSphere, physicsBox, new Vector3f(-2,0,0), new Vector3f(2,0,0), Vector3f.UNIT_Z,Vector3f.UNIT_Z);
-//        getPhysicsSpace().add(joint);
 
         // an obstacle mesh, does not move (mass=0)
         Geometry geom4=new Geometry("node2",new Sphere(16,16,1.2f));
@@ -137,7 +116,7 @@ public class TestSimplePhysics extends SimpleBulletApplication{
         rootNode.attachChild(node2);
         getPhysicsSpace().add(node2);
 
-        // the floor, does not move (mass=0)
+        // the floor mesh, does not move (mass=0)
         Geometry geom5=new Geometry("box2",new Box(Vector3f.ZERO,100f,0.2f,100f));
         geom5.setMaterial(mat);
         geom5.updateGeometricState();
@@ -149,10 +128,11 @@ public class TestSimplePhysics extends SimpleBulletApplication{
         node3.updateGeometricState();
         getPhysicsSpace().add(node3);
 
-//        rootNode.setLocalScale(10);
-        
-//        debugState=new PhysicsDebugState(rootNode);
-//        stateManager.attach(debugState);
+        // Join the physics objects with a Point2Point joint
+//        PhysicsPoint2PointJoint joint=new PhysicsPoint2PointJoint(physicsSphere, physicsBox, new Vector3f(-2,0,0), new Vector3f(2,0,0));
+//        PhysicsHingeJoint joint=new PhysicsHingeJoint(physicsSphere, physicsBox, new Vector3f(-2,0,0), new Vector3f(2,0,0), Vector3f.UNIT_Z,Vector3f.UNIT_Z);
+//        getPhysicsSpace().add(joint);
+
     }
 
     @Override

@@ -44,6 +44,9 @@ import com.jme3.export.Savable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A CompoundCollisionShape allows combining multiple base shapes
@@ -52,7 +55,7 @@ import java.util.Iterator;
  */
 public class CompoundCollisionShape extends CollisionShape {
 
-    private ArrayList<ChildCollisionShape> children = new ArrayList<ChildCollisionShape>();
+    protected ArrayList<ChildCollisionShape> children = new ArrayList<ChildCollisionShape>();
 
     public CompoundCollisionShape() {
         cShape = new CompoundShape();
@@ -96,6 +99,18 @@ public class CompoundCollisionShape extends CollisionShape {
         }
     }
 
+    public List<ChildCollisionShape> getChildren() {
+        return children;
+    }
+
+    /**
+     * WARNING - CompoundCollisionShape scaling has no effect.
+     */
+    @Override
+    public void setScale(Vector3f scale) {
+        Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "CompoundCollisionShape cannot be scaled");
+    }
+
     public void write(JmeExporter ex) throws IOException {
         super.write(ex);
         OutputCapsule capsule = ex.getCapsule(this);
@@ -106,7 +121,7 @@ public class CompoundCollisionShape extends CollisionShape {
         super.read(im);
         InputCapsule capsule = im.getCapsule(this);
         children = capsule.readSavableArrayList("children", new ArrayList<ChildCollisionShape>());
-        cShape.setLocalScaling(Converter.convert(scale));
+        cShape.setLocalScaling(Converter.convert(getScale()));
         loadChildren();
     }
 
@@ -117,7 +132,7 @@ public class CompoundCollisionShape extends CollisionShape {
         }
     }
 
-    private class ChildCollisionShape implements Savable {
+    public class ChildCollisionShape implements Savable {
 
         public Vector3f location;
         public Matrix3f rotation;

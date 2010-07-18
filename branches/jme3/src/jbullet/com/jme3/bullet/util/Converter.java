@@ -32,14 +32,13 @@
 package com.jme3.bullet.util;
 
 import com.bulletphysics.collision.shapes.IndexedMesh;
-import com.bulletphysics.collision.shapes.TriangleIndexVertexArray;
-import com.jme3.math.Vector3f;
 import com.jme3.scene.mesh.IndexBuffer;
 import com.jme3.scene.Mesh;
-import com.jme3.scene.VertexBuffer;
 import com.jme3.scene.VertexBuffer.Type;
+import com.jme3.util.BufferUtils;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 
 /**
  * Nice convenience methods for conversion between javax.vecmath and com.jme3.math
@@ -51,100 +50,100 @@ public class Converter {
     private Converter() {
     }
 
-    public static com.jme3.math.Vector3f convert( javax.vecmath.Vector3f oldVec ) {
+    public static com.jme3.math.Vector3f convert(javax.vecmath.Vector3f oldVec) {
         com.jme3.math.Vector3f newVec = new com.jme3.math.Vector3f();
-        convert( oldVec, newVec );
+        convert(oldVec, newVec);
         return newVec;
     }
 
-    public static void convert( javax.vecmath.Vector3f oldVec, com.jme3.math.Vector3f newVec ) {
+    public static void convert(javax.vecmath.Vector3f oldVec, com.jme3.math.Vector3f newVec) {
         newVec.x = oldVec.x;
         newVec.y = oldVec.y;
         newVec.z = oldVec.z;
     }
 
-    public static javax.vecmath.Vector3f convert( com.jme3.math.Vector3f oldVec ) {
+    public static javax.vecmath.Vector3f convert(com.jme3.math.Vector3f oldVec) {
         javax.vecmath.Vector3f newVec = new javax.vecmath.Vector3f();
-        convert( oldVec, newVec );
+        convert(oldVec, newVec);
         return newVec;
     }
 
-    public static void convert( com.jme3.math.Vector3f oldVec, javax.vecmath.Vector3f newVec ) {
+    public static void convert(com.jme3.math.Vector3f oldVec, javax.vecmath.Vector3f newVec) {
         newVec.x = oldVec.x;
         newVec.y = oldVec.y;
         newVec.z = oldVec.z;
     }
 
-    public static void convert( com.jme3.math.Quaternion oldQuat, javax.vecmath.Quat4f newQuat ) {
+    public static void convert(com.jme3.math.Quaternion oldQuat, javax.vecmath.Quat4f newQuat) {
         newQuat.w = oldQuat.getW();
         newQuat.x = oldQuat.getX();
         newQuat.y = oldQuat.getY();
         newQuat.z = oldQuat.getZ();
     }
 
-    public static javax.vecmath.Quat4f convert( com.jme3.math.Quaternion oldQuat ) {
+    public static javax.vecmath.Quat4f convert(com.jme3.math.Quaternion oldQuat) {
         javax.vecmath.Quat4f newQuat = new javax.vecmath.Quat4f();
-        convert( oldQuat, newQuat );
+        convert(oldQuat, newQuat);
         return newQuat;
     }
 
-    public static void convert( javax.vecmath.Quat4f oldQuat, com.jme3.math.Quaternion newQuat ) {
+    public static void convert(javax.vecmath.Quat4f oldQuat, com.jme3.math.Quaternion newQuat) {
         newQuat.set(oldQuat.x, oldQuat.y, oldQuat.z, oldQuat.w);
     }
 
-    public static com.jme3.math.Quaternion convert( javax.vecmath.Quat4f oldQuat ) {
+    public static com.jme3.math.Quaternion convert(javax.vecmath.Quat4f oldQuat) {
         com.jme3.math.Quaternion newQuat = new com.jme3.math.Quaternion();
-        convert( oldQuat, newQuat );
+        convert(oldQuat, newQuat);
         return newQuat;
     }
 
-    public static com.jme3.math.Matrix3f convert( javax.vecmath.Matrix3f oldMatrix ) {
+    public static com.jme3.math.Matrix3f convert(javax.vecmath.Matrix3f oldMatrix) {
         com.jme3.math.Matrix3f newMatrix = new com.jme3.math.Matrix3f();
-        convert( oldMatrix, newMatrix );
+        convert(oldMatrix, newMatrix);
         return newMatrix;
     }
 
-    public static void convert( javax.vecmath.Matrix3f oldMatrix, com.jme3.math.Matrix3f newMatrix ) {
-        newMatrix.set(0,0, oldMatrix.m00);
-        newMatrix.set(0,1, oldMatrix.m01);
-        newMatrix.set(0,2, oldMatrix.m02);
-        newMatrix.set(1,0, oldMatrix.m10);
-        newMatrix.set(1,1, oldMatrix.m11);
-        newMatrix.set(1,2, oldMatrix.m12);
-        newMatrix.set(2,0, oldMatrix.m20);
-        newMatrix.set(2,1, oldMatrix.m21);
-        newMatrix.set(2,2, oldMatrix.m22);
+    public static void convert(javax.vecmath.Matrix3f oldMatrix, com.jme3.math.Matrix3f newMatrix) {
+        newMatrix.set(0, 0, oldMatrix.m00);
+        newMatrix.set(0, 1, oldMatrix.m01);
+        newMatrix.set(0, 2, oldMatrix.m02);
+        newMatrix.set(1, 0, oldMatrix.m10);
+        newMatrix.set(1, 1, oldMatrix.m11);
+        newMatrix.set(1, 2, oldMatrix.m12);
+        newMatrix.set(2, 0, oldMatrix.m20);
+        newMatrix.set(2, 1, oldMatrix.m21);
+        newMatrix.set(2, 2, oldMatrix.m22);
     }
 
-    public static javax.vecmath.Matrix3f convert( com.jme3.math.Matrix3f oldMatrix ) {
+    public static javax.vecmath.Matrix3f convert(com.jme3.math.Matrix3f oldMatrix) {
         javax.vecmath.Matrix3f newMatrix = new javax.vecmath.Matrix3f();
-        convert( oldMatrix, newMatrix );
+        convert(oldMatrix, newMatrix);
         return newMatrix;
     }
 
-    public static void convert( com.jme3.math.Matrix3f oldMatrix, javax.vecmath.Matrix3f newMatrix ) {
-        newMatrix.m00 = oldMatrix.get(0,0);
-        newMatrix.m01 = oldMatrix.get(0,1);
-        newMatrix.m02 = oldMatrix.get(0,2);
-        newMatrix.m10 = oldMatrix.get(1,0);
-        newMatrix.m11 = oldMatrix.get(1,1);
-        newMatrix.m12 = oldMatrix.get(1,2);
-        newMatrix.m20 = oldMatrix.get(2,0);
-        newMatrix.m21 = oldMatrix.get(2,1);
-        newMatrix.m22 = oldMatrix.get(2,2);
+    public static void convert(com.jme3.math.Matrix3f oldMatrix, javax.vecmath.Matrix3f newMatrix) {
+        newMatrix.m00 = oldMatrix.get(0, 0);
+        newMatrix.m01 = oldMatrix.get(0, 1);
+        newMatrix.m02 = oldMatrix.get(0, 2);
+        newMatrix.m10 = oldMatrix.get(1, 0);
+        newMatrix.m11 = oldMatrix.get(1, 1);
+        newMatrix.m12 = oldMatrix.get(1, 2);
+        newMatrix.m20 = oldMatrix.get(2, 0);
+        newMatrix.m21 = oldMatrix.get(2, 1);
+        newMatrix.m22 = oldMatrix.get(2, 2);
     }
 
-    public static void convert(com.jme3.math.Transform in, com.bulletphysics.linearmath.Transform out){
-        convert(in.getTranslation(),out.origin);
+    public static void convert(com.jme3.math.Transform in, com.bulletphysics.linearmath.Transform out) {
+        convert(in.getTranslation(), out.origin);
         //TODO: reuse vector
-        convert(in.getRotation().toRotationMatrix(),out.basis);
+        convert(in.getRotation().toRotationMatrix(), out.basis);
     }
 
     public static IndexedMesh convert(Mesh mesh) {
 
         IndexedMesh jBulletIndexedMesh = new IndexedMesh();
-        jBulletIndexedMesh.triangleIndexBase = ByteBuffer.allocate( mesh.getTriangleCount() * 3 * 4 );
-        jBulletIndexedMesh.vertexBase = ByteBuffer.allocate( mesh.getVertexCount() * 3 * 4 );
+        jBulletIndexedMesh.triangleIndexBase = ByteBuffer.allocate(mesh.getTriangleCount() * 3 * 4);
+        jBulletIndexedMesh.vertexBase = ByteBuffer.allocate(mesh.getVertexCount() * 3 * 4);
 
         IndexBuffer indices = mesh.getIndexBuffer();
         FloatBuffer vertices = mesh.getFloatBuffer(Type.Position);
@@ -153,18 +152,41 @@ public class Converter {
         int verticesLength = mesh.getVertexCount() * 3;
         jBulletIndexedMesh.numVertices = mesh.getVertexCount();
         jBulletIndexedMesh.vertexStride = 12; //3 verts * 4 bytes per.
-        for ( int i = 0; i < verticesLength; i++ ) {
+        for (int i = 0; i < verticesLength; i++) {
             float tempFloat = vertices.get();
-            jBulletIndexedMesh.vertexBase.putFloat( tempFloat );
+            jBulletIndexedMesh.vertexBase.putFloat(tempFloat);
         }
 
         int indicesLength = mesh.getTriangleCount() * 3;
         jBulletIndexedMesh.numTriangles = mesh.getTriangleCount();
         jBulletIndexedMesh.triangleIndexStride = 12; //3 index entries * 4 bytes each.
-        for ( int i = 0; i < indicesLength; i++ ) {
-            jBulletIndexedMesh.triangleIndexBase.putInt( indices.get(i) );
+        for (int i = 0; i < indicesLength; i++) {
+            jBulletIndexedMesh.triangleIndexBase.putInt(indices.get(i));
         }
 
         return jBulletIndexedMesh;
+    }
+
+    public static Mesh convert(IndexedMesh mesh) {
+        Mesh jmeMesh = new Mesh();
+
+        jmeMesh.setBuffer(Type.Index, 3, BufferUtils.createShortBuffer(mesh.numTriangles * 3));
+        jmeMesh.setBuffer(Type.Position, 3, BufferUtils.createFloatBuffer(mesh.numVertices * 3));
+
+        IndexBuffer indicess = jmeMesh.getIndexBuffer();
+        FloatBuffer vertices = jmeMesh.getFloatBuffer(Type.Position);
+
+        for (int i = 0; i < mesh.numTriangles * 3; i++) {
+            indicess.put(i, mesh.triangleIndexBase.getInt(i*4));
+        }
+
+        for (int i = 0; i < mesh.numVertices * 3; i++) {
+            vertices.put(i, mesh.vertexBase.getFloat(i*4));
+        }
+
+        jmeMesh.updateCounts();
+        jmeMesh.updateBound();
+
+        return jmeMesh;
     }
 }

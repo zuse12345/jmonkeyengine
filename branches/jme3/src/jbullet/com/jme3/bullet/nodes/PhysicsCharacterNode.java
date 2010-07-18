@@ -34,7 +34,6 @@ package com.jme3.bullet.nodes;
 import com.bulletphysics.collision.dispatch.CollisionFlags;
 import com.bulletphysics.collision.shapes.ConvexShape;
 import com.bulletphysics.dynamics.character.KinematicCharacterController;
-import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import com.jme3.bullet.collision.shapes.CollisionShape;
@@ -55,10 +54,9 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
     private KinematicCharacterController character;
     private float stepHeight;
     private Vector3f walkDirection = new Vector3f();
-    private float fallSpeed=55.0f;
-    private float jumpSpeed=10.0f;
-    private int upAxis=1;
-
+    private float fallSpeed = 55.0f;
+    private float jumpSpeed = 10.0f;
+    private int upAxis = 1;
 
     public PhysicsCharacterNode() {
     }
@@ -69,7 +67,7 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
             throw (new UnsupportedOperationException("Kinematic character nodes can only have sphere collision shapes"));
         }
         this.stepHeight = stepHeight;
-        character = new KinematicCharacterController(gObject, (ConvexShape) cShape.getCShape(), stepHeight);
+        character = new KinematicCharacterController(gObject, (ConvexShape) collisionShape.getCShape(), stepHeight);
     }
 
     public PhysicsCharacterNode(Spatial spat, CollisionShape shape, float stepHeight) {
@@ -78,7 +76,7 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
             throw (new UnsupportedOperationException("Kinematic character nodes can only have sphere collision shapes"));
         }
         this.stepHeight = stepHeight;
-        character = new KinematicCharacterController(gObject, (ConvexShape) cShape.getCShape(), stepHeight);
+        character = new KinematicCharacterController(gObject, (ConvexShape) collisionShape.getCShape(), stepHeight);
     }
 
     @Override
@@ -102,25 +100,24 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
     }
 
     public void setUpAxis(int axis) {
-        upAxis=axis;
+        upAxis = axis;
         character.setUpAxis(axis);
     }
 
     public void setFallSpeed(float fallSpeed) {
-        this.fallSpeed=fallSpeed;
+        this.fallSpeed = fallSpeed;
         character.setFallSpeed(fallSpeed);
     }
 
     public void setJumpSpeed(float jumpSpeed) {
-        this.jumpSpeed=fallSpeed;
+        this.jumpSpeed = fallSpeed;
         character.setJumpSpeed(jumpSpeed);
     }
-    
+
     //does nothing..
 //    public void setMaxJumpHeight(float height) {
 //        character.setMaxJumpHeight(height);
 //    }
-
     public void setGravity(float value) {
         character.setGravity(value);
     }
@@ -161,8 +158,8 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
     public void write(JmeExporter e) throws IOException {
         super.write(e);
         OutputCapsule capsule = e.getCapsule(this);
-        capsule.write(stepHeight, "stepHeight",1.0f);
-        capsule.write(getGravity(), "gravity",9.8f);
+        capsule.write(stepHeight, "stepHeight", 1.0f);
+        capsule.write(getGravity(), "gravity", 9.8f);
         capsule.write(getMaxSlope(), "maxSlope", 1.0f);
         capsule.write(fallSpeed, "fallSpeed", 55.0f);
         capsule.write(jumpSpeed, "jumpSpeed", 10.0f);
@@ -173,13 +170,12 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
     public void read(JmeImporter e) throws IOException {
         super.read(e);
         InputCapsule capsule = e.getCapsule(this);
-        stepHeight=capsule.readFloat("stepHeight", 1.0f);
-        character = new KinematicCharacterController(gObject, (ConvexShape) cShape.getCShape(), stepHeight);
+        stepHeight = capsule.readFloat("stepHeight", 1.0f);
+        character = new KinematicCharacterController(gObject, (ConvexShape) collisionShape.getCShape(), stepHeight);
         setGravity(capsule.readFloat("gravity", 9.8f));
         setMaxSlope(capsule.readFloat("maxSlope", 1.0f));
         setFallSpeed(capsule.readFloat("fallSpeed", 1.0f));
         setJumpSpeed(capsule.readFloat("jumpSpeed", 1.0f));
         setUpAxis(capsule.readInt("upAxis", 1));
     }
-
 }

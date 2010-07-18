@@ -87,6 +87,10 @@ public abstract class CollisionShape implements Savable {
         cShape.setLocalScaling(Converter.convert(scale));
     }
 
+    public Vector3f getScale() {
+        return scale;
+    }
+    
     public void write(JmeExporter ex) throws IOException {
         OutputCapsule capsule = ex.getCapsule(this);
         capsule.write(scale, "scale", new Vector3f(1, 1, 1));
@@ -96,4 +100,5 @@ public abstract class CollisionShape implements Savable {
         InputCapsule capsule = im.getCapsule(this);
         this.scale = (Vector3f) capsule.readSavable("scale", new Vector3f(1, 1, 1));
     }
+
 }

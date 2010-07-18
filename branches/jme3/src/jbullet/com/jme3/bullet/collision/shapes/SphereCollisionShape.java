@@ -59,6 +59,10 @@ public class SphereCollisionShape extends CollisionShape {
         createShape();
     }
 
+    public float getRadius() {
+        return radius;
+    }
+
     public void write(JmeExporter ex) throws IOException {
         super.write(ex);
         OutputCapsule capsule = ex.getCapsule(this);
@@ -74,6 +78,7 @@ public class SphereCollisionShape extends CollisionShape {
 
     protected void createShape() {
         cShape = new SphereShape(radius);
-        cShape.setLocalScaling(Converter.convert(scale));
+        cShape.setLocalScaling(Converter.convert(getScale()));
     }
+
 }

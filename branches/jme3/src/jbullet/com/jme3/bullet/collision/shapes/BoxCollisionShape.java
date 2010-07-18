@@ -46,7 +46,7 @@ import java.io.IOException;
  */
 public class BoxCollisionShape extends CollisionShape {
 
-    protected Vector3f halfExtents;
+    private Vector3f halfExtents;
 
     public BoxCollisionShape() {
     }
@@ -60,6 +60,10 @@ public class BoxCollisionShape extends CollisionShape {
         createShape();
     }
 
+    public final Vector3f getHalfExtents() {
+        return halfExtents;
+    }
+    
     public void write(JmeExporter ex) throws IOException {
         super.write(ex);
         OutputCapsule capsule = ex.getCapsule(this);
@@ -76,6 +80,7 @@ public class BoxCollisionShape extends CollisionShape {
 
     protected void createShape() {
         cShape = new BoxShape(Converter.convert(halfExtents));
-        cShape.setLocalScaling(Converter.convert(scale));
+        cShape.setLocalScaling(Converter.convert(getScale()));
     }
+
 }

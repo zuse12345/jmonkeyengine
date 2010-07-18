@@ -75,6 +75,14 @@ public class CylinderCollisionShape extends CollisionShape {
         createShape();
     }
 
+    public final Vector3f getHalfExtents() {
+        return halfExtents;
+    }
+
+    public int getAxis() {
+        return axis;
+    }
+
     public void write(JmeExporter ex) throws IOException {
         super.write(ex);
         OutputCapsule capsule = ex.getCapsule(this);
@@ -102,6 +110,7 @@ public class CylinderCollisionShape extends CollisionShape {
                 cShape = new CylinderShapeZ(Converter.convert(halfExtents));
                 break;
         }
-        cShape.setLocalScaling(Converter.convert(scale));
+        cShape.setLocalScaling(Converter.convert(getScale()));
     }
+
 }

@@ -78,6 +78,18 @@ public class CapsuleCollisionShape extends CollisionShape{
         createShape();
     }
 
+    public float getRadius() {
+        return radius;
+    }
+
+    public float getHeight() {
+        return height;
+    }
+
+    public int getAxis() {
+        return axis;
+    }
+
     public void write(JmeExporter ex) throws IOException {
         super.write(ex);
         OutputCapsule capsule = ex.getCapsule(this);
@@ -107,7 +119,7 @@ public class CapsuleCollisionShape extends CollisionShape{
                 cShape=new CapsuleShapeZ(radius,height);
             break;
         }
-        cShape.setLocalScaling(Converter.convert(scale));
+        cShape.setLocalScaling(Converter.convert(getScale()));
     }
 
 }

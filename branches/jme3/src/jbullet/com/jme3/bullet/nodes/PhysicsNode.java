@@ -43,6 +43,7 @@ import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.joints.PhysicsJoint;
 import com.jme3.bullet.nodes.infos.PhysicsNodeState;
+import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.bullet.util.Converter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
@@ -63,7 +64,6 @@ public class PhysicsNode extends CollisionObject {
 
     protected RigidBodyConstructionInfo constructionInfo;
     protected RigidBody rBody;
-    protected CollisionShape collisionShape;
     protected PhysicsNodeState motionState = new PhysicsNodeState();
     protected boolean rebuildBody = true;
     protected float mass = 1.0f;
@@ -83,8 +83,6 @@ public class PhysicsNode extends CollisionObject {
 
 //    protected boolean dirty=true;
     public PhysicsNode() {
-        collisionShape = new BoxCollisionShape(new Vector3f(0.5f, 0.5f, 0.5f));
-        rebuildRigidBody();
     }
 
     /**
@@ -169,26 +167,6 @@ public class PhysicsNode extends CollisionObject {
         }
     }
 
-    /**
-     * Note that the CollisionShape of a PhysicsNode does not scale with the Node
-     * as it could be used by other PhysicsNodes. Scale the CollisionShape separately.
-     * @param localScale
-     */
-    @Override
-    public void setLocalScale(float localScale) {
-        super.setLocalScale(localScale);
-    }
-
-    /**
-     * Note that the CollisionShape of a PhysicsNode does not scale with the Node
-     * as it could be used by other PhysicsNodes. Scale the CollisionShape separately.
-     * @param localScale
-     */
-    @Override
-    public void setLocalScale(Vector3f localScale) {
-        super.setLocalScale(localScale);
-    }
-
     @Override
     public void updateGeometricState() {
         if ((refreshFlags & RF_LIGHTLIST) != 0) {
@@ -207,8 +185,6 @@ public class PhysicsNode extends CollisionObject {
         // the important part- make sure child geometric state is refreshed
         // first before updating own world bound. This saves
         // a round-trip later on.
-        // NOTE 9/19/09
-        // Although it does save a round trip,
         for (int i = 0, cSize = children.size(); i < cSize; i++) {
             Spatial child = children.get(i);
             child.updateGeometricState();
@@ -218,6 +194,8 @@ public class PhysicsNode extends CollisionObject {
             updateWorldBound();
         }
 
+        //only called to sync debug shapes in CollisionObject
+        super.updateGeometricState();
     }
 
     /**

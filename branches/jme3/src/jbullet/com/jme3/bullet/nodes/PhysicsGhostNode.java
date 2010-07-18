@@ -63,7 +63,6 @@ import java.util.List;
 public class PhysicsGhostNode extends CollisionObject {
 
     protected PairCachingGhostObject gObject;
-    protected CollisionShape cShape;
     protected boolean locationDirty = false;
     //TEMP VARIABLES
     protected final Quaternion tmp_inverseWorldRotation = new Quaternion();
@@ -77,13 +76,13 @@ public class PhysicsGhostNode extends CollisionObject {
     }
 
     public PhysicsGhostNode(CollisionShape shape) {
-        cShape = shape;
+        collisionShape = shape;
         buildObject();
     }
 
     public PhysicsGhostNode(Spatial child, CollisionShape shape) {
         this.attachChild(child);
-        cShape = shape;
+        collisionShape = shape;
         buildObject();
     }
 
@@ -92,7 +91,7 @@ public class PhysicsGhostNode extends CollisionObject {
             gObject = new PairCachingGhostObject();
             gObject.setCollisionFlags(gObject.getCollisionFlags() | CollisionFlags.NO_CONTACT_RESPONSE);
         }
-        gObject.setCollisionShape(cShape.getCShape());
+        gObject.setCollisionShape(collisionShape.getCShape());
         gObject.setUserPointer(this);
     }
 
@@ -121,11 +120,9 @@ public class PhysicsGhostNode extends CollisionObject {
         // the important part- make sure child geometric state is refreshed
         // first before updating own world bound. This saves
         // a round-trip later on.
-        // NOTE 9/19/09
-        // Although it does save a round trip,
         for (int i = 0, cSize = children.size(); i < cSize; i++) {
             Spatial child = children.get(i);
-            if (!locationDirty){
+            if (!locationDirty) {
                 // force children to update transform from this physics node
                 child.setLocalScale(child.getLocalScale());
             }
@@ -137,6 +134,8 @@ public class PhysicsGhostNode extends CollisionObject {
             updateWorldBound();
         }
 
+        //only called to sync debug shapes in CollisionObject
+        super.updateGeometricState();
     }
 
     @Override
@@ -146,7 +145,7 @@ public class PhysicsGhostNode extends CollisionObject {
                 Converter.convert(jmeTrans.getTranslation(), tempTrans.origin);
                 tempTrans.setRotation(Converter.convert(jmeTrans.getRotation()));
                 gObject.setWorldTransform(tempTrans);
-                cShape.setScale(getWorldScale());
+                collisionShape.setScale(getWorldScale());
                 locationDirty = false;
             }
         } else {
@@ -238,7 +237,7 @@ public class PhysicsGhostNode extends CollisionObject {
     public void write(JmeExporter e) throws IOException {
         super.write(e);
         OutputCapsule capsule = e.getCapsule(this);
-        capsule.write(cShape, "collisionShape", null);
+        capsule.write(collisionShape, "collisionShape", null);
     }
 
     @Override
@@ -246,8 +245,7 @@ public class PhysicsGhostNode extends CollisionObject {
         super.read(e);
         InputCapsule capsule = e.getCapsule(this);
         CollisionShape shape = (CollisionShape) capsule.readSavable("collisionShape", new SphereCollisionShape(1));
-        cShape = shape;
+        collisionShape = shape;
         buildObject();
     }
-
 }

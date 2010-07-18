@@ -51,7 +51,7 @@ public class JmeParticleEmitter extends JmeGeometry {
             ImageUtilities.loadImage("com/jme3/gde/core/scene/nodes/icons/particleemitter.gif");
     private ParticleEmitter geom;
 
-    public JmeParticleEmitter(ParticleEmitter spatial, JmeSpatialChildFactory children) {
+    public JmeParticleEmitter(ParticleEmitter spatial, JmeChildren children) {
         super(spatial, children);
         getLookupContents().add(spatial);
         this.geom = spatial;

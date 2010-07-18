@@ -66,6 +66,7 @@ public class ScenePreviewProcessor implements SceneProcessor {
     private Camera offCamera;
     private ConcurrentLinkedQueue<PreviewRequest> previewQueue = new ConcurrentLinkedQueue<PreviewRequest>();
     private PreviewRequest currentPreviewRequest;
+    private RenderManager rm;
 
     public void addRequest(PreviewRequest request) {
         previewQueue.add(request);
@@ -107,10 +108,10 @@ public class ScenePreviewProcessor implements SceneProcessor {
 
         // attach the scene to the viewport to be rendered
         offView.attachScene(previewNode);
-
     }
 
     public void initialize(RenderManager rm, ViewPort vp) {
+        this.rm = rm;
     }
 
     public void reshape(ViewPort vp, int i, int i1) {

@@ -42,11 +42,13 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Spatial;
 import com.jme3.ui.Picture;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import org.openide.cookies.SaveCookie;
-import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
@@ -54,53 +56,46 @@ import org.openide.util.Exceptions;
  *
  * @author normenhansen
  */
-public class JmeSpatialChildFactory extends ChildFactory<Object> {
+public class JmeChildren extends Children.Keys<Object> {
 
-    private com.jme3.scene.Spatial spatial;
-    private boolean doLights = true;
-    private boolean doMesh = true;
+    private Spatial spatial;
     private SaveCookie cookie;
+    HashMap<Object, Node> map = new HashMap<Object, Node>();
 
-    public JmeSpatialChildFactory(com.jme3.scene.Spatial spatial) {
+    public JmeChildren(Spatial spatial) {
         this.spatial = spatial;
-    }
-
-    public JmeSpatialChildFactory(com.jme3.scene.Spatial spatial, boolean doLights) {
-        this.spatial = spatial;
-        this.doLights = doLights;
     }
 
     public void refreshChildren(boolean immediate) {
-        super.refresh(immediate);
+        setKeys(createKeys());
+        refresh();
     }
 
-    @Override
-    protected boolean createKeys(final List<Object> toPopulate) {
+    protected List<Object> createKeys() {
         try {
-            return SceneApplication.getApplication().enqueue(new Callable<Boolean>() {
+            return SceneApplication.getApplication().enqueue(new Callable<List<Object>>() {
 
-                public Boolean call() throws Exception {
+                public List<Object> call() throws Exception {
+                    List<Object> keys = new LinkedList<Object>();
                     if (spatial != null && spatial instanceof com.jme3.scene.Node) {
-                        toPopulate.addAll(((com.jme3.scene.Node) spatial).getChildren());
-                        return true;
+                        keys.addAll(((com.jme3.scene.Node) spatial).getChildren());
+                        return keys;
                     }
-                    if (spatial instanceof Geometry && doMesh) {
+                    if (spatial instanceof Geometry) {
                         Geometry geom = (Geometry) spatial;
                         Mesh mesh = geom.getMesh();
                         if (mesh != null) {
-                            toPopulate.add(new MeshGeometryPair(mesh, geom));
+                            keys.add(new MeshGeometryPair(mesh, geom));
                         }
                     }
-                    if (doLights) {
-                        LightList lights = spatial.getWorldLightList();
-                        for (int i = 0; i < lights.size(); i++) {
-                            Light light = lights.get(i);
-                            if (light != null) {
-                                toPopulate.add(new LightSpatialPair(light, spatial));
-                            }
+                    LightList lights = spatial.getWorldLightList();
+                    for (int i = 0; i < lights.size(); i++) {
+                        Light light = lights.get(i);
+                        if (light != null) {
+                            keys.add(new LightSpatialPair(light, spatial));
                         }
                     }
-                    return true;
+                    return keys;
                 }
             }).get();
         } catch (InterruptedException ex) {
@@ -108,62 +103,56 @@ public class JmeSpatialChildFactory extends ChildFactory<Object> {
         } catch (ExecutionException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return true;
-    }
-
-    @Override
-    protected Node createNodeForKey(Object key) {
-        //TODO: add way for plugins to add their own spatial types, probably
-        //      best via registering some object in the global lookup
-        if (key instanceof Spatial) {
-            JmeSpatialChildFactory factory = new JmeSpatialChildFactory((Spatial) key);
-            factory.setCookie(cookie);
-            if (key instanceof com.jme3.audio.AudioNode) {
-                return new JmeAudioNode((com.jme3.audio.AudioNode) key, factory).setSaveCookie(cookie);
-            }
-            if (key instanceof com.jme3.scene.Node) {
-                return new JmeNode((com.jme3.scene.Node) key, factory).setSaveCookie(cookie);
-            }
-            if (key instanceof BitmapText) {
-                return new JmeBitmapText((BitmapText) key, factory).setSaveCookie(cookie);
-            }
-            if (key instanceof Picture) {
-                return new JmePicture((Picture) key, factory).setSaveCookie(cookie);
-            }
-            if (key instanceof ParticleEmitter) {
-                return new JmeParticleEmitter((ParticleEmitter) key, factory).setSaveCookie(cookie);
-            }
-            if (key instanceof com.jme3.scene.Geometry) {
-                return new JmeGeometry((Geometry) key, factory).setSaveCookie(cookie);
-            }
-            return new JmeSpatial((Spatial) key, factory).setSaveCookie(cookie);
-        } else if (key instanceof LightSpatialPair) {
-            LightSpatialPair pair = (LightSpatialPair) key;
-            if (pair.getLight() instanceof PointLight) {
-                return new JmePointLight(pair.getSpatial(), (PointLight) pair.getLight());
-            }
-            if (pair.getLight() instanceof DirectionalLight) {
-                return new JmeDirectionalLight(pair.getSpatial(), (DirectionalLight) pair.getLight());
-            }
-            return new JmeLight(pair.getSpatial(), pair.getLight());
-        } else if (key instanceof MeshGeometryPair) {
-            MeshGeometryPair pair = (MeshGeometryPair) key;
-            return new JmeMesh(pair.getGeometry(),pair.getMesh());
-        }
         return null;
     }
 
-    @Override
-    protected Node[] createNodesForKey(Object key) {
-        Node[] nodes = new Node[1];
-        nodes[0] = createNodeForKey(key);
-        return nodes;
-    }
-
-    /**
-     * @param cookie the cookie to set
-     */
     public void setCookie(SaveCookie cookie) {
         this.cookie = cookie;
+    }
+
+    @Override
+    protected void addNotify() {
+        super.addNotify();
+        setKeys(createKeys());
+    }
+
+    @Override
+    protected Node[] createNodes(Object key) {
+        if (key instanceof Spatial) {
+            JmeChildren factory = new JmeChildren((Spatial) key);
+            factory.setCookie(cookie);
+            if (key instanceof com.jme3.audio.AudioNode) {
+                return new Node[]{new JmeAudioNode((com.jme3.audio.AudioNode) key, factory).setSaveCookie(cookie)};
+            }
+            if (key instanceof com.jme3.scene.Node) {
+                return new Node[]{new JmeNode((com.jme3.scene.Node) key, factory).setSaveCookie(cookie)};
+            }
+            if (key instanceof BitmapText) {
+                return new Node[]{new JmeBitmapText((BitmapText) key, factory).setSaveCookie(cookie)};
+            }
+            if (key instanceof Picture) {
+                return new Node[]{new JmePicture((Picture) key, factory).setSaveCookie(cookie)};
+            }
+            if (key instanceof ParticleEmitter) {
+                return new Node[]{new JmeParticleEmitter((ParticleEmitter) key, factory).setSaveCookie(cookie)};
+            }
+            if (key instanceof com.jme3.scene.Geometry) {
+                return new Node[]{new JmeGeometry((Geometry) key, factory).setSaveCookie(cookie)};
+            }
+            return new Node[]{new JmeSpatial((Spatial) key, factory).setSaveCookie(cookie)};
+        } else if (key instanceof LightSpatialPair) {
+            LightSpatialPair pair = (LightSpatialPair) key;
+            if (pair.getLight() instanceof PointLight) {
+                return new Node[]{new JmePointLight(pair.getSpatial(), (PointLight) pair.getLight())};
+            }
+            if (pair.getLight() instanceof DirectionalLight) {
+                return new Node[]{new JmeDirectionalLight(pair.getSpatial(), (DirectionalLight) pair.getLight())};
+            }
+            return new Node[]{new JmeLight(pair.getSpatial(), pair.getLight())};
+        } else if (key instanceof MeshGeometryPair) {
+            MeshGeometryPair pair = (MeshGeometryPair) key;
+            return new Node[]{new JmeMesh(pair.getGeometry(), pair.getMesh())};
+        }
+        return null;
     }
 }

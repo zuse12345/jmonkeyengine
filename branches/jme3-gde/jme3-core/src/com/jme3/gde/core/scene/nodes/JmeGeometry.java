@@ -51,7 +51,7 @@ public class JmeGeometry extends JmeSpatial {
             ImageUtilities.loadImage("com/jme3/gde/core/scene/nodes/icons/geometry.gif");
     private Geometry geom;
 
-    public JmeGeometry(Geometry spatial, JmeSpatialChildFactory children) {
+    public JmeGeometry(Geometry spatial, JmeChildren children) {
         super(spatial, children);
         getLookupContents().add(spatial);
         this.geom = spatial;

@@ -74,14 +74,14 @@ import org.openide.util.lookup.InstanceContent;
 public class JmeSpatial extends AbstractNode {
 
     private Spatial spatial;
-    private JmeSpatialChildFactory factory;
+    private JmeChildren factory;
     private final InstanceContent lookupContents;
     private Lookup lookup;
     private SaveCookie saveCookie = new SaveCookieImpl();
     protected final DataFlavor SPATIAL_FLAVOR = new DataFlavor(ClipboardSpatial.class, "Spatial");
 
-    public JmeSpatial(Spatial spatial, JmeSpatialChildFactory factory) {
-        super(Children.create(factory, true), new JmeLookup(new InstanceContent()));
+    public JmeSpatial(Spatial spatial, JmeChildren factory) {
+        super(factory, new JmeLookup(new InstanceContent()));
         this.factory = factory;
         this.spatial = spatial;
         lookupContents = ((JmeLookup) getLookup()).getInstanceContent();
@@ -94,8 +94,26 @@ public class JmeSpatial extends AbstractNode {
         return lookupContents;
     }
 
-    public JmeSpatialChildFactory getFactory() {
-        return factory;
+    public JmeSpatial getChild(Spatial spat) {
+        if (spat == null) {
+            return null;
+        }
+        if (getLookup().lookup(spat.getClass()) == spat) {
+            return this;
+        }
+
+        Node[] children = getChildren().getNodes();
+        for (int i = 0; i < children.length; i++) {
+            Node node = children[i];
+            if (node instanceof JmeSpatial) {
+                JmeSpatial jmeSpatial = (JmeSpatial) node;
+                JmeSpatial found = jmeSpatial.getChild(spat);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
     }
 
     //TODO: refresh does not work
@@ -217,6 +235,11 @@ public class JmeSpatial extends AbstractNode {
                     return null;
                 }
             }).get();
+            //TODO: not a good cast
+            JmeNode node = ((JmeNode) getParentNode());
+            if (node != null) {
+                node.refresh(false);
+            }
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         } catch (ExecutionException ex) {

@@ -267,7 +267,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         for (Iterator it = collection.iterator(); it.hasNext();) {
             Object object = it.next();
             if(object instanceof JmeSpatial){
-                setSaveNode((JmeSpatial)object);
+                setSelectedNode((JmeSpatial)object);
                 return;
             }
         }
@@ -322,7 +322,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                     camController.disable();
                 }
                 currentSceneRequest = request;
-                setSaveNode(request.getRootNode());
+                setSelectedNode(request.getRootNode());
                 getCurrentSceneRequest().setDisplayed(true);
                 Node model = request.getLookup().lookup(Node.class);
                 if (model == null) {
@@ -337,7 +337,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     }
 
     private void closeCurrentScene() {
-        setSaveNode(null);
+        setSelectedNode(null);
         if (currentSceneRequest != null) {
             currentSceneRequest.setDisplayed(false);
         }
@@ -359,7 +359,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         });
     }
 
-    private void setSaveNode(final org.openide.nodes.Node node) {
+    public void setSelectedNode(final org.openide.nodes.Node node) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 if (node == null) {

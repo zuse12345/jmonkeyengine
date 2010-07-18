@@ -34,16 +34,22 @@ package com.jme3.gde.scenecomposer;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
+import com.jme3.gde.core.scene.nodes.JmeNode;
 import com.jme3.input.InputManager;
+import com.jme3.input.RawInputListener;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
+import com.jme3.input.event.JoyAxisEvent;
+import com.jme3.input.event.JoyButtonEvent;
+import com.jme3.input.event.KeyInputEvent;
+import com.jme3.input.event.MouseButtonEvent;
+import com.jme3.input.event.MouseMotionEvent;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Ray;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import org.openide.awt.StatusDisplayer;
 
@@ -51,43 +57,51 @@ import org.openide.awt.StatusDisplayer;
  *
  * @author normenhansen
  */
-public class ComposerCameraController implements ActionListener, AnalogListener {
+public class ComposerCameraController implements ActionListener, AnalogListener, RawInputListener {
 
     private boolean leftMouse, rightMouse, middleMouse;
     private float deltaX, deltaY, deltaZ, deltaWheel;
-    private float mouseX = 0;
-    private float mouseY = 0;
+    private int mouseX = 0;
+    private int mouseY = 0;
     private Quaternion rot = new Quaternion();
     private Vector3f vector = new Vector3f();
     private Vector3f focus = new Vector3f();
     private Camera cam;
     private Node rootNode;
+    private JmeNode jmeNode;
     private InputManager inputManager;
 
-    public ComposerCameraController(Camera cam, Node rootNode) {
+    public ComposerCameraController(Camera cam, JmeNode rootNode) {
         this.cam = cam;
-        this.rootNode = rootNode;
+        this.jmeNode = rootNode;
+        this.rootNode = rootNode.getLookup().lookup(Node.class);
         inputManager = SceneApplication.getApplication().getInputManager();
     }
 
-    public Geometry checkClick() {
+    public void checkClick() {
         if (leftMouse) {
             CollisionResults results = new CollisionResults();
             Ray ray = new Ray();
-            ray.setOrigin(cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0));
-//            ray.setOrigin(cam.getLocation());
-            ray.setDirection(cam.getDirection());
+            Vector3f pos = cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0).clone();
+            Vector3f dir = cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0.3f);
+            dir.subtractLocal(pos).normalizeLocal();
+            ray.setOrigin(pos);
+            ray.setDirection(dir);
             rootNode.collideWith(ray, results);
-            CollisionResult result = results.getClosestCollision();
-            if (result != null) {
-                StatusDisplayer.getDefault().setStatusText("found geometry: "+result.getGeometry().getName());
-                return result.getGeometry();
-            }
+            final CollisionResult result = results.getClosestCollision();
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                public void run() {
+                    if (result != null && result.getGeometry() != null) {
+                        SceneApplication.getApplication().setSelectedNode(jmeNode.getChild(result.getGeometry()));
+                    }
+                }
+            });
         }
-        return null;
     }
 
     public void enable() {
+        inputManager.addRawInputListener(this);
         inputManager.addListener(this, "MouseAxisX");
         inputManager.addListener(this, "MouseAxisY");
         inputManager.addListener(this, "MouseAxisX-");
@@ -100,7 +114,47 @@ public class ComposerCameraController implements ActionListener, AnalogListener 
     }
 
     public void disable() {
+        inputManager.removeRawInputListener(this);
         inputManager.removeListener(this);
+    }
+
+    /*
+     * methods to move camera
+     */
+    private void rotateCamera(Vector3f axis, float amount) {
+        if (axis.equals(cam.getLeft())) {
+            float elevation = -FastMath.asin(cam.getDirection().y);
+            amount = Math.min(Math.max(elevation + amount,
+                    -FastMath.HALF_PI), FastMath.HALF_PI)
+                    - elevation;
+        }
+        rot.fromAngleAxis(amount, axis);
+        cam.getLocation().subtract(focus, vector);
+        rot.mult(vector, vector);
+        focus.add(vector, cam.getLocation());
+
+        Quaternion curRot = cam.getRotation().clone();
+        cam.setRotation(rot.mult(curRot));
+    }
+
+    private void panCamera(float left, float up) {
+        cam.getLeft().mult(left, vector);
+        vector.scaleAdd(up, cam.getUp(), vector);
+        cam.setLocation(cam.getLocation().add(vector));
+        focus.addLocal(vector);
+    }
+
+    private void moveCamera(float forward) {
+        cam.getDirection().mult(forward, vector);
+        cam.setLocation(cam.getLocation().add(vector));
+    }
+
+    private void zoomCamera(float amount) {
+        float dist = cam.getLocation().distance(focus);
+        amount = dist - Math.max(0f, dist - amount);
+        Vector3f loc = cam.getLocation().clone();
+        loc.scaleAdd(amount, cam.getDirection(), loc);
+        cam.setLocation(loc);
     }
 
     public void onAction(String string, boolean bln, float f) {
@@ -157,42 +211,20 @@ public class ComposerCameraController implements ActionListener, AnalogListener 
         }
     }
 
-    /*
-     * methods to move camera
-     */
-    private void rotateCamera(Vector3f axis, float amount) {
-        if (axis.equals(cam.getLeft())) {
-            float elevation = -FastMath.asin(cam.getDirection().y);
-            amount = Math.min(Math.max(elevation + amount,
-                    -FastMath.HALF_PI), FastMath.HALF_PI)
-                    - elevation;
-        }
-        rot.fromAngleAxis(amount, axis);
-        cam.getLocation().subtract(focus, vector);
-        rot.mult(vector, vector);
-        focus.add(vector, cam.getLocation());
-
-        Quaternion curRot = cam.getRotation().clone();
-        cam.setRotation(rot.mult(curRot));
+    public void onJoyAxisEvent(JoyAxisEvent jae) {
     }
 
-    private void panCamera(float left, float up) {
-        cam.getLeft().mult(left, vector);
-        vector.scaleAdd(up, cam.getUp(), vector);
-        cam.setLocation(cam.getLocation().add(vector));
-        focus.addLocal(vector);
+    public void onJoyButtonEvent(JoyButtonEvent jbe) {
     }
 
-    private void moveCamera(float forward) {
-        cam.getDirection().mult(forward, vector);
-        cam.setLocation(cam.getLocation().add(vector));
+    public void onMouseMotionEvent(MouseMotionEvent mme) {
+        mouseX = mme.getX();
+        mouseY = mme.getY();
     }
 
-    private void zoomCamera(float amount) {
-        float dist = cam.getLocation().distance(focus);
-        amount = dist - Math.max(0f, dist - amount);
-        Vector3f loc = cam.getLocation().clone();
-        loc.scaleAdd(amount, cam.getDirection(), loc);
-        cam.setLocation(loc);
+    public void onMouseButtonEvent(MouseButtonEvent mbe) {
+    }
+
+    public void onKeyEvent(KeyInputEvent kie) {
     }
 }

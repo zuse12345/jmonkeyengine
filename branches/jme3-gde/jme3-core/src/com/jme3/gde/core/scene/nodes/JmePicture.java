@@ -49,7 +49,7 @@ public class JmePicture extends JmeGeometry {
             ImageUtilities.loadImage("com/jme3/gde/core/scene/nodes/icons/picture.gif");
     private Picture geom;
 
-    public JmePicture(Picture spatial, JmeSpatialChildFactory children) {
+    public JmePicture(Picture spatial, JmeChildren children) {
         super(spatial, children);
         getLookupContents().add(spatial);
         this.geom = spatial;

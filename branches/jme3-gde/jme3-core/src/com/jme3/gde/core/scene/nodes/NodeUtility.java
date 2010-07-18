@@ -42,33 +42,33 @@ import org.openide.cookies.SaveCookie;
 public class NodeUtility {
 
     public static JmeNode createNode(Node node) {
-        JmeSpatialChildFactory factory = new JmeSpatialChildFactory(node);
+        JmeChildren factory = new JmeChildren(node);
         JmeNode jmeNode = new JmeNode(node, factory);
         return jmeNode;
     }
 
     public static JmeNode createNode(Node node, boolean includeLights) {
-        JmeSpatialChildFactory factory = new JmeSpatialChildFactory(node, includeLights);
+        JmeChildren factory = new JmeChildren(node);
         JmeNode jmeNode = new JmeNode(node, factory);
         return jmeNode;
     }
 
     public static JmeNode createNode(Node node, SaveCookie cookie) {
-        JmeSpatialChildFactory factory = new JmeSpatialChildFactory(node);
+        JmeChildren factory = new JmeChildren(node);
         factory.setCookie(cookie);
         JmeNode jmeNode = new JmeNode(node, factory);
         return jmeNode;
     }
 
     public static JmeNode createNode(Node node, boolean includeLights, SaveCookie cookie) {
-        JmeSpatialChildFactory factory = new JmeSpatialChildFactory(node, includeLights);
+        JmeChildren factory = new JmeChildren(node);
         factory.setCookie(cookie);
         JmeNode jmeNode = new JmeNode(node, factory);
         return jmeNode;
     }
 
     public static JmeSpatial createSpatial(Spatial node, SaveCookie cookie) {
-        JmeSpatialChildFactory factory = new JmeSpatialChildFactory(node);
+        JmeChildren factory = new JmeChildren(node);
         factory.setCookie(cookie);
         JmeSpatial jmeSpatial = new JmeSpatial(node, factory);
         return jmeSpatial;

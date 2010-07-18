@@ -15,7 +15,6 @@ import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
 import com.jme3.export.binary.BinaryExporter;
 import com.jme3.gde.core.assets.ProjectAssetManager;
-import com.jme3.gde.core.assets.nodes.SaveNode;
 import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
@@ -506,7 +505,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             if (camController != null) {
                 camController.disable();
             }
-            camController = new ComposerCameraController(SceneApplication.getApplication().getCamera(), request.getRootNode().getLookup().lookup(Node.class));
+            camController = new ComposerCameraController(SceneApplication.getApplication().getCamera(), request.getRootNode());
             camController.enable();
         } else {
             setLoadedState("no scene loaded", false);

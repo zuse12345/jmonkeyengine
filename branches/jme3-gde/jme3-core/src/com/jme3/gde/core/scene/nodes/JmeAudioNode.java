@@ -52,7 +52,7 @@ public class JmeAudioNode extends JmeNode {
             ImageUtilities.loadImage("com/jme3/gde/core/scene/nodes/icons/audionode.gif");
     private AudioNode node;
 
-    public JmeAudioNode(AudioNode spatial, JmeSpatialChildFactory children) {
+    public JmeAudioNode(AudioNode spatial, JmeChildren children) {
         super(spatial, children);
         getLookupContents().add(spatial);
         this.node = spatial;

@@ -57,7 +57,7 @@ public class JmeNode extends JmeSpatial {
             ImageUtilities.loadImage("com/jme3/gde/core/scene/nodes/icons/node.gif");
     private Node node;
 
-    public JmeNode(Node spatial, JmeSpatialChildFactory children) {
+    public JmeNode(Node spatial, JmeChildren children) {
         super(spatial, children);
         getLookupContents().add(spatial);
         this.node = spatial;

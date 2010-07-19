@@ -5,6 +5,7 @@ import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.util.SortUtil;
 import java.io.IOException;
@@ -15,12 +16,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class LightList implements Iterable<Light>, Savable, Cloneable {
+public final class LightList implements Iterable<Light>, Savable, Cloneable {
 
-    Light[] list, tlist;
-    float[] distToOwner;
-    int listSize;
-    Spatial owner;
+    private Light[] list, tlist;
+    private float[] distToOwner;
+    private int listSize;
+    private Spatial owner;
 
     private static final int DEFAULT_SIZE = 1;
 
@@ -242,7 +243,14 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
     @Override
     public LightList clone(){
         try{
-            return (LightList) super.clone();
+            LightList clone = (LightList) super.clone();
+            
+            clone.owner = null;
+            clone.list = list.clone();
+            clone.distToOwner = distToOwner.clone();
+            clone.tlist = null; // list used for sorting only
+
+            return clone;
         }catch (CloneNotSupportedException ex){
             throw new AssertionError();
         }
@@ -265,8 +273,12 @@ public class LightList implements Iterable<Light>, Savable, Cloneable {
 
         List<Light> lights = ic.readSavableArrayList("lights", null);
         listSize = lights.size();
-        list = new Light[listSize];
-        distToOwner = new float[listSize];
+        
+        // NOTE: make sure the array has a length of at least 1
+        int arraySize = Math.max(DEFAULT_SIZE, listSize);
+        list = new Light[arraySize];
+        distToOwner = new float[arraySize];
+
         for (int i = 0; i < listSize; i++){
             list[i] = lights.get(i);
         }

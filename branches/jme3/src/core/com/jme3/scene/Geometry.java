@@ -148,7 +148,13 @@ public class Geometry extends Spatial {
             throw new NullPointerException("Geometry: "+getName()+" has null mesh");
 
         if (mesh.getBound() != null) {
-            worldBound = mesh.getBound().transform(worldTransform, worldBound);
+            if (ignoreTransform){
+                // we do not transform the model bound by the world transform,
+                // just use the model bound as-is
+                worldBound = mesh.getBound().clone(worldBound);
+            }else{
+                worldBound = mesh.getBound().transform(worldTransform, worldBound);
+            }
         }
     }
 

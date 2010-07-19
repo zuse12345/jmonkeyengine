@@ -160,7 +160,6 @@ public class ParticleTriMesh extends ParticleMesh {
                 positions.put(0).put(0).put(0);
                 positions.put(0).put(0).put(0);
                 continue;
-//                break;
             }
             
             if (facingVelocity){

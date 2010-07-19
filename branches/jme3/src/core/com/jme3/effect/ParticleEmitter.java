@@ -372,9 +372,7 @@ public class ParticleEmitter extends Geometry implements Control {
         for (int i = 0; i < particles.length; i++){
             Particle p = particles[i];
             if (p.life == 0){ // particle is dead
-//                p.color.set(0,0,0,0);
-//                assert unusedIndices.contains(i);
-                assert i < firstUnUsed;
+//                assert i <= firstUnUsed;
                 continue;
             }
 

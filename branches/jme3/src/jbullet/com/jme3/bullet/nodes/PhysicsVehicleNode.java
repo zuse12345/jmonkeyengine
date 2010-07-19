@@ -44,10 +44,13 @@ import com.jme3.scene.Spatial;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.util.Converter;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
+import com.jme3.scene.debug.Arrow;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
 
 /**
  * <p>PhysicsVehicleNode - Special PhysicsNode that implements vehicle functions</p>
@@ -65,51 +68,55 @@ import java.util.List;
  * @see com.jmex.jbullet.PhysicsSpace
  * @author normenhansen
  */
-public class PhysicsVehicleNode extends PhysicsNode{
+public class PhysicsVehicleNode extends PhysicsNode {
+
     private RaycastVehicle vehicle;
     private VehicleTuning tuning;
     private VehicleRaycaster rayCaster;
-    private List<PhysicsVehicleWheel> wheels=new LinkedList<PhysicsVehicleWheel>();
+    private List<PhysicsVehicleWheel> wheels = new LinkedList<PhysicsVehicleWheel>();
 
-    public PhysicsVehicleNode(CollisionShape shape){
+    public PhysicsVehicleNode(CollisionShape shape) {
         super(shape);
     }
 
-    public PhysicsVehicleNode(Spatial child, CollisionShape shape){
+    public PhysicsVehicleNode(Spatial child, CollisionShape shape) {
         super(child, shape);
     }
 
-    public PhysicsVehicleNode(Spatial child, CollisionShape shape, float mass){
+    public PhysicsVehicleNode(Spatial child, CollisionShape shape, float mass) {
         super(child, shape, mass);
     }
 
     @Override
     public void updatePhysicsState() {
         super.updatePhysicsState();
-        if(wheels!=null)
-        for (int i = 0; i < wheels.size(); i++) {
-            vehicle.updateWheelTransform(i,true);
-            wheels.get(i).updatePhysicsState();
+        if (wheels != null) {
+            for (int i = 0; i < wheels.size(); i++) {
+                vehicle.updateWheelTransform(i, true);
+                wheels.get(i).updatePhysicsState();
+            }
         }
     }
 
-   @Override
-    protected void postRebuild(){
+    @Override
+    protected void postRebuild() {
         super.postRebuild();
         createVehicleConstraint();
         rBody.setActivationState(CollisionObject.DISABLE_DEACTIVATION);
     }
 
     private void createVehicleConstraint() {
-        if(tuning==null)
-            tuning=new VehicleTuning();
-        rayCaster=new DefaultVehicleRaycaster(PhysicsSpace.getPhysicsSpace().getDynamicsWorld());
-        vehicle=new RaycastVehicle(tuning, rBody, rayCaster);
-        if(wheels!=null)
-        for(PhysicsVehicleWheel wheel:wheels){
-            wheel.setWheelInfo(vehicle.addWheel(Converter.convert(wheel.getLocation()), Converter.convert(wheel.getDirection()), Converter.convert(wheel.getAxle()),
-                    wheel.getRestLength(), wheel.getRadius(), tuning, wheel.isFrontWheel()));
-            wheel.applyInfo();
+        if (tuning == null) {
+            tuning = new VehicleTuning();
+        }
+        rayCaster = new DefaultVehicleRaycaster(PhysicsSpace.getPhysicsSpace().getDynamicsWorld());
+        vehicle = new RaycastVehicle(tuning, rBody, rayCaster);
+        if (wheels != null) {
+            for (PhysicsVehicleWheel wheel : wheels) {
+                wheel.setWheelInfo(vehicle.addWheel(Converter.convert(wheel.getLocation()), Converter.convert(wheel.getDirection()), Converter.convert(wheel.getAxle()),
+                        wheel.getRestLength(), wheel.getRadius(), tuning, wheel.isFrontWheel()));
+                wheel.applyInfo();
+            }
         }
     }
 
@@ -124,10 +131,10 @@ public class PhysicsVehicleNode extends PhysicsNode{
      * @param isFrontWheel sets if this wheel is a front wheel (steering)
      * @return the PhysicsVehicleWheel object to get/set infos on the wheel
      */
-    public PhysicsVehicleWheel addWheel(Spatial spat, Vector3f connectionPoint, Vector3f direction, Vector3f axle, float suspensionRestLength, float wheelRadius, boolean isFrontWheel){
-        PhysicsVehicleWheel wheel=new PhysicsVehicleWheel(spat,connectionPoint,direction,axle,suspensionRestLength,wheelRadius,isFrontWheel);
-        WheelInfo info=vehicle.addWheel(Converter.convert(connectionPoint), Converter.convert(direction), Converter.convert(axle),
-                                        suspensionRestLength, wheelRadius, tuning, isFrontWheel);
+    public PhysicsVehicleWheel addWheel(Spatial spat, Vector3f connectionPoint, Vector3f direction, Vector3f axle, float suspensionRestLength, float wheelRadius, boolean isFrontWheel) {
+        PhysicsVehicleWheel wheel = new PhysicsVehicleWheel(spat, connectionPoint, direction, axle, suspensionRestLength, wheelRadius, isFrontWheel);
+        WheelInfo info = vehicle.addWheel(Converter.convert(connectionPoint), Converter.convert(direction), Converter.convert(axle),
+                suspensionRestLength, wheelRadius, tuning, isFrontWheel);
         wheel.setWheelInfo(info);
         //TODO: info.applyTuningInfo(Tuning tuning)
         wheel.setFrictionSlip(tuning.frictionSlip);
@@ -138,6 +145,9 @@ public class PhysicsVehicleNode extends PhysicsNode{
         wheel.applyInfo();
         wheels.add(wheel);
 //        this.attachChild(spat);
+        if(debugShape!=null){
+            detachDebugShape();
+        }
         this.attachChild(wheel);
         return wheel;
     }
@@ -147,7 +157,7 @@ public class PhysicsVehicleNode extends PhysicsNode{
      * @param wheel the wheel index
      * @return the WheelInfo of the selected wheel
      */
-    public PhysicsVehicleWheel getWheel(int wheel){
+    public PhysicsVehicleWheel getWheel(int wheel) {
         return wheels.get(wheel);
     }
 
@@ -180,7 +190,7 @@ public class PhysicsVehicleNode extends PhysicsNode{
     public void setFrictionSlip(int wheel, float frictionSlip) {
         wheels.get(wheel).setFrictionSlip(frictionSlip);
     }
-    
+
     /**
      * reduces the rolling torque applied from the wheels that cause the vehicle to roll over.
      * This is a bit of a hack, but it's quite effective. 0.0 = no roll, 1.0 = physical behaviour.
@@ -306,7 +316,7 @@ public class PhysicsVehicleNode extends PhysicsNode{
     /**
      * reset the suspension
      */
-    public void resetSuspension(){
+    public void resetSuspension() {
         vehicle.resetSuspension();
     }
 
@@ -314,7 +324,7 @@ public class PhysicsVehicleNode extends PhysicsNode{
      * apply the given engine force to all wheels, works continuously
      * @param force the force
      */
-    public void accelerate(float force){
+    public void accelerate(float force) {
         for (int i = 0; i < wheels.size(); i++) {
             vehicle.applyEngineForce(force, i);
         }
@@ -325,7 +335,7 @@ public class PhysicsVehicleNode extends PhysicsNode{
      * @param wheel the wheel to apply the force on
      * @param force the force
      */
-    public void accelerate(int wheel, float force){
+    public void accelerate(int wheel, float force) {
         vehicle.applyEngineForce(force, wheel);
     }
 
@@ -333,10 +343,11 @@ public class PhysicsVehicleNode extends PhysicsNode{
      * set the given steering value to all front wheels (0 = forward)
      * @param value the steering angle of the front wheels (Pi = 360deg)
      */
-    public void steer(float value){
+    public void steer(float value) {
         for (int i = 0; i < wheels.size(); i++) {
-            if(getWheel(i).isFrontWheel())
+            if (getWheel(i).isFrontWheel()) {
                 vehicle.setSteeringValue(value, i);
+            }
         }
     }
 
@@ -345,7 +356,7 @@ public class PhysicsVehicleNode extends PhysicsNode{
      * @param wheel the wheel to set the steering on
      * @param value the steering angle of the front wheels (Pi = 360deg)
      */
-    public void steer(int wheel, float value){
+    public void steer(int wheel, float value) {
         vehicle.setSteeringValue(value, wheel);
     }
 
@@ -353,7 +364,7 @@ public class PhysicsVehicleNode extends PhysicsNode{
      * apply the given brake force to all wheels, works continuously
      * @param force the force
      */
-    public void brake(float force){
+    public void brake(float force) {
         for (int i = 0; i < wheels.size(); i++) {
             vehicle.setBrake(force, i);
         }
@@ -364,7 +375,7 @@ public class PhysicsVehicleNode extends PhysicsNode{
      * @param wheel the wheel to apply the force on
      * @param force the force
      */
-    public void brake(int wheel, float force){
+    public void brake(int wheel, float force) {
         vehicle.setBrake(force, wheel);
     }
 
@@ -381,6 +392,43 @@ public class PhysicsVehicleNode extends PhysicsNode{
     }
 
     @Override
+    protected Spatial getDebugShape() {
+        Spatial shape = super.getDebugShape();
+        Node node = null;
+        if (shape instanceof Node) {
+            node = (Node) shape;
+        } else {
+            node = new Node("DebugShapeNode");
+            node.attachChild(shape);
+        }
+        for (Iterator<PhysicsVehicleWheel> it = wheels.iterator(); it.hasNext();) {
+            PhysicsVehicleWheel physicsVehicleWheel = it.next();
+            Vector3f location = physicsVehicleWheel.getLocation().clone();
+            Vector3f direction = physicsVehicleWheel.getDirection().clone();
+            Vector3f axle = physicsVehicleWheel.getAxle().clone();
+            float restLength = physicsVehicleWheel.getRestLength();
+            float radius = physicsVehicleWheel.getRadius();
+            physicsVehicleWheel.getRadius();
+            Arrow locArrow = new Arrow(location);
+            Arrow axleArrow = new Arrow(axle.normalizeLocal().mult(0.3f));
+            Arrow wheelArrow = new Arrow(direction.normalizeLocal().mult(radius));
+            Arrow dirArrow = new Arrow(direction.normalizeLocal().multLocal(restLength));
+            Geometry locGeom = new Geometry("WheelLocationDebugShape", locArrow);
+            Geometry dirGeom = new Geometry("WheelDirectionDebugShape", dirArrow);
+            Geometry axleGeom = new Geometry("WheelAxleDebugShape", axleArrow);
+            Geometry wheelGeom = new Geometry("WheelRadiusDebugShape", wheelArrow);
+            dirGeom.setLocalTranslation(location);
+            axleGeom.setLocalTranslation(location.add(direction));
+            wheelGeom.setLocalTranslation(location.add(direction));
+            node.attachChild(locGeom);
+            node.attachChild(dirGeom);
+            node.attachChild(axleGeom);
+            node.attachChild(wheelGeom);
+        }
+        return node;
+    }
+
+    @Override
     public void read(JmeImporter im) throws IOException {
         super.read(im);
         //TODO
@@ -393,5 +441,4 @@ public class PhysicsVehicleNode extends PhysicsNode{
         //TODO
         throw new UnsupportedOperationException("vehicle saving not working yet");
     }
-
 }

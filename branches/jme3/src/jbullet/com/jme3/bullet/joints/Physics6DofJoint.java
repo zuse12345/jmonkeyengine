@@ -59,6 +59,10 @@ public class Physics6DofJoint extends PhysicsJoint{
     private LinkedList<RotationalLimitMotor> rotationalMotors=new LinkedList<RotationalLimitMotor>();
     private TranslationalLimitMotor translationalMotor;
 
+    /**
+     * @param pivotA local translation of the joint connection point in node A
+     * @param pivotB local translation of the joint connection point in node B
+     */
     public Physics6DofJoint(PhysicsNode nodeA, PhysicsNode nodeB, Vector3f pivotA, Vector3f pivotB, Matrix3f rotA, Matrix3f rotB, boolean useLinearReferenceFrameA) {
         super(nodeA, nodeB, pivotA, pivotB);
 
@@ -74,6 +78,10 @@ public class Physics6DofJoint extends PhysicsJoint{
         gatherMotors();
     }
 
+    /**
+     * @param pivotA local translation of the joint connection point in node A
+     * @param pivotB local translation of the joint connection point in node B
+     */
     public Physics6DofJoint(PhysicsNode nodeA, PhysicsNode nodeB, Vector3f pivotA, Vector3f pivotB, boolean useLinearReferenceFrameA) {
         super(nodeA, nodeB, pivotA, pivotB);
 

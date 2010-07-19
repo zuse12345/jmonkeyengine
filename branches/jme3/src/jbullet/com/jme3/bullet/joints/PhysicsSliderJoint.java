@@ -55,6 +55,10 @@ public class PhysicsSliderJoint extends PhysicsJoint {
     public PhysicsSliderJoint() {
     }
 
+    /**
+     * @param pivotA local translation of the joint connection point in node A
+     * @param pivotB local translation of the joint connection point in node B
+     */
     public PhysicsSliderJoint(PhysicsNode nodeA, PhysicsNode nodeB, Vector3f pivotA, Vector3f pivotB, Matrix3f rotA, Matrix3f rotB, boolean useLinearReferenceFrameA) {
         super(nodeA, nodeB, pivotA, pivotB);
         this.rotA=rotA;
@@ -63,6 +67,10 @@ public class PhysicsSliderJoint extends PhysicsJoint {
         createJoint();
     }
 
+    /**
+     * @param pivotA local translation of the joint connection point in node A
+     * @param pivotB local translation of the joint connection point in node B
+     */
     public PhysicsSliderJoint(PhysicsNode nodeA, PhysicsNode nodeB, Vector3f pivotA, Vector3f pivotB, boolean useLinearReferenceFrameA) {
         super(nodeA, nodeB, pivotA, pivotB);
         this.rotA=new Matrix3f();

@@ -59,7 +59,7 @@ public abstract class PhysicsJoint implements Savable {
 
     /**
      * @param pivotA local translation of the joint connection point in node A
-     * @param pivotB local translation of the joint connection point in node A
+     * @param pivotB local translation of the joint connection point in node B
      */
     public PhysicsJoint(PhysicsNode nodeA, PhysicsNode nodeB, Vector3f pivotA, Vector3f pivotB) {
         this.nodeA = nodeA;

@@ -31,9 +31,11 @@ public class TestCollisionGroups extends SimpleBulletApplication{
     @Override
     public void simpleInitApp() {
         Material mat = new Material(getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
-        mat.setColor("m_Color", ColorRGBA.Blue);
+        mat.setColor("m_Color", ColorRGBA.Red);
+        Material mat2 = new Material(getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
+        mat2.setColor("m_Color", ColorRGBA.Yellow);
 
-//         Add a physics sphere to the world
+        // Add a physics sphere to the world
         PhysicsNode physicsSphere=new PhysicsNode(new SphereCollisionShape(1),1);
         physicsSphere.setLocalTranslation(new Vector3f(3,6,0));
         physicsSphere.attachDebugShape(assetManager);
@@ -45,7 +47,7 @@ public class TestCollisionGroups extends SimpleBulletApplication{
         // Add a physics sphere to the world using the collision shape from sphere one
         PhysicsNode physicsSphere2=new PhysicsNode(physicsSphere.getCollisionShape(),1);
         physicsSphere2.setLocalTranslation(new Vector3f(4,8,0));
-        physicsSphere2.attachDebugShape(assetManager);
+        physicsSphere2.attachDebugShape(mat2);
         physicsSphere2.updateGeometricState();
         physicsSphere2.updateModelBound();
         physicsSphere2.addCollideWithGroup(PhysicsNode.COLLISION_GROUP_02);
@@ -53,24 +55,21 @@ public class TestCollisionGroups extends SimpleBulletApplication{
         getPhysicsSpace().add(physicsSphere2);
 
         // an obstacle mesh, does not move (mass=0)
-        Geometry geom4=new Geometry("node2",new Sphere(16,16,1.2f));
-        geom4.setMaterial(mat);
-        PhysicsNode node2=new PhysicsNode(geom4,new MeshCollisionShape(geom4.getMesh()),0);
+        PhysicsNode node2=new PhysicsNode(new MeshCollisionShape(new Sphere(16,16,1.2f)),0);
         node2.setLocalTranslation(new Vector3f(2.5f,-4,0f));
+        node2.attachDebugShape(mat);
         node2.setCollisionGroup(PhysicsNode.COLLISION_GROUP_02);
         node2.setCollideWithGroups(PhysicsNode.COLLISION_GROUP_02);
         rootNode.attachChild(node2);
         getPhysicsSpace().add(node2);
 
         // the floor, does not move (mass=0)
-        Geometry geom5=new Geometry("box2",new Box(Vector3f.ZERO,100f,0.2f,100f));
-        geom5.setMaterial(mat);
-        geom5.updateGeometricState();
-        PhysicsNode node3=new PhysicsNode(geom5,new MeshCollisionShape(geom5.getMesh()),0);
+        PhysicsNode node3=new PhysicsNode(new MeshCollisionShape(new Box(Vector3f.ZERO,100f,0.2f,100f)),0);
         node3.setLocalTranslation(new Vector3f(0f,-6,0f));
-        rootNode.attachChild(node3);
+        node3.attachDebugShape(assetManager);
         node3.updateModelBound();
         node3.updateGeometricState();
+        rootNode.attachChild(node3);
         getPhysicsSpace().add(node3);
     }
 

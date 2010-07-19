@@ -208,14 +208,14 @@ public abstract class CollisionObject extends Node {
      * Attaches a visual debug shape of the current collision shape to this physics object
      * @param material Material to use for the debug shape
      */
-    public void attachDebugShape(Material material) {
+    public Spatial attachDebugShape(Material material) {
         if (debugShape != null) {
             detachDebugShape();
         }
 
         Spatial spatial = getDebugShape();
         if (spatial == null) {
-            return;
+            return null;
         }
         if (spatial instanceof Node) {
             List<Spatial> children = ((Node) spatial).getChildren();
@@ -230,6 +230,8 @@ public abstract class CollisionObject extends Node {
 
         }
         this.attachChild(spatial);
+        this.debugShape = spatial;
+        return spatial;
     }
 
     /**
@@ -240,7 +242,7 @@ public abstract class CollisionObject extends Node {
         debugShape = null;
     }
 
-    private Spatial getDebugShape() {
+    protected Spatial getDebugShape() {
         if (collisionShape == null) {
             return null;
         }
@@ -265,11 +267,10 @@ public abstract class CollisionObject extends Node {
             return null;
         }
         debugShape.updateGeometricState();
-        this.debugShape = debugShape;
         return debugShape;
     }
 
-    private Geometry createDebugShape(CollisionShape shape) {
+    protected Geometry createDebugShape(CollisionShape shape) {
         Geometry geom = new Geometry();
         if (shape instanceof BoxCollisionShape) {
             geom.setName("BoxDebugShape");

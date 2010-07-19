@@ -64,7 +64,7 @@ public class PhysicsHingeJoint extends PhysicsJoint {
     /**
      * Creates a new HingeJoint
      * @param pivotA local translation of the joint connection point in node A
-     * @param pivotB local translation of the joint connection point in node A
+     * @param pivotB local translation of the joint connection point in node B
      */
     public PhysicsHingeJoint(PhysicsNode nodeA, PhysicsNode nodeB, Vector3f pivotA, Vector3f pivotB, Vector3f axisA, Vector3f axisB) {
         super(nodeA, nodeB, pivotA, pivotB);

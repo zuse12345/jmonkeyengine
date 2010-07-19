@@ -59,7 +59,7 @@ public class TestSimplePhysics extends SimpleBulletApplication{
     @Override
     public void simpleInitApp() {
 
-//         Add a physics sphere to the world
+        // Add a physics sphere to the world
         PhysicsNode physicsSphere=new PhysicsNode(new SphereCollisionShape(1),1);
         physicsSphere.setLocalTranslation(new Vector3f(3,6,0));
         physicsSphere.attachDebugShape(getAssetManager());

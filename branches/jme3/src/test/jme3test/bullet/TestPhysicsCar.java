@@ -136,6 +136,7 @@ public class TestPhysicsCar extends SimpleBulletApplication implements ActionLis
                         wheelDirection, wheelAxle, 0.2f, r, false);
 
         player.updateModelBound();
+        player.attachDebugShape(assetManager);
         rootNode.attachChild(player);
 
         getPhysicsSpace().add(player);

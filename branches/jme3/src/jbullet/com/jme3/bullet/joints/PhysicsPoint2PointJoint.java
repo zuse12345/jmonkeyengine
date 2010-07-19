@@ -51,6 +51,10 @@ public class PhysicsPoint2PointJoint extends PhysicsJoint{
     public PhysicsPoint2PointJoint() {
     }
 
+    /**
+     * @param pivotA local translation of the joint connection point in node A
+     * @param pivotB local translation of the joint connection point in node B
+     */
     public PhysicsPoint2PointJoint(PhysicsNode nodeA, PhysicsNode nodeB, Vector3f pivotA, Vector3f pivotB) {
         super(nodeA, nodeB, pivotA, pivotB);
         createJoint();

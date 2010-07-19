@@ -61,6 +61,10 @@ public class PhysicsConeJoint extends PhysicsJoint {
     public PhysicsConeJoint() {
     }
 
+    /**
+     * @param pivotA local translation of the joint connection point in node A
+     * @param pivotB local translation of the joint connection point in node B
+     */
     public PhysicsConeJoint(PhysicsNode nodeA, PhysicsNode nodeB, Vector3f pivotA, Vector3f pivotB) {
         super(nodeA, nodeB, pivotA, pivotB);
         this.rotA = new Matrix3f();
@@ -68,6 +72,10 @@ public class PhysicsConeJoint extends PhysicsJoint {
         createJoint();
     }
 
+    /**
+     * @param pivotA local translation of the joint connection point in node A
+     * @param pivotB local translation of the joint connection point in node B
+     */
     public PhysicsConeJoint(PhysicsNode nodeA, PhysicsNode nodeB, Vector3f pivotA, Vector3f pivotB, Matrix3f rotA, Matrix3f rotB) {
         super(nodeA, nodeB, pivotA, pivotB);
         this.rotA = rotA;

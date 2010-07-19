@@ -1,18 +1,14 @@
 package jme3test.bullet;
 
 import com.jme3.app.SimpleBulletApplication;
-import com.jme3.asset.TextureKey;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
-import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.joints.PhysicsHingeJoint;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.input.KeyInput;
 import com.jme3.input.binding.BindingListener;
 import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.shape.Box;
-import com.jme3.texture.Texture;
 
 public class TestPhysicsHingeJoint extends SimpleBulletApplication implements BindingListener {
     private PhysicsHingeJoint joint;
@@ -52,59 +48,26 @@ public class TestPhysicsHingeJoint extends SimpleBulletApplication implements Bi
     @Override
     public void simpleInitApp() {
         setupKeys();
-        setupFloor();
         setupJoint();
     }
 
-    public void setupFloor() {
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
-        TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);
-        key.setGenerateMips(true);
-        Texture tex = assetManager.loadTexture(key);
-        tex.setMinFilter(Texture.MinFilter.Trilinear);
-        mat.setTexture("m_ColorMap", tex);
-        
-        Box floor = new Box(Vector3f.ZERO, 100, 1f, 100);
-        Geometry floorGeom = new Geometry("Floor", floor);
-        floorGeom.setMaterial(mat);
-        floorGeom.updateModelBound();
-
-        PhysicsNode tb=new PhysicsNode(floorGeom,new MeshCollisionShape(floorGeom.getMesh()),0);
-        rootNode.attachChild(tb);
-        tb.setLocalTranslation(new Vector3f(0f,-6,0f));
-        tb.updateModelBound();
-        tb.updateGeometricState();
-        getPhysicsSpace().add(tb);
-    }
-
     public void setupJoint() {
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
-        TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);
-        key.setGenerateMips(true);
-        Texture tex = assetManager.loadTexture(key);
-        tex.setMinFilter(Texture.MinFilter.Trilinear);
-        mat.setTexture("m_ColorMap", tex);
 
-        Box holder = new Box(Vector3f.ZERO, .1f, .1f, .1f);
-        Geometry holderGeom = new Geometry("Holder", holder);
-        holderGeom.setMaterial(mat);
-        holderGeom.updateModelBound();
+        Material mat = new Material(getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
+        mat.setColor("m_Color", ColorRGBA.Yellow);
 
-        Box hammer = new Box(Vector3f.ZERO, .3f, .3f, .3f);
-        Geometry hammerGeom = new Geometry("Hammer", hammer);
-        hammerGeom.setMaterial(mat);
-        hammerGeom.updateModelBound();
-
-        PhysicsNode holderNode=new PhysicsNode(holderGeom,new BoxCollisionShape(new Vector3f( .1f, .1f, .1f)),0);
+        PhysicsNode holderNode=new PhysicsNode(new BoxCollisionShape(new Vector3f( .1f, .1f, .1f)),0);
         rootNode.attachChild(holderNode);
         holderNode.setLocalTranslation(new Vector3f(0f,0,0f));
+        holderNode.attachDebugShape(mat);
         holderNode.updateModelBound();
         holderNode.updateGeometricState();
         getPhysicsSpace().add(holderNode);
 
-        PhysicsNode hammerNode=new PhysicsNode(hammerGeom,new BoxCollisionShape(new Vector3f( .3f, .3f, .3f)),1);
+        PhysicsNode hammerNode=new PhysicsNode(new BoxCollisionShape(new Vector3f( .3f, .3f, .3f)),1);
         rootNode.attachChild(hammerNode);
         hammerNode.setLocalTranslation(new Vector3f(0f,-1,0f));
+        hammerNode.attachDebugShape(assetManager);
         hammerNode.updateModelBound();
         hammerNode.updateGeometricState();
         getPhysicsSpace().add(hammerNode);

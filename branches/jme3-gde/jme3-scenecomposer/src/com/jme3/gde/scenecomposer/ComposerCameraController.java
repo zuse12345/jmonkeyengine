@@ -244,7 +244,6 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
     }
 
     public void update(float f) {
-        System.out.println("update"+f);
         if (checkClick) {
             CollisionResults results = new CollisionResults();
             Ray ray = new Ray();

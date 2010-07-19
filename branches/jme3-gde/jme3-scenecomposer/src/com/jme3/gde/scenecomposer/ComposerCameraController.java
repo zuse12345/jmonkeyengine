@@ -72,6 +72,8 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
     private InputManager inputManager;
     private ClickListener listener;
 
+    private boolean moved=false;
+
     public ComposerCameraController(Camera cam, JmeNode rootNode) {
         this.cam = cam;
         this.jmeRootNode = rootNode;
@@ -162,8 +164,10 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
         if ("MouseButtonLeft".equals(string)) {
             if (bln) {
                 leftMouse = true;
+                moved=false;
             } else {
                 leftMouse = false;
+                if(!moved)
                 checkClick();
             }
         }
@@ -178,6 +182,7 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
 
     public void onAnalog(String string, float f1, float f) {
         if ("MouseAxisX".equals(string)) {
+            moved=true;
             if (leftMouse) {
                 rotateCamera(Vector3f.UNIT_Y, -f1 * 2.5f);
             }
@@ -185,13 +190,16 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
                 panCamera(deltaX * 10, -deltaY * 10);
             }
         } else if ("MouseAxisY".equals(string)) {
-            if (leftMouse) {
+            moved=true;
+            if (leftMouse) 
+            {
                 rotateCamera(cam.getLeft(), -f1 * 2.5f);
             }
             if (rightMouse) {
                 panCamera(deltaX * 10, -deltaY * 10);
             }
         } else if ("MouseAxisX-".equals(string)) {
+            moved=true;
             if (leftMouse) {
                 rotateCamera(Vector3f.UNIT_Y, f1 * 2.5f);
             }
@@ -199,6 +207,7 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
                 panCamera(deltaX * 10, -deltaY * 10);
             }
         } else if ("MouseAxisY-".equals(string)) {
+            moved=true;
             if (leftMouse) {
                 rotateCamera(cam.getLeft(), f1 * 2.5f);
             }

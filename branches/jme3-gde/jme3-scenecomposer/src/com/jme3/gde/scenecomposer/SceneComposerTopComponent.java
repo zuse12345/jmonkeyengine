@@ -565,6 +565,8 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 public void run() {
                     if (result != null && result.getGeometry() != null) {
                         SceneApplication.getApplication().setSelectedNode(currentRequest.getRootNode().getChild(result.getGeometry()));
+                    }else if(clickAddSpatialName == null){
+                        SceneApplication.getApplication().setSelectedNode(currentRequest.getRootNode());
                     }
                 }
             });

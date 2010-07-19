@@ -87,10 +87,10 @@ public class TestPhysicsCar extends SimpleBulletApplication implements ActionLis
         Texture tex = assetManager.loadTexture(key);
         mat.setTexture("m_ColorMap", tex);
         //box stand in
-        Box b = new Box(new Vector3f(0,0,0),0.5f,0.5f,2f);
+        Box b = new Box(new Vector3f(0,0,0),1f,0.5f,2.4f);
         Geometry g= new Geometry("Box",b);
         g.setMaterial(matBox);
-        player = new PhysicsVehicleNode(g, new BoxCollisionShape(new Vector3f(0.5f,0.5f,2f)),1);
+        player = new PhysicsVehicleNode(g, new BoxCollisionShape(new Vector3f(1f,0.5f,2.4f)),1);
 
         //setting default values for wheels
         player.setSuspensionCompression(compValue*2.0f*FastMath.sqrt(stiffness));

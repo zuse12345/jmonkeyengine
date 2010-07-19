@@ -10,6 +10,7 @@ import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
@@ -71,26 +72,16 @@ public class TestPhysicsCar extends SimpleBulletApplication implements ActionLis
     }
 
     private void buildPlayer() {
-        float r=0.6f;
+        float r=0.5f;
         float stiffness=90.0f;//200=f1 car
         float compValue=0.4f; //(lower than damp!)
         float dampValue=0.8f;
 
-        Material matBox = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
-        TextureKey keyBox = new TextureKey("Models/Sign Post/Sign Post.jpg", true);
-        keyBox.setGenerateMips(true);
-        Texture texBox = assetManager.loadTexture(keyBox);
-        matBox.setTexture("m_ColorMap", texBox);
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
-        TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);
-        key.setGenerateMips(true);
-        Texture tex = assetManager.loadTexture(key);
-        mat.setTexture("m_ColorMap", tex);
+        Material mat = new Material(getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
+        mat.setColor("m_Color", ColorRGBA.Red);
+
         //box stand in
-        Box b = new Box(new Vector3f(0,0,0),1f,0.5f,2.4f);
-        Geometry g= new Geometry("Box",b);
-        g.setMaterial(matBox);
-        player = new PhysicsVehicleNode(g, new BoxCollisionShape(new Vector3f(1f,0.5f,2.4f)),1);
+        player = new PhysicsVehicleNode(new Node(),new BoxCollisionShape(new Vector3f(1.2f,0.5f,2.4f)),1);
 
         //setting default values for wheels
         player.setSuspensionCompression(compValue*2.0f*FastMath.sqrt(stiffness));
@@ -108,7 +99,7 @@ public class TestPhysicsCar extends SimpleBulletApplication implements ActionLis
         node1.attachChild(wheels1);
         wheels1.rotate(0, FastMath.HALF_PI, 0);
         wheels1.setMaterial(mat);
-        player.addWheel(node1, new Vector3f(-1f,-0.5f,2f),
+        player.addWheel(wheels1, new Vector3f(-1f,-0.5f,2f),
                         wheelDirection, wheelAxle, 0.2f, r, true);
 
         Node node2 = new Node("wheel 2 node");
@@ -116,23 +107,23 @@ public class TestPhysicsCar extends SimpleBulletApplication implements ActionLis
         node2.attachChild(wheels2);
         wheels2.rotate(0, FastMath.HALF_PI, 0);
         wheels2.setMaterial(mat);
-        player.addWheel(node2, new Vector3f(1f,-0.5f,2f),
+        player.addWheel(wheels2, new Vector3f(1f,-0.5f,2f),
                         wheelDirection, wheelAxle, 0.2f, r, true);
 
         Node node3 = new Node("wheel 3 node");
         Geometry wheels3=new Geometry("wheel 3",wheelMesh);
         node3.attachChild(wheels3);
         wheels3.rotate(0, FastMath.HALF_PI, 0);
-        wheels3.setMaterial(matBox);
-        player.addWheel(node3, new Vector3f(-1f,-0.5f,-2f),
+        wheels3.setMaterial(mat);
+        player.addWheel(wheels3, new Vector3f(-1f,-0.5f,-2f),
                         wheelDirection, wheelAxle, 0.2f, r, false);
 
         Node node4 = new Node("wheel 4 node");
         Geometry wheels4=new Geometry("wheel 4",wheelMesh);
         node4.attachChild(wheels4);
         wheels4.rotate(0, FastMath.HALF_PI, 0);
-        wheels4.setMaterial(matBox);
-        player.addWheel(node4, new Vector3f(1f,-0.5f,-2f),
+        wheels4.setMaterial(mat);
+        player.addWheel(wheels4, new Vector3f(1f,-0.5f,-2f),
                         wheelDirection, wheelAxle, 0.2f, r, false);
 
         player.updateModelBound();

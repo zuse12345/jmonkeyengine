@@ -28,7 +28,10 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.light.PointLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Ray;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
@@ -64,7 +67,7 @@ import org.openide.util.Utilities;
  */
 @ConvertAsProperties(dtd = "-//com.jme3.gde.scenecomposer//SceneComposer//EN",
 autostore = false)
-public final class SceneComposerTopComponent extends TopComponent implements SceneListener, LookupListener, AppState, ClickListener {
+public final class SceneComposerTopComponent extends TopComponent implements SceneListener, LookupListener {
 
     private static SceneComposerTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -77,7 +80,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     private Spatial selected;
     ComposerCameraController camController;
     private SaveCookie saveCookie = new SaveCookieImpl();
-    private String clickAddSpatialName = null;
 
     public SceneComposerTopComponent() {
         initComponents();
@@ -85,8 +87,8 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         setToolTipText(NbBundle.getMessage(SceneComposerTopComponent.class, "HINT_SceneComposerTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         result = Utilities.actionsGlobalContext().lookupResult(JmeSpatial.class);
-        result.addLookupListener(this);
         SceneApplication.getApplication().addSceneListener(this);
+        result.addLookupListener(this);
     }
 
     /** This method is called from within the constructor to
@@ -196,7 +198,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
         if (jList1.getSelectedValue() != null) {
-            clickAddSpatialName = jList1.getSelectedValue().toString();
+            camController.setClickAddSpatialName(jList1.getSelectedValue().toString());
         }
 
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -249,12 +251,14 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 
     @Override
     public void componentOpened() {
-        // TODO add custom code on component opening
+        super.componentOpened();
     }
 
     @Override
     public void componentClosed() {
-        // TODO add custom code on component closing
+        super.componentClosed();
+        SceneApplication.getApplication().removeSceneListener(this);
+        result.removeLookupListener(this);
     }
 
     void writeProperties(java.util.Properties p) {
@@ -362,7 +366,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         }
     }
 
-    private void doAddSpatial(String name, Vector3f point) {
+    public void doAddSpatial(String name, Vector3f point) {
         if (selected instanceof Node) {
             if ("Node".equals(name)) {
                 ((Node) selected).attachChild(new Node("Node"));
@@ -550,30 +554,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         }
     }
 
-    public void clickReceived(CollisionResults results) {
-        if (results == null) {
-            return;
-        }
-        final CollisionResult result = results.getClosestCollision();
-        if (clickAddSpatialName != null && result != null) {
-            Vector3f point = result.getContactPoint();
-            doAddSpatial(clickAddSpatialName, point);
-            clickAddSpatialName = null;
-        } else {
-            java.awt.EventQueue.invokeLater(new Runnable() {
-
-                public void run() {
-                    if (result != null && result.getGeometry() != null) {
-                        SceneApplication.getApplication().setSelectedNode(currentRequest.getRootNode().getChild(result.getGeometry()));
-                    }else if(clickAddSpatialName == null){
-                        SceneApplication.getApplication().setSelectedNode(currentRequest.getRootNode());
-                    }
-                }
-            });
-        }
-
-    }
-
     private void selectSpatial(JmeSpatial spatial) {
         if (spatial == null) {
             setSelectedObjectText(null);
@@ -598,11 +578,10 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         if (request.equals(currentRequest)) {
             setLoadedState(currentRequest.getRootNode().getName(), true);
             if (camController != null) {
-                camController.removeListener(this);
                 camController.disable();
             }
             camController = new ComposerCameraController(SceneApplication.getApplication().getCamera(), request.getRootNode());
-            camController.addListener(this);
+            camController.setMaster(this);
             camController.enable();
         } else {
             setLoadedState("no scene loaded", false);
@@ -639,41 +618,5 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 //            }
 
         }
-    }
-
-    /*
-     * AppState
-     */
-    public void initialize(AppStateManager asm, Application aplctn) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public boolean isInitialized() {
-        return true;
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void stateAttached(AppStateManager asm) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void stateDetached(AppStateManager asm) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void update(float f) {
-    }
-
-    public void render(RenderManager rm) {
-//        if (camController != null) {
-//            Geometry geom = camController.checkClick();
-//            if (geom != null) {
-//                StatusDisplayer.getDefault().setStatusText("Clicked Geometry: " + geom.toString());
-//            }
-//        }
-    }
-
-    public void cleanup() {
-//        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

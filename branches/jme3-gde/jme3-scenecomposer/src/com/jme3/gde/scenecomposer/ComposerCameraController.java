@@ -31,9 +31,12 @@
  */
 package com.jme3.gde.scenecomposer;
 
-import com.jme3.gde.core.scene.SceneApplication;
+import com.jme3.app.Application;
+import com.jme3.app.state.AppState;
+import com.jme3.app.state.AppStateManager;
 import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
+import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.nodes.JmeNode;
 import com.jme3.input.InputManager;
 import com.jme3.input.RawInputListener;
@@ -50,14 +53,15 @@ import com.jme3.math.Ray;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
+import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Node;
-import org.openide.awt.StatusDisplayer;
+import java.util.concurrent.Callable;
 
 /**
  *
  * @author normenhansen
  */
-public class ComposerCameraController implements ActionListener, AnalogListener, RawInputListener {
+public class ComposerCameraController implements ActionListener, AnalogListener, RawInputListener, AppState {
 
     private boolean leftMouse, rightMouse, middleMouse;
     private float deltaX, deltaY, deltaZ, deltaWheel;
@@ -70,9 +74,10 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
     private Node rootNode;
     private JmeNode jmeRootNode;
     private InputManager inputManager;
-    private ClickListener listener;
-
-    private boolean moved=false;
+    private SceneComposerTopComponent master;
+    private String clickAddSpatialName = null;
+    private boolean moved = false;
+    private boolean checkClick = false;
 
     public ComposerCameraController(Camera cam, JmeNode rootNode) {
         this.cam = cam;
@@ -81,26 +86,8 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
         inputManager = SceneApplication.getApplication().getInputManager();
     }
 
-    public void addListener(ClickListener listener) {
-        this.listener = listener;
-    }
-
-    public void removeListener(ClickListener listener) {
-        this.listener = null;
-    }
-
-    public void checkClick() {
-        CollisionResults results = new CollisionResults();
-        Ray ray = new Ray();
-        Vector3f pos = cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0).clone();
-        Vector3f dir = cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0.3f).clone();
-        dir.subtractLocal(pos).normalizeLocal();
-        ray.setOrigin(pos);
-        ray.setDirection(dir);
-        rootNode.collideWith(ray, results);
-        if(listener!=null){
-            listener.clickReceived(results);
-        }
+    public void setMaster(SceneComposerTopComponent component) {
+        this.master = component;
     }
 
     public void enable() {
@@ -114,11 +101,13 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
         inputManager.addListener(this, "MouseButtonLeft");
         inputManager.addListener(this, "MouseButtonMiddle");
         inputManager.addListener(this, "MouseButtonRight");
+        SceneApplication.getApplication().getStateManager().attach(this);
     }
 
     public void disable() {
         inputManager.removeRawInputListener(this);
         inputManager.removeListener(this);
+        SceneApplication.getApplication().getStateManager().detach(this);
     }
 
     /*
@@ -164,11 +153,12 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
         if ("MouseButtonLeft".equals(string)) {
             if (bln) {
                 leftMouse = true;
-                moved=false;
+                moved = false;
             } else {
                 leftMouse = false;
-                if(!moved)
-                checkClick();
+                if (!moved) {
+                    checkClick = true;
+                }
             }
         }
         if ("MouseButtonRight".equals(string)) {
@@ -182,7 +172,7 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
 
     public void onAnalog(String string, float f1, float f) {
         if ("MouseAxisX".equals(string)) {
-            moved=true;
+            moved = true;
             if (leftMouse) {
                 rotateCamera(Vector3f.UNIT_Y, -f1 * 2.5f);
             }
@@ -190,16 +180,15 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
                 panCamera(deltaX * 10, -deltaY * 10);
             }
         } else if ("MouseAxisY".equals(string)) {
-            moved=true;
-            if (leftMouse) 
-            {
+            moved = true;
+            if (leftMouse) {
                 rotateCamera(cam.getLeft(), -f1 * 2.5f);
             }
             if (rightMouse) {
                 panCamera(deltaX * 10, -deltaY * 10);
             }
         } else if ("MouseAxisX-".equals(string)) {
-            moved=true;
+            moved = true;
             if (leftMouse) {
                 rotateCamera(Vector3f.UNIT_Y, f1 * 2.5f);
             }
@@ -207,7 +196,7 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
                 panCamera(deltaX * 10, -deltaY * 10);
             }
         } else if ("MouseAxisY-".equals(string)) {
-            moved=true;
+            moved = true;
             if (leftMouse) {
                 rotateCamera(cam.getLeft(), f1 * 2.5f);
             }
@@ -236,5 +225,68 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
     }
 
     public void onKeyEvent(KeyInputEvent kie) {
+    }
+
+    /**APPSTATE**/
+    public void initialize(AppStateManager asm, Application aplctn) {
+        appInit = true;
+    }
+    private boolean appInit = false;
+
+    public boolean isInitialized() {
+        return appInit;
+    }
+
+    public void stateAttached(AppStateManager asm) {
+    }
+
+    public void stateDetached(AppStateManager asm) {
+    }
+
+    public void update(float f) {
+        System.out.println("update"+f);
+        if (checkClick) {
+            CollisionResults results = new CollisionResults();
+            Ray ray = new Ray();
+            Vector3f pos = cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0).clone();
+            Vector3f dir = cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0.3f).clone();
+            dir.subtractLocal(pos).normalizeLocal();
+            ray.setOrigin(pos);
+            ray.setDirection(dir);
+            rootNode.collideWith(ray, results);
+            if (results == null) {
+                return;
+            }
+            final CollisionResult result = results.getClosestCollision();
+            if (clickAddSpatialName != null && result != null) {
+                Vector3f point = result.getContactPoint();
+                if (master != null) {
+                    master.doAddSpatial(clickAddSpatialName, point);
+                }
+                clickAddSpatialName = null;
+            } else {
+                java.awt.EventQueue.invokeLater(new Runnable() {
+
+                    public void run() {
+                        if (result != null && result.getGeometry() != null) {
+                            SceneApplication.getApplication().setSelectedNode(jmeRootNode.getChild(result.getGeometry()));
+                        } else if (clickAddSpatialName == null) {
+                            SceneApplication.getApplication().setSelectedNode(jmeRootNode);
+                        }
+                    }
+                });
+            }
+            checkClick = false;
+        }
+    }
+
+    public void render(RenderManager rm) {
+    }
+
+    public void cleanup() {
+    }
+
+    public void setClickAddSpatialName(String clickAddSpatialName) {
+        this.clickAddSpatialName = clickAddSpatialName;
     }
 }

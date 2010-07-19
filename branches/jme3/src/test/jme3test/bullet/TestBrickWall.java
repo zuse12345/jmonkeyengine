@@ -145,13 +145,12 @@ public class TestBrickWall extends SimpleBulletApplication {
         Geometry reBoxg = new Geometry("brick", brick);
         reBoxg.setMaterial(mat);
         // reBoxg.setShadowMode(ShadowMode.CastAndRecieve);
-        PhysicsNode brickNode = new PhysicsNode(reBoxg, new BoxCollisionShape(new Vector3f(bLength, bHeight, bWidth)), 1);
+        PhysicsNode brickNode = new PhysicsNode(reBoxg, new BoxCollisionShape(new Vector3f(bLength, bHeight, bWidth)), 1.5f);
         brickNode.setLocalTranslation(ori);
         brickNode.updateModelBound();
         brickNode.updateGeometricState();
         brickNode.setShadowMode(ShadowMode.CastAndRecieve);
-        //^ brickNode.setFriction(1f);
-        brickNode.setMass(1.5f);
+        // brickNode.setFriction(1f);
         this.rootNode.attachChild(brickNode);
         this.getPhysicsSpace().add(brickNode);
     }

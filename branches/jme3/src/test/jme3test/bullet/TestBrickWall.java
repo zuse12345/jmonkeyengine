@@ -9,13 +9,16 @@ import com.jme3.font.BitmapText;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.material.Material;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
+import com.jme3.scene.shape.Sphere.TextureMode;
 import com.jme3.shadow.BasicShadowRenderer;
 import com.jme3.texture.Texture;
+import com.jme3.texture.Texture.WrapMode;
 
 /**
  *
@@ -23,12 +26,24 @@ import com.jme3.texture.Texture;
  */
 public class TestBrickWall extends SimpleBulletApplication {
 
-    float bLength = 0.48f;
-    float bWidth = 0.24f;
-    float bHeight = 0.12f;
+    static float bLength = 0.48f;
+    static float bWidth = 0.24f;
+    static float bHeight = 0.12f;
+    
     Material mat;
     Material mat2;
     BasicShadowRenderer bsr;
+
+    private static final Sphere bullet;
+    private static final Box brick;
+
+    static {
+        bullet = new Sphere(32, 32, 0.4f, true, false);
+        bullet.setTextureMode(TextureMode.Projected);
+
+        brick = new Box(Vector3f.ZERO, bLength, bHeight, bWidth);
+        brick.scaleTextureCoordinates(new Vector2f(1f, .5f));
+    }
 
     public static void main(String args[]) {
         TestBrickWall f = new TestBrickWall();
@@ -48,28 +63,28 @@ public class TestBrickWall extends SimpleBulletApplication {
         inputManager.addListener(actionListener, "shoot");
 
         rootNode.setShadowMode(ShadowMode.Off);
-        bsr = new BasicShadowRenderer(assetManager, 512);
+        bsr = new BasicShadowRenderer(assetManager, 1024);
         bsr.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
         viewPort.addProcessor(bsr);
         //System.out.print(this.getPhysicsSpace().getAccuracy());
         this.getPhysicsSpace().setAccuracy(0.005f);
     }
+
+
+
     private ActionListener actionListener = new ActionListener() {
 
         public void onAction(String name, boolean keyPressed, float tpf) {
             if (name.equals("shoot") && !keyPressed) {
-                Sphere bullet = new Sphere(16, 16, 0.4f);
                 Geometry bulletg = new Geometry("bullet", bullet);
                 bulletg.setMaterial(mat2);
-                PhysicsNode bulletNode = new PhysicsNode(bulletg, new SphereCollisionShape(0.2f), 1);
+                PhysicsNode bulletNode = new PhysicsNode(bulletg, new SphereCollisionShape(0.4f), 1);
                 bulletNode.setLocalTranslation(cam.getLocation());
                 bulletNode.updateModelBound();
                 bulletNode.updateGeometricState();
                 bulletNode.setShadowMode(ShadowMode.CastAndRecieve);
 
                 bulletNode.setLinearVelocity(cam.getDirection().mult(25));
-                // bulletNode.setMass(1f);
-                System.out.println(bulletNode.getMass());
                 rootNode.attachChild(bulletNode);
                 getPhysicsSpace().add(bulletNode);
             }
@@ -94,12 +109,15 @@ public class TestBrickWall extends SimpleBulletApplication {
         TextureKey key = new TextureKey("Textures/Terrain/Pond/Pond.png");
         key.setGenerateMips(true);
         Texture tex = assetManager.loadTexture(key);
+        tex.setWrap(WrapMode.Repeat);
         fmat.setTexture("floorTexture", tex);
 
         Box floorBox = new Box(Vector3f.ZERO, 10f, 0.1f, 5f);
+        floorBox.scaleTextureCoordinates(new Vector2f(3, 6));
+
         Geometry floor = new Geometry("floor", floorBox);
         floor.setMaterial(fmat);
-        floor.setShadowMode(ShadowMode.Recieve);
+        floor.setShadowMode(ShadowMode.CastAndRecieve);
         PhysicsNode floorNode = new PhysicsNode(floor, new BoxCollisionShape(new Vector3f(10f, 0.1f, 5f)), 0);
         floorNode.setLocalTranslation(0, -0.1f, 0);
         floorNode.updateGeometricState();
@@ -123,8 +141,8 @@ public class TestBrickWall extends SimpleBulletApplication {
     }
 
     public void addBrick(Vector3f ori) {
-        Box b = new Box(Vector3f.ZERO, bLength, bHeight, bWidth);
-        Geometry reBoxg = new Geometry("brick", b);
+        
+        Geometry reBoxg = new Geometry("brick", brick);
         reBoxg.setMaterial(mat);
         // reBoxg.setShadowMode(ShadowMode.CastAndRecieve);
         PhysicsNode brickNode = new PhysicsNode(reBoxg, new BoxCollisionShape(new Vector3f(bLength, bHeight, bWidth)), 1);

@@ -169,14 +169,14 @@ public class Application implements SystemListener {
     }
 
     /**
-     * Initializes the content manager.
+     * Initializes the asset manager.
      */
     private void initAssetManager(){
         assetManager = JmeSystem.newAssetManager();
     }
 
     /**
-     * @return The content manager for this application.
+     * @return The asset manager for this application.
      */
     public AssetManager getAssetManager(){
         return assetManager;
@@ -187,6 +187,13 @@ public class Application implements SystemListener {
      */
     public InputManager getInputManager(){
         return inputManager;
+    }
+
+    /**
+     * @return the app state manager
+     */
+    public AppStateManager getStateManager() {
+        return stateManager;
     }
 
     /**

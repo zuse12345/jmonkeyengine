@@ -3,6 +3,7 @@ package jme3test.bullet;
 import com.jme3.app.SimpleBulletApplication;
 import com.jme3.asset.TextureKey;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
+import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.font.BitmapText;
 import com.jme3.input.controls.ActionListener;
@@ -60,7 +61,7 @@ public class TestBrickWall extends SimpleBulletApplication {
                 Sphere bullet = new Sphere(16, 16, 0.4f);
                 Geometry bulletg = new Geometry("bullet", bullet);
                 bulletg.setMaterial(mat2);
-                PhysicsNode bulletNode = new PhysicsNode(bulletg, new BoxCollisionShape(new Vector3f(0.2f, 0.2f, 0.2f)), 1);
+                PhysicsNode bulletNode = new PhysicsNode(bulletg, new SphereCollisionShape(0.2f), 1);
                 bulletNode.setLocalTranslation(cam.getLocation());
                 bulletNode.updateModelBound();
                 bulletNode.updateGeometricState();

@@ -68,14 +68,23 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
     private Vector3f focus = new Vector3f();
     private Camera cam;
     private Node rootNode;
-    private JmeNode jmeNode;
+    private JmeNode jmeRootNode;
     private InputManager inputManager;
+    private ClickListener listener;
 
     public ComposerCameraController(Camera cam, JmeNode rootNode) {
         this.cam = cam;
-        this.jmeNode = rootNode;
+        this.jmeRootNode = rootNode;
         this.rootNode = rootNode.getLookup().lookup(Node.class);
         inputManager = SceneApplication.getApplication().getInputManager();
+    }
+
+    public void addListener(ClickListener listener) {
+        this.listener = listener;
+    }
+
+    public void removeListener(ClickListener listener) {
+        this.listener = null;
     }
 
     public void checkClick() {
@@ -87,15 +96,9 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
         ray.setOrigin(pos);
         ray.setDirection(dir);
         rootNode.collideWith(ray, results);
-        final CollisionResult result = results.getClosestCollision();
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                if (result != null && result.getGeometry() != null) {
-                    SceneApplication.getApplication().setSelectedNode(jmeNode.getChild(result.getGeometry()));
-                }
-            }
-        });
+        if(listener!=null){
+            listener.clickReceived(results);
+        }
     }
 
     public void enable() {

@@ -10,6 +10,8 @@ import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.DesktopAssetManager;
 import com.jme3.audio.AudioNode;
+import com.jme3.collision.CollisionResult;
+import com.jme3.collision.CollisionResults;
 import com.jme3.effect.EmitterSphereShape;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
@@ -25,6 +27,7 @@ import com.jme3.gde.core.scene.nodes.NodeUtility;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.PointLight;
 import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
@@ -61,7 +64,7 @@ import org.openide.util.Utilities;
  */
 @ConvertAsProperties(dtd = "-//com.jme3.gde.scenecomposer//SceneComposer//EN",
 autostore = false)
-public final class SceneComposerTopComponent extends TopComponent implements SceneListener, LookupListener, AppState {
+public final class SceneComposerTopComponent extends TopComponent implements SceneListener, LookupListener, AppState, ClickListener {
 
     private static SceneComposerTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -73,7 +76,8 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     private JmeSpatial selectedSpat;
     private Spatial selected;
     ComposerCameraController camController;
-    private SaveCookie saveCookie=new SaveCookieImpl();
+    private SaveCookie saveCookie = new SaveCookieImpl();
+    private String clickAddSpatialName = null;
 
     public SceneComposerTopComponent() {
         initComponents();
@@ -100,6 +104,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         addObjectButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
+        jButton1 = new javax.swing.JButton();
 
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -130,18 +135,28 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 
         jScrollPane1.setViewportView(jList1);
 
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.jButton1.text")); // NOI18N
+        jButton1.setEnabled(false);
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(selectedSpatialLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
+            .add(selectedSpatialLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 272, Short.MAX_VALUE)
             .add(jPanel2Layout.createSequentialGroup()
                 .add(2, 2, 2)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
                     .add(jPanel2Layout.createSequentialGroup()
                         .add(addObjectButton)
-                        .addContainerGap(182, Short.MAX_VALUE))))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jButton1)
+                        .addContainerGap(82, Short.MAX_VALUE))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -150,7 +165,9 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(addObjectButton))
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(addObjectButton)
+                    .add(jButton1)))
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -159,7 +176,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 136, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 123, Short.MAX_VALUE)
                 .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
@@ -176,8 +193,16 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 
     }//GEN-LAST:event_addObjectButtonActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        if (jList1.getSelectedValue() != null) {
+            clickAddSpatialName = jList1.getSelectedValue().toString();
+        }
+
+    }//GEN-LAST:event_jButton1ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addObjectButton;
+    private javax.swing.JButton jButton1;
     private javax.swing.JList jList1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -288,9 +313,11 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 if (text != null) {
                     selectedSpatialLabel.setText(text);
                     addObjectButton.setEnabled(true);
+                    jButton1.setEnabled(true);
                 } else {
                     selectedSpatialLabel.setText("no spatial selected");
                     addObjectButton.setEnabled(false);
+                    jButton1.setEnabled(false);
                 }
             }
         });
@@ -312,55 +339,17 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     }
 
     private void addSpatial(final String name) {
+        addSpatial(name, new Vector3f(0, 0, 0));
+    }
+
+    private void addSpatial(final String name, final Vector3f point) {
         if (currentRequest != null && currentRequest.isDisplayed()) {
             try {
                 selectedSpat.fireSave(true);
                 SceneApplication.getApplication().enqueue(new Callable() {
 
                     public Object call() throws Exception {
-                        if (selected instanceof Node) {
-                            if ("Node".equals(name)) {
-                                ((Node) selected).attachChild(new Node("Node"));
-                            } else if ("Particle Emitter".equals(name)) {
-                                ParticleEmitter emit = new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 200);
-                                emit.setShape(new EmitterSphereShape(Vector3f.ZERO, 1f));
-                                emit.setGravity(0);
-                                emit.setLowLife(5);
-                                emit.setHighLife(10);
-                                emit.setStartVel(new Vector3f(0, 0, 0));
-                                emit.setImagesX(15);
-                                Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
-                                //                    mat.setTexture("m_Texture", SceneApplication.getApplication().getAssetManager().loadTexture("Effects/Smoke/Smoke.png"));
-                                emit.setMaterial(mat);
-                                ((Node) selected).attachChild(emit);
-                                refreshSelected();
-                            } else if ("Audio Node".equals(name)) {
-                                AudioNode node = new AudioNode();
-                                node.setName("Audio Node");
-                                ((Node) selected).attachChild(node);
-                                refreshSelected();
-                            } else if ("Picture".equals(name)) {
-                                Picture pic = new Picture("Picture");
-                                Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
-                                pic.setMaterial(mat);
-                                ((Node) selected).attachChild(pic);
-                                refreshSelected();
-                            } else if ("Point Light".equals(name)) {
-                                ((Node) selected).addLight(new PointLight());
-                                refreshSelected();
-                            } else if ("Directional Light".equals(name)) {
-                                ((Node) selected).addLight(new DirectionalLight());
-                                refreshSelected();
-                            }
-                        } else if (selected instanceof Geometry) {
-                            if ("Point Light".equals(name)) {
-                                ((Spatial) selected).addLight(new PointLight());
-                                refreshSelected();
-                            } else if ("Directional Light".equals(name)) {
-                                ((Spatial) selected).addLight(new DirectionalLight());
-                                refreshSelected();
-                            }
-                        }
+                        doAddSpatial(name, point);
                         return null;
 
                     }
@@ -369,6 +358,87 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 Exceptions.printStackTrace(ex);
             } catch (ExecutionException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    private void doAddSpatial(String name, Vector3f point) {
+        if (selected instanceof Node) {
+            if ("Node".equals(name)) {
+                ((Node) selected).attachChild(new Node("Node"));
+            } else if ("Particle Emitter".equals(name)) {
+                ParticleEmitter emit = new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 200);
+                emit.setShape(new EmitterSphereShape(Vector3f.ZERO, 1f));
+                emit.setGravity(0);
+                emit.setLowLife(5);
+                emit.setHighLife(10);
+                emit.setStartVel(new Vector3f(0, 0, 0));
+                emit.setImagesX(15);
+                Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
+                //                    mat.setTexture("m_Texture", SceneApplication.getApplication().getAssetManager().loadTexture("Effects/Smoke/Smoke.png"));
+                emit.setMaterial(mat);
+                if (point != null) {
+                    Vector3f localVec = new Vector3f();
+                    selected.worldToLocal(point, localVec);
+                    emit.setLocalTranslation(localVec);
+                }
+                ((Node) selected).attachChild(emit);
+                refreshSelected();
+            } else if ("Audio Node".equals(name)) {
+                AudioNode node = new AudioNode();
+                node.setName("Audio Node");
+                if (point != null) {
+                    Vector3f localVec = new Vector3f();
+                    selected.worldToLocal(point, localVec);
+                    node.setLocalTranslation(localVec);
+                }
+                ((Node) selected).attachChild(node);
+                refreshSelected();
+            } else if ("Picture".equals(name)) {
+                Picture pic = new Picture("Picture");
+                Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
+                pic.setMaterial(mat);
+                if (point != null) {
+                    Vector3f localVec = new Vector3f();
+                    selected.worldToLocal(point, localVec);
+                    pic.setLocalTranslation(localVec);
+                }
+                ((Node) selected).attachChild(pic);
+                refreshSelected();
+            } else if ("Point Light".equals(name)) {
+                PointLight light = new PointLight();
+                if (point != null) {
+                    Vector3f localVec = new Vector3f();
+                    selected.worldToLocal(point, localVec);
+                    light.setPosition(localVec);
+                }
+                light.setColor(ColorRGBA.White);
+                ((Node) selected).addLight(light);
+                refreshSelected();
+            } else if ("Directional Light".equals(name)) {
+                DirectionalLight dl = new DirectionalLight();
+                dl.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
+                dl.setColor(ColorRGBA.Green);
+                ((Node) selected).addLight(dl);
+                refreshSelected();
+            }
+        } else if (selected instanceof Geometry) {
+            if ("Point Light".equals(name)) {
+                PointLight light = new PointLight();
+                if (point != null) {
+                    Vector3f localVec = new Vector3f();
+                    selected.worldToLocal(point, localVec);
+                    light.setPosition(localVec);
+                }
+                light.setColor(ColorRGBA.White);
+                selected.addLight(light);
+                refreshSelected();
+            } else if ("Directional Light".equals(name)) {
+                DirectionalLight dl = new DirectionalLight();
+                dl.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
+                dl.setColor(ColorRGBA.Green);
+                selected.addLight(dl);
+                refreshSelected();
             }
         }
     }
@@ -407,10 +477,10 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     public void loadModel(Spatial spat, FileObject file, ProjectAssetManager manager) {
         //TODO: handle request change
         Node node;
-        if(spat instanceof Node){
-            node=(Node)spat;
-        }else{
-            node=new Node();
+        if (spat instanceof Node) {
+            node = (Node) spat;
+        } else {
+            node = new Node();
             node.attachChild(spat);
         }
         JmeNode jmeNode = NodeUtility.createNode(node, saveCookie);
@@ -455,6 +525,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 sceneNameLabel.setText(name);
                 if (!active) {
                     addObjectButton.setEnabled(false);
+                    jButton1.setEnabled(false);
                     close();
                 } else {
                     open();
@@ -479,12 +550,34 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         }
     }
 
-    private void selectSpatial(JmeSpatial spatial){
-        if(spatial==null){
+    public void clickReceived(CollisionResults results) {
+        if (results == null) {
+            return;
+        }
+        final CollisionResult result = results.getClosestCollision();
+        if (clickAddSpatialName != null && result != null) {
+            Vector3f point = result.getContactPoint();
+            doAddSpatial(clickAddSpatialName, point);
+            clickAddSpatialName = null;
+        } else {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                public void run() {
+                    if (result != null && result.getGeometry() != null) {
+                        SceneApplication.getApplication().setSelectedNode(currentRequest.getRootNode().getChild(result.getGeometry()));
+                    }
+                }
+            });
+        }
+
+    }
+
+    private void selectSpatial(JmeSpatial spatial) {
+        if (spatial == null) {
             setSelectedObjectText(null);
             setSelectionData(null);
-            selectedSpat=null;
-            selected=null;
+            selectedSpat = null;
+            selected = null;
             return;
         }
         selectedSpat = spatial;
@@ -503,9 +596,11 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         if (request.equals(currentRequest)) {
             setLoadedState(currentRequest.getRootNode().getName(), true);
             if (camController != null) {
+                camController.removeListener(this);
                 camController.disable();
             }
             camController = new ComposerCameraController(SceneApplication.getApplication().getCamera(), request.getRootNode());
+            camController.addListener(this);
             camController.enable();
         } else {
             setLoadedState("no scene loaded", false);

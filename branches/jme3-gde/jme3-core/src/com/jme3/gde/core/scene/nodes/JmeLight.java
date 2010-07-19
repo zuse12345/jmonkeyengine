@@ -125,7 +125,7 @@ public class JmeLight extends AbstractNode {
             SceneApplication.getApplication().enqueue(new Callable<Void>() {
 
                 public Void call() throws Exception {
-//                    spatial.removeLight(light);
+                    spatial.removeLight(light);
                     return null;
                 }
             }).get();

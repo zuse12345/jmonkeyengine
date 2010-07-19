@@ -79,6 +79,9 @@ public class CompoundCollisionShape extends CollisionShape {
      * @param location the local location of the child shape
      */
     public void addChildShape(CollisionShape shape, Vector3f location, Matrix3f rotation) {
+        if(shape instanceof CompoundCollisionShape){
+            throw new IllegalStateException("CompoundCollisionShapes cannot have CompoundCollisionShapes as children!");
+        }
         Transform transA = new Transform(Converter.convert(rotation));
         Converter.convert(location, transA.origin);
         children.add(new ChildCollisionShape(location, rotation, shape));

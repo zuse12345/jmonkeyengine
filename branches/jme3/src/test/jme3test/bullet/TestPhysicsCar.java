@@ -95,6 +95,7 @@ public class TestPhysicsCar extends SimpleBulletApplication implements ActionLis
         player.setSuspensionCompression(compValue * 2.0f * FastMath.sqrt(stiffness));
         player.setSuspensionDamping(dampValue * 2.0f * FastMath.sqrt(stiffness));
         player.setSuspensionStiffness(stiffness);
+        player.setMaxSuspensionForce(10000.0f);
         
         //Create four wheels and add them at their locations
         Vector3f wheelDirection = new Vector3f(0, -1, 0); // was 0, -1, 0

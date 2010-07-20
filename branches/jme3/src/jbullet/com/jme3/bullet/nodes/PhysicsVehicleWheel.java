@@ -61,6 +61,7 @@ public class PhysicsVehicleWheel extends Node {
     private float frictionSlip = 10.5f;
     private float rollInfluence = 1.0f;
     private float maxSuspensionTravelCm = 500f;
+    private float maxSuspensionForce = 6000f;
     private float radius = 0.5f;
     private float restLength = 1f;
     private Vector3f wheelWorldLocation = new Vector3f();
@@ -241,6 +242,20 @@ public class PhysicsVehicleWheel extends Node {
         applyInfo();
     }
 
+    public float getMaxSuspensionForce() {
+        return maxSuspensionForce;
+    }
+
+    /**
+     * The maximum suspension force, raise this above the default 6000 if your suspension cannot
+     * handle the weight of your vehcile.
+     * @param maxSuspensionTravelCm
+     */
+    public void setMaxSuspensionForce(float maxSuspensionForce) {
+        this.maxSuspensionForce = maxSuspensionForce;
+        applyInfo();
+    }
+
     public void applyInfo() {
         wheelInfo.suspensionStiffness = suspensionStiffness;
         wheelInfo.wheelsDampingRelaxation = wheelsDampingRelaxation;
@@ -248,6 +263,7 @@ public class PhysicsVehicleWheel extends Node {
         wheelInfo.frictionSlip = frictionSlip;
         wheelInfo.rollInfluence = rollInfluence;
         wheelInfo.maxSuspensionTravelCm = maxSuspensionTravelCm;
+        wheelInfo.maxSuspensionForce = maxSuspensionForce;
         wheelInfo.wheelsRadius = radius;
         wheelInfo.bIsFrontWheel = frontWheel;
         wheelInfo.suspensionRestLength1 = restLength;
@@ -328,18 +344,19 @@ public class PhysicsVehicleWheel extends Node {
     public void read(JmeImporter im) throws IOException {
         super.read(im);
         InputCapsule capsule = im.getCapsule(this);
-        frontWheel=capsule.readBoolean("frontWheel", false);
-        location=(Vector3f)capsule.readSavable("wheelLocation", new Vector3f());
-        direction=(Vector3f)capsule.readSavable("wheelDirection", new Vector3f());
-        axle=(Vector3f)capsule.readSavable("wheelAxle", new Vector3f());
-        suspensionStiffness=capsule.readFloat("suspensionStiffness",  20.0f);
-        wheelsDampingRelaxation=capsule.readFloat("wheelsDampingRelaxation",  2.3f);
-        wheelsDampingCompression=capsule.readFloat("wheelsDampingCompression",  4.4f);
-        frictionSlip=capsule.readFloat("frictionSlip",  10.5f);
-        rollInfluence=capsule.readFloat("rollInfluence",  1.0f);
-        maxSuspensionTravelCm=capsule.readFloat("maxSuspensionTravelCm",  500f);
-        radius=capsule.readFloat("wheelRadius",  0.5f);
-        restLength=capsule.readFloat("restLength",  1f);
+        frontWheel = capsule.readBoolean("frontWheel", false);
+        location = (Vector3f) capsule.readSavable("wheelLocation", new Vector3f());
+        direction = (Vector3f) capsule.readSavable("wheelDirection", new Vector3f());
+        axle = (Vector3f) capsule.readSavable("wheelAxle", new Vector3f());
+        suspensionStiffness = capsule.readFloat("suspensionStiffness", 20.0f);
+        wheelsDampingRelaxation = capsule.readFloat("wheelsDampingRelaxation", 2.3f);
+        wheelsDampingCompression = capsule.readFloat("wheelsDampingCompression", 4.4f);
+        frictionSlip = capsule.readFloat("frictionSlip", 10.5f);
+        rollInfluence = capsule.readFloat("rollInfluence", 1.0f);
+        maxSuspensionTravelCm = capsule.readFloat("maxSuspensionTravelCm", 500f);
+        maxSuspensionForce = capsule.readFloat("maxSuspensionForce", 6000f);
+        radius = capsule.readFloat("wheelRadius", 0.5f);
+        restLength = capsule.readFloat("restLength", 1f);
     }
 
     @Override
@@ -356,6 +373,7 @@ public class PhysicsVehicleWheel extends Node {
         capsule.write(frictionSlip, "frictionSlip", 10.5f);
         capsule.write(rollInfluence, "rollInfluence", 1.0f);
         capsule.write(maxSuspensionTravelCm, "maxSuspensionTravelCm", 500f);
+        capsule.write(maxSuspensionForce, "maxSuspensionForce", 6000f);
         capsule.write(radius, "wheelRadius", 0.5f);
         capsule.write(restLength, "restLength", 1f);
     }

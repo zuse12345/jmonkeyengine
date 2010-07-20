@@ -166,6 +166,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
         wheel.setSuspensionStiffness(tuning.suspensionStiffness);
         wheel.setWheelsDampingCompression(tuning.suspensionCompression);
         wheel.setWheelsDampingRelaxation(tuning.suspensionDamping);
+        wheel.setMaxSuspensionForce(tuning.maxSuspensionForce);
         wheel.applyInfo();
         wheels.add(wheel);
         if (debugShape != null) {
@@ -239,6 +240,19 @@ public class PhysicsVehicleNode extends PhysicsNode {
      */
     public void setMaxSuspensionTravelCm(float maxSuspensionTravelCm) {
         tuning.maxSuspensionTravelCm = maxSuspensionTravelCm;
+    }
+
+    public float getMaxSuspensionForce() {
+        return tuning.maxSuspensionForce;
+    }
+
+    /**
+     * The maximum suspension force, raise this above the default 6000 if your suspension cannot
+     * handle the weight of your vehcile.
+     * @param maxSuspensionTravelCm
+     */
+    public void setMaxSuspensionForce(float maxSuspensionForce) {
+        tuning.maxSuspensionForce = maxSuspensionForce;
     }
 
     /**
@@ -479,6 +493,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
         tuning = new VehicleTuning();
         tuning.frictionSlip = capsule.readFloat("frictionSlip", 10.5f);
         tuning.maxSuspensionTravelCm = capsule.readFloat("maxSuspensionTravelCm", 500f);
+        tuning.maxSuspensionForce = capsule.readFloat("maxSuspensionForce", 6000f);
         tuning.suspensionCompression = capsule.readFloat("suspensionCompression", 0.83f);
         tuning.suspensionDamping = capsule.readFloat("suspensionDamping", 0.88f);
         tuning.suspensionStiffness = capsule.readFloat("suspensionStiffness", 5.88f);
@@ -490,6 +505,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
         OutputCapsule capsule = ex.getCapsule(this);
         capsule.write(tuning.frictionSlip, "frictionSlip", 10.5f);
         capsule.write(tuning.maxSuspensionTravelCm, "maxSuspensionTravelCm", 500f);
+        capsule.write(tuning.maxSuspensionForce, "maxSuspensionForce", 6000f);
         capsule.write(tuning.suspensionCompression, "suspensionCompression", 0.83f);
         capsule.write(tuning.suspensionDamping, "suspensionDamping", 0.88f);
         capsule.write(tuning.suspensionStiffness, "suspensionStiffness", 5.88f);

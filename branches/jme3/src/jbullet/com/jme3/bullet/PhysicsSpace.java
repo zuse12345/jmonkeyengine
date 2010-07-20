@@ -60,7 +60,6 @@ import com.jme3.math.Vector3f;
 //import com.jme3.util.GameTaskQueue;
 //import com.jme3.util.GameTaskQueueManager;
 import com.jme3.bullet.collision.CollisionEvent;
-import com.jme3.bullet.collision.CollisionGroupListener;
 import com.jme3.bullet.collision.CollisionListener;
 import com.jme3.bullet.collision.CollisionObject;
 import com.jme3.bullet.joints.PhysicsJoint;
@@ -122,7 +121,7 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
     private List<PhysicsJoint> physicsJoints = new LinkedList<PhysicsJoint>();
     private List<CollisionListener> collisionListeners = new LinkedList<CollisionListener>();
     private List<CollisionEvent> collisionEvents = new LinkedList<CollisionEvent>();
-    private Map<Integer, CollisionGroupListener> collisionGroupListeners = new ConcurrentHashMap<Integer, CollisionGroupListener>();
+    private Map<Integer, CollisionListener> collisionGroupListeners = new ConcurrentHashMap<Integer, CollisionListener>();
     private Vector3f worldMin = new Vector3f(-10000f, -10000f, -10000f);
     private Vector3f worldMax = new Vector3f(10000f, 10000f, 10000f);
     private float accuracy = 1f / 60f;
@@ -255,8 +254,8 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
             CollisionObject collisionObject1 = (CollisionObject) colOb1.getUserPointer();
             if ((collisionObject.getCollideWithGroups() & collisionObject1.getCollisionGroup()) > 0
                     || (collisionObject1.getCollideWithGroups() & collisionObject.getCollisionGroup()) > 0) {
-                CollisionGroupListener listener = collisionGroupListeners.get(collisionObject.getCollisionGroup());
-                CollisionGroupListener listener1 = collisionGroupListeners.get(collisionObject1.getCollisionGroup());
+                CollisionListener listener = collisionGroupListeners.get(collisionObject.getCollisionGroup());
+                CollisionListener listener1 = collisionGroupListeners.get(collisionObject1.getCollisionGroup());
                 if (listener != null) {
                     return listener.collide(collisionObject, collisionObject1);
                 } else if (listener1 != null) {
@@ -563,11 +562,12 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
     }
 
     /**
-     * Adds a listener for a specific collision group, such a listener can check collisions before they happen.
+     * Adds a listener for a specific collision group, such a listener can disable collisions when they happen.<br>
+     * There can be only one listener per collision group.
      * @param listener
      * @param collisionGroup
      */
-    public void addCollisionGroupListener(CollisionGroupListener listener, int collisionGroup) {
+    public void addCollisionGroupListener(CollisionListener listener, int collisionGroup) {
         collisionGroupListeners.put(collisionGroup, listener);
     }
 

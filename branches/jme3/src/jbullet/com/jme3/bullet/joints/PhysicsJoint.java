@@ -66,6 +66,8 @@ public abstract class PhysicsJoint implements Savable {
         this.nodeB = nodeB;
         this.pivotA = pivotA;
         this.pivotB = pivotB;
+        nodeA.addJoint(this);
+        nodeB.addJoint(this);
     }
 
     /**
@@ -91,7 +93,12 @@ public abstract class PhysicsJoint implements Savable {
         this.collisionBetweenLinkedBodys = collisionBetweenLinkedBodys;
     }
 
+    /**
+     * destroys this joint and removes it from its connected PhysicsNodes joint lists
+     */
     public void destroy() {
+        getNodeA().removeJoint(this);
+        getNodeB().removeJoint(this);
     }
 
     public void write(JmeExporter ex) throws IOException {

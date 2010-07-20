@@ -43,7 +43,6 @@ import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.joints.PhysicsJoint;
 import com.jme3.bullet.nodes.infos.PhysicsNodeState;
-import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.bullet.util.Converter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
@@ -81,7 +80,6 @@ public class PhysicsNode extends CollisionObject {
     protected boolean applyTorque = false;
     private ArrayList<PhysicsJoint> joints = new ArrayList<PhysicsJoint>();
 
-//    protected boolean dirty=true;
     public PhysicsNode() {
     }
 
@@ -662,7 +660,7 @@ public class PhysicsNode extends CollisionObject {
     }
 
     /**
-     * do not use manually, joints are removed automatically
+     * 
      */
     public void removeJoint(PhysicsJoint joint) {
         joints.remove(joint);

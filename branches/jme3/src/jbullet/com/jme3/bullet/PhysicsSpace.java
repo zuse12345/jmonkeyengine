@@ -530,15 +530,11 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
 
     private void addJoint(PhysicsJoint joint) {
         physicsJoints.add(joint);
-        joint.getNodeA().addJoint(joint);
-        joint.getNodeB().addJoint(joint);
         getDynamicsWorld().addConstraint(joint.getConstraint(), !joint.isCollisionBetweenLinkedBodys());
     }
 
     private void removeJoint(PhysicsJoint joint) {
         physicsJoints.remove(joint);
-        joint.getNodeA().removeJoint(joint);
-        joint.getNodeB().removeJoint(joint);
         getDynamicsWorld().removeConstraint(joint.getConstraint());
     }
 

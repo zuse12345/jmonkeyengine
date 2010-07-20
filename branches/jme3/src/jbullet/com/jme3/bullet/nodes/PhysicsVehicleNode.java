@@ -44,6 +44,8 @@ import com.jme3.scene.Spatial;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.util.Converter;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.OutputCapsule;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.debug.Arrow;
@@ -73,7 +75,10 @@ public class PhysicsVehicleNode extends PhysicsNode {
     private RaycastVehicle vehicle;
     private VehicleTuning tuning;
     private VehicleRaycaster rayCaster;
-    private List<PhysicsVehicleWheel> wheels = new ArrayList<PhysicsVehicleWheel>();
+    private ArrayList<PhysicsVehicleWheel> wheels = new ArrayList<PhysicsVehicleWheel>();
+
+    public PhysicsVehicleNode() {
+    }
 
     public PhysicsVehicleNode(CollisionShape shape) {
         super(shape);
@@ -122,7 +127,21 @@ public class PhysicsVehicleNode extends PhysicsNode {
 
     /**
      * add a wheel to this vehicle
-     * @param spat the wheel Spatial (mesh)
+     * @param connectionPoint The starting point of the ray, where the suspension connects to the chassis (chassis space)
+     * @param direction the direction of the wheel (should be -Y / 0,-1,0 for a normal car)
+     * @param axle The axis of the wheel (should be -X / -1,0,0 for a normal car)
+     * @param suspensionRestLength The current length of the suspension (metres)
+     * @param wheelRadius the wheel radius
+     * @param isFrontWheel sets if this wheel is a front wheel (steering)
+     * @return the PhysicsVehicleWheel object to get/set infos on the wheel
+     */
+    public PhysicsVehicleWheel addWheel(Vector3f connectionPoint, Vector3f direction, Vector3f axle, float suspensionRestLength, float wheelRadius, boolean isFrontWheel) {
+        return addWheel(null, connectionPoint, direction, axle, suspensionRestLength, wheelRadius, isFrontWheel);
+    }
+
+    /**
+     * add a wheel to this vehicle
+     * @param spat the wheel Geometry
      * @param connectionPoint The starting point of the ray, where the suspension connects to the chassis (chassis space)
      * @param direction the direction of the wheel (should be -Y / 0,-1,0 for a normal car)
      * @param axle The axis of the wheel (should be -X / -1,0,0 for a normal car)
@@ -132,7 +151,12 @@ public class PhysicsVehicleNode extends PhysicsNode {
      * @return the PhysicsVehicleWheel object to get/set infos on the wheel
      */
     public PhysicsVehicleWheel addWheel(Spatial spat, Vector3f connectionPoint, Vector3f direction, Vector3f axle, float suspensionRestLength, float wheelRadius, boolean isFrontWheel) {
-        PhysicsVehicleWheel wheel = new PhysicsVehicleWheel(spat, connectionPoint, direction, axle, suspensionRestLength, wheelRadius, isFrontWheel);
+        PhysicsVehicleWheel wheel = null;
+        if (spat == null) {
+            wheel = new PhysicsVehicleWheel(connectionPoint, direction, axle, suspensionRestLength, wheelRadius, isFrontWheel);
+        } else {
+            wheel = new PhysicsVehicleWheel(spat, connectionPoint, direction, axle, suspensionRestLength, wheelRadius, isFrontWheel);
+        }
         WheelInfo info = vehicle.addWheel(Converter.convert(connectionPoint), Converter.convert(direction), Converter.convert(axle),
                 suspensionRestLength, wheelRadius, tuning, isFrontWheel);
         wheel.setWheelInfo(info);
@@ -451,15 +475,24 @@ public class PhysicsVehicleNode extends PhysicsNode {
 
     @Override
     public void read(JmeImporter im) throws IOException {
+        InputCapsule capsule = im.getCapsule(this);
+        tuning = new VehicleTuning();
+        tuning.frictionSlip = capsule.readFloat("frictionSlip", 10.5f);
+        tuning.maxSuspensionTravelCm = capsule.readFloat("maxSuspensionTravelCm", 500f);
+        tuning.suspensionCompression = capsule.readFloat("suspensionCompression", 0.83f);
+        tuning.suspensionDamping = capsule.readFloat("suspensionDamping", 0.88f);
+        tuning.suspensionStiffness = capsule.readFloat("suspensionStiffness", 5.88f);
         super.read(im);
-        //TODO
-        throw new UnsupportedOperationException("vehicle saving not working yet");
     }
 
     @Override
     public void write(JmeExporter ex) throws IOException {
+        OutputCapsule capsule = ex.getCapsule(this);
+        capsule.write(tuning.frictionSlip, "frictionSlip", 10.5f);
+        capsule.write(tuning.maxSuspensionTravelCm, "maxSuspensionTravelCm", 500f);
+        capsule.write(tuning.suspensionCompression, "suspensionCompression", 0.83f);
+        capsule.write(tuning.suspensionDamping, "suspensionDamping", 0.88f);
+        capsule.write(tuning.suspensionStiffness, "suspensionStiffness", 5.88f);
         super.write(ex);
-        //TODO
-        throw new UnsupportedOperationException("vehicle saving not working yet");
     }
 }

@@ -142,6 +142,14 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
         character.jump();
     }
 
+    @Override
+    public void setCollisionShape(CollisionShape collisionShape) {
+        if (!(collisionShape instanceof SphereCollisionShape)) {
+            throw (new UnsupportedOperationException("Kinematic character nodes can only have sphere collision shapes!"));
+        }
+        super.setCollisionShape(collisionShape);
+    }
+
     /**
      * used internally
      */

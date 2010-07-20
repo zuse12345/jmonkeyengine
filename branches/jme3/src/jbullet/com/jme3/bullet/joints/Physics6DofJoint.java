@@ -41,7 +41,10 @@ import com.jme3.bullet.joints.motors.RotationalLimitMotor;
 import com.jme3.bullet.joints.motors.TranslationalLimitMotor;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.util.Converter;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.OutputCapsule;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
@@ -55,9 +58,18 @@ import java.util.LinkedList;
  * include free and/or limited angular degrees of freedom are undefined.
  * @author normenhansen
  */
-public class Physics6DofJoint extends PhysicsJoint{
-    private LinkedList<RotationalLimitMotor> rotationalMotors=new LinkedList<RotationalLimitMotor>();
+public class Physics6DofJoint extends PhysicsJoint {
+
+    private boolean useLinearReferenceFrameA = true;
+    private LinkedList<RotationalLimitMotor> rotationalMotors = new LinkedList<RotationalLimitMotor>();
     private TranslationalLimitMotor translationalMotor;
+    private Vector3f angularUpperLimit = new Vector3f(Vector3f.POSITIVE_INFINITY);
+    private Vector3f angularLowerLimit = new Vector3f(Vector3f.NEGATIVE_INFINITY);
+    private Vector3f linearUpperLimit = new Vector3f(Vector3f.POSITIVE_INFINITY);
+    private Vector3f linearLowerLimit = new Vector3f(Vector3f.NEGATIVE_INFINITY);
+
+    public Physics6DofJoint() {
+    }
 
     /**
      * @param pivotA local translation of the joint connection point in node A
@@ -65,16 +77,17 @@ public class Physics6DofJoint extends PhysicsJoint{
      */
     public Physics6DofJoint(PhysicsNode nodeA, PhysicsNode nodeB, Vector3f pivotA, Vector3f pivotB, Matrix3f rotA, Matrix3f rotB, boolean useLinearReferenceFrameA) {
         super(nodeA, nodeB, pivotA, pivotB);
+        this.useLinearReferenceFrameA = useLinearReferenceFrameA;
 
-        Transform transA=new Transform(Converter.convert(rotA));
-        Converter.convert(pivotA,transA.origin);
-        Converter.convert(rotA,transA.basis);
+        Transform transA = new Transform(Converter.convert(rotA));
+        Converter.convert(pivotA, transA.origin);
+        Converter.convert(rotA, transA.basis);
 
-        Transform transB=new Transform(Converter.convert(rotB));
-        Converter.convert(pivotB,transB.origin);
-        Converter.convert(rotB,transB.basis);
+        Transform transB = new Transform(Converter.convert(rotB));
+        Converter.convert(pivotB, transB.origin);
+        Converter.convert(rotB, transB.basis);
 
-        constraint=new Generic6DofConstraint(nodeA.getRigidBody(), nodeB.getRigidBody(), transA, transB, useLinearReferenceFrameA);
+        constraint = new Generic6DofConstraint(nodeA.getRigidBody(), nodeB.getRigidBody(), transA, transB, useLinearReferenceFrameA);
         gatherMotors();
     }
 
@@ -84,23 +97,24 @@ public class Physics6DofJoint extends PhysicsJoint{
      */
     public Physics6DofJoint(PhysicsNode nodeA, PhysicsNode nodeB, Vector3f pivotA, Vector3f pivotB, boolean useLinearReferenceFrameA) {
         super(nodeA, nodeB, pivotA, pivotB);
+        this.useLinearReferenceFrameA = useLinearReferenceFrameA;
 
-        Transform transA=new Transform(Converter.convert(new Matrix3f()));
-        Converter.convert(pivotA,transA.origin);
+        Transform transA = new Transform(Converter.convert(new Matrix3f()));
+        Converter.convert(pivotA, transA.origin);
 
-        Transform transB=new Transform(Converter.convert(new Matrix3f()));
-        Converter.convert(pivotB,transB.origin);
+        Transform transB = new Transform(Converter.convert(new Matrix3f()));
+        Converter.convert(pivotB, transB.origin);
 
-        constraint=new Generic6DofConstraint(nodeA.getRigidBody(), nodeB.getRigidBody(), transA, transB, useLinearReferenceFrameA);
+        constraint = new Generic6DofConstraint(nodeA.getRigidBody(), nodeB.getRigidBody(), transA, transB, useLinearReferenceFrameA);
         gatherMotors();
     }
 
-    private void gatherMotors(){
+    private void gatherMotors() {
         for (int i = 0; i < 3; i++) {
-            RotationalLimitMotor rmot=new RotationalLimitMotor(((Generic6DofConstraint)constraint).getRotationalLimitMotor(i));
+            RotationalLimitMotor rmot = new RotationalLimitMotor(((Generic6DofConstraint) constraint).getRotationalLimitMotor(i));
             rotationalMotors.add(rmot);
         }
-        translationalMotor=new TranslationalLimitMotor(((Generic6DofConstraint)constraint).getTranslationalLimitMotor());
+        translationalMotor = new TranslationalLimitMotor(((Generic6DofConstraint) constraint).getTranslationalLimitMotor());
     }
 
     /**
@@ -118,34 +132,97 @@ public class Physics6DofJoint extends PhysicsJoint{
      * @param index the index of the RotationalLimitMotor
      * @return the RotationalLimitMotor at the given index
      */
-    public RotationalLimitMotor getRotationalLimitMotor(int index){
+    public RotationalLimitMotor getRotationalLimitMotor(int index) {
         return rotationalMotors.get(index);
     }
 
-    public void setLinearUpperLimit(Vector3f vector){
-        ((Generic6DofConstraint)constraint).setLinearUpperLimit(Converter.convert(vector));
+    public void setLinearUpperLimit(Vector3f vector) {
+        linearUpperLimit.set(vector);
+        ((Generic6DofConstraint) constraint).setLinearUpperLimit(Converter.convert(vector));
     }
 
-    public void setLinearLowerLimit(Vector3f vector){
-        ((Generic6DofConstraint)constraint).setLinearLowerLimit(Converter.convert(vector));
+    public void setLinearLowerLimit(Vector3f vector) {
+        linearLowerLimit.set(vector);
+        ((Generic6DofConstraint) constraint).setLinearLowerLimit(Converter.convert(vector));
     }
 
-    public void setAngularUpperLimit(Vector3f vector){
-        ((Generic6DofConstraint)constraint).setAngularUpperLimit(Converter.convert(vector));
+    public void setAngularUpperLimit(Vector3f vector) {
+        angularUpperLimit.set(vector);
+        ((Generic6DofConstraint) constraint).setAngularUpperLimit(Converter.convert(vector));
     }
 
-    public void setAngularLowerLimit(Vector3f vector){
-        ((Generic6DofConstraint)constraint).setAngularLowerLimit(Converter.convert(vector));
+    public void setAngularLowerLimit(Vector3f vector) {
+        angularLowerLimit.set(vector);
+        ((Generic6DofConstraint) constraint).setAngularLowerLimit(Converter.convert(vector));
     }
 
     @Override
     public void read(JmeImporter im) throws IOException {
-        throw new UnsupportedOperationException("6dof joint saving not working yet");
+        super.read(im);
+        InputCapsule capsule = im.getCapsule(this);
+
+        Transform transA = new Transform(Converter.convert(new Matrix3f()));
+        Converter.convert(pivotA, transA.origin);
+
+        Transform transB = new Transform(Converter.convert(new Matrix3f()));
+        Converter.convert(pivotB, transB.origin);
+        constraint = new Generic6DofConstraint(nodeA.getRigidBody(), nodeB.getRigidBody(), transA, transB, useLinearReferenceFrameA);
+        gatherMotors();
+
+        setAngularUpperLimit((Vector3f) capsule.readSavable("angularUpperLimit", new Vector3f(Vector3f.POSITIVE_INFINITY)));
+        setAngularLowerLimit((Vector3f) capsule.readSavable("angularLowerLimit", new Vector3f(Vector3f.NEGATIVE_INFINITY)));
+        setLinearUpperLimit((Vector3f) capsule.readSavable("linearUpperLimit", new Vector3f(Vector3f.POSITIVE_INFINITY)));
+        setLinearLowerLimit((Vector3f) capsule.readSavable("linearLowerLimit", new Vector3f(Vector3f.NEGATIVE_INFINITY)));
+
+        for (int i = 0; i < 3; i++) {
+            RotationalLimitMotor rotationalLimitMotor = getRotationalLimitMotor(i);
+            rotationalLimitMotor.setBounce(capsule.readFloat("rotMotor" + i + "_Bounce", 0.0f));
+            rotationalLimitMotor.setDamping(capsule.readFloat("rotMotor" + i + "_Damping", 1.0f));
+            rotationalLimitMotor.setERP(capsule.readFloat("rotMotor" + i + "_ERP", 0.5f));
+            rotationalLimitMotor.setHiLimit(capsule.readFloat("rotMotor" + i + "_HiLimit", Float.POSITIVE_INFINITY));
+            rotationalLimitMotor.setLimitSoftness(capsule.readFloat("rotMotor" + i + "_LimitSoftness", 0.5f));
+            rotationalLimitMotor.setLoLimit(capsule.readFloat("rotMotor" + i + "_LoLimit", Float.NEGATIVE_INFINITY));
+            rotationalLimitMotor.setMaxLimitForce(capsule.readFloat("rotMotor" + i + "_MaxLimitForce", 300.0f));
+            rotationalLimitMotor.setMaxMotorForce(capsule.readFloat("rotMotor" + i + "_MaxMotorForce", 0.1f));
+            rotationalLimitMotor.setTargetVelocity(capsule.readFloat("rotMotor" + i + "_TargetVelocity", 0));
+            rotationalLimitMotor.setEnableMotor(capsule.readBoolean("rotMotor" + i + "_EnableMotor", false));
+        }
+        getTranslationalLimitMotor().setAccumulatedImpulse((Vector3f) capsule.readSavable("transMotor_AccumulatedImpulse", Vector3f.ZERO));
+        getTranslationalLimitMotor().setDamping(capsule.readFloat("transMotor_", 1.0f));
+        getTranslationalLimitMotor().setLimitSoftness(capsule.readFloat("transMotor_", 0.7f));
+        getTranslationalLimitMotor().setLowerLimit((Vector3f) capsule.readSavable("transMotor_", Vector3f.ZERO));
+        getTranslationalLimitMotor().setRestitution(capsule.readFloat("transMotor_", 0.5f));
+        getTranslationalLimitMotor().setUpperLimit((Vector3f) capsule.readSavable("transMotor_", Vector3f.ZERO));
     }
 
     @Override
     public void write(JmeExporter ex) throws IOException {
-        throw new UnsupportedOperationException("6dof joint saving not working yet");
+        super.write(ex);
+        OutputCapsule capsule = ex.getCapsule(this);
+        capsule.write(angularUpperLimit, "angularUpperLimit", new Vector3f(Vector3f.POSITIVE_INFINITY));
+        capsule.write(angularLowerLimit, "angularLowerLimit", new Vector3f(Vector3f.NEGATIVE_INFINITY));
+        capsule.write(linearUpperLimit, "linearUpperLimit", new Vector3f(Vector3f.POSITIVE_INFINITY));
+        capsule.write(linearLowerLimit, "linearLowerLimit", new Vector3f(Vector3f.NEGATIVE_INFINITY));
+        int i = 0;
+        for (Iterator<RotationalLimitMotor> it = rotationalMotors.iterator(); it.hasNext();) {
+            RotationalLimitMotor rotationalLimitMotor = it.next();
+            capsule.write(rotationalLimitMotor.getBounce(), "rotMotor" + i + "_Bounce", 0.0f);
+            capsule.write(rotationalLimitMotor.getDamping(), "rotMotor" + i + "_Damping", 1.0f);
+            capsule.write(rotationalLimitMotor.getERP(), "rotMotor" + i + "_ERP", 0.5f);
+            capsule.write(rotationalLimitMotor.getHiLimit(), "rotMotor" + i + "_HiLimit", Float.POSITIVE_INFINITY);
+            capsule.write(rotationalLimitMotor.getLimitSoftness(), "rotMotor" + i + "_LimitSoftness", 0.5f);
+            capsule.write(rotationalLimitMotor.getLoLimit(), "rotMotor" + i + "_LoLimit", Float.NEGATIVE_INFINITY);
+            capsule.write(rotationalLimitMotor.getMaxLimitForce(), "rotMotor" + i + "_MaxLimitForce", 300.0f);
+            capsule.write(rotationalLimitMotor.getMaxMotorForce(), "rotMotor" + i + "_MaxMotorForce", 0.1f);
+            capsule.write(rotationalLimitMotor.getTargetVelocity(), "rotMotor" + i + "_TargetVelocity", 0);
+            capsule.write(rotationalLimitMotor.isEnableMotor(), "rotMotor" + i + "_EnableMotor", false);
+            i++;
+        }
+        capsule.write(getTranslationalLimitMotor().getAccumulatedImpulse(), "transMotor_AccumulatedImpulse", Vector3f.ZERO);
+        capsule.write(getTranslationalLimitMotor().getDamping(), "transMotor_", 1.0f);
+        capsule.write(getTranslationalLimitMotor().getLimitSoftness(), "transMotor_", 0.7f);
+        capsule.write(getTranslationalLimitMotor().getLowerLimit(), "transMotor_", Vector3f.ZERO);
+        capsule.write(getTranslationalLimitMotor().getRestitution(), "transMotor_", 0.5f);
+        capsule.write(getTranslationalLimitMotor().getUpperLimit(), "transMotor_", Vector3f.ZERO);
     }
-    
 }

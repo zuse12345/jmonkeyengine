@@ -37,8 +37,10 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import com.jme3.bullet.collision.CollisionObject;
 import com.jme3.bullet.util.Converter;
+import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
 import com.jme3.scene.Node;
 import java.io.IOException;
 
@@ -49,7 +51,6 @@ import java.io.IOException;
 public class PhysicsVehicleWheel extends Node {
 
     private com.bulletphysics.dynamics.vehicle.WheelInfo wheelInfo;
-    private Spatial spatial;
     private boolean frontWheel;
     private Vector3f location = new Vector3f();
     private Vector3f direction = new Vector3f();
@@ -67,10 +68,17 @@ public class PhysicsVehicleWheel extends Node {
     private com.jme3.math.Quaternion tempRotation = new com.jme3.math.Quaternion();
     private com.jme3.math.Matrix3f tempMatrix = new com.jme3.math.Matrix3f();
 
+    public PhysicsVehicleWheel() {
+    }
+
     public PhysicsVehicleWheel(Spatial spat, Vector3f location, Vector3f direction, Vector3f axle,
             float restLength, float radius, boolean frontWheel) {
+        this(location, direction, axle, restLength, radius, frontWheel);
         this.attachChild(spat);
-        this.spatial = spat;
+    }
+
+    public PhysicsVehicleWheel(Vector3f location, Vector3f direction, Vector3f axle,
+            float restLength, float radius, boolean frontWheel) {
         this.location.set(location);
         this.direction.set(direction);
         this.axle.set(axle);
@@ -123,14 +131,6 @@ public class PhysicsVehicleWheel extends Node {
 
     public void setWheelInfo(com.bulletphysics.dynamics.vehicle.WheelInfo wheelInfo) {
         this.wheelInfo = wheelInfo;
-    }
-
-    public Spatial getSpatial() {
-        return spatial;
-    }
-
-    public void setSpatial(Spatial spat) {
-        this.spatial = spat;
     }
 
     public boolean isFrontWheel() {
@@ -287,7 +287,7 @@ public class PhysicsVehicleWheel extends Node {
     }
 
     /**
-     * returns the location where the wheel collides with the ground
+     * returns the location where the wheel collides with the ground (world space)
      */
     public Vector3f getCollisionLocation(Vector3f vec) {
         Converter.convert(wheelInfo.raycastInfo.contactPointWS, vec);
@@ -295,14 +295,14 @@ public class PhysicsVehicleWheel extends Node {
     }
 
     /**
-     * returns the location where the wheel collides with the ground
+     * returns the location where the wheel collides with the ground (world space)
      */
     public Vector3f getCollisionLocation() {
         return Converter.convert(wheelInfo.raycastInfo.contactPointWS);
     }
 
     /**
-     * returns the normal where the wheel collides with the ground
+     * returns the normal where the wheel collides with the ground (world space)
      */
     public Vector3f getCollisionNormal(Vector3f vec) {
         Converter.convert(wheelInfo.raycastInfo.contactNormalWS, vec);
@@ -310,7 +310,7 @@ public class PhysicsVehicleWheel extends Node {
     }
 
     /**
-     * returns the normal where the wheel collides with the ground
+     * returns the normal where the wheel collides with the ground (world space)
      */
     public Vector3f getCollisionNormal() {
         return Converter.convert(wheelInfo.raycastInfo.contactNormalWS);
@@ -327,14 +327,36 @@ public class PhysicsVehicleWheel extends Node {
     @Override
     public void read(JmeImporter im) throws IOException {
         super.read(im);
-        //TODO
-//        throw new UnsupportedOperationException("vehicle saving not working yet");
+        InputCapsule capsule = im.getCapsule(this);
+        frontWheel=capsule.readBoolean("frontWheel", false);
+        location=(Vector3f)capsule.readSavable("wheelLocation", new Vector3f());
+        direction=(Vector3f)capsule.readSavable("wheelDirection", new Vector3f());
+        axle=(Vector3f)capsule.readSavable("wheelAxle", new Vector3f());
+        suspensionStiffness=capsule.readFloat("suspensionStiffness",  20.0f);
+        wheelsDampingRelaxation=capsule.readFloat("wheelsDampingRelaxation",  2.3f);
+        wheelsDampingCompression=capsule.readFloat("wheelsDampingCompression",  4.4f);
+        frictionSlip=capsule.readFloat("frictionSlip",  10.5f);
+        rollInfluence=capsule.readFloat("rollInfluence",  1.0f);
+        maxSuspensionTravelCm=capsule.readFloat("maxSuspensionTravelCm",  500f);
+        radius=capsule.readFloat("wheelRadius",  0.5f);
+        restLength=capsule.readFloat("restLength",  1f);
     }
 
     @Override
     public void write(JmeExporter ex) throws IOException {
         super.write(ex);
-        //TODO
-//        throw new UnsupportedOperationException("vehicle saving not working yet");
+        OutputCapsule capsule = ex.getCapsule(this);
+        capsule.write(frontWheel, "frontWheel", false);
+        capsule.write(location, "wheelLocation", new Vector3f());
+        capsule.write(direction, "wheelDirection", new Vector3f());
+        capsule.write(axle, "wheelAxle", new Vector3f());
+        capsule.write(suspensionStiffness, "suspensionStiffness", 20.0f);
+        capsule.write(wheelsDampingRelaxation, "wheelsDampingRelaxation", 2.3f);
+        capsule.write(wheelsDampingCompression, "wheelsDampingCompression", 4.4f);
+        capsule.write(frictionSlip, "frictionSlip", 10.5f);
+        capsule.write(rollInfluence, "rollInfluence", 1.0f);
+        capsule.write(maxSuspensionTravelCm, "maxSuspensionTravelCm", 500f);
+        capsule.write(radius, "wheelRadius", 0.5f);
+        capsule.write(restLength, "restLength", 1f);
     }
 }

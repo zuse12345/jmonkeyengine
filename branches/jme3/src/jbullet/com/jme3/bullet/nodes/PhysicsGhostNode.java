@@ -96,6 +96,12 @@ public class PhysicsGhostNode extends CollisionObject {
     }
 
     @Override
+    public void setCollisionShape(CollisionShape collisionShape) {
+        super.setCollisionShape(collisionShape);
+        buildObject();
+    }
+
+    @Override
     public void updateGeometricState() {
         if ((refreshFlags & RF_LIGHTLIST) != 0) {
             updateWorldLightList();

@@ -35,9 +35,10 @@ import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.PhysicsSpace.BroadphaseType;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
-import com.jme3.input.BindingAdapter;
 import com.jme3.input.FlyByCamera;
 import com.jme3.input.KeyInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.RenderState;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
@@ -77,6 +78,30 @@ public abstract class SimpleBulletApplication extends Application {
     public BroadphaseType broadphaseType = BroadphaseType.DBVT;
     public Vector3f worldMin = new Vector3f(-10000f, -10000f, -10000f);
     public Vector3f worldMax = new Vector3f(10000f, 10000f, 10000f);
+
+    private AppActionListener actionListener = new AppActionListener();
+
+    private class AppActionListener implements ActionListener {
+        public void onAction(String name, boolean value, float tpf) {
+            if (!value)
+                return;
+
+            if (name.equals("SIMPLEAPP_Exit")){
+                    stop();
+                }else if (name.equals("SIMPLEAPP_CameraPos")){
+                    if (cam != null){
+                        Vector3f loc = cam.getLocation();
+                        Quaternion rot = cam.getRotation();
+                        System.out.println("Camera Position: ("+
+                                loc.x+", "+loc.y+", "+loc.z+")");
+                        System.out.println("Camera Rotation: "+rot);
+                        System.out.println("Camera Direction: "+cam.getDirection());
+                    }
+                }else if (name.equals("SIMPLEAPP_Memory")){
+                    BufferUtils.printCurrentDirectMemory(null);
+                }
+        }
+    }
 
     public SimpleBulletApplication() {
         super();
@@ -216,37 +241,18 @@ public abstract class SimpleBulletApplication extends Application {
         viewPort.attachScene(rootNode);
         guiViewPort.attachScene(guiNode);
 
-        if (inputManager != null) {
+        if (inputManager != null){
             flyCam = new FlyByCamera(cam);
             flyCam.setMoveSpeed(1f);
             flyCam.registerWithInput(inputManager);
 
-            if (context.getType() == Type.Display) {
-                inputManager.registerKeyBinding("SIMPLEAPP_Exit", KeyInput.KEY_ESCAPE);
-            }
+            if (context.getType() == Type.Display)
+                inputManager.addMapping("SIMPLEAPP_Exit", new KeyTrigger(KeyInput.KEY_ESCAPE));
 
-            inputManager.registerKeyBinding("SIMPLEAPP_CameraPos", KeyInput.KEY_C);
-            inputManager.registerKeyBinding("SIMPLEAPP_Memory", KeyInput.KEY_M);
-            inputManager.addBindingListener(new BindingAdapter() {
-
-                @Override
-                public void onBinding(String binding, float value) {
-                    if (binding.equals("SIMPLEAPP_Exit")) {
-                        stop();
-                    } else if (binding.equals("SIMPLEAPP_CameraPos")) {
-                        if (cam != null) {
-                            Vector3f loc = cam.getLocation();
-                            Quaternion rot = cam.getRotation();
-                            System.out.println("Camera Position: ("
-                                    + loc.x + ", " + loc.y + ", " + loc.z + ")");
-                            System.out.println("Camera Rotation: " + rot);
-                            System.out.println("Camera Direction: " + cam.getDirection());
-                        }
-                    } else if (binding.equals("SIMPLEAPP_Memory")) {
-                        BufferUtils.printCurrentDirectMemory(null);
-                    }
-                }
-            });
+            inputManager.addMapping("SIMPLEAPP_CameraPos", new KeyTrigger(KeyInput.KEY_C));
+            inputManager.addMapping("SIMPLEAPP_Memory", new KeyTrigger(KeyInput.KEY_M));
+            inputManager.addListener(actionListener, "SIMPLEAPP_Exit",
+                                     "SIMPLEAPP_CameraPos", "SIMPLEAPP_Memory");
         }
 
         // call user code

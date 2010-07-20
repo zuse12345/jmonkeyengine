@@ -65,7 +65,7 @@ public class TestPhysicsCharacter extends SimpleBulletApplication implements Act
         mat.setColor("m_Color", ColorRGBA.Red);
 
         // Add a physics character to the world
-        physicsCharacter = new PhysicsCharacterNode(new BoxCollisionShape(new Vector3f(1,1,1)), .1f);
+        physicsCharacter = new PhysicsCharacterNode(new SphereCollisionShape(1.2f), .1f);
         physicsCharacter.setLocalTranslation(new Vector3f(3, 6, 0));
         physicsCharacter.attachDebugShape(mat);
         physicsCharacter.updateModelBound();

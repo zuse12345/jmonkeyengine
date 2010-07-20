@@ -976,6 +976,11 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
                 clone.worldBound = worldBound.clone();
             clone.worldLights = worldLights.clone();
             clone.localLights = localLights.clone();
+
+            // Set the new owner of the light lists
+            clone.localLights.setOwner(clone);
+            clone.worldLights.setOwner(clone);
+
             clone.worldTransform = worldTransform.clone();
             clone.localTransform = localTransform.clone();
 
@@ -1021,7 +1026,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         capsule.write(cullHint, "cull_mode", CullHint.Inherit);
         capsule.write(queueBucket, "queue", RenderQueue.Bucket.Inherit);
         capsule.write(shadowMode, "shadow_mode", ShadowMode.Inherit);
-        capsule.write(localTransform, "transform", new Transform());
+        capsule.write(localTransform, "transform", Transform.Identity);
         capsule.write(localLights, "lights", null);
         capsule.writeSavableArrayList(controls, "controlsList", null);
     }

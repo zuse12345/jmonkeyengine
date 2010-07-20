@@ -908,13 +908,11 @@ public class Camera implements Savable, Cloneable {
                     //object is outside of frustum
                     bound.setCheckPlane( planeId );
                     return FrustumIntersect.Outside;
-                }
-                else if ( side == Plane.Side.Positive ) {
+                } else if ( side == Plane.Side.Positive ) {
                     //object is visible on *this* plane, so mark this plane
                     //so that we don't check it for sub nodes.
                     planeState |= mask;
-                }
-                else {
+                } else {
                     rVal = FrustumIntersect.Intersects;
                 }
             }

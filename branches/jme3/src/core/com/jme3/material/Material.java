@@ -28,8 +28,12 @@ import com.jme3.texture.Texture;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Material implements Cloneable, Savable {
+
+    private static final Logger logger = Logger.getLogger(Material.class.getName());
 
     private static final RenderState additiveLight = new RenderState();
     private static final RenderState depthOnly = new RenderState();
@@ -215,7 +219,20 @@ public class Material implements Cloneable, Savable {
         return paramValues.values();
     }
 
+    private void checkSetParam(VarType type, String name){
+        MatParam paramDef = def.getMaterialParam(name);
+        if (paramDef == null)
+            throw new IllegalArgumentException("Material parameter is not defined: " + name);
+
+        if (paramDef.getVarType() != type)
+            logger.logp(Level.WARNING, "Material parameter being set: {0} with " +
+                                      "type {1} doesn't match definition type {2}",
+                                      name, type.name(), paramDef.getVarType());
+    }
+
     public void setParam(String name, VarType type, Object value){
+        checkSetParam(type, name);
+
         MatParam val = getParam(name);
         if (technique != null){
             technique.notifySetParam(name, type, value);
@@ -228,7 +245,9 @@ public class Material implements Cloneable, Savable {
 
     public void setTextureParam(String name, VarType type, Texture value){
         if (value == null)
-            return;
+            throw new NullPointerException();
+
+        checkSetParam(type, name);
         
         MatParamTexture val = getTextureParam(name);
         if (val == null)

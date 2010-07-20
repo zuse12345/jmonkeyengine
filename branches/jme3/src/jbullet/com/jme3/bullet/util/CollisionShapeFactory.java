@@ -76,6 +76,13 @@ public class CollisionShapeFactory {
         return shape;
     }
 
+    /**
+     * Creates a Compound Shape with
+     * @param rootNode
+     * @param shape
+     * @param meshAccurate true for Mesh-accurate collision shapes meant for immovable "world objects"
+     * @return
+     */
     public static CompoundCollisionShape createCompoundShape(
             Node rootNode, CompoundCollisionShape shape, boolean meshAccurate) {
         rootNode.updateGeometricState();
@@ -97,6 +104,12 @@ public class CollisionShapeFactory {
         return createCompoundShape(rootNode, new CompoundCollisionShape(), false);
     }
 
+    /**
+     * This type of collision shape is mesh-accurate and meant for immovable "world objects".
+     * Examples include terrain, houses or whole shooter levels.<br>
+     * Objects with "mesh" type collision shape will not collide with each other.
+     * @return A MeshCollisionShape or a CompoundCollisionShape with MeshCollisionShapes as children if the supplied spatial is a Node.
+     */
     public static CollisionShape createMeshShape(Spatial spatial) {
         if (spatial instanceof Geometry) {
             return createSingleMeshShape((Geometry) spatial);
@@ -109,7 +122,9 @@ public class CollisionShapeFactory {
 
     /**
      * Note that mesh-sccurate dynamic shapes are very expensive and you should consider
-     * using a compound shape of standard shapes instead.
+     * using a compound shape of standard shapes instead.<br>
+     * If you use GImpact shapes, its probably best to do so with a low-poly version of your model.
+     * @return A GImpactCollisionShape or a CompoundCollisionShape with GImpactCollisionShapes as children if the supplied spatial is a Node.
      */
     public static CollisionShape createDynamicMeshShape(Spatial spatial) {
         if (spatial instanceof Geometry) {
@@ -133,6 +148,11 @@ public class CollisionShapeFactory {
         }
     }
 
+    /**
+     * This type of collision shape is mesh-accurate and meant for immovable "world objects".
+     * Examples include terrain, houses or whole shooter levels.<br>
+     * Objects with "mesh" type collision shape will not collide with each other.
+     */
     public static MeshCollisionShape createSingleMeshShape(Geometry geom) {
         Mesh mesh = geom.getMesh();
         if (mesh != null) {
@@ -144,6 +164,11 @@ public class CollisionShapeFactory {
         }
     }
 
+    /**
+     * Uses the bounding box of the supplied spatial to create a BoxCollisionShape
+     * @param spatial
+     * @return BoxCollisionShape with the size of the spatials BoundingBox
+     */
     public static BoxCollisionShape createSingleBoxShape(Spatial spatial) {
         spatial.setModelBound(new BoundingBox());
         spatial.updateGeometricState();
@@ -154,8 +179,9 @@ public class CollisionShapeFactory {
     }
 
     /**
-     * Note that mesh-sccurate dynamic shapes are very expensive and you should consider
-     * using a compound shape of standard shapes instead.
+     * Note that these mesh-sccurate dynamic shapes (GImpactCollisionShapes) are very expensive and you should consider
+     * using a compound shape of standard shapes instead.<br>
+     * If you use GImpact shapes, its probably best to do so with a low-poly version of your model.
      */
     public static GImpactCollisionShape createSingleDynamicMeshShape(Geometry geom) {
         Mesh mesh = geom.getMesh();

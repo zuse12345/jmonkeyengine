@@ -149,7 +149,7 @@ public class PhysicsGhostNode extends CollisionObject {
         if (locationDirty) {
             synchronized (jmeTrans) {
                 Converter.convert(jmeTrans.getTranslation(), tempTrans.origin);
-                tempTrans.setRotation(Converter.convert(jmeTrans.getRotation()));
+                tempTrans.setRotation(Converter.convert(jmeTrans.getRotation(), tempRot));
                 gObject.setWorldTransform(tempTrans);
                 collisionShape.setScale(getWorldScale());
                 locationDirty = false;

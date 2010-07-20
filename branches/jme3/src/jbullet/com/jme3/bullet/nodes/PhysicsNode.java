@@ -67,6 +67,7 @@ public class PhysicsNode extends CollisionObject {
     protected float mass = 1.0f;
     protected boolean kinematic = false;
     protected javax.vecmath.Vector3f tempVec = new javax.vecmath.Vector3f();
+    protected javax.vecmath.Vector3f tempVec2 = new javax.vecmath.Vector3f();
     protected Transform tempTrans = new Transform(new javax.vecmath.Matrix3f());
     protected javax.vecmath.Matrix3f tempMatrix = new javax.vecmath.Matrix3f();
     //jme-specific
@@ -280,8 +281,7 @@ public class PhysicsNode extends CollisionObject {
     }
 
     public void getGravity(Vector3f gravity) {
-        //TODO: gravity
-        rBody.setGravity(Converter.convert(gravity));
+        rBody.setGravity(Converter.convert(gravity, tempVec));
     }
 
     /**
@@ -347,7 +347,7 @@ public class PhysicsNode extends CollisionObject {
      * @param vec the angular velocity of this PhysicsNode
      */
     public void setAngularVelocity(Vector3f vec) {
-        rBody.setAngularVelocity(Converter.convert(vec));
+        rBody.setAngularVelocity(Converter.convert(vec, tempVec));
         rBody.activate();
     }
 
@@ -372,7 +372,7 @@ public class PhysicsNode extends CollisionObject {
      * @param vec the linear velocity of this PhysicsNode
      */
     public void setLinearVelocity(Vector3f vec) {
-        rBody.setLinearVelocity(Converter.convert(vec));
+        rBody.setLinearVelocity(Converter.convert(vec, tempVec));
         rBody.activate();
     }
 
@@ -466,8 +466,7 @@ public class PhysicsNode extends CollisionObject {
     private Callable doApplyContinuousForce = new Callable() {
 
         public Object call() throws Exception {
-            //TODO: reuse vector
-            rBody.applyForce(Converter.convert(continuousForce), Converter.convert(continuousForceLocation));
+            rBody.applyForce(Converter.convert(continuousForce, tempVec), Converter.convert(continuousForceLocation, tempVec2));
             rBody.activate();
             if (applyForce) {
                 PhysicsSpace.requeueOnThisThread(doApplyContinuousForce);
@@ -531,8 +530,7 @@ public class PhysicsNode extends CollisionObject {
     private Callable doApplyContinuousTorque = new Callable() {
 
         public Object call() throws Exception {
-            //TODO: reuse vector
-            rBody.applyTorque(Converter.convert(continuousTorque));
+            rBody.applyTorque(Converter.convert(continuousTorque, tempVec));
             rBody.activate();
             if (applyTorque) {
                 PhysicsSpace.requeueOnThisThread(doApplyContinuousTorque);
@@ -549,8 +547,7 @@ public class PhysicsNode extends CollisionObject {
      * @param location the location of the force
      */
     public void applyForce(final Vector3f force, final Vector3f location) {
-        //TODO: reuse vector!
-        rBody.applyForce(Converter.convert(force), Converter.convert(location));
+        rBody.applyForce(Converter.convert(force, tempVec), Converter.convert(location, tempVec2));
         rBody.activate();
     }
 
@@ -561,8 +558,7 @@ public class PhysicsNode extends CollisionObject {
      * @param force the force
      */
     public void applyCentralForce(final Vector3f force) {
-        //TODO: reuse vector!
-        rBody.applyCentralForce(Converter.convert(force));
+        rBody.applyCentralForce(Converter.convert(force, tempVec));
         rBody.activate();
     }
 
@@ -573,8 +569,7 @@ public class PhysicsNode extends CollisionObject {
      * @param torque the torque
      */
     public void applyTorque(final Vector3f torque) {
-        //TODO: reuse vector!
-        rBody.applyTorque(Converter.convert(torque));
+        rBody.applyTorque(Converter.convert(torque, tempVec));
         rBody.activate();
     }
 
@@ -584,8 +579,7 @@ public class PhysicsNode extends CollisionObject {
      * @param rel_pos location relative to object
      */
     public void applyImpulse(final Vector3f impulse, final Vector3f rel_pos) {
-        //TODO: reuse vector!
-        rBody.applyImpulse(Converter.convert(impulse), Converter.convert(rel_pos));
+        rBody.applyImpulse(Converter.convert(impulse, tempVec), Converter.convert(rel_pos, tempVec2));
         rBody.activate();
     }
 
@@ -595,8 +589,7 @@ public class PhysicsNode extends CollisionObject {
      * @param vec
      */
     public void applyTorqueImpulse(final Vector3f vec) {
-        //TODO: reuse vector!
-        rBody.applyTorqueImpulse(Converter.convert(vec));
+        rBody.applyTorqueImpulse(Converter.convert(vec, tempVec));
         rBody.activate();
     }
 

@@ -45,23 +45,21 @@ import com.jme3.math.Matrix3f;
  * allow multithreaded access from the jme scenegraph and the bullet physicsspace
  * @author normenhansen
  */
-public class PhysicsNodeState extends MotionState{
+public class PhysicsNodeState extends MotionState {
     //stores the bullet transform
-    private Transform motionStateTrans=new Transform(Converter.convert(new Matrix3f()));
-    
+
+    private Transform motionStateTrans = new Transform(Converter.convert(new Matrix3f()));
     //stores jme transform info
-    private Vector3f worldLocation=new Vector3f();
-    private Matrix3f worldRotation=new Matrix3f();
-    private Quaternion worldRotationQuat=new Quaternion();
-
-    private Vector3f localLocation=new Vector3f();
-    private Quaternion localRotationQuat=new Quaternion();
+    private Vector3f worldLocation = new Vector3f();
+    private Matrix3f worldRotation = new Matrix3f();
+    private Quaternion worldRotationQuat = new Quaternion();
+    private Vector3f localLocation = new Vector3f();
+    private Quaternion localRotationQuat = new Quaternion();
     //keep track of transform changes
-    private boolean physicsLocationDirty=false;
-    private boolean jmeLocationDirty=true;
-
+    private boolean physicsLocationDirty = false;
+    private boolean jmeLocationDirty = true;
     //temp variable for conversion
-    private Quaternion tmp_inverseWorldRotation=new Quaternion();
+    private Quaternion tmp_inverseWorldRotation = new Quaternion();
 
     public PhysicsNodeState() {
     }
@@ -81,12 +79,14 @@ public class PhysicsNodeState extends MotionState{
      * @param worldTrans
      */
     public synchronized void setWorldTransform(Transform worldTrans) {
-        if(jmeLocationDirty) return;
+        if (jmeLocationDirty) {
+            return;
+        }
         motionStateTrans.set(worldTrans);
         Converter.convert(worldTrans.origin, worldLocation);
         Converter.convert(worldTrans.basis, worldRotation);
         worldRotationQuat.fromRotationMatrix(worldRotation);
-        physicsLocationDirty=true;
+        physicsLocationDirty = true;
     }
 
     /**
@@ -94,13 +94,13 @@ public class PhysicsNodeState extends MotionState{
      * @param location
      * @param rotation
      */
-    public synchronized void setWorldTransform(Vector3f location, Quaternion rotation){
+    public synchronized void setWorldTransform(Vector3f location, Quaternion rotation) {
         worldLocation.set(location);
         worldRotationQuat.set(rotation);
         worldRotation.set(rotation.toRotationMatrix());
-        Converter.convert(worldLocation,motionStateTrans.origin);
-        Converter.convert(worldRotation,motionStateTrans.basis);
-        jmeLocationDirty=true;
+        Converter.convert(worldLocation, motionStateTrans.origin);
+        Converter.convert(worldRotation, motionStateTrans.basis);
+        jmeLocationDirty = true;
     }
 
     /**
@@ -108,44 +108,48 @@ public class PhysicsNodeState extends MotionState{
      * @param rBody
      */
     public synchronized void applyTransform(RigidBody rBody) {
-        if(!jmeLocationDirty) return;
-        assert(rBody!=null);
+        if (!jmeLocationDirty) {
+            return;
+        }
+        assert (rBody != null);
         rBody.setWorldTransform(motionStateTrans);
         rBody.activate();
-        jmeLocationDirty=false;
+        jmeLocationDirty = false;
     }
 
     /**
      * applies the current transform to the given jme Node if the location has been updated on the physics side
      * @param spatial
      */
-    public synchronized boolean applyTransform(PhysicsNode spatial){
-        if(!physicsLocationDirty) return false;
-        if(spatial.getParent()!=null){
-            localLocation.set(worldLocation).subtractLocal( spatial.getParent().getWorldTranslation() );
-            localLocation.divideLocal( spatial.getParent().getWorldScale() );
-            tmp_inverseWorldRotation.set(spatial.getParent().getWorldRotation()).inverseLocal().multLocal( localLocation );
+    public synchronized boolean applyTransform(PhysicsNode spatial) {
+        if (!physicsLocationDirty) {
+            return false;
+        }
+        if (spatial.getParent() != null) {
+            localLocation.set(worldLocation).subtractLocal(spatial.getParent().getWorldTranslation());
+            localLocation.divideLocal(spatial.getParent().getWorldScale());
+            tmp_inverseWorldRotation.set(spatial.getParent().getWorldRotation()).inverseLocal().multLocal(localLocation);
 
             localRotationQuat.set(worldRotationQuat);
             tmp_inverseWorldRotation.set(spatial.getParent().getWorldRotation()).inverseLocal().mult(localRotationQuat, localRotationQuat);
 
             spatial.setLocalTranslation(localLocation);
             spatial.setLocalRotation(localRotationQuat);
-        }
-        else{
+        } else {
             spatial.setLocalTranslation(worldLocation);
             spatial.setLocalRotation(worldRotationQuat);
         }
-        physicsLocationDirty=false;
+        physicsLocationDirty = false;
         return true;
     }
 
-    public synchronized boolean applyTransform(com.jme3.math.Transform trans){
-        if(!physicsLocationDirty) return false;
+    public synchronized boolean applyTransform(com.jme3.math.Transform trans) {
+        if (!physicsLocationDirty) {
+            return false;
+        }
         trans.setTranslation(worldLocation);
         trans.setRotation(worldRotationQuat);
-        physicsLocationDirty=false;
+        physicsLocationDirty = false;
         return true;
     }
-
 }

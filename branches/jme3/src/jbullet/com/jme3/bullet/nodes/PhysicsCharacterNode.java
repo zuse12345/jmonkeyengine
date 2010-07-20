@@ -58,6 +58,8 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
     private float jumpSpeed = 10.0f;
     private int upAxis = 1;
 
+    private javax.vecmath.Vector3f tempVec=new javax.vecmath.Vector3f();
+
     public PhysicsCharacterNode() {
     }
 
@@ -87,7 +89,7 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
     }
 
     public void warp(Vector3f location) {
-        character.warp(Converter.convert(location));
+        character.warp(Converter.convert(location, tempVec));
     }
 
     /**
@@ -96,7 +98,7 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
      */
     public void setWalkDirection(Vector3f vec) {
         walkDirection.set(vec);
-        character.setWalkDirection(Converter.convert(walkDirection));
+        character.setWalkDirection(Converter.convert(walkDirection, tempVec));
     }
 
     public void setUpAxis(int axis) {

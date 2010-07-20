@@ -38,7 +38,6 @@ import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.util.BufferUtils;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
 
 /**
  * Nice convenience methods for conversion between javax.vecmath and com.jme3.math
@@ -56,10 +55,11 @@ public class Converter {
         return newVec;
     }
 
-    public static void convert(javax.vecmath.Vector3f oldVec, com.jme3.math.Vector3f newVec) {
+    public static com.jme3.math.Vector3f convert(javax.vecmath.Vector3f oldVec, com.jme3.math.Vector3f newVec) {
         newVec.x = oldVec.x;
         newVec.y = oldVec.y;
         newVec.z = oldVec.z;
+        return newVec;
     }
 
     public static javax.vecmath.Vector3f convert(com.jme3.math.Vector3f oldVec) {
@@ -68,17 +68,19 @@ public class Converter {
         return newVec;
     }
 
-    public static void convert(com.jme3.math.Vector3f oldVec, javax.vecmath.Vector3f newVec) {
+    public static javax.vecmath.Vector3f convert(com.jme3.math.Vector3f oldVec, javax.vecmath.Vector3f newVec) {
         newVec.x = oldVec.x;
         newVec.y = oldVec.y;
         newVec.z = oldVec.z;
+        return newVec;
     }
 
-    public static void convert(com.jme3.math.Quaternion oldQuat, javax.vecmath.Quat4f newQuat) {
+    public static javax.vecmath.Quat4f convert(com.jme3.math.Quaternion oldQuat, javax.vecmath.Quat4f newQuat) {
         newQuat.w = oldQuat.getW();
         newQuat.x = oldQuat.getX();
         newQuat.y = oldQuat.getY();
         newQuat.z = oldQuat.getZ();
+        return newQuat;
     }
 
     public static javax.vecmath.Quat4f convert(com.jme3.math.Quaternion oldQuat) {
@@ -87,8 +89,9 @@ public class Converter {
         return newQuat;
     }
 
-    public static void convert(javax.vecmath.Quat4f oldQuat, com.jme3.math.Quaternion newQuat) {
+    public static com.jme3.math.Quaternion convert(javax.vecmath.Quat4f oldQuat, com.jme3.math.Quaternion newQuat) {
         newQuat.set(oldQuat.x, oldQuat.y, oldQuat.z, oldQuat.w);
+        return newQuat;
     }
 
     public static com.jme3.math.Quaternion convert(javax.vecmath.Quat4f oldQuat) {
@@ -103,7 +106,7 @@ public class Converter {
         return newMatrix;
     }
 
-    public static void convert(javax.vecmath.Matrix3f oldMatrix, com.jme3.math.Matrix3f newMatrix) {
+    public static com.jme3.math.Matrix3f convert(javax.vecmath.Matrix3f oldMatrix, com.jme3.math.Matrix3f newMatrix) {
         newMatrix.set(0, 0, oldMatrix.m00);
         newMatrix.set(0, 1, oldMatrix.m01);
         newMatrix.set(0, 2, oldMatrix.m02);
@@ -113,6 +116,7 @@ public class Converter {
         newMatrix.set(2, 0, oldMatrix.m20);
         newMatrix.set(2, 1, oldMatrix.m21);
         newMatrix.set(2, 2, oldMatrix.m22);
+        return newMatrix;
     }
 
     public static javax.vecmath.Matrix3f convert(com.jme3.math.Matrix3f oldMatrix) {
@@ -121,7 +125,7 @@ public class Converter {
         return newMatrix;
     }
 
-    public static void convert(com.jme3.math.Matrix3f oldMatrix, javax.vecmath.Matrix3f newMatrix) {
+    public static javax.vecmath.Matrix3f convert(com.jme3.math.Matrix3f oldMatrix, javax.vecmath.Matrix3f newMatrix) {
         newMatrix.m00 = oldMatrix.get(0, 0);
         newMatrix.m01 = oldMatrix.get(0, 1);
         newMatrix.m02 = oldMatrix.get(0, 2);
@@ -131,12 +135,14 @@ public class Converter {
         newMatrix.m20 = oldMatrix.get(2, 0);
         newMatrix.m21 = oldMatrix.get(2, 1);
         newMatrix.m22 = oldMatrix.get(2, 2);
+        return newMatrix;
     }
 
-    public static void convert(com.jme3.math.Transform in, com.bulletphysics.linearmath.Transform out) {
+    public static com.bulletphysics.linearmath.Transform convert(com.jme3.math.Transform in, com.bulletphysics.linearmath.Transform out) {
         convert(in.getTranslation(), out.origin);
-        //TODO: reuse vector
+        //TODO: reuse matrix
         convert(in.getRotation().toRotationMatrix(), out.basis);
+        return out;
     }
 
     public static IndexedMesh convert(Mesh mesh) {

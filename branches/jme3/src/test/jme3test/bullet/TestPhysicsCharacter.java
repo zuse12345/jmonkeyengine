@@ -30,10 +30,12 @@ public class TestPhysicsCharacter extends SimpleBulletApplication implements Act
     private Vector3f walkDirection = new Vector3f();
     private Material mat;
     private static final Sphere bullet;
+    private static final SphereCollisionShape bulletCollisionShape;
 
     static {
         bullet = new Sphere(32, 32, 0.4f, true, false);
         bullet.setTextureMode(TextureMode.Projected);
+        bulletCollisionShape=new SphereCollisionShape(0.4f);
     }
 
     public static void main(String[] args) {
@@ -146,7 +148,7 @@ public class TestPhysicsCharacter extends SimpleBulletApplication implements Act
         } else if (binding.equals("shoot") && !value) {
             Geometry bulletg = new Geometry("bullet", bullet);
             bulletg.setMaterial(mat);
-            PhysicsNode bulletNode = new PhysicsNode(bulletg, new SphereCollisionShape(0.4f), 1);
+            PhysicsNode bulletNode = new PhysicsNode(bulletg, bulletCollisionShape, 1);
             bulletNode.setLocalTranslation(cam.getLocation());
             bulletNode.updateModelBound();
             bulletNode.updateGeometricState();

@@ -37,10 +37,12 @@ public class TestBrickWall extends SimpleBulletApplication {
 
     private static final Sphere bullet;
     private static final Box brick;
+    private static final SphereCollisionShape bulletCollisionShape;
 
     static {
         bullet = new Sphere(32, 32, 0.4f, true, false);
         bullet.setTextureMode(TextureMode.Projected);
+        bulletCollisionShape=new SphereCollisionShape(0.4f);
 
         brick = new Box(Vector3f.ZERO, bLength, bHeight, bWidth);
         brick.scaleTextureCoordinates(new Vector2f(1f, .5f));
@@ -79,7 +81,7 @@ public class TestBrickWall extends SimpleBulletApplication {
             if (name.equals("shoot") && !keyPressed) {
                 Geometry bulletg = new Geometry("bullet", bullet);
                 bulletg.setMaterial(mat2);
-                PhysicsNode bulletNode = new PhysicsNode(bulletg, new SphereCollisionShape(0.4f), 1);
+                PhysicsNode bulletNode = new PhysicsNode(bulletg, bulletCollisionShape, 1);
                 bulletNode.setLocalTranslation(cam.getLocation());
                 bulletNode.updateModelBound();
                 bulletNode.updateGeometricState();

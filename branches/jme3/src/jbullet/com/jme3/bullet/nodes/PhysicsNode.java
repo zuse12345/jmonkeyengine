@@ -55,8 +55,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
- * <p>PhysicsNode - Basic jbullet-jme physics object</p>
- * @see com.jmex.jbullet.PhysicsSpace
+ * <p>PhysicsNode - Basic physics object</p>
  * @author normenhansen
  */
 public class PhysicsNode extends CollisionObject {

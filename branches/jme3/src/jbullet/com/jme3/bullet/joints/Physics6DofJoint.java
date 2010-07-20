@@ -188,11 +188,11 @@ public class Physics6DofJoint extends PhysicsJoint {
             rotationalLimitMotor.setEnableMotor(capsule.readBoolean("rotMotor" + i + "_EnableMotor", false));
         }
         getTranslationalLimitMotor().setAccumulatedImpulse((Vector3f) capsule.readSavable("transMotor_AccumulatedImpulse", Vector3f.ZERO));
-        getTranslationalLimitMotor().setDamping(capsule.readFloat("transMotor_", 1.0f));
-        getTranslationalLimitMotor().setLimitSoftness(capsule.readFloat("transMotor_", 0.7f));
-        getTranslationalLimitMotor().setLowerLimit((Vector3f) capsule.readSavable("transMotor_", Vector3f.ZERO));
-        getTranslationalLimitMotor().setRestitution(capsule.readFloat("transMotor_", 0.5f));
-        getTranslationalLimitMotor().setUpperLimit((Vector3f) capsule.readSavable("transMotor_", Vector3f.ZERO));
+        getTranslationalLimitMotor().setDamping(capsule.readFloat("transMotor_Damping", 1.0f));
+        getTranslationalLimitMotor().setLimitSoftness(capsule.readFloat("transMotor_LimitSoftness", 0.7f));
+        getTranslationalLimitMotor().setLowerLimit((Vector3f) capsule.readSavable("transMotor_LowerLimit", Vector3f.ZERO));
+        getTranslationalLimitMotor().setRestitution(capsule.readFloat("transMotor_Restitution", 0.5f));
+        getTranslationalLimitMotor().setUpperLimit((Vector3f) capsule.readSavable("transMotor_UpperLimit", Vector3f.ZERO));
     }
 
     @Override
@@ -219,10 +219,10 @@ public class Physics6DofJoint extends PhysicsJoint {
             i++;
         }
         capsule.write(getTranslationalLimitMotor().getAccumulatedImpulse(), "transMotor_AccumulatedImpulse", Vector3f.ZERO);
-        capsule.write(getTranslationalLimitMotor().getDamping(), "transMotor_", 1.0f);
-        capsule.write(getTranslationalLimitMotor().getLimitSoftness(), "transMotor_", 0.7f);
-        capsule.write(getTranslationalLimitMotor().getLowerLimit(), "transMotor_", Vector3f.ZERO);
-        capsule.write(getTranslationalLimitMotor().getRestitution(), "transMotor_", 0.5f);
-        capsule.write(getTranslationalLimitMotor().getUpperLimit(), "transMotor_", Vector3f.ZERO);
+        capsule.write(getTranslationalLimitMotor().getDamping(), "transMotor_Damping", 1.0f);
+        capsule.write(getTranslationalLimitMotor().getLimitSoftness(), "transMotor_LimitSoftness", 0.7f);
+        capsule.write(getTranslationalLimitMotor().getLowerLimit(), "transMotor_LowerLimit", Vector3f.ZERO);
+        capsule.write(getTranslationalLimitMotor().getRestitution(), "transMotor_Restitution", 0.5f);
+        capsule.write(getTranslationalLimitMotor().getUpperLimit(), "transMotor_UpperLimit", Vector3f.ZERO);
     }
 }

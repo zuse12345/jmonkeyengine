@@ -46,30 +46,27 @@ import java.io.IOException;
  * Stores info about one wheel of a PhysicsVehicleNode
  * @author normenhansen
  */
-public class PhysicsVehicleWheel extends Node{
+public class PhysicsVehicleWheel extends Node {
+
     private com.bulletphysics.dynamics.vehicle.WheelInfo wheelInfo;
     private Spatial spatial;
     private boolean frontWheel;
-    private Vector3f location=new Vector3f();
-    private Vector3f direction=new Vector3f();
-    private Vector3f axle=new Vector3f();
-
+    private Vector3f location = new Vector3f();
+    private Vector3f direction = new Vector3f();
+    private Vector3f axle = new Vector3f();
     private float suspensionStiffness = 20.0f;
     private float wheelsDampingRelaxation = 2.3f;
     private float wheelsDampingCompression = 4.4f;
     private float frictionSlip = 10.5f;
     private float rollInfluence = 1.0f;
     private float maxSuspensionTravelCm = 500f;
+    private float radius = 0.5f;
+    private float restLength = 1f;
+    private Vector3f wheelWorldLocation = new Vector3f();
+    private Quaternion wheelWorldRotation = new Quaternion();
+    private com.jme3.math.Quaternion tempRotation = new com.jme3.math.Quaternion();
+    private com.jme3.math.Matrix3f tempMatrix = new com.jme3.math.Matrix3f();
 
-    private float radius=0.5f;
-    private float restLength=1f;
-
-    private Vector3f wheelWorldLocation=new Vector3f();
-    private Quaternion wheelWorldRotation=new Quaternion();
-
-    private com.jme3.math.Quaternion tempRotation=new com.jme3.math.Quaternion();
-    private com.jme3.math.Matrix3f tempMatrix=new com.jme3.math.Matrix3f();
-    
     public PhysicsVehicleWheel(Spatial spat, Vector3f location, Vector3f direction, Vector3f axle,
             float restLength, float radius, boolean frontWheel) {
         this.attachChild(spat);
@@ -77,44 +74,42 @@ public class PhysicsVehicleWheel extends Node{
         this.location.set(location);
         this.direction.set(direction);
         this.axle.set(axle);
-        this.frontWheel=frontWheel;
-        this.restLength=restLength;
-        this.radius=radius;
+        this.frontWheel = frontWheel;
+        this.restLength = restLength;
+        this.radius = radius;
     }
 
     @Override
-    public synchronized void updateGeometricState(){
-        if ((refreshFlags & RF_LIGHTLIST) != 0){
+    public synchronized void updateGeometricState() {
+        if ((refreshFlags & RF_LIGHTLIST) != 0) {
             updateWorldLightList();
         }
 
-        getLocalTranslation().set( wheelWorldLocation ).subtractLocal( parent.getWorldTranslation() );
-        getLocalTranslation().divideLocal( parent.getWorldScale() );
-        tempRotation.set( parent.getWorldRotation()).inverseLocal().multLocal( getLocalTranslation() );
+        getLocalTranslation().set(wheelWorldLocation).subtractLocal(parent.getWorldTranslation());
+        getLocalTranslation().divideLocal(parent.getWorldScale());
+        tempRotation.set(parent.getWorldRotation()).inverseLocal().multLocal(getLocalTranslation());
 
-        tempRotation.set(parent.getWorldRotation()).inverseLocal().mult(wheelWorldRotation,getLocalRotation());
+        tempRotation.set(parent.getWorldRotation()).inverseLocal().mult(wheelWorldRotation, getLocalRotation());
 
         updateWorldTransforms();
 
         // the important part- make sure child geometric state is refreshed
         // first before updating own world bound. This saves
         // a round-trip later on.
-        // NOTE 9/19/09
-        // Although it does save a round trip,
         for (int i = 0, cSize = children.size(); i < cSize; i++) {
             Spatial child = children.get(i);
             child.updateGeometricState();
         }
 
-        if ((refreshFlags & RF_BOUND) != 0){
+        if ((refreshFlags & RF_BOUND) != 0) {
             updateWorldBound();
         }
-        
+
     }
 
-    public synchronized void updatePhysicsState(){
-        Converter.convert(wheelInfo.worldTransform.origin,wheelWorldLocation);
-        Converter.convert(wheelInfo.worldTransform.basis,tempMatrix);
+    public synchronized void updatePhysicsState() {
+        Converter.convert(wheelInfo.worldTransform.origin, wheelWorldLocation);
+        Converter.convert(wheelInfo.worldTransform.basis, tempMatrix);
         wheelWorldRotation.fromRotationMatrix(tempMatrix);
     }
 
@@ -246,7 +241,7 @@ public class PhysicsVehicleWheel extends Node{
         applyInfo();
     }
 
-    public void applyInfo(){
+    public void applyInfo() {
         wheelInfo.suspensionStiffness = suspensionStiffness;
         wheelInfo.wheelsDampingRelaxation = wheelsDampingRelaxation;
         wheelInfo.wheelsDampingCompression = wheelsDampingCompression;
@@ -255,7 +250,7 @@ public class PhysicsVehicleWheel extends Node{
         wheelInfo.maxSuspensionTravelCm = maxSuspensionTravelCm;
         wheelInfo.wheelsRadius = radius;
         wheelInfo.bIsFrontWheel = frontWheel;
-        wheelInfo.suspensionRestLength1=restLength;
+        wheelInfo.suspensionRestLength1 = restLength;
     }
 
     public float getRadius() {
@@ -280,45 +275,44 @@ public class PhysicsVehicleWheel extends Node{
      * returns the object this wheel is in contact with or null if no contact
      * @return the CollisionObject (PhysicsNode, PhysicsGhostNode)
      */
-    public CollisionObject getGroundObject(){
-        if(wheelInfo.raycastInfo.groundObject == null){
+    public CollisionObject getGroundObject() {
+        if (wheelInfo.raycastInfo.groundObject == null) {
             return null;
-        }
-        else if(wheelInfo.raycastInfo.groundObject instanceof RigidBody){
+        } else if (wheelInfo.raycastInfo.groundObject instanceof RigidBody) {
             System.out.println("RigidBody");
-            return (PhysicsNode)((RigidBody)wheelInfo.raycastInfo.groundObject).getUserPointer();
-        }
-        else
+            return (PhysicsNode) ((RigidBody) wheelInfo.raycastInfo.groundObject).getUserPointer();
+        } else {
             return null;
+        }
     }
 
     /**
      * returns the location where the wheel collides with the ground
      */
-    public Vector3f getCollisionLocation(Vector3f vec){
-        Converter.convert(wheelInfo.raycastInfo.contactPointWS,vec);
+    public Vector3f getCollisionLocation(Vector3f vec) {
+        Converter.convert(wheelInfo.raycastInfo.contactPointWS, vec);
         return vec;
     }
 
     /**
      * returns the location where the wheel collides with the ground
      */
-    public Vector3f getCollisionLocation(){
+    public Vector3f getCollisionLocation() {
         return Converter.convert(wheelInfo.raycastInfo.contactPointWS);
     }
 
     /**
      * returns the normal where the wheel collides with the ground
      */
-    public Vector3f getCollisionNormal(Vector3f vec){
-        Converter.convert(wheelInfo.raycastInfo.contactNormalWS,vec);
+    public Vector3f getCollisionNormal(Vector3f vec) {
+        Converter.convert(wheelInfo.raycastInfo.contactNormalWS, vec);
         return vec;
     }
 
     /**
      * returns the normal where the wheel collides with the ground
      */
-    public Vector3f getCollisionNormal(){
+    public Vector3f getCollisionNormal() {
         return Converter.convert(wheelInfo.raycastInfo.contactNormalWS);
     }
 
@@ -326,7 +320,7 @@ public class PhysicsVehicleWheel extends Node{
      * returns how much the wheel skids on the ground (for skid sounds/smoke etc.)<br>
      * 0.0 = wheels are sliding, 1.0 = wheels have traction.
      */
-    public float getSkidInfo(){
+    public float getSkidInfo() {
         return wheelInfo.skidInfo;
     }
 
@@ -343,5 +337,4 @@ public class PhysicsVehicleWheel extends Node{
         //TODO
 //        throw new UnsupportedOperationException("vehicle saving not working yet");
     }
-
 }

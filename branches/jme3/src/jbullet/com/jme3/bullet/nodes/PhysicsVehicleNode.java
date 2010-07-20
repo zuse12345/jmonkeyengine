@@ -48,8 +48,8 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.debug.Arrow;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -73,7 +73,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     private RaycastVehicle vehicle;
     private VehicleTuning tuning;
     private VehicleRaycaster rayCaster;
-    private List<PhysicsVehicleWheel> wheels = new LinkedList<PhysicsVehicleWheel>();
+    private List<PhysicsVehicleWheel> wheels = new ArrayList<PhysicsVehicleWheel>();
 
     public PhysicsVehicleNode(CollisionShape shape) {
         super(shape);
@@ -144,8 +144,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
         wheel.setWheelsDampingRelaxation(tuning.suspensionDamping);
         wheel.applyInfo();
         wheels.add(wheel);
-//        this.attachChild(spat);
-        if(debugShape!=null){
+        if (debugShape != null) {
             detachDebugShape();
         }
         this.attachChild(wheel);
@@ -377,6 +376,28 @@ public class PhysicsVehicleNode extends PhysicsNode {
      */
     public void brake(int wheel, float force) {
         vehicle.setBrake(force, wheel);
+    }
+
+    /**
+     * Get the current speed of the vehicle in km/h
+     * @return
+     */
+    public float getCurrentVehicleSpeedKmHour() {
+        return vehicle.getCurrentSpeedKmHour();
+    }
+
+    /**
+     * Get the current forward vector of the vehicle in world coordinates
+     * @param vector
+     * @return
+     */
+    public Vector3f getForwardVector(Vector3f vector) {
+        if (vector == null) {
+            vector = new Vector3f();
+        }
+        vehicle.getForwardVector(tempVec);
+        Converter.convert(tempVec, vector);
+        return vector;
     }
 
     /**

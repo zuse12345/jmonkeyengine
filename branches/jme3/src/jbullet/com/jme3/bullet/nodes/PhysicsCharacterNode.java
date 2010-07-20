@@ -63,8 +63,8 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
 
     public PhysicsCharacterNode(CollisionShape shape, float stepHeight) {
         super(shape);
-        if (!(shape instanceof SphereCollisionShape)) {
-            throw (new UnsupportedOperationException("Kinematic character nodes can only have sphere collision shapes"));
+        if (!(shape.getCShape() instanceof ConvexShape)) {
+            throw (new UnsupportedOperationException("Kinematic character nodes cannot have mesh collision shapes"));
         }
         this.stepHeight = stepHeight;
         character = new KinematicCharacterController(gObject, (ConvexShape) collisionShape.getCShape(), stepHeight);
@@ -72,8 +72,8 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
 
     public PhysicsCharacterNode(Spatial spat, CollisionShape shape, float stepHeight) {
         super(spat, shape);
-        if (!(shape instanceof SphereCollisionShape)) {
-            throw (new UnsupportedOperationException("Kinematic character nodes can only have sphere collision shapes"));
+        if (!(shape.getCShape() instanceof ConvexShape)) {
+            throw (new UnsupportedOperationException("Kinematic character nodes cannot have mesh collision shapes"));
         }
         this.stepHeight = stepHeight;
         character = new KinematicCharacterController(gObject, (ConvexShape) collisionShape.getCShape(), stepHeight);

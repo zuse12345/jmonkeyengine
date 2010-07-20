@@ -305,11 +305,11 @@ public abstract class CollisionObject extends Node {
         } else if (shape instanceof CylinderCollisionShape) {
             geom.setName("CylinderDebugShape");
             CylinderCollisionShape cylinderCollisionShape = (CylinderCollisionShape) shape;
-
             Vector3f scale = cylinderCollisionShape.getScale();
             Vector3f halfExtents = cylinderCollisionShape.getHalfExtents();
             int axis = cylinderCollisionShape.getAxis();
             Mesh cylinder = null;
+            //TODO: bestter debug shape for cylinder
             switch (axis) {
                 case 0:
                     cylinder = new Box(Vector3f.ZERO, halfExtents.x, halfExtents.y, halfExtents.z);
@@ -328,25 +328,21 @@ public abstract class CollisionObject extends Node {
         } else if (shape instanceof CapsuleCollisionShape) {
             geom.setName("CapsuleDebugShape");
             CapsuleCollisionShape capsuleCollisionShape = (CapsuleCollisionShape) shape;
-
             Vector3f scale = capsuleCollisionShape.getScale();
-            Vector3f halfExtents = null;
             int axis = capsuleCollisionShape.getAxis();
             float height = capsuleCollisionShape.getHeight();
             float radius = capsuleCollisionShape.getRadius();
             Mesh cylinder = null;
+            //TODO: better debug shape for capsule
             switch (axis) {
                 case 0:
-                    halfExtents = new Vector3f(height / 2.0f, radius, radius);
-                    cylinder = new Box(Vector3f.ZERO, halfExtents.x, halfExtents.y, halfExtents.z);
+                    cylinder = new Box(Vector3f.ZERO, (height / 2.0f) + radius, radius, radius);
                     break;
                 case 1:
-                    halfExtents = new Vector3f(radius, height / 2.0f, radius);
-                    cylinder = new Box(Vector3f.ZERO, halfExtents.x, halfExtents.y, halfExtents.z);
+                    cylinder = new Box(Vector3f.ZERO, radius, (height / 2.0f) + radius, radius);
                     break;
                 case 2:
-//                    halfExtents = new Vector3f(radius, radius, height / 2.0f);
-                    cylinder = new Cylinder(16, 16, radius, height);
+                    cylinder = new Cylinder(16, 16, radius, height + (radius*2));
                     break;
             }
 

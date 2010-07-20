@@ -89,7 +89,6 @@ public class TestGhostObject extends SimpleBulletApplication {
 
     @Override
     public void simpleUpdate(float tpf) {
-        Logger.getLogger(TestGhostObject.class.getName()).
-                info(ghostNode.getOverlappingObjects().toString());
+        fpsText.setText("Overlapping objects: " + ghostNode.getOverlappingObjects().toString());
     }
 }

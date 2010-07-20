@@ -25,6 +25,7 @@ public class MTLLoader implements AssetLoader {
     protected MaterialList matList;
     protected Material material;
     protected AssetManager assetManager;
+    protected String folderName;
 
     public void reset(){
         scan = null;
@@ -99,7 +100,7 @@ public class MTLLoader implements AssetLoader {
         }else if (cmd.equals("map_Kd")){
             String path = scan.next();
             String name = new File(path).getName();
-            TextureKey key = new TextureKey(name);
+            TextureKey key = new TextureKey(folderName + name);
             key.setGenerateMips(true);
             Texture texture = assetManager.loadTexture(key);
             if (texture != null){
@@ -110,7 +111,7 @@ public class MTLLoader implements AssetLoader {
             if (material.getParam("m_NormalMap") == null){
                 String path = scan.next();
                 String name = new File(path).getName();
-                TextureKey key = new TextureKey(name);
+                TextureKey key = new TextureKey(folderName + name);
                 key.setGenerateMips(true);
                 Texture texture = assetManager.loadTexture(key);
                 if (texture != null){
@@ -124,7 +125,7 @@ public class MTLLoader implements AssetLoader {
         }else if (cmd.equals("map_Ks")){
             String path = scan.next();
             String name = new File(path).getName();
-            TextureKey key = new TextureKey(name);
+            TextureKey key = new TextureKey(folderName + name);
             key.setGenerateMips(true);
             Texture texture = assetManager.loadTexture(key);
             if (texture != null){
@@ -138,7 +139,7 @@ public class MTLLoader implements AssetLoader {
         }else if (cmd.equals("map_d")){
             String path = scan.next();
             String name = new File(path).getName();
-            TextureKey key = new TextureKey(name);
+            TextureKey key = new TextureKey(folderName + name);
             key.setGenerateMips(true);
             Texture texture = assetManager.loadTexture(key);
             if (texture != null){
@@ -160,6 +161,7 @@ public class MTLLoader implements AssetLoader {
     @SuppressWarnings("empty-statement")
     public Object load(AssetInfo info){
         this.assetManager = info.getManager();
+        folderName = info.getKey().getFolder();
 
         InputStream in = info.openStream();
         scan = new Scanner(in);

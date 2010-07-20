@@ -32,6 +32,7 @@ public class TestBrickWall extends SimpleBulletApplication {
     
     Material mat;
     Material mat2;
+    Material mat3;
     BasicShadowRenderer bsr;
 
     private static final Sphere bullet;
@@ -63,7 +64,7 @@ public class TestBrickWall extends SimpleBulletApplication {
         inputManager.addListener(actionListener, "shoot");
 
         rootNode.setShadowMode(ShadowMode.Off);
-        bsr = new BasicShadowRenderer(assetManager, 1024);
+        bsr = new BasicShadowRenderer(assetManager, 256);
         bsr.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
         viewPort.addProcessor(bsr);
         //System.out.print(this.getPhysicsSpace().getAccuracy());
@@ -105,19 +106,12 @@ public class TestBrickWall extends SimpleBulletApplication {
     }
 
     public void initFloor() {
-        Material fmat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
-        TextureKey key = new TextureKey("Textures/Terrain/Pond/Pond.png");
-        key.setGenerateMips(true);
-        Texture tex = assetManager.loadTexture(key);
-        tex.setWrap(WrapMode.Repeat);
-        fmat.setTexture("floorTexture", tex);
-
         Box floorBox = new Box(Vector3f.ZERO, 10f, 0.1f, 5f);
         floorBox.scaleTextureCoordinates(new Vector2f(3, 6));
 
         Geometry floor = new Geometry("floor", floorBox);
-        floor.setMaterial(fmat);
-        floor.setShadowMode(ShadowMode.CastAndRecieve);
+        floor.setMaterial(mat3);
+        floor.setShadowMode(ShadowMode.Recieve);
         PhysicsNode floorNode = new PhysicsNode(floor, new BoxCollisionShape(new Vector3f(10f, 0.1f, 5f)), 0);
         floorNode.setLocalTranslation(0, -0.1f, 0);
         floorNode.updateGeometricState();
@@ -128,27 +122,31 @@ public class TestBrickWall extends SimpleBulletApplication {
 
     public void initMaterial() {
         mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
-        TextureKey key = new TextureKey("Textures/Terrain/BrickWall/BrickWall.jpg", true);
+        TextureKey key = new TextureKey("Textures/Terrain/BrickWall/BrickWall.jpg");
         key.setGenerateMips(true);
         Texture tex = assetManager.loadTexture(key);
-        mat.setTexture("color map", tex);
+        mat.setTexture("m_ColorMap", tex);
 
         mat2 = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
-        TextureKey key2 = new TextureKey("Textures/Terrain/Rock/Rock.PNG", true);
+        TextureKey key2 = new TextureKey("Textures/Terrain/Rock/Rock.PNG");
         key2.setGenerateMips(true);
         Texture tex2 = assetManager.loadTexture(key2);
-        mat2.setTexture("color map", tex2);
+        mat2.setTexture("m_ColorMap", tex2);
+
+        mat3 = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
+        TextureKey key3 = new TextureKey("Textures/Terrain/Pond/Pond.png");
+        key.setGenerateMips(true);
+        Texture tex3 = assetManager.loadTexture(key3);
+        tex3.setWrap(WrapMode.Repeat);
+        mat3.setTexture("m_ColorMap", tex3);
     }
 
     public void addBrick(Vector3f ori) {
         
         Geometry reBoxg = new Geometry("brick", brick);
         reBoxg.setMaterial(mat);
-        // reBoxg.setShadowMode(ShadowMode.CastAndRecieve);
         PhysicsNode brickNode = new PhysicsNode(reBoxg, new BoxCollisionShape(new Vector3f(bLength, bHeight, bWidth)), 1.5f);
         brickNode.setLocalTranslation(ori);
-        brickNode.updateModelBound();
-        brickNode.updateGeometricState();
         brickNode.setShadowMode(ShadowMode.CastAndRecieve);
         // brickNode.setFriction(1f);
         this.rootNode.attachChild(brickNode);

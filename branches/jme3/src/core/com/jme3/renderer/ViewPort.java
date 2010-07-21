@@ -10,13 +10,13 @@ import java.util.List;
 
 public class ViewPort {
 
-    protected Camera cam;
-    protected RenderQueue queue = new RenderQueue();
-    protected List<Spatial> sceneList = new ArrayList<Spatial>();
-    protected List<SceneProcessor> processors = new ArrayList<SceneProcessor>();
+    protected final Camera cam;
+    protected final RenderQueue queue = new RenderQueue();
+    protected final ArrayList<Spatial> sceneList = new ArrayList<Spatial>();
+    protected final ArrayList<SceneProcessor> processors = new ArrayList<SceneProcessor>();
     protected FrameBuffer out = null;
 
-    protected ColorRGBA backColor = new ColorRGBA(0,0,0,0);
+    protected final ColorRGBA backColor = new ColorRGBA(0,0,0,0);
     protected boolean clearEnabled = true;
 
     public ViewPort(String name, Camera cam) {
@@ -62,6 +62,10 @@ public class ViewPort {
 
     public void attachScene(Spatial scene){
         sceneList.add(scene);
+    }
+
+    public void detachScene(Spatial scene){
+        sceneList.remove(scene);
     }
 
     public void clearScenes() {

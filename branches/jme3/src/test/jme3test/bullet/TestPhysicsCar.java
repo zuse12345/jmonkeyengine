@@ -13,6 +13,7 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
@@ -27,6 +28,7 @@ public class TestPhysicsCar extends SimpleBulletApplication implements ActionLis
     private final float brakeForce = 100.0f;
     private float steeringValue = 0;
     private float accelerationValue = 0;
+    private Vector3f jumpForce = new Vector3f(0, 3000, 0);
 
     public static void main(String[] args) {
         TestPhysicsCar app = new TestPhysicsCar();
@@ -46,11 +48,13 @@ public class TestPhysicsCar extends SimpleBulletApplication implements ActionLis
         inputManager.addMapping("Ups", new KeyTrigger(KeyInput.KEY_U));
         inputManager.addMapping("Downs", new KeyTrigger(KeyInput.KEY_J));
         inputManager.addMapping("Space", new KeyTrigger(KeyInput.KEY_SPACE));
+        inputManager.addMapping("Reset", new KeyTrigger(KeyInput.KEY_RETURN));
         inputManager.addListener(this, "Lefts");
         inputManager.addListener(this, "Rights");
         inputManager.addListener(this, "Ups");
         inputManager.addListener(this, "Downs");
         inputManager.addListener(this, "Space");
+        inputManager.addListener(this, "Reset");
     }
 
     public void setupFloor() {
@@ -96,7 +100,7 @@ public class TestPhysicsCar extends SimpleBulletApplication implements ActionLis
         player.setSuspensionDamping(dampValue * 2.0f * FastMath.sqrt(stiffness));
         player.setSuspensionStiffness(stiffness);
         player.setMaxSuspensionForce(10000.0f);
-        
+
         //Create four wheels and add them at their locations
         Vector3f wheelDirection = new Vector3f(0, -1, 0); // was 0, -1, 0
         Vector3f wheelAxle = new Vector3f(-1, 0, 0); // was -1, 0, 0
@@ -174,6 +178,20 @@ public class TestPhysicsCar extends SimpleBulletApplication implements ActionLis
                 player.brake(brakeForce);
             } else {
                 player.brake(0f);
+            }
+        } else if (binding.equals("Space")) {
+            if (value) {
+                player.applyImpulse(jumpForce, Vector3f.ZERO);
+            }
+        } else if (binding.equals("Reset")) {
+            if (value) {
+                System.out.println("Reset");
+                player.setLocalTranslation(0, 0, 0);
+                player.setLocalRotation(new Quaternion());
+                player.setLinearVelocity(Vector3f.ZERO);
+                player.setAngularVelocity(Vector3f.ZERO);
+                player.resetSuspension();
+            } else {
             }
         }
     }

@@ -151,6 +151,12 @@ public class TestPhysicsCar extends SimpleBulletApplication implements ActionLis
         getPhysicsSpace().add(player);
     }
 
+    @Override
+    public void simpleUpdate(float tpf) {
+        Quaternion quat=new Quaternion();
+        cam.lookAt(player.getWorldTranslation(), Vector3f.UNIT_Y);
+    }
+
     public void onAction(String binding, boolean value, float tpf) {
         if (binding.equals("Lefts")) {
             if (value) {

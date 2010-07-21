@@ -137,7 +137,7 @@ public class TestBrickWall extends SimpleBulletApplication {
 
         mat3 = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         TextureKey key3 = new TextureKey("Textures/Terrain/Pond/Pond.png");
-        key.setGenerateMips(true);
+        key3.setGenerateMips(true);
         Texture tex3 = assetManager.loadTexture(key3);
         tex3.setWrap(WrapMode.Repeat);
         mat3.setTexture("m_ColorMap", tex3);

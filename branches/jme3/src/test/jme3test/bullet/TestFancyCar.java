@@ -1,6 +1,7 @@
 package jme3test.bullet;
 
 import com.jme3.app.SimpleBulletApplication;
+import com.jme3.asset.TextureKey;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
@@ -13,6 +14,7 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.FastMath;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
@@ -21,6 +23,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.shadow.BasicShadowRenderer;
+import com.jme3.texture.Texture;
 import com.jme3.texture.Texture.WrapMode;
 
 public class TestFancyCar extends SimpleBulletApplication implements ActionListener {
@@ -43,11 +46,13 @@ public class TestFancyCar extends SimpleBulletApplication implements ActionListe
         inputManager.addMapping("Ups", new KeyTrigger(KeyInput.KEY_U));
         inputManager.addMapping("Downs", new KeyTrigger(KeyInput.KEY_J));
         inputManager.addMapping("Space", new KeyTrigger(KeyInput.KEY_SPACE));
+        inputManager.addMapping("Reset", new KeyTrigger(KeyInput.KEY_RETURN));
         inputManager.addListener(this,"Lefts");
         inputManager.addListener(this,"Rights");
         inputManager.addListener(this,"Ups");
         inputManager.addListener(this,"Downs");
         inputManager.addListener(this,"Space");
+        inputManager.addListener(this,"Reset");
     }
 
     @Override
@@ -222,11 +227,22 @@ public class TestFancyCar extends SimpleBulletApplication implements ActionListe
                 player.brake(60f);
             else
                 player.brake(0f);
+        } else if (binding.equals("Reset")) {
+            if (value) {
+                System.out.println("Reset");
+                player.setLocalTranslation(0, 0, 0);
+                player.setLocalRotation(new Quaternion());
+                player.setLinearVelocity(Vector3f.ZERO);
+                player.setAngularVelocity(Vector3f.ZERO);
+                player.resetSuspension();
+            } else {
+            }
         }
     }
 
     @Override
     public void simpleUpdate(float tpf) {
+        cam.lookAt(player.getWorldTranslation(), Vector3f.UNIT_Y);
         //XXX: Hack alert! Physics Wheels dont rotate atm, force them
         float carSpeed = player.getLinearVelocity().length() / wheelRadius;
         node_bl.rotate(-carSpeed * tpf, 0, 0);

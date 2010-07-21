@@ -113,6 +113,10 @@ public abstract class PhysicsCollisionObject extends Node {
         }
     }
 
+    public CollisionShape getCollisionShape() {
+        return collisionShape;
+    }
+
     /**
      * @return the CollisionShape of this PhysicsNode, to be able to reuse it with
      * other physics nodes (increases performance)

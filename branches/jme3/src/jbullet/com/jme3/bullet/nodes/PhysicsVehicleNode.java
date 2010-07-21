@@ -242,19 +242,6 @@ public class PhysicsVehicleNode extends PhysicsNode {
         tuning.maxSuspensionTravelCm = maxSuspensionTravelCm;
     }
 
-    public float getMaxSuspensionForce() {
-        return tuning.maxSuspensionForce;
-    }
-
-    /**
-     * The maximum suspension force, raise this above the default 6000 if your suspension cannot
-     * handle the weight of your vehcile.
-     * @param maxSuspensionTravelCm
-     */
-    public void setMaxSuspensionForce(float maxSuspensionForce) {
-        tuning.maxSuspensionForce = maxSuspensionForce;
-    }
-
     /**
      * the maximum distance the suspension can be compressed (centimetres)
      * @param wheel
@@ -262,6 +249,29 @@ public class PhysicsVehicleNode extends PhysicsNode {
      */
     public void setMaxSuspensionTravelCm(int wheel, float maxSuspensionTravelCm) {
         wheels.get(wheel).setMaxSuspensionTravelCm(maxSuspensionTravelCm);
+    }
+
+    public float getMaxSuspensionForce() {
+        return tuning.maxSuspensionForce;
+    }
+
+    /**
+     * This vaue caps the maximum suspension force, raise this above the default 6000 if your suspension cannot
+     * handle the weight of your vehcile.
+     * @param maxSuspensionForce
+     */
+    public void setMaxSuspensionForce(float maxSuspensionForce) {
+        tuning.maxSuspensionForce = maxSuspensionForce;
+    }
+
+    /**
+     * This vaue caps the maximum suspension force, raise this above the default 6000 if your suspension cannot
+     * handle the weight of your vehcile.
+     * @param wheel
+     * @param maxSuspensionForce
+     */
+    public void setMaxSuspensionForce(int wheel, float maxSuspensionForce) {
+        wheels.get(wheel).setMaxSuspensionForce(maxSuspensionForce);
     }
 
     /**

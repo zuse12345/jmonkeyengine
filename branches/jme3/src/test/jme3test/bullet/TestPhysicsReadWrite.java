@@ -132,22 +132,20 @@ public class TestPhysicsReadWrite extends SimpleBulletApplication{
 
         //save and load the physicsRootNode
         try {
+            //remove all physics objects from physics space
             getPhysicsSpace().removeAll(physicsRootNode);
             physicsRootNode.removeFromParent();
-
+            //export to byte array
             ByteArrayOutputStream bout=new ByteArrayOutputStream();
             BinaryExporter.getInstance().save(physicsRootNode, bout);
+            //import from byte array
             ByteArrayInputStream bin=new ByteArrayInputStream(bout.toByteArray());
             BinaryImporter imp=BinaryImporter.getInstance();
             imp.setAssetManager(assetManager);
             Node newPhysicsRootNode=(Node)imp.load(bin);
-            PhysicsNode pnode=(PhysicsNode)newPhysicsRootNode.getChild("physicssphere");
-            if(pnode!=null){
-                System.out.println("found sphere");
-                pnode.setFriction(10);
-            }
-            rootNode.attachChild(newPhysicsRootNode);
+            //add all physics objects to physics space
             getPhysicsSpace().addAll(newPhysicsRootNode);
+            rootNode.attachChild(newPhysicsRootNode);
         } catch (IOException ex) {
             Logger.getLogger(TestPhysicsReadWrite.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -2,12 +2,6 @@
 #labels JMP
 *Menu*
  * [Introduction]
- * jMonkeyEngine3
-  * BuildJme3
-  * SourcePackagesJme3
- * jMonkeyPlatform
-  * [BuildPlatform Build Platform]
-  * [AttachSourceCode Attach Source Code]
-  * [NetbeansSwingGuiBuilder Netbeans Swing GUI Builder]
-  * [JMPFeatures Features]
+ * [http://www.jmonkeyengine.com/wiki/doku.php/jme3 jMonkeyEngine]
+ * [http://www.jmonkeyengine.com/wiki/doku.php/jme3:jmonkeyplatform jMonkeyPlatform]
  * [http://www.jmonkeyengine.com/wiki/doku.php?id=about_jme About]

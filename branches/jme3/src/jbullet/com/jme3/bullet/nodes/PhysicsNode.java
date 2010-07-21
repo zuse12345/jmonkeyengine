@@ -52,7 +52,6 @@ import com.jme3.math.Matrix3f;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 /**
  * <p>PhysicsNode - Basic physics object</p>
@@ -205,6 +204,14 @@ public class PhysicsNode extends PhysicsCollisionObject {
             rebuildRigidBody();
         }
         motionState.applyTransform(rBody);
+        synchronized (this) {
+            if (applyForce) {
+                rBody.applyForce(Converter.convert(continuousForce, tempVec), Converter.convert(continuousForceLocation, tempVec2));
+            }
+            if (applyTorque) {
+                rBody.applyTorque(Converter.convert(continuousTorque, tempVec));
+            }
+        }
     }
 
     /**
@@ -328,21 +335,21 @@ public class PhysicsNode extends PhysicsCollisionObject {
         rBody.setDamping(linearDamping, angularDamping);
     }
 
-    public void setLinearDamping(float linearDamping){
+    public void setLinearDamping(float linearDamping) {
         constructionInfo.linearDamping = linearDamping;
         rBody.setDamping(linearDamping, constructionInfo.angularDamping);
     }
 
-    public void setAngularDamping(float angularDamping){
+    public void setAngularDamping(float angularDamping) {
         constructionInfo.angularDamping = angularDamping;
         rBody.setDamping(constructionInfo.linearDamping, angularDamping);
     }
 
-    public float getLinearDamping(){
+    public float getLinearDamping() {
         return constructionInfo.linearDamping;
     }
 
-    public float getAngularDamping(){
+    public float getAngularDamping() {
         return constructionInfo.angularDamping;
     }
 
@@ -415,7 +422,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
      * @param vec the vector to store the continuous force in
      * @return null if no force is applied
      */
-    public Vector3f getContinuousForce(Vector3f vec) {
+    public synchronized Vector3f getContinuousForce(Vector3f vec) {
         if (applyForce) {
             return vec.set(continuousForce);
         } else {
@@ -427,7 +434,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
      * get the currently applied continuous force
      * @return null if no force is applied
      */
-    public Vector3f getContinuousForce() {
+    public synchronized Vector3f getContinuousForce() {
         if (applyForce) {
             return continuousForce;
         } else {
@@ -439,7 +446,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
      * get the currently applied continuous force location
      * @return null if no force is applied
      */
-    public Vector3f getContinuousForceLocation() {
+    public synchronized Vector3f getContinuousForceLocation() {
         if (applyForce) {
             return continuousForceLocation;
         } else {
@@ -454,14 +461,11 @@ public class PhysicsNode extends PhysicsCollisionObject {
      * @param apply true if the force should be applied each physics tick
      * @param force the vector of the force to apply
      */
-    public void applyContinuousForce(boolean apply, Vector3f force) {
+    public synchronized void applyContinuousForce(boolean apply, Vector3f force) {
         if (force != null) {
             continuousForce.set(force);
         }
         continuousForceLocation.set(0, 0, 0);
-        if (!applyForce && apply) {
-            PhysicsSpace.enqueueOnThisThread(doApplyContinuousForce);
-        }
         applyForce = apply;
 
     }
@@ -473,15 +477,12 @@ public class PhysicsNode extends PhysicsCollisionObject {
      * @param apply true if the force should be applied each physics tick
      * @param force the offset of the force
      */
-    public void applyContinuousForce(boolean apply, Vector3f force, Vector3f location) {
+    public synchronized void applyContinuousForce(boolean apply, Vector3f force, Vector3f location) {
         if (force != null) {
             continuousForce.set(force);
         }
         if (location != null) {
             continuousForceLocation.set(location);
-        }
-        if (!applyForce && apply) {
-            PhysicsSpace.enqueueOnThisThread(doApplyContinuousForce);
         }
         applyForce = apply;
 
@@ -491,29 +492,15 @@ public class PhysicsNode extends PhysicsCollisionObject {
      * use to enable/disable continuous force
      * @param apply set to false to disable
      */
-    public void applyContinuousForce(boolean apply) {
-        if (!applyForce && apply) {
-            PhysicsSpace.enqueueOnThisThread(doApplyContinuousForce);
-        }
+    public synchronized void applyContinuousForce(boolean apply) {
         applyForce = apply;
     }
-    private Callable doApplyContinuousForce = new Callable() {
-
-        public Object call() throws Exception {
-            rBody.applyForce(Converter.convert(continuousForce, tempVec), Converter.convert(continuousForceLocation, tempVec2));
-            rBody.activate();
-            if (applyForce) {
-                PhysicsSpace.requeueOnThisThread(doApplyContinuousForce);
-            }
-            return null;
-        }
-    };
 
     /**
      * get the currently applied continuous torque
      * @return null if no torque is applied
      */
-    public Vector3f getContinuousTorque() {
+    public synchronized Vector3f getContinuousTorque() {
         if (applyTorque) {
             return continuousTorque;
         } else {
@@ -526,7 +513,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
      * @param vec the vector to store the continuous torque in
      * @return null if no torque is applied
      */
-    public Vector3f getContinuousTorque(Vector3f vec) {
+    public synchronized Vector3f getContinuousTorque(Vector3f vec) {
         if (applyTorque) {
             return vec.set(continuousTorque);
         } else {
@@ -541,12 +528,9 @@ public class PhysicsNode extends PhysicsCollisionObject {
      * @param apply true if the force should be applied each physics tick
      * @param vec the vector of the force to apply
      */
-    public void applyContinuousTorque(boolean apply, Vector3f vec) {
+    public synchronized void applyContinuousTorque(boolean apply, Vector3f vec) {
         if (vec != null) {
             continuousTorque.set(vec);
-        }
-        if (!applyTorque && apply) {
-            PhysicsSpace.enqueueOnThisThread(doApplyContinuousTorque);
         }
         applyTorque = apply;
     }
@@ -555,23 +539,9 @@ public class PhysicsNode extends PhysicsCollisionObject {
      * use to enable/disable continuous torque
      * @param apply set to false to disable
      */
-    public void applyContinuousTorque(boolean apply) {
-        if (!applyTorque && apply) {
-            PhysicsSpace.enqueueOnThisThread(doApplyContinuousTorque);
-        }
+    public synchronized void applyContinuousTorque(boolean apply) {
         applyTorque = apply;
     }
-    private Callable doApplyContinuousTorque = new Callable() {
-
-        public Object call() throws Exception {
-            rBody.applyTorque(Converter.convert(continuousTorque, tempVec));
-            rBody.activate();
-            if (applyTorque) {
-                PhysicsSpace.requeueOnThisThread(doApplyContinuousTorque);
-            }
-            return null;
-        }
-    };
 
     /**
      * apply a force to the PhysicsNode, only applies force in the next physics tick,
@@ -663,21 +633,21 @@ public class PhysicsNode extends PhysicsCollisionObject {
         rBody.setSleepingThresholds(linear, angular);
     }
 
-    public void setLinearSleepingThreshold(float linearSleepingThreshold){
+    public void setLinearSleepingThreshold(float linearSleepingThreshold) {
         constructionInfo.linearSleepingThreshold = linearSleepingThreshold;
         rBody.setSleepingThresholds(linearSleepingThreshold, constructionInfo.angularSleepingThreshold);
     }
 
-    public void setAngularSleepingThreshold(float angularSleepingThreshold){
+    public void setAngularSleepingThreshold(float angularSleepingThreshold) {
         constructionInfo.angularSleepingThreshold = angularSleepingThreshold;
         rBody.setSleepingThresholds(constructionInfo.linearSleepingThreshold, angularSleepingThreshold);
     }
 
-    public float getLinearSleepingThreshold(){
+    public float getLinearSleepingThreshold() {
         return constructionInfo.linearSleepingThreshold;
     }
 
-    public float getAngularSleepingThreshold(){
+    public float getAngularSleepingThreshold() {
         return constructionInfo.angularSleepingThreshold;
     }
 

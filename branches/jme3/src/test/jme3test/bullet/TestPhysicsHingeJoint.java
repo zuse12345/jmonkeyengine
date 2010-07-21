@@ -57,19 +57,19 @@ public class TestPhysicsHingeJoint extends SimpleBulletApplication implements Bi
         mat.setColor("m_Color", ColorRGBA.Yellow);
 
         PhysicsNode holderNode=new PhysicsNode(new BoxCollisionShape(new Vector3f( .1f, .1f, .1f)),0);
-        rootNode.attachChild(holderNode);
         holderNode.setLocalTranslation(new Vector3f(0f,0,0f));
         holderNode.attachDebugShape(mat);
         holderNode.updateModelBound();
         holderNode.updateGeometricState();
+        rootNode.attachChild(holderNode);
         getPhysicsSpace().add(holderNode);
 
         PhysicsNode hammerNode=new PhysicsNode(new BoxCollisionShape(new Vector3f( .3f, .3f, .3f)),1);
-        rootNode.attachChild(hammerNode);
         hammerNode.setLocalTranslation(new Vector3f(0f,-1,0f));
         hammerNode.attachDebugShape(assetManager);
         hammerNode.updateModelBound();
         hammerNode.updateGeometricState();
+        rootNode.attachChild(hammerNode);
         getPhysicsSpace().add(hammerNode);
 
         joint=new PhysicsHingeJoint(holderNode, hammerNode, Vector3f.ZERO, new Vector3f(0f,-1,0f), Vector3f.UNIT_Z, Vector3f.UNIT_Z);

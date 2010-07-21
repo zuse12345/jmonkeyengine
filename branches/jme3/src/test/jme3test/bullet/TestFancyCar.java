@@ -87,10 +87,10 @@ public class TestFancyCar extends SimpleBulletApplication implements ActionListe
         floorGeom.updateModelBound();
 
         PhysicsNode tb=new PhysicsNode(floorGeom,new MeshCollisionShape(floorGeom.getMesh()),0);
-        rootNode.attachChild(tb);
         tb.setLocalTranslation(new Vector3f(0f,-6,0f));
         tb.updateModelBound();
         tb.updateGeometricState();
+        rootNode.attachChild(tb);
         getPhysicsSpace().add(tb);
     }
 

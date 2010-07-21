@@ -105,9 +105,9 @@ public class TestSimplePhysics extends SimpleBulletApplication{
         PhysicsNode node3=new PhysicsNode(new MeshCollisionShape(new Box(Vector3f.ZERO,100f,0.2f,100f)),0);
         node3.setLocalTranslation(new Vector3f(0f,-6,0f));
         node3.attachDebugShape(getAssetManager());
-        rootNode.attachChild(node3);
         node3.updateModelBound();
         node3.updateGeometricState();
+        rootNode.attachChild(node3);
         getPhysicsSpace().add(node3);
 
         // Join the physics objects with a Point2Point joint

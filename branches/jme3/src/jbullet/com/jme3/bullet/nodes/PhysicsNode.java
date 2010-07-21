@@ -728,7 +728,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
         CollisionShape shape = (CollisionShape) capsule.readSavable("collisionShape", new BoxCollisionShape(Vector3f.UNIT_XYZ));
         collisionShape = shape;
         rebuildRigidBody();
-        setGravity((Vector3f) capsule.readSavable("gravity", Vector3f.ZERO));
+        setGravity((Vector3f) capsule.readSavable("gravity", Vector3f.ZERO.clone()));
         setFriction(capsule.readFloat("friction", 0.5f));
         setKinematic(capsule.readBoolean("kinematic", false));
 
@@ -737,14 +737,12 @@ public class PhysicsNode extends PhysicsCollisionObject {
         setSleepingThresholds(capsule.readFloat("linearSleepingThreshold", 0.8f), capsule.readFloat("angularSleepingThreshold", 1.0f));
 
 
-        Vector3f continuousForce = (Vector3f) capsule.readSavable("continuousForce", Vector3f.ZERO);
-        Vector3f continuousForceLocation = (Vector3f) capsule.readSavable("continuousForceLocation", Vector3f.ZERO);
-        boolean applyForce = capsule.readBoolean("applyForce", false);
-        applyContinuousForce(applyForce, continuousForce, continuousForceLocation);
+        continuousForce = (Vector3f) capsule.readSavable("continuousForce", Vector3f.ZERO.clone());
+        continuousForceLocation = (Vector3f) capsule.readSavable("continuousForceLocation", Vector3f.ZERO.clone());
+        applyForce = capsule.readBoolean("applyForce", false);
 
-        Vector3f continuousTorque = (Vector3f) capsule.readSavable("continuousTorque", Vector3f.ZERO);
-        boolean applyTorque = capsule.readBoolean("applyTorque", false);
-        applyContinuousTorque(applyTorque, continuousTorque);
+        continuousTorque = (Vector3f) capsule.readSavable("continuousTorque", Vector3f.ZERO.clone());
+        applyTorque = capsule.readBoolean("applyTorque", false);
 
         joints = capsule.readSavableArrayList("joints", null);
     }

@@ -264,6 +264,9 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
                 }
                 clickAddSpatialName = null;
             } else {
+                if (result != null && result.getGeometry() != null) {
+                    master.doAttachSelectionMark(true, result.getGeometry());
+                }
                 java.awt.EventQueue.invokeLater(new Runnable() {
 
                     public void run() {

@@ -32,9 +32,8 @@
 package com.jme3.gde.core.scene;
 
 import com.jme3.gde.core.assets.ProjectAssetManager;
-import com.jme3.gde.core.assets.nodes.SaveNode;
 import com.jme3.gde.core.scene.nodes.JmeNode;
-import org.openide.nodes.Node;
+import com.jme3.scene.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -47,9 +46,9 @@ public class SceneRequest {
     private String mimeType = "";
     private Object requester;
     private JmeNode rootNode;
+    private com.jme3.scene.Node toolNode;
     private ProjectAssetManager manager;
     private boolean displayed = false;
-    private Node saveNode=new SaveNode();
 
     public SceneRequest(Object requester, JmeNode rootNode, ProjectAssetManager manager) {
         this.requester = requester;
@@ -124,13 +123,20 @@ public class SceneRequest {
         return manager;
     }
 
-    @Deprecated
-    public Node getSaveNode() {
-        return saveNode;
+    /**
+     * @return the toolScene
+     */
+    public Node getToolNode() {
+        return toolNode;
     }
 
-    @Deprecated
-    public void setSaveNode(Node saveNode) {
-        this.saveNode = saveNode;
+    /**
+     * Add an additional Node that is not displayed in the SceneExplorer and can be
+     * used for displaying in-world tools, templates, previews etc.
+     * @param toolScene the toolScene to set
+     */
+    public void setToolNode(Node toolNode) {
+        this.toolNode = toolNode;
     }
+
 }

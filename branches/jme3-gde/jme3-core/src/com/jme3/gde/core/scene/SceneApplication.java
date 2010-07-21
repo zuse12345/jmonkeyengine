@@ -84,6 +84,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     }
     protected Node rootNode = new Node("Root Node");
     protected Node guiNode = new Node("Gui Node");
+    protected Node toolsNode = new Node("Tools Node");
     private SceneCameraController camController;
     //preview variables
     protected float secondCounter = 0.0f;
@@ -92,20 +93,13 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     protected FlyByCamera flyCam;
     protected boolean showSettings = true;
     private SceneRequest currentSceneRequest;
-
     private LinkedList<SceneListener> listeners = new LinkedList<SceneListener>();
-
     private ScenePreviewProcessor previewProcessor;
-
     private Lookup.Result nodeSelectionResult;
-    
     private ApplicationLogHandler logHandler = new ApplicationLogHandler();
-
     private WireProcessor wireProcessor;
-
     private ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Opening SceneViewer..");
-
-    private boolean sceneActive=false;
+    private boolean sceneActive = false;
 
     public SceneApplication() {
         progressHandle.start(7);
@@ -154,8 +148,8 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         camController = new SceneCameraController(cam, inputManager);
         //create preview view
         progressHandle.progress("Setup Preview Scene", 3);
-        
-        previewProcessor=new ScenePreviewProcessor();
+
+        previewProcessor = new ScenePreviewProcessor();
         previewProcessor.setupPreviewView();
 
         // enable depth test and back-face culling for performance
@@ -173,6 +167,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         loadStatsView();
         progressHandle.progress("Attach Scene to Viewport", 6);
         viewPort.attachScene(rootNode);
+        viewPort.attachScene(toolsNode);
         guiViewPort.attachScene(guiNode);
         cam.setLocation(new Vector3f(0, 0, 10));
 
@@ -201,12 +196,12 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         try {
             rootNode.updateLogicalState(tpf);
             guiNode.updateLogicalState(tpf);
+            toolsNode.updateLogicalState(tpf);
             rootNode.updateGeometricState();
             guiNode.updateGeometricState();
+            toolsNode.updateGeometricState();
 
             getStateManager().update(tpf);
-
-//            previewProcessor.doPreviews();
 
             renderManager.render(tpf);
         } catch (Exception e) {
@@ -216,35 +211,35 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 
     @Override
     public <V> Future<V> enqueue(Callable<V> callable) {
-        if(sceneActive)
+        if (sceneActive) {
             return super.enqueue(callable);
-        else{
+        } else {
             try {
-                final V value=callable.call();
-                return new Future<V>(){
+                final V value = callable.call();
+                return new Future<V>() {
 
                     //Attempts to cancel execution of this task.
-                    public boolean cancel(boolean mayInterruptIfRunning){
+                    public boolean cancel(boolean mayInterruptIfRunning) {
                         return true;
                     }
 
-                    public boolean isCancelled(){
+                    public boolean isCancelled() {
                         return false;
                     }
 
-                    public boolean isDone(){
+                    public boolean isDone() {
                         return true;
                     }
 
                     // Waits if necessary for the computation to complete,
                     //  and then retrieves its result.
-                    public V get() throws InterruptedException, ExecutionException{
+                    public V get() throws InterruptedException, ExecutionException {
                         return value;
                     }
 
                     // Waits if necessary for at most the given time for the computation
                     // to complete, and then retrieves its result, if available.
-                    public V get(long timeout, TimeUnit unit){
+                    public V get(long timeout, TimeUnit unit) {
                         return value;
                     }
                 };
@@ -268,15 +263,14 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         Collection collection = nodeSelectionResult.allInstances();
         for (Iterator it = collection.iterator(); it.hasNext();) {
             Object object = it.next();
-            if(object instanceof JmeSpatial){
-                setSelectedNode((JmeSpatial)object);
+            if (object instanceof JmeSpatial) {
+                setSelectedNode((JmeSpatial) object);
                 return;
             }
         }
     }
 
     //TODO: replace with Lookup functionality
-
     public void addSceneListener(SceneListener listener) {
         listeners.add(listener);
     }
@@ -309,10 +303,10 @@ public class SceneApplication extends Application implements LookupProvider, Loo
      */
     public void requestScene(final SceneRequest request) {
         setWindowTitle(request.getWindowTitle());
-//        setMimeType(request.getMimeType());
         enqueue(new Callable() {
 
             public Object call() throws Exception {
+                toolsNode.detachAllChildren();
                 rootNode.detachAllChildren();
                 if (request.getManager() != null) {
                     assetManager = request.getManager().getManager();
@@ -332,6 +326,9 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                     return null;
                 }
                 rootNode.attachChild(model);
+                if (request.getToolNode() != null) {
+                    toolsNode.attachChild(request.getToolNode());
+                }
                 notifySceneListeners();
                 return null;
             }
@@ -354,6 +351,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 
     private void setWindowTitle(final String string) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 SceneViewerTopComponent.findInstance().setDisplayName(string);
                 SceneViewerTopComponent.findInstance().requestActive();
@@ -363,6 +361,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 
     public void setSelectedNode(final org.openide.nodes.Node node) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 if (node == null) {
                     SceneViewerTopComponent.findInstance().setActivatedNodes(new org.openide.nodes.Node[]{});
@@ -423,8 +422,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         this.sceneActive = sceneActive;
     }
 
-    public RenderManager getRenderManager(){
+    public RenderManager getRenderManager() {
         return renderManager;
     }
-
 }

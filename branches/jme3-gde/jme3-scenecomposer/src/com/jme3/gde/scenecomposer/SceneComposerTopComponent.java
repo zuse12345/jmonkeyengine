@@ -4,14 +4,9 @@
  */
 package com.jme3.gde.scenecomposer;
 
-import com.jme3.app.Application;
-import com.jme3.app.state.AppState;
-import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.DesktopAssetManager;
 import com.jme3.audio.AudioNode;
-import com.jme3.collision.CollisionResult;
-import com.jme3.collision.CollisionResults;
 import com.jme3.effect.EmitterSphereShape;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
@@ -28,12 +23,9 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.light.PointLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Ray;
-import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.Camera;
-import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.ui.Picture;
@@ -80,6 +72,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     private Spatial selected;
     ComposerCameraController camController;
     private SaveCookie saveCookie = new SaveCookieImpl();
+    private Spatial selectionShape;
 
     public SceneComposerTopComponent() {
         initComponents();
@@ -492,6 +485,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         this.currentRequest = request;
         this.currentFileObject = file;
         request.setWindowTitle("SceneViewer - " + request.getRootNode().getName() + " (SceneComposer)");
+        request.setToolNode(new Node("SceneComposerToolNode"));
         SceneApplication.getApplication().requestScene(request);
         selectSpatial(currentRequest.getRootNode());
     }
@@ -558,17 +552,82 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         if (spatial == null) {
             setSelectedObjectText(null);
             setSelectionData(null);
+            attachSelectionMark(false);
             selectedSpat = null;
             selected = null;
             return;
+        } else {
+            attachSelectionMark(false);
         }
         selectedSpat = spatial;
         //TODO: remove
         selectedSpat.fireSave(true);
         setActivatedNodes(new org.openide.nodes.Node[]{selectedSpat});
-        selected = spatial.getLookup().lookup(Spatial.class);
+
+        if (selected != spatial.getLookup().lookup(Spatial.class)) {
+            attachSelectionMark(true);
+            selected = spatial.getLookup().lookup(Spatial.class);
+        }
+
         setSelectedObjectText(spatial.getName());
         setSelectionData(selected instanceof Node);
+    }
+
+    private void attachSelectionMark(final boolean attach) {
+        if (selectedSpat == null) {
+            return;
+        }
+        final Geometry geom = selectedSpat.getLookup().lookup(Geometry.class);
+        if (geom == null) {
+            return;
+        }
+        final Node parent = geom.getParent();
+        if (geom != null && parent != null) {
+            SceneApplication.getApplication().enqueue(new Callable() {
+
+                public Object call() throws Exception {
+                    doAttachSelectionMark(attach, geom);
+                    return null;
+                }
+            });
+
+        }
+    }
+
+    public void doAttachSelectionMark(boolean attach, Geometry geom) {
+        if (attach && selected == geom) {
+            return;
+        }
+        selected = geom;
+        if (selected == null)  {
+            return;
+        }
+        if (attach && selectionShape != null) {
+            selectionShape.removeFromParent();
+            selectionShape = null;
+        }
+        if (attach) {
+            Mesh mesh = geom.getMesh();
+            if (mesh == null) {
+                return;
+            }
+            Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
+            mat.setColor("m_Color", ColorRGBA.Blue);
+            Geometry selectionGeometry = new Geometry("selection_geometry_sceneviewer", mesh);
+            selectionGeometry.setMaterial(mat);
+            selectionGeometry.setLocalTransform(selectionGeometry.getWorldTransform());
+            if (currentRequest != null && currentRequest.getToolNode() != null) {
+                currentRequest.getToolNode().attachChild(selectionGeometry);
+                selectionShape = selectionGeometry;
+            }
+        } else {
+            if (currentRequest != null && currentRequest.getToolNode() != null) {
+                if (selectionShape != null) {
+                    selectionShape.removeFromParent();
+                }
+            }
+            selectionShape = null;
+        }
     }
 
     /*
@@ -593,9 +652,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 //        selected = null;
 //        selectedSpat = null;
 //        setSelectedObjectText(null);
-    }
-
-    public void nodeSelected(JmeSpatial spatial) {
     }
 
     public void previewRequested(PreviewRequest request) {

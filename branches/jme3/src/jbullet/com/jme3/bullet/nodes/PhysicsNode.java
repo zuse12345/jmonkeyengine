@@ -83,7 +83,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * creates a new PhysicsNode with the supplied collision shape
+     * Creates a new PhysicsNode with the supplied collision shape
      * @param child
      * @param shape
      */
@@ -99,7 +99,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * creates a new PhysicsNode with the supplied child node or geometry and
+     * Creates a new PhysicsNode with the supplied child node or geometry and
      * sets the supplied collision shape to the PhysicsNode
      * @param child
      * @param shape
@@ -109,7 +109,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * creates a new PhysicsNode with the supplied child node or geometry and
+     * Creates a new PhysicsNode with the supplied child node or geometry and
      * uses the supplied collision shape for that PhysicsNode<br>
      * @param child
      * @param shape
@@ -124,7 +124,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * builds/rebuilds the phyiscs body when parameters have changed
+     * Builds/rebuilds the phyiscs body when parameters have changed
      */
     protected void rebuildRigidBody() {
         boolean removed = false;
@@ -196,7 +196,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * only to be called from physics thread!!
+     * Only to be called from physics thread!!
      */
     @Override
     public void updatePhysicsState() {
@@ -215,7 +215,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * this is normally only needed when using detached physics
+     * This is normally only needed when using detached physics
      * @param location the location of the actual physics object
      */
     public void setPhysicsLocation(Vector3f location) {
@@ -225,7 +225,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * this is normally only needed when using detached physics
+     * This is normally only needed when using detached physics
      * @param rotation the rotation of the actual physics object
      */
     public void setPhysicsRotation(Matrix3f rotation) {
@@ -235,7 +235,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * this is normally only needed when using detached physics
+     * This is normally only needed when using detached physics
      * @param location the location of the actual physics object is stored in this Vector3f
      */
     public void getPhysicsLocation(Vector3f location) {
@@ -244,7 +244,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * this is normally only needed when using detached physics
+     * This is normally only needed when using detached physics
      * @param rotation the rotation of the actual physics object is stored in this Matrix3f
      */
     public void getPhysicsRotation(Matrix3f rotation) {
@@ -253,8 +253,8 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * sets the node to kinematic mode. in this mode the node is not affected by physics
-     * but affects other physics objects. its kinetic force is calculated by the amount
+     * Sets the node to kinematic mode. in this mode the node is not affected by physics
+     * but affects other physics objects. Iits kinetic force is calculated by the amount
      * of movement it is exposed to and its weight.
      * @param kinematic
      */
@@ -278,7 +278,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * sets the mass of this PhysicsNode, objects with mass=0 are static.
+     * Sets the mass of this PhysicsNode, objects with mass=0 are static.
      * @param mass
      */
     public void setMass(float mass) {
@@ -321,7 +321,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * sets the friction of this physics object
+     * Sets the friction of this physics object
      * @param friction the friction of this physics object
      */
     public void setFriction(float friction) {
@@ -358,8 +358,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * the "bouncyness" of the PhysicsNode
-     * best performance if restitution=0
+     * The "bouncyness" of the PhysicsNode, best performance if restitution=0
      * @param restitution
      */
     public void setRestitution(float restitution) {
@@ -368,7 +367,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * get the current angular velocity of this PhysicsNode
+     * Get the current angular velocity of this PhysicsNode
      * @return the current linear velocity
      */
     public Vector3f getAngularVelocity() {
@@ -376,7 +375,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * get the current angular velocity of this PhysicsNode
+     * Get the current angular velocity of this PhysicsNode
      * @param vec the vector to store the velocity in
      */
     public void getAngularVelocity(Vector3f vec) {
@@ -384,7 +383,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * sets the angular velocity of this PhysicsNode
+     * Sets the angular velocity of this PhysicsNode
      * @param vec the angular velocity of this PhysicsNode
      */
     public void setAngularVelocity(Vector3f vec) {
@@ -393,7 +392,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * get the current linear velocity of this PhysicsNode
+     * Get the current linear velocity of this PhysicsNode
      * @return the current linear velocity
      */
     public Vector3f getLinearVelocity() {
@@ -401,7 +400,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * get the current linear velocity of this PhysicsNode
+     * Get the current linear velocity of this PhysicsNode
      * @param vec the vector to store the velocity in
      */
     public void getLinearVelocity(Vector3f vec) {
@@ -409,7 +408,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * sets the linear velocity of this PhysicsNode
+     * Sets the linear velocity of this PhysicsNode
      * @param vec the linear velocity of this PhysicsNode
      */
     public void setLinearVelocity(Vector3f vec) {
@@ -418,7 +417,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * get the currently applied continuous force
+     * Get the currently applied continuous force
      * @param vec the vector to store the continuous force in
      * @return null if no force is applied
      */
@@ -443,7 +442,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * get the currently applied continuous force location
+     * Get the currently applied continuous force location
      * @return null if no force is applied
      */
     public synchronized Vector3f getContinuousForceLocation() {
@@ -455,7 +454,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * apply a continuous force to this PhysicsNode, the force is updated automatically each
+     * Apply a continuous force to this PhysicsNode, the force is updated automatically each
      * tick so you only need to set it once and then set it to false to stop applying
      * the force.
      * @param apply true if the force should be applied each physics tick
@@ -471,7 +470,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * apply a continuous force to this PhysicsNode, the force is updated automatically each
+     * Apply a continuous force to this PhysicsNode, the force is updated automatically each
      * tick so you only need to set it once and then set it to false to stop applying
      * the force.
      * @param apply true if the force should be applied each physics tick
@@ -489,7 +488,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * use to enable/disable continuous force
+     * Use to enable/disable continuous force
      * @param apply set to false to disable
      */
     public synchronized void applyContinuousForce(boolean apply) {
@@ -497,7 +496,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * get the currently applied continuous torque
+     * Get the currently applied continuous torque
      * @return null if no torque is applied
      */
     public synchronized Vector3f getContinuousTorque() {
@@ -509,7 +508,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * get the currently applied continuous torque
+     * Get the currently applied continuous torque
      * @param vec the vector to store the continuous torque in
      * @return null if no torque is applied
      */
@@ -522,7 +521,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * apply a continuous torque to this PhysicsNode. The torque is updated automatically each
+     * Apply a continuous torque to this PhysicsNode. The torque is updated automatically each
      * tick so you only need to set it once and then set it to false to stop applying
      * the torque.
      * @param apply true if the force should be applied each physics tick
@@ -536,7 +535,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * use to enable/disable continuous torque
+     * Use to enable/disable continuous torque
      * @param apply set to false to disable
      */
     public synchronized void applyContinuousTorque(boolean apply) {
@@ -544,9 +543,9 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * apply a force to the PhysicsNode, only applies force in the next physics tick,
-     * use applyContinuousForce to apply continuous force
-     * 
+     * Apply a force to the PhysicsNode, only applies force if the next physics update call
+     * updates the physics space.<br>
+     * To apply an impulse, use applyImpulse, use applyContinuousForce to apply continuous force.
      * @param force the force
      * @param location the location of the force
      */
@@ -556,8 +555,9 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * apply a force to the PhysicsNode, only applies force in the next physics tick,
-     * use applyContinuousForce to apply continuous force
+     * Apply a force to the PhysicsNode, only applies force if the next physics update call
+     * updates the physics space.<br>
+     * To apply an impulse, use applyImpulse, use applyContinuousForce to apply continuous force.
      * 
      * @param force the force
      */
@@ -567,8 +567,9 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * apply a torque to the PhysicsNode, only applies force in the next physics tick,
-     * use applyContinuousTorque to apply continuous torque
+     * Apply a force to the PhysicsNode, only applies force if the next physics update call
+     * updates the physics space.<br>
+     * To apply an impulse, use applyImpulse, use applyContinuousForce to apply continuous force.
      * 
      * @param torque the torque
      */
@@ -578,7 +579,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * apply an impulse to the PhysicsNode
+     * Apply an impulse to the PhysicsNode in the next physics update.
      * @param impulse applied impulse
      * @param rel_pos location relative to object
      */
@@ -588,8 +589,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * apply a torque impulse to the PhysicsNode
-     * 
+     * Apply a torque impulse to the PhysicsNode in the next physics update.
      * @param vec
      */
     public void applyTorqueImpulse(final Vector3f vec) {
@@ -598,7 +598,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * clear all forces from the PhysicsNode
+     * Clear all forces from the PhysicsNode
      * 
      */
     public void clearForces() {

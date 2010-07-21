@@ -126,7 +126,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * add a wheel to this vehicle
+     * Add a wheel to this vehicle
      * @param connectionPoint The starting point of the ray, where the suspension connects to the chassis (chassis space)
      * @param direction the direction of the wheel (should be -Y / 0,-1,0 for a normal car)
      * @param axle The axis of the wheel (should be -X / -1,0,0 for a normal car)
@@ -140,7 +140,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * add a wheel to this vehicle
+     * Add a wheel to this vehicle
      * @param spat the wheel Geometry
      * @param connectionPoint The starting point of the ray, where the suspension connects to the chassis (chassis space)
      * @param direction the direction of the wheel (should be -Y / 0,-1,0 for a normal car)
@@ -177,7 +177,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * you can get access to the single wheels via this method.
+     * You can get access to the single wheels via this method.
      * @param wheel the wheel index
      * @return the WheelInfo of the selected wheel
      */
@@ -193,7 +193,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * use before adding wheels, this is the default used when adding wheels.
+     * Use before adding wheels, this is the default used when adding wheels.
      * After adding the wheel, use direct wheel access.<br>
      * The coefficient of friction between the tyre and the ground.
      * Should be about 0.8 for realistic cars, but can increased for better handling.
@@ -205,7 +205,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * the coefficient of friction between the tyre and the ground.
+     * The coefficient of friction between the tyre and the ground.
      * Should be about 0.8 for realistic cars, but can increased for better handling.
      * Set large (10000.0) for kart racers
      * @param wheel
@@ -216,7 +216,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * reduces the rolling torque applied from the wheels that cause the vehicle to roll over.
+     * Reduces the rolling torque applied from the wheels that cause the vehicle to roll over.
      * This is a bit of a hack, but it's quite effective. 0.0 = no roll, 1.0 = physical behaviour.
      * If m_frictionSlip is too high, you'll need to reduce this to stop the vehicle rolling over.
      * You should also try lowering the vehicle's centre of mass
@@ -233,7 +233,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * use before adding wheels, this is the default used when adding wheels.
+     * Use before adding wheels, this is the default used when adding wheels.
      * After adding the wheel, use direct wheel access.<br>
      * The maximum distance the suspension can be compressed (centimetres)
      * @param maxSuspensionTravelCm the maxSuspensionTravelCm to set
@@ -243,7 +243,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * the maximum distance the suspension can be compressed (centimetres)
+     * The maximum distance the suspension can be compressed (centimetres)
      * @param wheel
      * @param maxSuspensionTravelCm
      */
@@ -282,7 +282,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * use before adding wheels, this is the default used when adding wheels.
+     * Use before adding wheels, this is the default used when adding wheels.
      * After adding the wheel, use direct wheel access.<br>
      * The damping coefficient for when the suspension is compressed.
      * Set to k * 2.0 * FastMath.sqrt(m_suspensionStiffness) so k is proportional to critical damping.<br>
@@ -295,7 +295,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * the damping coefficient for when the suspension is compressed.
+     * The damping coefficient for when the suspension is compressed.
      * Set to k * 2.0 * FastMath.sqrt(m_suspensionStiffness) so k is proportional to critical damping.<br>
      * k = 0.0 undamped & bouncy, k = 1.0 critical damping<br>
      * 0.1 to 0.3 are good values
@@ -314,7 +314,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * use before adding wheels, this is the default used when adding wheels.
+     * Use before adding wheels, this is the default used when adding wheels.
      * After adding the wheel, use direct wheel access.<br>
      * The damping coefficient for when the suspension is expanding.
      * See the comments for setSuspensionCompression for how to set k.
@@ -325,7 +325,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * the damping coefficient for when the suspension is expanding.
+     * The damping coefficient for when the suspension is expanding.
      * See the comments for setSuspensionCompression for how to set k.
      * @param wheel
      * @param suspensionDamping
@@ -342,7 +342,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * use before adding wheels, this is the default used when adding wheels.
+     * Use before adding wheels, this is the default used when adding wheels.
      * After adding the wheel, use direct wheel access.<br>
      * The stiffness constant for the suspension.  10.0 - Offroad buggy, 50.0 - Sports car, 200.0 - F1 Car
      * @param suspensionStiffness 
@@ -352,7 +352,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * the stiffness constant for the suspension.  10.0 - Offroad buggy, 50.0 - Sports car, 200.0 - F1 Car
+     * The stiffness constant for the suspension.  10.0 - Offroad buggy, 50.0 - Sports car, 200.0 - F1 Car
      * @param wheel
      * @param suspensionStiffness
      */
@@ -361,14 +361,14 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * reset the suspension
+     * Reset the suspension
      */
     public void resetSuspension() {
         vehicle.resetSuspension();
     }
 
     /**
-     * apply the given engine force to all wheels, works continuously
+     * Apply the given engine force to all wheels, works continuously
      * @param force the force
      */
     public void accelerate(float force) {
@@ -378,7 +378,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * apply the given engine force, works continuously
+     * Apply the given engine force, works continuously
      * @param wheel the wheel to apply the force on
      * @param force the force
      */
@@ -387,7 +387,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * set the given steering value to all front wheels (0 = forward)
+     * Set the given steering value to all front wheels (0 = forward)
      * @param value the steering angle of the front wheels (Pi = 360deg)
      */
     public void steer(float value) {
@@ -399,7 +399,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * set the given steering value to the given wheel (0 = forward)
+     * Set the given steering value to the given wheel (0 = forward)
      * @param wheel the wheel to set the steering on
      * @param value the steering angle of the front wheels (Pi = 360deg)
      */
@@ -408,7 +408,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * apply the given brake force to all wheels, works continuously
+     * Apply the given brake force to all wheels, works continuously
      * @param force the force
      */
     public void brake(float force) {
@@ -418,7 +418,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
-     * apply the given brake force, works continuously
+     * Apply the given brake force, works continuously
      * @param wheel the wheel to apply the force on
      * @param force the force
      */

@@ -289,13 +289,20 @@ public class PhysicsNode extends CollisionObject {
         }
     }
 
-    public void getGravity(Vector3f gravity) {
+    public Vector3f getGravity() {
+        return getGravity(null);
+    }
+
+    public Vector3f getGravity(Vector3f gravity) {
+        if (gravity == null) {
+            gravity = new Vector3f();
+        }
         rBody.getGravity(tempVec);
-        Converter.convert(tempVec, gravity);
+        return Converter.convert(tempVec, gravity);
     }
 
     /**
-     * set the gravity of this PhysicsNode
+     * Set the local gravity of this PhysicsNode
      * @param gravity the gravity vector to set
      */
     public void setGravity(Vector3f gravity) {
@@ -697,23 +704,23 @@ public class PhysicsNode extends CollisionObject {
 
         capsule.write(getMass(), "mass", 1.0f);
 
-        Vector3f store = new Vector3f();
-        getGravity(store);
+        capsule.write(collisionShape, "collisionShape", null);
 
-        capsule.write(store, "gravity", Vector3f.ZERO);
-        capsule.write(getFriction(), "friction", 0);
+        capsule.write(getGravity(), "gravity", Vector3f.ZERO);
+        capsule.write(getFriction(), "friction", 0.5f);
         capsule.write(getRestitution(), "restitution", 0);
+        capsule.write(kinematic, "kinematic", false);
+
         capsule.write(constructionInfo.linearDamping, "linearDamping", 0);
         capsule.write(constructionInfo.angularDamping, "angularDamping", 0);
+        capsule.write(constructionInfo.linearSleepingThreshold, "linearSleepingThreshold", 0.8f);
+        capsule.write(constructionInfo.angularSleepingThreshold, "angularSleepingThreshold", 1.0f);
 
-        capsule.write(kinematic, "kinematic", false);
         capsule.write(continuousForce, "continuousForce", Vector3f.ZERO);
         capsule.write(continuousForceLocation, "continuousForceLocation", Vector3f.ZERO);
         capsule.write(continuousTorque, "continuousTorque", Vector3f.ZERO);
         capsule.write(applyForce, "applyForce", false);
         capsule.write(applyTorque, "applyTorque", false);
-
-        capsule.write(collisionShape, "collisionShape", null);
 
         capsule.writeSavableArrayList(joints, "joints", null);
     }
@@ -729,12 +736,13 @@ public class PhysicsNode extends CollisionObject {
         collisionShape = shape;
         rebuildRigidBody();
         setGravity((Vector3f) capsule.readSavable("gravity", Vector3f.ZERO));
-        setFriction(capsule.readFloat("friction", 0));
-        float linearDamping = capsule.readFloat("linearDamping", 0);
-        float angularDamping = capsule.readFloat("angularDamping", 0);
-        setDamping(linearDamping, angularDamping);
-        setRestitution(capsule.readFloat("restitution", 0));
+        setFriction(capsule.readFloat("friction", 0.5f));
         setKinematic(capsule.readBoolean("kinematic", false));
+
+        setRestitution(capsule.readFloat("restitution", 0));
+        setDamping(capsule.readFloat("linearDamping", 0), capsule.readFloat("angularDamping", 0));
+        setSleepingThresholds(capsule.readFloat("linearSleepingThreshold", 0.8f), capsule.readFloat("angularSleepingThreshold", 1.0f));
+
 
         Vector3f continuousForce = (Vector3f) capsule.readSavable("continuousForce", Vector3f.ZERO);
         Vector3f continuousForceLocation = (Vector3f) capsule.readSavable("continuousForceLocation", Vector3f.ZERO);

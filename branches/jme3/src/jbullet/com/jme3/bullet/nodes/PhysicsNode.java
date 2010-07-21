@@ -328,6 +328,24 @@ public class PhysicsNode extends PhysicsCollisionObject {
         rBody.setDamping(linearDamping, angularDamping);
     }
 
+    public void setLinearDamping(float linearDamping){
+        constructionInfo.linearDamping = linearDamping;
+        rBody.setDamping(linearDamping, constructionInfo.angularDamping);
+    }
+
+    public void setAngularDamping(float angularDamping){
+        constructionInfo.angularDamping = angularDamping;
+        rBody.setDamping(constructionInfo.linearDamping, angularDamping);
+    }
+
+    public float getLinearDamping(){
+        return constructionInfo.linearDamping;
+    }
+
+    public float getAngularDamping(){
+        return constructionInfo.angularDamping;
+    }
+
     public float getRestitution() {
         return rBody.getRestitution();
     }
@@ -617,22 +635,9 @@ public class PhysicsNode extends PhysicsCollisionObject {
         rBody.clearForces();
     }
 
-    /**
-     * @return the CollisionShape of this PhysicsNode, to be able to reuse it with
-     * other physics nodes (increases performance)
-     */
-    public CollisionShape getCollisionShape() {
-        return collisionShape;
-    }
-
-    /**
-     * sets a CollisionShape to be used for this PhysicsNode for reusing CollisionShapes
-     * @param collisionShape the CollisionShape to set
-     */
     public void setCollisionShape(CollisionShape collisionShape) {
-        this.collisionShape = collisionShape;
+        super.setCollisionShape(collisionShape);
         rebuildRigidBody();
-//        rebuildBody = true;
     }
 
     /**
@@ -656,6 +661,24 @@ public class PhysicsNode extends PhysicsCollisionObject {
         constructionInfo.linearSleepingThreshold = linear;
         constructionInfo.angularSleepingThreshold = angular;
         rBody.setSleepingThresholds(linear, angular);
+    }
+
+    public void setLinearSleepingThreshold(float linearSleepingThreshold){
+        constructionInfo.linearSleepingThreshold = linearSleepingThreshold;
+        rBody.setSleepingThresholds(linearSleepingThreshold, constructionInfo.angularSleepingThreshold);
+    }
+
+    public void setAngularSleepingThreshold(float angularSleepingThreshold){
+        constructionInfo.angularSleepingThreshold = angularSleepingThreshold;
+        rBody.setSleepingThresholds(constructionInfo.linearSleepingThreshold, angularSleepingThreshold);
+    }
+
+    public float getLinearSleepingThreshold(){
+        return constructionInfo.linearSleepingThreshold;
+    }
+
+    public float getAngularSleepingThreshold(){
+        return constructionInfo.angularSleepingThreshold;
     }
 
     /**

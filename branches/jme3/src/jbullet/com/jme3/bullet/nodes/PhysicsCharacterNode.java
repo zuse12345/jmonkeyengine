@@ -37,7 +37,6 @@ import com.bulletphysics.dynamics.character.KinematicCharacterController;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import com.jme3.bullet.collision.shapes.CollisionShape;
-import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.util.Converter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
@@ -106,14 +105,26 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
         character.setUpAxis(axis);
     }
 
+    public int getUpAxis() {
+        return upAxis;
+    }
+
     public void setFallSpeed(float fallSpeed) {
         this.fallSpeed = fallSpeed;
         character.setFallSpeed(fallSpeed);
     }
 
+    public float getFallSpeed() {
+        return fallSpeed;
+    }
+
     public void setJumpSpeed(float jumpSpeed) {
         this.jumpSpeed = fallSpeed;
         character.setJumpSpeed(jumpSpeed);
+    }
+
+    public float getJumpSpeed() {
+        return jumpSpeed;
     }
 
     //does nothing..
@@ -146,10 +157,11 @@ public class PhysicsCharacterNode extends PhysicsGhostNode {
 
     @Override
     public void setCollisionShape(CollisionShape collisionShape) {
-        if (!(collisionShape instanceof SphereCollisionShape)) {
-            throw (new UnsupportedOperationException("Kinematic character nodes can only have sphere collision shapes!"));
+        if (!(collisionShape.getCShape() instanceof ConvexShape)) {
+            throw (new UnsupportedOperationException("Kinematic character nodes cannot have mesh collision shapes"));
         }
         super.setCollisionShape(collisionShape);
+        character = new KinematicCharacterController(gObject, (ConvexShape) collisionShape.getCShape(), stepHeight);
     }
 
     /**

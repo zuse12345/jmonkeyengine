@@ -100,6 +100,12 @@ public abstract class PhysicsCollisionObject extends Node {
     public void updatePhysicsState() {
     }
 
+    /**
+     * Sets a CollisionShape to this physics object, note that the object should
+     * not be in the physics space when adding a new collision shape as it is rebuilt
+     * on the physics side.
+     * @param collisionShape the CollisionShape to set
+     */
     public void setCollisionShape(CollisionShape collisionShape) {
         this.collisionShape = collisionShape;
         if (debugShape != null) {
@@ -108,7 +114,8 @@ public abstract class PhysicsCollisionObject extends Node {
     }
 
     /**
-     * @return the collisionGroup
+     * @return the CollisionShape of this PhysicsNode, to be able to reuse it with
+     * other physics nodes (increases performance)
      */
     public int getCollisionGroup() {
         return collisionGroup;

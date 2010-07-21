@@ -70,6 +70,7 @@ public class PhysicsGhostNode extends PhysicsCollisionObject {
     protected com.jme3.math.Transform jmeTrans = new com.jme3.math.Transform();
     protected javax.vecmath.Quat4f tempRot = new javax.vecmath.Quat4f();
     // Linked list should be fine, because it won't grow big and Arraylist would acquire a new array each update
+    // For detached multithreading this list should be thread safe -- normen 07.21.2010
     private List<PhysicsCollisionObject> overlappingObjects = new LinkedList<PhysicsCollisionObject>();
 
     public PhysicsGhostNode() {

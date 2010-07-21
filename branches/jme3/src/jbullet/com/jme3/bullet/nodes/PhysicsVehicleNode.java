@@ -116,6 +116,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
         }
         rayCaster = new DefaultVehicleRaycaster(PhysicsSpace.getPhysicsSpace().getDynamicsWorld());
         vehicle = new RaycastVehicle(tuning, rBody, rayCaster);
+        vehicle.setCoordinateSystem(0, 1, 2);
         if (wheels != null) {
             for (PhysicsVehicleWheel wheel : wheels) {
                 wheel.setWheelInfo(vehicle.addWheel(Converter.convert(wheel.getLocation()), Converter.convert(wheel.getDirection()), Converter.convert(wheel.getAxle()),
@@ -129,7 +130,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
      * Add a wheel to this vehicle
      * @param connectionPoint The starting point of the ray, where the suspension connects to the chassis (chassis space)
      * @param direction the direction of the wheel (should be -Y / 0,-1,0 for a normal car)
-     * @param axle The axis of the wheel (should be -X / -1,0,0 for a normal car)
+     * @param axle The axis of the wheel, pointing right in vehicle direction (should be -X / -1,0,0 for a normal car)
      * @param suspensionRestLength The current length of the suspension (metres)
      * @param wheelRadius the wheel radius
      * @param isFrontWheel sets if this wheel is a front wheel (steering)
@@ -144,7 +145,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
      * @param spat the wheel Geometry
      * @param connectionPoint The starting point of the ray, where the suspension connects to the chassis (chassis space)
      * @param direction the direction of the wheel (should be -Y / 0,-1,0 for a normal car)
-     * @param axle The axis of the wheel (should be -X / -1,0,0 for a normal car)
+     * @param axle The axis of the wheel, pointing right in vehicle direction (should be -X / -1,0,0 for a normal car)
      * @param suspensionRestLength The current length of the suspension (metres)
      * @param wheelRadius the wheel radius
      * @param isFrontWheel sets if this wheel is a front wheel (steering)

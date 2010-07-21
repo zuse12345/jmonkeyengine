@@ -465,7 +465,7 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
                 addNode(physicsNode);
             }
             //add joints
-            List<PhysicsJoint> joints = ((PhysicsNode) node).getJoints();
+            List<PhysicsJoint> joints = physicsNode.getJoints();
             for (Iterator<PhysicsJoint> it1 = joints.iterator(); it1.hasNext();) {
                 PhysicsJoint physicsJoint = it1.next();
                 //add connected physicsnodes if they are not already added
@@ -487,6 +487,44 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
             Spatial spatial = it.next();
             if (spatial instanceof Node) {
                 addAll((Node) spatial);
+            }
+        }
+    }
+
+    /**
+     * Removes all physics subnodes and joints in the given root node from the physics space
+     * (e.g. before saving to disk)
+     * @param node the rootnode containing the physics objects
+     */
+    public void removeAll(Node node) {
+        if (node instanceof PhysicsNode) {
+            PhysicsNode physicsNode = (PhysicsNode) node;
+            if (physicsNodes.containsValue(physicsNode)) {
+                removeNode(physicsNode);
+            }
+            //remove joints
+            List<PhysicsJoint> joints = physicsNode.getJoints();
+            for (Iterator<PhysicsJoint> it1 = joints.iterator(); it1.hasNext();) {
+                PhysicsJoint physicsJoint = it1.next();
+                //add connected physicsnodes if they are not already added
+                if (physicsNodes.containsValue(physicsJoint.getNodeA())) {
+                    removeNode(physicsJoint.getNodeA());
+                }
+                if (physicsNodes.containsValue(physicsJoint.getNodeB())) {
+                    removeNode(physicsJoint.getNodeB());
+                }
+                removeJoint(physicsJoint);
+            }
+        }
+        if (node instanceof PhysicsGhostNode) {
+            removeGhostNode((PhysicsGhostNode) node);
+        }
+        //recursion
+        List<Spatial> children = node.getChildren();
+        for (Iterator<Spatial> it = children.iterator(); it.hasNext();) {
+            Spatial spatial = it.next();
+            if (spatial instanceof Node) {
+                removeAll((Node) spatial);
             }
         }
     }

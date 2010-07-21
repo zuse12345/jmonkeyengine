@@ -281,7 +281,8 @@ public class PhysicsNode extends CollisionObject {
     }
 
     public void getGravity(Vector3f gravity) {
-        rBody.setGravity(Converter.convert(gravity, tempVec));
+        rBody.getGravity(tempVec);
+        Converter.convert(tempVec, gravity);
     }
 
     /**
@@ -289,8 +290,7 @@ public class PhysicsNode extends CollisionObject {
      * @param gravity the gravity vector to set
      */
     public void setGravity(Vector3f gravity) {
-        rBody.getGravity(tempVec);
-        Converter.convert(tempVec, gravity);
+        rBody.setGravity(Converter.convert(gravity, tempVec));
     }
 
     public float getFriction() {

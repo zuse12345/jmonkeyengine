@@ -19,9 +19,19 @@ import com.jme3.system.JmeSystem;
 import com.jme3.util.BufferUtils;
 
 /**
- * <code>SimpleApplication</code> extends the <code>Application</code> class
- * to provide default functionality like a first-person camera,
+ * <code>SimpleApplication</code> extends the {@link com.jme3.app.Application}
+ * class to provide default functionality like a first-person camera,
  * and an accessible root node that is updated and rendered regularly.
+ * Additionally, <code>SimpleApplication</code> will display a statistics view
+ * using the {@link com.jme3.app.StatsView} class. It will display
+ * the current frames-per-second value on-screen in addition to the statistics.
+ * Several keys have special functionality in <code>SimpleApplication</code>:<br/>
+ *
+ * <table>
+ * <tr><td>Esc</td><td>- Close the application</td></tr>
+ * <tr><td>C</td><td>- Display the camera position and rotation in the console.</td></tr>
+ * <tr><td>M</td><td>- Display memory usage in the console.</td></tr>
+ * </table>
  */
 public abstract class SimpleApplication extends Application {
 

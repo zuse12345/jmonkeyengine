@@ -43,7 +43,8 @@ import java.util.logging.Logger;
 
 /**
  * <code>AppTask</code> is used in <code>AppTaskQueue</code> to manage tasks that have
- * yet to be accomplished.
+ * yet to be accomplished. The AppTask system is used to execute tasks either
+ * in the OpenGL/Render thread, or outside of it.
  *
  * @author Matthew D. Hicks, lazloh
  */

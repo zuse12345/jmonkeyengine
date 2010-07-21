@@ -76,8 +76,6 @@ public class TestPhysicsReadWrite extends SimpleBulletApplication{
         physicsSphere.setName("physicssphere");
         physicsSphere.setLocalTranslation(new Vector3f(3,6,0));
         physicsSphere.attachDebugShape(getAssetManager());
-        physicsSphere.updateGeometricState();
-        physicsSphere.updateModelBound();
         physicsRootNode.attachChild(physicsSphere);
         getPhysicsSpace().add(physicsSphere);
 
@@ -85,8 +83,6 @@ public class TestPhysicsReadWrite extends SimpleBulletApplication{
         PhysicsNode physicsSphere2=new PhysicsNode(physicsSphere.getCollisionShape(),1);
         physicsSphere2.setLocalTranslation(new Vector3f(4,8,0));
         physicsSphere2.attachDebugShape(getAssetManager());
-        physicsSphere2.updateGeometricState();
-        physicsSphere2.updateModelBound();
         physicsRootNode.attachChild(physicsSphere2);
         getPhysicsSpace().add(physicsSphere2);
 
@@ -95,8 +91,6 @@ public class TestPhysicsReadWrite extends SimpleBulletApplication{
         physicsBox.setFriction(0.1f);
         physicsBox.setLocalTranslation(new Vector3f(.6f,4,.5f));
         physicsBox.attachDebugShape(getAssetManager());
-        physicsBox.updateGeometricState();
-        physicsBox.updateModelBound();
         physicsRootNode.attachChild(physicsBox);
         getPhysicsSpace().add(physicsBox);
 
@@ -118,8 +112,6 @@ public class TestPhysicsReadWrite extends SimpleBulletApplication{
         PhysicsNode node3=new PhysicsNode(new MeshCollisionShape(new Box(Vector3f.ZERO,100f,0.2f,100f)),0);
         node3.setLocalTranslation(new Vector3f(0f,-6,0f));
         node3.attachDebugShape(getAssetManager());
-        node3.updateModelBound();
-        node3.updateGeometricState();
         physicsRootNode.attachChild(node3);
         getPhysicsSpace().add(node3);
 
@@ -127,8 +119,6 @@ public class TestPhysicsReadWrite extends SimpleBulletApplication{
 //        PhysicsPoint2PointJoint joint=new PhysicsPoint2PointJoint(physicsSphere, physicsBox, new Vector3f(-2,0,0), new Vector3f(2,0,0));
         PhysicsHingeJoint joint=new PhysicsHingeJoint(physicsSphere, physicsBox, new Vector3f(-2,0,0), new Vector3f(2,0,0), Vector3f.UNIT_Z,Vector3f.UNIT_Z);
         getPhysicsSpace().add(joint);
-
-        rootNode.updateGeometricState();
 
         //save and load the physicsRootNode
         try {

@@ -6,10 +6,27 @@ import com.jme3.font.BitmapText;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.Statistics;
 import com.jme3.renderer.ViewPort;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.Control;
 
+/**
+ * The <code>StatsView</code> provides a heads-up display (HUD) of various
+ * statistics of rendering. The data is retrieved every frame from a
+ * {@link com.jme3.renderer.Statistics} and then displayed on screen.<br/>
+ * <br/>
+ * Usage:<br/>
+ * To use the stats view, you need to retrieve the
+ * {@link com.jme3.renderer.Statistics} from the
+ * {@link com.jme3.renderer.Renderer} used by the application. Then, attach
+ * the <code>StatsView</code> to the scene graph.<br/>
+ * <code><br/>
+ * Statistics stats = renderer.getStatistics();<br/>
+ * StatsView statsView = new StatsView("MyStats", assetManager, stats);<br/>
+ * rootNode.attachChild(statsView);<br/>
+ * </code>
+ */
 public class StatsView extends Node implements Control {
 
     private BitmapText[] labels;
@@ -20,6 +37,10 @@ public class StatsView extends Node implements Control {
 
     public StatsView(String name, AssetManager manager, Statistics stats){
         super(name);
+
+        setQueueBucket(Bucket.Gui);
+        setCullHint(CullHint.Never);
+
         statistics = stats;
 
         statLabels = statistics.getLabels();

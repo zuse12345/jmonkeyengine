@@ -9,7 +9,6 @@ import com.jme3.audio.AudioStream;
 import com.jme3.audio.Environment;
 import com.jme3.audio.Listener;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.Camera;
 import com.jme3.util.BufferUtils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -22,6 +21,10 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.openal.AL;
 
 import org.lwjgl.openal.AL11;
+import org.lwjgl.openal.ALC10;
+import org.lwjgl.openal.ALCdevice;
+import org.lwjgl.openal.EFX10;
+import org.lwjgl.openal.OpenALException;
 
 import static org.lwjgl.openal.AL10.*;
 
@@ -45,6 +48,11 @@ public class LwjglAudioRenderer implements AudioRenderer {
     private Listener listener;
     private boolean audioDisabled = false;
 
+    private boolean supportEfx = false;
+    private int auxSends = 0;
+    private int reverbFx = -1;
+    private int reverbFxSlot = -1;
+
     public LwjglAudioRenderer(){
         nativeBuf.order(ByteOrder.nativeOrder());
     }
@@ -52,6 +60,10 @@ public class LwjglAudioRenderer implements AudioRenderer {
     public void initialize(){
         try{
             AL.create();
+        }catch (OpenALException ex){
+            logger.log(Level.SEVERE, "Failed to load audio library", ex);
+            audioDisabled = true;
+            return;
         }catch (LWJGLException ex){
             logger.log(Level.SEVERE, "Failed to load audio library", ex);
             audioDisabled = true;
@@ -69,6 +81,20 @@ public class LwjglAudioRenderer implements AudioRenderer {
         ib.clear();
         ib.get(channels);
         ib.clear();
+
+        ALCdevice device = AL.getDevice();
+        supportEfx = ALC10.alcIsExtensionPresent(device, "ALC_EXT_EFX");
+        logger.finer("Audio EFX support: " + supportEfx);
+
+        if (supportEfx){
+            ib.position(0).limit(1);
+            ALC10.alcGetInteger(device, EFX10.ALC_EFX_MAJOR_VERSION, ib);
+            int major = ib.get(0);
+            ib.position(0).limit(1);
+            ALC10.alcGetInteger(device, EFX10.ALC_EFX_MINOR_VERSION, ib);
+            int minor = ib.get(0);
+            logger.info("Audio effect extension version: "+major+"."+minor);
+        }
     }
 
     public void cleanup(){

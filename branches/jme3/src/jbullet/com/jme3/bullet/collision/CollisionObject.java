@@ -57,6 +57,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Cylinder;
 import com.jme3.scene.shape.Sphere;
+import com.jme3.util.TempVars;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -256,7 +257,9 @@ public abstract class CollisionObject extends Node {
                 CollisionShape collisionShape = childCollisionShape.shape;
                 Geometry geometry = createDebugShape(collisionShape);
                 geometry.setLocalTranslation(childCollisionShape.location);
-                geometry.setLocalRotation(childCollisionShape.rotation);
+                TempVars.get().tempMat3.set(geometry.getLocalRotation());
+                childCollisionShape.rotation.add(TempVars.get().tempMat3);
+                geometry.setLocalRotation(TempVars.get().tempMat3);
                 node.attachChild(geometry);
             }
             debugShape = node;
@@ -309,18 +312,18 @@ public abstract class CollisionObject extends Node {
             Vector3f halfExtents = cylinderCollisionShape.getHalfExtents();
             int axis = cylinderCollisionShape.getAxis();
             Mesh cylinder = null;
-            //TODO: bestter debug shape for cylinder
             switch (axis) {
                 case 0:
-                    cylinder = new Box(Vector3f.ZERO, halfExtents.x, halfExtents.y, halfExtents.z);
+                    cylinder = new Cylinder(16, 16, halfExtents.x, halfExtents.z * 2, true);
+                    geom.setLocalRotation(new Quaternion(new float[]{FastMath.HALF_PI,0,FastMath.HALF_PI}));
                     break;
                 case 1:
-                    cylinder = new Box(Vector3f.ZERO, halfExtents.x, halfExtents.y, halfExtents.z);
+                    cylinder = new Cylinder(16, 16, halfExtents.x, halfExtents.z * 2, true);
+                    geom.setLocalRotation(new Quaternion(new float[]{FastMath.HALF_PI,0,0}));
                     break;
                 case 2:
-                    cylinder = new Cylinder(16, 16, halfExtents.x, halfExtents.z * 2);
+                    cylinder = new Cylinder(16, 16, halfExtents.x, halfExtents.z * 2, true);
                     break;
-
             }
             geom.setMesh(cylinder);
             geom.setLocalScale(scale);
@@ -336,13 +339,15 @@ public abstract class CollisionObject extends Node {
             //TODO: better debug shape for capsule
             switch (axis) {
                 case 0:
-                    cylinder = new Box(Vector3f.ZERO, (height / 2.0f) + radius, radius, radius);
+                    cylinder = new Cylinder(16, 16, radius, height + (radius*2), true);
+                    geom.setLocalRotation(new Quaternion(new float[]{FastMath.HALF_PI,0,FastMath.HALF_PI}));
                     break;
                 case 1:
-                    cylinder = new Box(Vector3f.ZERO, radius, (height / 2.0f) + radius, radius);
+                    cylinder = new Cylinder(16, 16, radius, height + (radius*2), true);
+                    geom.setLocalRotation(new Quaternion(new float[]{FastMath.HALF_PI,0,0}));
                     break;
                 case 2:
-                    cylinder = new Cylinder(16, 16, radius, height + (radius*2));
+                    cylinder = new Cylinder(16, 16, radius, height + (radius*2), true);
                     break;
             }
 

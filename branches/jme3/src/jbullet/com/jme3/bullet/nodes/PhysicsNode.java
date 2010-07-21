@@ -276,8 +276,7 @@ public class PhysicsNode extends CollisionObject {
      */
     public void setMass(float mass) {
         this.mass = mass;
-        rebuildRigidBody();
-//        rebuildBody = true;
+        rBody.setMassProps(mass, localInertia);
     }
 
     public void getGravity(Vector3f gravity) {

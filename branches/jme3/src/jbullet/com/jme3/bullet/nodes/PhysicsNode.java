@@ -277,6 +277,11 @@ public class PhysicsNode extends CollisionObject {
     public void setMass(float mass) {
         this.mass = mass;
         rBody.setMassProps(mass, localInertia);
+        if (mass == 0.0f) {
+            rBody.setCollisionFlags(rBody.getCollisionFlags() | CollisionFlags.STATIC_OBJECT);
+        } else {
+            rBody.setCollisionFlags(rBody.getCollisionFlags() & ~CollisionFlags.STATIC_OBJECT);
+        }
     }
 
     public void getGravity(Vector3f gravity) {

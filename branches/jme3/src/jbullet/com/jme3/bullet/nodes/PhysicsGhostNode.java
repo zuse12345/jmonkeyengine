@@ -39,7 +39,7 @@ import com.jme3.math.Matrix3f;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
-import com.jme3.bullet.collision.CollisionObject;
+import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
@@ -60,7 +60,7 @@ import java.util.List;
  * collision sensors/triggers, explosions etc.<br>
  * @author normenhansen
  */
-public class PhysicsGhostNode extends CollisionObject {
+public class PhysicsGhostNode extends PhysicsCollisionObject {
 
     protected PairCachingGhostObject gObject;
     protected boolean locationDirty = false;
@@ -70,7 +70,7 @@ public class PhysicsGhostNode extends CollisionObject {
     protected com.jme3.math.Transform jmeTrans = new com.jme3.math.Transform();
     protected javax.vecmath.Quat4f tempRot = new javax.vecmath.Quat4f();
     // Linked list should be fine, because it won't grow big and Arraylist would acquire a new array each update
-    private List<CollisionObject> overlappingObjects = new LinkedList<CollisionObject>();
+    private List<PhysicsCollisionObject> overlappingObjects = new LinkedList<PhysicsCollisionObject>();
 
     public PhysicsGhostNode() {
     }
@@ -218,7 +218,7 @@ public class PhysicsGhostNode extends CollisionObject {
      * They could be both regular PhysicsNodes or PhysicsGhostNode.
      * @return All CollisionObjects overlapping with this GhostNode.
      */
-    public List<CollisionObject> getOverlappingObjects() {
+    public List<PhysicsCollisionObject> getOverlappingObjects() {
         return overlappingObjects;
     }
 
@@ -235,7 +235,7 @@ public class PhysicsGhostNode extends CollisionObject {
      * @param index The index of the overlapping Node to retrieve.
      * @return The Overlapping CollisionObject at the given index.
      */
-    public CollisionObject getOverlapping(int index) {
+    public PhysicsCollisionObject getOverlapping(int index) {
         return overlappingObjects.get(index);
     }
 

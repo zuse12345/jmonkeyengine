@@ -1,9 +1,9 @@
 package jme3test.bullet;
 
 import com.jme3.app.SimpleBulletApplication;
-import com.jme3.bullet.collision.CollisionEvent;
-import com.jme3.bullet.collision.CollisionListener;
-import com.jme3.bullet.collision.CollisionObject;
+import com.jme3.bullet.collision.PhysicsCollisionEvent;
+import com.jme3.bullet.collision.PhysicsCollisionListener;
+import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
@@ -23,7 +23,7 @@ import com.jme3.scene.shape.Sphere.TextureMode;
  *
  * @author normenhansen
  */
-public class TestCollisionListener extends SimpleBulletApplication implements ActionListener, CollisionListener {
+public class TestCollisionListener extends SimpleBulletApplication implements ActionListener, PhysicsCollisionListener {
 
     private Material mat;
     private static final Sphere bullet;
@@ -104,7 +104,7 @@ public class TestCollisionListener extends SimpleBulletApplication implements Ac
         //TODO: add render code
     }
 
-    public void collision(CollisionEvent event) {
+    public void collision(PhysicsCollisionEvent event) {
         if ("box".equals(event.getNodeA().getName()) || "box".equals(event.getNodeB().getName())) {
             if ("bullet".equals(event.getNodeA().getName()) || "bullet".equals(event.getNodeB().getName())) {
                 fpsText.setText("You hit the box!");
@@ -117,7 +117,7 @@ public class TestCollisionListener extends SimpleBulletApplication implements Ac
         }
     }
 
-    public boolean collide(CollisionObject nodeA, CollisionObject nodeB) {
+    public boolean collide(PhysicsCollisionObject nodeA, PhysicsCollisionObject nodeB) {
         //group 2 only randomly collides
         if (Math.random() < 0.5f) {
             return true;

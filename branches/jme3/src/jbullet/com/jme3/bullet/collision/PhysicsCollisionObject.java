@@ -68,7 +68,7 @@ import java.util.logging.Logger;
  * Base class for collision objects (PhysicsNode, PhysicsGhostNode)
  * @author normenhansen
  */
-public abstract class CollisionObject extends Node {
+public abstract class PhysicsCollisionObject extends Node {
 
     protected Spatial debugShape;
     protected CollisionShape collisionShape;

@@ -59,9 +59,9 @@ import com.jme3.export.JmeImporter;
 import com.jme3.math.Vector3f;
 //import com.jme3.util.GameTaskQueue;
 //import com.jme3.util.GameTaskQueueManager;
-import com.jme3.bullet.collision.CollisionEvent;
-import com.jme3.bullet.collision.CollisionListener;
-import com.jme3.bullet.collision.CollisionObject;
+import com.jme3.bullet.collision.PhysicsCollisionEvent;
+import com.jme3.bullet.collision.PhysicsCollisionListener;
+import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.joints.PhysicsJoint;
 import com.jme3.bullet.nodes.PhysicsGhostNode;
 import com.jme3.bullet.nodes.PhysicsCharacterNode;
@@ -119,9 +119,9 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
     private Map<GhostObject, PhysicsGhostNode> physicsGhostNodes = new ConcurrentHashMap<GhostObject, PhysicsGhostNode>();
     private Map<RigidBody, PhysicsNode> physicsNodes = new ConcurrentHashMap<RigidBody, PhysicsNode>();
     private List<PhysicsJoint> physicsJoints = new LinkedList<PhysicsJoint>();
-    private List<CollisionListener> collisionListeners = new LinkedList<CollisionListener>();
-    private List<CollisionEvent> collisionEvents = new LinkedList<CollisionEvent>();
-    private Map<Integer, CollisionListener> collisionGroupListeners = new ConcurrentHashMap<Integer, CollisionListener>();
+    private List<PhysicsCollisionListener> collisionListeners = new LinkedList<PhysicsCollisionListener>();
+    private List<PhysicsCollisionEvent> collisionEvents = new LinkedList<PhysicsCollisionEvent>();
+    private Map<Integer, PhysicsCollisionListener> collisionGroupListeners = new ConcurrentHashMap<Integer, PhysicsCollisionListener>();
     private Vector3f worldMin = new Vector3f(-10000f, -10000f, -10000f);
     private Vector3f worldMax = new Vector3f(10000f, 10000f, 10000f);
     private float accuracy = 1f / 60f;
@@ -207,7 +207,7 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
         BulletGlobals.setContactProcessedCallback(new ContactProcessedCallback() {
 
             public boolean contactProcessed(ManifoldPoint cp, Object body0, Object body1) {
-                CollisionObject node = null, node1 = null;
+                PhysicsCollisionObject node = null, node1 = null;
                 if (body0 instanceof RigidBody) {
                     RigidBody rBody = (RigidBody) body0;
                     node = (PhysicsNode) rBody.getUserPointer();
@@ -223,7 +223,7 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
                     node1 = physicsGhostNodes.get(rBody);
                 }
                 if (node != null && node1 != null) {
-                    collisionEvents.add(new CollisionEvent(CollisionEvent.TYPE_PROCESSED, node, node1, cp));
+                    collisionEvents.add(new PhysicsCollisionEvent(PhysicsCollisionEvent.TYPE_PROCESSED, node, node1, cp));
                 } else {
                     System.out.println("error finding node during collision");
                 }
@@ -250,12 +250,12 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
             com.bulletphysics.collision.dispatch.CollisionObject colOb = (com.bulletphysics.collision.dispatch.CollisionObject) bp.clientObject;
             com.bulletphysics.collision.dispatch.CollisionObject colOb1 = (com.bulletphysics.collision.dispatch.CollisionObject) bp1.clientObject;
             assert (colOb.getUserPointer() != null && colOb1.getUserPointer() != null);
-            CollisionObject collisionObject = (CollisionObject) colOb.getUserPointer();
-            CollisionObject collisionObject1 = (CollisionObject) colOb1.getUserPointer();
+            PhysicsCollisionObject collisionObject = (PhysicsCollisionObject) colOb.getUserPointer();
+            PhysicsCollisionObject collisionObject1 = (PhysicsCollisionObject) colOb1.getUserPointer();
             if ((collisionObject.getCollideWithGroups() & collisionObject1.getCollisionGroup()) > 0
                     || (collisionObject1.getCollideWithGroups() & collisionObject.getCollisionGroup()) > 0) {
-                CollisionListener listener = collisionGroupListeners.get(collisionObject.getCollisionGroup());
-                CollisionListener listener1 = collisionGroupListeners.get(collisionObject1.getCollisionGroup());
+                PhysicsCollisionListener listener = collisionGroupListeners.get(collisionObject.getCollisionGroup());
+                PhysicsCollisionListener listener1 = collisionGroupListeners.get(collisionObject1.getCollisionGroup());
                 if (listener != null) {
                     return listener.collide(collisionObject, collisionObject1);
                 } else if (listener1 != null) {
@@ -320,7 +320,7 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
         //sync ghostnodes, with overlapping Objects.
         for (Entry<GhostObject, PhysicsGhostNode> entry : physicsGhostNodes.entrySet()) {
             PhysicsGhostNode node = entry.getValue();
-            List<CollisionObject> overlappingObjs = node.getOverlappingObjects();
+            List<PhysicsCollisionObject> overlappingObjs = node.getOverlappingObjects();
             overlappingObjs.clear(); // <-- clear from old values.
             for (com.bulletphysics.collision.dispatch.CollisionObject collObj : entry.getKey().getOverlappingPairs()) {
                 if (collObj instanceof GhostObject) {
@@ -342,8 +342,8 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
 
     private void distributeEvents() {
         //add collision callbacks
-        for (CollisionListener listener : collisionListeners) {
-            for (CollisionEvent event : collisionEvents) {
+        for (PhysicsCollisionListener listener : collisionListeners) {
+            for (PhysicsCollisionEvent event : collisionEvents) {
                 listener.collision(event);
             }
         }
@@ -587,7 +587,7 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
      * Adds a CollisionListener that will be informed about collision events
      * @param listener the CollisionListener to add
      */
-    public void addCollisionListener(CollisionListener listener) {
+    public void addCollisionListener(PhysicsCollisionListener listener) {
         collisionListeners.add(listener);
     }
 
@@ -595,7 +595,7 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
      * Removes a CollisionListener from the list
      * @param listener the CollisionListener to remove
      */
-    public void removeCollisionListener(CollisionListener listener) {
+    public void removeCollisionListener(PhysicsCollisionListener listener) {
         collisionListeners.remove(listener);
     }
 
@@ -605,7 +605,7 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
      * @param listener
      * @param collisionGroup
      */
-    public void addCollisionGroupListener(CollisionListener listener, int collisionGroup) {
+    public void addCollisionGroupListener(PhysicsCollisionListener listener, int collisionGroup) {
         collisionGroupListeners.put(collisionGroup, listener);
     }
 

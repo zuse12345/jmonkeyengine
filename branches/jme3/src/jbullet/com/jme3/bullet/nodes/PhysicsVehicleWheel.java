@@ -35,7 +35,7 @@ import com.bulletphysics.dynamics.RigidBody;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
-import com.jme3.bullet.collision.CollisionObject;
+import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.util.Converter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
@@ -291,7 +291,7 @@ public class PhysicsVehicleWheel extends Node {
      * returns the object this wheel is in contact with or null if no contact
      * @return the CollisionObject (PhysicsNode, PhysicsGhostNode)
      */
-    public CollisionObject getGroundObject() {
+    public PhysicsCollisionObject getGroundObject() {
         if (wheelInfo.raycastInfo.groundObject == null) {
             return null;
         } else if (wheelInfo.raycastInfo.groundObject instanceof RigidBody) {

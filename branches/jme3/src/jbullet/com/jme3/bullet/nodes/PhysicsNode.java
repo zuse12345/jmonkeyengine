@@ -38,7 +38,7 @@ import com.bulletphysics.linearmath.Transform;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import com.jme3.bullet.PhysicsSpace;
-import com.jme3.bullet.collision.CollisionObject;
+import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.joints.PhysicsJoint;
@@ -58,7 +58,7 @@ import java.util.concurrent.Callable;
  * <p>PhysicsNode - Basic physics object</p>
  * @author normenhansen
  */
-public class PhysicsNode extends CollisionObject {
+public class PhysicsNode extends PhysicsCollisionObject {
 
     protected RigidBodyConstructionInfo constructionInfo;
     protected RigidBody rBody;

@@ -35,13 +35,13 @@ package com.jme3.bullet.collision;
  * Interface for Objects that want to be informed about CollisionEvents
  * @author normenhansen
  */
-public interface CollisionListener {
+public interface PhysicsCollisionListener {
 
     /**
      * Called when a collision happens in the PhysicsSpace
      * @param event the CollisionEvent
      */
-    public void collision(CollisionEvent event);
+    public void collision(PhysicsCollisionEvent event);
 
     /**
      * Called when two physics objects of the registered group are about to collide<br>
@@ -50,5 +50,5 @@ public interface CollisionListener {
      * @param nodeB CollisionObject #2
      * @return true if PhysicsNode should collide, false otherwise
      */
-    public boolean collide(CollisionObject nodeA, CollisionObject nodeB);
+    public boolean collide(PhysicsCollisionObject nodeA, PhysicsCollisionObject nodeB);
 }

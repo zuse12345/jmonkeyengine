@@ -40,17 +40,17 @@ import java.util.EventObject;
  * A CollisionEvent stores all information about a collision in the PhysicsWorld
  * @author normenhansen
  */
-public class CollisionEvent extends EventObject{
+public class PhysicsCollisionEvent extends EventObject{
     public static final int TYPE_ADDED=0;
     public static final int TYPE_PROCESSED=1;
     public static final int TYPE_DESTROYED=1;
     private int type;
-    private CollisionObject nodeA;
-    private CollisionObject nodeB;
+    private PhysicsCollisionObject nodeA;
+    private PhysicsCollisionObject nodeB;
 
     private ManifoldPoint cp;
 
-    public CollisionEvent(int type, CollisionObject source, CollisionObject nodeB, ManifoldPoint cp) {
+    public PhysicsCollisionEvent(int type, PhysicsCollisionObject source, PhysicsCollisionObject nodeB, ManifoldPoint cp) {
         super(source);
         this.type=type;
         this.nodeA=source;
@@ -62,11 +62,11 @@ public class CollisionEvent extends EventObject{
         return type;
     }
 
-    public CollisionObject getNodeA() {
+    public PhysicsCollisionObject getNodeA() {
         return nodeA;
     }
 
-    public CollisionObject getNodeB() {
+    public PhysicsCollisionObject getNodeB() {
         return nodeB;
     }
 

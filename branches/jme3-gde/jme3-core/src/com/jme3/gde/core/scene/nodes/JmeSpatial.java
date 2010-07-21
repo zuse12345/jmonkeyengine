@@ -49,9 +49,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
@@ -59,7 +56,6 @@ import org.openide.actions.PasteAction;
 import org.openide.actions.RenameAction;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
@@ -323,6 +319,21 @@ public class JmeSpatial extends AbstractNode {
             }
         };
         return trans;
+    }
+
+    /**
+     * returns the PropertySet with the given name (mostly Class.name)
+     * @param name
+     * @return The PropertySet or null if no PropertySet by that name exists
+     */
+    public PropertySet getPropertySet(String name){
+        for (int i = 0; i < getPropertySets().length; i++) {
+            PropertySet propertySet = getPropertySets()[i];
+            if(propertySet.getName().equals(name)){
+                return propertySet;
+            }
+        }
+        return null;
     }
 
     @Override

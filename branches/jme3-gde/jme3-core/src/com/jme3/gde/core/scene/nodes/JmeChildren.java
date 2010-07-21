@@ -31,6 +31,12 @@
  */
 package com.jme3.gde.core.scene.nodes;
 
+import com.jme3.bullet.collision.PhysicsCollisionObject;
+import com.jme3.bullet.nodes.PhysicsCharacterNode;
+import com.jme3.bullet.nodes.PhysicsGhostNode;
+import com.jme3.bullet.nodes.PhysicsNode;
+import com.jme3.bullet.nodes.PhysicsVehicleNode;
+import com.jme3.bullet.nodes.PhysicsVehicleWheel;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.font.BitmapText;
 import com.jme3.gde.core.scene.SceneApplication;
@@ -118,9 +124,28 @@ public class JmeChildren extends Children.Keys<Object> {
 
     @Override
     protected Node[] createNodes(Object key) {
+        //TODO: replace by some lookup where JmeSpatials register themselves..
         if (key instanceof Spatial) {
             JmeChildren factory = new JmeChildren((Spatial) key);
             factory.setCookie(cookie);
+            if (key instanceof PhysicsVehicleNode) {
+                return new Node[]{new JmePhysicsVehicleNode((PhysicsVehicleNode) key, factory).setSaveCookie(cookie)};
+            }
+            if (key instanceof PhysicsNode) {
+                return new Node[]{new JmePhysicsNode((PhysicsNode) key, factory).setSaveCookie(cookie)};
+            }
+            if (key instanceof PhysicsCharacterNode) {
+                return new Node[]{new JmePhysicsGhostNode((PhysicsGhostNode) key, factory).setSaveCookie(cookie)};
+            }
+            if (key instanceof PhysicsGhostNode) {
+                return new Node[]{new JmePhysicsGhostNode((PhysicsGhostNode) key, factory).setSaveCookie(cookie)};
+            }
+            if (key instanceof PhysicsCollisionObject) {
+                return new Node[]{new JmePhysicsCollisionObject((PhysicsCollisionObject) key, factory).setSaveCookie(cookie)};
+            }
+            if (key instanceof PhysicsVehicleWheel) {
+                return new Node[]{new JmePhysicsVehicleWheel((PhysicsVehicleWheel) key, factory).setSaveCookie(cookie)};
+            }
             if (key instanceof com.jme3.audio.AudioNode) {
                 return new Node[]{new JmeAudioNode((com.jme3.audio.AudioNode) key, factory).setSaveCookie(cookie)};
             }

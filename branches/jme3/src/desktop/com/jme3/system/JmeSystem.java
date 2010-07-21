@@ -276,28 +276,28 @@ public class JmeSystem {
             return;
         
         initialized = true;
-        try {
-            if (!lowPermissions){
-                // can only modify logging settings
-                // if permissions are available
-
-                JmeFormatter formatter = new JmeFormatter();
-                Handler fileHandler = new FileHandler("jme.log");
-                fileHandler.setFormatter(formatter);
-                Logger.getLogger("").addHandler(fileHandler);
-
-                Handler consoleHandler = new ConsoleHandler();
-                consoleHandler.setFormatter(formatter);
-                Logger.getLogger("").removeHandler(Logger.getLogger("").getHandlers()[0]);
-                Logger.getLogger("").addHandler(consoleHandler);
-
-                Logger.getLogger("com.jme3").setLevel(Level.FINEST);
-            }
-        } catch (IOException ex){
-            logger.log(Level.SEVERE, "I/O Error while creating log file", ex);
-        } catch (SecurityException ex){
-            logger.log(Level.SEVERE, "Security error in creating log file", ex);
-        }
+//        try {
+//            if (!lowPermissions){
+//                // can only modify logging settings
+//                // if permissions are available
+//
+//                JmeFormatter formatter = new JmeFormatter();
+//                Handler fileHandler = new FileHandler("jme.log");
+//                fileHandler.setFormatter(formatter);
+//                Logger.getLogger("").addHandler(fileHandler);
+//
+//                Handler consoleHandler = new ConsoleHandler();
+//                consoleHandler.setFormatter(formatter);
+//                Logger.getLogger("").removeHandler(Logger.getLogger("").getHandlers()[0]);
+//                Logger.getLogger("").addHandler(consoleHandler);
+//
+//                Logger.getLogger("com.jme3").setLevel(Level.FINEST);
+//            }
+//        } catch (IOException ex){
+//            logger.log(Level.SEVERE, "I/O Error while creating log file", ex);
+//        } catch (SecurityException ex){
+//            logger.log(Level.SEVERE, "Security error in creating log file", ex);
+//        }
         logger.log(Level.INFO, "Running on {0}", getFullName());
 
         

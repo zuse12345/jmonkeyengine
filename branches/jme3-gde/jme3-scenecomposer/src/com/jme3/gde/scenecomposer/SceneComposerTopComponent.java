@@ -23,9 +23,9 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.light.PointLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.ui.Picture;
@@ -69,10 +69,10 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     private FileObject currentFileObject;
     private final Result<JmeSpatial> result;
     private JmeSpatial selectedSpat;
-    private Spatial selected;
+//    private Spatial selected;
     ComposerCameraController camController;
+    ComposerToolController toolController;
     private SaveCookie saveCookie = new SaveCookieImpl();
-    private Spatial selectionShape;
 
     public SceneComposerTopComponent() {
         initComponents();
@@ -94,90 +94,218 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 
         jPanel1 = new javax.swing.JPanel();
         sceneNameLabel = new javax.swing.JLabel();
+        sceneInfoLabel1 = new javax.swing.JLabel();
+        sceneInfoLabel2 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         selectedSpatialLabel = new javax.swing.JLabel();
-        addObjectButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
-        jButton1 = new javax.swing.JButton();
+        jToolBar1 = new javax.swing.JToolBar();
+        addObjectButton = new javax.swing.JButton();
+        addCursorButton = new javax.swing.JButton();
+        moveToCursorButton = new javax.swing.JButton();
+        jSeparator4 = new javax.swing.JToolBar.Separator();
+        showSelectionToggleButton = new javax.swing.JToggleButton();
+        showGridToggleButton = new javax.swing.JToggleButton();
+        jSeparator3 = new javax.swing.JToolBar.Separator();
+        jLabel1 = new javax.swing.JLabel();
+        resetCursorButton = new javax.swing.JButton();
+        cursorToSelectionButton = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JToolBar.Separator();
+        jPanel3 = new javax.swing.JPanel();
+        jSeparator2 = new javax.swing.JToolBar.Separator();
+        jLabel2 = new javax.swing.JLabel();
+        camToCursorSelectionButton = new javax.swing.JButton();
 
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         org.openide.awt.Mnemonics.setLocalizedText(sceneNameLabel, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.sceneNameLabel.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(sceneInfoLabel1, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.sceneInfoLabel1.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(sceneInfoLabel2, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.sceneInfoLabel2.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, sceneNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, sceneNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 651, Short.MAX_VALUE)
+            .add(sceneInfoLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 651, Short.MAX_VALUE)
+            .add(sceneInfoLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 651, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
                 .add(sceneNameLabel)
-                .addContainerGap(123, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(sceneInfoLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(sceneInfoLabel2)
+                .addContainerGap(71, Short.MAX_VALUE))
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(selectedSpatialLabel, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.selectedSpatialLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(addObjectButton, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.addObjectButton.text")); // NOI18N
-        addObjectButton.setEnabled(false);
-        addObjectButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addObjectButtonActionPerformed(evt);
-            }
-        });
-
         jScrollPane1.setViewportView(jList1);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.jButton1.text")); // NOI18N
-        jButton1.setEnabled(false);
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(selectedSpatialLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 272, Short.MAX_VALUE)
+            .add(selectedSpatialLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
             .add(jPanel2Layout.createSequentialGroup()
                 .add(2, 2, 2)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(addObjectButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButton1)
-                        .addContainerGap(82, Short.MAX_VALUE))))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
                 .add(selectedSpatialLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(addObjectButton)
-                    .add(jButton1)))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 115, Short.MAX_VALUE))
         );
+
+        jToolBar1.setFloatable(false);
+        jToolBar1.setRollover(true);
+
+        addObjectButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/scenecomposer/add.gif"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addObjectButton, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.addObjectButton.text")); // NOI18N
+        addObjectButton.setToolTipText(org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.addObjectButton.toolTipText")); // NOI18N
+        addObjectButton.setEnabled(false);
+        addObjectButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addObjectButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(addObjectButton);
+
+        addCursorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/scenecomposer/add.gif"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addCursorButton, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.addCursorButton.text")); // NOI18N
+        addCursorButton.setToolTipText(org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.addCursorButton.toolTipText")); // NOI18N
+        addCursorButton.setEnabled(false);
+        addCursorButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addCursorButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(addCursorButton);
+
+        moveToCursorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/scenecomposer/move.gif"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(moveToCursorButton, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.moveToCursorButton.text")); // NOI18N
+        moveToCursorButton.setToolTipText(org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.moveToCursorButton.toolTipText")); // NOI18N
+        moveToCursorButton.setFocusable(false);
+        moveToCursorButton.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        moveToCursorButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        moveToCursorButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                moveToCursorButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(moveToCursorButton);
+        jToolBar1.add(jSeparator4);
+
+        showSelectionToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/scenecomposer/box_wire.gif"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(showSelectionToggleButton, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.showSelectionToggleButton.text")); // NOI18N
+        showSelectionToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.showSelectionToggleButton.toolTipText")); // NOI18N
+        showSelectionToggleButton.setFocusable(false);
+        showSelectionToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        showSelectionToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        showSelectionToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showSelectionToggleButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(showSelectionToggleButton);
+
+        showGridToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/scenecomposer/box_wire.gif"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(showGridToggleButton, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.showGridToggleButton.text")); // NOI18N
+        showGridToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.showGridToggleButton.toolTipText")); // NOI18N
+        showGridToggleButton.setFocusable(false);
+        showGridToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        showGridToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        showGridToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showGridToggleButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(showGridToggleButton);
+        jToolBar1.add(jSeparator3);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.jLabel1.text")); // NOI18N
+        jToolBar1.add(jLabel1);
+
+        org.openide.awt.Mnemonics.setLocalizedText(resetCursorButton, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.resetCursorButton.text")); // NOI18N
+        resetCursorButton.setToolTipText(org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.resetCursorButton.toolTipText")); // NOI18N
+        resetCursorButton.setFocusable(false);
+        resetCursorButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        resetCursorButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        resetCursorButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetCursorButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(resetCursorButton);
+
+        org.openide.awt.Mnemonics.setLocalizedText(cursorToSelectionButton, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.cursorToSelectionButton.text")); // NOI18N
+        cursorToSelectionButton.setFocusable(false);
+        cursorToSelectionButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        cursorToSelectionButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        cursorToSelectionButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cursorToSelectionButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(cursorToSelectionButton);
+        jToolBar1.add(jSeparator1);
+
+        org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 306, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 21, Short.MAX_VALUE)
+        );
+
+        jToolBar1.add(jPanel3);
+        jToolBar1.add(jSeparator2);
+
+        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/scenecomposer/camera.gif"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.jLabel2.text")); // NOI18N
+        jToolBar1.add(jLabel2);
+
+        org.openide.awt.Mnemonics.setLocalizedText(camToCursorSelectionButton, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.camToCursorSelectionButton.text")); // NOI18N
+        camToCursorSelectionButton.setToolTipText(org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.camToCursorSelectionButton.toolTipText")); // NOI18N
+        camToCursorSelectionButton.setFocusable(false);
+        camToCursorSelectionButton.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        camToCursorSelectionButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        camToCursorSelectionButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                camToCursorSelectionButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(camToCursorSelectionButton);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 123, Short.MAX_VALUE)
-                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .add(jToolBar1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 866, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(jToolBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -188,22 +316,69 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 
     }//GEN-LAST:event_addObjectButtonActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
+    private void addCursorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCursorButtonActionPerformed
         if (jList1.getSelectedValue() != null) {
-            camController.setClickAddSpatialName(jList1.getSelectedValue().toString());
+            addSpatial(jList1.getSelectedValue().toString(), toolController.getCursorLocation());
         }
 
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_addCursorButtonActionPerformed
+
+    private void showSelectionToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showSelectionToggleButtonActionPerformed
+        if (toolController != null) {
+            toolController.setShowSelection(showSelectionToggleButton.isSelected());
+        }
+    }//GEN-LAST:event_showSelectionToggleButtonActionPerformed
+
+    private void showGridToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showGridToggleButtonActionPerformed
+        if (toolController != null) {
+            toolController.setShowGrid(showGridToggleButton.isSelected());
+        }
+    }//GEN-LAST:event_showGridToggleButtonActionPerformed
+
+    private void moveToCursorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveToCursorButtonActionPerformed
+        moveSelectedSpatial(toolController.getCursorLocation());
+    }//GEN-LAST:event_moveToCursorButtonActionPerformed
+
+    private void resetCursorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetCursorButtonActionPerformed
+        if (toolController != null) {
+            toolController.setCursorLocation(Vector3f.ZERO);
+        }
+    }//GEN-LAST:event_resetCursorButtonActionPerformed
+
+    private void camToCursorSelectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_camToCursorSelectionButtonActionPerformed
+        camController.setCamFocus(toolController.getCursorLocation());
+    }//GEN-LAST:event_camToCursorSelectionButtonActionPerformed
+
+    private void cursorToSelectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cursorToSelectionButtonActionPerformed
+        if (toolController != null) {
+            toolController.snapCursorToSelection();
+        }
+    }//GEN-LAST:event_cursorToSelectionButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addCursorButton;
     private javax.swing.JButton addObjectButton;
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton camToCursorSelectionButton;
+    private javax.swing.JButton cursorToSelectionButton;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JList jList1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JToolBar.Separator jSeparator1;
+    private javax.swing.JToolBar.Separator jSeparator2;
+    private javax.swing.JToolBar.Separator jSeparator3;
+    private javax.swing.JToolBar.Separator jSeparator4;
+    private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JButton moveToCursorButton;
+    private javax.swing.JButton resetCursorButton;
+    private javax.swing.JLabel sceneInfoLabel1;
+    private javax.swing.JLabel sceneInfoLabel2;
     private javax.swing.JLabel sceneNameLabel;
     private javax.swing.JLabel selectedSpatialLabel;
+    private javax.swing.JToggleButton showGridToggleButton;
+    private javax.swing.JToggleButton showSelectionToggleButton;
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -310,11 +485,11 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 if (text != null) {
                     selectedSpatialLabel.setText(text);
                     addObjectButton.setEnabled(true);
-                    jButton1.setEnabled(true);
+                    addCursorButton.setEnabled(true);
                 } else {
                     selectedSpatialLabel.setText("no spatial selected");
                     addObjectButton.setEnabled(false);
-                    jButton1.setEnabled(false);
+                    addCursorButton.setEnabled(false);
                 }
             }
         });
@@ -343,14 +518,17 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         if (currentRequest != null && currentRequest.isDisplayed()) {
             try {
                 selectedSpat.fireSave(true);
-                SceneApplication.getApplication().enqueue(new Callable() {
+                final Spatial node = selectedSpat.getLookup().lookup(Spatial.class);
+                if (node != null) {
+                    SceneApplication.getApplication().enqueue(new Callable() {
 
-                    public Object call() throws Exception {
-                        doAddSpatial(name, point);
-                        return null;
+                        public Object call() throws Exception {
+                            doAddSpatial(node, name, point);
+                            return null;
 
-                    }
-                }).get();
+                        }
+                    }).get();
+                }
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (ExecutionException ex) {
@@ -359,7 +537,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         }
     }
 
-    public void doAddSpatial(String name, Vector3f point) {
+    public void doAddSpatial(Spatial selected, String name, Vector3f point) {
         if (selected instanceof Node) {
             if ("Node".equals(name)) {
                 ((Node) selected).attachChild(new Node("Node"));
@@ -440,13 +618,123 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         }
     }
 
+    private void moveSelectedSpatial(final Vector3f point) {
+        if (currentRequest != null && currentRequest.isDisplayed()) {
+            try {
+                selectedSpat.fireSave(true);
+                final Spatial node = selectedSpat.getLookup().lookup(Spatial.class);
+                if (node != null) {
+                    SceneApplication.getApplication().enqueue(new Callable() {
+
+                        public Object call() throws Exception {
+                            doMoveSpatial(node, point);
+                            return null;
+
+                        }
+                    }).get();
+                }
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    public void doMoveSpatial(Spatial selected, Vector3f translation) {
+        Vector3f localTranslation = selected.getLocalTranslation();
+        Node parent = selected.getParent();
+        if (parent != null) {
+            localTranslation.set(translation).subtractLocal(parent.getWorldTranslation());
+            localTranslation.divideLocal(parent.getWorldScale());
+            //TODO: reuse quaternion..
+            new Quaternion().set(parent.getWorldRotation()).inverseLocal().multLocal(localTranslation);
+        } else {
+            localTranslation.set(translation);
+        }
+        selected.setLocalTranslation(localTranslation);
+    }
+
+    public void saveRequest() {
+        if (currentFileObject != null && currentRequest != null && currentRequest.isDisplayed()) {
+            SceneApplication.getApplication().enqueue(new Callable() {
+
+                public Object call() throws Exception {
+                    ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Saving File..");
+                    progressHandle.start();
+                    Node node = currentRequest.getRootNode().getLookup().lookup(Node.class);
+                    BinaryExporter exp = BinaryExporter.getInstance();
+                    try {
+                        exp.save(node, FileUtil.toFile(currentFileObject));
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    progressHandle.finish();
+                    StatusDisplayer.getDefault().setStatusText("Saved file " + currentFileObject.getNameExt());
+                    //try make NetBeans update the tree.. :/
+                    setSceneInfo(currentRequest.getRootNode().getName(), true);
+                    return null;
+                }
+            });
+        }
+    }
+
+    /**
+     * method to set the state of the ui items
+     */
+    private void setSceneInfo(final String name, final boolean active) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                sceneNameLabel.setText(name);
+
+                sceneInfoLabel1.setText("File Size: " + currentFileObject.getSize() / 1024 + " kB");
+                if (!active) {
+                    addObjectButton.setEnabled(false);
+                    addCursorButton.setEnabled(false);
+                    showSelectionToggleButton.setSelected(false);
+                    showGridToggleButton.setSelected(false);
+                    close();
+                } else {
+                    open();
+                    showSelectionToggleButton.setSelected(false);
+                    showGridToggleButton.setSelected(false);
+                    requestActive();
+                }
+            }
+        });
+    }
+
+    private void selectSpatial(JmeSpatial spatial) {
+        if (spatial == null) {
+            setSelectedObjectText(null);
+            setSelectionData(null);
+            toolController.updateSelection(null);
+            selectedSpat = null;
+            return;
+        } else {
+            toolController.updateSelection(spatial.getLookup().lookup(Spatial.class));
+        }
+        selectedSpat = spatial;
+        if (selectedSpat.getLookup().lookup(Node.class) != null) {
+            setSelectionData(true);
+        } else {
+            setSelectionData(false);
+        }
+        //TODO: remove
+        selectedSpat.fireSave(true);
+        setActivatedNodes(new org.openide.nodes.Node[]{selectedSpat});
+        setSelectedObjectText(spatial.getName());
+    }
+
     /*
      * methods for external access
      */
     public void addModel(final AssetManager manager, final String assetName) {
 
-        if (currentRequest != null && currentRequest.isDisplayed() && selected != null && selected instanceof Node) {
+        if (currentRequest != null && currentRequest.isDisplayed()) {
             selectedSpat.fireSave(true);
+            final Spatial selected = selectedSpat.getLookup().lookup(Spatial.class);
             SceneApplication.getApplication().enqueue(new Callable() {
 
                 public Object call() throws Exception {
@@ -487,50 +775,12 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         request.setWindowTitle("SceneViewer - " + request.getRootNode().getName() + " (SceneComposer)");
         request.setToolNode(new Node("SceneComposerToolNode"));
         SceneApplication.getApplication().requestScene(request);
-        selectSpatial(currentRequest.getRootNode());
     }
 
-    public void saveRequest() {
-        if (currentFileObject != null && currentRequest != null && currentRequest.isDisplayed()) {
-            SceneApplication.getApplication().enqueue(new Callable() {
-
-                public Object call() throws Exception {
-                    ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Saving File..");
-                    progressHandle.start();
-                    Node node = currentRequest.getRootNode().getLookup().lookup(Node.class);
-                    BinaryExporter exp = BinaryExporter.getInstance();
-                    try {
-                        exp.save(node, FileUtil.toFile(currentFileObject));
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    progressHandle.finish();
-                    StatusDisplayer.getDefault().setStatusText("Saved file " + currentFileObject.getNameExt());
-                    //try make NetBeans update the tree.. :/
-                    return null;
-                }
-            });
+    public void doMoveCursor(Vector3f vector) {
+        if (toolController != null) {
+            toolController.doSetCursorLocation(vector);
         }
-    }
-
-    /**
-     * method to set the state of the ui items
-     */
-    private void setLoadedState(final String name, final boolean active) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                sceneNameLabel.setText(name);
-                if (!active) {
-                    addObjectButton.setEnabled(false);
-                    jButton1.setEnabled(false);
-                    close();
-                } else {
-                    open();
-                    requestActive();
-                }
-            }
-        });
     }
 
     /**
@@ -548,110 +798,39 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         }
     }
 
-    private void selectSpatial(JmeSpatial spatial) {
-        if (spatial == null) {
-            setSelectedObjectText(null);
-            setSelectionData(null);
-            attachSelectionMark(false);
-            selectedSpat = null;
-            selected = null;
-            return;
-        } else {
-            attachSelectionMark(false);
-        }
-        selectedSpat = spatial;
-        //TODO: remove
-        selectedSpat.fireSave(true);
-        setActivatedNodes(new org.openide.nodes.Node[]{selectedSpat});
-
-        if (selected != spatial.getLookup().lookup(Spatial.class)) {
-            attachSelectionMark(true);
-            selected = spatial.getLookup().lookup(Spatial.class);
-        }
-
-        setSelectedObjectText(spatial.getName());
-        setSelectionData(selected instanceof Node);
-    }
-
-    private void attachSelectionMark(final boolean attach) {
-        if (selectedSpat == null) {
-            return;
-        }
-        final Geometry geom = selectedSpat.getLookup().lookup(Geometry.class);
-        if (geom == null) {
-            return;
-        }
-        final Node parent = geom.getParent();
-        if (geom != null && parent != null) {
-            SceneApplication.getApplication().enqueue(new Callable() {
-
-                public Object call() throws Exception {
-                    doAttachSelectionMark(attach, geom);
-                    return null;
-                }
-            });
-
-        }
-    }
-
-    public void doAttachSelectionMark(boolean attach, Geometry geom) {
-        if (attach && selected == geom) {
-            return;
-        }
-        selected = geom;
-        if (selected == null)  {
-            return;
-        }
-        if (attach && selectionShape != null) {
-            selectionShape.removeFromParent();
-            selectionShape = null;
-        }
-        if (attach) {
-            Mesh mesh = geom.getMesh();
-            if (mesh == null) {
-                return;
-            }
-            Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
-            mat.setColor("m_Color", ColorRGBA.Blue);
-            Geometry selectionGeometry = new Geometry("selection_geometry_sceneviewer", mesh);
-            selectionGeometry.setMaterial(mat);
-            selectionGeometry.setLocalTransform(selectionGeometry.getWorldTransform());
-            if (currentRequest != null && currentRequest.getToolNode() != null) {
-                currentRequest.getToolNode().attachChild(selectionGeometry);
-                selectionShape = selectionGeometry;
-            }
-        } else {
-            if (currentRequest != null && currentRequest.getToolNode() != null) {
-                if (selectionShape != null) {
-                    selectionShape.removeFromParent();
-                }
-            }
-            selectionShape = null;
-        }
-    }
-
     /*
      * SceneListener
      */
     public void sceneRequested(SceneRequest request) {
         if (request.equals(currentRequest)) {
-            setLoadedState(currentRequest.getRootNode().getName(), true);
+            setSceneInfo(currentRequest.getRootNode().getName(), true);
             if (camController != null) {
                 camController.disable();
+            }
+            if (toolController != null) {
+                toolController.cleanup();
             }
             camController = new ComposerCameraController(SceneApplication.getApplication().getCamera(), request.getRootNode());
             camController.setMaster(this);
             camController.enable();
+            toolController = new ComposerToolController(currentRequest.getToolNode(), currentRequest.getManager().getManager());
         } else {
-            setLoadedState("no scene loaded", false);
+            setSceneInfo("no scene loaded", false);
             if (camController != null) {
                 camController.disable();
                 camController = null;
             }
+            if (toolController != null) {
+                toolController.cleanup();
+                toolController = null;
+            }
         }
-//        selected = null;
-//        selectedSpat = null;
-//        setSelectedObjectText(null);
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                selectSpatial(currentRequest.getRootNode());
+            }
+        });
     }
 
     public void previewRequested(PreviewRequest request) {

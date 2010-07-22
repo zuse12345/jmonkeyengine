@@ -75,9 +75,10 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
     private JmeNode jmeRootNode;
     private InputManager inputManager;
     private SceneComposerTopComponent master;
-    private String clickAddSpatialName = null;
     private boolean moved = false;
+    private boolean movedR = false;
     private boolean checkClick = false;
+    private boolean checkClickR = false;
 
     public ComposerCameraController(Camera cam, JmeNode rootNode) {
         this.cam = cam;
@@ -108,6 +109,22 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
         inputManager.removeRawInputListener(this);
         inputManager.removeListener(this);
         SceneApplication.getApplication().getStateManager().detach(this);
+    }
+
+    public void setCamFocus(final Vector3f focus) {
+        SceneApplication.getApplication().enqueue(new Callable<Object>() {
+
+            public Object call() throws Exception {
+                doSetCamFocus(focus);
+                return null;
+            }
+        });
+
+    }
+
+    public void doSetCamFocus(Vector3f focus) {
+        this.focus.set(focus);
+        cam.setLocation(focus.add(vector, cam.getLocation()));
     }
 
     /*
@@ -164,8 +181,12 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
         if ("MouseButtonRight".equals(string)) {
             if (bln) {
                 rightMouse = true;
+                movedR = false;
             } else {
                 rightMouse = false;
+                if (!movedR) {
+                    checkClickR = true;
+                }
             }
         }
     }
@@ -173,35 +194,39 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
     public void onAnalog(String string, float f1, float f) {
         if ("MouseAxisX".equals(string)) {
             moved = true;
+            movedR = true;
             if (leftMouse) {
                 rotateCamera(Vector3f.UNIT_Y, -f1 * 2.5f);
             }
             if (rightMouse) {
-                panCamera(deltaX * 10, -deltaY * 10);
+                panCamera(f1 * 2.5f, 0);
             }
         } else if ("MouseAxisY".equals(string)) {
             moved = true;
+            movedR = true;
             if (leftMouse) {
                 rotateCamera(cam.getLeft(), -f1 * 2.5f);
             }
             if (rightMouse) {
-                panCamera(deltaX * 10, -deltaY * 10);
+                panCamera(0, -f1 * 2.5f);
             }
         } else if ("MouseAxisX-".equals(string)) {
             moved = true;
+            movedR = true;
             if (leftMouse) {
                 rotateCamera(Vector3f.UNIT_Y, f1 * 2.5f);
             }
             if (rightMouse) {
-                panCamera(deltaX * 10, -deltaY * 10);
+                panCamera(-f1 * 2.5f, 0);
             }
         } else if ("MouseAxisY-".equals(string)) {
             moved = true;
+            movedR = true;
             if (leftMouse) {
                 rotateCamera(cam.getLeft(), f1 * 2.5f);
             }
             if (rightMouse) {
-                panCamera(deltaX * 10, -deltaY * 10);
+                panCamera(0, f1 * 2.5f);
             }
         } else if ("MouseWheel".equals(string)) {
             zoomCamera(.1f);
@@ -257,28 +282,35 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
                 return;
             }
             final CollisionResult result = results.getClosestCollision();
-            if (clickAddSpatialName != null && result != null) {
-                Vector3f point = result.getContactPoint();
-                if (master != null) {
-                    master.doAddSpatial(clickAddSpatialName, point);
-                }
-                clickAddSpatialName = null;
-            } else {
-                if (result != null && result.getGeometry() != null) {
-                    master.doAttachSelectionMark(true, result.getGeometry());
-                }
-                java.awt.EventQueue.invokeLater(new Runnable() {
+            java.awt.EventQueue.invokeLater(new Runnable() {
 
-                    public void run() {
-                        if (result != null && result.getGeometry() != null) {
-                            SceneApplication.getApplication().setSelectedNode(jmeRootNode.getChild(result.getGeometry()));
-                        } else if (clickAddSpatialName == null) {
-                            SceneApplication.getApplication().setSelectedNode(jmeRootNode);
-                        }
+                public void run() {
+                    if (result != null && result.getGeometry() != null) {
+                        SceneApplication.getApplication().setSelectedNode(jmeRootNode.getChild(result.getGeometry()));
+                    } else {
+                        SceneApplication.getApplication().setSelectedNode(jmeRootNode);
                     }
-                });
-            }
+                }
+            });
             checkClick = false;
+        }
+        if (checkClickR) {
+            CollisionResults results = new CollisionResults();
+            Ray ray = new Ray();
+            Vector3f pos = cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0).clone();
+            Vector3f dir = cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0.3f).clone();
+            dir.subtractLocal(pos).normalizeLocal();
+            ray.setOrigin(pos);
+            ray.setDirection(dir);
+            rootNode.collideWith(ray, results);
+            if (results == null) {
+                return;
+            }
+            CollisionResult result = results.getClosestCollision();
+            if (result != null) {
+                master.doMoveCursor(result.getContactPoint());
+            }
+            checkClickR = false;
         }
     }
 
@@ -286,9 +318,5 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
     }
 
     public void cleanup() {
-    }
-
-    public void setClickAddSpatialName(String clickAddSpatialName) {
-        this.clickAddSpatialName = clickAddSpatialName;
     }
 }

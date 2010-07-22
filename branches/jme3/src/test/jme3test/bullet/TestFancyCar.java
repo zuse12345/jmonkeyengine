@@ -115,10 +115,10 @@ public class TestFancyCar extends SimpleBulletApplication implements ActionListe
     }
 
     private void buildPlayer() {
-        float stiffness=90.0f;//200=f1 car
-        float compValue=0.4f; //(lower than damp!)
-        float dampValue=0.8f;
-        final float mass = 1;
+        float stiffness=120.0f;//200=f1 car
+        float compValue=0.2f; //(lower than damp!)
+        float dampValue=0.3f;
+        final float mass = 400;
 
         Spatial car = assetManager.loadModel("Models/Ferrari/Car.scene");
         Node carNode = (Node) car;
@@ -142,6 +142,7 @@ public class TestFancyCar extends SimpleBulletApplication implements ActionListe
         player.setSuspensionCompression(compValue*2.0f*FastMath.sqrt(stiffness));
         player.setSuspensionDamping(dampValue*2.0f*FastMath.sqrt(stiffness));
         player.setSuspensionStiffness(stiffness);
+        player.setMaxSuspensionForce(10000);
 
         //Create four wheels and add them at their locations
         //note that our fancy car actually goes backwards..
@@ -224,13 +225,13 @@ public class TestFancyCar extends SimpleBulletApplication implements ActionListe
         //note that our fancy car actually goes backwards..
         else if (binding.equals("Ups")) {
             if(value)
-                accelerationValue-=4;
+                accelerationValue-=800;
             else
-                accelerationValue+=4;
+                accelerationValue+=800;
             player.accelerate(accelerationValue);
         } else if (binding.equals("Downs")) {
             if(value)
-                player.brake(0.1f);
+                player.brake(40f);
             else
                 player.brake(0f);
         } else if (binding.equals("Reset")) {

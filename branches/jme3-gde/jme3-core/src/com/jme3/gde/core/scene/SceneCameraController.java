@@ -69,8 +69,8 @@ public class SceneCameraController implements ActionListener, AnalogListener {
         inputManager.addMapping("MouseWheel", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
         inputManager.addMapping("MouseWheel-", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
         inputManager.addMapping("MouseButtonLeft", new MouseButtonTrigger(0));
-        inputManager.addMapping("MouseButtonMiddle", new MouseButtonTrigger(1));
-        inputManager.addMapping("MouseButtonRight", new MouseButtonTrigger(2));
+        inputManager.addMapping("MouseButtonMiddle", new MouseButtonTrigger(2));
+        inputManager.addMapping("MouseButtonRight", new MouseButtonTrigger(1));
     }
 
     public void enable() {
@@ -148,38 +148,34 @@ public class SceneCameraController implements ActionListener, AnalogListener {
                 rotateCamera(Vector3f.UNIT_Y, -f1 * 2.5f);
             }
             if (rightMouse) {
-                panCamera(deltaX * 10, -deltaY * 10);
+                panCamera(f1 * 2.5f, 0);
             }
-        }
-        else if ("MouseAxisY".equals(string)) {
+        } else if ("MouseAxisY".equals(string)) {
             if (leftMouse) {
                 rotateCamera(cam.getLeft(), -f1 * 2.5f);
             }
             if (rightMouse) {
-                panCamera(deltaX * 10, -deltaY * 10);
+                panCamera(0, -f1 * 2.5f);
             }
-        }
-        else if ("MouseAxisX-".equals(string)) {
+        } else if ("MouseAxisX-".equals(string)) {
             if (leftMouse) {
                 rotateCamera(Vector3f.UNIT_Y, f1 * 2.5f);
             }
             if (rightMouse) {
-                panCamera(deltaX * 10, -deltaY * 10);
+                panCamera(-f1 * 2.5f, 0);
             }
-        }
-        else if ("MouseAxisY-".equals(string)) {
+        } else if ("MouseAxisY-".equals(string)) {
             if (leftMouse) {
                 rotateCamera(cam.getLeft(), f1 * 2.5f);
             }
             if (rightMouse) {
-                panCamera(deltaX * 10, -deltaY * 10);
+                panCamera(0, f1 * 2.5f);
             }
-        }
-        else if ("MouseWheel".equals(string)) {
+        } else if ("MouseWheel".equals(string)) {
             zoomCamera(.1f);
-        }
-        else if ("MouseWheel-".equals(string)) {
+        } else if ("MouseWheel-".equals(string)) {
             zoomCamera(-.1f);
         }
+
     }
 }

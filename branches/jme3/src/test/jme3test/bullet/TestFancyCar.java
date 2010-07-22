@@ -200,9 +200,9 @@ public class TestFancyCar extends SimpleBulletApplication implements ActionListe
         player.addWheel(primaryNode, box.getCenter().add(0, -back_wheel_h, 0),
                         wheelDirection, wheelAxle, 0.2f, wheelRadius, false);
 
-        player.attachDebugShape(assetManager);
-        player.getWheel(2).setFrictionSlip(8);
-        player.getWheel(3).setFrictionSlip(8);
+//        player.attachDebugShape(assetManager);
+        player.getWheel(2).setFrictionSlip(4);
+        player.getWheel(3).setFrictionSlip(4);
         rootNode.attachChild(player);
         getPhysicsSpace().add(player);
     }
@@ -230,7 +230,7 @@ public class TestFancyCar extends SimpleBulletApplication implements ActionListe
             player.accelerate(accelerationValue);
         } else if (binding.equals("Downs")) {
             if(value)
-                player.brake(0.5f);
+                player.brake(0.1f);
             else
                 player.brake(0f);
         } else if (binding.equals("Reset")) {

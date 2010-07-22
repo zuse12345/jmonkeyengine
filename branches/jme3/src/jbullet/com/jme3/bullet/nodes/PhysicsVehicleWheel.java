@@ -122,10 +122,6 @@ public class PhysicsVehicleWheel extends Node {
         wheelWorldRotation.fromRotationMatrix(tempMatrix);
     }
 
-    public void setParent(PhysicsVehicleNode parent) {
-        this.parent = parent;
-    }
-
     public com.bulletphysics.dynamics.vehicle.WheelInfo getWheelInfo() {
         return wheelInfo;
     }

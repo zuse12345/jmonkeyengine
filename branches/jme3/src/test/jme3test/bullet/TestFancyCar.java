@@ -1,9 +1,9 @@
 package jme3test.bullet;
 
 import com.jme3.app.SimpleBulletApplication;
-import com.jme3.asset.TextureKey;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
+import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.nodes.PhysicsVehicleNode;
@@ -23,7 +23,6 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.shadow.BasicShadowRenderer;
-import com.jme3.texture.Texture;
 import com.jme3.texture.Texture.WrapMode;
 
 public class TestFancyCar extends SimpleBulletApplication implements ActionListener {
@@ -131,21 +130,23 @@ public class TestFancyCar extends SimpleBulletApplication implements ActionListe
         // put chasis in center, so that physics box matches up with it
         // also remove from parent to avoid transform issues
         chasis.removeFromParent();
-        chasis.center();
+//        chasis.setLocalTranslation(Vector3f.UNIT_Y);
         chasis.setShadowMode(ShadowMode.Cast);
 
-        //HINT: for now, vehicles have to be created in the physics thread when multithreading!
-        player = new PhysicsVehicleNode(chasis, new BoxCollisionShape(extent), mass);
+        CompoundCollisionShape compoundShape=new CompoundCollisionShape();
+        compoundShape.addChildShape(new BoxCollisionShape(extent), Vector3f.UNIT_Y);
+
+        player = new PhysicsVehicleNode(chasis, compoundShape, mass);
 
         //setting default values for wheels
         player.setSuspensionCompression(compValue*2.0f*FastMath.sqrt(stiffness));
         player.setSuspensionDamping(dampValue*2.0f*FastMath.sqrt(stiffness));
         player.setSuspensionStiffness(stiffness);
-        player.setFrictionSlip(.8f);
 
         //Create four wheels and add them at their locations
+        //note that our fancy car actually goes backwards..
         Vector3f wheelDirection = new Vector3f(0,-1,0);
-        Vector3f wheelAxle = new Vector3f(1,0,0);
+        Vector3f wheelAxle = new Vector3f(-1,0,0);
 
         Geometry wheel_fr = findGeom(carNode, "WheelFrontRight");
         wheel_fr.removeFromParent();
@@ -157,8 +158,8 @@ public class TestFancyCar extends SimpleBulletApplication implements ActionListe
         primaryNode.attachChild(node_fr);
         box = (BoundingBox) wheel_fr.getModelBound();
         wheelRadius = box.getYExtent();
-        float back_wheel_h = wheelRadius * 1.5f;
-        float front_wheel_h = wheelRadius * 1.7f;
+        float back_wheel_h = (wheelRadius * 1.7f)-1f;
+        float front_wheel_h = (wheelRadius * 1.9f)-1f;
         player.addWheel(primaryNode, box.getCenter().add(0, -front_wheel_h, 0),
                 wheelDirection, wheelAxle, 0.2f, wheelRadius, true);
 
@@ -199,6 +200,9 @@ public class TestFancyCar extends SimpleBulletApplication implements ActionListe
         player.addWheel(primaryNode, box.getCenter().add(0, -back_wheel_h, 0),
                         wheelDirection, wheelAxle, 0.2f, wheelRadius, false);
 
+        player.attachDebugShape(assetManager);
+        player.getWheel(2).setFrictionSlip(8);
+        player.getWheel(3).setFrictionSlip(8);
         rootNode.attachChild(player);
         getPhysicsSpace().add(player);
     }
@@ -216,15 +220,17 @@ public class TestFancyCar extends SimpleBulletApplication implements ActionListe
             else
                 steeringValue+=.5f;
             player.steer(steeringValue);
-        } else if (binding.equals("Ups")) {
+        }
+        //note that our fancy car actually goes backwards..
+        else if (binding.equals("Ups")) {
             if(value)
-                accelerationValue+=30;
+                accelerationValue-=4;
             else
-                accelerationValue-=30;
+                accelerationValue+=4;
             player.accelerate(accelerationValue);
         } else if (binding.equals("Downs")) {
             if(value)
-                player.brake(60f);
+                player.brake(0.5f);
             else
                 player.brake(0f);
         } else if (binding.equals("Reset")) {
@@ -243,12 +249,6 @@ public class TestFancyCar extends SimpleBulletApplication implements ActionListe
     @Override
     public void simpleUpdate(float tpf) {
         cam.lookAt(player.getWorldTranslation(), Vector3f.UNIT_Y);
-        //XXX: Hack alert! Physics Wheels dont rotate atm, force them
-        float carSpeed = player.getLinearVelocity().length() / wheelRadius;
-        node_bl.rotate(-carSpeed * tpf, 0, 0);
-        node_br.rotate(-carSpeed * tpf, 0, 0);
-        node_fl.rotate(-carSpeed * tpf, 0, 0);
-        node_fr.rotate(-carSpeed * tpf, 0, 0);
     }
 
 }

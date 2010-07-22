@@ -33,17 +33,28 @@ package com.jme3.bullet.util;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
+import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
+import com.jme3.bullet.collision.shapes.CompoundCollisionShape.ChildCollisionShape;
+import com.jme3.bullet.collision.shapes.CylinderCollisionShape;
 import com.jme3.bullet.collision.shapes.GImpactCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
+import com.jme3.bullet.collision.shapes.SphereCollisionShape;
+import com.jme3.math.FastMath;
 import com.jme3.math.Matrix3f;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Cylinder;
+import com.jme3.scene.shape.Sphere;
+import com.jme3.util.TempVars;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  *
@@ -207,5 +218,125 @@ public class CollisionShapeFactory {
             compoundShape.removeChildShape(child);
             compoundShape.addChildShape(child, location.addLocal(vector), rotation);
         }
+    }
+
+    /**
+     * Creates a debug shape from the given collision shape. This is mostly used internally.<br>
+     * To attach a debug shape to a physics object, call <code>attachDebugShape(AssetManager manager);</code> on it.
+     * @param collisionShape
+     * @return
+     */
+    public static Spatial getDebugShape(CollisionShape collisionShape) {
+        if (collisionShape == null) {
+            return null;
+        }
+        Spatial debugShape;
+        if (collisionShape instanceof CompoundCollisionShape) {
+            CompoundCollisionShape shape = (CompoundCollisionShape) collisionShape;
+            List<ChildCollisionShape> children = shape.getChildren();
+            Node node = new Node("DebugShapeNode");
+            for (Iterator<ChildCollisionShape> it = children.iterator(); it.hasNext();) {
+                ChildCollisionShape childCollisionShape = it.next();
+                CollisionShape ccollisionShape = childCollisionShape.shape;
+                Geometry geometry = createDebugShape(ccollisionShape);
+                geometry.setLocalTranslation(childCollisionShape.location);
+                TempVars.get().tempMat3.set(geometry.getLocalRotation());
+                childCollisionShape.rotation.add(TempVars.get().tempMat3);
+                geometry.setLocalRotation(TempVars.get().tempMat3);
+                node.attachChild(geometry);
+            }
+            debugShape = node;
+        } else {
+            debugShape = createDebugShape(collisionShape);
+        }
+        if (debugShape == null) {
+            return null;
+        }
+        debugShape.updateGeometricState();
+        return debugShape;
+    }
+
+    private static Geometry createDebugShape(CollisionShape shape) {
+        Geometry geom = new Geometry();
+        if (shape instanceof BoxCollisionShape) {
+            geom.setName("BoxDebugShape");
+            BoxCollisionShape boxCollisionShape = (BoxCollisionShape) shape;
+            final Vector3f halfExtents = boxCollisionShape.getHalfExtents();
+            Vector3f scale = boxCollisionShape.getScale();
+            Box box = new Box(halfExtents.negate(), halfExtents);
+            geom.setMesh(box);
+            geom.setLocalScale(scale);
+        } else if (shape instanceof SphereCollisionShape) {
+            geom.setName("SphereDebugShape");
+            SphereCollisionShape sphereCollisionShape = (SphereCollisionShape) shape;
+            float radius = sphereCollisionShape.getRadius();
+            Sphere sphere = new Sphere(16, 16, radius);
+            Vector3f scale = sphereCollisionShape.getScale();
+            geom.setMesh(sphere);
+            geom.setLocalScale(scale);
+        } else if (shape instanceof MeshCollisionShape) {
+            geom.setName("MeshDebugShape");
+            MeshCollisionShape meshCollisionShape = (MeshCollisionShape) shape;
+            Mesh mesh = meshCollisionShape.createJmeMesh();
+            Vector3f scale = meshCollisionShape.getScale();
+            geom.setMesh(mesh);
+            geom.setLocalScale(scale);
+        } else if (shape instanceof GImpactCollisionShape) {
+            geom.setName("GImpactDebugShape");
+            GImpactCollisionShape meshCollisionShape = (GImpactCollisionShape) shape;
+            Mesh mesh = meshCollisionShape.createJmeMesh();
+            Vector3f scale = meshCollisionShape.getScale();
+            geom.setMesh(mesh);
+            geom.setLocalScale(scale);
+        } else if (shape instanceof CylinderCollisionShape) {
+            geom.setName("CylinderDebugShape");
+            CylinderCollisionShape cylinderCollisionShape = (CylinderCollisionShape) shape;
+            Vector3f scale = cylinderCollisionShape.getScale();
+            Vector3f halfExtents = cylinderCollisionShape.getHalfExtents();
+            int axis = cylinderCollisionShape.getAxis();
+            Mesh cylinder = null;
+            switch (axis) {
+                case 0:
+                    cylinder = new Cylinder(16, 16, halfExtents.z, halfExtents.x * 2.0f, true);
+                    geom.setLocalRotation(new Quaternion(new float[]{FastMath.HALF_PI, 0, FastMath.HALF_PI}));
+                    break;
+                case 1:
+                    cylinder = new Cylinder(16, 16, halfExtents.x, halfExtents.y * 2.0f, true);
+                    geom.setLocalRotation(new Quaternion(new float[]{FastMath.HALF_PI, 0, 0}));
+                    break;
+                case 2:
+                    cylinder = new Cylinder(16, 16, halfExtents.y, halfExtents.z * 2.0f, true);
+                    break;
+            }
+            geom.setMesh(cylinder);
+            geom.setLocalScale(scale);
+
+        } else if (shape instanceof CapsuleCollisionShape) {
+            geom.setName("CapsuleDebugShape");
+            CapsuleCollisionShape capsuleCollisionShape = (CapsuleCollisionShape) shape;
+            Vector3f scale = capsuleCollisionShape.getScale();
+            int axis = capsuleCollisionShape.getAxis();
+            float height = capsuleCollisionShape.getHeight();
+            float radius = capsuleCollisionShape.getRadius();
+            Mesh cylinder = null;
+            //TODO: better debug shape for capsule
+            switch (axis) {
+                case 0:
+                    cylinder = new Cylinder(16, 16, radius, height + (radius * 2.0f), true);
+                    geom.setLocalRotation(new Quaternion(new float[]{FastMath.HALF_PI, 0, FastMath.HALF_PI}));
+                    break;
+                case 1:
+                    cylinder = new Cylinder(16, 16, radius, height + (radius * 2.0f), true);
+                    geom.setLocalRotation(new Quaternion(new float[]{FastMath.HALF_PI, 0, 0}));
+                    break;
+                case 2:
+                    cylinder = new Cylinder(16, 16, radius, height + (radius * 2.0f), true);
+                    break;
+            }
+
+            geom.setMesh(cylinder);
+            geom.setLocalScale(scale);
+        }
+        return geom;
     }
 }

@@ -7,6 +7,8 @@ package com.jme3.gde.scenecomposer;
 import com.jme3.asset.AssetManager;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bounding.BoundingVolume;
+import com.jme3.bullet.collision.PhysicsCollisionObject;
+import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -140,7 +142,10 @@ public class ComposerToolController {
         }
         if (spat instanceof Geometry) {
             attachGeometrySelection((Geometry) spat);
-        } else {
+        } else if(spat instanceof PhysicsCollisionObject){
+            attachPhysicsSelection((PhysicsCollisionObject)spat);
+        }
+        else {
             attachBoxSelection(spat);
         }
     }
@@ -154,7 +159,7 @@ public class ComposerToolController {
         mat.setColor("m_Color", ColorRGBA.Blue);
         Geometry selectionGeometry = new Geometry("selection_geometry_sceneviewer", mesh);
         selectionGeometry.setMaterial(mat);
-        selectionGeometry.setLocalTransform(selectionGeometry.getWorldTransform());
+        selectionGeometry.setLocalTransform(geom.getWorldTransform());
         toolsNode.attachChild(selectionGeometry);
         selectionShape = selectionGeometry;
     }
@@ -169,7 +174,19 @@ public class ComposerToolController {
             bbox.getExtent(extent);
             Geometry selectionGeometry = new Geometry("selection_geometry_sceneviewer", new Box(bbox.getCenter(), extent.x, extent.x, extent.z));
             selectionGeometry.setMaterial(mat);
-            selectionGeometry.setLocalTransform(selectionGeometry.getWorldTransform());
+            selectionGeometry.setLocalTransform(geom.getWorldTransform());
+            toolsNode.attachChild(selectionGeometry);
+            selectionShape = selectionGeometry;
+        }
+    }
+
+    private void attachPhysicsSelection(PhysicsCollisionObject geom) {
+        Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
+        mat.setColor("m_Color", ColorRGBA.Blue);
+        Spatial selectionGeometry=CollisionShapeFactory.getDebugShape(geom.getCollisionShape());
+        if (selectionGeometry !=null) {
+            selectionGeometry.setMaterial(mat);
+            selectionGeometry.setLocalTransform(geom.getWorldTransform());
             toolsNode.attachChild(selectionGeometry);
             selectionShape = selectionGeometry;
         }

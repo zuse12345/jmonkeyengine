@@ -329,15 +329,15 @@ public abstract class PhysicsCollisionObject extends Node {
             Mesh cylinder = null;
             switch (axis) {
                 case 0:
-                    cylinder = new Cylinder(16, 16, halfExtents.x, halfExtents.z * 2, true);
-                    geom.setLocalRotation(new Quaternion(new float[]{FastMath.HALF_PI,0,FastMath.HALF_PI}));
+                    cylinder = new Cylinder(16, 16, halfExtents.z, halfExtents.x * 2.0f, true);
+                    geom.setLocalRotation(new Quaternion(new float[]{FastMath.HALF_PI, 0, FastMath.HALF_PI}));
                     break;
                 case 1:
-                    cylinder = new Cylinder(16, 16, halfExtents.x, halfExtents.z * 2, true);
-                    geom.setLocalRotation(new Quaternion(new float[]{FastMath.HALF_PI,0,0}));
+                    cylinder = new Cylinder(16, 16, halfExtents.x, halfExtents.y * 2.0f, true);
+                    geom.setLocalRotation(new Quaternion(new float[]{FastMath.HALF_PI, 0, 0}));
                     break;
                 case 2:
-                    cylinder = new Cylinder(16, 16, halfExtents.x, halfExtents.z * 2, true);
+                    cylinder = new Cylinder(16, 16, halfExtents.y, halfExtents.z * 2.0f, true);
                     break;
             }
             geom.setMesh(cylinder);
@@ -354,15 +354,15 @@ public abstract class PhysicsCollisionObject extends Node {
             //TODO: better debug shape for capsule
             switch (axis) {
                 case 0:
-                    cylinder = new Cylinder(16, 16, radius, height + (radius*2), true);
-                    geom.setLocalRotation(new Quaternion(new float[]{FastMath.HALF_PI,0,FastMath.HALF_PI}));
+                    cylinder = new Cylinder(16, 16, radius, height + (radius * 2.0f), true);
+                    geom.setLocalRotation(new Quaternion(new float[]{FastMath.HALF_PI, 0, FastMath.HALF_PI}));
                     break;
                 case 1:
-                    cylinder = new Cylinder(16, 16, radius, height + (radius*2), true);
-                    geom.setLocalRotation(new Quaternion(new float[]{FastMath.HALF_PI,0,0}));
+                    cylinder = new Cylinder(16, 16, radius, height + (radius * 2.0f), true);
+                    geom.setLocalRotation(new Quaternion(new float[]{FastMath.HALF_PI, 0, 0}));
                     break;
                 case 2:
-                    cylinder = new Cylinder(16, 16, radius, height + (radius*2), true);
+                    cylinder = new Cylinder(16, 16, radius, height + (radius * 2.0f), true);
                     break;
             }
 

@@ -128,7 +128,9 @@ public abstract class PhysicsCollisionObject extends Node {
     /**
      * Sets the collision group number for this physics object. <br>
      * The groups are integer bit masks and some pre-made variables are available in CollisionObject.
-     * All physics objects are by default in COLLISION_GROUP_01.
+     * All physics objects are by default in COLLISION_GROUP_01.<br>
+     * Two object will collide when <b>one</b> of the partys has the
+     * collisionGroup of the other in its collideWithGroups set.<br>
      * @param collisionGroup the collisionGroup to set
      */
     public void setCollisionGroup(int collisionGroup) {
@@ -136,7 +138,9 @@ public abstract class PhysicsCollisionObject extends Node {
     }
 
     /**
-     * Add a group that this object will collide with.
+     * Add a group that this object will collide with.<br>
+     * Two object will collide when <b>one</b> of the partys has the
+     * collisionGroup of the other in its collideWithGroups set.<br>
      * @param collisionGroup
      */
     public void addCollideWithGroup(int collisionGroup) {

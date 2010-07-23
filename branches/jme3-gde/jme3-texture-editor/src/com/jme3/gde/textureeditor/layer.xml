@@ -102,25 +102,10 @@
             </folder>
         </folder>
     </folder>
-    <folder name="Menu">
-        <folder name="Window">
-            <file name="ImageEditorAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/com-jme3-gde-textureeditor-ImageEditorAction.instance"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Services">
         <folder name="MIMEResolver">
             <file name="JmeTextureResolver.xml" url="JmeTextureResolver.xml">
                 <attr name="displayName" bundlevalue="com.jme3.gde.textureeditor.Bundle#Services/MIMEResolver/JmeTextureResolver.xml"/>
-            </file>
-        </folder>
-    </folder>
-    <folder name="Templates">
-        <folder name="Other">
-            <file name="JmeTextureTemplate.jpg" url="JmeTextureTemplate.jpg">
-                <attr name="displayName" bundlevalue="com.jme3.gde.textureeditor.Bundle#Templates/Other/JmeTextureTemplate.jpg"/>
-                <attr name="template" boolvalue="true"/>
             </file>
         </folder>
     </folder>

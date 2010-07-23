@@ -783,15 +783,22 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     }
 
     public void doCreatePhysicsMesh(Spatial selected) {
+        Node parent = selected.getParent();
         if (selected instanceof PhysicsCollisionObject) {
             PhysicsCollisionObject collObj = (PhysicsCollisionObject) selected;
+            collObj.removeFromParent();
             collObj.setCollisionShape(CollisionShapeFactory.createMeshShape(selected));
+            if (parent != null) {
+                parent.attachChild(selected);
+            }
             return;
         }
-        Node parent = selected.getParent();
+        selected.removeFromParent();
         PhysicsNode node = new PhysicsNode(selected, CollisionShapeFactory.createMeshShape(selected), 0);
         node.setName(selected.getName() + "-PhysicsNode");
-        parent.attachChild(node);
+        if (parent != null) {
+            parent.attachChild(node);
+        }
         refreshSelectedParent();
     }
 

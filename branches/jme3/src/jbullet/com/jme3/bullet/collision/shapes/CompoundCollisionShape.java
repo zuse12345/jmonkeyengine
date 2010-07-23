@@ -84,6 +84,7 @@ public class CompoundCollisionShape extends CollisionShape {
         }
         Transform transA = new Transform(Converter.convert(rotation));
         Converter.convert(location, transA.origin);
+        Converter.convert(rotation, transA.basis);
         children.add(new ChildCollisionShape(location, rotation, shape));
         ((CompoundShape) cShape).addChildShape(transA, shape.getCShape());
     }

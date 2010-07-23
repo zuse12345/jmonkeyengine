@@ -7,7 +7,9 @@ import com.jme3.audio.AudioNode;
 import com.jme3.audio.AudioNode.Status;
 import com.jme3.audio.AudioStream;
 import com.jme3.audio.Environment;
+import com.jme3.audio.Filter;
 import com.jme3.audio.Listener;
+import com.jme3.audio.LowPassFilter;
 import com.jme3.math.Vector3f;
 import com.jme3.util.BufferUtils;
 import java.nio.ByteBuffer;
@@ -94,6 +96,21 @@ public class LwjglAudioRenderer implements AudioRenderer {
             ALC10.alcGetInteger(device, EFX10.ALC_EFX_MINOR_VERSION, ib);
             int minor = ib.get(0);
             logger.info("Audio effect extension version: "+major+"."+minor);
+
+            ALC10.alcGetInteger(device, EFX10.ALC_MAX_AUXILIARY_SENDS, ib);
+            auxSends = ib.get(0);
+            logger.info("Audio max auxilary sends: "+auxSends);
+
+            // create slot
+            ib.position(0).limit(1);
+            EFX10.alGenAuxiliaryEffectSlots(ib);
+            reverbFxSlot = ib.get(0);
+
+            // create effect
+            ib.position(0).limit(1);
+            EFX10.alGenEffects(ib);
+            reverbFx = ib.get(0);
+            EFX10.alEffecti(reverbFx, EFX10.AL_EFFECT_TYPE, EFX10.AL_EFFECT_REVERB);
         }
     }
 
@@ -106,6 +123,16 @@ public class LwjglAudioRenderer implements AudioRenderer {
         ib.put(channels);
         ib.flip();
         alDeleteSources(ib);
+
+        if (supportEfx){
+            ib.position(0).limit(1);
+            ib.put(0, reverbFx);
+            EFX10.alDeleteEffects(ib);
+
+            ib.position(0).limit(1);
+            ib.put(0, reverbFxSlot);
+            EFX10.alDeleteAuxiliaryEffectSlots(ib);
+        }
 
         // XXX: Delete other buffers/sources
         AL.destroy();
@@ -121,6 +148,28 @@ public class LwjglAudioRenderer implements AudioRenderer {
         alListener(AL_ORIENTATION, fb);
     }
 
+    private void updateFilter(Filter f){
+        int id = f.getId();
+        if (id == -1){
+            ib.position(0).limit(1);
+            EFX10.alGenFilters(ib);
+            id = ib.get(0);
+            f.setId(id);
+        }
+
+        if (f instanceof LowPassFilter){
+            LowPassFilter lpf = (LowPassFilter) f;
+            EFX10.alFilteri(id, EFX10.AL_FILTER_TYPE,    EFX10.AL_FILTER_LOWPASS);
+            EFX10.alFilterf(id, EFX10.AL_LOWPASS_GAIN,   lpf.getVolume());
+            EFX10.alFilterf(id, EFX10.AL_LOWPASS_GAINHF, lpf.getHighFreqVolume());
+        }else{
+            throw new UnsupportedOperationException("Filter type unsupported: "+
+                                                    f.getClass().getName());
+        }
+
+        f.clearUpdateNeeded();
+    }
+
     private void setSourceParams(int id, AudioNode src, boolean forceNonLoop){
         if (src.isPositional()){
             AudioNode pointSrc = src;
@@ -130,6 +179,19 @@ public class LwjglAudioRenderer implements AudioRenderer {
             alSource3f(id, AL_VELOCITY, vel.x, vel.y, vel.z);
             alSourcef(id, AL_MAX_DISTANCE, pointSrc.getMaxDistance());
             alSourcef(id, AL_REFERENCE_DISTANCE, pointSrc.getRefDistance());
+
+            if (pointSrc.isReverbEnabled()){
+                int filter = EFX10.AL_FILTER_NULL;
+                if (pointSrc.getReverbFilter() != null){
+                    Filter f = pointSrc.getReverbFilter();
+                    if (f.isUpdateNeeded()){
+                        updateFilter(f);
+                    }
+                    filter = f.getId();
+                }
+//                alSource3i(id, EFX10.AL_AUXILIARY_SEND_FILTER, reverbFxSlot, 0, filter);
+
+            }
         }else{
             // play in headspace
             alSourcei(id, AL_SOURCE_RELATIVE, AL_TRUE);

@@ -214,7 +214,7 @@ public final class OBJLoader implements AssetLoader {
             f.verticies[i] = vertList.get(i);
         }
 
-        if (currentMatName != null){
+        if (matList != null){
             matFaces.get(currentMatName).add(f);
         }else{
             faces.add(f); // faces that belong to the default material
@@ -255,9 +255,15 @@ public final class OBJLoader implements AssetLoader {
             throw new IOException("Expected .mtl file! Got: " + name);
 
         matList = (MaterialList) assetManager.loadAsset(key.getFolder() + name);
-        // create face lists for every material
-        for (String matName : matList.keySet()){
-            matFaces.put(matName, new ArrayList<Face>());
+
+        if (matList != null){
+            // create face lists for every material
+            for (String matName : matList.keySet()){
+                matFaces.put(matName, new ArrayList<Face>());
+            }
+        }else{
+            logger.log(Level.WARNING, "Can't find MTL file. " +
+                                      "Using default material for OBJ.");
         }
     }
 
@@ -326,6 +332,7 @@ public final class OBJLoader implements AssetLoader {
         if (material == null){
             // create default material
             material = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+            material.setFloat("m_Shininess", 64);
         }
         geom.setMaterial(material);
         if (material.isTransparent())

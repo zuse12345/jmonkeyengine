@@ -36,8 +36,6 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
     public LwjglCanvas(){
         super();
 
-
-
         canvas = new Canvas(){
             
             @Override
@@ -94,6 +92,30 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
         
         canvas.setFocusable(true);
         canvas.setIgnoreRepaint(true);
+    }
+
+    @Override
+    public Type getType() {
+        return Type.Canvas;
+    }
+
+    public void create(boolean waitFor){
+        // do not do anything.
+        // superclass's create() will be called at initInThread()
+        if (waitFor)
+            waitFor(true);
+    }
+
+    @Override
+    public void setTitle(String title) {
+    }
+
+    @Override
+    public void restart() {
+    }
+
+    public Canvas getCanvas(){
+        return canvas;
     }
 
     @Override
@@ -168,35 +190,15 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
         super.runLoop();
     }
 
-    @Override
-    public Type getType() {
-        return Type.Canvas;
-    }
-
-    public void create(boolean waitFor){
-        // do not do anything.
-        // superclass's create() will be called at initInThread()
-        if (waitFor)
-            waitFor(true);
-    }
-
-    @Override
-    public void setTitle(String title) {
-    }
-
     private void pauseCanvas(){
-//        try {
-            if (Mouse.isCreated() && Mouse.isGrabbed()){
-                Mouse.setGrabbed(false);
-                mouseWasGrabbed = true;
-            }
+        if (Mouse.isCreated() && Mouse.isGrabbed()){
+            Mouse.setGrabbed(false);
+            mouseWasGrabbed = true;
+        }
 
-            logger.log(Level.INFO, "OGL: Destroying display (temporarily)");
-            
-            Display.destroy();
-//        } catch (LWJGLException ex) {
-//            logger.log(Level.SEVERE, "in pauseCanvas()", ex);
-//        }
+        logger.log(Level.INFO, "OGL: Destroying display (temporarily)");
+
+        Display.destroy();
     }
 
     /**
@@ -242,14 +244,6 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
         }
 
         listener.gainFocus();
-    }
-
-    @Override
-    public void restart() {
-    }
-
-    public Canvas getCanvas(){
-        return canvas;
     }
 
     @Override

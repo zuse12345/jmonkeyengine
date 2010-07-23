@@ -146,9 +146,12 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
         cam.setRotation(rot.mult(curRot));
     }
 
-    private void panCamera(float left, float up) {
+    private void panCamera(float left, float up, float vecAmount) {
         cam.getLeft().mult(left, vector);
         vector.scaleAdd(up, cam.getUp(), vector);
+        if(vecAmount>0){
+            vector.multLocal(cam.getLocation().distance(focus)*vecAmount);
+        }
         cam.setLocation(cam.getLocation().add(vector));
         focus.addLocal(vector);
     }
@@ -199,7 +202,7 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
                 rotateCamera(Vector3f.UNIT_Y, -f1 * 2.5f);
             }
             if (rightMouse) {
-                panCamera(f1 * 2.5f, 0);
+                panCamera(f1 * 2.5f, 0, 1);
             }
         } else if ("MouseAxisY".equals(string)) {
             moved = true;
@@ -208,7 +211,7 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
                 rotateCamera(cam.getLeft(), -f1 * 2.5f);
             }
             if (rightMouse) {
-                panCamera(0, -f1 * 2.5f);
+                panCamera(0, -f1 * 2.5f, 1);
             }
         } else if ("MouseAxisX-".equals(string)) {
             moved = true;
@@ -217,7 +220,7 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
                 rotateCamera(Vector3f.UNIT_Y, f1 * 2.5f);
             }
             if (rightMouse) {
-                panCamera(-f1 * 2.5f, 0);
+                panCamera(-f1 * 2.5f, 0, 1);
             }
         } else if ("MouseAxisY-".equals(string)) {
             moved = true;
@@ -226,7 +229,7 @@ public class ComposerCameraController implements ActionListener, AnalogListener,
                 rotateCamera(cam.getLeft(), f1 * 2.5f);
             }
             if (rightMouse) {
-                panCamera(0, f1 * 2.5f);
+                panCamera(0, f1 * 2.5f, 1);
             }
         } else if ("MouseWheel".equals(string)) {
             zoomCamera(.1f);

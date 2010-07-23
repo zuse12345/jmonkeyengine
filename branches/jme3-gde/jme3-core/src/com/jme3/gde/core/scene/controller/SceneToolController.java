@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.jme3.gde.scenecomposer;
+package com.jme3.gde.core.scene.controller;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.bounding.BoundingBox;
@@ -23,27 +23,28 @@ import com.jme3.scene.shape.Box;
 import java.util.concurrent.Callable;
 
 /**
- *
+ * This class can be used or extended by other plugins to display
+ * standard tools in the tools scene e.g. a cursor etc.
  * @author normenhansen
  */
-public class ComposerToolController {
+public class SceneToolController {
 
-    private Node toolsNode;
-    private boolean showSelection = false;
-    private boolean showGrid = false;
-    private Node cursor;
-    private Geometry grid;
-    private Spatial selected;
-    private Spatial selectionShape;
-    private AssetManager manager;
+    protected Node toolsNode;
+    protected boolean showSelection = false;
+    protected boolean showGrid = false;
+    protected Node cursor;
+    protected Geometry grid;
+    protected Spatial selected;
+    protected Spatial selectionShape;
+    protected AssetManager manager;
 
-    public ComposerToolController(Node toolsNode, AssetManager manager) {
+    public SceneToolController(Node toolsNode, AssetManager manager) {
         this.toolsNode = toolsNode;
         this.manager = manager;
         initTools();
     }
 
-    private void initTools() {
+    protected void initTools() {
         Material redMat = new Material(manager, "Common/MatDefs/Misc/WireColor.j3md");
         redMat.setColor("m_Color", ColorRGBA.Red);
         Material greenMat = new Material(manager, "Common/MatDefs/Misc/WireColor.j3md");
@@ -135,7 +136,7 @@ public class ComposerToolController {
         }
     }
 
-    private void attachSelectionShape(Spatial spat) {
+    protected void attachSelectionShape(Spatial spat) {
         if (selectionShape != null) {
             selectionShape.removeFromParent();
             selectionShape = null;
@@ -150,7 +151,7 @@ public class ComposerToolController {
         }
     }
 
-    private void attachGeometrySelection(Geometry geom) {
+    protected void attachGeometrySelection(Geometry geom) {
         Mesh mesh = geom.getMesh();
         if (mesh == null) {
             return;
@@ -164,7 +165,7 @@ public class ComposerToolController {
         selectionShape = selectionGeometry;
     }
 
-    private void attachBoxSelection(Spatial geom) {
+    protected void attachBoxSelection(Spatial geom) {
         Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
         mat.setColor("m_Color", ColorRGBA.Blue);
         BoundingVolume bound = geom.getWorldBound();
@@ -180,7 +181,7 @@ public class ComposerToolController {
         }
     }
 
-    private void attachPhysicsSelection(PhysicsCollisionObject geom) {
+    protected void attachPhysicsSelection(PhysicsCollisionObject geom) {
         Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
         mat.setColor("m_Color", ColorRGBA.Blue);
         Spatial selectionGeometry=CollisionShapeFactory.getDebugShape(geom.getCollisionShape());
@@ -192,7 +193,7 @@ public class ComposerToolController {
         }
     }
 
-    private void detachSelectionShape() {
+    protected void detachSelectionShape() {
         if (selectionShape != null) {
             selectionShape.removeFromParent();
             selectionShape = null;

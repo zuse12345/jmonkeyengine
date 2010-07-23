@@ -19,6 +19,7 @@ import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
 import com.jme3.gde.core.scene.SceneRequest;
+import com.jme3.gde.core.scene.controller.SceneToolController;
 import com.jme3.gde.core.scene.nodes.JmeNode;
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
 import com.jme3.gde.core.scene.nodes.NodeUtility;
@@ -77,7 +78,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     private JmeSpatial selectedSpat;
 //    private Spatial selected;
     ComposerCameraController camController;
-    ComposerToolController toolController;
+    SceneToolController toolController;
     private SaveCookie saveCookie = new SaveCookieImpl();
 
     public SceneComposerTopComponent() {
@@ -953,7 +954,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             camController = new ComposerCameraController(SceneApplication.getApplication().getCamera(), request.getRootNode());
             camController.setMaster(this);
             camController.enable();
-            toolController = new ComposerToolController(currentRequest.getToolNode(), currentRequest.getManager().getManager());
+            toolController = new SceneToolController(currentRequest.getToolNode(), currentRequest.getManager().getManager());
         } else {
             setSceneInfo("no scene loaded", false);
             if (camController != null) {

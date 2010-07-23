@@ -45,7 +45,6 @@ public class Installer extends ModuleInstall {
     @Override
     public boolean closing() {
         SceneApplication.getApplication().stop();
-        SceneApplication.getApplication().destroy();
         return true;
     }
 

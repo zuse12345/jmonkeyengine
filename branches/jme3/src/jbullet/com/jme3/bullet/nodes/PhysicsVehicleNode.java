@@ -178,6 +178,15 @@ public class PhysicsVehicleNode extends PhysicsNode {
     }
 
     /**
+     * This rebuilds the vehicle as there is no way in bullet to remove a wheel.
+     * @param wheel
+     */
+    public void removeWheel(int wheel){
+        wheels.remove(wheel);
+        rebuildRigidBody();
+    }
+
+    /**
      * You can get access to the single wheels via this method.
      * @param wheel the wheel index
      * @return the WheelInfo of the selected wheel

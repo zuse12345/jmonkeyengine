@@ -185,7 +185,7 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
     }
 
     private void pauseCanvas(){
-        try {
+//        try {
             if (Mouse.isCreated() && Mouse.isGrabbed()){
                 Mouse.setGrabbed(false);
                 mouseWasGrabbed = true;
@@ -194,11 +194,9 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
             logger.log(Level.INFO, "OGL: Destroying display (temporarily)");
             
             Display.destroy();
-            Display.setParent(null);
-            
-        } catch (LWJGLException ex) {
-            logger.log(Level.SEVERE, "in pauseCanvas()", ex);
-        }
+//        } catch (LWJGLException ex) {
+//            logger.log(Level.SEVERE, "in pauseCanvas()", ex);
+//        }
     }
 
     /**

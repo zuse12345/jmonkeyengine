@@ -158,6 +158,11 @@
         </folder>
     </folder>
     <folder name="Services">
+        <folder name="JavaHelp">
+            <file name="materials-helpset.xml" url="materials-helpset.xml">
+                <attr name="position" intvalue="3210"/>
+            </file>
+        </folder>
         <folder name="MIMEResolver">
             <file name="JMEMaterialDefinitionResolver.xml" url="JMEMaterialDefinitionResolver.xml">
                 <attr name="displayName" bundlevalue="com.jme3.gde.materials.Bundle#Services/MIMEResolver/JMEMaterialDefinitionResolver.xml"/>

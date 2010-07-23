@@ -35,7 +35,6 @@ import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
 import com.jme3.gde.core.scene.SceneRequest;
-import com.jme3.gde.core.scene.nodes.JmeNode;
 import com.jme3.gde.core.scene.nodes.JmeSpatial;
 import java.util.Collection;
 import java.util.Iterator;
@@ -53,6 +52,7 @@ import org.openide.actions.PasteAction;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.util.HelpCtx;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
@@ -183,6 +183,14 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        HelpCtx ctx=new HelpCtx("com.jme3.gde.core.sceneexplorer");
+        //this call is for single components:
+        //HelpCtx.setHelpIDString(this, "com.jme3.gde.core.sceneviewer");
+        return ctx;
     }
 
     @Override

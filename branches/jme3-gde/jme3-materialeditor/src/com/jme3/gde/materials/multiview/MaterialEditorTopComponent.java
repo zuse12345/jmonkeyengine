@@ -29,8 +29,6 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -45,6 +43,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.CloneableTopComponent;
@@ -264,6 +263,14 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;//ALWAYS;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        HelpCtx ctx=new HelpCtx("com.jme3.gde.materials.usage");
+        //this call is for single components:
+        //HelpCtx.setHelpIDString(this, "com.jme3.gde.core.sceneviewer");
+        return ctx;
     }
 
     @Override

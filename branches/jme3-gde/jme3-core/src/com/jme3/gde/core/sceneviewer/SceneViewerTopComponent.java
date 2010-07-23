@@ -45,8 +45,8 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
@@ -182,6 +182,14 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     }
 
     @Override
+    public HelpCtx getHelpCtx() {
+        HelpCtx ctx=new HelpCtx("com.jme3.gde.core.sceneviewer");
+        //this call is for single components:
+        //HelpCtx.setHelpIDString(this, "com.jme3.gde.core.sceneviewer");
+        return ctx;
+    }
+
+    @Override
     public void componentOpened() {
         super.componentOpened();
         app.setSceneActive(true);
@@ -273,8 +281,8 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                Collection<JmeSpatial> old = (Collection<JmeSpatial>)getLookup().lookupAll(JmeSpatial.class);
-                if (old.size()>0) {
+                Collection<JmeSpatial> old = (Collection<JmeSpatial>) getLookup().lookupAll(JmeSpatial.class);
+                if (old.size() > 0) {
                     for (JmeSpatial jmeSpatial : old) {
                         lookupContents.remove(jmeSpatial);
                     }

@@ -547,11 +547,14 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 
             public void run() {
                 if (text != null) {
+                    //XXX: wtf? why do i have to repaint?
                     ((TitledBorder) palettePanel.getBorder()).setTitle("Palette:" + text);
+                    palettePanel.repaint();
                     addObjectButton.setEnabled(true);
                     addCursorButton.setEnabled(true);
                 } else {
                     ((TitledBorder) palettePanel.getBorder()).setTitle("no spatial selected");
+                    palettePanel.repaint();
                     addObjectButton.setEnabled(false);
                     addCursorButton.setEnabled(false);
                 }
@@ -824,6 +827,8 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 
             public void run() {
                 ((TitledBorder) sceneInfoPanel.getBorder()).setTitle(name);
+                //XXX: wtf? why do i have to repaint?
+                sceneInfoPanel.repaint();
 
                 if (!active) {
                     addObjectButton.setEnabled(false);
@@ -863,13 +868,17 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         selectedSpat = spatial;
         if (selectedSpat.getLookup().lookup(Node.class) != null) {
             setSelectionData(true);
+            setSelectedObjectText(selectedSpat.getLookup().lookup(Node.class).getName());
+        } else if (selectedSpat.getLookup().lookup(Spatial.class) != null) {
+            setSelectionData(false);
+            setSelectedObjectText(selectedSpat.getLookup().lookup(Spatial.class).getName());
         } else {
+            setSelectedObjectText(null);
             setSelectionData(false);
         }
         //TODO: remove
         selectedSpat.fireSave(true);
         setActivatedNodes(new org.openide.nodes.Node[]{selectedSpat});
-        setSelectedObjectText(selectedSpat.getLookup().lookup(Spatial.class).getName());
     }
 
     /*

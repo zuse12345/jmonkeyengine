@@ -35,7 +35,6 @@ import com.jme3.app.Application;
 import com.jme3.app.state.AppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.gde.core.scene.SceneApplication;
-import com.jme3.gde.core.scene.nodes.JmeNode;
 import com.jme3.input.InputManager;
 import com.jme3.input.RawInputListener;
 import com.jme3.input.controls.ActionListener;
@@ -66,7 +65,6 @@ public abstract class AbstractCameraController implements ActionListener, Analog
     protected Vector3f vector = new Vector3f();
     protected Vector3f focus = new Vector3f();
     protected Camera cam;
-    protected JmeNode jmeRootNode;
     protected InputManager inputManager;
     protected Object master;
     protected boolean moved = false;

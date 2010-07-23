@@ -47,13 +47,15 @@ import com.jme3.scene.Node;
  * @author normenhansen
  */
 public class ComposerCameraController extends AbstractCameraController {
+
     private Node rootNode;
+    private JmeNode jmeRootNode;
 
     public ComposerCameraController(Camera cam, JmeNode rootNode) {
         super(cam, SceneApplication.getApplication().getInputManager());
-        this.rootNode=rootNode.getLookup().lookup(Node.class);
+        this.jmeRootNode = rootNode;
+        this.rootNode = rootNode.getLookup().lookup(Node.class);
     }
-
 
     public void checkClick(int button) {
         if (button == 0) {
@@ -95,7 +97,7 @@ public class ComposerCameraController extends AbstractCameraController {
             }
             CollisionResult result = results.getClosestCollision();
             if (result != null) {
-                ((SceneComposerTopComponent)master).doMoveCursor(result.getContactPoint());
+                ((SceneComposerTopComponent) master).doMoveCursor(result.getContactPoint());
             }
             checkClickR = false;
         }

@@ -35,7 +35,7 @@ import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
 import com.jme3.gde.core.scene.SceneRequest;
-import com.jme3.gde.core.scene.nodes.JmeSpatial;
+import com.jme3.gde.core.sceneexplorer.nodes.JmeSpatial;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Logger;

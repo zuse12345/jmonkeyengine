@@ -35,7 +35,7 @@ import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.controller.AbstractCameraController;
-import com.jme3.gde.core.scene.nodes.JmeNode;
+import com.jme3.gde.core.sceneexplorer.nodes.JmeNode;
 import com.jme3.math.Ray;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;

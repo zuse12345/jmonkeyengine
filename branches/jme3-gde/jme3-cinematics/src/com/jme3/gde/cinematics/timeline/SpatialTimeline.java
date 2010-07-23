@@ -33,7 +33,7 @@ package com.jme3.gde.cinematics.timeline;
 
 import com.jme3.gde.cinematics.controls.MovementControl;
 import com.jme3.gde.core.scene.SceneApplication;
-import com.jme3.gde.core.scene.nodes.JmeSpatial;
+import com.jme3.gde.core.sceneexplorer.nodes.JmeSpatial;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;

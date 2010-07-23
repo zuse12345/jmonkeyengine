@@ -37,7 +37,7 @@ import com.jme3.gde.cinematics.timeline.keyframes.Vector3fKeyFrame;
 import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneListener;
 import com.jme3.gde.core.scene.SceneRequest;
-import com.jme3.gde.core.scene.nodes.JmeSpatial;
+import com.jme3.gde.core.sceneexplorer.nodes.JmeSpatial;
 import com.jme3.math.Vector3f;
 import java.awt.Color;
 import java.awt.Graphics;

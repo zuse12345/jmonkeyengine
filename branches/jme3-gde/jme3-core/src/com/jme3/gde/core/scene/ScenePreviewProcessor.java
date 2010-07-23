@@ -31,7 +31,7 @@
  */
 package com.jme3.gde.core.scene;
 
-import com.jme3.gde.core.scene.nodes.JmeSpatial;
+import com.jme3.gde.core.sceneexplorer.nodes.JmeSpatial;
 import com.jme3.light.PointLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;

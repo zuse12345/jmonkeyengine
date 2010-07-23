@@ -35,7 +35,7 @@ import com.jme3.app.Application;
 import com.jme3.app.StatsView;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
-import com.jme3.gde.core.scene.nodes.JmeSpatial;
+import com.jme3.gde.core.sceneexplorer.nodes.JmeSpatial;
 import com.jme3.gde.core.scene.processors.WireProcessor;
 import com.jme3.gde.core.sceneviewer.SceneViewerTopComponent;
 import com.jme3.input.FlyByCamera;

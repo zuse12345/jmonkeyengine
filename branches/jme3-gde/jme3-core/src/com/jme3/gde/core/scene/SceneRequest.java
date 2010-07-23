@@ -32,7 +32,7 @@
 package com.jme3.gde.core.scene;
 
 import com.jme3.gde.core.assets.ProjectAssetManager;
-import com.jme3.gde.core.scene.nodes.JmeNode;
+import com.jme3.gde.core.sceneexplorer.nodes.JmeNode;
 import com.jme3.scene.Node;
 import org.openide.util.Lookup;
 

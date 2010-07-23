@@ -197,6 +197,13 @@ public class Application implements SystemListener {
     }
 
     /**
+     * @return the render manager
+     */
+    public RenderManager getRenderManager() {
+        return renderManager;
+    }
+
+    /**
      * @return The renderer for the application, or null if was not started yet.
      */
     public Renderer getRenderer(){
@@ -404,6 +411,8 @@ public class Application implements SystemListener {
      * Callback from ContextListener.
      */
     public void destroy(){
+        stateManager.cleanup();
+        
         destroyInput();
         if (audioRenderer != null)
             audioRenderer.cleanup();

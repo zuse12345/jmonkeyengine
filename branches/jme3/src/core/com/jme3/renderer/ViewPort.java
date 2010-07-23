@@ -10,6 +10,7 @@ import java.util.List;
 
 public class ViewPort {
 
+    protected final String name;
     protected final Camera cam;
     protected final RenderQueue queue = new RenderQueue();
     protected final ArrayList<Spatial> sceneList = new ArrayList<Spatial>();
@@ -20,7 +21,12 @@ public class ViewPort {
     protected boolean clearEnabled = true;
 
     public ViewPort(String name, Camera cam) {
+        this.name = name;
         this.cam = cam;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public List<SceneProcessor> getProcessors(){

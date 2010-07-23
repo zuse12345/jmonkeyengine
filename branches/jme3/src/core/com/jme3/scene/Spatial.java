@@ -816,6 +816,15 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
     }
 
     /**
+     * Scales the spatial by the given value
+     *
+     * @return The spatial on which this method is called, e.g <code>this</code>.
+     */
+    public Spatial scale(float s){
+        return scale(s,s,s);
+    }
+
+    /**
      * Scales the spatial by the given scale vector.
      *
      * @return The spatial on which this method is called, e.g <code>this</code>.

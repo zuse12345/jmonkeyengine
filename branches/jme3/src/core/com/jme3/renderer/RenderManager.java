@@ -22,6 +22,7 @@ import com.jme3.system.Timer;
 import com.jme3.util.IntMap.Entry;
 import com.jme3.util.TempVars;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -69,6 +70,42 @@ public class RenderManager {
     public RenderManager(Renderer renderer){
         this.renderer = renderer;
         this.shader = renderer.getCaps().contains(Caps.GLSL100);
+    }
+
+    public ViewPort getPreView(String viewName){
+        for (int i = 0; i < preViewPorts.size(); i++){
+            if (preViewPorts.get(i).getName().equals(viewName))
+                return preViewPorts.get(i);
+        }
+        return null;
+    }
+
+    public ViewPort getMainView(String viewName){
+        for (int i = 0; i < viewPorts.size(); i++){
+            if (viewPorts.get(i).getName().equals(viewName))
+                return viewPorts.get(i);
+        }
+        return null;
+    }
+
+    public ViewPort getPostView(String viewName){
+        for (int i = 0; i < postViewPorts.size(); i++){
+            if (postViewPorts.get(i).getName().equals(viewName))
+                return postViewPorts.get(i);
+        }
+        return null;
+    }
+
+    public List<ViewPort> getPreViews(){
+        return Collections.unmodifiableList(preViewPorts);
+    }
+
+    public List<ViewPort> getMainViews(){
+        return Collections.unmodifiableList(viewPorts);
+    }
+
+    public List<ViewPort> getPostViews(){
+        return Collections.unmodifiableList(postViewPorts);
     }
 
     /**

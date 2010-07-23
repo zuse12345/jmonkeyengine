@@ -4,6 +4,7 @@ import com.jme3.system.AppSettings;
 import com.jme3.system.JmeCanvasContext;
 import com.jme3.system.JmeContext.Type;
 import java.awt.Canvas;
+import java.awt.Graphics;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,21 +35,31 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
 
     public LwjglCanvas(){
         super();
+
+
+
         canvas = new Canvas(){
+            
             @Override
             public void addNotify(){
                 super.addNotify();
                 if (renderThread == null || renderThread.getState() == Thread.State.TERMINATED){
+                    if (renderThread != null && renderThread.getState() == Thread.State.TERMINATED){
+                        logger.log(Level.INFO, "EDT: Creating OGL thread. Was terminated.");
+                    }else{
+                        logger.log(Level.INFO, "EDT: Creating OGL thread.");
+                    }
                     renderThread = new Thread(LwjglCanvas.this, "LWJGL Renderer Thread");
                     renderThread.start();
                 }else{
                     if (needClose.get())
                         return;
 
-//                    logger.log(Level.INFO, "EDT: Sending re-init authorization..");
-                    // reinitializing
-                    reinitAuth.set(true);
+                    logger.log(Level.INFO, "EDT: Sending re-init authorization..");
+
+                    // reinitializing canvas
                     synchronized (reinitAuthLock){
+                        reinitAuth.set(true);
                         reinitAuthLock.notifyAll();
                     }
                 }
@@ -56,14 +67,16 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
 
             @Override
             public void removeNotify(){
-                if (needClose.get())
+                if (needClose.get()){
+                    logger.log(Level.INFO, "EDT: Close requested. Not re-initing.");
                     return;
+                }
                 
                 // request to put context into reinit mode
                 // this waits until reinit is authorized
-//                logger.log(Level.INFO, "EDT: Sending re-init request..");
-                reinitReq.set(true);
+                logger.log(Level.INFO, "EDT: Sending re-init request..");
                 synchronized (reinitReqLock){
+                    reinitReq.set(true);
                     while (reinitReq.get()){
                         try {
                             reinitReqLock.wait();
@@ -71,19 +84,27 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
                             logger.log(Level.SEVERE, "EDT: Interrupted! ", ex);
                         }
                     }
+                    // NOTE: reinitReq is now false.
                 }
-//                logger.log(Level.INFO, "EDT: Acknowledged reciept of re-init request!");
+                logger.log(Level.INFO, "EDT: Acknowledged receipt of re-init request!");
+                
                 super.removeNotify();
             }
         };
+        
         canvas.setFocusable(true);
         canvas.setIgnoreRepaint(true);
     }
 
     @Override
     protected void runLoop(){
-        if (reinitReq.get()){
-//            logger.log(Level.INFO, "OGL: Re-init request recieved!");
+        boolean reinitNeeded;
+        synchronized (reinitReqLock){
+            reinitNeeded = reinitReq.get();
+        }
+        
+        if (reinitNeeded){
+            logger.log(Level.INFO, "OGL: Re-init request recieved!");
             listener.loseFocus();
 
             boolean mouseActive = Mouse.isCreated();
@@ -99,13 +120,13 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
 
             pauseCanvas();
 
-            reinitReq.set(false);
             synchronized (reinitReqLock){
+                reinitReq.set(false);
                 reinitReqLock.notifyAll();
             }
 
             // we got the reinit request, now we wait for reinit to happen..
-//            logger.log(Level.INFO, "OGL: Waiting for re-init authorization..");
+            logger.log(Level.INFO, "OGL: Waiting for re-init authorization..");
             synchronized (reinitAuthLock){
                 while (!reinitAuth.get()){
                     try {
@@ -117,8 +138,11 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
                         logger.log(Level.SEVERE, "OGL: Interrupted! ", ex);
                     }
                 }
+                // NOTE: reinitAuth becamse true, now set it to false.
+                reinitAuth.set(false);
             }
-//            logger.log(Level.INFO, "OGL: Re-init authorization recieved. Re-initializing..");
+            
+            logger.log(Level.INFO, "OGL: Re-init authorization recieved. Re-initializing..");
             restoreCanvas();
 
             try {
@@ -161,24 +185,27 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
     }
 
     private void pauseCanvas(){
-//        try {
+        try {
             if (Mouse.isCreated() && Mouse.isGrabbed()){
                 Mouse.setGrabbed(false);
                 mouseWasGrabbed = true;
             }
 
-//            logger.log(Level.INFO, "OGL: Destroying display (temporarily)");
+            logger.log(Level.INFO, "OGL: Destroying display (temporarily)");
+            
             Display.destroy();
-//        } catch (LWJGLException ex) {
-//            logger.log(Level.SEVERE, "in pauseCanvas()", ex);
-//        }
+            Display.setParent(null);
+            
+        } catch (LWJGLException ex) {
+            logger.log(Level.SEVERE, "in pauseCanvas()", ex);
+        }
     }
 
     /**
      * Called if canvas was removed and then restored unexpectedly
      */
     private void restoreCanvas(){
-//        logger.log(Level.INFO, "OGL: Waiting for canvas to become displayable..");
+        logger.log(Level.INFO, "OGL: Waiting for canvas to become displayable..");
         while (!canvas.isDisplayable()){
             try {
                 Thread.sleep(1);
@@ -187,10 +214,10 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
             }
         }
         renderer.resetGLObjects();
-//        logger.log(Level.INFO, "OGL: Creating display..");
+        logger.log(Level.INFO, "OGL: Creating display..");
         createContext(settings);
 
-//        logger.log(Level.INFO, "OGL: Waiting for display to become active..");
+        logger.log(Level.INFO, "OGL: Waiting for display to become active..");
         while (!Display.isCreated()){
             try {
                 Thread.sleep(1);
@@ -198,7 +225,7 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
                 logger.log(Level.SEVERE, "OGL: Interrupted! ", ex);
             }
         }
-//        logger.log(Level.INFO, "OGL: Display is active!");
+        logger.log(Level.INFO, "OGL: Display is active!");
 
         try {
             if (mouseWasGrabbed){

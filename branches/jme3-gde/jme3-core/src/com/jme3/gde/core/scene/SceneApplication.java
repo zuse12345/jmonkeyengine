@@ -39,6 +39,9 @@ import com.jme3.gde.core.scene.nodes.JmeSpatial;
 import com.jme3.gde.core.scene.processors.WireProcessor;
 import com.jme3.gde.core.sceneviewer.SceneViewerTopComponent;
 import com.jme3.input.FlyByCamera;
+import com.jme3.input.MouseInput;
+import com.jme3.input.controls.MouseAxisTrigger;
+import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.light.PointLight;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
@@ -174,6 +177,16 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         progressHandle.progress("Create", 6);
         wireProcessor = new WireProcessor(assetManager);
         progressHandle.finish();
+        
+        inputManager.addMapping("MouseAxisX", new MouseAxisTrigger(MouseInput.AXIS_X, false));
+        inputManager.addMapping("MouseAxisY", new MouseAxisTrigger(MouseInput.AXIS_Y, false));
+        inputManager.addMapping("MouseAxisX-", new MouseAxisTrigger(MouseInput.AXIS_X, true));
+        inputManager.addMapping("MouseAxisY-", new MouseAxisTrigger(MouseInput.AXIS_Y, true));
+        inputManager.addMapping("MouseWheel", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
+        inputManager.addMapping("MouseWheel-", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
+        inputManager.addMapping("MouseButtonLeft", new MouseButtonTrigger(0));
+        inputManager.addMapping("MouseButtonMiddle", new MouseButtonTrigger(2));
+        inputManager.addMapping("MouseButtonRight", new MouseButtonTrigger(1));
     }
 
     @Override

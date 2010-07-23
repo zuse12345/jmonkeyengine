@@ -869,7 +869,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         //TODO: remove
         selectedSpat.fireSave(true);
         setActivatedNodes(new org.openide.nodes.Node[]{selectedSpat});
-        setSelectedObjectText(spatial.getName());
+        setSelectedObjectText(selectedSpat.getLookup().lookup(Spatial.class).getName());
     }
 
     /*

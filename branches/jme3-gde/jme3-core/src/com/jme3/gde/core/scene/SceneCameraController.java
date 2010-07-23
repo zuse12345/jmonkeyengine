@@ -31,151 +31,22 @@
  */
 package com.jme3.gde.core.scene;
 
+import com.jme3.gde.core.scene.controller.AbstractCameraController;
 import com.jme3.input.InputManager;
-import com.jme3.input.MouseInput;
-import com.jme3.input.controls.ActionListener;
-import com.jme3.input.controls.AnalogListener;
-import com.jme3.input.controls.MouseAxisTrigger;
-import com.jme3.input.controls.MouseButtonTrigger;
-import com.jme3.math.FastMath;
-import com.jme3.math.Quaternion;
-import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 
 /**
  *
  * @author normenhansen
  */
-public class SceneCameraController implements ActionListener, AnalogListener {
-
-    private boolean leftMouse, rightMouse, middleMouse;
-    private float deltaX = 0.01f, deltaY = 0.01f, deltaZ = 0.01f, deltaWheel = 1;
-    private float mouseX = 0;
-    private float mouseY = 0;
-    private Quaternion rot = new Quaternion();
-    private Vector3f vector = new Vector3f();
-    private Vector3f focus = new Vector3f();
-    private Camera cam;
-    private InputManager inputManager;
+public class SceneCameraController extends AbstractCameraController {
 
     public SceneCameraController(Camera cam, InputManager inputManager) {
-        this.cam = cam;
-        this.inputManager = inputManager;
-
-        inputManager.addMapping("MouseAxisX", new MouseAxisTrigger(MouseInput.AXIS_X, false));
-        inputManager.addMapping("MouseAxisY", new MouseAxisTrigger(MouseInput.AXIS_Y, false));
-        inputManager.addMapping("MouseAxisX-", new MouseAxisTrigger(MouseInput.AXIS_X, true));
-        inputManager.addMapping("MouseAxisY-", new MouseAxisTrigger(MouseInput.AXIS_Y, true));
-        inputManager.addMapping("MouseWheel", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
-        inputManager.addMapping("MouseWheel-", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
-        inputManager.addMapping("MouseButtonLeft", new MouseButtonTrigger(0));
-        inputManager.addMapping("MouseButtonMiddle", new MouseButtonTrigger(2));
-        inputManager.addMapping("MouseButtonRight", new MouseButtonTrigger(1));
+        super(cam,inputManager);
     }
 
-    public void enable() {
-        inputManager.addListener(this, "MouseAxisX");
-        inputManager.addListener(this, "MouseAxisY");
-        inputManager.addListener(this, "MouseAxisX-");
-        inputManager.addListener(this, "MouseAxisY-");
-        inputManager.addListener(this, "MouseWheel");
-        inputManager.addListener(this, "MouseWheel-");
-        inputManager.addListener(this, "MouseButtonLeft");
-        inputManager.addListener(this, "MouseButtonMiddle");
-        inputManager.addListener(this, "MouseButtonRight");
+    @Override
+    protected void checkClick(int button) {
     }
 
-    public void disable() {
-        inputManager.removeListener(this);
-    }
-
-    private void rotateCamera(Vector3f axis, float amount) {
-        if (axis.equals(cam.getLeft())) {
-            float elevation = -FastMath.asin(cam.getDirection().y);
-            amount = Math.min(Math.max(elevation + amount,
-                    -FastMath.HALF_PI), FastMath.HALF_PI)
-                    - elevation;
-        }
-        rot.fromAngleAxis(amount, axis);
-        cam.getLocation().subtract(focus, vector);
-        rot.mult(vector, vector);
-        focus.add(vector, cam.getLocation());
-
-        Quaternion curRot = cam.getRotation().clone();
-        cam.setRotation(rot.mult(curRot));
-    }
-
-    private void panCamera(float left, float up) {
-        cam.getLeft().mult(left, vector);
-        vector.scaleAdd(up, cam.getUp(), vector);
-        cam.setLocation(cam.getLocation().add(vector));
-        focus.addLocal(vector);
-    }
-
-    private void moveCamera(float forward) {
-        cam.getDirection().mult(forward, vector);
-        cam.setLocation(cam.getLocation().add(vector));
-    }
-
-    private void zoomCamera(float amount) {
-        float dist = cam.getLocation().distance(focus);
-        amount = dist - Math.max(0f, dist - amount);
-        Vector3f loc = cam.getLocation().clone();
-        loc.scaleAdd(amount, cam.getDirection(), loc);
-        cam.setLocation(loc);
-    }
-
-    public void onAction(String string, boolean bln, float f) {
-        if ("MouseButtonLeft".equals(string)) {
-            if (bln) {
-                leftMouse = true;
-            } else {
-                leftMouse = false;
-            }
-        }
-        if ("MouseButtonRight".equals(string)) {
-            if (bln) {
-                rightMouse = true;
-            } else {
-                rightMouse = false;
-            }
-        }
-    }
-
-    public void onAnalog(String string, float f1, float f) {
-        if ("MouseAxisX".equals(string)) {
-            if (leftMouse) {
-                rotateCamera(Vector3f.UNIT_Y, -f1 * 2.5f);
-            }
-            if (rightMouse) {
-                panCamera(f1 * 2.5f, 0);
-            }
-        } else if ("MouseAxisY".equals(string)) {
-            if (leftMouse) {
-                rotateCamera(cam.getLeft(), -f1 * 2.5f);
-            }
-            if (rightMouse) {
-                panCamera(0, -f1 * 2.5f);
-            }
-        } else if ("MouseAxisX-".equals(string)) {
-            if (leftMouse) {
-                rotateCamera(Vector3f.UNIT_Y, f1 * 2.5f);
-            }
-            if (rightMouse) {
-                panCamera(-f1 * 2.5f, 0);
-            }
-        } else if ("MouseAxisY-".equals(string)) {
-            if (leftMouse) {
-                rotateCamera(cam.getLeft(), f1 * 2.5f);
-            }
-            if (rightMouse) {
-                panCamera(0, f1 * 2.5f);
-            }
-        } else if ("MouseWheel".equals(string)) {
-            zoomCamera(.1f);
-        } else if ("MouseWheel-".equals(string)) {
-            zoomCamera(-.1f);
-        }
-
-    }
 }

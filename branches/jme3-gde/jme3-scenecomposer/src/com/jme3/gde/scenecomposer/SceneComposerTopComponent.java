@@ -523,7 +523,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 
             public void run() {
                 if (selectedSpat != null) {
-                    ((JmeSpatial)selectedSpat.getParentNode()).refresh(false);
+                    ((JmeSpatial) selectedSpat.getParentNode()).refresh(false);
                 }
             }
         });
@@ -547,11 +547,11 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 
             public void run() {
                 if (text != null) {
-                    ((TitledBorder)palettePanel.getBorder()).setTitle("Palette:"+text);
+                    ((TitledBorder) palettePanel.getBorder()).setTitle("Palette:" + text);
                     addObjectButton.setEnabled(true);
                     addCursorButton.setEnabled(true);
                 } else {
-                    ((TitledBorder)palettePanel.getBorder()).setTitle("no spatial selected");
+                    ((TitledBorder) palettePanel.getBorder()).setTitle("no spatial selected");
                     addObjectButton.setEnabled(false);
                     addCursorButton.setEnabled(false);
                 }
@@ -566,7 +566,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 if (node == null) {
                     jList1.setListData(new String[]{});
                 } else if (node) {
-                    jList1.setListData(new String[]{"Particle Emitter", "Audio Node", "Picture", "Point Light", "Directional Light"});
+                    jList1.setListData(new String[]{"Node", "Particle Emitter", "Audio Node", "Picture", "Point Light", "Directional Light"});
                 } else {
                     jList1.setListData(new String[]{"Point Light", "Directional Light"});
                 }
@@ -659,6 +659,10 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 dl.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
                 dl.setColor(ColorRGBA.Green);
                 ((Node) selected).addLight(dl);
+                refreshSelected();
+            } else if ("Node".equals(name)) {
+                Node node = new Node("Node");
+                ((Node) selected).attachChild(node);
                 refreshSelected();
             }
         } else if (selected instanceof Geometry) {
@@ -783,7 +787,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         }
         Node parent = selected.getParent();
         PhysicsNode node = new PhysicsNode(selected, CollisionShapeFactory.createMeshShape(selected), 0);
-        node.setName(selected.getName()+"-PhysicsNode");
+        node.setName(selected.getName() + "-PhysicsNode");
         parent.attachChild(node);
         refreshSelectedParent();
     }
@@ -819,7 +823,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                ((TitledBorder)sceneInfoPanel.getBorder()).setTitle(name);
+                ((TitledBorder) sceneInfoPanel.getBorder()).setTitle(name);
 
                 if (!active) {
                     addObjectButton.setEnabled(false);

@@ -33,6 +33,7 @@ package com.jme3.app;
 
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.PhysicsSpace.BroadphaseType;
+import com.jme3.bullet.PhysicsTickListener;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.input.FlyByCamera;
@@ -62,7 +63,7 @@ import java.util.logging.Logger;
  *
  * @author normenhansen
  */
-public abstract class SimpleBulletApplication extends Application {
+public abstract class SimpleBulletApplication extends Application implements PhysicsTickListener{
 
     protected ScheduledThreadPoolExecutor executor;
     private PhysicsSpace pSpace;
@@ -130,11 +131,13 @@ public abstract class SimpleBulletApplication extends Application {
             executor.shutdown();
         }
         executor = new ScheduledThreadPoolExecutor(1);
+        final SimpleBulletApplication app=this;
         Callable<Boolean> call = new Callable<Boolean>() {
 
             public Boolean call() throws Exception {
                 detachedPhysicsLastUpdate = System.currentTimeMillis();
                 pSpace = new PhysicsSpace(worldMin, worldMax, broadphaseType);
+                pSpace.addTickListener(app);
                 return true;
             }
         };
@@ -151,7 +154,6 @@ public abstract class SimpleBulletApplication extends Application {
     private Callable<Boolean> parallelPhysicsUpdate = new Callable<Boolean>() {
 
         public Boolean call() throws Exception {
-            simplePhysicsUpdate(timer.getTimePerFrame() * speed);
             pSpace.update(timer.getTimePerFrame() * speed);
             return true;
         }
@@ -160,7 +162,6 @@ public abstract class SimpleBulletApplication extends Application {
     private Callable<Boolean> detachedPhysicsUpdate = new Callable<Boolean>() {
 
         public Boolean call() throws Exception {
-            simplePhysicsUpdate(getPhysicsSpace().getAccuracy() * speed);
             pSpace.update(getPhysicsSpace().getAccuracy() * speed);
             long update = System.currentTimeMillis() - detachedPhysicsLastUpdate;
             detachedPhysicsLastUpdate = System.currentTimeMillis();
@@ -229,6 +230,7 @@ public abstract class SimpleBulletApplication extends Application {
             executor.submit(detachedPhysicsUpdate);
         } else {
             pSpace = new PhysicsSpace(worldMin, worldMax, broadphaseType);
+            pSpace.addTickListener(this);
         }
 
         // enable depth test and back-face culling for performance
@@ -296,7 +298,6 @@ public abstract class SimpleBulletApplication extends Application {
                 Logger.getLogger(SimpleBulletApplication.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else if (threadingType == ThreadingType.SEQUENTIAL) {
-            simplePhysicsUpdate(tpf);
             pSpace.update(tpf);
             renderManager.render(tpf);
             simpleRender(renderManager);
@@ -307,6 +308,10 @@ public abstract class SimpleBulletApplication extends Application {
     }
 
     public abstract void simpleInitApp();
+
+    public void physicsTick(PhysicsSpace space, float f) {
+        simplePhysicsUpdate(f);
+    }
 
     public void simplePhysicsUpdate(float tpf) {
     }

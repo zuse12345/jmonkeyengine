@@ -61,7 +61,12 @@ public class XMLImporter implements JmeImporter {
         return assetManager;
     }
 
+    public void setAssetManager(AssetManager assetManager){
+        this.assetManager = assetManager;
+    }
+
     public Object load(AssetInfo info) throws IOException{
+        assetManager = info.getManager();
         InputStream in = info.openStream();
         Savable obj = load(in);
         in.close();

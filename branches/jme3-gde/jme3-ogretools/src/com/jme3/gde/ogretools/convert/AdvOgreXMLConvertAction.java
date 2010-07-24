@@ -40,7 +40,7 @@ public final class AdvOgreXMLConvertAction implements ActionListener {
         }
 
         // TODO use context
-        FileObject file = context.getPrimaryFile();
+        final FileObject file = context.getPrimaryFile();
         final OgreXMLConvertOptions options = new OgreXMLConvertOptions(file.getPath(), file.getParent().getPath() + File.separator + "+" + file.getNameExt());
         AdvOgreXMLConvertDialog dialog = new AdvOgreXMLConvertDialog(WindowManager.getDefault().getMainWindow(), true, options);
         dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
@@ -52,7 +52,7 @@ public final class AdvOgreXMLConvertAction implements ActionListener {
             public void run() {
                 ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Converting OgreXML");
                 progressHandle.start(4);
-                
+
                 OgreXMLConvert converter = new OgreXMLConvert();
                 if (!converter.doConvert(options, progressHandle)) {
                     progressHandle.finish();
@@ -61,9 +61,20 @@ public final class AdvOgreXMLConvertAction implements ActionListener {
                 FileObject sourceMatFile = FileUtil.toFileObject(new File(options.getSourceFile().replaceAll("mesh.xml", "material")));
                 if (sourceMatFile.isValid()) {
                     try {
-                        sourceMatFile.copy(sourceMatFile.getParent(), "+"+sourceMatFile.getName(), sourceMatFile.getExt());
+                        sourceMatFile.copy(sourceMatFile.getParent(), "+" + sourceMatFile.getName(), sourceMatFile.getExt());
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    Confirmation msg = new NotifyDescriptor.Confirmation(
+                            "No material file found for " + file.getNameExt() + "\n"
+                            + "A file named " + file.getNameExt().replaceAll(".mesh.xml", ".material") + " should be in the same folder.\n"
+                            + "Press OK to import mesh only.",
+                            NotifyDescriptor.OK_CANCEL_OPTION,
+                            NotifyDescriptor.WARNING_MESSAGE);
+                    Object result = DialogDisplayer.getDefault().notify(msg);
+                    if (!NotifyDescriptor.OK_OPTION.equals(result)) {
+                        return;
                     }
                 }
 
@@ -71,7 +82,7 @@ public final class AdvOgreXMLConvertAction implements ActionListener {
 //                FileLock lock = null;
                 try {
 //                    lock = file.lock();
-                    progressHandle.progress("Creating j3o file",3);
+                    progressHandle.progress("Creating j3o file", 3);
                     String outputPath = file.getParent().getPath() + File.separator + context.getPrimaryFile().getName() + ".j3o";
                     ((DesktopAssetManager) manager.getManager()).clearCache();
                     Spatial model = manager.getManager().loadModel(manager.getRelativeAssetPath(file.getPath()));
@@ -99,7 +110,7 @@ public final class AdvOgreXMLConvertAction implements ActionListener {
                 }
             }
         };
-        
+
         if (options.isGenerate()) {
             new Thread(run).start();
         }

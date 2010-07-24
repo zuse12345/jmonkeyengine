@@ -49,6 +49,19 @@ public final class OgreXMLToJme implements ActionListener {
                     FileLock lock = null;
                     try {
                         lock = file.lock();
+                        String materialPath = file.getPath().replaceAll(".mesh.xml", ".material");
+                        if(!new File(materialPath).exists()){
+                            Confirmation msg = new NotifyDescriptor.Confirmation(
+                                    "No material file found for " + file.getNameExt() + "\n"
+                                    + "A file named "+file.getNameExt().replaceAll(".mesh.xml", ".material")+" should be in the same folder.\n"
+                                    + "Press OK to import mesh only.",
+                                    NotifyDescriptor.OK_CANCEL_OPTION,
+                                    NotifyDescriptor.WARNING_MESSAGE);
+                            Object result = DialogDisplayer.getDefault().notify(msg);
+                            if (!NotifyDescriptor.OK_OPTION.equals(result)) {
+                                return;
+                            }
+                        }
                         String outputPath = file.getParent().getPath() + File.separator + file.getName() + ".j3o";
                         ((DesktopAssetManager) manager.getManager()).clearCache();
                         Spatial model = manager.getManager().loadModel(manager.getRelativeAssetPath(file.getPath()));
@@ -63,7 +76,7 @@ public final class OgreXMLToJme implements ActionListener {
                                 "Error converting " + file.getNameExt() + "\n" + ex.toString(),
                                 NotifyDescriptor.OK_CANCEL_OPTION,
                                 NotifyDescriptor.ERROR_MESSAGE);
-                        DialogDisplayer.getDefault().notify(msg);
+                        DialogDisplayer.getDefault().notifyLater(msg);
                     } finally {
                         if (lock != null) {
                             lock.releaseLock();

@@ -1,0 +1,128 @@
+/*
+ * Copyright (c) 2003-2008 jMonkeyEngine
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * * Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ *
+ * * Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the distribution.
+ *
+ * * Neither the name of 'jMonkeyEngine' nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
+ *   without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+package com.jme3.scene;
+
+import com.jme3.asset.AssetKey;
+import com.jme3.asset.AssetManager;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+/**
+ * The AssetLinkNode does not store its children when exported to file.
+ * Instead, you can add a list of AssetKeys that will be loaded and attached
+ * when the AssetLinkNode is restored.
+ * @author normenhansen
+ */
+public class AssetLinkNode extends Node {
+
+    private ArrayList<AssetKey> assetLoaderKeys = new ArrayList<AssetKey>();
+    private Map<AssetKey, Spatial> assetChildren = new HashMap<AssetKey, Spatial>();
+
+    public AssetLinkNode() {
+    }
+
+    public AssetLinkNode(AssetKey key) {
+        this(key.getName(), key);
+    }
+
+    public AssetLinkNode(String name, AssetKey key) {
+        super(name);
+        assetLoaderKeys.add(key);
+    }
+
+    /**
+     * Add a "linked" child. These are loaded from the assetManager when the
+     * AssetLinkNode is loaded from a binary file.
+     * @param key
+     */
+    public void addLinkedChild(AssetKey key) {
+        if (assetLoaderKeys.contains(key)) {
+            return;
+        }
+        assetLoaderKeys.add(key);
+    }
+
+    public void removeLinkedChild(AssetKey key) {
+        assetLoaderKeys.remove(key);
+    }
+
+    /**
+     * Loads the linked children AssetKeys from the AssetManager and attaches them to the Node<br>
+     * If they are already attached, they will be reloaded.
+     * @param manager
+     */
+    public void attachLinkedChildren(AssetManager manager) {
+        for (Iterator<AssetKey> it = assetLoaderKeys.iterator(); it.hasNext();) {
+            AssetKey assetKey = it.next();
+            Spatial curChild = assetChildren.get(assetKey);
+            if (curChild != null) {
+                curChild.removeFromParent();
+            }
+            Spatial child = (Spatial) manager.loadAsset(assetKey);
+            attachChild(child);
+            assetChildren.put(assetKey, child);
+        }
+    }
+
+    @Override
+    public void read(JmeImporter e) throws IOException {
+        super.read(e);
+        InputCapsule capsule = e.getCapsule(this);
+        assetLoaderKeys = (ArrayList<AssetKey>) capsule.readSavableArrayList("assetLoaderKeys", null);
+        if (assetLoaderKeys != null) {
+            for (Iterator<AssetKey> it = assetLoaderKeys.iterator(); it.hasNext();) {
+                AssetKey modelKey = it.next();
+                Spatial child = (Spatial) e.getAssetManager().loadAsset(modelKey);
+                child.parent = this;
+                children.add(child);
+                assetChildren.put(modelKey, child);
+            }
+        }
+    }
+
+    @Override
+    public void write(JmeExporter e) throws IOException {
+        ArrayList<Spatial> childs = children;
+        children = new ArrayList<Spatial>(assetLoaderKeys.size());
+        super.write(e);
+        OutputCapsule capsule = e.getCapsule(this);
+        capsule.writeSavableArrayList(assetLoaderKeys, "assetLoaderKeys", null);
+        children = childs;
+    }
+}

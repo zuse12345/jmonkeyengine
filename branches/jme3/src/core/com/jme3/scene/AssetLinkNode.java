@@ -88,8 +88,16 @@ public class AssetLinkNode extends Node {
         return assetLoaderKeys;
     }
 
+    public void attachLinkedChild(AssetManager manager, AssetKey<Spatial> key) {
+        addLinkedChild(key);
+        Spatial child=manager.loadAsset(key);
+        assetChildren.put(key, child);
+        attachChild(child);
+    }
+
     public void attachLinkedChild(Spatial spat, AssetKey<Spatial> key) {
         addLinkedChild(key);
+        assetChildren.put(key, spat);
         attachChild(spat);
     }
 
@@ -99,10 +107,12 @@ public class AssetLinkNode extends Node {
             detachChild(spatial);
         }
         removeLinkedChild(key);
+        assetChildren.remove(key);
     }
 
     public void detachLinkedChild(Spatial child, AssetKey<Spatial> key) {
         removeLinkedChild(key);
+        assetChildren.remove(key);
         detachChild(child);
     }
 
@@ -138,15 +148,13 @@ public class AssetLinkNode extends Node {
     public void read(JmeImporter e) throws IOException {
         super.read(e);
         InputCapsule capsule = e.getCapsule(this);
-        assetLoaderKeys = (ArrayList<AssetKey<Spatial>>) capsule.readSavableArrayList("assetLoaderKeys", null);
-        if (assetLoaderKeys != null) {
-            for (Iterator<AssetKey<Spatial>> it = assetLoaderKeys.iterator(); it.hasNext();) {
-                AssetKey<Spatial> modelKey = it.next();
-                Spatial child = e.getAssetManager().loadAsset(modelKey);
-                child.parent = this;
-                children.add(child);
-                assetChildren.put(modelKey, child);
-            }
+        assetLoaderKeys = (ArrayList<AssetKey<Spatial>>) capsule.readSavableArrayList("assetLoaderKeys", new ArrayList<AssetKey<Spatial>>());
+        for (Iterator<AssetKey<Spatial>> it = assetLoaderKeys.iterator(); it.hasNext();) {
+            AssetKey<Spatial> modelKey = it.next();
+            Spatial child = e.getAssetManager().loadAsset(modelKey);
+            child.parent = this;
+            children.add(child);
+            assetChildren.put(modelKey, child);
         }
     }
 

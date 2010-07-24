@@ -125,7 +125,7 @@ public class JmeChildren extends Children.Keys<Object> {
 
     @Override
     protected Node[] createNodes(Object key) {
-        for (ExplorerNode di : Lookup.getDefault().lookupAll(ExplorerNode.class)) {
+        for (SceneExplorerNode di : Lookup.getDefault().lookupAll(SceneExplorerNode.class)) {
             if (di.getExplorerObjectClass().getName().equals(key.getClass().getName())) {
                 System.out.println("Found " + di.getExplorerNodeClass());
                 Node[] ret = di.createNodes(key, null, cookie);

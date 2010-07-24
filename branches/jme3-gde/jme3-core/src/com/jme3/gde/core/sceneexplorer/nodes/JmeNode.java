@@ -52,7 +52,7 @@ import org.openide.util.datatransfer.PasteType;
  *
  * @author normenhansen
  */
-@org.openide.util.lookup.ServiceProvider(service=ExplorerNode.class)
+@org.openide.util.lookup.ServiceProvider(service=SceneExplorerNode.class)
 public class JmeNode extends JmeSpatial {
 
     private static Image smallImage =

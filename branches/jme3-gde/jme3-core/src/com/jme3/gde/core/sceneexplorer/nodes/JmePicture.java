@@ -44,7 +44,7 @@ import org.openide.util.ImageUtilities;
  *
  * @author normenhansen
  */
-@org.openide.util.lookup.ServiceProvider(service=ExplorerNode.class)
+@org.openide.util.lookup.ServiceProvider(service=SceneExplorerNode.class)
 public class JmePicture extends JmeGeometry {
 
     private static Image smallImage =

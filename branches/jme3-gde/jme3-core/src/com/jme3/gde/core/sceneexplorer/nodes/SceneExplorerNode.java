@@ -39,7 +39,7 @@ import org.openide.nodes.Node;
  *
  * @author normenhansen
  */
-public interface ExplorerNode {
+public interface SceneExplorerNode {
 
     public Class getExplorerNodeClass();
 

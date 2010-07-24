@@ -45,7 +45,7 @@ import org.openide.util.Exceptions;
  *
  * @author normenhansen
  */
-@org.openide.util.lookup.ServiceProvider(service=ExplorerNode.class)
+@org.openide.util.lookup.ServiceProvider(service=SceneExplorerNode.class)
 public class JmePointLight extends JmeLight{
     PointLight pointLight;
 

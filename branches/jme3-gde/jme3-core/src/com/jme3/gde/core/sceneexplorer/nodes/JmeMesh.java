@@ -55,8 +55,8 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author normenhansen
  */
-@org.openide.util.lookup.ServiceProvider(service=ExplorerNode.class)
-public class JmeMesh extends AbstractNode implements ExplorerNode{
+@org.openide.util.lookup.ServiceProvider(service=SceneExplorerNode.class)
+public class JmeMesh extends AbstractNode implements SceneExplorerNode{
 
     private final InstanceContent lookupContents;
     private Geometry geom;

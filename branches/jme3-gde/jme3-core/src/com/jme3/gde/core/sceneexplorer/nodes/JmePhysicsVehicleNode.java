@@ -44,7 +44,7 @@ import org.openide.util.ImageUtilities;
  *
  * @author normenhansen
  */
-@org.openide.util.lookup.ServiceProvider(service=ExplorerNode.class)
+@org.openide.util.lookup.ServiceProvider(service=SceneExplorerNode.class)
 public class JmePhysicsVehicleNode extends JmePhysicsNode {
 
     private static Image smallImage =

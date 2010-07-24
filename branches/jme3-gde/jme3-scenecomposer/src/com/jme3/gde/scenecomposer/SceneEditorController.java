@@ -323,7 +323,7 @@ public class SceneEditorController {
     }
 
     public void doAddModel(AssetManager manager, String assetName, Node selected) {
-        ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Importing Model..");
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Adding Model..");
         progressHandle.start();
         try {
             if (selected instanceof AssetLinkNode) {

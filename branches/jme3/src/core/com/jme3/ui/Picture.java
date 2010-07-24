@@ -15,7 +15,7 @@ import com.jme3.texture.Texture2D;
  * A <code>Picture</code> represents a 2D image drawn on the screen.
  * It can be used to represent sprites or other background elements.
  *
- * @author Momoko_Fan
+ * @author Kirill Vainer
  */
 public class Picture extends Geometry {
 

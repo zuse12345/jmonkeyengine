@@ -14,7 +14,6 @@ public class Grid extends Mesh {
         yLines -= 2;
         int lineCount = xLines + yLines + 4;
 
-
         FloatBuffer fpb = BufferUtils.createFloatBuffer(6 * lineCount);
         ShortBuffer sib = BufferUtils.createShortBuffer(2 * lineCount);
 

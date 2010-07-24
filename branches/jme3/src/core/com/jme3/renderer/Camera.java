@@ -131,7 +131,7 @@ public class Camera implements Savable, Cloneable {
     /**
      * MAX_WORLD_PLANES holds the maximum planes allowed by the system.
      */
-    public static final int MAX_WORLD_PLANES = 32;
+    public static final int MAX_WORLD_PLANES = 6;
 
     //the location and orientation of the camera.
     /**
@@ -281,6 +281,7 @@ public class Camera implements Savable, Cloneable {
             cam.viewportChanged = true;
             cam.planeState = 0;
 
+            cam.worldPlane = new Plane[MAX_WORLD_PLANES];
             for (int i = 0; i < worldPlane.length; i++){
                 cam.worldPlane[i] = worldPlane[i].clone();
             }
@@ -298,8 +299,10 @@ public class Camera implements Savable, Cloneable {
 
             cam.viewMatrix = viewMatrix.clone();
             cam.projectionMatrix = projectionMatrix.clone();
-            cam.viewProjectionMatrix = cam.viewProjectionMatrix.clone();
-
+            cam.viewProjectionMatrix = viewProjectionMatrix.clone();
+            
+            cam.update();
+            
             return cam;
         } catch (CloneNotSupportedException ex) {
             throw new AssertionError();
@@ -1065,40 +1068,36 @@ public class Camera implements Savable, Cloneable {
 
         // left plane
         Vector3f leftPlaneNormal = worldPlane[LEFT_PLANE].getNormal();
-        leftPlaneNormal.set(left).multLocal(coeffLeft[0]);
-//        leftPlaneNormal.x = left.x * coeffLeft[0];
-//        leftPlaneNormal.y = left.y * coeffLeft[0];
-//        leftPlaneNormal.z = left.z * coeffLeft[0];
+        leftPlaneNormal.x = left.x * coeffLeft[0];
+        leftPlaneNormal.y = left.y * coeffLeft[0];
+        leftPlaneNormal.z = left.z * coeffLeft[0];
         leftPlaneNormal.addLocal( direction.x * coeffLeft[1], direction.y
                 * coeffLeft[1], direction.z * coeffLeft[1] );
         worldPlane[LEFT_PLANE].setConstant( location.dot( leftPlaneNormal ) );
 
         // right plane
         Vector3f rightPlaneNormal = worldPlane[RIGHT_PLANE].getNormal();
-        rightPlaneNormal.set(left).multLocal(coeffRight[0]);
-//        rightPlaneNormal.x = left.x * coeffRight[0];
-//        rightPlaneNormal.y = left.y * coeffRight[0];
-//        rightPlaneNormal.z = left.z * coeffRight[0];
+        rightPlaneNormal.x = left.x * coeffRight[0];
+        rightPlaneNormal.y = left.y * coeffRight[0];
+        rightPlaneNormal.z = left.z * coeffRight[0];
         rightPlaneNormal.addLocal( direction.x * coeffRight[1], direction.y
                 * coeffRight[1], direction.z * coeffRight[1] );
         worldPlane[RIGHT_PLANE].setConstant( location.dot( rightPlaneNormal ) );
 
         // bottom plane
         Vector3f bottomPlaneNormal = worldPlane[BOTTOM_PLANE].getNormal();
-        bottomPlaneNormal.set(up).multLocal(coeffBottom[0]);
-//        bottomPlaneNormal.x = up.x * coeffBottom[0];
-//        bottomPlaneNormal.y = up.y * coeffBottom[0];
-//        bottomPlaneNormal.z = up.z * coeffBottom[0];
+        bottomPlaneNormal.x = up.x * coeffBottom[0];
+        bottomPlaneNormal.y = up.y * coeffBottom[0];
+        bottomPlaneNormal.z = up.z * coeffBottom[0];
         bottomPlaneNormal.addLocal( direction.x * coeffBottom[1], direction.y
                 * coeffBottom[1], direction.z * coeffBottom[1] );
         worldPlane[BOTTOM_PLANE].setConstant( location.dot( bottomPlaneNormal ) );
 
         // top plane
         Vector3f topPlaneNormal = worldPlane[TOP_PLANE].getNormal();
-        topPlaneNormal.set(up).multLocal(coeffTop[0]);
-//        topPlaneNormal.x = up.x * coeffTop[0];
-//        topPlaneNormal.y = up.y * coeffTop[0];
-//        topPlaneNormal.z = up.z * coeffTop[0];
+        topPlaneNormal.x = up.x * coeffTop[0];
+        topPlaneNormal.y = up.y * coeffTop[0];
+        topPlaneNormal.z = up.z * coeffTop[0];
         topPlaneNormal.addLocal( direction.x * coeffTop[1], direction.y
                 * coeffTop[1], direction.z * coeffTop[1] );
         worldPlane[TOP_PLANE].setConstant( location.dot( topPlaneNormal ) );
@@ -1268,9 +1267,5 @@ public class Camera implements Savable, Cloneable {
         height = capsule.readInt("height", 0);
     }
     
-//    public Class<AbstractCamera> getClassTag() {
-//        return AbstractCamera.class;
-//    }
-//
 }
 

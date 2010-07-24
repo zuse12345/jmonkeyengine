@@ -347,12 +347,20 @@ public final class OBJLoader implements AssetLoader {
         Mesh m = new Mesh();
         m.setMode(Mode.Triangles);
 
+        boolean hasTexCoord = false;
+        boolean hasNormals  = false;
+
         ArrayList<Face> newFaces = new ArrayList<Face>(faceList.size());
         for (int i = 0; i < faceList.size(); i++){
             Face f = faceList.get(i);
 
             for (Vertex v : f.verticies){
                 findVertexIndex(v);
+
+                if (!hasTexCoord && v.vt != null)
+                    hasTexCoord = true;
+                if (!hasNormals && v.vn != null)
+                    hasNormals = true;
             }
 
             if (f.verticies.length == 4){
@@ -368,10 +376,10 @@ public final class OBJLoader implements AssetLoader {
         FloatBuffer normBuf = null;
         FloatBuffer tcBuf   = null;
 
-        if (norms.size() > 0){
+        if (hasNormals){
             normBuf = BufferUtils.createFloatBuffer(vertIndexMap.size() * 3);
         }
-        if (texCoords.size() > 0){
+        if (hasTexCoord){
             tcBuf = BufferUtils.createFloatBuffer(vertIndexMap.size() * 2);
         }
 
@@ -405,21 +413,25 @@ public final class OBJLoader implements AssetLoader {
             posBuf.put(v2.v.x).put(v2.v.y).put(v2.v.z);
 
             if (normBuf != null){
-                normBuf.position(v0.index * 3);
-                normBuf.put(v0.vn.x).put(v0.vn.y).put(v0.vn.z);
-                normBuf.position(v1.index * 3);
-                normBuf.put(v1.vn.x).put(v1.vn.y).put(v1.vn.z);
-                normBuf.position(v2.index * 3);
-                normBuf.put(v2.vn.x).put(v2.vn.y).put(v2.vn.z);
+                if (v0.vn != null){
+                    normBuf.position(v0.index * 3);
+                    normBuf.put(v0.vn.x).put(v0.vn.y).put(v0.vn.z);
+                    normBuf.position(v1.index * 3);
+                    normBuf.put(v1.vn.x).put(v1.vn.y).put(v1.vn.z);
+                    normBuf.position(v2.index * 3);
+                    normBuf.put(v2.vn.x).put(v2.vn.y).put(v2.vn.z);
+                }
             }
 
             if (tcBuf != null){
-                tcBuf.position(v0.index * 2);
-                tcBuf.put(v0.vt.x).put(v0.vt.y);
-                tcBuf.position(v1.index * 2);
-                tcBuf.put(v1.vt.x).put(v1.vt.y);
-                tcBuf.position(v2.index * 2);
-                tcBuf.put(v2.vt.x).put(v2.vt.y);
+                if (v0.vt != null){
+                    tcBuf.position(v0.index * 2);
+                    tcBuf.put(v0.vt.x).put(v0.vt.y);
+                    tcBuf.position(v1.index * 2);
+                    tcBuf.put(v1.vt.x).put(v1.vt.y);
+                    tcBuf.position(v2.index * 2);
+                    tcBuf.put(v2.vt.x).put(v2.vt.y);
+                }
             }
 
             int index = i * 3; // current face * 3 = current index

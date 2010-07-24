@@ -105,7 +105,7 @@ public class NiftyJmeDisplay extends TimeProvider implements SceneProcessor {
 
     public void cleanup() {
         inited = false;
-        nifty.exit();
+//        nifty.exit();
     }
 
 }

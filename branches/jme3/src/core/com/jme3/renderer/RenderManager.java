@@ -552,13 +552,13 @@ public class RenderManager {
     }
 
      public void render(float tpf){
-         for (int i = preViewPorts.size() - 1; i >= 0; i--){
+         for (int i = 0; i < preViewPorts.size(); i++){
              renderViewPort(preViewPorts.get(i), tpf);
          }
-         for (int i = viewPorts.size() - 1; i >= 0; i--){
+         for (int i = 0; i < viewPorts.size(); i++){
              renderViewPort(viewPorts.get(i), tpf);
          }
-         for (int i = postViewPorts.size() - 1; i >= 0; i--){
+         for (int i = 0; i < postViewPorts.size(); i++){
              renderViewPort(postViewPorts.get(i), tpf);
          }
      }

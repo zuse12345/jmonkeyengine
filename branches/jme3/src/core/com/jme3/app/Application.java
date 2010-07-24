@@ -137,7 +137,11 @@ public class Application implements SystemListener {
 
         renderManager = new RenderManager(renderer);
         viewPort = renderManager.createMainView("Default", cam);
-        guiViewPort = renderManager.createPostView("Gui Default", cam);
+        viewPort.setClearEnabled(true);
+
+        // Create a new cam for the gui
+        Camera guiCam = new Camera(settings.getWidth(), settings.getHeight());
+        guiViewPort = renderManager.createPostView("Gui Default", guiCam);
         guiViewPort.setClearEnabled(false);
     }
 

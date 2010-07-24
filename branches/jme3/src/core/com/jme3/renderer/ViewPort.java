@@ -18,7 +18,7 @@ public class ViewPort {
     protected FrameBuffer out = null;
 
     protected final ColorRGBA backColor = new ColorRGBA(0,0,0,0);
-    protected boolean clearEnabled = true;
+    protected boolean clearEnabled = false;
 
     public ViewPort(String name, Camera cam) {
         this.name = name;

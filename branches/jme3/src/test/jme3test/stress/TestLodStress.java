@@ -1,4 +1,4 @@
-package jme3test.scene;
+package jme3test.stress;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.input.KeyInput;

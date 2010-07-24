@@ -193,6 +193,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      */
     public boolean checkCulling(Camera cam){
         CullHint cm = getCullHint();
+        assert cm != CullHint.Inherit;
         if (cm == Spatial.CullHint.Always){
             setLastFrustumIntersection(Camera.FrustumIntersect.Outside);
             return false;
@@ -201,18 +202,16 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
             return true;
         }
 
-        int state = cam.getPlaneState();
-
         // check to see if we can cull this node
         frustrumIntersects = (parent != null ? parent.frustrumIntersects
                 : Camera.FrustumIntersect.Intersects);
 
-        if (cm == Spatial.CullHint.Dynamic
-                && frustrumIntersects == Camera.FrustumIntersect.Intersects) {
-            frustrumIntersects = cam.contains(getWorldBound());
+        if (frustrumIntersects == Camera.FrustumIntersect.Intersects) {
+            int state = cam.getPlaneState();
+            frustrumIntersects = cam.contains(getWorldBound());  
+            cam.setPlaneState(state);
         }
 
-        cam.setPlaneState(state);
         return frustrumIntersects != Camera.FrustumIntersect.Outside;
     }
 

@@ -314,13 +314,55 @@ public class SceneEditorController {
         refreshSelectedParent();
     }
 
+    public void addModel(final AssetManager manager, final String assetName) {
+        if (selectedSpat == null) {
+            return;
+        }
+        final Node selected = selectedSpat.getLookup().lookup(Node.class);
+        if (selected != null) {
+            SceneApplication.getApplication().enqueue(new Callable<Object>() {
+
+                public Object call() throws Exception {
+                    doAddModel(manager, assetName, selected);
+                    return null;
+                }
+            });
+        }
+    }
+
+    public void doAddModel(AssetManager manager, String assetName, Node selected) {
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Importing Model..");
+        progressHandle.start();
+        try {
+            if (selected instanceof AssetLinkNode) {
+                AssetLinkNode linkNode = (AssetLinkNode) selected;
+                linkNode.attachLinkedChild(manager, new AssetKey<Spatial>(assetName));
+            } else {
+                ((DesktopAssetManager) manager).clearCache();
+                AssetKey<Spatial> key = new AssetKey<Spatial>(assetName);
+                AssetLinkNode linkNode = new AssetLinkNode(key);
+                linkNode.attachLinkedChildren(manager);
+                selected.attachChild(linkNode);
+            }
+            refreshSelected();
+        } catch (Exception ex) {
+            Confirmation msg = new NotifyDescriptor.Confirmation(
+                    "Error importing " + assetName + "\n" + ex.toString(),
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(msg);
+        }
+        progressHandle.finish();
+
+    }
+
     public void saveScene() {
         final Node node = jmeRootNode.getLookup().lookup(Node.class);
-        final FileObject file=currentFileObject;
+        final FileObject file = currentFileObject;
         SceneApplication.getApplication().enqueue(new Callable() {
 
             public Object call() throws Exception {
-                doSaveScene(node,file);
+                doSaveScene(node, file);
                 return null;
             }
         });
@@ -336,39 +378,9 @@ public class SceneEditorController {
             Exceptions.printStackTrace(ex);
         }
         progressHandle.finish();
-        StatusDisplayer.getDefault().setStatusText(currentFileObject.getNameExt()+" saved.");
+        StatusDisplayer.getDefault().setStatusText(currentFileObject.getNameExt() + " saved.");
         //try make NetBeans update the tree.. :/
 
-    }
-
-    public void addModel(final AssetManager manager, final String assetName) {
-        if (selectedSpat == null) {
-            return;
-        }
-        final Spatial selected = selectedSpat.getLookup().lookup(Spatial.class);
-        SceneApplication.getApplication().enqueue(new Callable() {
-
-            public Object call() throws Exception {
-                ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Importing Model..");
-                progressHandle.start();
-                try {
-                    ((DesktopAssetManager) manager).clearCache();
-                    AssetKey key = new AssetKey(assetName);
-                    AssetLinkNode linkNode = new AssetLinkNode(key);
-                    linkNode.attachLinkedChildren(manager);
-                    ((Node) selected).attachChild(linkNode);
-                    refreshSelected();
-                } catch (Exception ex) {
-                    Confirmation msg = new NotifyDescriptor.Confirmation(
-                            "Error importing " + assetName + "\n" + ex.toString(),
-                            NotifyDescriptor.OK_CANCEL_OPTION,
-                            NotifyDescriptor.ERROR_MESSAGE);
-                    DialogDisplayer.getDefault().notifyLater(msg);
-                }
-                progressHandle.finish();
-                return null;
-            }
-        });
     }
 
     private void refreshSelected(final JmeSpatial spat) {
@@ -419,12 +431,18 @@ public class SceneEditorController {
 
     }
 
-    public void cleanup(){
-        Node node =jmeRootNode.getLookup().lookup(Node.class);
-        node.removeFromParent();
+    public void cleanup() {
+        final Node node = jmeRootNode.getLookup().lookup(Node.class);
+        SceneApplication.getApplication().enqueue(new Callable() {
+
+            public Object call() throws Exception {
+                doCleanup(node);
+                return null;
+            }
+        });
     }
 
-    public void doCleanup(){
-
+    public void doCleanup(Node node) {
+        node.removeFromParent();
     }
 }

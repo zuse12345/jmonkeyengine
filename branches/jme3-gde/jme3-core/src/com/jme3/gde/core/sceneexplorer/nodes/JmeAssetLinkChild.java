@@ -31,72 +31,69 @@
  */
 package com.jme3.gde.core.sceneexplorer.nodes;
 
-import com.jme3.gde.core.sceneexplorer.nodes.properties.JmeProperty;
+import com.jme3.asset.AssetKey;
+import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.scene.AssetLinkNode;
-import java.awt.Image;
-import org.openide.cookies.SaveCookie;
-import org.openide.nodes.Node.Property;
-import org.openide.nodes.Sheet;
+import com.jme3.scene.Spatial;
+import java.io.IOException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import org.openide.actions.CopyAction;
+import org.openide.actions.CutAction;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.PasteAction;
+import org.openide.actions.RenameAction;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author normenhansen
  */
-@org.openide.util.lookup.ServiceProvider(service=SceneExplorerNode.class)
-public class JmeAssetLinkNode extends JmeNode {
+public class JmeAssetLinkChild extends AbstractNode {
 
-    private static Image smallImage =
-            ImageUtilities.loadImage("com/jme3/gde/core/sceneexplorer/nodes/icons/linknode.gif");
-    private AssetLinkNode geom;
+    private AssetKey<Spatial> key;
+    private AssetLinkNode linkNode;
 
-    public JmeAssetLinkNode() {
+    public JmeAssetLinkChild(AssetKey<Spatial> key, AssetLinkNode linkNode) {
+        super(Children.LEAF);
+        this.key = key;
+        this.linkNode = linkNode;
+        this.setName(key.getName());
     }
 
-    public JmeAssetLinkNode(AssetLinkNode spatial, JmeChildren children) {
-        super(spatial, new AssetLinkChildren(spatial));
-        getLookupContents().add(spatial);
-        this.geom = spatial;
-        setName(spatial.getName());
-    }
-
-    @Override
-    public Image getIcon(int type) {
-        return smallImage;
+    protected SystemAction[] createActions() {
+        return new SystemAction[]{
+                    SystemAction.get(DeleteAction.class)
+                };
     }
 
     @Override
-    public Image getOpenedIcon(int type) {
-        return smallImage;
+    public boolean canDestroy() {
+        return true;
     }
 
     @Override
-    protected Sheet createSheet() {
-        Sheet sheet = super.createSheet();
-        Sheet.Set set = Sheet.createPropertiesSet();
-        set.setDisplayName("AssetLinkNode");
-        set.setName(AssetLinkNode.class.getName());
-        AssetLinkNode obj = geom;//getLookup().lookup(Spatial.class);
-        if (obj == null) {
-            return sheet;
+    public void destroy() throws IOException {
+        super.destroy();
+        try {
+            SceneApplication.getApplication().enqueue(new Callable<Void>() {
+
+                public Void call() throws Exception {
+                    linkNode.detachLinkedChild(key);
+                    return null;
+                }
+            }).get();
+            JmeSpatial node = ((JmeSpatial) getParentNode());
+            if (node != null) {
+                node.refresh(false);
+            }
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
         }
-
-        sheet.put(set);
-        return sheet;
-
-    }
-
-    public Class getExplorerObjectClass() {
-        return AssetLinkNode.class;
-    }
-
-    public Class getExplorerNodeClass() {
-        return JmeAssetLinkNode.class;
-    }
-
-    public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
-        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
-        return new org.openide.nodes.Node[]{new JmeAssetLinkNode((AssetLinkNode) key, children).setSaveCookie(cookie)};
     }
 }

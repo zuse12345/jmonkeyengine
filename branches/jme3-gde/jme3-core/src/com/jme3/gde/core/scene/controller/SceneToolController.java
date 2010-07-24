@@ -201,6 +201,9 @@ public class SceneToolController {
     }
 
     public void cleanup() {
+        detachSelectionShape();
+        cursor.removeFromParent();
+        grid.removeFromParent();
     }
 
     //TODO: multithreading!

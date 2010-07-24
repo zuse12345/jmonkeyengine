@@ -65,9 +65,9 @@ import org.openide.util.Lookup;
  */
 public class JmeChildren extends Children.Keys<Object> {
 
-    private Spatial spatial;
-    private SaveCookie cookie;
-    HashMap<Object, Node> map = new HashMap<Object, Node>();
+    protected Spatial spatial;
+    protected SaveCookie cookie;
+    protected HashMap<Object, Node> map = new HashMap<Object, Node>();
 
     public JmeChildren(Spatial spatial) {
         this.spatial = spatial;

@@ -1,5 +1,6 @@
-package jme3test.scene;
+package jme3test.bullet;
 
+import jme3test.scene.*;
 import com.jme3.app.SimpleBulletApplication;
 import com.jme3.asset.plugins.HttpZipLocator;
 import com.jme3.asset.plugins.ZipLocator;

@@ -63,10 +63,6 @@ public class SceneEditorController {
         return jmeRootNode;
     }
 
-    public void setJmeRootNode(JmeSpatial jmeRootNode) {
-        this.jmeRootNode = jmeRootNode;
-    }
-
     public JmeSpatial getSelectedSpat() {
         return selectedSpat;
     }
@@ -77,10 +73,6 @@ public class SceneEditorController {
 
     public FileObject getCurrentFileObject() {
         return currentFileObject;
-    }
-
-    public void setCurrentFileObject(FileObject currentFileObject) {
-        this.currentFileObject = currentFileObject;
     }
 
     public void addSpatial(final String name) {

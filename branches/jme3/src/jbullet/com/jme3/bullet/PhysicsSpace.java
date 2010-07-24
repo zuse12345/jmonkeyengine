@@ -49,13 +49,12 @@ import com.bulletphysics.collision.dispatch.GhostPairCallback;
 import com.bulletphysics.collision.narrowphase.ManifoldPoint;
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
 import com.bulletphysics.dynamics.DynamicsWorld;
+import com.bulletphysics.dynamics.InternalTickCallback;
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.constraintsolver.ConstraintSolver;
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
 import com.bulletphysics.extras.gimpact.GImpactCollisionAlgorithm;
 import com.jme3.app.AppTask;
-import com.jme3.export.JmeExporter;
-import com.jme3.export.JmeImporter;
 import com.jme3.math.Vector3f;
 //import com.jme3.util.GameTaskQueue;
 //import com.jme3.util.GameTaskQueueManager;
@@ -68,10 +67,8 @@ import com.jme3.bullet.nodes.PhysicsCharacterNode;
 import com.jme3.bullet.nodes.PhysicsVehicleNode;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.util.Converter;
-import com.jme3.export.Savable;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -89,7 +86,7 @@ import java.util.logging.Logger;
  * @see com.jmex.jbullet.nodes.PhysicsNode
  * @author normenhansen
  */
-public class PhysicsSpace extends OverlapFilterCallback implements Savable {
+public class PhysicsSpace {
 
     public static ThreadLocal<ConcurrentLinkedQueue<AppTask<?>>> rQueueTL =
             new ThreadLocal<ConcurrentLinkedQueue<AppTask<?>>>() {
@@ -122,6 +119,7 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
     private List<PhysicsCollisionListener> collisionListeners = new LinkedList<PhysicsCollisionListener>();
     private List<PhysicsCollisionEvent> collisionEvents = new LinkedList<PhysicsCollisionEvent>();
     private Map<Integer, PhysicsCollisionListener> collisionGroupListeners = new ConcurrentHashMap<Integer, PhysicsCollisionListener>();
+    private ConcurrentLinkedQueue<PhysicsTickListener> tickListeners = new ConcurrentLinkedQueue<PhysicsTickListener>();
     private Vector3f worldMin = new Vector3f(-10000f, -10000f, -10000f);
     private Vector3f worldMax = new Vector3f(10000f, 10000f, 10000f);
     private float accuracy = 1f / 60f;
@@ -184,13 +182,64 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
         dynamicsWorld.setGravity(new javax.vecmath.Vector3f(0, -9.81f, 0));
 
         //register filter callback for groups / collision decision
-        dynamicsWorld.getPairCache().setOverlapFilterCallback(this);
+        setOverlapFilterCallback();
 
         broadphase.getOverlappingPairCache().setInternalGhostPairCallback(new GhostPairCallback());
         GImpactCollisionAlgorithm.registerAlgorithm(dispatcher);
 
         physicsSpaceTL.set(this);
+        setTickCallback();
         setContactCallbacks();
+    }
+
+    private void setOverlapFilterCallback() {
+        OverlapFilterCallback callback = new OverlapFilterCallback() {
+
+            public boolean needBroadphaseCollision(BroadphaseProxy bp, BroadphaseProxy bp1) {
+                boolean collides = (bp.collisionFilterGroup & bp1.collisionFilterMask) != 0;
+                if (collides) {
+                    collides = (bp1.collisionFilterGroup & bp.collisionFilterMask) != 0;
+                }
+                if (collides) {
+                    assert (bp.clientObject instanceof com.bulletphysics.collision.dispatch.CollisionObject && bp.clientObject instanceof com.bulletphysics.collision.dispatch.CollisionObject);
+                    com.bulletphysics.collision.dispatch.CollisionObject colOb = (com.bulletphysics.collision.dispatch.CollisionObject) bp.clientObject;
+                    com.bulletphysics.collision.dispatch.CollisionObject colOb1 = (com.bulletphysics.collision.dispatch.CollisionObject) bp1.clientObject;
+                    assert (colOb.getUserPointer() != null && colOb1.getUserPointer() != null);
+                    PhysicsCollisionObject collisionObject = (PhysicsCollisionObject) colOb.getUserPointer();
+                    PhysicsCollisionObject collisionObject1 = (PhysicsCollisionObject) colOb1.getUserPointer();
+                    if ((collisionObject.getCollideWithGroups() & collisionObject1.getCollisionGroup()) > 0
+                            || (collisionObject1.getCollideWithGroups() & collisionObject.getCollisionGroup()) > 0) {
+                        PhysicsCollisionListener listener = collisionGroupListeners.get(collisionObject.getCollisionGroup());
+                        PhysicsCollisionListener listener1 = collisionGroupListeners.get(collisionObject1.getCollisionGroup());
+                        if (listener != null) {
+                            return listener.collide(collisionObject, collisionObject1);
+                        } else if (listener1 != null) {
+                            return listener1.collide(collisionObject, collisionObject1);
+                        }
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                return collides;
+            }
+        };
+        dynamicsWorld.getPairCache().setOverlapFilterCallback(callback);
+    }
+
+    private void setTickCallback() {
+        final PhysicsSpace space = this;
+        InternalTickCallback callback = new InternalTickCallback() {
+
+            @Override
+            public void internalTick(DynamicsWorld dw, float f) {
+                for (Iterator<PhysicsTickListener> it = tickListeners.iterator(); it.hasNext();) {
+                    PhysicsTickListener physicsTickCallback = it.next();
+                    physicsTickCallback.physicsTick(space, f);
+                }
+            }
+        };
+        dynamicsWorld.setInternalTickCallback(callback, this);
     }
 
     private void setContactCallbacks() {
@@ -238,35 +287,6 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
                 return true;
             }
         });
-    }
-
-    public boolean needBroadphaseCollision(BroadphaseProxy bp, BroadphaseProxy bp1) {
-        boolean collides = (bp.collisionFilterGroup & bp1.collisionFilterMask) != 0;
-        if (collides) {
-            collides = (bp1.collisionFilterGroup & bp.collisionFilterMask) != 0;
-        }
-        if (collides) {
-            assert (bp.clientObject instanceof com.bulletphysics.collision.dispatch.CollisionObject && bp.clientObject instanceof com.bulletphysics.collision.dispatch.CollisionObject);
-            com.bulletphysics.collision.dispatch.CollisionObject colOb = (com.bulletphysics.collision.dispatch.CollisionObject) bp.clientObject;
-            com.bulletphysics.collision.dispatch.CollisionObject colOb1 = (com.bulletphysics.collision.dispatch.CollisionObject) bp1.clientObject;
-            assert (colOb.getUserPointer() != null && colOb1.getUserPointer() != null);
-            PhysicsCollisionObject collisionObject = (PhysicsCollisionObject) colOb.getUserPointer();
-            PhysicsCollisionObject collisionObject1 = (PhysicsCollisionObject) colOb1.getUserPointer();
-            if ((collisionObject.getCollideWithGroups() & collisionObject1.getCollisionGroup()) > 0
-                    || (collisionObject1.getCollideWithGroups() & collisionObject.getCollisionGroup()) > 0) {
-                PhysicsCollisionListener listener = collisionGroupListeners.get(collisionObject.getCollisionGroup());
-                PhysicsCollisionListener listener1 = collisionGroupListeners.get(collisionObject1.getCollisionGroup());
-                if (listener != null) {
-                    return listener.collide(collisionObject, collisionObject1);
-                } else if (listener1 != null) {
-                    return listener1.collide(collisionObject, collisionObject1);
-                }
-                return true;
-            } else {
-                return false;
-            }
-        }
-        return collides;
     }
 
     /**
@@ -583,6 +603,14 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
         dynamicsWorld.setGravity(Converter.convert(gravity));
     }
 
+    public void addTickListener(PhysicsTickListener listener) {
+        tickListeners.add(listener);
+    }
+
+    public void removeTickListener(PhysicsTickListener listener) {
+        tickListeners.remove(listener);
+    }
+
     /**
      * Adds a CollisionListener that will be informed about collision events
      * @param listener the CollisionListener to add
@@ -671,14 +699,6 @@ public class PhysicsSpace extends OverlapFilterCallback implements Savable {
 
     public void setWorldMax(Vector3f worldMax) {
         this.worldMax.set(worldMax);
-    }
-
-    public void write(JmeExporter ex) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void read(JmeImporter im) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     /**

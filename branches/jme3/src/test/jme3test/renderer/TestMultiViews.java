@@ -3,11 +3,11 @@ package jme3test.renderer;
 import com.jme3.app.SimpleApplication;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.renderer.Camera;
+import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Spatial.CullHint;
-import com.jme3.scene.debug.Grid;
 
 public class TestMultiViews extends SimpleApplication {
 
@@ -28,17 +28,6 @@ public class TestMultiViews extends SimpleApplication {
         rootNode.addLight(dl);
         rootNode.attachChild(teaGeom);
 
-        Geometry gridGeom = new Geometry("Grid", new Grid(3, 3, cam.getHeight() / 3f));
-        
-        gridGeom.scale(1, -1, 1);
-//        gridGeom.center();
-        gridGeom.move( 100, 400, 0);
-        gridGeom.setQueueBucket(Bucket.Gui);
-        gridGeom.setMaterial(assetManager.loadMaterial("Common/Materials/RedColor.j3m"));
-        gridGeom.setCullHint(CullHint.Never);
-        guiNode.attachChild(gridGeom);
-
-        /*
         // Setup first view
         cam.setViewPort(.5f, 1f, 0f, 0.5f);
         cam.setLocation(new Vector3f(3.3212643f, 4.484704f, 4.2812433f));
@@ -73,6 +62,5 @@ public class TestMultiViews extends SimpleApplication {
         ViewPort view4 = renderManager.createMainView("Top Right", cam4);
         view4.setClearEnabled(false);
         view4.attachScene(rootNode);
-         */
     }
 }

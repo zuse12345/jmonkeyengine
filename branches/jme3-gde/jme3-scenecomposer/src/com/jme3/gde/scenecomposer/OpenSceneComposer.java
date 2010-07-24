@@ -50,12 +50,11 @@ public final class OpenSceneComposer implements ActionListener {
                     ((DesktopAssetManager) manager.getManager()).clearCache();
                     file.lock();
                     spat = manager.getManager().loadModel(assetName);
-                    //TODO: change scenecomposer to not depend on awt thread (move stuff from TopComponent)
                     java.awt.EventQueue.invokeLater(new Runnable() {
 
                         public void run() {
                             SceneComposerTopComponent composer = SceneComposerTopComponent.findInstance();
-                            composer.loadModel(spat, file, manager);
+                            composer.openScene(spat, file, manager);
                         }
                     });
                 } catch (IOException ex) {

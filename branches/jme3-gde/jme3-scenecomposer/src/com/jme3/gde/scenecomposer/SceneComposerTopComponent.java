@@ -5,15 +5,6 @@
 package com.jme3.gde.scenecomposer;
 
 import com.jme3.asset.AssetManager;
-import com.jme3.asset.DesktopAssetManager;
-import com.jme3.audio.AudioNode;
-import com.jme3.bullet.collision.PhysicsCollisionObject;
-import com.jme3.bullet.nodes.PhysicsNode;
-import com.jme3.bullet.util.CollisionShapeFactory;
-import com.jme3.effect.EmitterSphereShape;
-import com.jme3.effect.ParticleEmitter;
-import com.jme3.effect.ParticleMesh;
-import com.jme3.export.binary.BinaryExporter;
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
@@ -23,28 +14,13 @@ import com.jme3.gde.core.scene.controller.SceneToolController;
 import com.jme3.gde.core.sceneexplorer.nodes.JmeNode;
 import com.jme3.gde.core.sceneexplorer.nodes.JmeSpatial;
 import com.jme3.gde.core.sceneexplorer.nodes.NodeUtility;
-import com.jme3.light.DirectionalLight;
-import com.jme3.light.PointLight;
-import com.jme3.material.Material;
-import com.jme3.math.ColorRGBA;
-import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.ui.Picture;
-import com.jme3.util.TangentBinormalGenerator;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.border.TitledBorder;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.NbBundle;
@@ -52,13 +28,8 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.Confirmation;
-import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
@@ -74,14 +45,12 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "com/jme3/gde/scenecomposer/jme-logo24.png";
     private static final String PREFERRED_ID = "SceneComposerTopComponent";
-    private SceneRequest currentRequest;
-    private FileObject currentFileObject;
     private final Result<JmeSpatial> result;
-    private JmeSpatial selectedSpat;
-//    private Spatial selected;
     ComposerCameraController camController;
     SceneToolController toolController;
+    SceneEditorController editorController;
     private SaveCookie saveCookie = new SaveCookieImpl();
+    private SceneRequest currentRequest;
 
     public SceneComposerTopComponent() {
         initComponents();
@@ -352,15 +321,15 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     }// </editor-fold>//GEN-END:initComponents
 
     private void addObjectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addObjectButtonActionPerformed
-        if (jList1.getSelectedValue() != null) {
-            addSpatial(jList1.getSelectedValue().toString());
+        if (jList1.getSelectedValue() != null && editorController != null) {
+            editorController.addSpatial(jList1.getSelectedValue().toString());
         }
 
     }//GEN-LAST:event_addObjectButtonActionPerformed
 
     private void addCursorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCursorButtonActionPerformed
-        if (jList1.getSelectedValue() != null) {
-            addSpatial(jList1.getSelectedValue().toString(), toolController.getCursorLocation());
+        if (jList1.getSelectedValue() != null && editorController != null) {
+            editorController.addSpatial(jList1.getSelectedValue().toString(), toolController.getCursorLocation());
         }
 
     }//GEN-LAST:event_addCursorButtonActionPerformed
@@ -378,7 +347,9 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     }//GEN-LAST:event_showGridToggleButtonActionPerformed
 
     private void moveToCursorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveToCursorButtonActionPerformed
-        moveSelectedSpatial(toolController.getCursorLocation());
+        if (editorController != null) {
+            editorController.moveSelectedSpatial(toolController.getCursorLocation());
+        }
     }//GEN-LAST:event_moveToCursorButtonActionPerformed
 
     private void resetCursorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetCursorButtonActionPerformed
@@ -398,11 +369,15 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     }//GEN-LAST:event_cursorToSelectionButtonActionPerformed
 
     private void createTangentsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createTangentsButtonActionPerformed
-        createTangentsForSelectedSpatial();
+        if (editorController != null) {
+            editorController.createTangentsForSelectedSpatial();
+        }
     }//GEN-LAST:event_createTangentsButtonActionPerformed
 
     private void createPhysicsMeshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createPhysicsMeshButtonActionPerformed
-        createPhysicsMeshForSelectedSpatial();
+        if (editorController != null) {
+            editorController.createPhysicsMeshForSelectedSpatial();
+        }
     }//GEN-LAST:event_createPhysicsMeshButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addCursorButton;
@@ -485,6 +460,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     @Override
     public void componentClosed() {
         super.componentClosed();
+        cleanupControllers();
     }
 
     void writeProperties(java.util.Properties p) {
@@ -510,42 +486,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     @Override
     protected String preferredID() {
         return PREFERRED_ID;
-    }
-
-    private void refreshSelected() {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                if (selectedSpat != null) {
-                    selectedSpat.refresh(false);
-                }
-            }
-        });
-
-    }
-
-    private void refreshSelectedParent() {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                if (selectedSpat != null) {
-                    ((JmeSpatial) selectedSpat.getParentNode()).refresh(false);
-                }
-            }
-        });
-
-    }
-
-    private void refreshRoot() {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                if (currentRequest != null) {
-                    currentRequest.getRootNode().refresh(false);
-                }
-            }
-        });
-
     }
 
     private void setSelectedObjectText(final String text) {
@@ -583,260 +523,11 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         });
     }
 
-    private void addSpatial(final String name) {
-        addSpatial(name, new Vector3f(0, 0, 0));
-    }
-
-    private void addSpatial(final String name, final Vector3f point) {
-        if (currentRequest != null && currentRequest.isDisplayed()) {
-            try {
-                selectedSpat.fireSave(true);
-                final Spatial node = selectedSpat.getLookup().lookup(Spatial.class);
-                if (node != null) {
-                    SceneApplication.getApplication().enqueue(new Callable() {
-
-                        public Object call() throws Exception {
-                            doAddSpatial(node, name, point);
-                            return null;
-
-                        }
-                    }).get();
-                }
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
-
-    public void doAddSpatial(Spatial selected, String name, Vector3f point) {
-        if (selected instanceof Node) {
-            if ("Node".equals(name)) {
-                ((Node) selected).attachChild(new Node("Node"));
-            } else if ("Particle Emitter".equals(name)) {
-                ParticleEmitter emit = new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 200);
-                emit.setShape(new EmitterSphereShape(Vector3f.ZERO, 1f));
-                emit.setGravity(0);
-                emit.setLowLife(5);
-                emit.setHighLife(10);
-                emit.setStartVel(new Vector3f(0, 0, 0));
-                emit.setImagesX(15);
-                Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
-                //                    mat.setTexture("m_Texture", SceneApplication.getApplication().getAssetManager().loadTexture("Effects/Smoke/Smoke.png"));
-                emit.setMaterial(mat);
-                if (point != null) {
-                    Vector3f localVec = new Vector3f();
-                    selected.worldToLocal(point, localVec);
-                    emit.setLocalTranslation(localVec);
-                }
-                ((Node) selected).attachChild(emit);
-                refreshSelected();
-            } else if ("Audio Node".equals(name)) {
-                AudioNode node = new AudioNode();
-                node.setName("Audio Node");
-                if (point != null) {
-                    Vector3f localVec = new Vector3f();
-                    selected.worldToLocal(point, localVec);
-                    node.setLocalTranslation(localVec);
-                }
-                ((Node) selected).attachChild(node);
-                refreshSelected();
-            } else if ("Picture".equals(name)) {
-                Picture pic = new Picture("Picture");
-                Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
-                pic.setMaterial(mat);
-                if (point != null) {
-                    Vector3f localVec = new Vector3f();
-                    selected.worldToLocal(point, localVec);
-                    pic.setLocalTranslation(localVec);
-                }
-                ((Node) selected).attachChild(pic);
-                refreshSelected();
-            } else if ("Point Light".equals(name)) {
-                PointLight light = new PointLight();
-                if (point != null) {
-                    Vector3f localVec = new Vector3f();
-                    selected.worldToLocal(point, localVec);
-                    light.setPosition(localVec);
-                }
-                light.setColor(ColorRGBA.White);
-                ((Node) selected).addLight(light);
-                refreshSelected();
-            } else if ("Directional Light".equals(name)) {
-                DirectionalLight dl = new DirectionalLight();
-                dl.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
-                dl.setColor(ColorRGBA.Green);
-                ((Node) selected).addLight(dl);
-                refreshSelected();
-            } else if ("Node".equals(name)) {
-                Node node = new Node("Node");
-                ((Node) selected).attachChild(node);
-                refreshSelected();
-            }
-        } else if (selected instanceof Geometry) {
-            if ("Point Light".equals(name)) {
-                PointLight light = new PointLight();
-                if (point != null) {
-                    Vector3f localVec = new Vector3f();
-                    selected.worldToLocal(point, localVec);
-                    light.setPosition(localVec);
-                }
-                light.setColor(ColorRGBA.White);
-                selected.addLight(light);
-                refreshSelected();
-            } else if ("Directional Light".equals(name)) {
-                DirectionalLight dl = new DirectionalLight();
-                dl.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
-                dl.setColor(ColorRGBA.Green);
-                selected.addLight(dl);
-                refreshSelected();
-            }
-        }
-    }
-
-    private void moveSelectedSpatial(final Vector3f point) {
-        if (currentRequest != null && currentRequest.isDisplayed()) {
-            try {
-                selectedSpat.fireSave(true);
-                final Spatial node = selectedSpat.getLookup().lookup(Spatial.class);
-                if (node != null) {
-                    SceneApplication.getApplication().enqueue(new Callable() {
-
-                        public Object call() throws Exception {
-                            doMoveSpatial(node, point);
-                            return null;
-
-                        }
-                    }).get();
-                }
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
-
-    public void doMoveSpatial(Spatial selected, Vector3f translation) {
-        Vector3f localTranslation = selected.getLocalTranslation();
-        Node parent = selected.getParent();
-        if (parent != null) {
-            localTranslation.set(translation).subtractLocal(parent.getWorldTranslation());
-            localTranslation.divideLocal(parent.getWorldScale());
-            //TODO: reuse quaternion..
-            new Quaternion().set(parent.getWorldRotation()).inverseLocal().multLocal(localTranslation);
-        } else {
-            localTranslation.set(translation);
-        }
-        selected.setLocalTranslation(localTranslation);
-    }
-
-    private void createTangentsForSelectedSpatial() {
-        if (currentRequest != null && currentRequest.isDisplayed()) {
-            try {
-                selectedSpat.fireSave(true);
-                final Spatial node = selectedSpat.getLookup().lookup(Spatial.class);
-                if (node != null) {
-                    SceneApplication.getApplication().enqueue(new Callable() {
-
-                        public Object call() throws Exception {
-                            doCreateTangents(node);
-                            return null;
-
-                        }
-                    }).get();
-                }
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
-
-    public void doCreateTangents(Spatial selected) {
-        if (selected instanceof Geometry) {
-            Geometry geom = (Geometry) selected;
-            Mesh mesh = geom.getMesh();
-            if (mesh != null) {
-                TangentBinormalGenerator.generate(mesh);
-            }
-        }
-    }
-
-    private void createPhysicsMeshForSelectedSpatial() {
-        if (currentRequest != null && currentRequest.isDisplayed() && selectedSpat != currentRequest.getRootNode()) {
-            try {
-                selectedSpat.fireSave(true);
-                final Spatial node = selectedSpat.getLookup().lookup(Spatial.class);
-                if (node != null) {
-                    SceneApplication.getApplication().enqueue(new Callable() {
-
-                        public Object call() throws Exception {
-                            doCreatePhysicsMesh(node);
-                            return null;
-
-                        }
-                    }).get();
-                }
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
-
-    public void doCreatePhysicsMesh(Spatial selected) {
-        Node parent = selected.getParent();
-        if (selected instanceof PhysicsCollisionObject) {
-            PhysicsCollisionObject collObj = (PhysicsCollisionObject) selected;
-            collObj.removeFromParent();
-            collObj.setCollisionShape(CollisionShapeFactory.createMeshShape(selected));
-            if (parent != null) {
-                parent.attachChild(selected);
-            }
-            return;
-        }
-        selected.removeFromParent();
-        PhysicsNode node = new PhysicsNode(selected, CollisionShapeFactory.createMeshShape(selected), 0);
-        node.setName(selected.getName() + "-PhysicsNode");
-        if (parent != null) {
-            parent.attachChild(node);
-        }
-        refreshSelectedParent();
-    }
-
-    public void saveRequest() {
-        if (currentFileObject != null && currentRequest != null && currentRequest.isDisplayed()) {
-            SceneApplication.getApplication().enqueue(new Callable() {
-
-                public Object call() throws Exception {
-                    ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Saving File..");
-                    progressHandle.start();
-                    Node node = currentRequest.getRootNode().getLookup().lookup(Node.class);
-                    BinaryExporter exp = BinaryExporter.getInstance();
-                    try {
-                        exp.save(node, FileUtil.toFile(currentFileObject));
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    progressHandle.finish();
-                    StatusDisplayer.getDefault().setStatusText("Saved file " + currentFileObject.getNameExt());
-                    //try make NetBeans update the tree.. :/
-                    setSceneInfo(currentRequest.getRootNode(), true);
-                    return null;
-                }
-            });
-        }
-    }
-
     /**
      * method to set the state of the ui items
      */
     private void setSceneInfo(final JmeNode jmeNode, final boolean active) {
-        final SceneComposerTopComponent inst=this;
+        final SceneComposerTopComponent inst = this;
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
@@ -864,10 +555,10 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                     showSelectionToggleButton.setSelected(false);
                     showGridToggleButton.setSelected(false);
                     //TODO: threading
-                    sceneInfoLabel1.setText("Name: " + currentFileObject.getNameExt());
-                    sceneInfoLabel2.setText("Size: " + currentFileObject.getSize() / 1024 + " kB");
-                    sceneInfoLabel1.setToolTipText("Name: " + currentFileObject.getNameExt());
-                    sceneInfoLabel2.setToolTipText("Size: " + currentFileObject.getSize() / 1024 + " kB");
+//                    sceneInfoLabel1.setText("Name: " + currentFileObject.getNameExt());
+//                    sceneInfoLabel2.setText("Size: " + currentFileObject.getSize() / 1024 + " kB");
+//                    sceneInfoLabel1.setToolTipText("Name: " + currentFileObject.getNameExt());
+//                    sceneInfoLabel2.setToolTipText("Size: " + currentFileObject.getSize() / 1024 + " kB");
                     open();
                     requestActive();
                 }
@@ -875,70 +566,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         });
     }
 
-    private void selectSpatial(JmeSpatial spatial) {
-        if(spatial==selectedSpat)
-            return;
-        if (spatial == null) {
-            setSelectedObjectText(null);
-            setSelectionData(null);
-            selectedSpat = null;
-            setActivatedNodes(new org.openide.nodes.Node[]{});
-            return;
-        } else {
-            if (toolController != null) {
-                toolController.updateSelection(spatial.getLookup().lookup(Spatial.class));
-            }
-        }
-        selectedSpat = spatial;
-        if (selectedSpat.getLookup().lookup(Node.class) != null) {
-            setSelectionData(true);
-            setSelectedObjectText(selectedSpat.getLookup().lookup(Node.class).getName());
-        } else if (selectedSpat.getLookup().lookup(Spatial.class) != null) {
-            setSelectionData(false);
-            setSelectedObjectText(selectedSpat.getLookup().lookup(Spatial.class).getName());
-        } else {
-            setSelectedObjectText(null);
-            setSelectionData(false);
-        }
-        //TODO: remove
-        selectedSpat.fireSave(true);
-        SceneApplication.getApplication().setSelectedNode(selectedSpat);
-        setActivatedNodes(new org.openide.nodes.Node[]{selectedSpat});
-    }
-
-    /*
-     * methods for external access
-     */
-    public void addModel(final AssetManager manager, final String assetName) {
-
-        if (currentRequest != null && currentRequest.isDisplayed()) {
-            selectedSpat.fireSave(true);
-            final Spatial selected = selectedSpat.getLookup().lookup(Spatial.class);
-            SceneApplication.getApplication().enqueue(new Callable() {
-
-                public Object call() throws Exception {
-                    ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Importing Model..");
-                    progressHandle.start();
-                    try {
-                        ((DesktopAssetManager) manager).clearCache();
-                        Spatial spat = manager.loadModel(assetName);
-                        ((Node) selected).attachChild(spat);
-                        refreshSelected();
-                    } catch (Exception ex) {
-                        Confirmation msg = new NotifyDescriptor.Confirmation(
-                                "Error importing " + assetName + "\n" + ex.toString(),
-                                NotifyDescriptor.OK_CANCEL_OPTION,
-                                NotifyDescriptor.ERROR_MESSAGE);
-                        DialogDisplayer.getDefault().notify(msg);
-                    }
-                    progressHandle.finish();
-                    return null;
-                }
-            });
-        }
-    }
-
-    public void loadModel(Spatial spat, FileObject file, ProjectAssetManager manager) {
+    public void openScene(Spatial spat, FileObject file, ProjectAssetManager manager) {
         SceneApplication.getApplication().addSceneListener(this);
         result.addLookupListener(this);
         //TODO: handle request change
@@ -950,12 +578,22 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             node.attachChild(spat);
         }
         JmeNode jmeNode = NodeUtility.createNode(node, saveCookie);
+        jmeNode.fireSave(true);
         SceneRequest request = new SceneRequest(this, jmeNode, manager);
+        if (editorController != null) {
+            editorController.cleanup();
+        }
+        editorController = new SceneEditorController(jmeNode, file);
         this.currentRequest = request;
-        this.currentFileObject = file;
         request.setWindowTitle("SceneViewer - " + request.getRootNode().getName() + " (SceneComposer)");
         request.setToolNode(new Node("SceneComposerToolNode"));
         SceneApplication.getApplication().requestScene(request);
+    }
+
+    void addModel(AssetManager manager, String assetName) {
+        if (editorController != null) {
+            editorController.addModel(manager, assetName);
+        }
     }
 
     public void doMoveCursor(Vector3f vector) {
@@ -978,6 +616,41 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         }
     }
 
+    private void selectSpatial(JmeSpatial spatial) {
+        if (spatial == null) {
+            setSelectedObjectText(null);
+            setSelectionData(null);
+            if (editorController != null) {
+                editorController.setSelectedSpat(spatial);
+            }
+            setActivatedNodes(new org.openide.nodes.Node[]{});
+            return;
+        } else {
+            if (toolController != null) {
+                toolController.updateSelection(spatial.getLookup().lookup(Spatial.class));
+            }
+        }
+        if (editorController == null) {
+            return;
+        }
+        editorController.setSelectedSpat(spatial);
+        if (spatial.getLookup().lookup(Node.class) != null) {
+            setSelectionData(true);
+            setSelectedObjectText(spatial.getLookup().lookup(Node.class).getName());
+        } else if (spatial.getLookup().lookup(Spatial.class) != null) {
+            setSelectionData(false);
+            setSelectedObjectText(spatial.getLookup().lookup(Spatial.class).getName());
+        } else {
+            setSelectedObjectText(null);
+            setSelectionData(false);
+        }
+        //TODO: remove
+        spatial.fireSave(true);
+        SceneApplication.getApplication().setSelectedNode(spatial);
+        setActivatedNodes(new org.openide.nodes.Node[]{spatial});
+    }
+
+
     /*
      * SceneListener
      */
@@ -990,22 +663,30 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             if (toolController != null) {
                 toolController.cleanup();
             }
+            toolController = new SceneToolController(currentRequest.getToolNode(), currentRequest.getManager().getManager());
             camController = new ComposerCameraController(SceneApplication.getApplication().getCamera(), request.getRootNode());
             camController.setMaster(this);
             camController.enable();
-            toolController = new SceneToolController(currentRequest.getToolNode(), currentRequest.getManager().getManager());
         } else {
             SceneApplication.getApplication().removeSceneListener(this);
-            currentRequest=null;
+            currentRequest = null;
             setSceneInfo(null, false);
-            if (camController != null) {
-                camController.disable();
-                camController = null;
-            }
-            if (toolController != null) {
-                toolController.cleanup();
-                toolController = null;
-            }
+            cleanupControllers();
+        }
+    }
+
+    private void cleanupControllers() {
+        if (camController != null) {
+            camController.disable();
+            camController = null;
+        }
+        if (toolController != null) {
+            toolController.cleanup();
+            toolController = null;
+        }
+        if (editorController != null) {
+            editorController.cleanup();
+            editorController = null;
         }
     }
 
@@ -1015,19 +696,9 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     private class SaveCookieImpl implements SaveCookie {
 
         public void save() throws IOException {
-
-//            Confirmation msg = new NotifyDescriptor.Confirmation("This plugin can not save!",
-//                    NotifyDescriptor.OK_CANCEL_OPTION,
-//                    NotifyDescriptor.QUESTION_MESSAGE);
-//
-//            Object result = DialogDisplayer.getDefault().notify(msg);
-
-            saveRequest();
-//            if (NotifyDescriptor.YES_OPTION.equals(result)) {
-            //selectedSpat.fireSave(false);
-//              }
-//            }
-
+            System.out.println("cookie called");
+            editorController.saveScene();
+//            setSceneInfo(currentRequest.getRootNode(), true);
         }
     }
 }

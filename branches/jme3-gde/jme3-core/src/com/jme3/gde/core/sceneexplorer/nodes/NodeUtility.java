@@ -57,6 +57,7 @@ public class NodeUtility {
         JmeChildren factory = new JmeChildren(node);
         factory.setCookie(cookie);
         JmeNode jmeNode = new JmeNode(node, factory);
+        jmeNode.setSaveCookie(cookie);
         return jmeNode;
     }
 
@@ -64,6 +65,7 @@ public class NodeUtility {
         JmeChildren factory = new JmeChildren(node);
         factory.setCookie(cookie);
         JmeNode jmeNode = new JmeNode(node, factory);
+        jmeNode.setSaveCookie(cookie);
         return jmeNode;
     }
 
@@ -71,6 +73,7 @@ public class NodeUtility {
         JmeChildren factory = new JmeChildren(node);
         factory.setCookie(cookie);
         JmeSpatial jmeSpatial = new JmeSpatial(node, factory);
+        jmeSpatial.setSaveCookie(cookie);
         return jmeSpatial;
     }
 }

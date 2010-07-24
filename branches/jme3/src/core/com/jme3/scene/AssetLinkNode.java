@@ -88,14 +88,22 @@ public class AssetLinkNode extends Node {
         return assetLoaderKeys;
     }
 
-    public void attachLinkedChild(Spatial spat, AssetKey<Spatial> key){
+    public void attachLinkedChild(Spatial spat, AssetKey<Spatial> key) {
         addLinkedChild(key);
         attachChild(spat);
     }
 
-    public int detachLinkedChild(Spatial child, AssetKey<Spatial> key) {
+    public void detachLinkedChild(AssetKey<Spatial> key) {
+        Spatial spatial = assetChildren.get(key);
+        if (spatial != null) {
+            detachChild(spatial);
+        }
         removeLinkedChild(key);
-        return super.detachChild(child);
+    }
+
+    public void detachLinkedChild(Spatial child, AssetKey<Spatial> key) {
+        removeLinkedChild(key);
+        detachChild(child);
     }
 
     /**
@@ -117,8 +125,8 @@ public class AssetLinkNode extends Node {
         }
     }
 
-    public void detachLinkedChildren(){
-        Set<Entry<AssetKey<Spatial>, Spatial>> set=assetChildren.entrySet();
+    public void detachLinkedChildren() {
+        Set<Entry<AssetKey<Spatial>, Spatial>> set = assetChildren.entrySet();
         for (Iterator<Entry<AssetKey<Spatial>, Spatial>> it = set.iterator(); it.hasNext();) {
             Entry<AssetKey<Spatial>, Spatial> entry = it.next();
             entry.getValue().removeFromParent();

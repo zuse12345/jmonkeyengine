@@ -256,7 +256,7 @@ public class ImageEditorComponent implements EditorToolTarget {
     private void requestFileAndSave() {
         FileChooserBuilder builder = new FileChooserBuilder(ImageEditorComponent.class);
         builder.addFileFilter(FileFilters.JPG);
-//        builder.addFileFilter(FileFilters.TGA);
+        builder.addFileFilter(FileFilters.TGA);
         builder.addFileFilter(FileFilters.PNG);
 
         JFileChooser fc= builder.createFileChooser();

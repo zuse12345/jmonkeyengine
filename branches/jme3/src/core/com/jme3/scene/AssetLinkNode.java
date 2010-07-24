@@ -86,10 +86,6 @@ public class AssetLinkNode extends Node {
         return assetLoaderKeys;
     }
 
-    public void setAssetLoaderKeys(ArrayList<AssetKey<Spatial>> assetLoaderKeys) {
-        this.assetLoaderKeys = assetLoaderKeys;
-    }
-
     /**
      * Loads the linked children AssetKeys from the AssetManager and attaches them to the Node<br>
      * If they are already attached, they will be reloaded.

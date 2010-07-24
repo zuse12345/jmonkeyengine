@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * The AssetLinkNode does not store its children when exported to file.
@@ -86,12 +88,23 @@ public class AssetLinkNode extends Node {
         return assetLoaderKeys;
     }
 
+    public void attachLinkedChild(Spatial spat, AssetKey<Spatial> key){
+        addLinkedChild(key);
+        attachChild(spat);
+    }
+
+    public int detachLinkedChild(Spatial child, AssetKey<Spatial> key) {
+        removeLinkedChild(key);
+        return super.detachChild(child);
+    }
+
     /**
      * Loads the linked children AssetKeys from the AssetManager and attaches them to the Node<br>
      * If they are already attached, they will be reloaded.
      * @param manager
      */
     public void attachLinkedChildren(AssetManager manager) {
+        detachLinkedChildren();
         for (Iterator<AssetKey<Spatial>> it = assetLoaderKeys.iterator(); it.hasNext();) {
             AssetKey<Spatial> assetKey = it.next();
             Spatial curChild = assetChildren.get(assetKey);
@@ -101,6 +114,15 @@ public class AssetLinkNode extends Node {
             Spatial child = manager.loadAsset(assetKey);
             attachChild(child);
             assetChildren.put(assetKey, child);
+        }
+    }
+
+    public void detachLinkedChildren(){
+        Set<Entry<AssetKey<Spatial>, Spatial>> set=assetChildren.entrySet();
+        for (Iterator<Entry<AssetKey<Spatial>, Spatial>> it = set.iterator(); it.hasNext();) {
+            Entry<AssetKey<Spatial>, Spatial> entry = it.next();
+            entry.getValue().removeFromParent();
+            it.remove();
         }
     }
 

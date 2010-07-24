@@ -44,6 +44,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The AssetLinkNode does not store its children when exported to file.
@@ -152,9 +154,12 @@ public class AssetLinkNode extends Node {
         for (Iterator<AssetKey<Spatial>> it = assetLoaderKeys.iterator(); it.hasNext();) {
             AssetKey<Spatial> modelKey = it.next();
             Spatial child = e.getAssetManager().loadAsset(modelKey);
-            child.parent = this;
-            children.add(child);
-            assetChildren.put(modelKey, child);
+            if(child!=null){
+                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Could not load linked child spatial: "+modelKey.getName());
+                child.parent = this;
+                children.add(child);
+                assetChildren.put(modelKey, child);
+            }
         }
     }
 

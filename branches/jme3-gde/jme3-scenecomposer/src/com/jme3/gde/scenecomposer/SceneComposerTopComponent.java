@@ -472,7 +472,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 
     @Override
     public HelpCtx getHelpCtx() {
-        HelpCtx ctx=new HelpCtx("com.jme3.gde.scenecomposer.usage");
+        HelpCtx ctx = new HelpCtx("com.jme3.gde.scenecomposer.usage");
         //this call is for single components:
         //HelpCtx.setHelpIDString(this, "com.jme3.gde.core.sceneviewer");
         return ctx;
@@ -875,7 +875,9 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         if (spatial == null) {
             setSelectedObjectText(null);
             setSelectionData(null);
-            toolController.updateSelection(null);
+            if (toolController != null) {
+                toolController.updateSelection(null);
+            }
             selectedSpat = null;
             return;
         } else {

@@ -596,6 +596,12 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         }
     }
 
+    void linkModel(AssetManager manager, String assetName) {
+        if (editorController != null) {
+            editorController.linkModel(manager, assetName);
+        }
+    }
+
     public void doMoveCursor(Vector3f vector) {
         if (toolController != null) {
             toolController.doSetCursorLocation(vector);

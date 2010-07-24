@@ -326,6 +326,44 @@ public class SceneEditorController {
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Adding Model..");
         progressHandle.start();
         try {
+            ((DesktopAssetManager) manager).clearCache();
+            AssetKey<Spatial> key = new AssetKey<Spatial>(assetName);
+            Spatial linkNode = manager.loadAsset(key);
+            if (linkNode != null) {
+                selected.attachChild(linkNode);
+            }
+            refreshSelected();
+        } catch (Exception ex) {
+            Confirmation msg = new NotifyDescriptor.Confirmation(
+                    "Error importing " + assetName + "\n" + ex.toString(),
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(msg);
+        }
+        progressHandle.finish();
+
+    }
+
+    public void linkModel(final AssetManager manager, final String assetName) {
+        if (selectedSpat == null) {
+            return;
+        }
+        final Node selected = selectedSpat.getLookup().lookup(Node.class);
+        if (selected != null) {
+            SceneApplication.getApplication().enqueue(new Callable<Object>() {
+
+                public Object call() throws Exception {
+                    doLinkModel(manager, assetName, selected);
+                    return null;
+                }
+            });
+        }
+    }
+
+    public void doLinkModel(AssetManager manager, String assetName, Node selected) {
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Adding Model..");
+        progressHandle.start();
+        try {
             if (selected instanceof AssetLinkNode) {
                 AssetLinkNode linkNode = (AssetLinkNode) selected;
                 linkNode.attachLinkedChild(manager, new AssetKey<Spatial>(assetName));

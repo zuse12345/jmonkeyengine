@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.border.TitledBorder;
 import org.netbeans.api.progress.ProgressHandle;
@@ -88,8 +89,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         setToolTipText(NbBundle.getMessage(SceneComposerTopComponent.class, "HINT_SceneComposerTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         result = Utilities.actionsGlobalContext().lookupResult(JmeSpatial.class);
-        SceneApplication.getApplication().addSceneListener(this);
-        result.addLookupListener(this);
     }
 
     /** This method is called from within the constructor to
@@ -467,7 +466,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 
     @Override
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_NEVER;
+        return TopComponent.PERSISTENCE_ALWAYS;
     }
 
     @Override
@@ -486,8 +485,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     @Override
     public void componentClosed() {
         super.componentClosed();
-        SceneApplication.getApplication().removeSceneListener(this);
-        result.removeLookupListener(this);
     }
 
     void writeProperties(java.util.Properties p) {
@@ -828,7 +825,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                     progressHandle.finish();
                     StatusDisplayer.getDefault().setStatusText("Saved file " + currentFileObject.getNameExt());
                     //try make NetBeans update the tree.. :/
-                    setSceneInfo(currentRequest.getRootNode().getName(), true);
+                    setSceneInfo(currentRequest.getRootNode(), true);
                     return null;
                 }
             });
@@ -838,15 +835,22 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     /**
      * method to set the state of the ui items
      */
-    private void setSceneInfo(final String name, final boolean active) {
+    private void setSceneInfo(final JmeNode jmeNode, final boolean active) {
+        final SceneComposerTopComponent inst=this;
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                ((TitledBorder) sceneInfoPanel.getBorder()).setTitle(name);
+                if (jmeNode != null) {
+                    ((TitledBorder) sceneInfoPanel.getBorder()).setTitle(jmeNode.getName());
+                    selectSpatial(jmeNode);
+                } else {
+                    ((TitledBorder) sceneInfoPanel.getBorder()).setTitle("");
+                }
                 //XXX: wtf? why do i have to repaint?
                 sceneInfoPanel.repaint();
 
                 if (!active) {
+                    result.removeLookupListener(inst);
                     addObjectButton.setEnabled(false);
                     addCursorButton.setEnabled(false);
                     showSelectionToggleButton.setSelected(false);
@@ -857,7 +861,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                     sceneInfoLabel2.setToolTipText("");
                     close();
                 } else {
-                    open();
                     showSelectionToggleButton.setSelected(false);
                     showGridToggleButton.setSelected(false);
                     //TODO: threading
@@ -865,6 +868,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                     sceneInfoLabel2.setText("Size: " + currentFileObject.getSize() / 1024 + " kB");
                     sceneInfoLabel1.setToolTipText("Name: " + currentFileObject.getNameExt());
                     sceneInfoLabel2.setToolTipText("Size: " + currentFileObject.getSize() / 1024 + " kB");
+                    open();
                     requestActive();
                 }
             }
@@ -872,18 +876,18 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     }
 
     private void selectSpatial(JmeSpatial spatial) {
+        if(spatial==selectedSpat)
+            return;
         if (spatial == null) {
             setSelectedObjectText(null);
             setSelectionData(null);
-            if (toolController != null) {
-                toolController.updateSelection(null);
-            }
             selectedSpat = null;
+            setActivatedNodes(new org.openide.nodes.Node[]{});
             return;
         } else {
-            if(toolController==null)
-                return;
-            toolController.updateSelection(spatial.getLookup().lookup(Spatial.class));
+            if (toolController != null) {
+                toolController.updateSelection(spatial.getLookup().lookup(Spatial.class));
+            }
         }
         selectedSpat = spatial;
         if (selectedSpat.getLookup().lookup(Node.class) != null) {
@@ -898,6 +902,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         }
         //TODO: remove
         selectedSpat.fireSave(true);
+        SceneApplication.getApplication().setSelectedNode(selectedSpat);
         setActivatedNodes(new org.openide.nodes.Node[]{selectedSpat});
     }
 
@@ -934,6 +939,8 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     }
 
     public void loadModel(Spatial spat, FileObject file, ProjectAssetManager manager) {
+        SceneApplication.getApplication().addSceneListener(this);
+        result.addLookupListener(this);
         //TODO: handle request change
         Node node;
         if (spat instanceof Node) {
@@ -962,7 +969,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
      */
     public void resultChanged(LookupEvent ev) {
         if (currentRequest == null || !currentRequest.isDisplayed()) {
-            selectSpatial(null);
             return;
         }
         Collection<JmeSpatial> items = (Collection<JmeSpatial>) result.allInstances();
@@ -977,7 +983,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
      */
     public void sceneRequested(SceneRequest request) {
         if (request.equals(currentRequest)) {
-            setSceneInfo(currentRequest.getRootNode().getName(), true);
+            setSceneInfo(currentRequest.getRootNode(), true);
             if (camController != null) {
                 camController.disable();
             }
@@ -989,7 +995,9 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             camController.enable();
             toolController = new SceneToolController(currentRequest.getToolNode(), currentRequest.getManager().getManager());
         } else {
-            setSceneInfo("no scene loaded", false);
+            SceneApplication.getApplication().removeSceneListener(this);
+            currentRequest=null;
+            setSceneInfo(null, false);
             if (camController != null) {
                 camController.disable();
                 camController = null;
@@ -999,12 +1007,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 toolController = null;
             }
         }
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                selectSpatial(currentRequest.getRootNode());
-            }
-        });
     }
 
     public void previewRequested(PreviewRequest request) {

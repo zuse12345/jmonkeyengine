@@ -53,8 +53,8 @@ import com.jme3.scene.Spatial.CullHint;
 import com.jme3.system.AppSettings;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -96,7 +96,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     protected FlyByCamera flyCam;
     protected boolean showSettings = true;
     private SceneRequest currentSceneRequest;
-    private LinkedList<SceneListener> listeners = new LinkedList<SceneListener>();
+    private ConcurrentLinkedQueue<SceneListener> listeners = new ConcurrentLinkedQueue<SceneListener>();
     private ScenePreviewProcessor previewProcessor;
     private Lookup.Result nodeSelectionResult;
     private ApplicationLogHandler logHandler = new ApplicationLogHandler();
@@ -277,7 +277,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         for (Iterator it = collection.iterator(); it.hasNext();) {
             Object object = it.next();
             if (object instanceof JmeSpatial) {
-                setSelectedNode((JmeSpatial) object);
+//                setSelectedNode((JmeSpatial) object);
                 return;
             }
         }

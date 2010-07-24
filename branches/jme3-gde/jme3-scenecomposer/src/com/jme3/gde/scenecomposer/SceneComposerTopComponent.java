@@ -881,6 +881,8 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             selectedSpat = null;
             return;
         } else {
+            if(toolController==null)
+                return;
             toolController.updateSelection(spatial.getLookup().lookup(Spatial.class));
         }
         selectedSpat = spatial;

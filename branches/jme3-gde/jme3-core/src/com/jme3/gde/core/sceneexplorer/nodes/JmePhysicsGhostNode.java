@@ -34,6 +34,7 @@ package com.jme3.gde.core.sceneexplorer.nodes;
 import com.jme3.bullet.nodes.PhysicsGhostNode;
 import com.jme3.gde.core.sceneexplorer.nodes.properties.JmeProperty;
 import java.awt.Image;
+import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
@@ -43,11 +44,15 @@ import org.openide.util.ImageUtilities;
  *
  * @author normenhansen
  */
+@org.openide.util.lookup.ServiceProvider(service=ExplorerNode.class)
 public class JmePhysicsGhostNode extends JmePhysicsCollisionObject {
 
     private static Image smallImage =
             ImageUtilities.loadImage("com/jme3/gde/core/sceneexplorer/nodes/icons/ghostnode.gif");
     private PhysicsGhostNode geom;
+
+    public JmePhysicsGhostNode() {
+    }
 
     public JmePhysicsGhostNode(PhysicsGhostNode spatial, JmeChildren children) {
         super(spatial, children);
@@ -102,5 +107,18 @@ public class JmePhysicsGhostNode extends JmePhysicsCollisionObject {
             Exceptions.printStackTrace(ex);
         }
         return prop;
+    }
+
+    public Class getExplorerObjectClass() {
+        return PhysicsGhostNode.class;
+    }
+
+    public Class getExplorerNodeClass() {
+        return JmePhysicsGhostNode.class;
+    }
+
+    public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
+        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        return new org.openide.nodes.Node[]{new JmePhysicsGhostNode((PhysicsGhostNode) key, children).setSaveCookie(cookie)};
     }
 }

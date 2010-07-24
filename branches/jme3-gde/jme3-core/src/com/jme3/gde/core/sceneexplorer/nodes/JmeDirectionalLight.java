@@ -37,6 +37,7 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.light.Light;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
+import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 
@@ -44,8 +45,12 @@ import org.openide.util.Exceptions;
  *
  * @author normenhansen
  */
+@org.openide.util.lookup.ServiceProvider(service=ExplorerNode.class)
 public class JmeDirectionalLight extends JmeLight{
     DirectionalLight pointLight;
+
+    public JmeDirectionalLight() {
+    }
 
     public JmeDirectionalLight(Spatial spatial, DirectionalLight pointLight) {
         super(spatial, pointLight);
@@ -92,5 +97,20 @@ public class JmeDirectionalLight extends JmeLight{
             Exceptions.printStackTrace(ex);
         }
         return prop;
+    }
+
+    public Class getExplorerObjectClass() {
+        return DirectionalLight.class;
+    }
+
+    public Class getExplorerNodeClass() {
+        return JmeDirectionalLight.class;
+    }
+
+    public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
+        //TODO
+        return null;
+//        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+//        return new org.openide.nodes.Node[]{new JmePicture((Picture) key, children).setSaveCookie(cookie)};
     }
 }

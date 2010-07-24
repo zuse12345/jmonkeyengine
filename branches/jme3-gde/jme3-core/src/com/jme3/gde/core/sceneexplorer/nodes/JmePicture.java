@@ -34,6 +34,7 @@ package com.jme3.gde.core.sceneexplorer.nodes;
 import com.jme3.gde.core.sceneexplorer.nodes.properties.JmeProperty;
 import com.jme3.ui.Picture;
 import java.awt.Image;
+import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
@@ -43,11 +44,15 @@ import org.openide.util.ImageUtilities;
  *
  * @author normenhansen
  */
+@org.openide.util.lookup.ServiceProvider(service=ExplorerNode.class)
 public class JmePicture extends JmeGeometry {
 
     private static Image smallImage =
             ImageUtilities.loadImage("com/jme3/gde/core/sceneexplorer/nodes/icons/picture.gif");
     private Picture geom;
+
+    public JmePicture() {
+    }
 
     public JmePicture(Picture spatial, JmeChildren children) {
         super(spatial, children);
@@ -106,4 +111,18 @@ public class JmePicture extends JmeGeometry {
         }
         return prop;
     }
+    
+    public Class getExplorerObjectClass() {
+        return Picture.class;
+    }
+
+    public Class getExplorerNodeClass() {
+        return JmePicture.class;
+    }
+
+    public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
+        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        return new org.openide.nodes.Node[]{new JmePicture((Picture) key, children).setSaveCookie(cookie)};
+    }
+
 }

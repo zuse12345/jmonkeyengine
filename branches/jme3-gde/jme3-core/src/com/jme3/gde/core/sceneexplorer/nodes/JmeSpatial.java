@@ -56,6 +56,7 @@ import org.openide.actions.PasteAction;
 import org.openide.actions.RenameAction;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
@@ -67,7 +68,8 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author normenhansen
  */
-public class JmeSpatial extends AbstractNode {
+@org.openide.util.lookup.ServiceProvider(service=ExplorerNode.class)
+public class JmeSpatial extends AbstractNode implements ExplorerNode{
 
     private Spatial spatial;
     private JmeChildren factory;
@@ -75,6 +77,11 @@ public class JmeSpatial extends AbstractNode {
     private Lookup lookup;
     private SaveCookie saveCookie = new SaveCookieImpl();
     protected final DataFlavor SPATIAL_FLAVOR = new DataFlavor(ClipboardSpatial.class, "Spatial");
+
+    public JmeSpatial() {
+        super(Children.LEAF);
+        lookupContents = null;
+    }
 
     public JmeSpatial(Spatial spatial, JmeChildren factory) {
         super(factory, new JmeLookup(new InstanceContent()));
@@ -397,4 +404,18 @@ public class JmeSpatial extends AbstractNode {
         }
         return prop;
     }
+
+    public Class getExplorerObjectClass() {
+        return Spatial.class;
+    }
+
+    public Class getExplorerNodeClass() {
+        return JmeSpatial.class;
+    }
+
+    public Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
+        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        return new Node[]{new JmeSpatial((Spatial) key, children).setSaveCookie(cookie)};
+    }
+
 }

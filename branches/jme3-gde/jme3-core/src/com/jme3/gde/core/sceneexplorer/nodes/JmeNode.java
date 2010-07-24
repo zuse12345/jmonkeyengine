@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -51,11 +52,15 @@ import org.openide.util.datatransfer.PasteType;
  *
  * @author normenhansen
  */
+@org.openide.util.lookup.ServiceProvider(service=ExplorerNode.class)
 public class JmeNode extends JmeSpatial {
 
     private static Image smallImage =
             ImageUtilities.loadImage("com/jme3/gde/core/sceneexplorer/nodes/icons/node.gif");
     private Node node;
+
+    public JmeNode() {
+    }
 
     public JmeNode(Node spatial, JmeChildren children) {
         super(spatial, children);
@@ -158,5 +163,18 @@ public class JmeNode extends JmeSpatial {
         if (null != paste) {
             s.add(paste);
         }
+    }
+
+    public Class getExplorerObjectClass() {
+        return Node.class;
+    }
+
+    public Class getExplorerNodeClass() {
+        return JmeNode.class;
+    }
+
+    public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
+        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        return new org.openide.nodes.Node[]{new JmeNode((Node) key, children).setSaveCookie(cookie)};
     }
 }

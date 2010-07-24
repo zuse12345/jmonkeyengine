@@ -57,6 +57,7 @@ import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -124,7 +125,17 @@ public class JmeChildren extends Children.Keys<Object> {
 
     @Override
     protected Node[] createNodes(Object key) {
-        //TODO: replace by some lookup where JmeSpatials register themselves..
+        for (ExplorerNode di : Lookup.getDefault().lookupAll(ExplorerNode.class)) {
+            if (di.getExplorerObjectClass().getName().equals(key.getClass().getName())) {
+                System.out.println("Found " + di.getExplorerNodeClass());
+                Node[] ret = di.createNodes(key, null, cookie);
+                if (ret != null) {
+                    return ret;
+                }
+            }
+        }
+
+        //TODO: go down in class hierarchy if class was not found, for now old checks are fallback
         if (key instanceof Spatial) {
             JmeChildren factory = new JmeChildren((Spatial) key);
             factory.setCookie(cookie);

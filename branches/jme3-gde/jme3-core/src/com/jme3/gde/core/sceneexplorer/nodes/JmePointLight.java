@@ -37,6 +37,7 @@ import com.jme3.light.Light;
 import com.jme3.light.PointLight;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
+import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 
@@ -44,8 +45,12 @@ import org.openide.util.Exceptions;
  *
  * @author normenhansen
  */
+@org.openide.util.lookup.ServiceProvider(service=ExplorerNode.class)
 public class JmePointLight extends JmeLight{
     PointLight pointLight;
+
+    public JmePointLight() {
+    }
 
     public JmePointLight(Spatial spatial, PointLight pointLight) {
         super(spatial, pointLight);
@@ -93,6 +98,18 @@ public class JmePointLight extends JmeLight{
             Exceptions.printStackTrace(ex);
         }
         return prop;
+    }
+
+    public Class getExplorerObjectClass() {
+        return PointLight.class;
+    }
+
+    public Class getExplorerNodeClass() {
+        return JmePointLight.class;
+    }
+
+    public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
+        return null;
     }
 
 }

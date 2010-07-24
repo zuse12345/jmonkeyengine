@@ -32,16 +32,19 @@
 
 package com.jme3.gde.core.sceneexplorer.nodes;
 
+import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
 
 /**
  *
  * @author normenhansen
  */
-public interface SceneNode {
+public interface ExplorerNode {
 
-    public Node getSceneNode();
+    public Class getExplorerNodeClass();
 
-    public String getSceneNodeClassName();
+    public Class getExplorerObjectClass();
+
+    public abstract Node[] createNodes(Object key, Object key2, SaveCookie cookie);
 
 }

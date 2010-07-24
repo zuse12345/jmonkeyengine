@@ -29,13 +29,11 @@
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.gde.core.sceneexplorer.nodes;
 
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.sceneexplorer.nodes.properties.JmeProperty;
 import com.jme3.light.Light;
-import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import java.awt.Image;
@@ -43,6 +41,7 @@ import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import org.openide.actions.DeleteAction;
+import org.openide.cookies.SaveCookie;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node.Property;
@@ -56,13 +55,19 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author normenhansen
  */
-public class JmeMesh extends AbstractNode {
+@org.openide.util.lookup.ServiceProvider(service=ExplorerNode.class)
+public class JmeMesh extends AbstractNode implements ExplorerNode{
 
     private final InstanceContent lookupContents;
     private Geometry geom;
     private Mesh mesh;
     private static Image smallImage =
             ImageUtilities.loadImage("com/jme3/gde/core/sceneexplorer/nodes/icons/mesh.gif");
+
+    public JmeMesh() {
+        super(Children.LEAF);
+        lookupContents = null;
+    }
 
     public JmeMesh(Geometry geom, Mesh mesh) {
         super(Children.LEAF, new JmeLookup(new InstanceContent()));
@@ -108,9 +113,9 @@ public class JmeMesh extends AbstractNode {
 
     protected SystemAction[] createActions() {
         return new SystemAction[]{
-//                    SystemAction.get(CopyAction.class),
-//                    SystemAction.get(CutAction.class),
-//                    SystemAction.get(PasteAction.class),
+                    //                    SystemAction.get(CopyAction.class),
+                    //                    SystemAction.get(CutAction.class),
+                    //                    SystemAction.get(PasteAction.class),
                     SystemAction.get(DeleteAction.class)
                 };
     }
@@ -157,5 +162,19 @@ public class JmeMesh extends AbstractNode {
             Exceptions.printStackTrace(ex);
         }
         return prop;
+    }
+
+    public Class getExplorerObjectClass() {
+        return Mesh.class;
+    }
+
+    public Class getExplorerNodeClass() {
+        return JmeMesh.class;
+    }
+
+    public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
+        return null;
+//        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+//        return new org.openide.nodes.Node[]{new JmePicture((Picture) key, children).setSaveCookie(cookie)};
     }
 }

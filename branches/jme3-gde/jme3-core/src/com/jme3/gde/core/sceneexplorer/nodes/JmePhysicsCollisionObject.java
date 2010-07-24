@@ -35,6 +35,7 @@ import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.gde.core.sceneexplorer.nodes.properties.JmeProperty;
 import java.awt.Image;
+import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
@@ -44,11 +45,15 @@ import org.openide.util.ImageUtilities;
  *
  * @author normenhansen
  */
+@org.openide.util.lookup.ServiceProvider(service=ExplorerNode.class)
 public class JmePhysicsCollisionObject extends JmeNode {
 
     private static Image smallImage =
             ImageUtilities.loadImage("com/jme3/gde/core/sceneexplorer/nodes/icons/node.gif");
     private PhysicsCollisionObject geom;
+
+    public JmePhysicsCollisionObject() {
+    }
 
     public JmePhysicsCollisionObject(PhysicsCollisionObject spatial, JmeChildren children) {
         super(spatial, children);
@@ -107,5 +112,18 @@ public class JmePhysicsCollisionObject extends JmeNode {
             Exceptions.printStackTrace(ex);
         }
         return prop;
+    }
+
+    public Class getExplorerObjectClass() {
+        return PhysicsCollisionObject.class;
+    }
+
+    public Class getExplorerNodeClass() {
+        return JmePhysicsCollisionObject.class;
+    }
+
+    public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
+        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        return new org.openide.nodes.Node[]{new JmePhysicsCollisionObject((PhysicsCollisionObject) key, children).setSaveCookie(cookie)};
     }
 }

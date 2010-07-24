@@ -35,15 +35,14 @@ import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.sceneexplorer.nodes.properties.JmeProperty;
 import com.jme3.light.Light;
 import com.jme3.math.ColorRGBA;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import java.awt.Image;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import org.openide.actions.CopyAction;
-import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
-import org.openide.actions.PasteAction;
+import org.openide.cookies.SaveCookie;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
@@ -56,13 +55,19 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author normenhansen
  */
-public class JmeLight extends AbstractNode {
+@org.openide.util.lookup.ServiceProvider(service=ExplorerNode.class)
+public class JmeLight extends AbstractNode implements ExplorerNode{
 
     private final InstanceContent lookupContents;
     private Spatial spatial;
     private Light light;
     private static Image smallImage =
             ImageUtilities.loadImage("com/jme3/gde/core/sceneexplorer/nodes/icons/light.gif");
+
+    public JmeLight() {
+        super(Children.LEAF);
+        lookupContents = null;
+    }
 
     public JmeLight(Spatial spatial, Light light) {
         super(Children.LEAF, new JmeLookup(new InstanceContent()));
@@ -107,9 +112,9 @@ public class JmeLight extends AbstractNode {
 
     protected SystemAction[] createActions() {
         return new SystemAction[]{
-//                    SystemAction.get(CopyAction.class),
-//                    SystemAction.get(CutAction.class),
-//                    SystemAction.get(PasteAction.class),
+                    //                    SystemAction.get(CopyAction.class),
+                    //                    SystemAction.get(CutAction.class),
+                    //                    SystemAction.get(PasteAction.class),
                     SystemAction.get(DeleteAction.class)
                 };
     }
@@ -157,4 +162,17 @@ public class JmeLight extends AbstractNode {
         }
         return prop;
     }
+
+    public Class getExplorerObjectClass() {
+        return Light.class;
+    }
+
+    public Class getExplorerNodeClass() {
+        return JmeLight.class;
+    }
+
+    public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
+        return null;
+    }
+
 }

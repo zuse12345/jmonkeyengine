@@ -38,6 +38,7 @@ import com.jme3.gde.core.sceneexplorer.nodes.properties.AudioDataProperty;
 import com.jme3.gde.core.sceneexplorer.nodes.properties.JmeProperty;
 import com.jme3.math.Vector3f;
 import java.awt.Image;
+import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -46,11 +47,15 @@ import org.openide.util.ImageUtilities;
  *
  * @author normenhansen
  */
+@org.openide.util.lookup.ServiceProvider(service=ExplorerNode.class)
 public class JmeAudioNode extends JmeNode {
 
     private static Image smallImage =
             ImageUtilities.loadImage("com/jme3/gde/core/sceneexplorer/nodes/icons/audionode.gif");
     private AudioNode node;
+
+    public JmeAudioNode() {
+    }
 
     public JmeAudioNode(AudioNode spatial, JmeChildren children) {
         super(spatial, children);
@@ -129,5 +134,18 @@ public class JmeAudioNode extends JmeNode {
             Exceptions.printStackTrace(ex);
         }
         return prop;
+    }
+
+    public Class getExplorerObjectClass() {
+        return AudioNode.class;
+    }
+
+    public Class getExplorerNodeClass() {
+        return JmeAudioNode.class;
+    }
+
+    public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
+        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        return new org.openide.nodes.Node[]{new JmeAudioNode((AudioNode) key, children).setSaveCookie(cookie)};
     }
 }

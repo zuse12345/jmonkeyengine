@@ -37,6 +37,7 @@ import com.jme3.gde.core.sceneexplorer.nodes.properties.JmeProperty;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import java.awt.Image;
+import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
@@ -46,8 +47,11 @@ import org.openide.util.ImageUtilities;
  *
  * @author normenhansen
  */
-//@org.openide.util.lookup.ServiceProvider(service=SceneNode.class)
-public class JmeParticleEmitter extends JmeGeometry implements SceneNode{
+@org.openide.util.lookup.ServiceProvider(service=ExplorerNode.class)
+public class JmeParticleEmitter extends JmeGeometry{
+
+    public JmeParticleEmitter() {
+    }
 
     private static Image smallImage =
             ImageUtilities.loadImage("com/jme3/gde/core/sceneexplorer/nodes/icons/particleemitter.gif");
@@ -134,12 +138,17 @@ public class JmeParticleEmitter extends JmeGeometry implements SceneNode{
         return prop;
     }
 
-    public Node getSceneNode() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Class getExplorerObjectClass() {
+        return ParticleEmitter.class;
     }
 
-    public String getSceneNodeClassName() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Class getExplorerNodeClass() {
+        return JmeParticleEmitter.class;
+    }
+
+    public Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
+        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        return new Node[]{new JmeParticleEmitter((ParticleEmitter) key, children).setSaveCookie(cookie)};
     }
 
 }

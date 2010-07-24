@@ -252,12 +252,4 @@
             </file>
         </folder>
     </folder>
-    <folder name="Templates">
-        <folder name="Other">
-            <file name="OgreSceneTemplate.scene" url="OgreSceneTemplate.scene">
-                <attr name="displayName" bundlevalue="com.jme3.gde.ogrexml.Bundle#Templates/Other/OgreSceneTemplate.scene"/>
-                <attr name="template" boolvalue="true"/>
-            </file>
-        </folder>
-    </folder>
 </filesystem>

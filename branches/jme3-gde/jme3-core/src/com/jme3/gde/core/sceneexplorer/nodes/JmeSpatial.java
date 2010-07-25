@@ -72,7 +72,7 @@ public class JmeSpatial extends AbstractSceneExplorerNode {
     public JmeSpatial() {
     }
 
-    public JmeSpatial(Spatial spatial, JmeChildren factory) {
+    public JmeSpatial(Spatial spatial, SceneExplorerChildren factory) {
         super(factory);
         this.jmeChildren = factory;
         this.spatial = spatial;
@@ -324,7 +324,7 @@ public class JmeSpatial extends AbstractSceneExplorerNode {
     }
 
     public Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
-        JmeChildren children = new JmeChildren((com.jme3.scene.Spatial) key);
+        SceneExplorerChildren children = new SceneExplorerChildren((com.jme3.scene.Spatial) key);
         children.setCookie(cookie);
         return new Node[]{new JmeSpatial((Spatial) key, children).setSaveCookie(cookie)};
     }

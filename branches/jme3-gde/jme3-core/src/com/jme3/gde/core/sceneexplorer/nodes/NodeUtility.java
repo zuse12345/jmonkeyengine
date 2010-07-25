@@ -42,20 +42,20 @@ import org.openide.cookies.SaveCookie;
 public class NodeUtility {
 
     public static JmeNode createNode(Node node) {
-        JmeChildren factory = new JmeChildren(node);
+        SceneExplorerChildren factory = new SceneExplorerChildren(node);
         JmeNode jmeNode = new JmeNode(node, factory);
         return jmeNode;
     }
 
     @Deprecated
     public static JmeNode createNode(Node node, boolean includeLights) {
-        JmeChildren factory = new JmeChildren(node);
+        SceneExplorerChildren factory = new SceneExplorerChildren(node);
         JmeNode jmeNode = new JmeNode(node, factory);
         return jmeNode;
     }
 
     public static JmeNode createNode(Node node, SaveCookie cookie) {
-        JmeChildren factory = new JmeChildren(node);
+        SceneExplorerChildren factory = new SceneExplorerChildren(node);
         factory.setCookie(cookie);
         JmeNode jmeNode = new JmeNode(node, factory);
         jmeNode.setSaveCookie(cookie);
@@ -64,7 +64,7 @@ public class NodeUtility {
 
     @Deprecated
     public static JmeNode createNode(Node node, boolean includeLights, SaveCookie cookie) {
-        JmeChildren factory = new JmeChildren(node);
+        SceneExplorerChildren factory = new SceneExplorerChildren(node);
         factory.setCookie(cookie);
         JmeNode jmeNode = new JmeNode(node, factory);
         jmeNode.setSaveCookie(cookie);
@@ -72,7 +72,7 @@ public class NodeUtility {
     }
 
     public static JmeSpatial createSpatial(Spatial node, SaveCookie cookie) {
-        JmeChildren factory = new JmeChildren(node);
+        SceneExplorerChildren factory = new SceneExplorerChildren(node);
         factory.setCookie(cookie);
         JmeSpatial jmeSpatial = new JmeSpatial(node, factory);
         jmeSpatial.setSaveCookie(cookie);

@@ -55,7 +55,7 @@ public class JmeParticleEmitter extends JmeGeometry{
             ImageUtilities.loadImage("com/jme3/gde/core/sceneexplorer/nodes/icons/particleemitter.gif");
     private ParticleEmitter geom;
 
-    public JmeParticleEmitter(ParticleEmitter spatial, JmeChildren children) {
+    public JmeParticleEmitter(ParticleEmitter spatial, SceneExplorerChildren children) {
         super(spatial, children);
         getLookupContents().add(spatial);
         this.geom = spatial;
@@ -123,7 +123,7 @@ public class JmeParticleEmitter extends JmeGeometry{
     }
 
     public Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
-        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        SceneExplorerChildren children=new SceneExplorerChildren((com.jme3.scene.Spatial)key);
         children.setCookie(cookie);
         return new Node[]{new JmeParticleEmitter((ParticleEmitter) key, children).setSaveCookie(cookie)};
     }

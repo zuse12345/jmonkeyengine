@@ -61,7 +61,7 @@ public class JmeNode extends JmeSpatial {
     public JmeNode() {
     }
 
-    public JmeNode(Node spatial, JmeChildren children) {
+    public JmeNode(Node spatial, SceneExplorerChildren children) {
         super(spatial, children);
         getLookupContents().add(spatial);
         this.node = spatial;
@@ -152,7 +152,7 @@ public class JmeNode extends JmeSpatial {
     }
 
     public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
-        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        SceneExplorerChildren children=new SceneExplorerChildren((com.jme3.scene.Spatial)key);
         children.setCookie(cookie);
         return new org.openide.nodes.Node[]{new JmeNode((Node) key, children).setSaveCookie(cookie)};
     }

@@ -52,7 +52,7 @@ public class JmePhysicsCollisionObject extends JmeNode {
     public JmePhysicsCollisionObject() {
     }
 
-    public JmePhysicsCollisionObject(PhysicsCollisionObject spatial, JmeChildren children) {
+    public JmePhysicsCollisionObject(PhysicsCollisionObject spatial, SceneExplorerChildren children) {
         super(spatial, children);
         getLookupContents().add(spatial);
         this.geom = spatial;
@@ -98,7 +98,7 @@ public class JmePhysicsCollisionObject extends JmeNode {
     }
 
     public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
-        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        SceneExplorerChildren children=new SceneExplorerChildren((com.jme3.scene.Spatial)key);
         children.setCookie(cookie);
         return new org.openide.nodes.Node[]{new JmePhysicsCollisionObject((PhysicsCollisionObject) key, children).setSaveCookie(cookie)};
     }

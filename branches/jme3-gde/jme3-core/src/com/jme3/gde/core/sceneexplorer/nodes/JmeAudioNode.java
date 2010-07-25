@@ -55,7 +55,7 @@ public class JmeAudioNode extends JmeNode {
     public JmeAudioNode() {
     }
 
-    public JmeAudioNode(AudioNode spatial, JmeChildren children) {
+    public JmeAudioNode(AudioNode spatial, SceneExplorerChildren children) {
         super(spatial, children);
         getLookupContents().add(spatial);
         this.node = spatial;
@@ -121,7 +121,7 @@ public class JmeAudioNode extends JmeNode {
     }
 
     public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
-        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        SceneExplorerChildren children=new SceneExplorerChildren((com.jme3.scene.Spatial)key);
         children.setCookie(cookie);
         return new org.openide.nodes.Node[]{new JmeAudioNode((AudioNode) key, children).setSaveCookie(cookie)};
     }

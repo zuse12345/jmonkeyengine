@@ -32,7 +32,7 @@
 
 package com.jme3.gde.core.sceneexplorer.nodes;
 
-import com.jme3.gde.core.sceneexplorer.nodes.properties.JmeProperty;
+import com.jme3.gde.core.sceneexplorer.nodes.properties.SceneExplorerProperty;
 import com.jme3.light.Light;
 import com.jme3.light.PointLight;
 import com.jme3.math.Vector3f;
@@ -83,7 +83,7 @@ public class JmePointLight extends JmeLight{
     private Property makeProperty(Light obj, Class returntype, String method, String name) {
         Property prop = null;
         try {
-            prop = new JmeProperty(obj, returntype, method, null);
+            prop = new SceneExplorerProperty(obj, returntype, method, null);
             prop.setName(name);
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);
@@ -94,7 +94,7 @@ public class JmePointLight extends JmeLight{
     private Property makeProperty(Light obj, Class returntype, String method, String setter, String name) {
         Property prop = null;
         try {
-            prop = new JmeProperty(obj, returntype, method, setter, this);
+            prop = new SceneExplorerProperty(obj, returntype, method, setter, this);
             prop.setName(name);
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);

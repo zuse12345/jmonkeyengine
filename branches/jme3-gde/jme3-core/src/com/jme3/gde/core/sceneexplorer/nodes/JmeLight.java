@@ -32,7 +32,7 @@
 package com.jme3.gde.core.sceneexplorer.nodes;
 
 import com.jme3.gde.core.scene.SceneApplication;
-import com.jme3.gde.core.sceneexplorer.nodes.properties.JmeProperty;
+import com.jme3.gde.core.sceneexplorer.nodes.properties.SceneExplorerProperty;
 import com.jme3.light.Light;
 import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Spatial;
@@ -71,10 +71,10 @@ public class JmeLight extends AbstractNode implements SceneExplorerNode, Propert
     }
 
     public JmeLight(Spatial spatial, Light light) {
-        super(Children.LEAF, new JmeLookup(new InstanceContent()));
+        super(Children.LEAF, new SceneExplorerLookup(new InstanceContent()));
         this.spatial = spatial;
         this.light = light;
-        lookupContents = ((JmeLookup) getLookup()).getInstanceContent();
+        lookupContents = ((SceneExplorerLookup) getLookup()).getInstanceContent();
         lookupContents.add(spatial);
         lookupContents.add(light);
         lookupContents.add(this);
@@ -145,7 +145,7 @@ public class JmeLight extends AbstractNode implements SceneExplorerNode, Propert
     private Property makeProperty(Light obj, Class returntype, String method, String name) {
         Property prop = null;
         try {
-            prop = new JmeProperty(obj, returntype, method, null);
+            prop = new SceneExplorerProperty(obj, returntype, method, null);
             prop.setName(name);
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);
@@ -156,7 +156,7 @@ public class JmeLight extends AbstractNode implements SceneExplorerNode, Propert
     private Property makeProperty(Light obj, Class returntype, String method, String setter, String name) {
         Property prop = null;
         try {
-            prop = new JmeProperty(obj, returntype, method, setter, this);
+            prop = new SceneExplorerProperty(obj, returntype, method, setter, this);
             prop.setName(name);
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);

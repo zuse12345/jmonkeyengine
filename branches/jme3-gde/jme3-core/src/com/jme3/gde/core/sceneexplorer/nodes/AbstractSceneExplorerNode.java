@@ -31,7 +31,7 @@
  */
 package com.jme3.gde.core.sceneexplorer.nodes;
 
-import com.jme3.gde.core.sceneexplorer.nodes.properties.JmeProperty;
+import com.jme3.gde.core.sceneexplorer.nodes.properties.SceneExplorerProperty;
 import com.jme3.scene.Spatial;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -52,19 +52,19 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class AbstractSceneExplorerNode extends AbstractNode implements SceneExplorerNode, PropertyChangeListener  {
 
-    protected JmeChildren jmeChildren;
+    protected SceneExplorerChildren jmeChildren;
     protected final InstanceContent lookupContents;
     protected SaveCookie saveCookie = null;//new SaveCookieImpl();
 
     public AbstractSceneExplorerNode() {
-        super(Children.LEAF, new JmeLookup(new InstanceContent()));
-        lookupContents = ((JmeLookup) getLookup()).getInstanceContent();
+        super(Children.LEAF, new SceneExplorerLookup(new InstanceContent()));
+        lookupContents = ((SceneExplorerLookup) getLookup()).getInstanceContent();
     }
 
-    public AbstractSceneExplorerNode(JmeChildren children) {
-        super(children, new JmeLookup(new InstanceContent()));
+    public AbstractSceneExplorerNode(SceneExplorerChildren children) {
+        super(children, new SceneExplorerLookup(new InstanceContent()));
         this.jmeChildren = children;
-        lookupContents = ((JmeLookup) getLookup()).getInstanceContent();
+        lookupContents = ((SceneExplorerLookup) getLookup()).getInstanceContent();
     }
 
     public InstanceContent getLookupContents() {
@@ -107,7 +107,7 @@ public class AbstractSceneExplorerNode extends AbstractNode implements SceneExpl
     protected Property makeProperty(Spatial obj, Class returntype, String method, String name) {
         Property prop = null;
         try {
-            prop = new JmeProperty(obj, returntype, method, null);
+            prop = new SceneExplorerProperty(obj, returntype, method, null);
             prop.setName(name);
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);
@@ -119,9 +119,9 @@ public class AbstractSceneExplorerNode extends AbstractNode implements SceneExpl
         Property prop = null;
         try {
             if(saveCookie==null){
-                prop = new JmeProperty(obj, returntype, method, null);
+                prop = new SceneExplorerProperty(obj, returntype, method, null);
             }else{
-                prop = new JmeProperty(obj, returntype, method, setter, this);
+                prop = new SceneExplorerProperty(obj, returntype, method, setter, this);
             }
             prop.setName(name);
 

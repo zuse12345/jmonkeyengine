@@ -46,7 +46,7 @@ import org.openide.util.Exceptions;
  *
  * @author normenhansen
  */
-public class AssetLinkChildren extends JmeChildren {
+public class AssetLinkChildren extends SceneExplorerChildren {
 
     public AssetLinkChildren(AssetLinkNode spatial) {
         super(spatial);

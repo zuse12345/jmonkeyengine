@@ -53,7 +53,7 @@ public class JmeBitmapText extends JmeGeometry {
     public JmeBitmapText() {
     }
 
-    public JmeBitmapText(BitmapText spatial, JmeChildren children) {
+    public JmeBitmapText(BitmapText spatial, SceneExplorerChildren children) {
         super(spatial, children);
         getLookupContents().add(spatial);
         this.geom = spatial;
@@ -100,7 +100,7 @@ public class JmeBitmapText extends JmeGeometry {
     }
 
     public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
-        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        SceneExplorerChildren children=new SceneExplorerChildren((com.jme3.scene.Spatial)key);
         children.setCookie(cookie);
         return new org.openide.nodes.Node[]{new JmeBitmapText((BitmapText) key, children).setSaveCookie(cookie)};
     }

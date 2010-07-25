@@ -51,7 +51,7 @@ public class JmePhysicsVehicleNode extends JmePhysicsNode {
     public JmePhysicsVehicleNode() {
     }
 
-    public JmePhysicsVehicleNode(PhysicsVehicleNode spatial, JmeChildren children) {
+    public JmePhysicsVehicleNode(PhysicsVehicleNode spatial, SceneExplorerChildren children) {
         super(spatial, children);
         getLookupContents().add(spatial);
         this.geom = spatial;
@@ -100,7 +100,7 @@ public class JmePhysicsVehicleNode extends JmePhysicsNode {
     }
 
     public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
-        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        SceneExplorerChildren children=new SceneExplorerChildren((com.jme3.scene.Spatial)key);
         children.setCookie(cookie);
         return new org.openide.nodes.Node[]{new JmePhysicsVehicleNode((PhysicsVehicleNode) key, children).setSaveCookie(cookie)};
     }

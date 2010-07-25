@@ -32,7 +32,7 @@
 package com.jme3.gde.core.sceneexplorer.nodes;
 
 import com.jme3.gde.core.scene.SceneApplication;
-import com.jme3.gde.core.sceneexplorer.nodes.properties.JmeProperty;
+import com.jme3.gde.core.sceneexplorer.nodes.properties.SceneExplorerProperty;
 import com.jme3.light.Light;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
@@ -72,10 +72,10 @@ public class JmeMesh extends AbstractNode implements SceneExplorerNode, Property
     }
 
     public JmeMesh(Geometry geom, Mesh mesh) {
-        super(Children.LEAF, new JmeLookup(new InstanceContent()));
+        super(Children.LEAF, new SceneExplorerLookup(new InstanceContent()));
         this.geom = geom;
         this.mesh = mesh;
-        lookupContents = ((JmeLookup) getLookup()).getInstanceContent();
+        lookupContents = ((SceneExplorerLookup) getLookup()).getInstanceContent();
         lookupContents.add(geom);
         lookupContents.add(mesh);
         lookupContents.add(this);
@@ -147,7 +147,7 @@ public class JmeMesh extends AbstractNode implements SceneExplorerNode, Property
     private Property makeProperty(Mesh obj, Class returntype, String method, String name) {
         Property prop = null;
         try {
-            prop = new JmeProperty(obj, returntype, method, null);
+            prop = new SceneExplorerProperty(obj, returntype, method, null);
             prop.setName(name);
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);
@@ -158,7 +158,7 @@ public class JmeMesh extends AbstractNode implements SceneExplorerNode, Property
     private Property makeProperty(Mesh obj, Class returntype, String method, String setter, String name) {
         Property prop = null;
         try {
-            prop = new JmeProperty(obj, returntype, method, setter, this);
+            prop = new SceneExplorerProperty(obj, returntype, method, setter, this);
             prop.setName(name);
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);

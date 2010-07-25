@@ -52,15 +52,15 @@ import org.openide.util.Exceptions;
  *
  * @author normenhansen
  */
-public class JmeProperty<T> extends PropertySupport.Reflection<T> {
+public class SceneExplorerProperty<T> extends PropertySupport.Reflection<T> {
 
     private LinkedList<PropertyChangeListener> listeners = new LinkedList<PropertyChangeListener>();
 
-    public JmeProperty(T instance, Class valueType, String getter, String setter) throws NoSuchMethodException {
+    public SceneExplorerProperty(T instance, Class valueType, String getter, String setter) throws NoSuchMethodException {
         this(instance, valueType, getter, setter, null);
     }
 
-    public JmeProperty(T instance, Class valueType, String getter, String setter, PropertyChangeListener listener) throws NoSuchMethodException {
+    public SceneExplorerProperty(T instance, Class valueType, String getter, String setter, PropertyChangeListener listener) throws NoSuchMethodException {
         super(instance, valueType, getter, setter);
         addPropertyChangeListener(listener);
         if (valueType == Vector3f.class) {

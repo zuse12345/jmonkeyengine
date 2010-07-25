@@ -31,7 +31,7 @@
  */
 package com.jme3.gde.core.sceneexplorer.nodes;
 
-import com.jme3.gde.core.sceneexplorer.nodes.properties.JmeProperty;
+import com.jme3.gde.core.sceneexplorer.nodes.properties.SceneExplorerProperty;
 import com.jme3.scene.AssetLinkNode;
 import java.awt.Image;
 import org.openide.cookies.SaveCookie;
@@ -54,7 +54,7 @@ public class JmeAssetLinkNode extends JmeNode {
     public JmeAssetLinkNode() {
     }
 
-    public JmeAssetLinkNode(AssetLinkNode spatial, JmeChildren children) {
+    public JmeAssetLinkNode(AssetLinkNode spatial, SceneExplorerChildren children) {
         super(spatial, new AssetLinkChildren(spatial));
         getLookupContents().add(spatial);
         this.geom = spatial;
@@ -96,7 +96,7 @@ public class JmeAssetLinkNode extends JmeNode {
     }
 
     public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
-        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        SceneExplorerChildren children=new SceneExplorerChildren((com.jme3.scene.Spatial)key);
         children.setCookie(cookie);
         return new org.openide.nodes.Node[]{new JmeAssetLinkNode((AssetLinkNode) key, children).setSaveCookie(cookie)};
     }

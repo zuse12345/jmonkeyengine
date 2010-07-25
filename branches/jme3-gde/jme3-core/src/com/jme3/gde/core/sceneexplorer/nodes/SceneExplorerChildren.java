@@ -63,13 +63,13 @@ import org.openide.util.Lookup;
  *
  * @author normenhansen
  */
-public class JmeChildren extends Children.Keys<Object> {
+public class SceneExplorerChildren extends Children.Keys<Object> {
 
     protected Spatial spatial;
     protected SaveCookie cookie;
     protected HashMap<Object, Node> map = new HashMap<Object, Node>();
 
-    public JmeChildren(Spatial spatial) {
+    public SceneExplorerChildren(Spatial spatial) {
         this.spatial = spatial;
     }
 
@@ -137,7 +137,7 @@ public class JmeChildren extends Children.Keys<Object> {
 
         //TODO: go down in class hierarchy if class was not found, for now old checks are fallback
         if (key instanceof Spatial) {
-            JmeChildren children = new JmeChildren((Spatial) key);
+            SceneExplorerChildren children = new SceneExplorerChildren((Spatial) key);
             children.setCookie(cookie);
             if (key instanceof PhysicsVehicleNode) {
                 return new Node[]{new JmePhysicsVehicleNode((PhysicsVehicleNode) key, children).setSaveCookie(cookie)};

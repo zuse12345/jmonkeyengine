@@ -80,6 +80,7 @@ public class ColorRGBAPropertyEditor implements PropertyEditor {
         text = text.replace('[', ' ');
         text = text.replace(']', ' ');
         String[] values = text.split(",");
+        ColorRGBA old=color;
         if (values.length != 4) {
             throw (new IllegalArgumentException("String not correct"));
         }
@@ -89,6 +90,7 @@ public class ColorRGBAPropertyEditor implements PropertyEditor {
             floats[i] = Float.parseFloat(string);
         }
         color.set(floats[0], floats[1], floats[2], floats[3]);
+        notifyListeners(old, color);
     }
 
     public String[] getTags() {
@@ -117,7 +119,7 @@ public class ColorRGBAPropertyEditor implements PropertyEditor {
         for (Iterator<PropertyChangeListener> it = listeners.iterator(); it.hasNext();) {
             PropertyChangeListener propertyChangeListener = it.next();
             //TODO: check what the "programmatic name" is supposed to be here.. for now its ColorRGBA
-            propertyChangeListener.propertyChange(new PropertyChangeEvent(this, "ColorRGBA", before, after));
+            propertyChangeListener.propertyChange(new PropertyChangeEvent(this, null, before, after));
         }
     }
 }

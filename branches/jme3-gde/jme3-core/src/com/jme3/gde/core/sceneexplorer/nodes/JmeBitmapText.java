@@ -108,7 +108,7 @@ public class JmeBitmapText extends JmeGeometry {
     private Property makeProperty(BitmapText obj, Class returntype, String method, String setter, String name) {
         Property prop = null;
         try {
-            prop = new JmeProperty(obj, returntype, method, setter);
+            prop = new JmeProperty(obj, returntype, method, setter, this);
             prop.setName(name);
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);
@@ -126,6 +126,7 @@ public class JmeBitmapText extends JmeGeometry {
 
     public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
         JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        children.setCookie(cookie);
         return new org.openide.nodes.Node[]{new JmeBitmapText((BitmapText) key, children).setSaveCookie(cookie)};
     }
 }

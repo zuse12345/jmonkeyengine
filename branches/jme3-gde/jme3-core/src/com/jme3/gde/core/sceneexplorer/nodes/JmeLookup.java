@@ -40,6 +40,7 @@ import org.openide.util.lookup.InstanceContent;
  * @author normenhansen
  */
 public class JmeLookup extends AbstractLookup{
+    private static final long serialVersionUID = 1212314412L;
     private InstanceContent instanceContent;
 
     public JmeLookup(InstanceContent instanceContent) {

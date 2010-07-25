@@ -124,6 +124,7 @@ public class EmitterShapePropertyEditor implements PropertyEditor {
         text = text.replace('[', ' ').trim();
         text = text.replace(']', ' ').trim();
         String[] strings = text.split(",");
+        EmitterShape old=emitter;
         if (strings.length == 0) {
             return;
         }
@@ -151,6 +152,7 @@ public class EmitterShapePropertyEditor implements PropertyEditor {
                 emitter = new EmitterSphereShape(Vector3f.ZERO, .5f);
             }
         }
+        notifyListeners(old, emitter);
     }
 
     public String[] getTags() {
@@ -178,7 +180,7 @@ public class EmitterShapePropertyEditor implements PropertyEditor {
         for (Iterator<PropertyChangeListener> it = listeners.iterator(); it.hasNext();) {
             PropertyChangeListener propertyChangeListener = it.next();
             //TODO: check what the "programmatic name" is supposed to be here.. for now its Quaternion
-            propertyChangeListener.propertyChange(new PropertyChangeEvent(this, "EmitterShape", before, after));
+            propertyChangeListener.propertyChange(new PropertyChangeEvent(this, null, before, after));
         }
     }
 }

@@ -88,7 +88,10 @@ public class QuaternionPropertyEditor implements PropertyEditor {
             String string = values[i];
             floats[i] = Float.parseFloat(string);
         }
+        Quaternion old=new Quaternion();
+        old.set(quaternion);
         quaternion.set(floats[0], floats[1], floats[2], floats[3]);
+        notifyListeners(old,quaternion);
     }
 
     public String[] getTags() {
@@ -115,7 +118,7 @@ public class QuaternionPropertyEditor implements PropertyEditor {
         for (Iterator<PropertyChangeListener> it = listeners.iterator(); it.hasNext();) {
             PropertyChangeListener propertyChangeListener = it.next();
             //TODO: check what the "programmatic name" is supposed to be here.. for now its Quaternion
-            propertyChangeListener.propertyChange(new PropertyChangeEvent(this, "Quaternion", before, after));
+            propertyChangeListener.propertyChange(new PropertyChangeEvent(this, null, before, after));
         }
     }
 }

@@ -130,7 +130,7 @@ public class JmeParticleEmitter extends JmeGeometry{
     private Property makeProperty(ParticleEmitter obj, Class returntype, String method, String setter, String name) {
         Property prop = null;
         try {
-            prop = new JmeProperty(obj, returntype, method, setter);
+            prop = new JmeProperty(obj, returntype, method, setter, this);
             prop.setName(name);
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);
@@ -148,6 +148,7 @@ public class JmeParticleEmitter extends JmeGeometry{
 
     public Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
         JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        children.setCookie(cookie);
         return new Node[]{new JmeParticleEmitter((ParticleEmitter) key, children).setSaveCookie(cookie)};
     }
 

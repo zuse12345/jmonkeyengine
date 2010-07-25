@@ -35,9 +35,10 @@ import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.sceneexplorer.nodes.properties.JmeProperty;
 import com.jme3.light.Light;
 import com.jme3.math.ColorRGBA;
-import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -56,7 +57,7 @@ import org.openide.util.lookup.InstanceContent;
  * @author normenhansen
  */
 @org.openide.util.lookup.ServiceProvider(service=SceneExplorerNode.class)
-public class JmeLight extends AbstractNode implements SceneExplorerNode{
+public class JmeLight extends AbstractNode implements SceneExplorerNode, PropertyChangeListener{
 
     private final InstanceContent lookupContents;
     private Spatial spatial;
@@ -155,7 +156,7 @@ public class JmeLight extends AbstractNode implements SceneExplorerNode{
     private Property makeProperty(Light obj, Class returntype, String method, String setter, String name) {
         Property prop = null;
         try {
-            prop = new JmeProperty(obj, returntype, method, setter);
+            prop = new JmeProperty(obj, returntype, method, setter, this);
             prop.setName(name);
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);
@@ -173,6 +174,9 @@ public class JmeLight extends AbstractNode implements SceneExplorerNode{
 
     public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
         return null;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
     }
 
 }

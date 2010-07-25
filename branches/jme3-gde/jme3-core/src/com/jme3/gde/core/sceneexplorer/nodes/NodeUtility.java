@@ -47,6 +47,7 @@ public class NodeUtility {
         return jmeNode;
     }
 
+    @Deprecated
     public static JmeNode createNode(Node node, boolean includeLights) {
         JmeChildren factory = new JmeChildren(node);
         JmeNode jmeNode = new JmeNode(node, factory);
@@ -61,6 +62,7 @@ public class NodeUtility {
         return jmeNode;
     }
 
+    @Deprecated
     public static JmeNode createNode(Node node, boolean includeLights, SaveCookie cookie) {
         JmeChildren factory = new JmeChildren(node);
         factory.setCookie(cookie);

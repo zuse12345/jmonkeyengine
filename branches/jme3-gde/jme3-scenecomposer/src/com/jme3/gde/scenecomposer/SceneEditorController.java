@@ -16,7 +16,6 @@ import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
 import com.jme3.export.binary.BinaryExporter;
 import com.jme3.gde.core.scene.SceneApplication;
-import com.jme3.gde.core.scene.SceneRequest;
 import com.jme3.gde.core.sceneexplorer.nodes.JmeSpatial;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.PointLight;
@@ -31,6 +30,8 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.ui.Picture;
 import com.jme3.util.TangentBinormalGenerator;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -42,17 +43,22 @@ import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author normenhansen
  */
-public class SceneEditorController {
+public class SceneEditorController implements PropertyChangeListener, NodeListener {
 
     private JmeSpatial jmeRootNode;
     private JmeSpatial selectedSpat;
     private FileObject currentFileObject;
+    private boolean needSave = false;
 
     public SceneEditorController(JmeSpatial jmeRootNode, FileObject currentFileObject) {
         this.jmeRootNode = jmeRootNode;
@@ -68,7 +74,19 @@ public class SceneEditorController {
     }
 
     public void setSelectedSpat(JmeSpatial selectedSpat) {
+        if (this.selectedSpat == selectedSpat) {
+            return;
+        }
+        if (this.selectedSpat != null) {
+            this.selectedSpat.removePropertyChangeListener(this);
+            this.selectedSpat.removeNodeListener(this);
+        }
         this.selectedSpat = selectedSpat;
+        if (selectedSpat != null) {
+            selectedSpat.fireSave(needSave);
+            selectedSpat.addPropertyChangeListener(this);//WeakListeners.propertyChange(this, selectedSpat));
+            selectedSpat.addNodeListener(this);//WeakListeners.propertyChange(this, selectedSpat));
+        }
     }
 
     public FileObject getCurrentFileObject() {
@@ -84,9 +102,9 @@ public class SceneEditorController {
             return;
         }
         try {
-            selectedSpat.fireSave(true);
             final Spatial node = selectedSpat.getLookup().lookup(Spatial.class);
             if (node != null) {
+                setNeedsSave(true);
                 SceneApplication.getApplication().enqueue(new Callable() {
 
                     public Object call() throws Exception {
@@ -193,9 +211,9 @@ public class SceneEditorController {
             return;
         }
         try {
-//            selectedSpat.fireSave(true);
             final Spatial node = selectedSpat.getLookup().lookup(Spatial.class);
             if (node != null) {
+                setNeedsSave(true);
                 SceneApplication.getApplication().enqueue(new Callable() {
 
                     public Object call() throws Exception {
@@ -231,9 +249,9 @@ public class SceneEditorController {
             return;
         }
         try {
-//            selectedSpat.fireSave(true);
             final Spatial node = selectedSpat.getLookup().lookup(Spatial.class);
             if (node != null) {
+                setNeedsSave(true);
                 SceneApplication.getApplication().enqueue(new Callable() {
 
                     public Object call() throws Exception {
@@ -266,8 +284,8 @@ public class SceneEditorController {
         }
         if (selectedSpat != jmeRootNode) {
             try {
-//                selectedSpat.fireSave(true);
                 final Spatial node = selectedSpat.getLookup().lookup(Spatial.class);
+                setNeedsSave(true);
                 if (node != null) {
                     SceneApplication.getApplication().enqueue(new Callable() {
 
@@ -312,6 +330,7 @@ public class SceneEditorController {
         }
         final Node selected = selectedSpat.getLookup().lookup(Node.class);
         if (selected != null) {
+            setNeedsSave(true);
             SceneApplication.getApplication().enqueue(new Callable<Object>() {
 
                 public Object call() throws Exception {
@@ -350,6 +369,7 @@ public class SceneEditorController {
         }
         final Node selected = selectedSpat.getLookup().lookup(Node.class);
         if (selected != null) {
+            setNeedsSave(true);
             SceneApplication.getApplication().enqueue(new Callable<Object>() {
 
                 public Object call() throws Exception {
@@ -386,16 +406,48 @@ public class SceneEditorController {
 
     }
 
+    public void setNeedsSave(boolean state) {
+        if (selectedSpat != null) {
+            selectedSpat.fireSave(state);
+        }
+        needSave = state;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if ((evt.getOldValue() == null && !(evt.getNewValue() == null)) || ((evt.getOldValue() != null) && !evt.getOldValue().equals(evt.getNewValue()))) {
+            setNeedsSave(true);
+        }
+    }
+
+    public void childrenAdded(NodeMemberEvent ev) {
+//        setNeedsSave(true);
+    }
+
+    public void childrenRemoved(NodeMemberEvent ev) {
+//        setNeedsSave(true);
+    }
+
+    public void childrenReordered(NodeReorderEvent ev) {
+//        setNeedsSave(true);
+    }
+
+    public void nodeDestroyed(NodeEvent ev) {
+//        setNeedsSave(true);
+    }
+
     public void saveScene() {
         final Node node = jmeRootNode.getLookup().lookup(Node.class);
         final FileObject file = currentFileObject;
-        SceneApplication.getApplication().enqueue(new Callable() {
+        if (node != null && file != null) {
+            setNeedsSave(false);
+            SceneApplication.getApplication().enqueue(new Callable() {
 
-            public Object call() throws Exception {
-                doSaveScene(node, file);
-                return null;
-            }
-        });
+                public Object call() throws Exception {
+                    doSaveScene(node, file);
+                    return null;
+                }
+            });
+        }
     }
 
     public void doSaveScene(Node node, FileObject currentFileObject) {
@@ -463,6 +515,9 @@ public class SceneEditorController {
 
     public void cleanup() {
         final Node node = jmeRootNode.getLookup().lookup(Node.class);
+        if (selectedSpat != null) {
+            selectedSpat.removePropertyChangeListener(this);
+        }
         SceneApplication.getApplication().enqueue(new Callable() {
 
             public Object call() throws Exception {

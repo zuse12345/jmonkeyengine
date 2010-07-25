@@ -97,6 +97,7 @@ public class JmeAssetLinkNode extends JmeNode {
 
     public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
         JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        children.setCookie(cookie);
         return new org.openide.nodes.Node[]{new JmeAssetLinkNode((AssetLinkNode) key, children).setSaveCookie(cookie)};
     }
 }

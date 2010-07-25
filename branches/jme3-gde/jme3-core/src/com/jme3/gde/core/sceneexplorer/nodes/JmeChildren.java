@@ -137,45 +137,45 @@ public class JmeChildren extends Children.Keys<Object> {
 
         //TODO: go down in class hierarchy if class was not found, for now old checks are fallback
         if (key instanceof Spatial) {
-            JmeChildren factory = new JmeChildren((Spatial) key);
-            factory.setCookie(cookie);
+            JmeChildren children = new JmeChildren((Spatial) key);
+            children.setCookie(cookie);
             if (key instanceof PhysicsVehicleNode) {
-                return new Node[]{new JmePhysicsVehicleNode((PhysicsVehicleNode) key, factory).setSaveCookie(cookie)};
+                return new Node[]{new JmePhysicsVehicleNode((PhysicsVehicleNode) key, children).setSaveCookie(cookie)};
             }
             if (key instanceof PhysicsNode) {
-                return new Node[]{new JmePhysicsNode((PhysicsNode) key, factory).setSaveCookie(cookie)};
+                return new Node[]{new JmePhysicsNode((PhysicsNode) key, children).setSaveCookie(cookie)};
             }
             if (key instanceof PhysicsCharacterNode) {
-                return new Node[]{new JmePhysicsGhostNode((PhysicsGhostNode) key, factory).setSaveCookie(cookie)};
+                return new Node[]{new JmePhysicsGhostNode((PhysicsGhostNode) key, children).setSaveCookie(cookie)};
             }
             if (key instanceof PhysicsGhostNode) {
-                return new Node[]{new JmePhysicsGhostNode((PhysicsGhostNode) key, factory).setSaveCookie(cookie)};
+                return new Node[]{new JmePhysicsGhostNode((PhysicsGhostNode) key, children).setSaveCookie(cookie)};
             }
             if (key instanceof PhysicsCollisionObject) {
-                return new Node[]{new JmePhysicsCollisionObject((PhysicsCollisionObject) key, factory).setSaveCookie(cookie)};
+                return new Node[]{new JmePhysicsCollisionObject((PhysicsCollisionObject) key, children).setSaveCookie(cookie)};
             }
             if (key instanceof PhysicsVehicleWheel) {
-                return new Node[]{new JmePhysicsVehicleWheel((PhysicsVehicleWheel) key, factory).setSaveCookie(cookie)};
+                return new Node[]{new JmePhysicsVehicleWheel((PhysicsVehicleWheel) key, children).setSaveCookie(cookie)};
             }
             if (key instanceof com.jme3.audio.AudioNode) {
-                return new Node[]{new JmeAudioNode((com.jme3.audio.AudioNode) key, factory).setSaveCookie(cookie)};
+                return new Node[]{new JmeAudioNode((com.jme3.audio.AudioNode) key, children).setSaveCookie(cookie)};
             }
             if (key instanceof com.jme3.scene.Node) {
-                return new Node[]{new JmeNode((com.jme3.scene.Node) key, factory).setSaveCookie(cookie)};
+                return new Node[]{new JmeNode((com.jme3.scene.Node) key, children).setSaveCookie(cookie)};
             }
             if (key instanceof BitmapText) {
-                return new Node[]{new JmeBitmapText((BitmapText) key, factory).setSaveCookie(cookie)};
+                return new Node[]{new JmeBitmapText((BitmapText) key, children).setSaveCookie(cookie)};
             }
             if (key instanceof Picture) {
-                return new Node[]{new JmePicture((Picture) key, factory).setSaveCookie(cookie)};
+                return new Node[]{new JmePicture((Picture) key, children).setSaveCookie(cookie)};
             }
             if (key instanceof ParticleEmitter) {
-                return new Node[]{new JmeParticleEmitter((ParticleEmitter) key, factory).setSaveCookie(cookie)};
+                return new Node[]{new JmeParticleEmitter((ParticleEmitter) key, children).setSaveCookie(cookie)};
             }
             if (key instanceof com.jme3.scene.Geometry) {
-                return new Node[]{new JmeGeometry((Geometry) key, factory).setSaveCookie(cookie)};
+                return new Node[]{new JmeGeometry((Geometry) key, children).setSaveCookie(cookie)};
             }
-            return new Node[]{new JmeSpatial((Spatial) key, factory).setSaveCookie(cookie)};
+            return new Node[]{new JmeSpatial((Spatial) key, children).setSaveCookie(cookie)};
         } else if (key instanceof LightSpatialPair) {
             LightSpatialPair pair = (LightSpatialPair) key;
             if (pair.getLight() instanceof PointLight) {

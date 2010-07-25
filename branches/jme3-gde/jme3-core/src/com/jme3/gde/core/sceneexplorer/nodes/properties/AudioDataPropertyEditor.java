@@ -31,9 +31,9 @@
  */
 package com.jme3.gde.core.sceneexplorer.nodes.properties;
 
+import com.jme3.audio.AudioData;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneRequest;
-import com.jme3.math.Quaternion;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -79,10 +79,12 @@ public class AudioDataPropertyEditor implements PropertyEditor {
     }
 
     public void setAsText(String text) throws IllegalArgumentException {
+        String old=material;
         if ("".equals(text)) {
             material = "null";
         }
         material = text;
+        notifyListeners(old, material);
     }
 
     public String[] getTags() {
@@ -110,11 +112,11 @@ public class AudioDataPropertyEditor implements PropertyEditor {
         listeners.remove(listener);
     }
 
-    private void notifyListeners(Quaternion before, Quaternion after) {
+    private void notifyListeners(String before, String after) {
         for (Iterator<PropertyChangeListener> it = listeners.iterator(); it.hasNext();) {
             PropertyChangeListener propertyChangeListener = it.next();
             //TODO: check what the "programmatic name" is supposed to be here.. for now its Quaternion
-            propertyChangeListener.propertyChange(new PropertyChangeEvent(this, "AudioData", before, after));
+            propertyChangeListener.propertyChange(new PropertyChangeEvent(this, null, before, after));
         }
     }
 }

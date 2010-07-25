@@ -95,28 +95,6 @@ public class JmeNode extends JmeSpatial {
 
     }
 
-    private Property makeProperty(Node obj, Class returntype, String method, String name) {
-        Property prop = null;
-        try {
-            prop = new JmeProperty(obj, returntype, method, null);
-            prop.setName(name);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return prop;
-    }
-
-    private Property makeProperty(Node obj, Class returntype, String method, String setter, String name) {
-        Property prop = null;
-        try {
-            prop = new JmeProperty(obj, returntype, method, setter);
-            prop.setName(name);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return prop;
-    }
-
     @Override
     public PasteType getDropType(final Transferable t, int action, int index) {
         Object data = null;
@@ -135,6 +113,7 @@ public class JmeNode extends JmeSpatial {
                 @Override
                 public Transferable paste() throws IOException {
                     try {
+                        fireSave(true);
                         SceneApplication.getApplication().enqueue(new Callable<Void>() {
 
                             public Void call() throws Exception {
@@ -165,6 +144,28 @@ public class JmeNode extends JmeSpatial {
         }
     }
 
+    private Property makeProperty(Node obj, Class returntype, String method, String name) {
+        Property prop = null;
+        try {
+            prop = new JmeProperty(obj, returntype, method, null);
+            prop.setName(name);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return prop;
+    }
+
+    private Property makeProperty(Node obj, Class returntype, String method, String setter, String name) {
+        Property prop = null;
+        try {
+            prop = new JmeProperty(obj, returntype, method, setter, this);
+            prop.setName(name);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return prop;
+    }
+
     public Class getExplorerObjectClass() {
         return Node.class;
     }
@@ -175,6 +176,7 @@ public class JmeNode extends JmeSpatial {
 
     public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
         JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        children.setCookie(cookie);
         return new org.openide.nodes.Node[]{new JmeNode((Node) key, children).setSaveCookie(cookie)};
     }
 }

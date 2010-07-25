@@ -37,6 +37,8 @@ import com.jme3.light.Light;
 import com.jme3.light.PointLight;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
@@ -92,7 +94,7 @@ public class JmePointLight extends JmeLight{
     private Property makeProperty(Light obj, Class returntype, String method, String setter, String name) {
         Property prop = null;
         try {
-            prop = new JmeProperty(obj, returntype, method, setter);
+            prop = new JmeProperty(obj, returntype, method, setter, this);
             prop.setName(name);
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);

@@ -91,7 +91,7 @@ public class JmeDirectionalLight extends JmeLight{
     private Property makeProperty(Light obj, Class returntype, String method, String setter, String name) {
         Property prop = null;
         try {
-            prop = new JmeProperty(obj, returntype, method, setter);
+            prop = new JmeProperty(obj, returntype, method, setter, this);
             prop.setName(name);
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);

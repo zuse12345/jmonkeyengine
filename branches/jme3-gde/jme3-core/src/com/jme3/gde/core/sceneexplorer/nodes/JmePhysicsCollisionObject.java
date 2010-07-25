@@ -106,7 +106,7 @@ public class JmePhysicsCollisionObject extends JmeNode {
     private Property makeProperty(PhysicsCollisionObject obj, Class returntype, String method, String setter, String name) {
         Property prop = null;
         try {
-            prop = new JmeProperty(obj, returntype, method, setter);
+            prop = new JmeProperty(obj, returntype, method, setter, this);
             prop.setName(name);
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);
@@ -124,6 +124,7 @@ public class JmePhysicsCollisionObject extends JmeNode {
 
     public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
         JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        children.setCookie(cookie);
         return new org.openide.nodes.Node[]{new JmePhysicsCollisionObject((PhysicsCollisionObject) key, children).setSaveCookie(cookie)};
     }
 }

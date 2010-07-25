@@ -578,7 +578,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             node.attachChild(spat);
         }
         JmeNode jmeNode = NodeUtility.createNode(node, saveCookie);
-        jmeNode.fireSave(true);
         SceneRequest request = new SceneRequest(this, jmeNode, manager);
         if (editorController != null) {
             editorController.cleanup();
@@ -650,8 +649,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             setSelectedObjectText(null);
             setSelectionData(false);
         }
-        //TODO: remove
-        spatial.fireSave(true);
         SceneApplication.getApplication().setSelectedNode(spatial);
         setActivatedNodes(new org.openide.nodes.Node[]{spatial});
     }
@@ -699,10 +696,9 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     public void previewRequested(PreviewRequest request) {
     }
 
-    private class SaveCookieImpl implements SaveCookie {
+    public class SaveCookieImpl implements SaveCookie {
 
         public void save() throws IOException {
-            System.out.println("cookie called");
             editorController.saveScene();
 //            setSceneInfo(currentRequest.getRootNode(), true);
         }

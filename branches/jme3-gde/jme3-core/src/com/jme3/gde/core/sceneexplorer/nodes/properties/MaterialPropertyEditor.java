@@ -86,6 +86,7 @@ public class MaterialPropertyEditor implements PropertyEditor {
 
     public void setAsText(final String text) throws IllegalArgumentException {
         try {
+            Material old = material;
             SceneApplication.getApplication().enqueue(new Callable<Void>() {
 
                 public Void call() throws Exception {
@@ -98,6 +99,7 @@ public class MaterialPropertyEditor implements PropertyEditor {
                     return null;
                 }
             }).get();
+            notifyListeners(old, material);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         } catch (ExecutionException ex) {
@@ -127,11 +129,11 @@ public class MaterialPropertyEditor implements PropertyEditor {
         listeners.remove(listener);
     }
 
-    private void notifyListeners(Quaternion before, Quaternion after) {
+    private void notifyListeners(Material before, Material after) {
         for (Iterator<PropertyChangeListener> it = listeners.iterator(); it.hasNext();) {
             PropertyChangeListener propertyChangeListener = it.next();
             //TODO: check what the "programmatic name" is supposed to be here.. for now its Quaternion
-            propertyChangeListener.propertyChange(new PropertyChangeEvent(this, "Material", before, after));
+            propertyChangeListener.propertyChange(new PropertyChangeEvent(this, null, before, after));
         }
     }
 }

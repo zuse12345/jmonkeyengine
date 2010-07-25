@@ -37,6 +37,8 @@ import com.jme3.light.Light;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -56,7 +58,7 @@ import org.openide.util.lookup.InstanceContent;
  * @author normenhansen
  */
 @org.openide.util.lookup.ServiceProvider(service=SceneExplorerNode.class)
-public class JmeMesh extends AbstractNode implements SceneExplorerNode{
+public class JmeMesh extends AbstractNode implements SceneExplorerNode, PropertyChangeListener{
 
     private final InstanceContent lookupContents;
     private Geometry geom;
@@ -156,7 +158,7 @@ public class JmeMesh extends AbstractNode implements SceneExplorerNode{
     private Property makeProperty(Mesh obj, Class returntype, String method, String setter, String name) {
         Property prop = null;
         try {
-            prop = new JmeProperty(obj, returntype, method, setter);
+            prop = new JmeProperty(obj, returntype, method, setter, this);
             prop.setName(name);
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);
@@ -176,5 +178,8 @@ public class JmeMesh extends AbstractNode implements SceneExplorerNode{
         return null;
 //        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
 //        return new org.openide.nodes.Node[]{new JmePicture((Picture) key, children).setSaveCookie(cookie)};
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
     }
 }

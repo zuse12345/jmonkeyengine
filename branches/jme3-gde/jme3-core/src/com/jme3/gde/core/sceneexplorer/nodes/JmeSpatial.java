@@ -45,10 +45,15 @@ import com.jme3.scene.Spatial.CullHint;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
@@ -68,14 +73,14 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author normenhansen
  */
-@org.openide.util.lookup.ServiceProvider(service=SceneExplorerNode.class)
-public class JmeSpatial extends AbstractNode implements SceneExplorerNode{
+@org.openide.util.lookup.ServiceProvider(service = SceneExplorerNode.class)
+public class JmeSpatial extends AbstractNode implements SceneExplorerNode, PropertyChangeListener {
 
     private Spatial spatial;
     private JmeChildren factory;
     private final InstanceContent lookupContents;
     private Lookup lookup;
-    private SaveCookie saveCookie = new SaveCookieImpl();
+    private SaveCookie saveCookie = null;//new SaveCookieImpl();
     protected final DataFlavor SPATIAL_FLAVOR = new DataFlavor(ClipboardSpatial.class, "Spatial");
 
     public JmeSpatial() {
@@ -141,7 +146,6 @@ public class JmeSpatial extends AbstractNode implements SceneExplorerNode{
     public void fireSave(boolean modified, boolean recursive) {
         if (modified) {
             if (saveCookie != null) {
-                lookupContents.remove(saveCookie);
                 lookupContents.add(saveCookie);
             }
         } else {
@@ -171,14 +175,21 @@ public class JmeSpatial extends AbstractNode implements SceneExplorerNode{
         return this;
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        if ((evt.getOldValue() == null && !(evt.getNewValue() == null)) || ((evt.getOldValue() != null) && !evt.getOldValue().equals(evt.getNewValue()))) {
+            fireSave(true);
+        }
+        firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+    }
+
     private class SaveCookieImpl implements SaveCookie {
 
         public void save() throws IOException {
-//            Confirmation msg = new NotifyDescriptor.Confirmation("This plugin can not save!",
-//                    NotifyDescriptor.OK_CANCEL_OPTION,
-//                    NotifyDescriptor.QUESTION_MESSAGE);
+            Confirmation msg = new NotifyDescriptor.Confirmation("Something went wrong!",
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE);
 //
-//            Object result = DialogDisplayer.getDefault().notify(msg);
+            Object result = DialogDisplayer.getDefault().notify(msg);
             //When user clicks "Yes", indicating they really want to save,
             //we need to disable the Save button and Save menu item,
             //so that it will only be usable when the next change is made
@@ -214,6 +225,7 @@ public class JmeSpatial extends AbstractNode implements SceneExplorerNode{
     public void setName(final String s) {
         super.setName(s);
         try {
+            fireSave(true);
             SceneApplication.getApplication().enqueue(new Callable<Void>() {
 
                 public Void call() throws Exception {
@@ -231,6 +243,7 @@ public class JmeSpatial extends AbstractNode implements SceneExplorerNode{
     @Override
     public void destroy() throws IOException {
         try {
+            fireSave(true);
             SceneApplication.getApplication().enqueue(new Callable<Void>() {
 
                 public Void call() throws Exception {
@@ -281,6 +294,7 @@ public class JmeSpatial extends AbstractNode implements SceneExplorerNode{
 
     @Override
     public Transferable clipboardCut() throws IOException {
+        fireSave(true);
         Transferable trans = new Transferable() {
 
             public DataFlavor[] getTransferDataFlavors() {
@@ -333,10 +347,10 @@ public class JmeSpatial extends AbstractNode implements SceneExplorerNode{
      * @param name
      * @return The PropertySet or null if no PropertySet by that name exists
      */
-    public PropertySet getPropertySet(String name){
+    public PropertySet getPropertySet(String name) {
         for (int i = 0; i < getPropertySets().length; i++) {
             PropertySet propertySet = getPropertySets()[i];
-            if(propertySet.getName().equals(name)){
+            if (propertySet.getName().equals(name)) {
                 return propertySet;
             }
         }
@@ -397,7 +411,7 @@ public class JmeSpatial extends AbstractNode implements SceneExplorerNode{
     private Property makeProperty(Spatial obj, Class returntype, String method, String setter, String name) {
         Property prop = null;
         try {
-            prop = new JmeProperty(obj, returntype, method, setter);
+            prop = new JmeProperty(obj, returntype, method, setter, this);
             prop.setName(name);
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);
@@ -414,8 +428,8 @@ public class JmeSpatial extends AbstractNode implements SceneExplorerNode{
     }
 
     public Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
-        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
+        JmeChildren children = new JmeChildren((com.jme3.scene.Spatial) key);
+        children.setCookie(cookie);
         return new Node[]{new JmeSpatial((Spatial) key, children).setSaveCookie(cookie)};
     }
-
 }

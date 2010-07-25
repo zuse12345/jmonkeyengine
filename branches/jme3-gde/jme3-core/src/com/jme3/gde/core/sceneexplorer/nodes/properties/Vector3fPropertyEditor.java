@@ -88,7 +88,10 @@ public class Vector3fPropertyEditor implements PropertyEditor {
             String string = values[i];
             floats[i] = Float.parseFloat(string);
         }
+        Vector3f old = new Vector3f();
+        old.set(vector);
         vector.set(floats[0], floats[1], floats[2]);
+        notifyListeners(old, vector);
     }
 
     public String[] getTags() {
@@ -115,7 +118,7 @@ public class Vector3fPropertyEditor implements PropertyEditor {
         for (Iterator<PropertyChangeListener> it = listeners.iterator(); it.hasNext();) {
             PropertyChangeListener propertyChangeListener = it.next();
             //TODO: check what the "programmatic name" is supposed to be here.. for now its Vector3f
-            propertyChangeListener.propertyChange(new PropertyChangeEvent(this, "Vector3f", before, after));
+            propertyChangeListener.propertyChange(new PropertyChangeEvent(this, null, before, after));
         }
     }
 }

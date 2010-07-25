@@ -109,6 +109,7 @@ public class MaterialPropertyEditor implements PropertyEditor {
 
     public String[] getTags() {
         SceneRequest request = SceneApplication.getApplication().getCurrentSceneRequest();
+        if(request==null) return new String[]{};
         String[] mats = request.getManager().getMaterials();
         return mats;
     }

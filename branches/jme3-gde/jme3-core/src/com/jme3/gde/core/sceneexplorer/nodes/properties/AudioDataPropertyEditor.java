@@ -90,6 +90,7 @@ public class AudioDataPropertyEditor implements PropertyEditor {
     public String[] getTags() {
         if ("null".equals(material)) {
             SceneRequest request = SceneApplication.getApplication().getCurrentSceneRequest();
+            if(request==null) return new String[]{};
             String[] mats = request.getManager().getSounds();
             return mats;
         }

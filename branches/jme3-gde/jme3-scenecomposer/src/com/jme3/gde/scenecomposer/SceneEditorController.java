@@ -413,6 +413,10 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
         needSave = state;
     }
 
+    public boolean isNeedSave() {
+        return needSave;
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
         if ((evt.getOldValue() == null && !(evt.getNewValue() == null)) || ((evt.getOldValue() != null) && !evt.getOldValue().equals(evt.getNewValue()))) {
             setNeedsSave(true);

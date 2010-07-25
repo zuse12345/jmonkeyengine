@@ -421,6 +421,10 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
     public void sceneRequested(SceneRequest request) {
     }
 
+    public boolean sceneClose(SceneRequest request) {
+        return true;
+    }
+
     public void previewRequested(PreviewRequest request) {
         if (request.getRequester() == this) {
             final ImageIcon icon = new ImageIcon(request.getImage());

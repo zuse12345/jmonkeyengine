@@ -382,4 +382,9 @@ public class TimelineManager implements TimelinePropertyListener, SceneListener 
 
     public void previewRequested(PreviewRequest source) {
     }
+
+    public boolean sceneClose(SceneRequest request) {
+        return true;
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

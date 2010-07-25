@@ -277,6 +277,11 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 //        throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    public boolean sceneClose(SceneRequest request) {
+        return true;
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     public void nodeSelected(final JmeSpatial spatial) {
         java.awt.EventQueue.invokeLater(new Runnable() {
 

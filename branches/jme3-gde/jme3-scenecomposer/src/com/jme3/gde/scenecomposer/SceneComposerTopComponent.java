@@ -28,6 +28,9 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -460,7 +463,9 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     @Override
     public void componentClosed() {
         super.componentClosed();
-        cleanupControllers();
+        if (currentRequest != null) {
+            SceneApplication.getApplication().closeScene(currentRequest);
+        }
     }
 
     void writeProperties(java.util.Properties p) {
@@ -653,6 +658,20 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         setActivatedNodes(new org.openide.nodes.Node[]{spatial});
     }
 
+    private void cleanupControllers() {
+        if (camController != null) {
+            camController.disable();
+            camController = null;
+        }
+        if (toolController != null) {
+            toolController.cleanup();
+            toolController = null;
+        }
+        if (editorController != null) {
+            editorController.cleanup();
+            editorController = null;
+        }
+    }
 
     /*
      * SceneListener
@@ -670,27 +689,45 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             camController = new ComposerCameraController(SceneApplication.getApplication().getCamera(), request.getRootNode());
             camController.setMaster(this);
             camController.enable();
-        } else {
-            SceneApplication.getApplication().removeSceneListener(this);
-            currentRequest = null;
-            setSceneInfo(null, false);
-            cleanupControllers();
-        }
+        }/* else {
+        SceneApplication.getApplication().removeSceneListener(this);
+        currentRequest = null;
+        setSceneInfo(null, false);
+        cleanupControllers();
+        }*/
     }
 
-    private void cleanupControllers() {
-        if (camController != null) {
-            camController.disable();
-            camController = null;
+    public boolean sceneClose(SceneRequest request) {
+        if (request.equals(currentRequest)) {
+            if (checkSaved()) {
+                SceneApplication.getApplication().removeSceneListener(this);
+                currentRequest = null;
+                setSceneInfo(null, false);
+                cleanupControllers();
+            } else {
+                return false;
+            }
         }
-        if (toolController != null) {
-            toolController.cleanup();
-            toolController = null;
+        return true;
+    }
+
+    private boolean checkSaved() {
+        if (editorController != null && editorController.isNeedSave()) {
+            Confirmation msg = new NotifyDescriptor.Confirmation(
+                    "Your Scene is not saved, do you want to save?",
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.WARNING_MESSAGE);
+            Object result = DialogDisplayer.getDefault().notify(msg);
+            if (NotifyDescriptor.CANCEL_OPTION.equals(result)) {
+                return false;
+            } else if (NotifyDescriptor.YES_OPTION.equals(result)) {
+                editorController.saveScene();
+                return true;
+            } else if (NotifyDescriptor.NO_OPTION.equals(result)) {
+                return true;
+            }
         }
-        if (editorController != null) {
-            editorController.cleanup();
-            editorController = null;
-        }
+        return true;
     }
 
     public void previewRequested(PreviewRequest request) {

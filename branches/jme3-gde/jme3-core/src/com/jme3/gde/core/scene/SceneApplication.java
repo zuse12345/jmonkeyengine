@@ -177,7 +177,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         progressHandle.progress("Create", 6);
         wireProcessor = new WireProcessor(assetManager);
         progressHandle.finish();
-        
+
         inputManager.addMapping("MouseAxisX", new MouseAxisTrigger(MouseInput.AXIS_X, false));
         inputManager.addMapping("MouseAxisY", new MouseAxisTrigger(MouseInput.AXIS_Y, false));
         inputManager.addMapping("MouseAxisX-", new MouseAxisTrigger(MouseInput.AXIS_X, true));
@@ -299,6 +299,16 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         }
     }
 
+    private boolean notifySceneListeners(SceneRequest closed) {
+        for (Iterator<SceneListener> it = listeners.iterator(); it.hasNext();) {
+            SceneListener sceneViewerListener = it.next();
+            if (!sceneViewerListener.sceneClose(currentSceneRequest)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public void notifySceneListeners(PreviewRequest request) {
         for (Iterator<SceneListener> it = listeners.iterator(); it.hasNext();) {
             SceneListener sceneViewerListener = it.next();
@@ -315,16 +325,15 @@ public class SceneApplication extends Application implements LookupProvider, Loo
      * @param tree
      */
     public void requestScene(final SceneRequest request) {
-        setWindowTitle(request.getWindowTitle());
         enqueue(new Callable() {
 
             public Object call() throws Exception {
-                toolsNode.detachAllChildren();
-                rootNode.detachAllChildren();
+                if (!closeCurrentScene()) {
+                    return null;
+                }
                 if (request.getManager() != null) {
                     assetManager = request.getManager().getManager();
                 }
-                closeCurrentScene();
                 if (request.getRequester() instanceof SceneApplication) {
                     camController.enable();
                 } else {
@@ -343,18 +352,53 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                     toolsNode.attachChild(request.getToolNode());
                 }
                 notifySceneListeners();
+                setWindowTitle(request.getWindowTitle());
                 return null;
             }
         });
     }
 
-    private void closeCurrentScene() {
-        setSelectedNode(null);
+    /**
+     * method to close a scene displayed by a scene request (threadsafe)
+     * @param tree
+     */
+    public void closeScene(final SceneRequest request) {
+        setWindowTitle("SceneViewer");
+        enqueue(new Callable() {
+
+            public Object call() throws Exception {
+                if (request == currentSceneRequest) {
+                    if(closeCurrentScene()){
+                        if (request.getRequester() instanceof SceneApplication) {
+                            camController.disable();
+                        }
+                        currentSceneRequest = null;
+                    }
+                }
+                return null;
+            }
+        });
+    }
+
+    private boolean closeCurrentScene() {
+        return closeCurrentScene(false);
+    }
+
+    private boolean closeCurrentScene(boolean force) {
         if (currentSceneRequest != null) {
+            if (!notifySceneListeners(currentSceneRequest)) {
+                if (!force) {
+                    return false;
+                }
+            }
             currentSceneRequest.setDisplayed(false);
         }
-        currentSceneRequest = null;
+        toolsNode.detachAllChildren();
+        rootNode.detachAllChildren();
+        setSelectedNode(null);
         resetCam();
+        currentSceneRequest = null;
+        return true;
     }
 
     private void resetCam() {

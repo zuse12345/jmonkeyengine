@@ -52,6 +52,7 @@ import org.openide.actions.PasteAction;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -251,6 +252,12 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
         this.request = request;
         explorerManager.setRootContext(request.getRootNode());
         explorerManager.getRootContext().setDisplayName(request.getRootNode().getName());
+    }
+
+    public boolean sceneClose(SceneRequest request){
+        this.request = null;
+        explorerManager.setRootContext(Node.EMPTY);
+        return true;
     }
 
     public void previewRequested(PreviewRequest request) {

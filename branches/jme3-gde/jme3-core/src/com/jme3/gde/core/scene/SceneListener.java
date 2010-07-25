@@ -39,6 +39,8 @@ public interface SceneListener {
 
     public void sceneRequested(SceneRequest request);
 
+    public boolean sceneClose(SceneRequest request);
+
     public void previewRequested(PreviewRequest request);
 
 }

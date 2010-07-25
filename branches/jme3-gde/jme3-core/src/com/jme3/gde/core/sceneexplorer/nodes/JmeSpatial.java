@@ -34,7 +34,6 @@ package com.jme3.gde.core.sceneexplorer.nodes;
 import com.jme3.bounding.BoundingVolume;
 import com.jme3.export.binary.BinaryExporter;
 import com.jme3.gde.core.scene.SceneApplication;
-import com.jme3.gde.core.sceneexplorer.nodes.properties.JmeProperty;
 import com.jme3.light.LightList;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
@@ -45,61 +44,41 @@ import com.jme3.scene.Spatial.CullHint;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.RenameAction;
 import org.openide.cookies.SaveCookie;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.InstanceContent;
 
 /**
  *
  * @author normenhansen
  */
 @org.openide.util.lookup.ServiceProvider(service = SceneExplorerNode.class)
-public class JmeSpatial extends AbstractNode implements SceneExplorerNode, PropertyChangeListener {
+public class JmeSpatial extends AbstractSceneExplorerNode {
 
     private Spatial spatial;
-    private JmeChildren factory;
-    private final InstanceContent lookupContents;
-    private Lookup lookup;
-    private SaveCookie saveCookie = null;//new SaveCookieImpl();
     protected final DataFlavor SPATIAL_FLAVOR = new DataFlavor(ClipboardSpatial.class, "Spatial");
 
     public JmeSpatial() {
-        super(Children.LEAF);
-        lookupContents = null;
     }
 
     public JmeSpatial(Spatial spatial, JmeChildren factory) {
-        super(factory, new JmeLookup(new InstanceContent()));
-        this.factory = factory;
+        super(factory);
+        this.jmeChildren = factory;
         this.spatial = spatial;
-        lookupContents = ((JmeLookup) getLookup()).getInstanceContent();
         getLookupContents().add(spatial);
         getLookupContents().add(this);
         setName(spatial.getName());
-    }
-
-    public InstanceContent getLookupContents() {
-        return lookupContents;
     }
 
     public JmeSpatial getChild(Spatial spat) {
@@ -126,7 +105,7 @@ public class JmeSpatial extends AbstractNode implements SceneExplorerNode, Prope
 
     //TODO: refresh does not work
     public void refresh(boolean immediate) {
-        factory.refreshChildren(immediate);
+        jmeChildren.refreshChildren(immediate);
     }
 
     protected SystemAction[] createActions() {
@@ -139,67 +118,6 @@ public class JmeSpatial extends AbstractNode implements SceneExplorerNode, Prope
                 };
     }
 
-    public void fireSave(boolean modified) {
-        fireSave(modified, false);
-    }
-
-    public void fireSave(boolean modified, boolean recursive) {
-        if (modified) {
-            if (saveCookie != null) {
-                lookupContents.add(saveCookie);
-            }
-        } else {
-            if (saveCookie != null) {
-                lookupContents.remove(saveCookie);
-            }
-        }
-        if (recursive) {
-            Node[] children = getChildren().getNodes();
-            for (int i = 0; i < children.length; i++) {
-                Node node = children[i];
-                if (node instanceof JmeSpatial) {
-                    ((JmeSpatial) node).fireSave(modified, recursive);
-                }
-            }
-        }
-    }
-
-    /**
-     * @param saveCookie the saveCookie to set
-     */
-    public JmeSpatial setSaveCookie(SaveCookie saveCookie) {
-        this.saveCookie = saveCookie;
-//        if (saveCookie != null) {
-//            lookupContents.add(saveCookie);
-//        }
-        return this;
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if ((evt.getOldValue() == null && !(evt.getNewValue() == null)) || ((evt.getOldValue() != null) && !evt.getOldValue().equals(evt.getNewValue()))) {
-            fireSave(true);
-        }
-        firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-    }
-
-    private class SaveCookieImpl implements SaveCookie {
-
-        public void save() throws IOException {
-            Confirmation msg = new NotifyDescriptor.Confirmation("Something went wrong!",
-                    NotifyDescriptor.OK_CANCEL_OPTION,
-                    NotifyDescriptor.QUESTION_MESSAGE);
-//
-            Object result = DialogDisplayer.getDefault().notify(msg);
-            //When user clicks "Yes", indicating they really want to save,
-            //we need to disable the Save button and Save menu item,
-            //so that it will only be usable when the next change is made
-            //to the text field:
-//            if (NotifyDescriptor.YES_OPTION.equals(result)) {
-//                fireSave(false);
-            //Implement your save functionality here.
-//            }
-        }
-    }
 
     @Override
     public boolean canCopy() {
@@ -395,28 +313,6 @@ public class JmeSpatial extends AbstractNode implements SceneExplorerNode, Prope
         sheet.put(set);
         return sheet;
 
-    }
-
-    private Property makeProperty(Spatial obj, Class returntype, String method, String name) {
-        Property prop = null;
-        try {
-            prop = new JmeProperty(obj, returntype, method, null);
-            prop.setName(name);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return prop;
-    }
-
-    private Property makeProperty(Spatial obj, Class returntype, String method, String setter, String name) {
-        Property prop = null;
-        try {
-            prop = new JmeProperty(obj, returntype, method, setter, this);
-            prop.setName(name);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return prop;
     }
 
     public Class getExplorerObjectClass() {

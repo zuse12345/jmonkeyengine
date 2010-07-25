@@ -32,13 +32,10 @@
 package com.jme3.gde.core.sceneexplorer.nodes;
 
 import com.jme3.bullet.nodes.PhysicsVehicleWheel;
-import com.jme3.gde.core.sceneexplorer.nodes.properties.JmeProperty;
 import com.jme3.math.Vector3f;
 import java.awt.Image;
 import org.openide.cookies.SaveCookie;
-import org.openide.nodes.Node.Property;
 import org.openide.nodes.Sheet;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -103,28 +100,6 @@ public class JmePhysicsVehicleWheel extends JmeNode {
         sheet.put(set);
         return sheet;
 
-    }
-
-    private Property makeProperty(PhysicsVehicleWheel obj, Class returntype, String method, String name) {
-        Property prop = null;
-        try {
-            prop = new JmeProperty(obj, returntype, method, null);
-            prop.setName(name);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return prop;
-    }
-
-    private Property makeProperty(PhysicsVehicleWheel obj, Class returntype, String method, String setter, String name) {
-        Property prop = null;
-        try {
-            prop = new JmeProperty(obj, returntype, method, setter, this);
-            prop.setName(name);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return prop;
     }
 
     public Class getExplorerObjectClass() {

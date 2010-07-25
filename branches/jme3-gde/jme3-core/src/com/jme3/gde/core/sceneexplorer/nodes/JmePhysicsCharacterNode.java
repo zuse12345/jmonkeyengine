@@ -32,12 +32,9 @@
 package com.jme3.gde.core.sceneexplorer.nodes;
 
 import com.jme3.bullet.nodes.PhysicsCharacterNode;
-import com.jme3.gde.core.sceneexplorer.nodes.properties.JmeProperty;
 import java.awt.Image;
 import org.openide.cookies.SaveCookie;
-import org.openide.nodes.Node.Property;
 import org.openide.nodes.Sheet;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -91,28 +88,6 @@ public class JmePhysicsCharacterNode extends JmePhysicsGhostNode {
         sheet.put(set);
         return sheet;
 
-    }
-
-    private Property makeProperty(PhysicsCharacterNode obj, Class returntype, String method, String name) {
-        Property prop = null;
-        try {
-            prop = new JmeProperty(obj, returntype, method, null);
-            prop.setName(name);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return prop;
-    }
-
-    private Property makeProperty(PhysicsCharacterNode obj, Class returntype, String method, String setter, String name) {
-        Property prop = null;
-        try {
-            prop = new JmeProperty(obj, returntype, method, setter, this);
-            prop.setName(name);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return prop;
     }
 
     public Class getExplorerObjectClass() {

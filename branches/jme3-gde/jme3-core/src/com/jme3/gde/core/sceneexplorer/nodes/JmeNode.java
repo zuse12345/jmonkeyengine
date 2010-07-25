@@ -32,7 +32,6 @@
 package com.jme3.gde.core.sceneexplorer.nodes;
 
 import com.jme3.gde.core.scene.SceneApplication;
-import com.jme3.gde.core.sceneexplorer.nodes.properties.JmeProperty;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import java.awt.Image;
@@ -142,28 +141,6 @@ public class JmeNode extends JmeSpatial {
         if (null != paste) {
             s.add(paste);
         }
-    }
-
-    private Property makeProperty(Node obj, Class returntype, String method, String name) {
-        Property prop = null;
-        try {
-            prop = new JmeProperty(obj, returntype, method, null);
-            prop.setName(name);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return prop;
-    }
-
-    private Property makeProperty(Node obj, Class returntype, String method, String setter, String name) {
-        Property prop = null;
-        try {
-            prop = new JmeProperty(obj, returntype, method, setter, this);
-            prop.setName(name);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return prop;
     }
 
     public Class getExplorerObjectClass() {

@@ -5,17 +5,16 @@
 package com.jme3.gde.scenecomposer;
 
 import com.jme3.gde.core.assets.ProjectAssetManager;
-import com.jme3.scene.Spatial;
+import com.jme3.gde.core.filetypes.SpatialAssetDataObject;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 
 public final class AddSceneComposer implements ActionListener {
 
-    private final DataObject context;
+    private final SpatialAssetDataObject context;
 
-    public AddSceneComposer(DataObject context) {
+    public AddSceneComposer(SpatialAssetDataObject context) {
         this.context = context;
     }
 

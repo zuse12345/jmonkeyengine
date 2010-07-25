@@ -31,6 +31,8 @@ import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Confirmation;
+import org.openide.awt.Toolbar;
+import org.openide.awt.ToolbarPool;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -458,6 +460,12 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     @Override
     public void componentOpened() {
         super.componentOpened();
+        Toolbar tb = ToolbarPool.getDefault().findToolbar("SceneComposer-Tools");
+        if (tb != null) {
+            if (!tb.isVisible()) {
+                tb.setVisible(true);
+            }
+        }
     }
 
     @Override
@@ -465,6 +473,12 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         super.componentClosed();
         if (currentRequest != null) {
             SceneApplication.getApplication().closeScene(currentRequest);
+        }
+        Toolbar tb = ToolbarPool.getDefault().findToolbar("SceneComposer-Tools");
+        if (tb != null) {
+            if (tb.isVisible()) {
+                tb.setVisible(false);
+            }
         }
     }
 

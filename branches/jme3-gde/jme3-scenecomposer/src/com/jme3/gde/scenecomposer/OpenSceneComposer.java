@@ -6,10 +6,7 @@ package com.jme3.gde.scenecomposer;
 
 import com.jme3.asset.DesktopAssetManager;
 import com.jme3.gde.core.assets.ProjectAssetManager;
-import com.jme3.gde.core.scene.SceneRequest;
-import com.jme3.gde.core.sceneexplorer.nodes.JmeNode;
-import com.jme3.gde.core.sceneexplorer.nodes.NodeUtility;
-import com.jme3.scene.Node;
+import com.jme3.gde.core.filetypes.BinaryModelDataObject;
 import com.jme3.scene.Spatial;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -21,14 +18,13 @@ import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 public final class OpenSceneComposer implements ActionListener {
 
-    private final DataObject context;
+    private final BinaryModelDataObject context;
 
-    public OpenSceneComposer(DataObject context) {
+    public OpenSceneComposer(BinaryModelDataObject context) {
         this.context = context;
     }
 

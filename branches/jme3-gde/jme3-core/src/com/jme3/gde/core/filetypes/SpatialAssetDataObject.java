@@ -34,42 +34,17 @@ package com.jme3.gde.core.filetypes;
 
 import java.io.IOException;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
  * @author normenhansen
  */
-public class AssetDataObject extends MultiDataObject {
-    protected final Lookup lookup;
-    protected final InstanceContent lookupContents = new InstanceContent();
+public class SpatialAssetDataObject extends AssetDataObject{
 
-    public AssetDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+    public SpatialAssetDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        lookup = new ProxyLookup(getCookieSet().getLookup(), new AbstractLookup(getLookupContents()));
-    }
-
-    @Override
-    protected Node createNodeDelegate() {
-        return new DataNode(this, Children.LEAF, getLookup());
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return lookup;
-    }
-
-    public InstanceContent getLookupContents() {
-        return lookupContents;
     }
 
 }

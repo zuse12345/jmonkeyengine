@@ -2,17 +2,7 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Actions">
-        <folder name="JME3">
-            <file name="com-jme3-gde-scenecomposer-AddSceneComposer.instance">
-                <attr name="delegate" methodvalue="org.openide.awt.Actions.inject"/>
-                <attr name="displayName" bundlevalue="com.jme3.gde.scenecomposer.Bundle#CTL_AddSceneComposer"/>
-                <attr name="iconBase" stringvalue="com/jme3/gde/scenecomposer/add.gif"/>
-                <attr name="injectable" stringvalue="com.jme3.gde.scenecomposer.AddSceneComposer"/>
-                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
-                <attr name="noIconInMenu" boolvalue="false"/>
-                <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
-                <attr name="type" stringvalue="org.openide.loaders.DataObject"/>
-            </file>
+        <folder name="SceneComposer">
             <file name="com-jme3-gde-scenecomposer-OpenSceneComposer.instance">
                 <attr name="delegate" methodvalue="org.openide.awt.Actions.inject"/>
                 <attr name="displayName" bundlevalue="com.jme3.gde.scenecomposer.Bundle#CTL_OpenSceneComposer"/>
@@ -21,10 +11,18 @@
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
                 <attr name="noIconInMenu" boolvalue="false"/>
                 <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
-                <attr name="type" stringvalue="org.openide.loaders.DataObject"/>
+                <attr name="type" stringvalue="com.jme3.gde.core.filetypes.BinaryModelDataObject"/>
             </file>
-        </folder>
-        <folder name="SceneComposer">
+            <file name="com-jme3-gde-scenecomposer-AddSceneComposer.instance">
+                <attr name="delegate" methodvalue="org.openide.awt.Actions.inject"/>
+                <attr name="displayName" bundlevalue="com.jme3.gde.scenecomposer.Bundle#CTL_AddSceneComposer"/>
+                <attr name="iconBase" stringvalue="com/jme3/gde/scenecomposer/add.gif"/>
+                <attr name="injectable" stringvalue="com.jme3.gde.scenecomposer.AddSceneComposer"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
+                <attr name="noIconInMenu" boolvalue="false"/>
+                <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
+                <attr name="type" stringvalue="com.jme3.gde.core.filetypes.SpatialAssetDataObject"/>
+            </file>
             <file name="com-jme3-gde-scenecomposer-LinkSceneComposer.instance">
                 <attr name="delegate" methodvalue="org.openide.awt.Actions.inject"/>
                 <attr name="displayName" bundlevalue="com.jme3.gde.scenecomposer.Bundle#CTL_LinkSceneComposer"/>
@@ -33,7 +31,7 @@
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
                 <attr name="noIconInMenu" boolvalue="false"/>
                 <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
-                <attr name="type" stringvalue="org.openide.loaders.DataObject"/>
+                <attr name="type" stringvalue="com.jme3.gde.core.filetypes.SpatialAssetDataObject"/>
             </file>
         </folder>
         <folder name="Window">
@@ -54,11 +52,11 @@
                         <attr name="position" intvalue="50"/>
                     </file>
                     <file name="com-jme3-gde-scenecomposer-OpenSceneComposer.shadow">
-                        <attr name="originalFile" stringvalue="Actions/JME3/com-jme3-gde-scenecomposer-OpenSceneComposer.instance"/>
+                        <attr name="originalFile" stringvalue="Actions/SceneComposer/com-jme3-gde-scenecomposer-OpenSceneComposer.instance"/>
                         <attr name="position" intvalue="51"/>
                     </file>
                     <file name="com-jme3-gde-scenecomposer-AddSceneComposer.shadow">
-                        <attr name="originalFile" stringvalue="Actions/JME3/com-jme3-gde-scenecomposer-AddSceneComposer.instance"/>
+                        <attr name="originalFile" stringvalue="Actions/SceneComposer/com-jme3-gde-scenecomposer-AddSceneComposer.instance"/>
                         <attr name="position" intvalue="52"/>
                     </file>
                     <file name="com-jme3-gde-scenecomposer-LinkSceneComposer.shadow">
@@ -80,7 +78,7 @@
                         <attr name="position" intvalue="50"/>
                     </file>
                     <file name="com-jme3-gde-scenecomposer-AddSceneComposer.shadow">
-                        <attr name="originalFile" stringvalue="Actions/JME3/com-jme3-gde-scenecomposer-AddSceneComposer.instance"/>
+                        <attr name="originalFile" stringvalue="Actions/SceneComposer/com-jme3-gde-scenecomposer-AddSceneComposer.instance"/>
                         <attr name="position" intvalue="52"/>
                     </file>
                     <file name="com-jme3-gde-scenecomposer-LinkSceneComposer.shadow">
@@ -100,7 +98,7 @@
                         <attr name="position" intvalue="50"/>
                     </file>
                     <file name="com-jme3-gde-scenecomposer-AddSceneComposer.shadow">
-                        <attr name="originalFile" stringvalue="Actions/JME3/com-jme3-gde-scenecomposer-AddSceneComposer.instance"/>
+                        <attr name="originalFile" stringvalue="Actions/SceneComposer/com-jme3-gde-scenecomposer-AddSceneComposer.instance"/>
                         <attr name="position" intvalue="52"/>
                     </file>
                     <file name="com-jme3-gde-scenecomposer-LinkSceneComposer.shadow">
@@ -122,6 +120,40 @@
             </file>
         </folder>
     </folder>-->
+    <folder name="Menu">
+        <folder name="File">
+            <file name="com-jme3-gde-scenecomposer-OpenSceneComposer.shadow">
+                <attr name="originalFile" stringvalue="Actions/SceneComposer/com-jme3-gde-scenecomposer-OpenSceneComposer.instance"/>
+                <attr name="position" intvalue="210"/>
+            </file>
+            <file name="com-jme3-gde-scenecomposer-AddSceneComposer.shadow">
+                <attr name="originalFile" stringvalue="Actions/SceneComposer/com-jme3-gde-scenecomposer-AddSceneComposer.instance"/>
+                <attr name="position" intvalue="220"/>
+            </file>
+            <file name="com-jme3-gde-scenecomposer-LinkSceneComposer.shadow">
+                <attr name="originalFile" stringvalue="Actions/SceneComposer/com-jme3-gde-scenecomposer-LinkSceneComposer.instance"/>
+                <attr name="position" intvalue="250"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Toolbars">
+        <folder name="File">
+            <file name="com-jme3-gde-scenecomposer-OpenSceneComposer.shadow">
+                <attr name="originalFile" stringvalue="Actions/SceneComposer/com-jme3-gde-scenecomposer-OpenSceneComposer.instance"/>
+                <attr name="position" intvalue="310"/>
+            </file>
+            <file name="com-jme3-gde-scenecomposer-AddSceneComposer.shadow">
+                <attr name="originalFile" stringvalue="Actions/SceneComposer/com-jme3-gde-scenecomposer-AddSceneComposer.instance"/>
+                <attr name="position" intvalue="320"/>
+            </file>
+            <file name="com-jme3-gde-scenecomposer-LinkSceneComposer.shadow">
+                <attr name="originalFile" stringvalue="Actions/SceneComposer/com-jme3-gde-scenecomposer-LinkSceneComposer.instance"/>
+                <attr name="position" intvalue="350"/>
+            </file>
+        </folder>
+        <folder name="SceneComposer-Tools_hidden">
+        </folder>
+    </folder>
     <folder name="Templates">
         <folder name="JME3">
             <file name="Scene.j3o" url="Scene.j3o">

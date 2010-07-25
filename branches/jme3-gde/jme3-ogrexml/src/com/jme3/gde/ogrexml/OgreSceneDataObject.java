@@ -31,7 +31,7 @@
  */
 package com.jme3.gde.ogrexml;
 
-import com.jme3.gde.core.filetypes.AssetDataObject;
+import com.jme3.gde.core.filetypes.SpatialAssetDataObject;
 import java.io.IOException;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -40,7 +40,7 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.text.DataEditorSupport;
 
-public class OgreSceneDataObject extends AssetDataObject {
+public class OgreSceneDataObject extends SpatialAssetDataObject {
 
     public OgreSceneDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);

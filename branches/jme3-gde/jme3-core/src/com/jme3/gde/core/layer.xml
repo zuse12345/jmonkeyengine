@@ -140,7 +140,7 @@
                 <folder name="Factories">
                     <file name="JMEBinaryModelDataLoader.instance">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/com/jme3/gde/core/filetypes/jme-logo.png"/>
-                        <attr name="dataObjectClass" stringvalue="com.jme3.gde.core.filetypes.JMEBinaryModelDataObject"/>
+                        <attr name="dataObjectClass" stringvalue="com.jme3.gde.core.filetypes.BinaryModelDataObject"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="application/jme3model"/>
                     </file>

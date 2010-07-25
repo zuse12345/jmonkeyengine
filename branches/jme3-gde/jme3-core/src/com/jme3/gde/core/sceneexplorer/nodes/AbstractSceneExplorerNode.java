@@ -50,7 +50,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author normenhansen
  */
-public class AbstractSceneExplorerNode extends AbstractNode implements SceneExplorerNode, PropertyChangeListener  {
+public class AbstractSceneExplorerNode extends AbstractNode implements SceneExplorerNode, PropertyChangeListener {
 
     protected SceneExplorerChildren jmeChildren;
     protected final InstanceContent lookupContents;
@@ -89,8 +89,8 @@ public class AbstractSceneExplorerNode extends AbstractNode implements SceneExpl
             Node[] children = getChildren().getNodes();
             for (int i = 0; i < children.length; i++) {
                 Node node = children[i];
-                if (node instanceof JmeSpatial) {
-                    ((JmeSpatial) node).fireSave(modified, recursive);
+                if (node instanceof AbstractSceneExplorerNode) {
+                    ((AbstractSceneExplorerNode) node).fireSave(modified, recursive);
                 }
             }
         }
@@ -104,10 +104,10 @@ public class AbstractSceneExplorerNode extends AbstractNode implements SceneExpl
         return this;
     }
 
-    protected Property makeProperty(Spatial obj, Class returntype, String method, String name) {
+    protected Property makeProperty(Object obj, Class returntype, String method, String name) {
         Property prop = null;
         try {
-            prop = new SceneExplorerProperty(obj, returntype, method, null);
+            prop = new SceneExplorerProperty(getExplorerObjectClass().cast(obj), returntype, method, null);
             prop.setName(name);
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);
@@ -115,13 +115,13 @@ public class AbstractSceneExplorerNode extends AbstractNode implements SceneExpl
         return prop;
     }
 
-    protected Property makeProperty(Spatial obj, Class returntype, String method, String setter, String name) {
+    protected Property makeProperty(Object obj, Class returntype, String method, String setter, String name) {
         Property prop = null;
         try {
-            if(saveCookie==null){
-                prop = new SceneExplorerProperty(obj, returntype, method, null);
-            }else{
-                prop = new SceneExplorerProperty(obj, returntype, method, setter, this);
+            if (saveCookie == null) {
+                prop = new SceneExplorerProperty(getExplorerObjectClass().cast(obj), returntype, method, null);
+            } else {
+                prop = new SceneExplorerProperty(getExplorerObjectClass().cast(obj), returntype, method, setter, this);
             }
             prop.setName(name);
 
@@ -156,7 +156,6 @@ public class AbstractSceneExplorerNode extends AbstractNode implements SceneExpl
 //            }
         }
     }
-
 
     public Class getExplorerNodeClass() {
         throw new UnsupportedOperationException("Not supported yet.");

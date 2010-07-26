@@ -6,7 +6,7 @@ package com.jme3.gde.scenecomposer;
 
 import com.jme3.asset.DesktopAssetManager;
 import com.jme3.gde.core.assets.ProjectAssetManager;
-import com.jme3.gde.core.filetypes.BinaryModelDataObject;
+import com.jme3.gde.core.assets.BinaryModelDataObject;
 import com.jme3.scene.Spatial;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -53,7 +53,7 @@ public final class OpenSceneComposer implements ActionListener {
                             composer.openScene(spat, file, manager);
                         }
                     });
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                     Confirmation msg = new NotifyDescriptor.Confirmation(
                             "Error opening " + file.getNameExt() + "\n" + ex.toString(),

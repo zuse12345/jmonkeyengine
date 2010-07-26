@@ -29,7 +29,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.gde.core.filetypes.actions;
+package com.jme3.gde.core.assets.actions;
 
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.DesktopAssetManager;
@@ -90,7 +90,7 @@ public final class OpenModel implements ActionListener {
 
                     }
 
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                     Confirmation msg = new NotifyDescriptor.Confirmation(
                             "Error opening " + file.getNameExt() + "\n" + ex.toString(),

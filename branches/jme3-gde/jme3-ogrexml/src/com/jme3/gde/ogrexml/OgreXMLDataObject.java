@@ -31,7 +31,7 @@
  */
 package com.jme3.gde.ogrexml;
 
-import com.jme3.gde.core.filetypes.SpatialAssetDataObject;
+import com.jme3.gde.core.assets.SpatialAssetDataObject;
 import java.io.IOException;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;

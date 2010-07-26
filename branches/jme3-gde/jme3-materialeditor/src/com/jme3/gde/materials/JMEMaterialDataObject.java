@@ -31,7 +31,7 @@
  */
 package com.jme3.gde.materials;
 
-import com.jme3.gde.core.filetypes.AssetDataObject;
+import com.jme3.gde.core.assets.AssetDataObject;
 import com.jme3.gde.materials.multiview.MaterialOpenSupport;
 import java.io.IOException;
 import org.openide.filesystems.FileObject;

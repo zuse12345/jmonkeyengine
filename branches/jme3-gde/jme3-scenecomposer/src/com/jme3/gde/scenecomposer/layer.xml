@@ -11,7 +11,7 @@
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
                 <attr name="noIconInMenu" boolvalue="false"/>
                 <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
-                <attr name="type" stringvalue="com.jme3.gde.core.filetypes.BinaryModelDataObject"/>
+                <attr name="type" stringvalue="com.jme3.gde.core.assets.BinaryModelDataObject"/>
             </file>
             <file name="com-jme3-gde-scenecomposer-AddSceneComposer.instance">
                 <attr name="delegate" methodvalue="org.openide.awt.Actions.inject"/>
@@ -21,7 +21,7 @@
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
                 <attr name="noIconInMenu" boolvalue="false"/>
                 <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
-                <attr name="type" stringvalue="com.jme3.gde.core.filetypes.SpatialAssetDataObject"/>
+                <attr name="type" stringvalue="com.jme3.gde.core.assets.SpatialAssetDataObject"/>
             </file>
             <file name="com-jme3-gde-scenecomposer-LinkSceneComposer.instance">
                 <attr name="delegate" methodvalue="org.openide.awt.Actions.inject"/>
@@ -31,7 +31,7 @@
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
                 <attr name="noIconInMenu" boolvalue="false"/>
                 <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
-                <attr name="type" stringvalue="com.jme3.gde.core.filetypes.SpatialAssetDataObject"/>
+                <attr name="type" stringvalue="com.jme3.gde.core.assets.SpatialAssetDataObject"/>
             </file>
         </folder>
         <folder name="Window">

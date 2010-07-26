@@ -32,7 +32,7 @@
 package com.jme3.gde.core.assets.nodes;
 
 import com.jme3.gde.core.assets.ProjectAssetManager;
-import com.jme3.gde.core.filetypes.AssetDataObject;
+import com.jme3.gde.core.assets.AssetDataObject;
 import java.awt.Image;
 import org.netbeans.api.project.Project;
 import org.openide.loaders.DataObject;

@@ -30,7 +30,7 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jme3.gde.core.filetypes;
+package com.jme3.gde.core.assets;
 
 import java.io.IOException;
 import org.openide.filesystems.FileObject;

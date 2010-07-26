@@ -32,8 +32,8 @@
 package com.jme3.gde.core.assets.nodes;
 
 import com.jme3.gde.core.assets.ProjectAssetManager;
-import com.jme3.gde.core.filetypes.AssetDataObject;
-import com.jme3.gde.core.filetypes.BinaryModelDataObject;
+import com.jme3.gde.core.assets.AssetDataObject;
+import com.jme3.gde.core.assets.BinaryModelDataObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;

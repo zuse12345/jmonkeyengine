@@ -70,7 +70,7 @@ public final class OgreXMLToJme implements ActionListener {
                         StatusDisplayer.getDefault().setStatusText("Created file " + file.getName() + ".j3o");
                         //try make NetBeans update the tree.. :/
                         context.getPrimaryFile().getParent().refresh();
-                    } catch (IOException ex) {
+                    } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);
                         Confirmation msg = new NotifyDescriptor.Confirmation(
                                 "Error converting " + file.getNameExt() + "\n" + ex.toString(),

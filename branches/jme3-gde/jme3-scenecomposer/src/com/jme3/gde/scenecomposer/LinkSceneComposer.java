@@ -5,7 +5,7 @@
 package com.jme3.gde.scenecomposer;
 
 import com.jme3.gde.core.assets.ProjectAssetManager;
-import com.jme3.gde.core.filetypes.SpatialAssetDataObject;
+import com.jme3.gde.core.assets.SpatialAssetDataObject;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import org.openide.filesystems.FileObject;

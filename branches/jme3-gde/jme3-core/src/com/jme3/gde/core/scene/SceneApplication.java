@@ -302,7 +302,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     private boolean notifySceneListeners(SceneRequest closed) {
         for (Iterator<SceneListener> it = listeners.iterator(); it.hasNext();) {
             SceneListener sceneViewerListener = it.next();
-            if (!sceneViewerListener.sceneClose(currentSceneRequest)) {
+            if (!sceneViewerListener.sceneClose(closed)) {
                 return false;
             }
         }
@@ -363,7 +363,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
      * @param tree
      */
     public void closeScene(final SceneRequest request) {
-        setWindowTitle("SceneViewer");
         enqueue(new Callable() {
 
             public Object call() throws Exception {
@@ -373,6 +372,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                             camController.disable();
                         }
                         currentSceneRequest = null;
+                        setWindowTitle("SceneViewer");
                     }
                 }
                 return null;

@@ -545,7 +545,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     /**
      * method to set the state of the ui items
      */
-    private void setSceneInfo(final JmeNode jmeNode, final boolean active) {
+    private void setSceneInfo(final JmeNode jmeNode, final FileObject file, final boolean active) {
         final SceneComposerTopComponent inst = this;
         java.awt.EventQueue.invokeLater(new Runnable() {
 
@@ -574,10 +574,12 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                     showSelectionToggleButton.setSelected(false);
                     showGridToggleButton.setSelected(false);
                     //TODO: threading
-//                    sceneInfoLabel1.setText("Name: " + currentFileObject.getNameExt());
-//                    sceneInfoLabel2.setText("Size: " + currentFileObject.getSize() / 1024 + " kB");
-//                    sceneInfoLabel1.setToolTipText("Name: " + currentFileObject.getNameExt());
-//                    sceneInfoLabel2.setToolTipText("Size: " + currentFileObject.getSize() / 1024 + " kB");
+                    if (file != null) {
+                        sceneInfoLabel1.setText("Name: " + file.getNameExt());
+                        sceneInfoLabel2.setText("Size: " + file.getSize() / 1024 + " kB");
+                        sceneInfoLabel1.setToolTipText("Name: " + file.getNameExt());
+                        sceneInfoLabel2.setToolTipText("Size: " + file.getSize() / 1024 + " kB");
+                    }
                     open();
                     requestActive();
                 }
@@ -603,7 +605,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         }
         editorController = new SceneEditorController(jmeNode, file);
         this.currentRequest = request;
-        request.setWindowTitle("SceneViewer - " + request.getRootNode().getName() + " (SceneComposer)");
+        request.setWindowTitle("SceneComposer - " + manager.getRelativeAssetPath(file.getPath()));
         request.setToolNode(new Node("SceneComposerToolNode"));
         SceneApplication.getApplication().requestScene(request);
     }
@@ -672,6 +674,36 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         setActivatedNodes(new org.openide.nodes.Node[]{spatial});
     }
 
+    private boolean checkSaved() {
+        if (editorController != null && editorController.isNeedSave()) {
+            Confirmation msg = new NotifyDescriptor.Confirmation(
+                    "Your Scene is not saved, do you want to save?",
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.WARNING_MESSAGE);
+            Object result = DialogDisplayer.getDefault().notify(msg);
+            if (NotifyDescriptor.CANCEL_OPTION.equals(result)) {
+                return false;
+            } else if (NotifyDescriptor.YES_OPTION.equals(result)) {
+                editorController.saveScene();
+                return true;
+            } else if (NotifyDescriptor.NO_OPTION.equals(result)) {
+                return true;
+            }
+        }
+        return true;
+    }
+
+    public class SaveCookieImpl implements SaveCookie {
+
+        public void save() throws IOException {
+            editorController.saveScene();
+            //TODO: update infos.. runs on callable..
+//            if (currentRequest != null) {
+//                setSceneInfo(currentRequest.getRootNode(), editorController.getCurrentFileObject(), true);
+//            }
+        }
+    }
+
     private void cleanupControllers() {
         if (camController != null) {
             camController.disable();
@@ -692,7 +724,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
      */
     public void sceneRequested(SceneRequest request) {
         if (request.equals(currentRequest)) {
-            setSceneInfo(currentRequest.getRootNode(), true);
+            setSceneInfo(currentRequest.getRootNode(), editorController.getCurrentFileObject(), true);
             if (camController != null) {
                 camController.disable();
             }
@@ -716,7 +748,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             if (checkSaved()) {
                 SceneApplication.getApplication().removeSceneListener(this);
                 currentRequest = null;
-                setSceneInfo(null, false);
+                setSceneInfo(null, null, false);
                 cleanupControllers();
             } else {
                 return false;
@@ -725,33 +757,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         return true;
     }
 
-    private boolean checkSaved() {
-        if (editorController != null && editorController.isNeedSave()) {
-            Confirmation msg = new NotifyDescriptor.Confirmation(
-                    "Your Scene is not saved, do you want to save?",
-                    NotifyDescriptor.YES_NO_OPTION,
-                    NotifyDescriptor.WARNING_MESSAGE);
-            Object result = DialogDisplayer.getDefault().notify(msg);
-            if (NotifyDescriptor.CANCEL_OPTION.equals(result)) {
-                return false;
-            } else if (NotifyDescriptor.YES_OPTION.equals(result)) {
-                editorController.saveScene();
-                return true;
-            } else if (NotifyDescriptor.NO_OPTION.equals(result)) {
-                return true;
-            }
-        }
-        return true;
-    }
-
     public void previewRequested(PreviewRequest request) {
-    }
-
-    public class SaveCookieImpl implements SaveCookie {
-
-        public void save() throws IOException {
-            editorController.saveScene();
-//            setSceneInfo(currentRequest.getRootNode(), true);
-        }
     }
 }

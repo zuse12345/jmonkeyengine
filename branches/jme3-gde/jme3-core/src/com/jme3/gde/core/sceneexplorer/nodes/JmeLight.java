@@ -32,50 +32,40 @@
 package com.jme3.gde.core.sceneexplorer.nodes;
 
 import com.jme3.gde.core.scene.SceneApplication;
-import com.jme3.gde.core.sceneexplorer.nodes.properties.SceneExplorerProperty;
 import com.jme3.light.Light;
 import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Spatial;
 import java.awt.Image;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import org.openide.actions.DeleteAction;
 import org.openide.cookies.SaveCookie;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.InstanceContent;
 
 /**
  *
  * @author normenhansen
  */
 @org.openide.util.lookup.ServiceProvider(service=SceneExplorerNode.class)
-public class JmeLight extends AbstractNode implements SceneExplorerNode, PropertyChangeListener{
+public class JmeLight extends AbstractSceneExplorerNode{
 
-    private final InstanceContent lookupContents;
     private Spatial spatial;
     private Light light;
     private static Image smallImage =
             ImageUtilities.loadImage("com/jme3/gde/core/sceneexplorer/nodes/icons/light.gif");
 
     public JmeLight() {
-        super(Children.LEAF);
-        lookupContents = null;
     }
 
     public JmeLight(Spatial spatial, Light light) {
-        super(Children.LEAF, new SceneExplorerLookup(new InstanceContent()));
+        super(Children.LEAF);
         this.spatial = spatial;
         this.light = light;
-        lookupContents = ((SceneExplorerLookup) getLookup()).getInstanceContent();
-        lookupContents.add(spatial);
         lookupContents.add(light);
         lookupContents.add(this);
         setName("Light");
@@ -142,28 +132,6 @@ public class JmeLight extends AbstractNode implements SceneExplorerNode, Propert
         }
     }
 
-    private Property makeProperty(Light obj, Class returntype, String method, String name) {
-        Property prop = null;
-        try {
-            prop = new SceneExplorerProperty(obj, returntype, method, null);
-            prop.setName(name);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return prop;
-    }
-
-    private Property makeProperty(Light obj, Class returntype, String method, String setter, String name) {
-        Property prop = null;
-        try {
-            prop = new SceneExplorerProperty(obj, returntype, method, setter, this);
-            prop.setName(name);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return prop;
-    }
-
     public Class getExplorerObjectClass() {
         return Light.class;
     }
@@ -174,9 +142,6 @@ public class JmeLight extends AbstractNode implements SceneExplorerNode, Propert
 
     public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
         return null;
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
     }
 
 }

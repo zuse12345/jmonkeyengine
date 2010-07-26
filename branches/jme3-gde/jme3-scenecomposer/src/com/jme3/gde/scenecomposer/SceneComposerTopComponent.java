@@ -446,7 +446,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 
     @Override
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
+        return TopComponent.PERSISTENCE_NEVER;
     }
 
     @Override
@@ -588,6 +588,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     }
 
     public void openScene(Spatial spat, FileObject file, ProjectAssetManager manager) {
+        cleanupControllers();
         SceneApplication.getApplication().addSceneListener(this);
         result.addLookupListener(this);
         //TODO: handle request change
@@ -749,7 +750,11 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 SceneApplication.getApplication().removeSceneListener(this);
                 currentRequest = null;
                 setSceneInfo(null, null, false);
-                cleanupControllers();
+                java.awt.EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        cleanupControllers();
+                    }
+                });
             } else {
                 return false;
             }

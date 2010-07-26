@@ -32,7 +32,6 @@
 package com.jme3.gde.core.sceneexplorer.nodes;
 
 import com.jme3.gde.core.sceneexplorer.nodes.properties.SceneExplorerProperty;
-import com.jme3.scene.Spatial;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -52,16 +51,16 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class AbstractSceneExplorerNode extends AbstractNode implements SceneExplorerNode, PropertyChangeListener {
 
-    protected SceneExplorerChildren jmeChildren;
+    protected Children jmeChildren;
     protected final InstanceContent lookupContents;
-    protected SaveCookie saveCookie = null;//new SaveCookieImpl();
+    protected SaveCookie saveCookie = null;
 
     public AbstractSceneExplorerNode() {
         super(Children.LEAF, new SceneExplorerLookup(new InstanceContent()));
         lookupContents = ((SceneExplorerLookup) getLookup()).getInstanceContent();
     }
 
-    public AbstractSceneExplorerNode(SceneExplorerChildren children) {
+    public AbstractSceneExplorerNode(Children children) {
         super(children, new SceneExplorerLookup(new InstanceContent()));
         this.jmeChildren = children;
         lookupContents = ((SceneExplorerLookup) getLookup()).getInstanceContent();
@@ -102,6 +101,13 @@ public class AbstractSceneExplorerNode extends AbstractNode implements SceneExpl
     public AbstractSceneExplorerNode setSaveCookie(SaveCookie saveCookie) {
         this.saveCookie = saveCookie;
         return this;
+    }
+
+    //TODO: refresh does not work
+    public void refresh(boolean immediate) {
+        if (jmeChildren instanceof SceneExplorerChildren) {
+            ((SceneExplorerChildren) jmeChildren).refreshChildren(immediate);
+        }
     }
 
     protected Property makeProperty(Object obj, Class returntype, String method, String name) {
@@ -150,22 +156,22 @@ public class AbstractSceneExplorerNode extends AbstractNode implements SceneExpl
             //we need to disable the Save button and Save menu item,
             //so that it will only be usable when the next change is made
             //to the text field:
-//            if (NotifyDescriptor.YES_OPTION.equals(result)) {
-//                fireSave(false);
-            //Implement your save functionality here.
-//            }
+            if (NotifyDescriptor.YES_OPTION.equals(result)) {
+                fireSave(false);
+//            Implement your save functionality here.
+            }
         }
     }
 
     public Class getExplorerNodeClass() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return this.getClass();
     }
 
     public Class getExplorerObjectClass() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return Object.class;
     }
 
     public Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new Node[]{Node.EMPTY};
     }
 }

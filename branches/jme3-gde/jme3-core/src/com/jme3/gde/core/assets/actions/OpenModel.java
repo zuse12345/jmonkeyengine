@@ -31,9 +31,9 @@
  */
 package com.jme3.gde.core.assets.actions;
 
-import com.jme3.asset.AssetKey;
 import com.jme3.asset.DesktopAssetManager;
 import com.jme3.gde.core.assets.ProjectAssetManager;
+import com.jme3.gde.core.assets.SpatialAssetDataObject;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneRequest;
 import com.jme3.gde.core.sceneexplorer.nodes.JmeNode;
@@ -42,7 +42,6 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDisplayer;
@@ -50,14 +49,13 @@ import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 public final class OpenModel implements ActionListener {
 
-    private final DataObject context;
+    private final SpatialAssetDataObject context;
 
-    public OpenModel(DataObject context) {
+    public OpenModel(SpatialAssetDataObject context) {
         this.context = context;
     }
 

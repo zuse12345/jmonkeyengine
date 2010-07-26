@@ -177,7 +177,7 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
             } else if ("Directional Light".equals(name)) {
                 DirectionalLight dl = new DirectionalLight();
                 dl.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
-                dl.setColor(ColorRGBA.Green);
+                dl.setColor(ColorRGBA.White);
                 ((Node) selected).addLight(dl);
                 refreshSelected();
             } else if ("Node".equals(name)) {
@@ -199,7 +199,7 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
             } else if ("Directional Light".equals(name)) {
                 DirectionalLight dl = new DirectionalLight();
                 dl.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
-                dl.setColor(ColorRGBA.Green);
+                dl.setColor(ColorRGBA.White);
                 selected.addLight(dl);
                 refreshSelected();
             }

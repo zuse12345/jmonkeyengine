@@ -32,16 +32,11 @@
 
 package com.jme3.gde.core.sceneexplorer.nodes;
 
-import com.jme3.gde.core.sceneexplorer.nodes.properties.SceneExplorerProperty;
-import com.jme3.light.Light;
 import com.jme3.light.PointLight;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Sheet;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -57,6 +52,7 @@ public class JmePointLight extends JmeLight{
     public JmePointLight(Spatial spatial, PointLight pointLight) {
         super(spatial, pointLight);
         this.pointLight = pointLight;
+        lookupContents.add(pointLight);
         setName("PointLight");
     }
 
@@ -78,28 +74,6 @@ public class JmePointLight extends JmeLight{
         sheet.put(set);
         return sheet;
 
-    }
-
-    private Property makeProperty(Light obj, Class returntype, String method, String name) {
-        Property prop = null;
-        try {
-            prop = new SceneExplorerProperty(obj, returntype, method, null);
-            prop.setName(name);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return prop;
-    }
-
-    private Property makeProperty(Light obj, Class returntype, String method, String setter, String name) {
-        Property prop = null;
-        try {
-            prop = new SceneExplorerProperty(obj, returntype, method, setter, this);
-            prop.setName(name);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return prop;
     }
 
     public Class getExplorerObjectClass() {

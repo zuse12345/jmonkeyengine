@@ -103,11 +103,6 @@ public class JmeSpatial extends AbstractSceneExplorerNode {
         return null;
     }
 
-    //TODO: refresh does not work
-    public void refresh(boolean immediate) {
-        jmeChildren.refreshChildren(immediate);
-    }
-
     protected SystemAction[] createActions() {
         return new SystemAction[]{
                     SystemAction.get(RenameAction.class),

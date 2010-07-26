@@ -69,6 +69,9 @@ public class SceneExplorerChildren extends Children.Keys<Object> {
     protected SaveCookie cookie;
     protected HashMap<Object, Node> map = new HashMap<Object, Node>();
 
+    public SceneExplorerChildren() {
+    }
+
     public SceneExplorerChildren(Spatial spatial) {
         this.spatial = spatial;
     }
@@ -76,6 +79,16 @@ public class SceneExplorerChildren extends Children.Keys<Object> {
     public void refreshChildren(boolean immediate) {
         setKeys(createKeys());
         refresh();
+    }
+
+    public void setCookie(SaveCookie cookie) {
+        this.cookie = cookie;
+    }
+
+    @Override
+    protected void addNotify() {
+        super.addNotify();
+        setKeys(createKeys());
     }
 
     protected List<Object> createKeys() {
@@ -86,7 +99,7 @@ public class SceneExplorerChildren extends Children.Keys<Object> {
                     List<Object> keys = new LinkedList<Object>();
                     if (spatial != null && spatial instanceof com.jme3.scene.Node) {
                         keys.addAll(((com.jme3.scene.Node) spatial).getChildren());
-                        return keys;
+//                        return keys;
                     }
                     if (spatial instanceof Geometry) {
                         Geometry geom = (Geometry) spatial;
@@ -95,7 +108,7 @@ public class SceneExplorerChildren extends Children.Keys<Object> {
                             keys.add(new MeshGeometryPair(mesh, geom));
                         }
                     }
-                    LightList lights = spatial.getWorldLightList();
+                    LightList lights = spatial.getLocalLightList();
                     for (int i = 0; i < lights.size(); i++) {
                         Light light = lights.get(i);
                         if (light != null) {
@@ -111,16 +124,6 @@ public class SceneExplorerChildren extends Children.Keys<Object> {
             Exceptions.printStackTrace(ex);
         }
         return null;
-    }
-
-    public void setCookie(SaveCookie cookie) {
-        this.cookie = cookie;
-    }
-
-    @Override
-    protected void addNotify() {
-        super.addNotify();
-        setKeys(createKeys());
     }
 
     @Override

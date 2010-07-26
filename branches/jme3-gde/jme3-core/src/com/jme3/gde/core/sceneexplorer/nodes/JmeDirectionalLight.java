@@ -32,14 +32,11 @@
 
 package com.jme3.gde.core.sceneexplorer.nodes;
 
-import com.jme3.gde.core.sceneexplorer.nodes.properties.SceneExplorerProperty;
 import com.jme3.light.DirectionalLight;
-import com.jme3.light.Light;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Sheet;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -47,14 +44,15 @@ import org.openide.util.Exceptions;
  */
 @org.openide.util.lookup.ServiceProvider(service=SceneExplorerNode.class)
 public class JmeDirectionalLight extends JmeLight{
-    DirectionalLight pointLight;
+    protected DirectionalLight directionalLight;
 
     public JmeDirectionalLight() {
     }
 
-    public JmeDirectionalLight(Spatial spatial, DirectionalLight pointLight) {
-        super(spatial, pointLight);
-        this.pointLight = pointLight;
+    public JmeDirectionalLight(Spatial spatial, DirectionalLight directionalLight) {
+        super(spatial, directionalLight);
+        this.directionalLight = directionalLight;
+        lookupContents.add(directionalLight);
         setName("DirectionalLight");
     }
 
@@ -65,7 +63,7 @@ public class JmeDirectionalLight extends JmeLight{
         Sheet.Set set = Sheet.createPropertiesSet();
         set.setDisplayName("DirectionalLight");
         set.setName(DirectionalLight.class.getName());
-        DirectionalLight obj = pointLight;
+        DirectionalLight obj = directionalLight;
         if (obj == null) {
             return sheet;
         }
@@ -75,28 +73,6 @@ public class JmeDirectionalLight extends JmeLight{
         sheet.put(set);
         return sheet;
 
-    }
-
-    private Property makeProperty(Light obj, Class returntype, String method, String name) {
-        Property prop = null;
-        try {
-            prop = new SceneExplorerProperty(obj, returntype, method, null);
-            prop.setName(name);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return prop;
-    }
-
-    private Property makeProperty(Light obj, Class returntype, String method, String setter, String name) {
-        Property prop = null;
-        try {
-            prop = new SceneExplorerProperty(obj, returntype, method, setter, this);
-            prop.setName(name);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return prop;
     }
 
     public Class getExplorerObjectClass() {

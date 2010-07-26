@@ -160,8 +160,8 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 
         progressHandle.progress("Prepare Camera", 4);
         camLight = new PointLight();
-        camLight.setColor(ColorRGBA.Black);
-        rootNode.addLight(camLight);
+        camLight.setColor(ColorRGBA.White);
+//        rootNode.addLight(camLight);
 
         progressHandle.progress("Prepare Stats View", 5);
         guiNode.setQueueBucket(Bucket.Gui);
@@ -435,9 +435,10 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             public Object call() throws Exception {
                 //TODO: how to remove lights?? no removeLight in node?
                 if (enabled) {
-                    camLight.setColor(ColorRGBA.White);
+                    rootNode.removeLight(camLight);
+                    rootNode.addLight(camLight);
                 } else {
-                    camLight.setColor(ColorRGBA.Black);
+                    rootNode.removeLight(camLight);
                 }
                 return null;
             }

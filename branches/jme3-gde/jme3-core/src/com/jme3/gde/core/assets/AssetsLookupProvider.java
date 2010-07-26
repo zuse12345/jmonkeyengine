@@ -31,6 +31,7 @@
  */
 package com.jme3.gde.core.assets;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.Properties;
 import org.netbeans.api.project.Project;
@@ -49,8 +50,8 @@ public class AssetsLookupProvider implements LookupProvider {
 
     public Lookup createAdditionalLookup(Lookup lookup) {
         Project prj = lookup.lookup(Project.class);
-        FileObject assetsProperties = prj.getProjectDirectory().getFileObject("nbproject/assets.properties");
-        if (assetsProperties != null) {
+        FileObject assetsProperties = prj.getProjectDirectory().getFileObject("nbproject"+File.separator+"assets.properties");
+        if (assetsProperties != null && assetsProperties.isValid()) {
             FileLock lock = null;
             try {
                 lock = assetsProperties.lock();

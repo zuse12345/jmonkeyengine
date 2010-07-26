@@ -217,6 +217,7 @@ public class TestAttachKinematicObject extends SimpleBulletApplication implement
 
                 driver.setKinematic(true);
                 driver.setLocalTranslation(0,2,0);
+                driver.setLocalRotation(Quaternion.DIRECTION_Z);
                 vehicle.attachChild(driver);
 
             } else {

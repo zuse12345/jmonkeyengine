@@ -167,6 +167,7 @@ public class TestRenderToMemory extends SimpleApplication implements SceneProces
         // create a pre-view. a view that is rendered before the main view
         offView = renderManager.createPreView("Offscreen View", offCamera);
         offView.setBackgroundColor(ColorRGBA.DarkGray);
+        offView.setClearEnabled(true);
         
         // this will let us know when the scene has been rendered to the 
         // frame buffer

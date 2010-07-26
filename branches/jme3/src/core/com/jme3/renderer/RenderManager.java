@@ -526,11 +526,12 @@ public class RenderManager {
         }
         
         renderer.setFrameBuffer(vp.getOutputFrameBuffer());
+        setCamera(vp.getCamera(), false);
         if (vp.isClearEnabled()){
-//            renderer.setBackgroundColor(vp.getBackgroundColor());
+            renderer.setBackgroundColor(vp.getBackgroundColor());
             renderer.clearBuffers(true, true, true);
         }
-        setCamera(vp.getCamera(), false);
+        
         List<Spatial> scenes = vp.getScenes();
         for (int i = scenes.size() - 1; i >= 0; i--){
             renderScene(scenes.get(i), vp);

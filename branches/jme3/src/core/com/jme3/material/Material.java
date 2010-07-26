@@ -381,7 +381,7 @@ public class Material implements Cloneable, Savable {
 //            r.applyRenderState(depthOnly);
 //            r.setShader(shader);
 //            r.renderMesh(g.getMesh(), g.getLodLevel(), 1);
-//
+
 //            int numLights = g.getWorldLightList().size();
 //            updateLightListUniforms(shader, g, numLights);
 //            r.applyRenderState(additiveLight);

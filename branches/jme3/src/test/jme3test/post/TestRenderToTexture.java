@@ -33,6 +33,7 @@ public class TestRenderToTexture extends SimpleApplication {
 
         // create a pre-view. a view that is rendered before the main view
         ViewPort offView = renderManager.createPreView("Offscreen View", offCamera);
+        offView.setClearEnabled(true);
         offView.setBackgroundColor(ColorRGBA.DarkGray);
 
         // create offscreen framebuffer

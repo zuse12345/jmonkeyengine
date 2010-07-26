@@ -24,6 +24,7 @@ public class TestNiftyToMesh extends SimpleApplication{
 
     public void simpleInitApp() {
        ViewPort niftyView = renderManager.createPreView("NiftyView", new Camera(1024, 768));
+       niftyView.setClearEnabled(true);
         NiftyJmeDisplay niftyDisplay = new NiftyJmeDisplay(assetManager,
                                                           inputManager,
                                                           audioRenderer,

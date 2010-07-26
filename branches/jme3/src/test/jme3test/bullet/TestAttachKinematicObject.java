@@ -21,9 +21,14 @@ import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Cylinder;
 import com.jme3.texture.Texture;
 
-public class TestPhysicsCar extends SimpleBulletApplication implements ActionListener {
+/**
+ * Tests attaching kinematic nodes to physicsnodes via the scenegraph
+ * @author normenhansen
+ */
+public class TestAttachKinematicObject extends SimpleBulletApplication implements ActionListener {
 
     private PhysicsVehicleNode vehicle;
+    private PhysicsNode driver;
     private final float accelerationForce = 1000.0f;
     private final float brakeForce = 100.0f;
     private float steeringValue = 0;
@@ -31,7 +36,7 @@ public class TestPhysicsCar extends SimpleBulletApplication implements ActionLis
     private Vector3f jumpForce = new Vector3f(0, 3000, 0);
 
     public static void main(String[] args) {
-        TestPhysicsCar app = new TestPhysicsCar();
+        TestAttachKinematicObject app = new TestAttachKinematicObject();
         app.start();
     }
 
@@ -142,6 +147,18 @@ public class TestPhysicsCar extends SimpleBulletApplication implements ActionLis
         vehicle.addWheel(wheels4, new Vector3f(xOff, yOff, -zOff),
                 wheelDirection, wheelAxle, restLength, radius, false);
 
+        driver=new PhysicsNode(new BoxCollisionShape(new Vector3f(0.2f,.5f,0.2f)));
+        driver.attachDebugShape(assetManager);
+        driver.setLocalTranslation(0,2,0);
+
+        //attach physics node to car
+        vehicle.attachChild(driver);
+        getPhysicsSpace().add(driver);
+
+        //XXX: set kinematic after adding to physicsspace if you want to be able to re-enable
+        //if using only kinematics, set before to save system resources.
+        driver.setKinematic(true);
+
         vehicle.attachDebugShape(assetManager);
         rootNode.attachChild(vehicle);
 
@@ -184,6 +201,9 @@ public class TestPhysicsCar extends SimpleBulletApplication implements ActionLis
             }
         } else if (binding.equals("Space")) {
             if (value) {
+                driver.setKinematic(false);
+                driver.setLocalTranslation(driver.getWorldTranslation());
+                rootNode.attachChild(driver);
                 vehicle.applyImpulse(jumpForce, Vector3f.ZERO);
             }
         } else if (binding.equals("Reset")) {
@@ -194,6 +214,11 @@ public class TestPhysicsCar extends SimpleBulletApplication implements ActionLis
                 vehicle.setLinearVelocity(Vector3f.ZERO);
                 vehicle.setAngularVelocity(Vector3f.ZERO);
                 vehicle.resetSuspension();
+
+                driver.setKinematic(true);
+                driver.setLocalTranslation(0,2,0);
+                vehicle.attachChild(driver);
+
             } else {
             }
         }

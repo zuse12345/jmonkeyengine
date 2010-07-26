@@ -83,7 +83,6 @@ public class TestBrickWall extends SimpleBulletApplication {
                 bulletg.setMaterial(mat2);
                 PhysicsNode bulletNode = new PhysicsNode(bulletg, bulletCollisionShape, 1);
                 bulletNode.setLocalTranslation(cam.getLocation());
-                bulletNode.updateModelBound();
                 bulletNode.updateGeometricState();
                 bulletNode.setShadowMode(ShadowMode.CastAndRecieve);
 
@@ -117,7 +116,6 @@ public class TestBrickWall extends SimpleBulletApplication {
         PhysicsNode floorNode = new PhysicsNode(floor, new BoxCollisionShape(new Vector3f(10f, 0.1f, 5f)), 0);
         floorNode.setLocalTranslation(0, -0.1f, 0);
         floorNode.updateGeometricState();
-        floorNode.updateModelBound();
         this.rootNode.attachChild(floorNode);
         this.getPhysicsSpace().add(floorNode);
     }

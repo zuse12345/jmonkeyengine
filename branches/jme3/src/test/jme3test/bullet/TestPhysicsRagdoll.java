@@ -81,7 +81,6 @@ public class TestPhysicsRagdoll  extends SimpleBulletApplication {
 //        Box b = new Box(Vector3f.ZERO, radius, height/2.0f,  radius);
         Cylinder b=new Cylinder(8,8,radius,height);
         Geometry geom = new Geometry("Box", b);
-        geom.updateModelBound();
 
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);

@@ -60,7 +60,6 @@ public class TestCollisionListener extends SimpleBulletApplication implements Ac
         physicsBox.setLocalTranslation(new Vector3f(.6f, 4, .5f));
         physicsBox.attachDebugShape(assetManager);
         physicsBox.updateGeometricState();
-        physicsBox.updateModelBound();
         rootNode.attachChild(physicsBox);
         getPhysicsSpace().add(physicsBox);
 
@@ -78,7 +77,6 @@ public class TestCollisionListener extends SimpleBulletApplication implements Ac
         PhysicsNode node3 = new PhysicsNode(new BoxCollisionShape(new Vector3f(100, 1, 100)), 0);
         node3.setLocalTranslation(new Vector3f(0f, -6, 0f));
         node3.attachDebugShape(assetManager);
-        node3.updateModelBound();
         node3.updateGeometricState();
         rootNode.attachChild(node3);
         getPhysicsSpace().add(node3);
@@ -133,7 +131,6 @@ public class TestCollisionListener extends SimpleBulletApplication implements Ac
             PhysicsNode bulletNode = new PhysicsNode(bulletg, bulletCollisionShape, 1);
             bulletNode.setName("bullet");
             bulletNode.setLocalTranslation(cam.getLocation());
-            bulletNode.updateModelBound();
             bulletNode.updateGeometricState();
             bulletNode.setShadowMode(ShadowMode.CastAndRecieve);
             bulletNode.setLinearVelocity(cam.getDirection().mult(25));

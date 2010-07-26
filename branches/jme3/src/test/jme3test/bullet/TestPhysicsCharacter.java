@@ -70,7 +70,6 @@ public class TestPhysicsCharacter extends SimpleBulletApplication implements Act
         physicsCharacter = new PhysicsCharacterNode(new SphereCollisionShape(1.2f), .1f);
         physicsCharacter.setLocalTranslation(new Vector3f(3, 6, 0));
         physicsCharacter.attachDebugShape(mat);
-        physicsCharacter.updateModelBound();
         rootNode.attachChild(physicsCharacter);
         getPhysicsSpace().add(physicsCharacter);
 
@@ -80,7 +79,6 @@ public class TestPhysicsCharacter extends SimpleBulletApplication implements Act
         physicsBox.setLocalTranslation(new Vector3f(.6f, 4, .5f));
         physicsBox.attachDebugShape(assetManager);
         physicsBox.updateGeometricState();
-        physicsBox.updateModelBound();
         rootNode.attachChild(physicsBox);
         getPhysicsSpace().add(physicsBox);
 
@@ -95,7 +93,6 @@ public class TestPhysicsCharacter extends SimpleBulletApplication implements Act
         PhysicsNode node3 = new PhysicsNode(new BoxCollisionShape(new Vector3f(100, 1, 100)), 0);
         node3.setLocalTranslation(new Vector3f(0f, -6, 0f));
         node3.attachDebugShape(assetManager);
-        node3.updateModelBound();
         node3.updateGeometricState();
         rootNode.attachChild(node3);
         getPhysicsSpace().add(node3);
@@ -150,7 +147,6 @@ public class TestPhysicsCharacter extends SimpleBulletApplication implements Act
             bulletg.setMaterial(mat);
             PhysicsNode bulletNode = new PhysicsNode(bulletg, bulletCollisionShape, 1);
             bulletNode.setLocalTranslation(cam.getLocation());
-            bulletNode.updateModelBound();
             bulletNode.updateGeometricState();
             bulletNode.setShadowMode(ShadowMode.CastAndRecieve);
             bulletNode.setLinearVelocity(cam.getDirection().mult(25));

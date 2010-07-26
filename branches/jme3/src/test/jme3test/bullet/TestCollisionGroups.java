@@ -40,7 +40,6 @@ public class TestCollisionGroups extends SimpleBulletApplication{
         physicsSphere.setLocalTranslation(new Vector3f(3,6,0));
         physicsSphere.attachDebugShape(assetManager);
         physicsSphere.updateGeometricState();
-        physicsSphere.updateModelBound();
         rootNode.attachChild(physicsSphere);
         getPhysicsSpace().add(physicsSphere);
 
@@ -49,7 +48,6 @@ public class TestCollisionGroups extends SimpleBulletApplication{
         physicsSphere2.setLocalTranslation(new Vector3f(4,8,0));
         physicsSphere2.attachDebugShape(mat2);
         physicsSphere2.updateGeometricState();
-        physicsSphere2.updateModelBound();
         physicsSphere2.addCollideWithGroup(PhysicsNode.COLLISION_GROUP_02);
         rootNode.attachChild(physicsSphere2);
         getPhysicsSpace().add(physicsSphere2);
@@ -67,7 +65,6 @@ public class TestCollisionGroups extends SimpleBulletApplication{
         PhysicsNode node3=new PhysicsNode(new MeshCollisionShape(new Box(Vector3f.ZERO,100f,0.2f,100f)),0);
         node3.setLocalTranslation(new Vector3f(0f,-6,0f));
         node3.attachDebugShape(assetManager);
-        node3.updateModelBound();
         node3.updateGeometricState();
         rootNode.attachChild(node3);
         getPhysicsSpace().add(node3);

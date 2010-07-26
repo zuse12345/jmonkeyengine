@@ -49,11 +49,12 @@ public final class OgreXMLToJme implements ActionListener {
                     FileLock lock = null;
                     try {
                         lock = file.lock();
-                        String materialPath = file.getPath().replaceAll(".mesh.xml", ".material");
+                        String materialPath = file.getPath().replaceAll(".mesh.xml", ".material").replaceAll(".MESH.XML", ".material");
                         if(!new File(materialPath).exists()){
                             Confirmation msg = new NotifyDescriptor.Confirmation(
                                     "No material file found for " + file.getNameExt() + "\n"
-                                    + "A file named "+file.getNameExt().replaceAll(".mesh.xml", ".material")+" should be in the same folder.\n"
+                                    + "A file named "+file.getNameExt().replaceAll(".mesh.xml", ".material").replaceAll(".MESH.XML", ".material")
+                                    +" should be in the same folder.\n"
                                     + "Press OK to import mesh only.",
                                     NotifyDescriptor.OK_CANCEL_OPTION,
                                     NotifyDescriptor.WARNING_MESSAGE);

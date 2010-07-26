@@ -88,11 +88,11 @@
             <folder name="ogrexml+xml">
                 <folder name="Actions">
                     <file name="com-jme3-gde-ogrexml-importer-OgreXMLToJme.shadow">
-                        <attr name="originalFile" stringvalue="Actions/JME3/com-jme3-gde-ogrexml-importer-OgreXMLToJme.instance"/>
+                        <attr name="originalFile" stringvalue="Actions/jMonkeyPlatform/com-jme3-gde-ogrexml-importer-OgreXMLToJme.instance"/>
                         <attr name="position" intvalue="0"/>
                     </file>
                     <file name="com-jme3-gde-core-assets-actions-OpenModel.shadow">
-                        <attr name="originalFile" stringvalue="Actions/JME3/com-jme3-gde-core-assets-actions-OpenModel.instance"/>
+                        <attr name="originalFile" stringvalue="Actions/jMonkeyPlatform/com-jme3-gde-core-assets-actions-OpenModel.instance"/>
                         <attr name="position" intvalue="10"/>
                     </file>
                     <file name="org-openide-actions-CopyAction.shadow">
@@ -164,11 +164,11 @@
             <folder name="ogrescene+xml">
                 <folder name="Actions">
                     <file name="com-jme3-gde-ogrexml-importer-OgreXMLToJme.shadow">
-                        <attr name="originalFile" stringvalue="Actions/JME3/com-jme3-gde-ogrexml-importer-OgreXMLToJme.instance"/>
+                        <attr name="originalFile" stringvalue="Actions/jMonkeyPlatform/com-jme3-gde-ogrexml-importer-OgreXMLToJme.instance"/>
                         <attr name="position" intvalue="0"/>
                     </file>
                     <file name="com-jme3-gde-core-assets-actions-OpenModel.shadow">
-                        <attr name="originalFile" stringvalue="Actions/JME3/com-jme3-gde-core-assets-actions-OpenModel.instance"/>
+                        <attr name="originalFile" stringvalue="Actions/jMonkeyPlatform/com-jme3-gde-core-assets-actions-OpenModel.instance"/>
                         <attr name="position" intvalue="10"/>
                     </file>
                     <file name="org-openide-actions-CopyAction.shadow">

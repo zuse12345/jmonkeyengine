@@ -182,15 +182,15 @@ public class SceneExplorerChildren extends Children.Keys<Object> {
         } else if (key instanceof LightSpatialPair) {
             LightSpatialPair pair = (LightSpatialPair) key;
             if (pair.getLight() instanceof PointLight) {
-                return new Node[]{new JmePointLight(pair.getSpatial(), (PointLight) pair.getLight())};
+                return new Node[]{new JmePointLight(pair.getSpatial(), (PointLight) pair.getLight()).setSaveCookie(cookie)};
             }
             if (pair.getLight() instanceof DirectionalLight) {
-                return new Node[]{new JmeDirectionalLight(pair.getSpatial(), (DirectionalLight) pair.getLight())};
+                return new Node[]{new JmeDirectionalLight(pair.getSpatial(), (DirectionalLight) pair.getLight()).setSaveCookie(cookie)};
             }
-            return new Node[]{new JmeLight(pair.getSpatial(), pair.getLight())};
+            return new Node[]{new JmeLight(pair.getSpatial(), pair.getLight()).setSaveCookie(cookie)};
         } else if (key instanceof MeshGeometryPair) {
             MeshGeometryPair pair = (MeshGeometryPair) key;
-            return new Node[]{new JmeMesh(pair.getGeometry(), pair.getMesh())};
+            return new Node[]{new JmeMesh(pair.getGeometry(), pair.getMesh()).setSaveCookie(cookie)};
         }
         return null;
     }

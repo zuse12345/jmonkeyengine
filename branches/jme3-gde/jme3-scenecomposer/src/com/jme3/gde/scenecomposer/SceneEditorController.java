@@ -32,7 +32,6 @@ import com.jme3.ui.Picture;
 import com.jme3.util.TangentBinormalGenerator;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.api.progress.ProgressHandle;
@@ -41,6 +40,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.NodeEvent;
@@ -459,8 +459,10 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
         progressHandle.start();
         BinaryExporter exp = BinaryExporter.getInstance();
         try {
+            FileLock lock=currentFileObject.lock();
             exp.save(node, FileUtil.toFile(currentFileObject));
-        } catch (IOException ex) {
+            lock.releaseLock();
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
         progressHandle.finish();

@@ -75,17 +75,16 @@ public final class OpenModel implements ActionListener {
                 final Spatial spat;
                 try {
                     ((DesktopAssetManager) manager.getManager()).clearCache();
-                    file.lock();
+                    lock = file.lock();
                     spat = manager.getManager().loadModel(assetName);
                     if (spat instanceof Node) {
                         //TODO: change scenecomposer to not depend on awt thread (move stuff from TopComponent)
                         JmeNode jmeNode = NodeUtility.createNode((Node) spat);
-                        SceneApplication app=SceneApplication.getApplication();
+                        SceneApplication app = SceneApplication.getApplication();
                         SceneRequest request = new SceneRequest(app, jmeNode, manager);
                         request.setWindowTitle("SceneViewer - View Model");
                         app.requestScene(request);
                     } else {
-
                     }
 
                 } catch (Exception ex) {

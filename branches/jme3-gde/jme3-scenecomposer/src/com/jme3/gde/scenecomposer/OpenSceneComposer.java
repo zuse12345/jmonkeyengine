@@ -44,7 +44,7 @@ public final class OpenSceneComposer implements ActionListener {
                 final Spatial spat;
                 try {
                     ((DesktopAssetManager) manager.getManager()).clearCache();
-                    file.lock();
+                    lock = file.lock();
                     spat = manager.getManager().loadModel(assetName);
                     java.awt.EventQueue.invokeLater(new Runnable() {
 

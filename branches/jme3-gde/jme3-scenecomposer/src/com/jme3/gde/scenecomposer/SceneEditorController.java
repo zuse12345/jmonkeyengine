@@ -458,12 +458,16 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Saving File..");
         progressHandle.start();
         BinaryExporter exp = BinaryExporter.getInstance();
+        FileLock lock = null;
         try {
-            FileLock lock=currentFileObject.lock();
+            lock = currentFileObject.lock();
             exp.save(node, FileUtil.toFile(currentFileObject));
-            lock.releaseLock();
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            if (lock != null) {
+                lock.releaseLock();
+            }
         }
         progressHandle.finish();
         StatusDisplayer.getDefault().setStatusText(currentFileObject.getNameExt() + " saved.");

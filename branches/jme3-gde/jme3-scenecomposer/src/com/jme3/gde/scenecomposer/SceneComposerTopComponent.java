@@ -97,7 +97,13 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         jSeparator1 = new javax.swing.JToolBar.Separator();
         jPanel3 = new javax.swing.JPanel();
         toolsPanel = new javax.swing.JPanel();
+        jToolBar3 = new javax.swing.JToolBar();
+        jLabel5 = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
         createTangentsButton = new javax.swing.JButton();
+        jToolBar2 = new javax.swing.JToolBar();
+        jLabel4 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
         createPhysicsMeshButton = new javax.swing.JButton();
 
         sceneInfoPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.sceneInfoPanel.border.title"))); // NOI18N
@@ -119,7 +125,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 .add(sceneInfoLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(sceneInfoLabel2)
-                .addContainerGap(112, Short.MAX_VALUE))
+                .addContainerGap(92, Short.MAX_VALUE))
         );
 
         palettePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.palettePanel.border.title"))); // NOI18N
@@ -134,7 +140,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         );
         palettePanelLayout.setVerticalGroup(
             palettePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1)
         );
 
         jToolBar1.setFloatable(false);
@@ -255,7 +261,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 317, Short.MAX_VALUE)
+            .add(0, 366, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -265,6 +271,26 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         jToolBar1.add(jPanel3);
 
         toolsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.toolsPanel.border.title"))); // NOI18N
+        toolsPanel.setLayout(new java.awt.GridLayout(6, 0));
+
+        jToolBar3.setFloatable(false);
+        jToolBar3.setRollover(true);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.jLabel5.text")); // NOI18N
+        jToolBar3.add(jLabel5);
+
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 207, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 18, Short.MAX_VALUE)
+        );
+
+        jToolBar3.add(jPanel2);
 
         org.openide.awt.Mnemonics.setLocalizedText(createTangentsButton, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.createTangentsButton.text")); // NOI18N
         createTangentsButton.setToolTipText(org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.createTangentsButton.toolTipText")); // NOI18N
@@ -273,6 +299,29 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 createTangentsButtonActionPerformed(evt);
             }
         });
+        jToolBar3.add(createTangentsButton);
+
+        toolsPanel.add(jToolBar3);
+
+        jToolBar2.setFloatable(false);
+        jToolBar2.setRollover(true);
+        jToolBar2.setAlignmentY(0.5F);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.jLabel4.text")); // NOI18N
+        jToolBar2.add(jLabel4);
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 184, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 18, Short.MAX_VALUE)
+        );
+
+        jToolBar2.add(jPanel1);
 
         org.openide.awt.Mnemonics.setLocalizedText(createPhysicsMeshButton, org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.createPhysicsMeshButton.text")); // NOI18N
         createPhysicsMeshButton.setToolTipText(org.openide.util.NbBundle.getMessage(SceneComposerTopComponent.class, "SceneComposerTopComponent.createPhysicsMeshButton.toolTipText")); // NOI18N
@@ -281,25 +330,9 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 createPhysicsMeshButtonActionPerformed(evt);
             }
         });
+        jToolBar2.add(createPhysicsMeshButton);
 
-        org.jdesktop.layout.GroupLayout toolsPanelLayout = new org.jdesktop.layout.GroupLayout(toolsPanel);
-        toolsPanel.setLayout(toolsPanelLayout);
-        toolsPanelLayout.setHorizontalGroup(
-            toolsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(toolsPanelLayout.createSequentialGroup()
-                .add(toolsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(createTangentsButton)
-                    .add(createPhysicsMeshButton))
-                .addContainerGap(78, Short.MAX_VALUE))
-        );
-        toolsPanelLayout.setVerticalGroup(
-            toolsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(toolsPanelLayout.createSequentialGroup()
-                .add(createTangentsButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(createPhysicsMeshButton)
-                .addContainerGap(90, Short.MAX_VALUE))
-        );
+        toolsPanel.add(jToolBar2);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -308,10 +341,10 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             .add(layout.createSequentialGroup()
                 .add(palettePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(toolsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(toolsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(sceneInfoPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-            .add(jToolBar1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 823, Short.MAX_VALUE)
+            .add(jToolBar1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 872, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -319,7 +352,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 .add(jToolBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(toolsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(toolsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 160, Short.MAX_VALUE)
                     .add(palettePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, sceneInfoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
@@ -394,7 +427,11 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JList jList1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JToolBar.Separator jSeparator1;
@@ -402,6 +439,8 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     private javax.swing.JToolBar.Separator jSeparator3;
     private javax.swing.JToolBar.Separator jSeparator4;
     private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JToolBar jToolBar2;
+    private javax.swing.JToolBar jToolBar3;
     private javax.swing.JButton moveToCursorButton;
     private javax.swing.JPanel palettePanel;
     private javax.swing.JButton resetCursorButton;

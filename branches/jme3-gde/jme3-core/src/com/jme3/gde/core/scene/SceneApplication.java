@@ -207,6 +207,8 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             secondCounter = 0.0f;
         }
         try {
+            getStateManager().update(tpf);
+            
             rootNode.updateLogicalState(tpf);
             guiNode.updateLogicalState(tpf);
             toolsNode.updateLogicalState(tpf);
@@ -214,8 +216,8 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             guiNode.updateGeometricState();
             toolsNode.updateGeometricState();
 
-            getStateManager().update(tpf);
 
+            getStateManager().render(renderManager);
             renderManager.render(tpf);
         } catch (Exception e) {
             e.printStackTrace();

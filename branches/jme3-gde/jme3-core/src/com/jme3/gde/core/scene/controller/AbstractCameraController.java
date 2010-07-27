@@ -261,6 +261,11 @@ public abstract class AbstractCameraController implements ActionListener, Analog
     }
 
     public void update(float f) {
+    }
+
+    protected abstract void checkClick(int button);
+
+    public void render(RenderManager rm) {
         if (checkClick) {
             checkClick(0);
             checkClick = false;
@@ -269,11 +274,6 @@ public abstract class AbstractCameraController implements ActionListener, Analog
             checkClick(1);
             checkClickR = false;
         }
-    }
-
-    protected abstract void checkClick(int button);
-
-    public void render(RenderManager rm) {
     }
 
     public void cleanup() {

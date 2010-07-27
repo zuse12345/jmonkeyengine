@@ -148,28 +148,6 @@
             </folder>
         </folder>
     </folder>
-    <folder name="Services">
-        <folder name="AutoupdateType">
-            <file name="com_jme3_gde_core_update_center.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="com.jme3.gde.core.Bundle"/>
-                <attr name="displayName" bundlevalue="com.jme3.gde.core.Bundle#Services/AutoupdateType/com_jme3_gde_core_update_center_nightly.instance"/>
-                <attr name="enabled" boolvalue="false"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider"/>
-                <attr name="url_key" stringvalue="com_jme3_gde_core_update_center_nightly"/>
-            </file>
-        </folder>
-        <folder name="JavaHelp">
-            <file name="core-helpset.xml" url="core-helpset.xml">
-                <attr name="position" intvalue="3358"/>
-            </file>
-        </folder>
-        <folder name="MIMEResolver">
-            <file name="JMEBinaryModelResolver.xml" url="JMEBinaryModelResolver.xml">
-                <attr name="displayName" bundlevalue="com.jme3.gde.core.Bundle#Services/MIMEResolver/JMEBinaryModelResolver.xml"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Toolbars">
         <folder name="File">
             <file name="com-jme3-gde-core-assets-actions-OpenModel.shadow">
@@ -187,6 +165,18 @@
                 <file name="desktopApp.xml_hidden"/>
                 <file name="emptyJ2SE.xml_hidden"/>
             </folder>
+        </folder>
+    </folder>
+    <folder name="Services">
+        <folder name="JavaHelp">
+            <file name="core-helpset.xml" url="core-helpset.xml">
+                <attr name="position" intvalue="3358"/>
+            </file>
+        </folder>
+        <folder name="MIMEResolver">
+            <file name="JMEBinaryModelResolver.xml" url="JMEBinaryModelResolver.xml">
+                <attr name="displayName" bundlevalue="com.jme3.gde.core.Bundle#Services/MIMEResolver/JMEBinaryModelResolver.xml"/>
+            </file>
         </folder>
     </folder>
     <folder name="Windows2">

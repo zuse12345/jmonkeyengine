@@ -33,7 +33,7 @@ public class TestCcd extends SimpleBulletApplication implements ActionListener{
     static {
         bullet = new Sphere(32, 32, 0.4f, true, false);
         bullet.setTextureMode(TextureMode.Projected);
-        bulletCollisionShape = new SphereCollisionShape(0.4f);
+        bulletCollisionShape = new SphereCollisionShape(0.1f);
     }
 
     public static void main(String[] args) {
@@ -109,7 +109,7 @@ public class TestCcd extends SimpleBulletApplication implements ActionListener{
             bulletNode.setLocalTranslation(cam.getLocation());
             bulletNode.updateGeometricState();
             bulletNode.setShadowMode(ShadowMode.CastAndRecieve);
-            bulletNode.setLinearVelocity(cam.getDirection().mult(25));
+            bulletNode.setLinearVelocity(cam.getDirection().mult(40));
             rootNode.attachChild(bulletNode);
             getPhysicsSpace().add(bulletNode);
         }
@@ -121,7 +121,7 @@ public class TestCcd extends SimpleBulletApplication implements ActionListener{
             bulletNode.setLocalTranslation(cam.getLocation());
             bulletNode.updateGeometricState();
             bulletNode.setShadowMode(ShadowMode.CastAndRecieve);
-            bulletNode.setLinearVelocity(cam.getDirection().mult(25));
+            bulletNode.setLinearVelocity(cam.getDirection().mult(40));
             rootNode.attachChild(bulletNode);
             getPhysicsSpace().add(bulletNode);
         }

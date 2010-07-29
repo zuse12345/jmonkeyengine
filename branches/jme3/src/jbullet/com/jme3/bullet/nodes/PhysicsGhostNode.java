@@ -240,6 +240,26 @@ public class PhysicsGhostNode extends PhysicsCollisionObject {
         return overlappingObjects.get(index);
     }
 
+    public void setCcdSweptSphereRadius(float radius){
+        gObject.setCcdSweptSphereRadius(radius);
+    }
+
+    public void setCcdMotionThreshold(float threshold){
+        gObject.setCcdMotionThreshold(threshold);
+    }
+
+    public float getCcdSweptSphereRadius(){
+        return gObject.getCcdSweptSphereRadius();
+    }
+
+    public float getCcdMotionThreshold(){
+        return gObject.getCcdMotionThreshold();
+    }
+
+    public float getCcdSquareMotionThreshold(){
+        return gObject.getCcdSquareMotionThreshold();
+    }
+
     @Override
     public void write(JmeExporter e) throws IOException {
         super.write(e);

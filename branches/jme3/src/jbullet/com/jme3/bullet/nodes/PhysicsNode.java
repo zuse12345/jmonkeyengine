@@ -51,6 +51,7 @@ import com.jme3.export.OutputCapsule;
 import com.jme3.math.Matrix3f;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -271,6 +272,26 @@ public class PhysicsNode extends PhysicsCollisionObject {
 
     public boolean isKinematic() {
         return kinematic;
+    }
+
+    public void setCcdSweptSphereRadius(float radius){
+        rBody.setCcdSweptSphereRadius(radius);
+    }
+
+    public void setCcdMotionThreshold(float threshold){
+        rBody.setCcdMotionThreshold(threshold);
+    }
+
+    public float getCcdSweptSphereRadius(){
+        return rBody.getCcdSweptSphereRadius();
+    }
+
+    public float getCcdMotionThreshold(){
+        return rBody.getCcdMotionThreshold();
+    }
+
+    public float getCcdSquareMotionThreshold(){
+        return rBody.getCcdSquareMotionThreshold();
     }
 
     public float getMass() {

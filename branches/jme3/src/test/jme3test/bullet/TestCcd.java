@@ -27,6 +27,7 @@ import com.jme3.scene.shape.Sphere.TextureMode;
 public class TestCcd extends SimpleBulletApplication implements ActionListener{
 
     private Material mat;
+    private Material mat2;
     private static final Sphere bullet;
     private static final SphereCollisionShape bulletCollisionShape;
 
@@ -54,17 +55,10 @@ public class TestCcd extends SimpleBulletApplication implements ActionListener{
         setupKeys();
 
         mat = new Material(getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
-        mat.setColor("m_Color", ColorRGBA.Red);
+        mat.setColor("m_Color", ColorRGBA.Green);
 
-        // Add a physics box to the world
-        PhysicsNode physicsBox = new PhysicsNode(new BoxCollisionShape(new Vector3f(1, 1, 1)), 1);
-        physicsBox.setName("box");
-        physicsBox.setFriction(0.1f);
-        physicsBox.setLocalTranslation(new Vector3f(.6f, 4, .5f));
-        physicsBox.attachDebugShape(assetManager);
-        physicsBox.updateGeometricState();
-        rootNode.attachChild(physicsBox);
-        getPhysicsSpace().add(physicsBox);
+        mat2 = new Material(getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
+        mat2.setColor("m_Color", ColorRGBA.Red);
 
         // An obstacle mesh, does not move (mass=0)
         PhysicsNode node2 = new PhysicsNode(new MeshCollisionShape(new Box(Vector3f.ZERO,4,4,0.1f)), 0);
@@ -104,7 +98,7 @@ public class TestCcd extends SimpleBulletApplication implements ActionListener{
             Geometry bulletg = new Geometry("bullet", bullet);
             bulletg.setMaterial(mat);
             PhysicsNode bulletNode = new PhysicsNode(bulletg, bulletCollisionShape, 1);
-            bulletNode.setCcdMotionThreshold(0.05f);
+            bulletNode.setCcdMotionThreshold(0.1f);
             bulletNode.setName("bullet");
             bulletNode.setLocalTranslation(cam.getLocation());
             bulletNode.updateGeometricState();
@@ -115,7 +109,7 @@ public class TestCcd extends SimpleBulletApplication implements ActionListener{
         }
         else if(binding.equals("shoot2") && !value) {
             Geometry bulletg = new Geometry("bullet", bullet);
-            bulletg.setMaterial(mat);
+            bulletg.setMaterial(mat2);
             PhysicsNode bulletNode = new PhysicsNode(bulletg, bulletCollisionShape, 1);
             bulletNode.setName("bullet");
             bulletNode.setLocalTranslation(cam.getLocation());

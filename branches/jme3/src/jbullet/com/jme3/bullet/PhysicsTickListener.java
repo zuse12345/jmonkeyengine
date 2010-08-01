@@ -5,8 +5,6 @@
 
 package com.jme3.bullet;
 
-import com.bulletphysics.dynamics.InternalTickCallback;
-
 /**
  *
  * @author normenhansen

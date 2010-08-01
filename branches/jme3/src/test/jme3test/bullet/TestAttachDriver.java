@@ -23,7 +23,7 @@ import com.jme3.scene.shape.Cylinder;
 import com.jme3.texture.Texture;
 
 /**
- * Tests attaching kinematic nodes to physicsnodes via the scenegraph
+ * Tests attaching/detaching nodes via joints
  * @author normenhansen
  */
 public class TestAttachDriver extends SimpleBulletApplication implements ActionListener {

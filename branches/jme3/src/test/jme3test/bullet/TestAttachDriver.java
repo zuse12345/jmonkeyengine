@@ -5,6 +5,7 @@ import com.jme3.asset.TextureKey;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
+import com.jme3.bullet.joints.PhysicsSliderJoint;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.nodes.PhysicsVehicleNode;
 import com.jme3.input.KeyInput;
@@ -25,18 +26,20 @@ import com.jme3.texture.Texture;
  * Tests attaching kinematic nodes to physicsnodes via the scenegraph
  * @author normenhansen
  */
-public class TestAttachKinematicObject extends SimpleBulletApplication implements ActionListener {
+public class TestAttachDriver extends SimpleBulletApplication implements ActionListener {
 
     private PhysicsVehicleNode vehicle;
     private PhysicsNode driver;
+    private PhysicsNode bridge;
+    private PhysicsSliderJoint slider;
     private final float accelerationForce = 1000.0f;
     private final float brakeForce = 100.0f;
     private float steeringValue = 0;
     private float accelerationValue = 0;
     private Vector3f jumpForce = new Vector3f(0, 3000, 0);
-
+    
     public static void main(String[] args) {
-        TestAttachKinematicObject app = new TestAttachKinematicObject();
+        TestAttachDriver app = new TestAttachDriver();
         app.start();
     }
 
@@ -147,22 +150,46 @@ public class TestAttachKinematicObject extends SimpleBulletApplication implement
         vehicle.addWheel(wheels4, new Vector3f(xOff, yOff, -zOff),
                 wheelDirection, wheelAxle, restLength, radius, false);
 
+        vehicle.attachDebugShape(assetManager);
+
+        rootNode.attachChild(vehicle);
+        getPhysicsSpace().add(vehicle);
+
+        //driver
         driver=new PhysicsNode(new BoxCollisionShape(new Vector3f(0.2f,.5f,0.2f)));
         driver.attachDebugShape(assetManager);
         driver.setLocalTranslation(0,2,0);
 
-        //attach physics node to car
-        vehicle.attachChild(driver);
+        rootNode.attachChild(driver);
         getPhysicsSpace().add(driver);
 
-        //XXX: set kinematic after adding to physicsspace if you want to be able to re-enable
-        //if using only kinematics, set before to save system resources.
-        driver.setKinematic(true);
+        //joint
+        slider=new PhysicsSliderJoint(driver, vehicle, Vector3f.UNIT_Y.negate(), Vector3f.UNIT_Y, true);
+        slider.setUpperLinLimit(.1f);
+        slider.setLowerLinLimit(-.1f);
 
-        vehicle.attachDebugShape(assetManager);
-        rootNode.attachChild(vehicle);
+        getPhysicsSpace().add(slider);
 
-        getPhysicsSpace().add(vehicle);
+        PhysicsNode pole1=new PhysicsNode(new BoxCollisionShape(new Vector3f(0.2f,1.25f,0.2f)),0);
+        pole1.attachDebugShape(assetManager);
+        PhysicsNode pole2=new PhysicsNode(new BoxCollisionShape(new Vector3f(0.2f,1.25f,0.2f)),0);
+        pole2.attachDebugShape(assetManager);
+        bridge=new PhysicsNode(new BoxCollisionShape(new Vector3f(2.5f,0.2f,0.2f)));
+        bridge.attachDebugShape(assetManager);
+        pole1.setLocalTranslation(new Vector3f(-2,-1,4));
+        pole1.updateGeometricState();
+        pole2.setLocalTranslation(new Vector3f(2,-1,4));
+        pole2.updateGeometricState();
+        bridge.setLocalTranslation(new Vector3f(0,1.4f,4));
+        bridge.updateGeometricState();
+
+        rootNode.attachChild(pole1);
+        rootNode.attachChild(pole2);
+        rootNode.attachChild(bridge);
+        getPhysicsSpace().add(pole1);
+        getPhysicsSpace().add(pole2);
+        getPhysicsSpace().add(bridge);
+
     }
 
     @Override
@@ -201,9 +228,8 @@ public class TestAttachKinematicObject extends SimpleBulletApplication implement
             }
         } else if (binding.equals("Space")) {
             if (value) {
-                driver.setKinematic(false);
-                driver.setLocalTranslation(driver.getWorldTranslation());
-                rootNode.attachChild(driver);
+                getPhysicsSpace().remove(slider);
+                slider.destroy();
                 vehicle.applyImpulse(jumpForce, Vector3f.ZERO);
             }
         } else if (binding.equals("Reset")) {
@@ -214,11 +240,8 @@ public class TestAttachKinematicObject extends SimpleBulletApplication implement
                 vehicle.setLinearVelocity(Vector3f.ZERO);
                 vehicle.setAngularVelocity(Vector3f.ZERO);
                 vehicle.resetSuspension();
-
-                driver.setKinematic(true);
-                driver.setLocalTranslation(0,2,0);
-                driver.setLocalRotation(Quaternion.DIRECTION_Z);
-                vehicle.attachChild(driver);
+                bridge.setLocalTranslation(new Vector3f(0,1.4f,4));
+                bridge.setLocalRotation(Quaternion.DIRECTION_Z);
 
             } else {
             }

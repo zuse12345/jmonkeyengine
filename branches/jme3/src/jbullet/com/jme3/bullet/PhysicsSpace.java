@@ -59,6 +59,7 @@ import com.jme3.math.Vector3f;
 //import com.jme3.util.GameTaskQueue;
 //import com.jme3.util.GameTaskQueueManager;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
+import com.jme3.bullet.collision.PhysicsCollisionEventFactory;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.joints.PhysicsJoint;
@@ -120,6 +121,7 @@ public class PhysicsSpace {
     private List<PhysicsCollisionEvent> collisionEvents = new LinkedList<PhysicsCollisionEvent>();
     private Map<Integer, PhysicsCollisionListener> collisionGroupListeners = new ConcurrentHashMap<Integer, PhysicsCollisionListener>();
     private ConcurrentLinkedQueue<PhysicsTickListener> tickListeners = new ConcurrentLinkedQueue<PhysicsTickListener>();
+    private PhysicsCollisionEventFactory eventFactory=new PhysicsCollisionEventFactory();
     private Vector3f worldMin = new Vector3f(-10000f, -10000f, -10000f);
     private Vector3f worldMax = new Vector3f(10000f, 10000f, 10000f);
     private float accuracy = 1f / 60f;
@@ -272,7 +274,7 @@ public class PhysicsSpace {
                     node1 = physicsGhostNodes.get(rBody);
                 }
                 if (node != null && node1 != null) {
-                    collisionEvents.add(new PhysicsCollisionEvent(PhysicsCollisionEvent.TYPE_PROCESSED, node, node1, cp));
+                    collisionEvents.add(eventFactory.getEvent(PhysicsCollisionEvent.TYPE_PROCESSED, node, node1, cp));
                 } else {
                     System.out.println("error finding node during collision");
                 }
@@ -367,7 +369,12 @@ public class PhysicsSpace {
                 listener.collision(event);
             }
         }
-        collisionEvents.clear();
+        //recycle events
+        for (Iterator<PhysicsCollisionEvent> it = collisionEvents.iterator(); it.hasNext();) {
+            PhysicsCollisionEvent physicsCollisionEvent = it.next();
+            eventFactory.recycle(physicsCollisionEvent);
+            it.remove();
+        }
     }
 
     public static <V> Future<V> enqueueOnThisThread(Callable<V> callable) {

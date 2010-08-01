@@ -40,22 +40,44 @@ import java.util.EventObject;
  * A CollisionEvent stores all information about a collision in the PhysicsWorld
  * @author normenhansen
  */
-public class PhysicsCollisionEvent extends EventObject{
-    public static final int TYPE_ADDED=0;
-    public static final int TYPE_PROCESSED=1;
-    public static final int TYPE_DESTROYED=1;
+public class PhysicsCollisionEvent extends EventObject {
+
+    public static final int TYPE_ADDED = 0;
+    public static final int TYPE_PROCESSED = 1;
+    public static final int TYPE_DESTROYED = 2;
     private int type;
     private PhysicsCollisionObject nodeA;
     private PhysicsCollisionObject nodeB;
-
     private ManifoldPoint cp;
 
     public PhysicsCollisionEvent(int type, PhysicsCollisionObject source, PhysicsCollisionObject nodeB, ManifoldPoint cp) {
         super(source);
-        this.type=type;
-        this.nodeA=source;
-        this.nodeB=nodeB;
-        this.cp=cp;
+        this.type = type;
+        this.nodeA = source;
+        this.nodeB = nodeB;
+        this.cp = cp;
+    }
+
+    /**
+     * used by event factory, called when event is destroyed
+     */
+    public void clean() {
+        source = null;
+        type = 0;
+        nodeA = null;
+        nodeB = null;
+        cp = null;
+    }
+
+    /**
+     * used by event factory, called when event reused
+     */
+    public void refactor(int type, PhysicsCollisionObject source, PhysicsCollisionObject nodeB, ManifoldPoint cp) {
+        this.source = source;
+        this.type = type;
+        this.nodeA = source;
+        this.nodeB = nodeB;
+        this.cp = cp;
     }
 
     public int getType() {
@@ -149,5 +171,4 @@ public class PhysicsCollisionEvent extends EventObject{
     public Object getUserPersistentData() {
         return cp.userPersistentData;
     }
-
 }

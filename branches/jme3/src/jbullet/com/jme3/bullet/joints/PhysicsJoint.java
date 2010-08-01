@@ -70,6 +70,10 @@ public abstract class PhysicsJoint implements Savable {
         nodeB.addJoint(this);
     }
 
+    public float getAppliedImpulse(){
+        return constraint.getAppliedImpulse();
+    }
+
     /**
      * @return the constraint
      */

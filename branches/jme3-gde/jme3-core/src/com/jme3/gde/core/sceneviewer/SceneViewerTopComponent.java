@@ -45,6 +45,9 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.InstanceContent;
@@ -183,7 +186,7 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 
     @Override
     public HelpCtx getHelpCtx() {
-        HelpCtx ctx=new HelpCtx("com.jme3.gde.core.sceneviewer");
+        HelpCtx ctx = new HelpCtx("com.jme3.gde.core.sceneviewer");
         //this call is for single components:
         //HelpCtx.setHelpIDString(this, "com.jme3.gde.core.sceneviewer");
         return ctx;
@@ -192,8 +195,26 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     @Override
     public void componentOpened() {
         super.componentOpened();
-        app.setSceneActive(true);
-        oGLPanel.add(((JmeCanvasContext) app.getContext()).getCanvas());
+        try {
+            oGLPanel.add(((JmeCanvasContext) app.getContext()).getCanvas());
+            app.setSceneActive(true);
+        } catch (Exception e) {
+            Message msg = new NotifyDescriptor.Message(
+                    "Error opening OpenGL window!\n"
+                    + "Your graphics card needs to support at least OpenGL 2.0,\n"
+                    + "if that is the case, please download the latest drivers.\n"
+                    + "("+e+")",
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(msg);
+        } catch (Error err) {
+            Message msg = new NotifyDescriptor.Message(
+                    "Error opening OpenGL window!\n"
+                    + "Your graphics card needs to support at least OpenGL 2.0,\n"
+                    + "if that is the case, please download the latest drivers.\n"
+                    + "("+err+")",
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(msg);
+        }
     }
 
     @Override

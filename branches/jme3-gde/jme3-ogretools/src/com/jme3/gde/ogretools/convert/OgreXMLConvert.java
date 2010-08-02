@@ -27,8 +27,8 @@ public class OgreXMLConvert {
 
     static final int BUFFER = 2048;
     public static String osx_path = System.getProperty("user.home") + "/Library/Application Support/jmonkeyplatform/ogretools/";
-    public static String windows_path = System.getProperty("user.home") + "\\jmonkeyplatform\\ogretools\\";
-    public static String linux_path = System.getProperty("user.home") + "/jmonkeyplatform/ogretools/";
+    public static String windows_path = System.getProperty("user.home") + "\\.jmonkeyplatform\\ogretools\\";
+    public static String linux_path = System.getProperty("user.home") + "/.jmonkeyplatform/ogretools/";
 
     public boolean doConvert(OgreXMLConvertOptions options, ProgressHandle handle) {
         if (!checkTools()) {

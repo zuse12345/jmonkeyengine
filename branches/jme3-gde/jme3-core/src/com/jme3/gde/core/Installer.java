@@ -66,7 +66,12 @@ public class Installer extends ModuleInstall {
         //set extraction dir for platform natives
         if (Utilities.isMac()) {
             String jmpDir = System.getProperty("user.home") + "/Library/Application Support/jmonkeyplatform/";
-            File file=new File(jmpDir);
+            File file = new File(jmpDir);
+            file.mkdirs();
+            com.jme3.system.Natives.setExtractionDir(jmpDir);
+        } else {
+            String jmpDir = System.getProperty("user.home") + File.separator + ".jmonkeyplatform" + File.separator;
+            File file = new File(jmpDir);
             file.mkdirs();
             com.jme3.system.Natives.setExtractionDir(jmpDir);
         }

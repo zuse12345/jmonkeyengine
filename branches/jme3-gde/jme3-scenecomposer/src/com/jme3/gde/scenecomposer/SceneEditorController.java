@@ -7,6 +7,7 @@ package com.jme3.gde.scenecomposer;
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.DesktopAssetManager;
+import com.jme3.asset.ModelKey;
 import com.jme3.audio.AudioNode;
 import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.nodes.PhysicsNode;
@@ -346,7 +347,7 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
         progressHandle.start();
         try {
             ((DesktopAssetManager) manager).clearCache();
-            AssetKey<Spatial> key = new AssetKey<Spatial>(assetName);
+            ModelKey key = new ModelKey(assetName);
             Spatial linkNode = manager.loadAsset(key);
             if (linkNode != null) {
                 selected.attachChild(linkNode);
@@ -389,7 +390,7 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
                 linkNode.attachLinkedChild(manager, new AssetKey<Spatial>(assetName));
             } else {
                 ((DesktopAssetManager) manager).clearCache();
-                AssetKey<Spatial> key = new AssetKey<Spatial>(assetName);
+                ModelKey key = new ModelKey(assetName);
                 AssetLinkNode linkNode = new AssetLinkNode(key);
                 linkNode.attachLinkedChildren(manager);
                 selected.attachChild(linkNode);

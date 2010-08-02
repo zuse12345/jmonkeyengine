@@ -62,6 +62,9 @@ import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.spi.project.LookupProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -103,6 +106,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     private WireProcessor wireProcessor;
     private ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Opening SceneViewer..");
     private boolean sceneActive = false;
+    private String lastError = "";
 
     public SceneApplication() {
         progressHandle.start(7);
@@ -146,11 +150,11 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     @Override
     public void initialize() {
         super.initialize();
-        progressHandle.progress("Setup Camera Controller", 2);
+        getProgressHandle().progress("Setup Camera Controller", 2);
         //create camera controler
         camController = new SceneCameraController(cam, inputManager);
         //create preview view
-        progressHandle.progress("Setup Preview Scene", 3);
+        getProgressHandle().progress("Setup Preview Scene", 3);
 
         previewProcessor = new ScenePreviewProcessor();
         previewProcessor.setupPreviewView();
@@ -158,25 +162,25 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         // enable depth test and back-face culling for performance
         renderer.applyRenderState(RenderState.DEFAULT);
 
-        progressHandle.progress("Prepare Camera", 4);
+        getProgressHandle().progress("Prepare Camera", 4);
         camLight = new PointLight();
         camLight.setColor(ColorRGBA.White);
 //        rootNode.addLight(camLight);
 
-        progressHandle.progress("Prepare Stats View", 5);
+        getProgressHandle().progress("Prepare Stats View", 5);
         guiNode.setQueueBucket(Bucket.Gui);
         guiNode.setCullHint(CullHint.Never);
         loadFPSText();
         loadStatsView();
-        progressHandle.progress("Attach Scene to Viewport", 6);
+        getProgressHandle().progress("Attach Scene to Viewport", 6);
         viewPort.attachScene(rootNode);
         viewPort.attachScene(toolsNode);
         guiViewPort.attachScene(guiNode);
         cam.setLocation(new Vector3f(0, 0, 10));
 
-        progressHandle.progress("Create", 6);
+        getProgressHandle().progress("Create", 6);
         wireProcessor = new WireProcessor(assetManager);
-        progressHandle.finish();
+        getProgressHandle().finish();
 
         inputManager.addMapping("MouseAxisX", new MouseAxisTrigger(MouseInput.AXIS_X, false));
         inputManager.addMapping("MouseAxisY", new MouseAxisTrigger(MouseInput.AXIS_Y, false));
@@ -195,20 +199,20 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             return;
         }
 
-        super.update();
-        float tpf = timer.getTimePerFrame();
-
-        camLight.setPosition(cam.getLocation());
-
-        secondCounter += tpf;
-        int fps = (int) timer.getFrameRate();
-        if (secondCounter >= 1.0f) {
-            fpsText.setText("Frames per second: " + fps);
-            secondCounter = 0.0f;
-        }
         try {
+            super.update();
+            float tpf = timer.getTimePerFrame();
+
+            camLight.setPosition(cam.getLocation());
+
+            secondCounter += tpf;
+            int fps = (int) timer.getFrameRate();
+            if (secondCounter >= 1.0f) {
+                fpsText.setText("Frames per second: " + fps);
+                secondCounter = 0.0f;
+            }
             getStateManager().update(tpf);
-            
+
             rootNode.updateLogicalState(tpf);
             guiNode.updateLogicalState(tpf);
             toolsNode.updateLogicalState(tpf);
@@ -220,7 +224,19 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             getStateManager().render(renderManager);
             renderManager.render(tpf);
         } catch (Exception e) {
-            e.printStackTrace();
+            String msg = e.getMessage();
+            if (msg == null) {
+                msg = "null";
+            }
+            if (!lastError.equals(msg)) {
+                Message mesg = new NotifyDescriptor.Message(
+                        "Error in scene!\n"
+                        + "(" + e + ")",
+                        NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(mesg);
+                e.printStackTrace();
+                lastError = msg;
+            }
         }
     }
 
@@ -369,7 +385,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 
             public Object call() throws Exception {
                 if (request == currentSceneRequest) {
-                    if(closeCurrentScene()){
+                    if (closeCurrentScene()) {
                         if (request.getRequester() instanceof SceneApplication) {
                             camController.disable();
                         }
@@ -484,5 +500,12 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 
     public RenderManager getRenderManager() {
         return renderManager;
+    }
+
+    /**
+     * @return the progressHandle
+     */
+    public ProgressHandle getProgressHandle() {
+        return progressHandle;
     }
 }

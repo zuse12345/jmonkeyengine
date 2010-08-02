@@ -174,11 +174,11 @@
     </folder>
     <folder name="Templates">
         <folder name="Material">
-            <file name="JMEMaterialTemplate.j3m" url="JMEMaterialTemplate.j3m">
+            <file name="Material.j3m" url="Material.j3m">
                 <attr name="displayName" bundlevalue="com.jme3.gde.materials.Bundle#Templates/Other/JMEMaterialTemplate.j3m"/>
                 <attr name="template" boolvalue="true"/>
             </file>
-            <file name="JMEMaterialDefinitionTemplate.j3md" url="JMEMaterialDefinitionTemplate.j3md">
+            <file name="MaterialDefinition.j3md" url="MaterialDefinition.j3md">
                 <attr name="displayName" bundlevalue="com.jme3.gde.materials.Bundle#Templates/Other/JMEMaterialDefinitionTemplate.j3md"/>
                 <attr name="template" boolvalue="true"/>
             </file>

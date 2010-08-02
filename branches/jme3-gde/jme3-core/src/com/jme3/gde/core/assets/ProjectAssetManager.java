@@ -59,7 +59,7 @@ public class ProjectAssetManager {
 
         manager.registerLoader("com.jme3.export.binary.BinaryImporter", "j3s");
 
-        manager.registerLocator(prj.getProjectDirectory() + "/" + folderName + "/",
+        manager.registerLocator(prj.getProjectDirectory().getPath() + "/" + folderName + "/",
                 "com.jme3.asset.plugins.FileLocator");
 
     }

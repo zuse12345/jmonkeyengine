@@ -82,7 +82,7 @@
     </folder>
     <folder name="Templates">
         <folder name="GUI">
-            <file name="NiftyGuiTemplate.xml" url="NiftyGuiTemplate.xml">
+            <file name="NiftyGui.xml" url="NiftyGui.xml">
                 <attr name="displayName" bundlevalue="com.jme3.gde.gui.Bundle#Templates/Other/NiftyGuiTemplate.xml"/>
                 <attr name="template" boolvalue="true"/>
             </file>

@@ -11,40 +11,6 @@
     <description>Builds, tests, and runs the project BasicGameTemplate.</description>
     <import file="nbproject/build-impl.xml"/>
 
-    <!--this target creates the assets jar file and modifies the classpath to include it-->
-    <target name="-pre-jar">
-        <!--load assets properties-->
-        <property file="nbproject/assets.properties"/>
-        <!--create jar from assets-->
-        <jar jarfile="${build.dir}/${assets.jar.name}" excludes="${assets.excludes}" basedir="${assets.folder.name}" compress="${assets.compress}"/>
-        <!--resolve assets and assets jar location-->
-        <property location="assets" name="assets.dir.resolved"/>
-        <property location="${build.dir}/${assets.jar.name}" name="assets.jar.resolved"/>
-        <!--this sets properties that would normally later be created in the build-impl.xml-->
-        <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
-        <pathconvert property="run.classpath.without.build.classes.dir">
-            <!--remove build.classes.dir and replace assets folder in dist classpath-->
-            <path path="${run.classpath}"/>
-            <map from="${build.classes.dir.resolved}" to=""/>
-            <map from="${assets.dir.resolved}" to="${assets.jar.resolved}"/>
-        </pathconvert>
-    </target>
-
-    <!--this target overrides the webstart jnlp copy process to insert the assets jar file-->
-    <target name="-strip-empty-lines">
-        <copy file="${jnlp.dest.dir}/${jnlp.file}_" tofile="${jnlp.dest.dir}/${jnlp.file}" overwrite="true" encoding="UTF-8">
-            <filterchain>
-                <linecontainsregexp>
-                    <regexp pattern=".+"/>
-                </linecontainsregexp>
-            </filterchain>
-            <filterchain>
-                <replacestring from="$${assets.jar.name}" to="${assets.jar.name}"/>
-            </filterchain>
-        </copy>
-        <delete file="${jnlp.dest.dir}/${jnlp.file}_" failonerror="false"/>
-    </target>
-    
     <!--
 
     There exist several targets which are by default empty and which can be 
@@ -106,4 +72,59 @@
     nbproject/build-impl.xml file. 
 
     -->
+    
+    <!--this target creates the assets jar file and modifies the export classpath to include it-->
+    <target name="-init-macrodef-copylibs">
+        <macrodef name="copylibs" uri="http://www.netbeans.org/ns/j2se-project/3">
+            <element name="customize" optional="true"/>
+            <sequential>
+                <!--load assets properties-->
+                <property file="nbproject/assets.properties"/>
+                <!--create jar from assets-->
+                <jar jarfile="${build.dir}/${assets.jar.name}" excludes="${assets.excludes}" basedir="${assets.folder.name}" compress="${assets.compress}"/>
+                <!--resolve assets and assets jar location-->
+                <property location="assets" name="assets.dir.resolved"/>
+                <property location="${build.dir}/${assets.jar.name}" name="assets.jar.resolved"/>
+
+                <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
+                <pathconvert property="run.classpath.without.build.classes.dir">
+                    <path path="${run.classpath}"/>
+                    <map from="${build.classes.dir.resolved}" to=""/>
+                    <!--add asset jar to classpath instead of folder-->
+                    <map from="${assets.dir.resolved}" to="${assets.jar.resolved}"/>
+                </pathconvert>
+                <pathconvert pathsep=" " property="jar.classpath">
+                    <path path="${run.classpath.without.build.classes.dir}"/>
+                    <chainedmapper>
+                        <flattenmapper/>
+                        <globmapper from="*" to="lib/*"/>
+                    </chainedmapper>
+                </pathconvert>
+                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${libs.CopyLibs.classpath}" name="copylibs"/>
+                <copylibs compress="${jar.compress}" index="${jar.index}" jarfile="${dist.jar}" manifest="${manifest.file}" runtimeclasspath="${run.classpath.without.build.classes.dir}">
+                    <fileset dir="${build.classes.dir}"/>
+                    <manifest>
+                        <attribute name="Class-Path" value="${jar.classpath}"/>
+                        <customize/>
+                    </manifest>
+                </copylibs>
+            </sequential>
+        </macrodef>
+    </target>
+
+    <!--this target overrides the webstart jnlp copy process to insert the assets jar file-->
+    <target name="-strip-empty-lines">
+        <copy file="${jnlp.dest.dir}/${jnlp.file}_" tofile="${jnlp.dest.dir}/${jnlp.file}" overwrite="true" encoding="UTF-8">
+            <filterchain>
+                <linecontainsregexp>
+                    <regexp pattern=".+"/>
+                </linecontainsregexp>
+            </filterchain>
+            <filterchain>
+                <replacestring from="$${assets.jar.name}" to="${assets.jar.name}"/>
+            </filterchain>
+        </copy>
+        <delete file="${jnlp.dest.dir}/${jnlp.file}_" failonerror="false"/>
+    </target>
+
 </project>

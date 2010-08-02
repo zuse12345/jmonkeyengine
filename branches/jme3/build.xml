@@ -71,9 +71,17 @@
 
     <!-- convenience target to transfer jme3 libraries to the jme3-jmp folder on the Hudson build server (jMonkeyPlatform) -->
     <target name="update-jmp-hudson">
+        <!--update jme3 svn revision info properly-->
+        <exec executable="svn" dir=".">
+            <arg value="update" />
+        </exec>
+        <!--update jmp-->
         <antcall target="-do-update-gde" inheritall="true">
             <param name="jmp_dir" value="../../jme3-jmp/workspace/"/>
         </antcall>
+        <!--antcall target="-create-jme3-svn-properties" inheritall="true">
+            <param name="jmp_dir" value="../../jme3-jmp/workspace/"/>
+        </antcall-->
     </target>
 
     <target name="-do-update-gde">
@@ -149,6 +157,35 @@
                 <exclude name=".svn"/>
             </fileset>
         </copy>
+    </target>
+
+    <!--creates properties files containing svn info for the jme3 folders in jMP-->
+    <target name="-create-jme3-svn-properties">
+        <mkdir dir="${jmp_dir}/build"/>
+        <!--update jme3 svn revision-->
+        <exec executable="svn" dir=".">
+            <arg value="update" />
+        </exec>
+        <!--jme3 svn properties-->
+        <exec executable="svn" dir="." output="${jmp_dir}/build/jme3-svn.properties">
+            <arg value="info" />
+        </exec>
+        <replace file="${jmp_dir}/build/jme3-svn.properties" token=" " value=""/>
+        <!--jme3 test data svn properties-->
+        <exec executable="svn" dir="src/test-data/" output="${jmp_dir}/build/jme3-testdata-svn.properties">
+            <arg value="info" />
+        </exec>
+        <replace file="${jmp_dir}/build/jme3-testdata-svn.properties" token=" " value=""/>
+        <!--jme3 libraries svn properties-->
+        <exec executable="svn" dir="lib/" output="${jmp_dir}/build/jme3-lib-svn.properties">
+            <arg value="info" />
+        </exec>
+        <replace file="${jmp_dir}/build/jme3-lib-svn.properties" token=" " value=""/>
+        <!--jme3 tests svn properties-->
+        <exec executable="svn" dir="src/test/" output="${jmp_dir}/build/jme3-tests-svn.properties">
+            <arg value="info" />
+        </exec>
+        <replace file="${jmp_dir}/build/jme3-tests-svn.properties" token=" " value=""/>
     </target>
 
     <!-- upload jme3 zip to jmonkeyengine.com/nightly -->

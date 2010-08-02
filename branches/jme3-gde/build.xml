@@ -239,7 +239,7 @@
         <replace file="build/jme3-tests-svn.properties" token=" " value=""/>
     </target>
 
-    <target name="-create-private-config">
+    <target name="create-private-config">
         <exec executable="mkdir" dir="./nbproject/" failonerror="false">
             <arg value="private" />
         </exec>

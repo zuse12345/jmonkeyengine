@@ -839,9 +839,22 @@ public final class Matrix3f implements Savable, Cloneable {
      * @return This matrix after transpose
      */
     public Matrix3f transposeLocal() {
-        float[] tmp = new float[9];
-        get(tmp, false);
-        set(tmp, true);
+//        float[] tmp = new float[9];
+//        get(tmp, false);
+//        set(tmp, true);
+
+        float tmp = m01;
+        m01 = m10;
+        m10 = tmp;
+
+        tmp = m02;
+        m02 = m20;
+        m20 = tmp;
+
+        tmp = m12;
+        m12 = m21;
+        m21 = tmp;
+
         return this;
     }
 

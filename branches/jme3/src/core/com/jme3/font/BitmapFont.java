@@ -83,7 +83,7 @@ public class BitmapFont implements Savable {
         System.arraycopy(pagesSavable, 0, pages, 0, pages.length);
     }
 
-    public float getLineWidth(String text){
+    public float getLineWidth(CharSequence text){
         float lineWidth = 0f;
         char lastChar = 0;
         boolean firstCharOfLine = true;
@@ -108,7 +108,7 @@ public class BitmapFont implements Savable {
 
     public float updateText(StringBlock block, QuadList target, boolean rightToLeft) {
 
-        String text = block.getText();
+        CharSequence text = block.getCharacters();
         float x = 0;
         float y = 0;
         float lineWidth = 0f;

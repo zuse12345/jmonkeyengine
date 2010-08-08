@@ -102,8 +102,6 @@ public class MaterialLoader implements AssetLoader {
         String keyword = scan.next();
         if (keyword.equals("texture")){
             readTextureImage();
-        }else if (keyword.equals("texture_alias")){
-            texture.setName(scan.next());
         }else if (keyword.equals("tex_address_mode")){
             String mode = scan.next();
             if (mode.equals("wrap")){

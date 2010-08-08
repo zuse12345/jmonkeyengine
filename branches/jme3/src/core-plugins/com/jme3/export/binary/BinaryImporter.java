@@ -59,7 +59,6 @@ public final class BinaryImporter implements JmeImporter {
     private static final Logger logger = Logger.getLogger(BinaryImporter.class
             .getName());
 
-    //TODO: Provide better cleanup and reuse of this class -- Good for now.
     private AssetManager assetManager;
 
     //Key - alias, object - bco

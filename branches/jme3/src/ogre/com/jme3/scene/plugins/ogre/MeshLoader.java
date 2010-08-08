@@ -142,10 +142,6 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
         if (matName.endsWith(".j3m")){
             // load as native jme3 material instance
             mat = assetManager.loadMaterial(matName);
-            // XXX: hack!
-//            mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
-//            mat.getAdditionalRenderState().setFaceCullMode(FaceCullMode.Off);
-//            mat.getAdditionalRenderState().setAlphaFallOff(0.1f);
         }else{
             if (materialList != null){
                 mat = materialList.get(matName);

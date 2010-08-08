@@ -68,67 +68,67 @@ public class AppTask<V> implements Future<V> {
         // TODO mayInterruptIfRunning was ignored in previous code, should this param be removed?
         stateLock.lock();
         try {
-                if (result != null) {
-                        return false;
-                }
-                cancelled = true;
+            if (result != null) {
+                return false;
+            }
+            cancelled = true;
 
-                finishedCondition.signalAll();
+            finishedCondition.signalAll();
 
-                return true;
+            return true;
         } finally {
-                stateLock.unlock();
+            stateLock.unlock();
         }
     }
 
     public V get() throws InterruptedException, ExecutionException {
         stateLock.lock();
         try {
-                while (!isDone()) {
-                        finishedCondition.await();
-                }
-                if (exception != null) {
-                        throw exception;
-                }
-                return result;
+            while (!isDone()) {
+                finishedCondition.await();
+            }
+            if (exception != null) {
+                throw exception;
+            }
+            return result;
         } finally {
-                stateLock.unlock();
+            stateLock.unlock();
         }
     }
 
     public V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         stateLock.lock();
         try {
-                if (!isDone()) {
-                        finishedCondition.await(timeout, unit);
-                }
-                if (exception != null) {
-                        throw exception;
-                }
-                if (result == null) {
-                        throw new TimeoutException("Object not returned in time allocated.");
-                }
-                return result;
+            if (!isDone()) {
+                finishedCondition.await(timeout, unit);
+            }
+            if (exception != null) {
+                throw exception;
+            }
+            if (result == null) {
+                throw new TimeoutException("Object not returned in time allocated.");
+            }
+            return result;
         } finally {
-                stateLock.unlock();
+            stateLock.unlock();
         }
     }
 
     public boolean isCancelled() {
         stateLock.lock();
         try {
-                return cancelled;
+            return cancelled;
         } finally {
-                stateLock.unlock();
+            stateLock.unlock();
         }
     }
 
     public boolean isDone() {
         stateLock.lock();
         try {
-                return finished || cancelled || (exception != null);
+            return finished || cancelled || (exception != null);
         } finally {
-                stateLock.unlock();
+            stateLock.unlock();
         }
     }
 
@@ -138,28 +138,28 @@ public class AppTask<V> implements Future<V> {
 
     public void invoke() {
         try {
-                final V tmpResult = callable.call();
+            final V tmpResult = callable.call();
 
-                stateLock.lock();
-                try {
-                        result = tmpResult;
-                        finished = true;
+            stateLock.lock();
+            try {
+                result = tmpResult;
+                finished = true;
 
-                        finishedCondition.signalAll();
-                } finally {
-                        stateLock.unlock();
-                }
-        } catch(Exception e) {
-                logger.logp(Level.SEVERE, this.getClass().toString(), "invoke()", "Exception", e);
+                finishedCondition.signalAll();
+            } finally {
+                stateLock.unlock();
+            }
+        } catch (Exception e) {
+            logger.logp(Level.SEVERE, this.getClass().toString(), "invoke()", "Exception", e);
 
-                stateLock.lock();
-                try {
-                        exception = new ExecutionException(e);
+            stateLock.lock();
+            try {
+                exception = new ExecutionException(e);
 
-                        finishedCondition.signalAll();
-                } finally {
-                        stateLock.unlock();
-                }
+                finishedCondition.signalAll();
+            } finally {
+                stateLock.unlock();
+            }
         }
     }
 

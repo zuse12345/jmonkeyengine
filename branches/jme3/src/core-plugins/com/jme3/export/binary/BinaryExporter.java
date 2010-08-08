@@ -145,7 +145,6 @@ public class BinaryExporter implements JmeExporter {
     private static final Logger logger = Logger.getLogger(BinaryExporter.class
             .getName());
 
-    //TODO: Provide better cleanup and reuse of this class.
     protected int aliasCount = 1;
     protected int idCount = 1;
 

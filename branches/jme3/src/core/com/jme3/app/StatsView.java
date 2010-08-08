@@ -35,6 +35,8 @@ public class StatsView extends Node implements Control {
     private String[] statLabels;
     private int[] statData;
 
+    private final StringBuilder stringBuilder = new StringBuilder();
+
     public StatsView(String name, AssetManager manager, Statistics stats){
         super(name);
 
@@ -60,7 +62,9 @@ public class StatsView extends Node implements Control {
     public void update(float tpf) {
         statistics.getData(statData);
         for (int i = 0; i < labels.length; i++) {
-            labels[i].setText(statLabels[i] + " = " + statData[i]);
+            stringBuilder.setLength(0);
+            stringBuilder.append(statLabels[i]).append(" = ").append(statData[i]);
+            labels[i].setText(stringBuilder);
         }
         statistics.clearFrame();
     }

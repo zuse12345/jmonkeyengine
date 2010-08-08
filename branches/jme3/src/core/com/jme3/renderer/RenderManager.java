@@ -502,6 +502,10 @@ public class RenderManager {
         setViewProjection(cam, ortho);
     }
 
+    /**
+     * Draws the viewport but doesn't invoke processors.
+     * @param vp
+     */
     public void renderViewPortRaw(ViewPort vp){
         setCamera(vp.getCamera(), false);
         List<Spatial> scenes = vp.getScenes();

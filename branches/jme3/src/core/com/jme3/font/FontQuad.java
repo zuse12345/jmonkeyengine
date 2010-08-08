@@ -4,6 +4,7 @@ import com.jme3.math.ColorRGBA;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.Arrays;
 
 public class FontQuad {
 
@@ -95,7 +96,7 @@ public class FontQuad {
 //                            v0, v2, v3 });
     }
 
-    public void storeToArrays(float[] pos, float[] tc, short[] idx, int quadIdx){
+    public void storeToArrays(float[] pos, float[] tc, short[] idx, byte[] colors, int quadIdx){
         float x = quadPosX;
         float y = quadPosY;
         float xpw = (x + quadPosWidth);
@@ -115,6 +116,18 @@ public class FontQuad {
         tc[2] = u0; tc[3] = v1;
         tc[4] = u1; tc[5] = v1;
         tc[6] = u1; tc[7] = v0;
+
+        if (color != null){
+            colors[0] = (byte) (colorInt & 0xff);
+            colors[1] = (byte) ((colorInt >> 8) & 0xff);
+            colors[2] = (byte) ((colorInt >> 16) & 0xff);
+            colors[3] = (byte) ((colorInt >> 24) & 0xff);
+            System.arraycopy(colors, 0, colors, 4,  4);
+            System.arraycopy(colors, 0, colors, 8,  4);
+            System.arraycopy(colors, 0, colors, 12, 4);
+        }else{
+            Arrays.fill(colors, (byte) 0xff);
+        }
 
         short i0 = (short) (quadIdx * 4);
         short i1 = (short) (i0 + 1);

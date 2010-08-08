@@ -24,6 +24,7 @@ public class BitmapText extends Geometry {
     private final float[] pos;
     private final float[] tc;
     private final short[] idx;
+    private final byte[] color;
 
     public BitmapText(BitmapFont font, boolean rightToLeft, boolean arrayBased){
         super("BitmapFont", new Mesh());
@@ -54,13 +55,16 @@ public class BitmapText extends Geometry {
         
         // scale colors from 0 - 255 range into 0 - 1
         m.getBuffer(Type.Color).setNormalized(true);
-        
+
+        arrayBased = true;
+
         if (arrayBased){
-            pos = new float[4 * 3]; // 4 verticies * 3 floats
-            tc  = new float[4 * 2]; // 4 verticies * 2 floats
-            idx = new short[2 * 3]; // 2 triangles * 3 indices
+            pos   = new float[4 * 3];  // 4 verticies * 3 floats
+            tc    = new float[4 * 2];  // 4 verticies * 2 floats
+            idx   = new short[2 * 3];  // 2 triangles * 3 indices
+            color = new byte[4 * 4];   // 4 verticies * 4 bytes
         }else{
-            pos = null; tc = null; idx = null;
+            pos = null; tc = null; idx = null; color = null;
         }
     }
 
@@ -91,7 +95,7 @@ public class BitmapText extends Geometry {
         needRefresh = true;
     }
 
-    public void setText(String text){
+    public void setText(CharSequence text){
         if (block.getText().equals(text))
             return;
         
@@ -178,10 +182,11 @@ public class BitmapText extends Geometry {
         if (pos != null){
             for (int i = 0; i < quadList.getQuantity(); i++){
                 FontQuad fq = quadList.getQuad(i);
-                fq.storeToArrays(pos, tc, idx, i);
+                fq.storeToArrays(pos, tc, idx, color, i);
                 fpb.put(pos);
                 ftb.put(tc);
                 sib.put(idx);
+                bcb.put(color);
             }
         }else{
             for (int i = 0; i < quadList.getQuantity(); i++){

@@ -79,7 +79,7 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
      * <code>meshes</code> argument.
      * @param meshes The skins, or meshes, to animate. Should have
      * properly set BoneIndex and BoneWeight buffers.
-     * @param skeleton The skeleton structure represents a bone heirarchy
+     * @param skeleton The skeleton structure represents a bone hierarchy
      * to be animated.
      */
     public AnimControl(Node model, Mesh[] meshes, Skeleton skeleton){
@@ -257,7 +257,7 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
         }
     }
 
-    void reset(){
+    final void reset(){
         resetToBind();
         if (skeleton != null){
             skeleton.resetAndUpdate();

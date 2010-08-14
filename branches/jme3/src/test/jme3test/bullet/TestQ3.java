@@ -1,6 +1,5 @@
 package jme3test.bullet;
 
-import jme3test.scene.*;
 import com.jme3.app.SimpleBulletApplication;
 import com.jme3.asset.plugins.HttpZipLocator;
 import com.jme3.asset.plugins.ZipLocator;
@@ -14,12 +13,12 @@ import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.DirectionalLight;
+import com.jme3.material.MaterialList;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.plugins.ogre.OgreMaterialList;
 import com.jme3.scene.plugins.ogre.OgreMeshKey;
 import com.jme3.scene.shape.Sphere;
 import java.io.File;
@@ -57,11 +56,6 @@ public class TestQ3 extends SimpleBulletApplication implements ActionListener {
         dl.setDirection(new Vector3f(-1, -1, -1).normalize());
         rootNode.addLight(dl);
 
-        dl = new DirectionalLight();
-        dl.setColor(ColorRGBA.White);
-        dl.setDirection(new Vector3f(1, -1, 1).normalize());
-        rootNode.addLight(dl);
-
         // load the level from zip or http zip
         if (useHttp) {
             assetManager.registerLocator("http://jmonkeyengine.googlecode.com/files/quake3level.zip", HttpZipLocator.class.getName());
@@ -70,7 +64,7 @@ public class TestQ3 extends SimpleBulletApplication implements ActionListener {
         }
 
         // create the geometry and attach it
-        OgreMaterialList matList = (OgreMaterialList) assetManager.loadAsset("Scene.material");
+        MaterialList matList = (MaterialList) assetManager.loadAsset("Scene.material");
         OgreMeshKey key = new OgreMeshKey("main.meshxml", matList);
         gameLevel = (Spatial) assetManager.loadAsset(key);
         gameLevel.setLocalScale(0.1f);

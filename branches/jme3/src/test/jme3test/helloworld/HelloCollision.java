@@ -16,7 +16,6 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import java.io.File;
 
 /**
  * Example 9b - How to make walls and floors solid.
@@ -96,18 +95,10 @@ public class HelloCollision
     Vector3f camDir = cam.getDirection().clone().multLocal(0.6f);
     Vector3f camLeft = cam.getLeft().clone().multLocal(0.4f);
     walkDirection.set(0, 0, 0);
-    if (left) {
-      walkDirection.addLocal(camLeft);
-    }
-    if (right) {
-      walkDirection.addLocal(camLeft.negate());
-    }
-    if (up) {
-      walkDirection.addLocal(camDir);
-    }
-    if (down) {
-      walkDirection.addLocal(camDir.negate());
-    }
+    if (left)  { walkDirection.addLocal(camLeft); }
+    if (right) { walkDirection.addLocal(camLeft.negate()); }
+    if (up)    { walkDirection.addLocal(camDir); }
+    if (down)  { walkDirection.addLocal(camDir.negate()); }
     player.setWalkDirection(walkDirection);
     cam.setLocation(player.getLocalTranslation());
   }
@@ -132,13 +123,13 @@ public class HelloCollision
   public void onAction(String binding, boolean value, float tpf) {
 
     if (binding.equals("Lefts")) {
-      if (value) { left = true; } else { left = false; }
+      if (value) { left = true; }  else { left = false; }
     } else if (binding.equals("Rights")) {
       if (value) { right = true; } else { right = false; }
     } else if (binding.equals("Ups")) {
-      if (value) { up = true; } else { up = false; }
+      if (value) { up = true; }    else { up = false; }
     } else if (binding.equals("Downs")) {
-      if (value) { down = true; } else { down = false; }
+      if (value) { down = true; }  else { down = false; }
     } else if (binding.equals("Jumps")) {
       player.jump();
     }

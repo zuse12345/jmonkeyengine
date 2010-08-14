@@ -132,29 +132,13 @@ public class HelloCollision
   public void onAction(String binding, boolean value, float tpf) {
 
     if (binding.equals("Lefts")) {
-      if (value) {
-        left = true;
-      } else {
-        left = false;
-      }
+      if (value) { left = true; } else { left = false; }
     } else if (binding.equals("Rights")) {
-      if (value) {
-        right = true;
-      } else {
-        right = false;
-      }
+      if (value) { right = true; } else { right = false; }
     } else if (binding.equals("Ups")) {
-      if (value) {
-        up = true;
-      } else {
-        up = false;
-      }
+      if (value) { up = true; } else { up = false; }
     } else if (binding.equals("Downs")) {
-      if (value) {
-        down = true;
-      } else {
-        down = false;
-      }
+      if (value) { down = true; } else { down = false; }
     } else if (binding.equals("Jumps")) {
       player.jump();
     }

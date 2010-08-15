@@ -89,7 +89,7 @@ public class HelloCollision
     inputManager.addListener(this, "Rights");
     inputManager.addListener(this, "Ups");
     inputManager.addListener(this, "Downs");
-    inputManager.addListener(this, "Space");
+    inputManager.addListener(this, "Jumps");
   }
 
   /** These are our custom actions triggered by key presses.

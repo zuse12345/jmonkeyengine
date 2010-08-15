@@ -17,8 +17,8 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 
 /**
- * Example 9b - How to make walls and floors solid.
- * This version uses a SphereCollisionShape with Physics, and an Action Listener.
+ * Example 9 - How to make walls and floors solid.
+ * This version uses Physics and a custom Action Listener.
  * @author normen, with edits by Zathras
  */
 public class HelloCollision
@@ -38,16 +38,14 @@ public class HelloCollision
   public void simpleInitApp() {
     renderer.setBackgroundColor(ColorRGBA.Cyan);
     
-    // We re-use the flyby camera for rotation, while position is handled
-    // by physics
+    // We re-use the flyby camera for rotation, while positioning is handled by physics
     flyCam.setMoveSpeed(100);
     setupKeys();
-    this.cam.setFrustumFar(2000);
 
     // We add a light so we see the scene
     DirectionalLight dl = new DirectionalLight();
     dl.setColor(ColorRGBA.White.clone().multLocal(2));
-    dl.setDirection(new Vector3f(-2.8f, -2.8f, -2.8f).normalize());
+    dl.setDirection(new Vector3f(2.8f, -2.8f, -2.8f).normalize());
     rootNode.addLight(dl);
 
     // We load the scene from the zip file. We set up collision detection by
@@ -62,12 +60,11 @@ public class HelloCollision
     // a capsule collision shape and a physics character node.
     // The physics character node offers extra settings for
     // size, stepheight, jumping, falling, and gravity.
+    // We also put the player in its starting position.
     player = new PhysicsCharacterNode(new CapsuleCollisionShape(1f, 6f, 1), .05f);
     player.setJumpSpeed(20);
     player.setFallSpeed(30);
     player.setGravity(30);
-
-    // We put the player in its starting position.
     player.setLocalTranslation(new Vector3f(0, 10, 0));
     player.updateGeometricState();
 
@@ -80,11 +77,42 @@ public class HelloCollision
     getPhysicsSpace().add(player);
   }
 
+  /** We over-write some navigational key mappings here, so we can
+   * add physics-controlled walking and jumping: */
+  private void setupKeys() {
+    inputManager.addMapping("Lefts",  new KeyTrigger(KeyInput.KEY_A));
+    inputManager.addMapping("Rights", new KeyTrigger(KeyInput.KEY_D));
+    inputManager.addMapping("Ups",    new KeyTrigger(KeyInput.KEY_W));
+    inputManager.addMapping("Downs",  new KeyTrigger(KeyInput.KEY_S));
+    inputManager.addMapping("Jumps",  new KeyTrigger(KeyInput.KEY_SPACE));
+    inputManager.addListener(this, "Lefts");
+    inputManager.addListener(this, "Rights");
+    inputManager.addListener(this, "Ups");
+    inputManager.addListener(this, "Downs");
+    inputManager.addListener(this, "Space");
+  }
+
+  /** These are our custom actions triggered by key presses.
+   * We do not walk yet, we just keep track of the direction the user pressed. */
+  public void onAction(String binding, boolean value, float tpf) {
+    if (binding.equals("Lefts")) {
+      if (value) { left = true; }  else { left = false; }
+    } else if (binding.equals("Rights")) {
+      if (value) { right = true; } else { right = false; }
+    } else if (binding.equals("Ups")) {
+      if (value) { up = true; }    else { up = false; }
+    } else if (binding.equals("Downs")) {
+      if (value) { down = true; }  else { down = false; }
+    } else if (binding.equals("Jumps")) {
+      player.jump();
+    }
+  }
+
   /**
-   * This is the main event loop.
-   * Since we deactivated the default camera and navigation,
-   * we must keep track in which direction the player is walking.
-   * We do that by interpreting the camera direction forward and to the side.
+   * This is the main event loop--walking happens here.
+   * We check in which direction the player is walking by interpreting
+   * the camera direction forward (camDir) and to the side (camLeft).
+   * The setWalkDirection() command is what lets a physics-controlled player walk.
    * We also make sure here that the camera moves with player.
    */
   @Override
@@ -98,37 +126,5 @@ public class HelloCollision
     if (down)  { walkDirection.addLocal(camDir.negate()); }
     player.setWalkDirection(walkDirection);
     cam.setLocation(player.getLocalTranslation());
-  }
-
-  /** Since we deactivated the default camera and navigation,
-   * we define the navigational key mappings here: */
-  private void setupKeys() {
-    inputManager.addMapping("Lefts", new KeyTrigger(KeyInput.KEY_A));
-    inputManager.addMapping("Rights", new KeyTrigger(KeyInput.KEY_D));
-    inputManager.addMapping("Ups", new KeyTrigger(KeyInput.KEY_W));
-    inputManager.addMapping("Downs", new KeyTrigger(KeyInput.KEY_S));
-    inputManager.addMapping("Jumps", new KeyTrigger(KeyInput.KEY_SPACE));
-    inputManager.addListener(this, "Lefts");
-    inputManager.addListener(this, "Rights");
-    inputManager.addListener(this, "Ups");
-    inputManager.addListener(this, "Downs");
-    inputManager.addListener(this, "Space");
-  }
-
-  /** These are the actions triggered by key presses.
-   * Here we keep track of the direction. */
-  public void onAction(String binding, boolean value, float tpf) {
-
-    if (binding.equals("Lefts")) {
-      if (value) { left = true; }  else { left = false; }
-    } else if (binding.equals("Rights")) {
-      if (value) { right = true; } else { right = false; }
-    } else if (binding.equals("Ups")) {
-      if (value) { up = true; }    else { up = false; }
-    } else if (binding.equals("Downs")) {
-      if (value) { down = true; }  else { down = false; }
-    } else if (binding.equals("Jumps")) {
-      player.jump();
-    }
   }
 }

@@ -48,11 +48,13 @@ public class HelloCollision
     dl.setDirection(new Vector3f(2.8f, -2.8f, -2.8f).normalize());
     rootNode.addLight(dl);
 
-    // We load the scene from the zip file. We set up collision detection by
-    // creating a compound collision shape and a physics node for the scene.
+    // We load the scene from the zip file and adjust its size.
     assetManager.registerLocator("town.zip", ZipLocator.class.getName());
     gameScene = assetManager.loadModel("main.scene");
-    gameScene.setLocalScale(2f); // Adjust the size
+    gameScene.setLocalScale(2f); 
+
+    // We set up collision detection by creating a 
+    // compound collision shape and a physics node for the scene.
     CompoundCollisionShape sceneShape = CollisionShapeFactory.createMeshCompoundShape((Node) gameScene);
     PhysicsNode levelNode = new PhysicsNode(gameScene, sceneShape, 0);
 
@@ -61,7 +63,7 @@ public class HelloCollision
     // The physics character node offers extra settings for
     // size, stepheight, jumping, falling, and gravity.
     // We also put the player in its starting position.
-    player = new PhysicsCharacterNode(new CapsuleCollisionShape(1f, 6f, 1), .05f);
+    player = new PhysicsCharacterNode(new CapsuleCollisionShape(1.5f, 6f, 1), .05f);
     player.setJumpSpeed(20);
     player.setFallSpeed(30);
     player.setGravity(30);

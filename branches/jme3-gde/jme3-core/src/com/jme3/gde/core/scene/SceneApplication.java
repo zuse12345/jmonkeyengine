@@ -136,7 +136,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         fpsText = new BitmapText(font, false);
         fpsText.setSize(font.getCharSet().getRenderedSize());
         fpsText.setLocalTranslation(0, fpsText.getLineHeight(), 0);
-        fpsText.setText("Frames per second");
+//        fpsText.setText("Frames per second");
         guiNode.attachChild(fpsText);
     }
 
@@ -208,7 +208,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             secondCounter += tpf;
             int fps = (int) timer.getFrameRate();
             if (secondCounter >= 1.0f) {
-                fpsText.setText("Frames per second: " + fps);
+//                fpsText.setText("Frames per second: " + fps);
                 secondCounter = 0.0f;
             }
             getStateManager().update(tpf);

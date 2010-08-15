@@ -7,7 +7,6 @@ import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
 import com.jme3.bullet.nodes.PhysicsCharacterNode;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.util.CollisionShapeFactory;
-import com.jme3.input.FirstPersonCamera;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
@@ -39,11 +38,9 @@ public class HelloCollision
   public void simpleInitApp() {
     renderer.setBackgroundColor(ColorRGBA.Cyan);
     
-    // We remove the default camera and navigation set up a custom first-person camera
-    inputManager.removeListener(flyCam);
-    FirstPersonCamera fps = new FirstPersonCamera(cam, new Vector3f(0, -10, 0));
-    fps.registerWithDispatcher(inputManager);
-    fps.setMoveSpeed(100);
+    // We re-use the flyby camera for rotation, while position is handled
+    // by physics
+    flyCam.setMoveSpeed(100);
     setupKeys();
     this.cam.setFrustumFar(2000);
 

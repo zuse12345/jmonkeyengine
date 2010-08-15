@@ -341,6 +341,7 @@ public class Material implements Cloneable, Savable {
         Uniform lightPos = shader.getUniform("g_LightPosition");
         lightColor.setVector4Length(numLights);
         lightPos.setVector4Length(numLights);
+
         for (int i = 0; i < numLights; i++){
             if (lightList.size() <= i){
                 lightColor.setVector4InArray(0f, 0f, 0f, 0f, i);

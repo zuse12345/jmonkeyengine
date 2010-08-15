@@ -16,9 +16,13 @@ public class KeyTrigger implements Trigger {
         return keyCode;
     }
 
+    public static final int keyHash(int keyCode){
+        return keyCode & 0xff;
+    }
+
     @Override
     public int hashCode(){
-        return Controls.keyHash(keyCode);
+        return keyHash(keyCode);
     }
 
 }

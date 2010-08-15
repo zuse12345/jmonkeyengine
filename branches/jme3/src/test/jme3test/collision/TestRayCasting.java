@@ -15,6 +15,7 @@ import com.jme3.scene.VertexBuffer.Type;
 public class TestRayCasting extends SimpleApplication {
 
     private RayTrace tracer;
+    private Spatial teapot;
 
     public static void main(String[] args){
         TestRayCasting app = new TestRayCasting();
@@ -42,8 +43,8 @@ public class TestRayCasting extends SimpleApplication {
         q.updateBound();
 //        Geometry teapot = new Geometry("MyGeom", q);
 
-        Spatial teapot = assetManager.loadModel("Models/Teapot/Teapot.meshxml");
-        teapot.scale(2f, 2f, 2f);
+        teapot = assetManager.loadModel("Models/Teapot/Teapot.mesh.xml");
+//        teapot.scale(2f, 2f, 2f);
 //        teapot.move(2f, 2f, -.5f);
         teapot.rotate(FastMath.HALF_PI, FastMath.HALF_PI, FastMath.HALF_PI);
         teapot.setMaterial(mat);
@@ -60,6 +61,9 @@ public class TestRayCasting extends SimpleApplication {
 
     @Override
     public void simpleUpdate(float tpf){
+        teapot.rotate(0,tpf,0);
+        rootNode.updateGeometricState();
+
         tracer.update();
     }
 

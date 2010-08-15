@@ -37,7 +37,7 @@ public class TestOgreComplexAnim extends SimpleApplication {
         dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
         rootNode.addLight(dl);
 
-        Node model = (Node) assetManager.loadModel("Models/Oto/Oto.meshxml");
+        Node model = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
 
         control = model.getControl(AnimControl.class);
 

@@ -8,8 +8,6 @@ import com.jme3.export.Savable;
 import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Spatial;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Abstract class for representing a light source.
@@ -42,6 +40,11 @@ public abstract class Light implements Savable, Cloneable {
     protected transient float lastDistance = -1;
 
     /**
+     * If light is disabled, it will not take effect.
+     */
+    protected boolean enabled = true;
+
+    /**
      * @return The color of the light.
      */
     public ColorRGBA getColor() {
@@ -60,6 +63,10 @@ public abstract class Light implements Savable, Cloneable {
         this.color.set(color);
     }
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+    
     @Override
     public Light clone(){
         try {
@@ -72,11 +79,13 @@ public abstract class Light implements Savable, Cloneable {
     public void write(JmeExporter ex) throws IOException {
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(color, "color", null);
+        oc.write(enabled, "enabled", true);
     }
 
     public void read(JmeImporter im) throws IOException {
         InputCapsule ic = im.getCapsule(this);
         color = (ColorRGBA) ic.readSavable("color", null);
+        enabled = ic.readBoolean("enabled", true);
     }
 
     public abstract void computeLastDistance(Spatial owner);

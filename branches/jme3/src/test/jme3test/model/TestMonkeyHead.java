@@ -10,7 +10,6 @@ import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.plugins.ogre.OgreMeshKey;
 import com.jme3.scene.shape.Sphere;
 
 public class TestMonkeyHead extends SimpleApplication {
@@ -26,6 +25,8 @@ public class TestMonkeyHead extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
+        viewPort.setBackgroundColor(ColorRGBA.DarkGray);
+
         Spatial bumpy = (Spatial) assetManager.loadModel("Models/MonkeyHead/MonkeyHead.mesh.xml");
         rootNode.attachChild(bumpy);
 

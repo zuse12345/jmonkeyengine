@@ -1,7 +1,6 @@
 package com.jme3.input;
 
 import com.jme3.collision.MotionAllowedListener;
-import com.jme3.input.binding.BindingListener;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;

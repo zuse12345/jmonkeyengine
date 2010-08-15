@@ -16,7 +16,6 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
-import com.jme3.scene.plugins.ogre.MeshLoader;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.shadow.BasicShadowRenderer;
@@ -144,7 +143,7 @@ public class TestEverything extends SimpleApplication {
 //    }
 
     public void setupRobotGuy(){
-        Node model = (Node) assetManager.loadModel("Models/Oto/Oto.meshxml");
+        Node model = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
         Material mat = assetManager.loadMaterial("Models/Oto/Oto.j3m");
         model.getChild(0).setMaterial(mat);
 //        model.setAnimation("Walk");
@@ -155,7 +154,7 @@ public class TestEverything extends SimpleApplication {
     }
 
     public void setupSignpost(){
-        Spatial signpost = assetManager.loadModel("Models/Sign Post/Sign Post.meshxml");
+        Spatial signpost = assetManager.loadModel("Models/Sign Post/Sign Post.mesh.xml");
         Material mat = assetManager.loadMaterial("Models/Sign Post/Sign Post.j3m");
         signpost.setMaterial(mat);
         signpost.rotate(0, FastMath.HALF_PI, 0);

@@ -51,7 +51,7 @@ public class TestPhysicsRagdoll  extends SimpleBulletApplication {
         rootNode.attachChild(node3);
         getPhysicsSpace().add(node3);
 
-        Node model = (Node) assetManager.loadModel("Models/Oto/Oto.meshxml");
+        Node model = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
 //        Node model = (Node)MeshLoader.loadModel(manager, "ninja.meshxml", "ninja.material");
 
         //debug view

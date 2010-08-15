@@ -26,6 +26,7 @@ public class TestApplication {
         AppSettings settings = new AppSettings(true);
         settings.setFullscreen(true);
         settings.setResolution(-1,-1); // current width/height
+        app.setSettings(settings);
         app.start();
         Thread.sleep(5000);
         app.stop();

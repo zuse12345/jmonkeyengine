@@ -6,14 +6,16 @@ import com.jme3.animation.AnimEventListener;
 import com.jme3.animation.LoopMode;
 import com.jme3.app.SimpleApplication;
 import com.jme3.input.KeyInput;
-import com.jme3.input.binding.BindingListener;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 
-public class TestOgreAnim extends SimpleApplication implements AnimEventListener, BindingListener {
+public class TestOgreAnim extends SimpleApplication 
+        implements AnimEventListener, ActionListener {
 
     private AnimChannel channel;
     private AnimControl control;
@@ -34,7 +36,7 @@ public class TestOgreAnim extends SimpleApplication implements AnimEventListener
         dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
         rootNode.addLight(dl);
 
-        Spatial model = (Spatial) assetManager.loadModel("Models/Oto/Oto.meshxml");
+        Spatial model = (Spatial) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
 
         model.center();
 
@@ -49,8 +51,8 @@ public class TestOgreAnim extends SimpleApplication implements AnimEventListener
 
         rootNode.attachChild(model);
 
-        inputManager.addBindingListener(this);
-        inputManager.registerKeyBinding("Attack", KeyInput.KEY_SPACE);
+        inputManager.addListener(this, "Attack");
+        inputManager.addMapping("Attack", new KeyTrigger(KeyInput.KEY_SPACE));
     }
 
     public void onAnimCycleDone(AnimControl control, AnimChannel channel, String animName) {
@@ -64,20 +66,14 @@ public class TestOgreAnim extends SimpleApplication implements AnimEventListener
     public void onAnimChange(AnimControl control, AnimChannel channel, String animName) {
     }
 
-    public void onBinding(String binding, float value) {
-        if (binding.equals("Attack")){
+    public void onAction(String binding, boolean value, float tpf) {
+        if (binding.equals("Attack") && value){
             if (!channel.getAnimationName().equals("Dodge")){
                 channel.setAnim("Dodge", 0.50f);
                 channel.setLoopMode(LoopMode.Cycle);
                 channel.setSpeed(0.10f);
             }
         }
-    }
-
-    public void onPreUpdate(float tpf) {
-    }
-
-    public void onPostUpdate(float tpf) {
     }
 
 }

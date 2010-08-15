@@ -1,7 +1,9 @@
 package jme3tools.preview;
 
 import com.jme3.app.Application;
-import com.jme3.input.binding.BindingListener;
+import com.jme3.input.controls.AnalogListener;
+import com.jme3.input.controls.MouseAxisTrigger;
+import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.PointLight;
 import com.jme3.material.Material;
@@ -17,7 +19,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.shadow.BasicShadowRenderer;
 
-public class PreviewDisplay extends Application implements BindingListener {
+public class PreviewDisplay extends Application implements AnalogListener {
 
     private Node rootNode = new Node("Root Node");
     private Spatial model;
@@ -77,17 +79,26 @@ public class PreviewDisplay extends Application implements BindingListener {
         rootNode.addLight(camLight);
 
         renderer.applyRenderState(RenderState.DEFAULT);
-        inputManager.addBindingListener(this);
-        inputManager.registerMouseAxisBinding("MOUSE_X+", 0, false);
-        inputManager.registerMouseAxisBinding("MOUSE_X-", 0, true);
-        inputManager.registerMouseAxisBinding("MOUSE_Y+", 1, false);
-        inputManager.registerMouseAxisBinding("MOUSE_Y-", 1, true);
-        inputManager.registerMouseAxisBinding("MOUSE_W+", 2, false);
-        inputManager.registerMouseAxisBinding("MOUSE_W-", 2, true);
+        inputManager.addListener(this, "MOUSE_X+",
+                                       "MOUSE_X-",
+                                       "MOUSE_Y+",
+                                       "MOUSE_Y-",
+                                       "MOUSE_W+",
+                                       "MOUSE_W-",
+                                       "MOUSE_LEFT",
+                                       "MOUSE_RIGHT",
+                                       "MOUSE_MIDDLE");
 
-        inputManager.registerMouseButtonBinding("MOUSE_LEFT", 0);
-        inputManager.registerMouseButtonBinding("MOUSE_RIGHT", 1);
-        inputManager.registerMouseButtonBinding("MOUSE_MIDDLE", 2);
+        inputManager.addMapping("MOUSE_X+", new MouseAxisTrigger(0, false));
+        inputManager.addMapping("MOUSE_X-", new MouseAxisTrigger(0, true));
+        inputManager.addMapping("MOUSE_Y+", new MouseAxisTrigger(1, false));
+        inputManager.addMapping("MOUSE_Y-", new MouseAxisTrigger(1, true));
+        inputManager.addMapping("MOUSE_W+", new MouseAxisTrigger(2, false));
+        inputManager.addMapping("MOUSE_W-", new MouseAxisTrigger(2, true));
+
+        inputManager.addMapping("MOUSE_LEFT", new MouseButtonTrigger(0));
+        inputManager.addMapping("MOUSE_RIGHT", new MouseButtonTrigger(1));
+        inputManager.addMapping("MOUSE_MIDDLE", new MouseButtonTrigger(2));
     }
 
     private Quaternion rot = new Quaternion();
@@ -125,7 +136,7 @@ public class PreviewDisplay extends Application implements BindingListener {
         cam.setLocation(loc);
     }
 
-    public void onBinding(String binding, float value){
+    public void onAnalog(String binding, float value, float tpf){
         if (binding.equals("MOUSE_LEFT"))
             leftMouse = value > 0f;
         else if (binding.equals("MOUSE_RIGHT"))
@@ -145,29 +156,6 @@ public class PreviewDisplay extends Application implements BindingListener {
         }else if (binding.equals("MOUSE_W-")){
             deltaWheel = -value;
         }
-    }
-
-    public void onPreUpdate(float tpf) {
-    }
-
-    public void onPostUpdate(float tpf) {
-        if (leftMouse){
-            rotateCamera(Vector3f.UNIT_Y, -deltaX * 5);
-            rotateCamera(cam.getLeft(), -deltaY * 5);
-        }
-        if (deltaWheel != 0){
-            zoomCamera(deltaWheel * 10);
-        }
-        if (rightMouse){
-            panCamera(deltaX * 10, -deltaY * 10);
-        }
-
-        leftMouse = false;
-        rightMouse = false;
-        middleMouse = false;
-        deltaX = 0;
-        deltaY = 0;
-        deltaWheel = 0;
     }
 
     private void setMode(int mode, Spatial spatial){
@@ -216,6 +204,24 @@ public class PreviewDisplay extends Application implements BindingListener {
 
         super.update();
         float tpf = timer.getTimePerFrame();
+
+        if (leftMouse){
+            rotateCamera(Vector3f.UNIT_Y, -deltaX * 5);
+            rotateCamera(cam.getLeft(), -deltaY * 5);
+        }
+        if (deltaWheel != 0){
+            zoomCamera(deltaWheel * 10);
+        }
+        if (rightMouse){
+            panCamera(deltaX * 10, -deltaY * 10);
+        }
+
+        leftMouse = false;
+        rightMouse = false;
+        middleMouse = false;
+        deltaX = 0;
+        deltaY = 0;
+        deltaWheel = 0;
 
         Vector3f temp = camLight.getPosition();
         temp.set(cam.getLeft()).multLocal(5.0f);

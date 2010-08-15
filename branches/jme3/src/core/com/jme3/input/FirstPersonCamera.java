@@ -1,14 +1,14 @@
 package com.jme3.input;
 
 import com.jme3.collision.MotionAllowedListener;
-import com.jme3.input.binding.BindingListener;
 import com.jme3.math.FastMath;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 
-public class FirstPersonCamera implements BindingListener {
+@Deprecated
+public class FirstPersonCamera {
 
     private Camera cam;
     private Vector3f initialUpVec;
@@ -60,32 +60,22 @@ public class FirstPersonCamera implements BindingListener {
     public void registerWithDispatcher(InputManager dispacher){
         dispacher.setCursorVisible(false);
 
-//        dispacher.registerJoystickAxisBinding("FPSCAM_Left",  2, JoyInput.AXIS_X, true);
-//        dispacher.registerJoystickAxisBinding("FPSCAM_Right", 2, JoyInput.AXIS_X, false);
-//        dispacher.registerJoystickAxisBinding("FPSCAM_Up",    2, JoyInput.AXIS_Y, true);
-//        dispacher.registerJoystickAxisBinding("FPSCAM_Down",  2, JoyInput.AXIS_Y, false);
+//        dispacher.registerMouseAxisBinding("FPSCAM_Left", 0, true);
+//        dispacher.registerMouseAxisBinding("FPSCAM_Right", 0, false);
+//        dispacher.registerMouseAxisBinding("FPSCAM_Up", 1, false);
+//        dispacher.registerMouseAxisBinding("FPSCAM_Down", 1, true);
 //
-//        dispacher.registerJoystickAxisBinding("FPSCAM_StrafeLeft",  2, JoyInput.POV_X, true);
-//        dispacher.registerJoystickAxisBinding("FPSCAM_StrafeRight", 2, JoyInput.POV_X, false);
-//        dispacher.registerJoystickAxisBinding("FPSCAM_Forward",     2, JoyInput.POV_Y, true);
-//        dispacher.registerJoystickAxisBinding("FPSCAM_Backward",    2, JoyInput.POV_Y, false);
-
-        dispacher.registerMouseAxisBinding("FPSCAM_Left", 0, true);
-        dispacher.registerMouseAxisBinding("FPSCAM_Right", 0, false);
-        dispacher.registerMouseAxisBinding("FPSCAM_Up", 1, false);
-        dispacher.registerMouseAxisBinding("FPSCAM_Down", 1, true);
-
-        dispacher.registerKeyBinding("FPSCAM_Left", KeyInput.KEY_LEFT);
-        dispacher.registerKeyBinding("FPSCAM_Right", KeyInput.KEY_RIGHT);
-        dispacher.registerKeyBinding("FPSCAM_Up", KeyInput.KEY_UP);
-        dispacher.registerKeyBinding("FPSCAM_Down", KeyInput.KEY_DOWN);
-
-        dispacher.registerKeyBinding("FPSCAM_StrafeLeft", KeyInput.KEY_A);
-        dispacher.registerKeyBinding("FPSCAM_StrafeRight", KeyInput.KEY_D);
-        dispacher.registerKeyBinding("FPSCAM_Forward", KeyInput.KEY_W);
-        dispacher.registerKeyBinding("FPSCAM_Backward", KeyInput.KEY_S);
-
-        dispacher.addBindingListener(this);
+//        dispacher.registerKeyBinding("FPSCAM_Left", KeyInput.KEY_LEFT);
+//        dispacher.registerKeyBinding("FPSCAM_Right", KeyInput.KEY_RIGHT);
+//        dispacher.registerKeyBinding("FPSCAM_Up", KeyInput.KEY_UP);
+//        dispacher.registerKeyBinding("FPSCAM_Down", KeyInput.KEY_DOWN);
+//
+//        dispacher.registerKeyBinding("FPSCAM_StrafeLeft", KeyInput.KEY_A);
+//        dispacher.registerKeyBinding("FPSCAM_StrafeRight", KeyInput.KEY_D);
+//        dispacher.registerKeyBinding("FPSCAM_Forward", KeyInput.KEY_W);
+//        dispacher.registerKeyBinding("FPSCAM_Backward", KeyInput.KEY_S);
+//
+//        dispacher.addBindingListener(this);
     }
 
     private void rotateCamera(float value, Vector3f axis){

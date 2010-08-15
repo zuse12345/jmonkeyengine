@@ -7,7 +7,8 @@ import com.jme3.bullet.joints.PhysicsHingeJoint;
 import com.jme3.bullet.nodes.PhysicsGhostNode;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.input.KeyInput;
-import com.jme3.input.binding.BindingListener;
+import com.jme3.input.controls.AnalogListener;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
@@ -16,7 +17,7 @@ import com.jme3.math.Vector3f;
  * Tests attaching ghost nodes to physicsnodes via the scenegraph
  * @author normenhansen
  */
-public class TestAttachGhostObject extends SimpleBulletApplication implements BindingListener {
+public class TestAttachGhostObject extends SimpleBulletApplication implements AnalogListener {
 
     private PhysicsHingeJoint joint;
     private PhysicsGhostNode gNode;
@@ -28,15 +29,13 @@ public class TestAttachGhostObject extends SimpleBulletApplication implements Bi
     }
 
     private void setupKeys() {
-        inputManager.registerKeyBinding("Lefts", KeyInput.KEY_H);
-        inputManager.registerKeyBinding("Rights", KeyInput.KEY_K);
-        inputManager.registerKeyBinding("Space", KeyInput.KEY_SPACE);
-        //used with method onBinding in BindingListener interface
-        //in order to add function to keys
-        inputManager.addBindingListener(this);
+        inputManager.addMapping("Lefts", new KeyTrigger(KeyInput.KEY_H));
+        inputManager.addMapping("Rights", new KeyTrigger(KeyInput.KEY_K));
+        inputManager.addMapping("Space", new KeyTrigger(KeyInput.KEY_SPACE));
+        inputManager.addListener(this, "Lefts", "Rights", "Space");
     }
 
-    public void onBinding(String binding, float value) {
+    public void onAnalog(String binding, float value, float tpf) {
         if (binding.equals("Lefts")) {
             joint.enableMotor(true, 1, .1f);
         } else if (binding.equals("Rights")) {
@@ -44,12 +43,6 @@ public class TestAttachGhostObject extends SimpleBulletApplication implements Bi
         } else if (binding.equals("Space")) {
             joint.enableMotor(false, 0, 0);
         }
-    }
-
-    public void onPreUpdate(float tpf) {
-    }
-
-    public void onPostUpdate(float tpf) {
     }
 
     @Override

@@ -186,6 +186,11 @@ public class LwjglRenderer implements Renderer {
                 break;
         }
 
+        if (!caps.contains(Caps.GLSL100)){
+            logger.log(Level.WARNING, "Force-adding GLSL100 support, since OpenGL is supported.");
+            caps.add(Caps.GLSL100);
+        }
+
         glGetInteger(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, intBuf16);
         vertexTextureUnits = intBuf16.get(0);
         logger.log(Level.FINER, "VTF Units: {0}", vertexTextureUnits);
@@ -323,6 +328,8 @@ public class LwjglRenderer implements Renderer {
                 glEnable(ARBMultisample.GL_MULTISAMPLE_ARB);
             }
         }
+
+        logger.log(Level.INFO, "Caps: " + caps);
     }
 
     public void resetGLObjects(){
@@ -549,7 +556,7 @@ public class LwjglRenderer implements Renderer {
         int shaderId = shader.getId();
 
         assert uniform.getName() != null;
-        assert shader.getId() != -1;
+        assert shader.getId() > 0;
         
         if (context.boundShaderProgram != shaderId){
             glUseProgram(shaderId);
@@ -857,6 +864,8 @@ public class LwjglRenderer implements Renderer {
             
             if (!shader.isUsable())
                 return;
+
+            assert shader.getId() > 0;
 
             updateShaderUniforms(shader);
             if (context.boundShaderProgram != shader.getId()){

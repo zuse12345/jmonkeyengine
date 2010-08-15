@@ -2,6 +2,7 @@ package jme3test.texture;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.AssetKey;
+import com.jme3.asset.ModelKey;
 import com.jme3.asset.TextureKey;
 import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
@@ -58,7 +59,7 @@ public class TestCubeMap extends SimpleApplication {
     }
 
     public Geometry createReflectiveTeapot(){
-        Geometry g = (Geometry) assetManager.loadAsset(new AssetKey("Models/Teapot/Teapot.obj"));
+        Geometry g = (Geometry) assetManager.loadAsset(new ModelKey("Models/Teapot/Teapot.obj"));
         g.setLocalScale(5);
         g.updateModelBound();
 

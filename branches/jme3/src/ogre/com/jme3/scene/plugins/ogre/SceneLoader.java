@@ -1,5 +1,6 @@
 package com.jme3.scene.plugins.ogre;
 
+import com.jme3.material.MaterialList;
 import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetLoader;
@@ -17,6 +18,7 @@ import java.io.InputStreamReader;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -34,7 +36,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
     private String sceneName;
     private String folderName;
     private AssetManager assetManager;
-    private OgreMaterialList materialList;
+    private MaterialList materialList;
     private Node root;
     private Node node;
     private Node entityNode;
@@ -105,7 +107,13 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             float range = parseFloat(attribs.getValue("range"));
             float constant = parseFloat(attribs.getValue("constant"));
             float linear = parseFloat(attribs.getValue("linear"));
-            float quadratic = parseFloat(attribs.getValue("quadratic"));
+
+            String quadraticStr = attribs.getValue("quadratic");
+            if (quadraticStr == null)
+                quadraticStr = attribs.getValue("quadric");
+
+            float quadratic = parseFloat(quadraticStr);
+            
             if (constant == 1 && quadratic == 0 && linear > 0){
                 range = 1f / linear;
             }
@@ -119,7 +127,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
         assert node.getParent() != null;
         assert elementStack.peek().equals("node");
         
-        String lightType = attribs.getValue("type");
+        String lightType = parseString(attribs.getValue("type"), "point");
         if(lightType.equals("point")) {
             light = new PointLight();
         } else if(lightType.equals("directional")) {
@@ -131,7 +139,11 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
         } else {
             logger.log(Level.WARNING, "No matching jME3 LightType found for OGRE LightType: {0}", lightType);
         }
-        logger.finest(light + " created.");
+        logger.log(Level.FINEST, "{0} created.", light);
+
+        if (!parseBool(attribs.getValue("visible"), true)){
+            // set to disabled
+        }
 
         // "attach" it to the parent of this node
         if (light != null)
@@ -144,7 +156,9 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             assert elementStack.size() == 0;
             String version = attribs.getValue("formatVersion");
             if (!version.equals("1.0.0"))
-                logger.warning("Unrecognized version number in dotScene file: "+version);
+                logger.log(Level.WARNING, "Unrecognized version number"
+                        + " in dotScene file: {0}", version);
+            
         }else if (qName.equals("nodes")){
             assert root == null;
             if (sceneName == null)
@@ -160,8 +174,8 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             assert elementStack.peek().equals("externals");
         }else if (qName.equals("file")){
             assert elementStack.peek().equals("item");
-            materialList = (OgreMaterialList)
-            assetManager.loadAsset(folderName+attribs.getValue("name"));
+            materialList = (MaterialList)
+                assetManager.loadAsset(folderName+attribs.getValue("name"));
 
         }else if (qName.equals("node")){
             String curElement = elementStack.peek();
@@ -269,7 +283,7 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             folderName = info.getKey().getFolder();
             sceneName = sceneName.substring(0, sceneName.length() - ext.length() - 1);
 
-            materialList = (OgreMaterialList) 
+            materialList = (MaterialList) 
                     assetManager.loadAsset(new AssetKey(sceneName+".material"));
 
             XMLReader xr = XMLReaderFactory.createXMLReader();

@@ -19,17 +19,26 @@ public class MouseAxisTrigger implements Trigger {
         return mouseAxis;
     }
 
+    public boolean isNegative() {
+        return negative;
+    }
+
     public String getName() {
+        String sign = negative ? "Negative" : "Positive";
         switch (mouseAxis){
-            case MouseInput.AXIS_X: return "Mouse X Axis";
-            case MouseInput.AXIS_Y: return "Mouse Y Axis";
-            case MouseInput.AXIS_WHEEL: return "Mouse Wheel";
+            case MouseInput.AXIS_X: return "Mouse X Axis " + sign;
+            case MouseInput.AXIS_Y: return "Mouse Y Axis " + sign;
+            case MouseInput.AXIS_WHEEL: return "Mouse Wheel " + sign;
             default: throw new AssertionError();
         }
     }
 
+    public static final int mouseAxisHash(int mouseAxis, boolean negative){
+        return (negative ? 768 : 512) | (mouseAxis & 0xff);
+    }
+
     @Override
     public int hashCode(){
-        return Controls.mouseAxisHash(mouseAxis, negative);
+        return mouseAxisHash(mouseAxis, negative);
     }
 }

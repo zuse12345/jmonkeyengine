@@ -9,6 +9,10 @@ public interface MouseInput extends Input {
                             AXIS_Y = 1,
                             AXIS_WHEEL = 2;
 
+    public static final int BUTTON_LEFT   = 0,
+                            BUTTON_RIGHT  = 1,
+                            BUTTON_MIDDLE = 2;
+
     /**
      * @param visible Whether the mouse cursor should be visible or not.
      */

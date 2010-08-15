@@ -7,11 +7,11 @@ import com.jme3.asset.AssetKey;
 import com.jme3.export.binary.BinaryExporter;
 import com.jme3.export.binary.BinaryImporter;
 import com.jme3.light.DirectionalLight;
+import com.jme3.material.MaterialList;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.plugins.ogre.OgreMaterialList;
 import com.jme3.scene.plugins.ogre.OgreMeshKey;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -26,8 +26,8 @@ public class TestOgreConvert extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        OgreMaterialList materials = (OgreMaterialList) assetManager.loadAsset(new AssetKey("Models/Oto/Oto.material"));
-        Spatial ogreModel = (Spatial) assetManager.loadAsset(new OgreMeshKey("Models/Oto/Oto.meshxml", materials));
+        MaterialList materials = (MaterialList) assetManager.loadAsset(new AssetKey("Models/Oto/Oto.material"));
+        Spatial ogreModel = (Spatial) assetManager.loadAsset(new OgreMeshKey("Models/Oto/Oto.mesh.xml", materials));
 
         DirectionalLight dl = new DirectionalLight();
         dl.setColor(ColorRGBA.White);

@@ -24,7 +24,9 @@ public class TestWav extends AudioApp {
         ar.playSource(src);
         sleep(2);
         ar.stopSource(src);
+
         sleep(1);
+        
         ar.playSource(src);
         sleep(1);
         ar.pauseSource(src);

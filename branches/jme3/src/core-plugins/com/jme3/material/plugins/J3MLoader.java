@@ -168,10 +168,12 @@ public class J3MLoader implements AssetLoader {
             key.setGenerateMips(true);
 
             Texture tex = owner.loadTexture(key);
-            if (repeat)
-                tex.setWrap(WrapMode.Repeat);
-            
-            material.setTextureParam(name, type, tex);
+            if (tex != null){
+                if (repeat)
+                    tex.setWrap(WrapMode.Repeat);
+
+                material.setTextureParam(name, type, tex);
+            }
         }else{
             switch (type){
                 case Float:

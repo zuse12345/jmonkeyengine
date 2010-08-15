@@ -4,7 +4,9 @@ import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.app.SimpleApplication;
 import com.jme3.input.KeyInput;
-import com.jme3.input.binding.BindingListener;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.AnalogListener;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -12,7 +14,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.debug.SkeletonDebugger;
 
-public class TestAnimBlendBug extends SimpleApplication implements BindingListener {
+public class TestAnimBlendBug extends SimpleApplication implements ActionListener {
 
 //    private AnimControl control;
     private AnimChannel channel1, channel2;
@@ -27,8 +29,8 @@ public class TestAnimBlendBug extends SimpleApplication implements BindingListen
         app.start();
     }
 
-    public void onBinding(String binding, float value) {
-        if (binding.equals("One")){
+    public void onAction(String name, boolean value, float tpf) {
+        if (name.equals("One") && value){
             channel1.setAnim(animNames[4], blendTime);
             channel2.setAnim(animNames[4], 0);
             channel1.setSpeed(0.25f);
@@ -53,8 +55,8 @@ public class TestAnimBlendBug extends SimpleApplication implements BindingListen
 
     @Override
     public void simpleInitApp() {
-        inputManager.registerKeyBinding("One", KeyInput.KEY_1);
-        inputManager.addBindingListener(this);
+        inputManager.addMapping("One", new KeyTrigger(KeyInput.KEY_1));
+        inputManager.addListener(this, "One");
 
         flyCam.setMoveSpeed(100f);
         cam.setLocation( new Vector3f( 0f, 150f, -325f ) );
@@ -65,8 +67,8 @@ public class TestAnimBlendBug extends SimpleApplication implements BindingListen
         dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
         rootNode.addLight(dl);
 
-        Node model1 = (Node) assetManager.loadModel("Models/Ninja/Ninja.meshxml");
-        Node model2 = (Node) assetManager.loadModel("Models/Ninja/Ninja.meshxml");
+        Node model1 = (Node) assetManager.loadModel("Models/Ninja/Ninja.mesh.xml");
+        Node model2 = (Node) assetManager.loadModel("Models/Ninja/Ninja.mesh.xml");
 //        Node model2 = model1.clone();
 
         model1.setLocalTranslation(-60, 0, 0);

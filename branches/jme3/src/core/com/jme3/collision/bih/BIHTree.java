@@ -3,6 +3,7 @@ package com.jme3.collision.bih;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bounding.BoundingVolume;
 import com.jme3.collision.Collidable;
+import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
 import com.jme3.collision.SweepSphere;
 import com.jme3.collision.UnsupportedCollisionException;
@@ -368,7 +369,7 @@ public class BIHTree implements CollisionData {
 
             if (tMin <= 0)
                 tMin = 0;
-            
+
             if (r.getLimit() < Float.POSITIVE_INFINITY){
                 tMax = Math.min(tMax, r.getLimit());
             }

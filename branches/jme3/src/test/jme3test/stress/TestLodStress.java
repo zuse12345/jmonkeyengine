@@ -2,7 +2,6 @@ package jme3test.stress;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.input.KeyInput;
-import com.jme3.input.binding.BindingListener;
 import com.jme3.material.Material;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
@@ -10,7 +9,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.control.LodControl;
 
-public class TestLodStress extends SimpleApplication implements BindingListener {
+public class TestLodStress extends SimpleApplication {
 
     private boolean lod = false;
 
@@ -19,22 +18,10 @@ public class TestLodStress extends SimpleApplication implements BindingListener 
         app.start();
     }
 
-    public void onBinding(String binding, float value) {
-        if (binding.equals("USELOD") && value >= 0f){
-            lod = !lod;
-        }
-    }
-
-    public void onPreUpdate(float tpf) {
-    }
-
-    public void onPostUpdate(float tpf) {
-    }
-
     public void simpleInitApp() {
-        inputManager.registerKeyBinding("USELOD", KeyInput.KEY_L);
+//        inputManager.registerKeyBinding("USELOD", KeyInput.KEY_L);
 
-        Node teapotNode = (Node) assetManager.loadModel("Models/Teapot/Teapot.meshxml");
+        Node teapotNode = (Node) assetManager.loadModel("Models/Teapot/Teapot.mesh.xml");
         Geometry teapot = (Geometry) teapotNode.getChild(0);
 
         // show normals as material

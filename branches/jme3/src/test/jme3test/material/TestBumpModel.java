@@ -26,7 +26,7 @@ public class TestBumpModel extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        Spatial signpost = (Spatial) assetManager.loadAsset(new OgreMeshKey("Models/Sign Post/Sign Post.meshxml", null));
+        Spatial signpost = (Spatial) assetManager.loadAsset(new OgreMeshKey("Models/Sign Post/Sign Post.mesh.xml", null));
         signpost.setMaterial( (Material) assetManager.loadAsset(new AssetKey("Models/Sign Post/Sign Post.j3m")));
         rootNode.attachChild(signpost);
 

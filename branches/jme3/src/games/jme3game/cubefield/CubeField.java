@@ -7,7 +7,8 @@ import com.jme3.bounding.BoundingVolume;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
-import com.jme3.input.binding.BindingListener;
+import com.jme3.input.controls.AnalogListener;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -24,7 +25,7 @@ import java.util.logging.Logger;
 /**
  * @author Kyle "bonechilla" Williams
  */
-public class CubeField extends SimpleApplication implements BindingListener {
+public class CubeField extends SimpleApplication implements AnalogListener {
 
     public static void main(String[] args) {
         CubeField app = new CubeField();
@@ -271,25 +272,23 @@ public class CubeField extends SimpleApplication implements BindingListener {
      * Sets up the keyboard bindings
      */
     private void Keys() {
-        inputManager.registerKeyBinding("START", KeyInput.KEY_RETURN);
-        inputManager.registerKeyBinding("Left", KeyInput.KEY_LEFT);
-        inputManager.registerKeyBinding("Right", KeyInput.KEY_RIGHT);
-        //used with method onBinding in BindingListener interface
-        //in order to add function to keys
-        inputManager.addBindingListener(this);
+        inputManager.addMapping("START", new KeyTrigger(KeyInput.KEY_RETURN));
+        inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_LEFT));
+        inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_RIGHT));
+        inputManager.addListener(this, "START", "Left", "Right");
     }
 
-    public void onBinding(String binding, float value) {
+    public void onAnalog(String binding, float value, float tpf) {
         if (binding.equals("START") && !START){
             START = true;
             guiNode.detachChild(pressStart);
             System.out.println("START");
         }else if (START == true && binding.equals("Left")){
-            player.move(0, 0, -(speed / 2f) * value * fpsRate);
-            camAngle -= value;
+            player.move(0, 0, -(speed / 2f) * value*tpf * fpsRate);
+            camAngle -= value*tpf;
         }else if (START == true && binding.equals("Right")){
-            player.move(0, 0, (speed / 2f) * value * fpsRate);
-            camAngle += value;
+            player.move(0, 0, (speed / 2f) * value*tpf * fpsRate);
+            camAngle += value*tpf;
         }
     }
 

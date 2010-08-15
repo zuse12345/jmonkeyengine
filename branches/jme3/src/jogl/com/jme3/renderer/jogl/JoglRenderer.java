@@ -317,15 +317,22 @@ public class JoglRenderer implements Renderer {
 //        gl.glLoadIdentity();
 
         for (int i = 0; i < list.size()+1; i++){
+
+            int lightId = gl.GL_LIGHT0 + i;
+
             if (list.size() <= i){
                 // goes beyond the num lights we need
                 // disable it
-                gl.glDisable(gl.GL_LIGHT0 + i);
+                gl.glDisable(lightId);
                 break;
             }
-            
+
             Light l = list.get(i);
-            int lightId = gl.GL_LIGHT0 + i;
+            
+            if (!l.isEnabled()){
+                gl.glDisable(lightId);
+                continue;
+            }
 
             ColorRGBA color = l.getColor();
             color.toArray(temp);

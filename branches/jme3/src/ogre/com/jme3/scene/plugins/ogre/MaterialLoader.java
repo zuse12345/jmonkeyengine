@@ -13,14 +13,17 @@ import com.jme3.texture.Image.Format;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture.WrapMode;
 import com.jme3.texture.Texture2D;
-import com.jme3.texture.TextureCubeMap;
 import com.jme3.util.BufferUtils;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Locale;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MaterialLoader implements AssetLoader {
+
+    private static final Logger logger = Logger.getLogger(MaterialLoader.class.getName());
 
     private String folderName;
     private AssetManager assetManager;
@@ -83,19 +86,27 @@ public class MaterialLoader implements AssetLoader {
         TextureKey key = new TextureKey(folderName + path, false);
         key.setGenerateMips(genMips);
         key.setAsCube(cubic);
-        texture = assetManager.loadTexture(key);
-        if (texture == null){
+
+        Texture loadedTexture = assetManager.loadTexture(key);
+        if (loadedTexture == null){
             ByteBuffer tempData = BufferUtils.createByteBuffer(3);
             tempData.put((byte)0xFF).put((byte)0x00).put((byte)0x00);
             texture = new Texture2D(new Image(Format.RGB8, 1,1,tempData));
-            System.out.println("WARNING! Using white mat instead of "+path);
+            logger.log(Level.WARNING, "Using RED texture instead of {0}", path);
+        }else{
+            texture.setImage(loadedTexture.getImage());
+            texture.setMinFilter(loadedTexture.getMinFilter());
+            texture.setTextureKey(loadedTexture.getTextureKey());
+
+            // XXX: Is this really neccessary?
+            texture.setWrap(WrapMode.Repeat);
+            if (texName != null){
+                texture.setName(texName);
+                texName = null;
+            }
         }
         
-        texture.setWrap(WrapMode.Repeat);
-        if (texName != null){
-            texture.setName(texName);
-            texName = null;
-        }
+        
     }
 
     private void readTextureUnitStatement(){
@@ -133,6 +144,9 @@ public class MaterialLoader implements AssetLoader {
             texName = null;
         }
         scan.next(); // skip "{"
+
+        texture = new Texture2D();
+
         while (!scan.hasNext("\\}")){
             readTextureUnitStatement();
         }
@@ -312,8 +326,7 @@ public class MaterialLoader implements AssetLoader {
         folderName = info.getKey().getFolder();
         assetManager = info.getManager();
 
-        // create an OgreMaterialList type for backward compat.
-        MaterialList list = new OgreMaterialList();
+        MaterialList list = new MaterialList();
         scan = new Scanner(info.openStream());
         scan.useLocale(Locale.US);
         while (scan.hasNext("material")){

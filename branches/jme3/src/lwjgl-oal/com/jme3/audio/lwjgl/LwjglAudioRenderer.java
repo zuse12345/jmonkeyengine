@@ -1,5 +1,6 @@
 package com.jme3.audio.lwjgl;
 
+import org.lwjgl.openal.AL10;
 import com.jme3.audio.AudioBuffer;
 import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioRenderer;
@@ -111,6 +112,9 @@ public class LwjglAudioRenderer implements AudioRenderer {
             EFX10.alGenEffects(ib);
             reverbFx = ib.get(0);
             EFX10.alEffecti(reverbFx, EFX10.AL_EFFECT_TYPE, EFX10.AL_EFFECT_REVERB);
+
+            // attach reverb effect to effect slot
+//            EFX10.alAuxiliaryEffectSloti(reverbFxSlot, EFX10.AL_EFFECTSLOT_EFFECT, reverbFx);
         }
     }
 
@@ -189,14 +193,23 @@ public class LwjglAudioRenderer implements AudioRenderer {
                     }
                     filter = f.getId();
                 }
-//                alSource3i(id, EFX10.AL_AUXILIARY_SEND_FILTER, reverbFxSlot, 0, filter);
-
+                AL11.alSource3i(id, EFX10.AL_AUXILIARY_SEND_FILTER, reverbFxSlot, 0, filter);
             }
         }else{
             // play in headspace
             alSourcei(id, AL_SOURCE_RELATIVE, AL_TRUE);
             alSource3f(id, AL_POSITION, 0,0,0);
             alSource3f(id, AL_VELOCITY, 0,0,0);
+        }
+
+        if (src.getDryFilter() != null){
+            Filter f = src.getDryFilter();
+            if (f.isUpdateNeeded()){
+                updateFilter(f);
+                
+                // NOTE: must re-attach filter for changes to apply.
+                alSourcei(id, EFX10.AL_DIRECT_FILTER, f.getId());
+            }
         }
 
         if (forceNonLoop){
@@ -243,7 +256,22 @@ public class LwjglAudioRenderer implements AudioRenderer {
         if (audioDisabled)
             return;
 
-        logger.warning("Reverb not supported by LWJGL renderer");
+        EFX10.alEffectf(reverbFx, EFX10.AL_REVERB_DENSITY,             env.getDensity());
+        EFX10.alEffectf(reverbFx, EFX10.AL_REVERB_DIFFUSION,           env.getDiffusion());
+        EFX10.alEffectf(reverbFx, EFX10.AL_REVERB_GAIN,                env.getGain());
+        EFX10.alEffectf(reverbFx, EFX10.AL_REVERB_GAINHF,              env.getGainHf());
+        EFX10.alEffectf(reverbFx, EFX10.AL_REVERB_DECAY_TIME,          env.getDecayTime());
+        EFX10.alEffectf(reverbFx, EFX10.AL_REVERB_DECAY_HFRATIO,       env.getDecayHFRatio());
+        EFX10.alEffectf(reverbFx, EFX10.AL_REVERB_REFLECTIONS_GAIN,    env.getReflectGain());
+        EFX10.alEffectf(reverbFx, EFX10.AL_REVERB_REFLECTIONS_DELAY,   env.getReflectDelay());
+        EFX10.alEffectf(reverbFx, EFX10.AL_REVERB_LATE_REVERB_GAIN,    env.getLateReverbGain());
+        EFX10.alEffectf(reverbFx, EFX10.AL_REVERB_LATE_REVERB_DELAY,   env.getLateReverbDelay());
+        EFX10.alEffectf(reverbFx, EFX10.AL_REVERB_AIR_ABSORPTION_GAINHF, env.getAirAbsorbGainHf());
+        EFX10.alEffectf(reverbFx, EFX10.AL_REVERB_ROOM_ROLLOFF_FACTOR, env.getRoomRolloffFactor());
+
+        // attach effect to slot
+        EFX10.alAuxiliaryEffectSloti(reverbFxSlot, EFX10.AL_EFFECTSLOT_EFFECT, reverbFx);
+//        logger.warning("Reverb not supported by LWJGL renderer");
     }
 
     private boolean fillBuffer(AudioStream stream, int id){
@@ -339,6 +367,17 @@ public class LwjglAudioRenderer implements AudioRenderer {
                 alSourceUnqueueBuffers(sourceId, ib);
             }else if (src.getAudioData() instanceof AudioBuffer){
                 alSourcei(sourceId, AL_BUFFER, 0);
+            }
+
+            if (src.getDryFilter() != null){
+                // detach filter
+                alSourcei(sourceId, EFX10.AL_DIRECT_FILTER, EFX10.AL_FILTER_NULL);
+            }
+            if (src.isPositional()){
+                AudioNode pas = (AudioNode) src;
+                if (pas.getReverbFilter() != null){
+                    AL11.alSource3i(sourceId, EFX10.AL_AUXILIARY_SEND_FILTER, 0, 0, EFX10.AL_FILTER_NULL);
+                }
             }
 
             chanSrcs[index] = null;

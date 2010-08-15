@@ -276,9 +276,12 @@ public final class BIHNode implements Savable {
         Vector3f d = r.getDirection().clone();
 
         Matrix4f inv = worldMatrix.invert();
-
+        
         inv.mult(r.getOrigin(), r.getOrigin());
-        inv.multNormalAcross(r.getDirection(), r.getDirection());
+
+        // Fixes rotation collision bug
+        inv.multNormal(r.getDirection(), r.getDirection());    
+//        inv.multNormalAcross(r.getDirection(), r.getDirection());
 
         float[] origins = { r.getOrigin().x,
                             r.getOrigin().y,
@@ -287,7 +290,7 @@ public final class BIHNode implements Savable {
         float[] invDirections = { 1f / r.getDirection().x,
                                   1f / r.getDirection().y,
                                   1f / r.getDirection().z };
-//
+
         r.getDirection().normalizeLocal();
 
         Vector3f v1 = new Vector3f(),

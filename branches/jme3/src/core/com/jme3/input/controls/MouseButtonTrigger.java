@@ -1,5 +1,8 @@
 package com.jme3.input.controls;
 
+/**
+ * Mouse-button trigger.
+ */
 public class MouseButtonTrigger implements Trigger {
 
     private final int mouseButton;
@@ -19,9 +22,13 @@ public class MouseButtonTrigger implements Trigger {
         return "Mouse Button " + mouseButton;
     }
 
+    public static int mouseButtonHash(int mouseButton){
+        return 256 | (mouseButton & 0xff);
+    }
+
     @Override
     public int hashCode(){
-        return Controls.mouseButtonHash(mouseButton);
+        return mouseButtonHash(mouseButton);
     }
 
 }

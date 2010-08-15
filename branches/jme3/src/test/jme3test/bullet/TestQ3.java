@@ -8,7 +8,6 @@ import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.nodes.PhysicsCharacterNode;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.util.CollisionShapeFactory;
-import com.jme3.input.FirstPersonCamera;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
@@ -43,10 +42,7 @@ public class TestQ3 extends SimpleBulletApplication implements ActionListener {
     }
 
     public void simpleInitApp() {
-        inputManager.removeListener(flyCam);
-        FirstPersonCamera fps = new FirstPersonCamera(cam, new Vector3f(0, -10, 0));
-        fps.registerWithDispatcher(inputManager);
-        fps.setMoveSpeed(100);
+        flyCam.setMoveSpeed(100);
         setupKeys();
 
         this.cam.setFrustumFar(2000);

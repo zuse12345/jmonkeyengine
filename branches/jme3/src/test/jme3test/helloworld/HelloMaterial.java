@@ -6,6 +6,7 @@ import com.jme3.material.Material;
 import com.jme3.material.RenderState.BlendMode;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
@@ -40,6 +41,7 @@ public class HelloMaterial extends SimpleApplication {
     Material mat_tt = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
     mat_tt.setTexture("m_ColorMap", assetManager.loadTexture("Textures/ColoredTex/Monkey.png"));
     mat_tt.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);  // activate transparency
+    window_frame.setQueueBucket(Bucket.Transparent);
     window_frame.setMaterial(mat_tt);
     rootNode.attachChild(window_frame);
 

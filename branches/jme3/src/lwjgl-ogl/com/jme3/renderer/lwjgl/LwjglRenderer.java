@@ -89,6 +89,7 @@ public class LwjglRenderer implements Renderer {
 
     // current state
     private Shader boundShader;
+    private int initialDrawBuf, initialReadBuf;
 
     private int glslVer;
     private int vertexTextureUnits;
@@ -153,6 +154,10 @@ public class LwjglRenderer implements Renderer {
                                                     "renderer!");
         }
 
+        // Fix issue in TestRenderToMemory when GL_FRONT is the main
+        // buffer being used.
+        initialDrawBuf = glGetInteger(GL_DRAW_BUFFER);
+        initialReadBuf = glGetInteger(GL_READ_BUFFER);
 
         int spaceIdx = versionStr.indexOf(" ");
         if (spaceIdx >= 1)
@@ -1124,11 +1129,11 @@ public class LwjglRenderer implements Renderer {
             }
             // select back buffer
             if (context.boundDrawBuf != -1){
-                glDrawBuffer(GL_BACK);
+                glDrawBuffer(initialDrawBuf);
                 context.boundDrawBuf = -1;
             }
             if (context.boundReadBuf != -1){
-                glReadBuffer(GL_BACK);
+                glReadBuffer(initialReadBuf);
                 context.boundReadBuf = -1;
             }
 

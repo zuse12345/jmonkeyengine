@@ -1,3 +1,4 @@
+#version 120
 uniform vec2 g_Resolution;
 uniform vec2 m_FrustumNearFar;
 uniform sampler2D m_Texture;
@@ -18,7 +19,7 @@ float depthv;
 vec3 getPosition(in vec2 uv){
   //Reconstruction from depth
   depthv =texture2D(m_DepthTexture,uv).r;
-  float depth= (2.0 * 1) / (m_FrustumNearFar.y + m_FrustumNearFar.x - depthv* (m_FrustumNearFar.y-m_FrustumNearFar.x));
+  float depth= (2.0 * m_FrustumNearFar.x) / (m_FrustumNearFar.y + m_FrustumNearFar.x - depthv* (m_FrustumNearFar.y-m_FrustumNearFar.x));
   
   //one frustum corner method
   float x = mix(-frustumCorner.x, frustumCorner.x, uv.x);
@@ -73,7 +74,7 @@ void main(){
    vec2 rand = getRandom(texCoord);
 
    float ao = 0.0;
-   float rad = clamp(m_SampleRadius / position.z,30/720,1000/720);
+   float rad =m_SampleRadius / position.z;
    
 
    int iterations = 4;
@@ -87,7 +88,7 @@ void main(){
       ao += doAmbientOcclusion(texCoord + coord2 * 1.00, position, normal);
 
    }
-   ao /= iterations * 4.0;
+   ao /= float(iterations) * 4.0;
    result = 1.0-ao;
 
    gl_FragColor=getColor(result);

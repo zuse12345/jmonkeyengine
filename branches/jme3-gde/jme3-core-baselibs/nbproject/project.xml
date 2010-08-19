@@ -47,7 +47,6 @@
                 <package>com.jme3.font.plugins</package>
                 <package>com.jme3.input</package>
                 <package>com.jme3.input.awt</package>
-                <package>com.jme3.input.binding</package>
                 <package>com.jme3.input.controls</package>
                 <package>com.jme3.input.dummy</package>
                 <package>com.jme3.input.event</package>
@@ -58,6 +57,8 @@
                 <package>com.jme3.math</package>
                 <package>com.jme3.niftygui</package>
                 <package>com.jme3.post</package>
+                <package>com.jme3.post.filters</package>
+                <package>com.jme3.post.ssao</package>
                 <package>com.jme3.renderer</package>
                 <package>com.jme3.renderer.jogl</package>
                 <package>com.jme3.renderer.layer</package>
@@ -105,8 +106,8 @@
                 <binary-origin>release/modules/ext/jME3-jogl-natives.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jME3-lwjgl-natives-2.5.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/jME3-lwjgl-natives-2.5.jar</binary-origin>
+                <runtime-relative-path>ext/jME3-lwjgl-natives.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/jME3-lwjgl-natives.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

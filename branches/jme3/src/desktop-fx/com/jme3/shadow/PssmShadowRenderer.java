@@ -55,7 +55,8 @@ public class PssmShadowRenderer implements SceneProcessor {
      */
     public PssmShadowRenderer(AssetManager manager, int size, int nbSplits) {
         assetManager = manager;
-        this.nbSplits = Math.max(Math.min(nbSplits, 8), 1);
+        nbSplits= Math.max(Math.min(nbSplits, 8), 1);
+        this.nbSplits = nbSplits;
 
         shadowFB = new FrameBuffer[nbSplits];
         shadowMaps = new Texture2D[nbSplits];
@@ -63,7 +64,7 @@ public class PssmShadowRenderer implements SceneProcessor {
         lightViewProjectionsMatrices = new Matrix4f[nbSplits];
         splits = new float[nbSplits + 1];
 
-        for (int i = 0; i < shadowFB.length; i++) {
+        for (int i = 0; i < nbSplits; i++) {
 
             shadowFB[i] = new FrameBuffer(size, size, 0);
             shadowMaps[i] = new Texture2D(size, size, Format.Depth);

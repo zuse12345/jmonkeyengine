@@ -207,7 +207,9 @@ public class ShadowUtil {
 
         Vector3f center = min.add(max).multLocal(0.5f);
         Vector3f extent = max.subtract(min).multLocal(0.5f);
-        return new BoundingBox(center, extent.x, extent.y, extent.z);
+        //Nehon 08/18/2010 : Added an offset to the extend to avoid banding artifacts when the frustum are aligned
+        return new BoundingBox(center, extent.x + 2.0f, extent.y + 2.0f, extent.z + 2.0f);
+        //return new BoundingBox(center, extent.x, extent.y, extent.z);
     }
 
     /**
@@ -320,6 +322,13 @@ public class ShadowUtil {
 
         BoundingBox casterBB   = computeUnionBound(visOccList);
         BoundingBox recieverBB = computeUnionBound(visRecvList);
+
+        //Nehon 08/18/2010 this is to avoid shadow bleeding when the ground is set to only receive shadows
+        if (visOccList.size() != visRecvList.size()) {
+            casterBB.setXExtent(casterBB.getXExtent() + 2.0f);
+            casterBB.setYExtent(casterBB.getYExtent() + 2.0f);
+            casterBB.setZExtent(casterBB.getZExtent() + 2.0f);
+        }
 
         Vector3f casterMin = casterBB.getMin(null);
         Vector3f casterMax = casterBB.getMax(null);

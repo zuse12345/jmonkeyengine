@@ -404,19 +404,34 @@ public class RenderManager {
         return renderer;
     }
 
+
+    /**
+     * Render the given viewport queues, flushing the geometryList
+     * @param vp the viewport
+     */
     public void flushQueue(ViewPort vp){
+        renderViewPortQueues(vp, true);
+    }
+
+    //Nehon 08/18/2010 changed flushQueue to renderViewPortQueues with a flush boolean param
+    /**
+     * Render the given viewport queues
+     * @param vp the viewport
+     * @param flush true to flush geometryList
+     */
+    public void renderViewPortQueues(ViewPort vp,boolean flush){
         RenderQueue rq = vp.getQueue();
         Camera cam = vp.getCamera();
         boolean depthRangeChanged = false;
 
         // render opaque objects with default depth range
         // opaque objects are sorted front-to-back, reducing overdraw
-        rq.renderQueue(Bucket.Opaque, this, cam);
+        rq.renderQueue(Bucket.Opaque, this, cam, flush);
 
         // render the sky, with depth range set to the farthest
         if (!rq.isQueueEmpty(Bucket.Sky)){
             renderer.setDepthRange(1, 1);
-            rq.renderQueue(Bucket.Sky, this, cam);
+            rq.renderQueue(Bucket.Sky, this, cam, flush);
             depthRangeChanged = true;
         }
 
@@ -429,13 +444,13 @@ public class RenderManager {
                 renderer.setDepthRange(0, 1);
                 depthRangeChanged = false;
             }
-            rq.renderQueue(Bucket.Transparent, this, cam);
+            rq.renderQueue(Bucket.Transparent, this, cam, flush);
         }
 
         if (!rq.isQueueEmpty(Bucket.Gui)){
             renderer.setDepthRange(0, 0);
             setCamera(cam, true);
-            rq.renderQueue(Bucket.Gui, this, cam);
+            rq.renderQueue(Bucket.Gui, this, cam, flush);
             setCamera(cam, false);
             depthRangeChanged = true;
         }
@@ -444,6 +459,8 @@ public class RenderManager {
         if (depthRangeChanged)
             renderer.setDepthRange(0, 1);
     }
+
+
 
     private void setViewPort(Camera cam){
         // this will make sure to update viewport only if needed

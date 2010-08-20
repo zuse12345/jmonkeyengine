@@ -75,6 +75,10 @@ public class CollisionResult implements Comparable<CollisionResult> {
         return contactPoint;
     }
 
+    public Vector3f getWorldContactPoint() {
+        return geometry.getWorldTranslation().add(geometry.getWorldRotation().mult(contactPoint));
+    }
+
     public Vector3f getContactNormal() {
         return contactNormal;
     }

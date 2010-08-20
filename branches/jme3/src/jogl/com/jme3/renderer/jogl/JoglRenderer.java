@@ -1000,7 +1000,9 @@ public class JoglRenderer implements Renderer {
             gl.glPointSize(mesh.getPointSize());
             context.pointSize = mesh.getPointSize();
         }
-        
+
+        checkTexturingUsed();
+
         if (vbo){
             renderMeshVBO(mesh, lod, count);
         }else{

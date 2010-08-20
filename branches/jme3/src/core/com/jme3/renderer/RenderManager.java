@@ -413,6 +413,10 @@ public class RenderManager {
         renderViewPortQueues(vp, true);
     }
 
+    public void clearQueue(ViewPort vp){
+        vp.getQueue().clear();
+    }
+
     //Nehon 08/18/2010 changed flushQueue to renderViewPortQueues with a flush boolean param
     /**
      * Render the given viewport queues
@@ -571,6 +575,9 @@ public class RenderManager {
                 proc.postFrame(vp.getOutputFrameBuffer());
             }
         }
+
+        // clear any remaining spatials that were not rendered.
+        clearQueue(vp);
     }
 
      public void render(float tpf){
@@ -583,6 +590,8 @@ public class RenderManager {
          for (int i = 0; i < postViewPorts.size(); i++){
              renderViewPort(postViewPorts.get(i), tpf);
          }
+
+
      }
 
 }

@@ -109,6 +109,7 @@ public class BitmapFont implements Savable {
     public float updateText(StringBlock block, QuadList target, boolean rightToLeft) {
 
         CharSequence text = block.getCharacters();
+        Align alignment = block.getAlignment();
         float x = 0;
         float y = 0;
         float lineWidth = 0f;
@@ -127,7 +128,43 @@ public class BitmapFont implements Savable {
         for (int i = 0; i < text.length(); i++){
             char theChar = text.charAt(i);
             BitmapCharacter c = charSet.getCharacter((int) theChar);
-            if (c == null){
+            if (theChar == '\n'){
+                x = 0;
+                y -= charSet.getLineHeight() * sizeScale;
+
+                // Justify the last (now complete) line
+                if (alignment == Align.Center){
+                    for (int k = 0; k < target.getQuantity(); k++){
+                        FontQuad q = target.getQuad(k);
+                        if (q.getLineNumber() == lineNumber){
+                            q.setX(q.getX() - lineWidth / 2f);
+                        }
+                    }
+                }
+                if (alignment == Align.Right){
+                    for (int k = 0; k < target.getQuantity(); k++){
+                        FontQuad q = target.getQuad(k);
+                        if (q.getLineNumber() == lineNumber){
+                            q.setX(q.getX() - lineWidth);
+                        }
+                    }
+                }
+                if (rightToLeft){
+                    // move all characters so that the current X = 0
+                    for (int k = 0; k < target.getQuantity(); k++){
+                        FontQuad q = target.getQuad(k);
+                        if (q.getLineNumber() == lineNumber){
+                            q.setX(q.getX() + lineWidth);
+                        }
+                    }
+                }
+
+                lineWidth = 0f;
+                wordWidth = 0f;
+
+                wordNumber = 1;
+                lineNumber++;
+            }else if (c == null){
                 // NOTE: Here we accept in-text commands..
                 // make sure we have at least 3 more chars in input
                 if ( theChar == '\1' && text.length() - i - 1 >= 3 ){
@@ -138,7 +175,7 @@ public class BitmapFont implements Savable {
                     textColor.set(r, g, b, 1f);
                     continue;
                 }
-            }else if (theChar == '\n' || theChar == '\r' || theChar == '\t'){
+            }else if (theChar == '\r' || theChar == '\t'){
                 // dont print these characters
                 continue;
             }else{
@@ -206,34 +243,6 @@ public class BitmapFont implements Savable {
             }
         }
 
-        Align alignment = block.getAlignment();
-        // Justify the last (now complete) line
-        if (alignment == Align.Center){
-            for (int k = 0; k < target.getQuantity(); k++){
-                FontQuad q = target.getQuad(k);
-                if (q.getLineNumber() == lineNumber){
-                    q.setX(q.getX() - lineWidth / 2f);
-                }
-            }
-        }
-        if (alignment == Align.Right){
-            for (int k = 0; k < target.getQuantity(); k++){
-                FontQuad q = target.getQuad(k);
-                if (q.getLineNumber() == lineNumber){
-                    q.setX(q.getX() - lineWidth);
-                }
-            }
-        }
-        if (rightToLeft){
-            // move all characters so that the current X = 0
-            for (int k = 0; k < target.getQuantity(); k++){
-                FontQuad q = target.getQuad(k);
-                if (q.getLineNumber() == lineNumber){
-                    q.setX(q.getX() + lineWidth);
-                }
-            }
-        }
-
         return lineWidth;
     }
 
@@ -259,9 +268,19 @@ public class BitmapFont implements Savable {
 
         for (int i = 0; i < text.length(); i++){
             BitmapCharacter c = charSet.getCharacter((int) text.charAt(i));
+            boolean newLine = text.charAt(i) == '\n';
+            if (newLine){
+                x = b.getTextBox().x;
+                y -= charSet.getLineHeight() * sizeScale;
 
-            if (c == null){
-//        logger.warning("Character '" + text.charAt(i) + "' is not in alphabet, skipping it.");
+                firstCharOfLine = true;
+                lastLineWidth = lineWidth;
+                lineWidth = 0f;
+
+                wordNumber = 1;
+                lineNumber++;
+            }else if (c == null){
+                 System.out.println("Character '" + text.charAt(i) + "' is not in alphabet, skipping it.");
             }else{
                 float xOffset = c.getXOffset() * sizeScale;
                 float yOffset = c.getYOffset() * sizeScale;
@@ -270,7 +289,7 @@ public class BitmapFont implements Savable {
                 float height = c.getHeight() * sizeScale;
 
                 // Newline
-                if (text.charAt(i) == '\n' || text.charAt(i) == '\r' || (lineWidth + xAdvance >= maxWidth)){
+                if (lineWidth + xAdvance >= maxWidth){
                     x = b.getTextBox().x;
                     y -= charSet.getLineHeight() * sizeScale;
 //                    float offset = 0f;

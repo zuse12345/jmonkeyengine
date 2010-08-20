@@ -8,7 +8,7 @@ import com.jme3.font.Rectangle;
 public class TestBitmapFont extends SimpleApplication {
 
     private String txtB =
-    "ABCDEFGHIKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-=_+[]\\;',./{}|:<>?";
+    "ABCDEFGHIKLMN\nOPQRSTUVWXYZ1234567890`~!@#$%^&*()-=_+[]\\;',./{}|:<>?";
 
     public static void main(String[] args){
         TestBitmapFont app = new TestBitmapFont();
@@ -27,7 +27,7 @@ public class TestBitmapFont extends SimpleApplication {
 
         BitmapText txt4 = new BitmapText(fnt, false);
         txt4.setSize(fnt.getPreferredSize() * 1.2f);
-        txt4.setText("Text without restriction. Text without restriction. Text without restriction. Text without restriction");
+        txt4.setText("Text without restriction. \nText without restriction. Text without restriction. Text without restriction");
         txt4.setLocalTranslation(40, txt4.getLineHeight() * 2, 0);
 
         guiNode.attachChild(txt4);

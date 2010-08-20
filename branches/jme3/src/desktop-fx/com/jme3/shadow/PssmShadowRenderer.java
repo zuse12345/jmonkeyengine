@@ -34,6 +34,7 @@ public class PssmShadowRenderer implements SceneProcessor {
     private ViewPort viewPort;
     private FrameBuffer[] shadowFB;
     private Texture2D[] shadowMaps;
+    private Texture2D dummyTex;
     private Camera shadowCam;
     private Material preshadowMat;
     private Material postshadowMat;
@@ -63,12 +64,15 @@ public class PssmShadowRenderer implements SceneProcessor {
         dispPic = new Picture[nbSplits];
         lightViewProjectionsMatrices = new Matrix4f[nbSplits];
         splits = new float[nbSplits + 1];
-
+        dummyTex= new Texture2D(size, size, Format.RGB8);
         for (int i = 0; i < nbSplits; i++) {
 
             shadowFB[i] = new FrameBuffer(size, size, 0);
             shadowMaps[i] = new Texture2D(size, size, Format.Depth);
+
             shadowFB[i].setDepthTexture(shadowMaps[i]);
+            shadowFB[i].setColorTexture(dummyTex);
+            
 
             //quads for debuging purpose
             dispPic[i] = new Picture("Picture" + i);

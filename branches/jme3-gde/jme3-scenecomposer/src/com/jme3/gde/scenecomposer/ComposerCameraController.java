@@ -97,7 +97,7 @@ public class ComposerCameraController extends AbstractCameraController {
             }
             CollisionResult result = results.getClosestCollision();
             if (result != null) {
-                ((SceneComposerTopComponent) master).doMoveCursor(result.getContactPoint());
+                ((SceneComposerTopComponent) master).doMoveCursor(result.getGeometry().getWorldTranslation().add(result.getContactPoint()));
             }
             checkClickR = false;
         }

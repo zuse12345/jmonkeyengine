@@ -58,6 +58,14 @@ vec4 getColor(in float result){
   }
 
 }
+
+vec2 reflection(in vec2 v1,in vec2 v2){
+    vec2 result= 2.0 * dot(v2, v1) * v2;
+    result=v1-result;
+    return result;
+}
+
+
 //const vec2 vec[4] = vec2[4](vec2(1.0,0.0), vec2(-1.0,0.0), vec2(0.0,1.0), vec2(0.0,-1.0));
 void main(){
 
@@ -79,7 +87,7 @@ void main(){
 
    int iterations = 4;
    for (int j = 0; j < iterations; ++j){
-      vec3 coord1 = reflect(vec3(m_Samples[j],0.0), vec3(rand,0.0)) * vec3(rad,rad,0.0);
+      vec2 coord1 = reflection(vec2(m_Samples[j]), vec2(rand)) * vec2(rad,rad);
       vec2 coord2 = vec2(coord1.x* 0.707 - coord1.y* 0.707, coord1.x* 0.707 + coord1.y* 0.707) ;
 
       ao += doAmbientOcclusion(texCoord + coord1.xy * 0.25, position, normal);

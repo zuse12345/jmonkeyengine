@@ -79,12 +79,12 @@ void main(){
 
    int iterations = 4;
    for (int j = 0; j < iterations; ++j){
-      vec2 coord1 = reflect(m_Samples[j], rand) * rad;
+      vec3 coord1 = reflect(vec3(m_Samples[j],0.0), vec3(rand,0.0)) * vec3(rad,rad,0.0);
       vec2 coord2 = vec2(coord1.x* 0.707 - coord1.y* 0.707, coord1.x* 0.707 + coord1.y* 0.707) ;
 
-      ao += doAmbientOcclusion(texCoord + coord1 * 0.25, position, normal);
+      ao += doAmbientOcclusion(texCoord + coord1.xy * 0.25, position, normal);
       ao += doAmbientOcclusion(texCoord + coord2 * 0.50, position, normal);
-      ao += doAmbientOcclusion(texCoord + coord1 * 0.75, position, normal);
+      ao += doAmbientOcclusion(texCoord + coord1.xy * 0.75, position, normal);
       ao += doAmbientOcclusion(texCoord + coord2 * 1.00, position, normal);
 
    }

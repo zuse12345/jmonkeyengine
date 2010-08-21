@@ -10,8 +10,8 @@ MaterialDef Post Shadow {
         Texture2D m_ShadowMap6
         Texture2D m_ShadowMap7
         
-        Int m_NbSplits
-        Float shadowIntensity
+       
+        Float m_ShadowIntensity
         FloatArray m_Splits
 
         Matrix4 m_LightViewProjectionMatrix0

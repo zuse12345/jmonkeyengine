@@ -45,7 +45,8 @@ public class PssmShadowRenderer implements SceneProcessor {
     private Vector3f[] points = new Vector3f[8];
     private Vector3f direction = new Vector3f();
     private AssetManager assetManager;
-    boolean debug = false;
+    private boolean debug = false;
+    private float textureSize;
 
     /**
      * Create a PSSM Shadow Renderer
@@ -58,6 +59,7 @@ public class PssmShadowRenderer implements SceneProcessor {
         assetManager = manager;
         nbSplits= Math.max(Math.min(nbSplits, 8), 1);
         this.nbSplits = nbSplits;
+        textureSize=size;
 
         shadowFB = new FrameBuffer[nbSplits];
         shadowMaps = new Texture2D[nbSplits];
@@ -267,8 +269,9 @@ public class PssmShadowRenderer implements SceneProcessor {
             }
 
             postshadowMat.setParam("m_Splits", VarType.FloatArray, splits);
-            postshadowMat.setInt("m_NbSplits", nbSplits);
-            postshadowMat.setFloat("shadowIntensity", shadowIntensity);
+          //  postshadowMat.setInt("m_NbSplits", nbSplits);
+         //   postshadowMat.setFloat("m_TexSize", textureSize);
+            postshadowMat.setFloat("m_ShadowIntensity", shadowIntensity);
 
 
             renderManager.setForcedMaterial(postshadowMat);

@@ -12,6 +12,7 @@ MaterialDef SSAO {
         Boolean m_UseAo
         Boolean m_UseOnlyAo
         Vector2 m_FrustumNearFar
+        Vector2Array m_Samples
     }
 
     Technique {

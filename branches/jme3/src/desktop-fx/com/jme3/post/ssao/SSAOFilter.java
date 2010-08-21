@@ -14,6 +14,7 @@ import com.jme3.post.Filter.Pass;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.Renderer;
 import com.jme3.renderer.ViewPort;
+import com.jme3.shader.VarType;
 import com.jme3.texture.Image.Format;
 
 
@@ -28,6 +29,7 @@ public class SSAOFilter extends Filter {
     private Vector3f frustumCorner;
     private Vector2f frustumNearFar;
     private SSAOConfig config;
+    private Vector2f[] samples={new Vector2f(1.0f,0.0f),new Vector2f(-1.0f,0.0f),new Vector2f(0.0f,1.0f),new Vector2f(0.0f,-1.0f)};
 
     public SSAOFilter(ViewPort vp) {
         this(vp, new SSAOConfig());
@@ -84,7 +86,9 @@ public class SSAOFilter extends Filter {
         material.setBoolean("m_UseAo", config.isUseAo());
         material.setBoolean("m_UseOnlyAo", config.isUseOnlyAo());
         material.setVector2("m_FrustumNearFar",frustumNearFar);
+        material.setParam("m_Samples",VarType.Vector2Array,samples);
 
+ //
         return material;
     }
 

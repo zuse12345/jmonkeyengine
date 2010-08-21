@@ -2,13 +2,13 @@
 uniform sampler2D m_Texture;
 uniform float m_SampleDist;
 uniform float m_SampleStrength;
+uniform float[10] m_Samples;
 varying vec2 texCoord;
 
 void main(void)
 {
    // some sample positions
-   float samples[10] =
-   float[](-0.08,-0.05,-0.03,-0.02,-0.01,0.01,0.02,0.03,0.05,0.08);
+   //float samples[10] =   float[](-0.08,-0.05,-0.03,-0.02,-0.01,0.01,0.02,0.03,0.05,0.08);
 
     // 0.5,0.5 is the center of the screen
     // so substracting texCoord from it will result in
@@ -31,7 +31,7 @@ void main(void)
     // the center of the screen
     for (int i = 0; i < 10; i++)
     {
-      sum += texture2D( m_Texture, texCoord + dir * samples[i] * m_SampleDist );
+      sum += texture2D( m_Texture, texCoord + dir * m_Samples[i] * m_SampleDist );
     }
 
     // we have taken eleven samples

@@ -10,6 +10,7 @@ import com.jme3.material.Material;
 import com.jme3.post.Filter;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
+import com.jme3.shader.VarType;
 
 
 /**
@@ -20,6 +21,7 @@ public class RadialBlurFilter extends Filter {
 
     private float sampleDist = 1.0f;
     private float sampleStrength = 2.2f;
+    private float[] samples={-0.08f,-0.05f,-0.03f,-0.02f,-0.01f,0.01f,0.02f,0.03f,0.05f,0.08f};
 
     public RadialBlurFilter() {
         super("Radial blur");
@@ -36,6 +38,8 @@ public class RadialBlurFilter extends Filter {
              
         material.setFloat("m_SampleDist", sampleDist);
         material.setFloat("m_SampleStrength", sampleStrength);
+        material.setParam("m_Samples",VarType.FloatArray, samples);
+        
         return material;
     }
 

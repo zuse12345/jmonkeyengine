@@ -27,15 +27,26 @@ public class SSAOUI {
 //    protected float bias = 0.1f;
 //    protected boolean useOnlyAo = false;
 //    protected boolean useAo = true;
+
+        System.out.println("----------------- SSAO UI Debugger --------------------");
+        System.out.println("-- Sample Radius : press Y to increase, H to decrease");
+        System.out.println("-- AO Intensity : press U to increase, J to decrease");
+        System.out.println("-- AO scale : press I to increase, K to decrease");
+        System.out.println("-- AO bias : press O to increase, P to decrease");
+        System.out.println("-- Toggle AO on/off : press space bar");
+        System.out.println("-- Use only AO : press Num pad 0");
+        System.out.println("-- Output config declaration : press P");
+        System.out.println("-------------------------------------------------------");
     
-        inputManager.addMapping("sampleRadiusUp", new KeyTrigger(KeyInput.KEY_U));
-        inputManager.addMapping("sampleRadiusDown", new KeyTrigger(KeyInput.KEY_J));
-        inputManager.addMapping("intensityUp", new KeyTrigger(KeyInput.KEY_I));
-        inputManager.addMapping("intensityDown", new KeyTrigger(KeyInput.KEY_K));
-        inputManager.addMapping("scaleUp", new KeyTrigger(KeyInput.KEY_O));
-        inputManager.addMapping("scaleDown", new KeyTrigger(KeyInput.KEY_L));
-        inputManager.addMapping("biasUp", new KeyTrigger(KeyInput.KEY_P));
-        inputManager.addMapping("biasDown", new KeyTrigger(KeyInput.KEY_M));
+        inputManager.addMapping("sampleRadiusUp", new KeyTrigger(KeyInput.KEY_Y));
+        inputManager.addMapping("sampleRadiusDown", new KeyTrigger(KeyInput.KEY_H));
+        inputManager.addMapping("intensityUp", new KeyTrigger(KeyInput.KEY_U));
+        inputManager.addMapping("intensityDown", new KeyTrigger(KeyInput.KEY_J));
+        inputManager.addMapping("scaleUp", new KeyTrigger(KeyInput.KEY_I));
+        inputManager.addMapping("scaleDown", new KeyTrigger(KeyInput.KEY_K));
+        inputManager.addMapping("biasUp", new KeyTrigger(KeyInput.KEY_O));
+        inputManager.addMapping("biasDown", new KeyTrigger(KeyInput.KEY_L));
+        inputManager.addMapping("outputConfig", new KeyTrigger(KeyInput.KEY_P));
         inputManager.addMapping("toggleUseAO", new KeyTrigger(KeyInput.KEY_SPACE));
         inputManager.addMapping("toggleUseOnlyAo", new KeyTrigger(KeyInput.KEY_NUMPAD0));
         
@@ -55,7 +66,9 @@ public class SSAOUI {
                     System.out.println("use Only AO : "+ssaoConfig.isUseOnlyAo());
 
                 }
-               
+                if (name.equals("outputConfig") && keyPressed) {
+                    System.out.println("new SSAOConfig("+ssaoConfig.getSampleRadius()+"f,"+ssaoConfig.getIntensity()+"f,"+ssaoConfig.getScale()+"f,"+ssaoConfig.getBias()+"f,"+ssaoConfig.isUseOnlyAo()+","+ssaoConfig.isUseAo()+");");
+                }
                
             }
         };
@@ -95,9 +108,11 @@ public class SSAOUI {
                     ssaoConfig.setBias(ssaoConfig.getBias()-0.001f);
                     System.out.println("bias : "+ssaoConfig.getBias());
                 }
+
+
             }
         };
-        inputManager.addListener(acl,"toggleUseAO","toggleUseOnlyAo");
+        inputManager.addListener(acl,"toggleUseAO","toggleUseOnlyAo","outputConfig");
         inputManager.addListener(anl, "sampleRadiusUp","sampleRadiusDown","intensityUp","intensityDown", "scaleUp","scaleDown",
                                 "biasUp","biasDown");
      

@@ -12,7 +12,7 @@ uniform mat4 m_LightViewProjectionMatrix7;
 uniform mat4 g_WorldViewProjectionMatrix;
 uniform mat4 g_WorldMatrix;
 
-varying vec4[8] projCoord;
+varying vec4 projCoord[8];
 
 varying float shadowPosition;
 

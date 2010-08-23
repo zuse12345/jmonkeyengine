@@ -19,6 +19,7 @@ public class ViewPort {
 
     protected final ColorRGBA backColor = new ColorRGBA(0,0,0,0);
     protected boolean clearEnabled = false;
+    protected boolean clearDepth = true, clearColor = true, clearStencil = true;
 
     public ViewPort(String name, Camera cam) {
         this.name = name;
@@ -46,8 +47,39 @@ public class ViewPort {
         return clearEnabled;
     }
 
+    public boolean isClearDepth() {
+        return clearDepth;
+    }
+
+    public void setClearDepth(boolean clearDepth) {
+        this.clearDepth = clearDepth;
+    }
+
+    public boolean isClearColor() {
+        return clearColor;
+    }
+
+    public void setClearColor(boolean clearColor) {
+        this.clearColor = clearColor;
+    }
+
+    public boolean isClearStencil() {
+        return clearStencil;
+    }
+
+    public void setClearStencil(boolean clearStencil) {
+        this.clearStencil = clearStencil;
+    }
+
     public void setClearEnabled(boolean clearEnabled) {
         this.clearEnabled = clearEnabled;
+    }
+
+    public void setClearFlags(boolean color, boolean depth, boolean stencil){
+        this.clearEnabled = true;
+        this.clearColor = color;
+        this.clearDepth = depth;
+        this.clearStencil = stencil;
     }
 
     public FrameBuffer getOutputFrameBuffer() {

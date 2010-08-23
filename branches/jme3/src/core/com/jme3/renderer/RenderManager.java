@@ -554,7 +554,9 @@ public class RenderManager {
         setCamera(vp.getCamera(), false);
         if (vp.isClearEnabled()){
             renderer.setBackgroundColor(vp.getBackgroundColor());
-            renderer.clearBuffers(true, true, true);
+            renderer.clearBuffers(vp.isClearColor(),
+                                  vp.isClearDepth(),
+                                  vp.isClearStencil());
         }
         
         List<Spatial> scenes = vp.getScenes();

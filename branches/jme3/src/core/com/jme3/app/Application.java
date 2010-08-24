@@ -260,7 +260,7 @@ public class Application implements SystemListener {
             settings = new AppSettings(true);
         }
         
-        logger.fine("Starting application: "+getClass().getName());
+        logger.log(Level.FINE, "Starting application: {0}", getClass().getName());
         context = JmeSystem.newContext(settings, contextType);
         context.setSystemListener(this);
         context.create(false);
@@ -276,7 +276,7 @@ public class Application implements SystemListener {
             settings = new AppSettings(true);
         }
 
-        logger.fine("Starting application: "+getClass().getName());
+        logger.log(Level.FINE, "Starting application: {0}", getClass().getName());
         context = JmeSystem.newContext(settings, JmeContext.Type.Canvas);
     }
 
@@ -306,7 +306,7 @@ public class Application implements SystemListener {
      * and making neccessary cleanup operations.
      */
     public void stop(boolean waitFor){
-        logger.fine("Closing application: "+getClass().getName());
+        logger.log(Level.FINE, "Closing application: {0}", getClass().getName());
         context.destroy(waitFor);
     }
 
@@ -323,6 +323,7 @@ public class Application implements SystemListener {
     public void initialize(){
         initDisplay();
         initCamera();
+        
         if (inputEnabled){
             initInput();
         }

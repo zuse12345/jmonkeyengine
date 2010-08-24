@@ -11,6 +11,7 @@ import com.jme3.input.MouseInput;
 import com.jme3.input.dummy.DummyKeyInput;
 import com.jme3.input.dummy.DummyMouseInput;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
@@ -62,7 +63,7 @@ public class LwjglOffscreenBuffer extends LwjglContext implements Runnable {
             pbuffer.makeCurrent();
 
             logger.info("Offscreen buffer created.");
-            logger.fine("Running on thread: "+Thread.currentThread().getName());
+            logger.log(Level.FINE, "Running on thread: {0}", Thread.currentThread().getName());
 
             Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                 public void uncaughtException(Thread thread, Throwable thrown) {
@@ -71,17 +72,17 @@ public class LwjglOffscreenBuffer extends LwjglContext implements Runnable {
             });
 
             String vendor = GL11.glGetString(GL11.GL_VENDOR);
-            logger.info("Vendor: "+vendor);
+            logger.log(Level.INFO, "Vendor: {0}", vendor);
 
             String version = GL11.glGetString(GL11.GL_VERSION);
-            logger.info("OpenGL Version: "+version);
+            logger.log(Level.INFO, "OpenGL Version: {0}", version);
 
             String renderer = GL11.glGetString(GL11.GL_RENDERER);
-            logger.info("Renderer: "+renderer);
+            logger.log(Level.INFO, "Renderer: {0}", renderer);
 
             if (GLContext.getCapabilities().OpenGL20){
                 String shadingLang = GL11.glGetString(GL20.GL_SHADING_LANGUAGE_VERSION);
-                logger.info("GLSL Ver: "+shadingLang);
+                logger.log(Level.INFO, "GLSL Ver: {0}", shadingLang);
             }
 
             created.set(true);
@@ -125,7 +126,7 @@ public class LwjglOffscreenBuffer extends LwjglContext implements Runnable {
     }
 
     public void run(){
-        logger.info("Using LWJGL "+Sys.getVersion());
+        logger.log(Level.INFO, "Using LWJGL {0}", Sys.getVersion());
         initInThread();
         while (!needClose.get()){
             runLoop();

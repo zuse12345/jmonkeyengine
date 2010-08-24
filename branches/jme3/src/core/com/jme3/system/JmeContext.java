@@ -35,7 +35,14 @@ public interface JmeContext {
          * General Purpose GPU computations or render a scene into a buffer
          * in order to save it as a screenshot, video or send through a network.
          */
-        OffscreenSurface
+        OffscreenSurface,
+
+        /**
+         * A <code>Headless</code> context is not visible and does not have
+         * any drawable surface. The implementation does not provide any
+         * display, input, or sound support.
+         */
+        Headless;
     }
 
     /**

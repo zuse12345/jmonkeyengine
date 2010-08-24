@@ -235,6 +235,9 @@ public class JmeSystem {
         }else if (settings.getRenderer().startsWith("JOGL")){
             ctx = newContextJogl(settings, contextType);
             ctx.setSettings(settings);
+        }else if (settings.getRenderer().equals("NULL")){
+            ctx = new NullContext();
+            ctx.setSettings(settings);
         }else{
             throw new UnsupportedOperationException(
                             "Unrecognizable renderer specified: "+

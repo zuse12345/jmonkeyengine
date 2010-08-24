@@ -121,7 +121,7 @@ public abstract class SimpleApplication extends Application {
 
     public void loadStatsView(){
         statsView = new StatsView("Statistics View", assetManager, renderer.getStatistics());
-        // move it up so it appears above fps text
+//         move it up so it appears above fps text
         statsView.setLocalTranslation(0, fpsText.getLineHeight(), 0);
         guiNode.attachChild(statsView);
     }
@@ -129,9 +129,6 @@ public abstract class SimpleApplication extends Application {
     @Override
     public void initialize(){
         super.initialize();
-
-        // enable depth test and back-face culling for performance
-        renderer.applyRenderState(RenderState.DEFAULT);
 
         guiNode.setQueueBucket(Bucket.Gui);
         guiNode.setCullHint(CullHint.Never);
@@ -185,7 +182,6 @@ public abstract class SimpleApplication extends Application {
 
         // render states
         stateManager.render(renderManager);
-
         renderManager.render(tpf);
         simpleRender(renderManager);
     }

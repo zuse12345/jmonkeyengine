@@ -18,6 +18,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.VertexBuffer;
 import com.jme3.shader.Uniform;
 import com.jme3.shader.VarType;
+import com.jme3.system.NullRenderer;
 import com.jme3.system.Timer;
 import com.jme3.util.IntMap.Entry;
 import com.jme3.util.TempVars;
@@ -558,7 +559,7 @@ public class RenderManager {
                                   vp.isClearDepth(),
                                   vp.isClearStencil());
         }
-        
+
         List<Spatial> scenes = vp.getScenes();
         for (int i = scenes.size() - 1; i >= 0; i--){
             renderScene(scenes.get(i), vp);
@@ -583,6 +584,9 @@ public class RenderManager {
     }
 
      public void render(float tpf){
+         if (renderer instanceof NullRenderer)
+             return;
+
          for (int i = 0; i < preViewPorts.size(); i++){
              renderViewPort(preViewPorts.get(i), tpf);
          }
@@ -592,8 +596,6 @@ public class RenderManager {
          for (int i = 0; i < postViewPorts.size(); i++){
              renderViewPort(postViewPorts.get(i), tpf);
          }
-
-
      }
 
 }

@@ -459,7 +459,7 @@ public final class SettingsDialog extends JDialog {
      * @return the list of renderers.
      */
     private JComboBox setUpRendererChooser() {
-        String modes[] = { "JOGL-OpenGL1", "LWJGL-OpenGL2", "LWJGL-OpenGL3", "LWJGL-OpenGL3.1" };
+        String modes[] = { "NULL", "JOGL-OpenGL1", "LWJGL-OpenGL2", "LWJGL-OpenGL3", "LWJGL-OpenGL3.1" };
         JComboBox nameBox = new JComboBox(modes);
         nameBox.setSelectedItem(source.getRenderer());
         return nameBox;

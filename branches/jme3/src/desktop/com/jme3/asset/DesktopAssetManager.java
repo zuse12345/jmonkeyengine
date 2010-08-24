@@ -10,6 +10,7 @@ import com.jme3.shader.ShaderKey;
 import com.jme3.texture.Texture;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,15 +34,20 @@ public class DesktopAssetManager implements AssetManager {
 //    private final Set<AssetKey> alreadyLoadingSet = new HashSet<AssetKey>();
 
     public DesktopAssetManager(){
-        this(false);
+        this(null);
     }
 
+    @Deprecated
     public DesktopAssetManager(boolean loadDefaults){
-        if (loadDefaults){
-            AssetConfig cfg = new AssetConfig(this);
-            InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream("com/jme3/asset/Desktop.cfg");
-//            InputStream stream = DesktopAssetManager.class.getResourceAsStream("Desktop.cfg");
+        this(Thread.currentThread().getContextClassLoader().getResource("com/jme3/asset/Desktop.cfg"));
+    }
+
+    public DesktopAssetManager(URL configFile){
+        if (configFile != null){
+            InputStream stream = null;
             try{
+                AssetConfig cfg = new AssetConfig(this);
+                stream = configFile.openStream();
                 cfg.loadText(stream);
             }catch (IOException ex){
                 logger.log(Level.SEVERE, "Failed to load asset config", ex);
@@ -60,11 +66,11 @@ public class DesktopAssetManager implements AssetManager {
         eventListener = listener;
     }
 
-    public void registerLoader(Class<?> loader, String ... extensions){
+    public void registerLoader(Class<? extends AssetLoader> loader, String ... extensions){
         handler.addLoader(loader, extensions);
         if (logger.isLoggable(Level.FINER)){
-            logger.finer("Registered loader: "+loader.getSimpleName()+" for extensions "+
-                        Arrays.toString(extensions));
+            logger.log(Level.FINER, "Registered loader: {0} for extensions {1}",
+              new Object[]{loader.getSimpleName(), Arrays.toString(extensions)});
         }
     }
 
@@ -80,25 +86,31 @@ public class DesktopAssetManager implements AssetManager {
         }
     }
 
+    public void registerLocator(String rootPath, Class<? extends AssetLocator> locatorClass){
+        handler.addLocator(locatorClass, rootPath);
+        if (logger.isLoggable(Level.FINER)){
+            logger.log(Level.FINER, "Registered locator: {0}",
+                    locatorClass.getSimpleName());
+        }
+    }
+
     public void registerLocator(String rootPath, String clsName){
-        Class<? extends AssetLoader> clazz = null;
+        Class<? extends AssetLocator> clazz = null;
         try{
-            clazz = (Class<? extends AssetLoader>) Class.forName(clsName);
+            clazz = (Class<? extends AssetLocator>) Class.forName(clsName);
         }catch (ClassNotFoundException ex){
             logger.log(Level.WARNING, "Failed to find locator: "+clsName, ex);
         }
         if (clazz != null){
-            handler.addLocator(clazz, rootPath);
-            if (logger.isLoggable(Level.FINER)){
-                logger.finer("Registered locator: "+clazz.getSimpleName());
-            }
+            registerLocator(rootPath, clazz);
         }
     }
     
     public void unregisterLocator(String rootPath, Class<?> clazz){
         handler.removeLocator(clazz, rootPath);
         if (logger.isLoggable(Level.FINER)){
-            logger.finer("Unregistered locator: "+clazz.getSimpleName());
+            logger.log(Level.FINER, "Unregistered locator: {0}",
+                    clazz.getSimpleName());
         }
     }
 
@@ -107,7 +119,8 @@ public class DesktopAssetManager implements AssetManager {
     }
 
     /**
-     * Delete an asset from the cache, returns true if it was deleted successfuly.
+     * Delete an asset from the cache, returns true if it was deleted
+     * successfully.
      * <br/><br/>
      * <font color="red">Thread-safe.</font>
      */
@@ -139,14 +152,14 @@ public class DesktopAssetManager implements AssetManager {
         if (o == null){
             AssetLoader loader = handler.aquireLoader(key);
             if (loader == null){
-                logger.warning("No loader registered for"+
-                               " type "+key.getExtension()+".");
+                logger.log(Level.WARNING,"No loader registered for type {0}.",
+                                            key.getExtension());
                 return null;
             }
 
             if (handler.getLocatorCount() == 0){
                 logger.warning("There are no locators currently"+
-                               " registered. Use ContentManager."+
+                               " registered. Use AssetManager."+
                                "registerLocator() to register a"+
                                " locator.");
                 return null;
@@ -154,7 +167,7 @@ public class DesktopAssetManager implements AssetManager {
 
             AssetInfo info = handler.tryLocate(key);
             if (info == null){
-                logger.warning("Cannot locate resource: "+key);
+                logger.log(Level.WARNING, "Cannot locate resource: {0}", key);
                 return null;
             }
 
@@ -164,12 +177,14 @@ public class DesktopAssetManager implements AssetManager {
                 logger.log(Level.WARNING, "Failed to load resource: "+key, ex);
             }
             if (o == null){
-                logger.warning("Error occured while loading resource "+key+
-                               " using "+loader.getClass().getSimpleName());
+                logger.log(Level.WARNING, "Error occured while loading resource {0} using {1}",
+                        new Object[]{key, loader.getClass().getSimpleName()});
             }else{
-                logger.finer("Loaded "+key+" with "+
-                             loader.getClass().getSimpleName());
-
+                if (logger.isLoggable(Level.FINER)){
+                    logger.log(Level.FINER, "Loaded {0} with {1}",
+                            new Object[]{key, loader.getClass().getSimpleName()});
+                }
+                
                 // do processing on asset before caching
                 o = key.postProcess(o);
 

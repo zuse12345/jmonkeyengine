@@ -10,7 +10,7 @@ import com.jme3.texture.plugins.AWTLoader;
 
 public class TestAbsoluteLocators {
     public static void main(String[] args){
-        AssetManager am = new DesktopAssetManager(false);
+        AssetManager am = new DesktopAssetManager();
 
         am.registerLoader(AWTLoader.class.getName(), "png");
         am.registerLoader(WAVLoader.class.getName(), "wav");

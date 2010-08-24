@@ -26,8 +26,7 @@ public class TestOgreConvert extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        MaterialList materials = (MaterialList) assetManager.loadAsset(new AssetKey("Models/Oto/Oto.material"));
-        Spatial ogreModel = (Spatial) assetManager.loadAsset(new OgreMeshKey("Models/Oto/Oto.mesh.xml", materials));
+        Spatial ogreModel = assetManager.loadModel("Models/Oto/Oto.mesh.xml");
 
         DirectionalLight dl = new DirectionalLight();
         dl.setColor(ColorRGBA.White);

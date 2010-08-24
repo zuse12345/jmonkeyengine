@@ -1,8 +1,9 @@
 package com.jme3.asset;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -21,8 +22,8 @@ public class ImplHandler {
     private final ArrayList<ImplThreadLocal> genericLocators =
                 new ArrayList<ImplThreadLocal>();
 
-    private final Hashtable<String, ImplThreadLocal> loaders =
-                new Hashtable<String, ImplThreadLocal>();
+    private final HashMap<String, ImplThreadLocal> loaders =
+                new HashMap<String, ImplThreadLocal>();
 
     public ImplHandler(AssetManager owner){
         this.owner = owner;
@@ -56,16 +57,14 @@ public class ImplHandler {
             try {
                 return type.newInstance();
             } catch (InstantiationException ex) {
-                logger.severe("Cannot create locator of type "+
-                              type.getName()+", does the class"+
-                              " have an empty and publically accessible"+
-                              " constructor?");
+                logger.log(Level.SEVERE,"Cannot create locator of type {0}, does"
+                            + " the class have an empty and publically accessible"+
+                              " constructor?", type.getName());
                 logger.throwing(type.getName(), "<init>", ex);
             } catch (IllegalAccessException ex) {
-                logger.severe("Cannot create locator of type "+
-                              type.getName()+", does the class"+
-                              " have an empty and publically accessible"+
-                              " constructor?");
+                logger.log(Level.SEVERE,"Cannot create locator of type {0}, "
+                            + "does the class have an empty and publically "
+                            + "accessible constructor?", type.getName());
                 logger.throwing(type.getName(), "<init>", ex);
             }
             return null;

@@ -71,8 +71,8 @@ public class TestRenderToMemory extends SimpleApplication implements SceneProces
             if (t == 0)
                 t = timer.getTime();
 
-            g2d.setBackground(Color.BLACK);
-            g2d.clearRect(0,0,width,height);
+//            g2d.setBackground(Color.BLACK);
+//            g2d.clearRect(0,0,width,height);
 
             synchronized (image){
                 g2d.drawImage(image, null, 0, 0);

@@ -31,7 +31,7 @@ public class TestOnlineJar extends SimpleApplication {
 
         Geometry quad = new Geometry("Textured Quad", quadMesh);
 
-        AssetManager am = new DesktopAssetManager(false);
+        AssetManager am = new DesktopAssetManager();
         am.registerLocator("http://www.jmonkeyengine.com/applet/jme3testdata.jar",
                            HttpZipLocator.class.getName());
         am.registerLoader(AWTLoader.class.getName(), "png");

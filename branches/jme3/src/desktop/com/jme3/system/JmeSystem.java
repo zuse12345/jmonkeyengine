@@ -85,8 +85,12 @@ public class JmeSystem {
         return lowPermissions;
     }
 
+    public static AssetManager newAssetManager(URL configFile){
+        return new DesktopAssetManager(configFile);
+    }
+    
     public static AssetManager newAssetManager(){
-        return new DesktopAssetManager(true);
+        return new DesktopAssetManager(null);
     }
 
     public static boolean showSettingsDialog(AppSettings sourceSettings){

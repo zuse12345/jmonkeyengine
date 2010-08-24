@@ -267,6 +267,14 @@ public class JoglRenderer implements Renderer {
         }
     }
 
+    public void setClipPlane(double a, double b, double c, double d) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void clearClipPlane() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     private FloatBuffer storeMatrix(Matrix4f matrix, FloatBuffer store){
         store.rewind();
         matrix.fillFloatBuffer(store,true);

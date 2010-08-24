@@ -1,0 +1,24 @@
+MaterialDef SimpleWater {
+
+    MaterialParameters {
+        Texture2D m_water_reflection
+        Texture2D m_water_refraction
+        Texture2D m_water_normalmap
+        Texture2D m_water_depthmap
+        Vector4 m_viewpos;
+    }
+
+    Technique {
+        VertexShader GLSL100:   Common/MatDefs/Water/simple_water.vert
+        FragmentShader GLSL100: Common/MatDefs/Water/simple_water.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+            WorldViewMatrix
+            Resolution
+        }
+    }
+
+    Technique FixedFunc {
+    }
+}

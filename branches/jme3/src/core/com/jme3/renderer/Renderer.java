@@ -74,6 +74,10 @@ public interface Renderer {
 
     public void clearClipRect();
 
+    public void setClipPlane(double a, double b, double c, double d);
+
+    public void clearClipPlane();
+
     public void setLighting(LightList lights);
 
     /**

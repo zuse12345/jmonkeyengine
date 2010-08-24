@@ -14,6 +14,7 @@ import com.jme3.audio.Listener;
 import com.jme3.input.InputManager;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
+import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
@@ -68,10 +69,17 @@ public class Application implements SystemListener {
     /**
      * Create a new instance of <code>Application</code>.
      */
-    public Application(){
+    public Application(URL assetConfigFile){
         // Why initialize it here? 
         // Because it allows offline loading of content.
-        initAssetManager();
+        assetManager = JmeSystem.newAssetManager(assetConfigFile);
+    }
+
+    /**
+     * Create a new instance of <code>Application</code>.
+     */
+    public Application(){
+        this(Thread.currentThread().getContextClassLoader().getResource("com/jme3/asset/Desktop.cfg"));
     }
 
     public boolean isPauseOnLostFocus() {
@@ -170,13 +178,6 @@ public class Application implements SystemListener {
 
     private void initStateManager(){
         stateManager = new AppStateManager(this);
-    }
-
-    /**
-     * Initializes the asset manager.
-     */
-    private void initAssetManager(){
-        assetManager = JmeSystem.newAssetManager();
     }
 
     /**

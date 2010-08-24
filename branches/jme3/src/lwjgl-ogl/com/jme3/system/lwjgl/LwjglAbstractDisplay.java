@@ -69,21 +69,21 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
                 });
             }
 
-            logger.info("Adapter: "+Display.getAdapter());
-            logger.info("Driver Version: "+Display.getVersion());
+            logger.log(Level.INFO, "Adapter: {0}", Display.getAdapter());
+            logger.log(Level.INFO, "Driver Version: {0}", Display.getVersion());
 
             String vendor = GL11.glGetString(GL11.GL_VENDOR);
-            logger.info("Vendor: "+vendor);
+            logger.log(Level.INFO, "Vendor: {0}", vendor);
 
             String version = GL11.glGetString(GL11.GL_VERSION);
-            logger.info("OpenGL Version: "+version);
+            logger.log(Level.INFO, "OpenGL Version: {0}", version);
 
             String renderer = GL11.glGetString(GL11.GL_RENDERER);
-            logger.info("Renderer: "+renderer);
+            logger.log(Level.INFO, "Renderer: {0}", renderer);
 
             if (GLContext.getCapabilities().OpenGL20){
                 String shadingLang = GL11.glGetString(GL20.GL_SHADING_LANGUAGE_VERSION);
-                logger.info("GLSL Ver: "+shadingLang);
+                logger.log(Level.INFO, "GLSL Ver: {0}", shadingLang);
             }
             
             created.set(true);
@@ -143,7 +143,7 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
     }
 
     public void run(){
-        logger.info("Using LWJGL "+Sys.getVersion());
+        logger.log(Level.INFO, "Using LWJGL {0}", Sys.getVersion());
         initInThread();
         while (true){
             if (Display.isCloseRequested())

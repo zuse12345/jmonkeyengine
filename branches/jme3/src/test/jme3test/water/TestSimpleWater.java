@@ -5,6 +5,9 @@
 package jme3test.water;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.input.KeyInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
@@ -19,7 +22,11 @@ import com.jme3.water.SimpleWaterProcessor;
  *
  * @author normenhansen
  */
-public class TestSimpleWater extends SimpleApplication {
+public class TestSimpleWater extends SimpleApplication implements ActionListener {
+    Material mat;
+    Geometry waterPlane;
+    SimpleWaterProcessor waterProcessor;
+    boolean useWater = true;
 
     public static void main(String[] args) {
         TestSimpleWater app = new TestSimpleWater();
@@ -28,33 +35,48 @@ public class TestSimpleWater extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
+        //init input
+        inputManager.addMapping("use_water", new KeyTrigger(KeyInput.KEY_O));
+        inputManager.addListener(this, "use_water");
+
         //init cam location
-        cam.setLocation(new Vector3f(0,10,10));
+        cam.setLocation(new Vector3f(0, 10, 10));
         cam.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
 
         //init scene
-        Node sceneNode=new Node("Scene");
+        Node sceneNode = new Node("Scene");
         Box b = new Box(Vector3f.ZERO, 1, 1, 1);
         Geometry geom = new Geometry("Box", b);
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
+        mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         mat.setTexture("m_ColorMap", assetManager.loadTexture("Interface/Logo/Monkey.jpg"));
         geom.setMaterial(mat);
         sceneNode.attachChild(geom);
         rootNode.attachChild(sceneNode);
 
         //create processor
-        SimpleWaterProcessor waterProcessor = new SimpleWaterProcessor(assetManager);
+        waterProcessor = new SimpleWaterProcessor(assetManager);
         waterProcessor.setReflectionScene(sceneNode);
+        viewPort.addProcessor(waterProcessor);
 
         //create water quad
         Quad quad = new Quad(10, 10);
-        Geometry waterPlane = new Geometry("WaterPlane", quad);
+        waterPlane = new Geometry("WaterPlane", quad);
         waterPlane.setLocalRotation(new Quaternion().fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_X));
         waterPlane.setMaterial(waterProcessor.getMaterial());
         waterPlane.setLocalTranslation(-5, 0, 5);
 
         rootNode.attachChild(waterPlane);
+    }
 
-        viewPort.addProcessor(waterProcessor);
+    public void onAction(String name, boolean value, float tpf) {
+        if (name.equals("use_water") && value) {
+            if (!useWater) {
+                useWater = true;
+                waterPlane.setMaterial(waterProcessor.getMaterial());
+            } else {
+                useWater = false;
+                waterPlane.setMaterial(mat);
+            }
+        }
     }
 }

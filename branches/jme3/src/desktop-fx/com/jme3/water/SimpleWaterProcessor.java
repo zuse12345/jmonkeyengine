@@ -38,7 +38,7 @@ public class SimpleWaterProcessor implements SceneProcessor {
     Texture2D dudvTexture;// = new Texture2D(512, 512, Format.RGB8);
     Spatial reflectionScene;
     float waterHeight;
-    Plane plane = new Plane(Vector3f.UNIT_Y, 1);
+    Plane plane = new Plane(Vector3f.UNIT_Y, Vector3f.ZERO.dot(Vector3f.UNIT_Y));
     Ray ray = new Ray();
     Vector3f targetLocation = new Vector3f();
     AssetManager manager;
@@ -72,7 +72,6 @@ public class SimpleWaterProcessor implements SceneProcessor {
     }
 
     public void postQueue(RenderQueue rq) {
-        Shader sh=new Shader();
         Camera sceneCam = rm.getCurrentCamera();
         //update ray
         ray.setOrigin(sceneCam.getLocation());

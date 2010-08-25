@@ -34,14 +34,14 @@ public class SimpleWaterRefractionProcessor implements SceneProcessor{
     }
 
     public void postQueue(RenderQueue rq) {
-        rm.getRenderer().setClipPlane(0, 1, 0, 0);
+//        rm.getRenderer().setClipPlane(0, -1, 0, 0);
     }
 
     public void postFrame(FrameBuffer out) {
-        rm.getRenderer().clearClipPlane();
+//        rm.getRenderer().clearClipPlane();
     }
 
     public void cleanup() {
-        rm.getRenderer().clearClipPlane();
+//        rm.getRenderer().clearClipPlane();
     }
 }

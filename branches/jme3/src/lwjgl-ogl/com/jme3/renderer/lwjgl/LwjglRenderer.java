@@ -528,21 +528,6 @@ public class LwjglRenderer implements Renderer {
         }
     }
 
-    public void setClipPlane(double a, double b, double c, double d){
-        DoubleBuffer buf=BufferUtils.createDoubleBuffer(4);
-        buf.put(a);
-        buf.put(b);
-        buf.put(c);
-        buf.put(d);
-        buf.position(0);
-        glEnable(GL_CLIP_PLANE0);
-        glClipPlane(GL_CLIP_PLANE0, buf);
-    }
-
-    public void clearClipPlane(){
-        glDisable(GL_CLIP_PLANE0);
-    }
-
     public void onFrame(){
         objManager.deleteUnused(this);
 //        statistics.clearFrame();

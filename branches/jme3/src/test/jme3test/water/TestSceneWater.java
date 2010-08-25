@@ -45,8 +45,8 @@ public class TestSceneWater extends SimpleApplication {
     public void simpleInitApp() {
         this.flyCam.setMoveSpeed(10);
         Node mainScene=new Node();
-        cam.setLocation(new Vector3f(-31.948586f, 14.062953f, -8.997411f));
-        cam.setRotation(new Quaternion(0.15516166f, 0.37978622f, -0.06478068f, 0.90966517f));
+        cam.setLocation(new Vector3f(-27.0f, 4.0f, 75.0f));
+        cam.setRotation(new Quaternion(0.03f, 0.9f, 0f, 0.4f));
 
         // load sky
         sphere.updateModelBound();

@@ -77,7 +77,7 @@ public class TestSceneWater extends SimpleApplication {
 
 
         SimpleWaterProcessor waterProcessor = new SimpleWaterProcessor(assetManager);
-        waterProcessor.setReflectionScene(scene);
+        waterProcessor.setReflectionScene(mainScene);
 
 
         Geometry water=new Geometry("water", new Quad(400,400));

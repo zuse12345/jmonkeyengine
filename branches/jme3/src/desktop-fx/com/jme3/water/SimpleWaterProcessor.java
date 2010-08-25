@@ -13,13 +13,16 @@ import com.jme3.math.Vector3f;
 import com.jme3.post.SceneProcessor;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
+import com.jme3.renderer.Renderer;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Spatial;
 import com.jme3.shader.Shader;
+import com.jme3.shader.VarType;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image.Format;
 import com.jme3.texture.Texture2D;
+import com.jme3.ui.Picture;
 
 /**
  *
@@ -33,7 +36,7 @@ public class SimpleWaterProcessor implements SceneProcessor {
     Camera refractionCam;
     Texture2D reflectionTexture = new Texture2D(512, 512, Format.RGB8);
     Texture2D refractionTexture = new Texture2D(512, 512, Format.RGB8);
-    Texture2D depthTexture = new Texture2D(512, 512, Format.RGB8);
+    Texture2D depthTexture = new Texture2D(512, 512, Format.Depth);
     Texture2D normalTexture;// = new Texture2D(512, 512, Format.RGB8);
     Texture2D dudvTexture;// = new Texture2D(512, 512, Format.RGB8);
     Spatial reflectionScene;
@@ -43,6 +46,10 @@ public class SimpleWaterProcessor implements SceneProcessor {
     Vector3f targetLocation = new Vector3f();
     AssetManager manager;
     Material material;
+     private Picture dispRefraction;
+     private Picture dispReflection;
+     private Picture dispDepth;
+
 
     public SimpleWaterProcessor(AssetManager manager) {
         this.manager = manager;
@@ -50,6 +57,14 @@ public class SimpleWaterProcessor implements SceneProcessor {
         normalTexture = (Texture2D)manager.loadTexture("Textures/Water/gradient_map.jpg");
         dudvTexture = (Texture2D)manager.loadTexture("Textures/Water/dudv_map.jpg");
         applyTextures(material);
+
+          dispRefraction = new Picture("dispRefraction");
+          dispRefraction.setTexture(manager, refractionTexture, false);
+          dispReflection   = new Picture("dispRefraction");
+          dispReflection.setTexture(manager, reflectionTexture, false);
+          dispDepth   = new Picture("depthTexture");
+          dispDepth.setTexture(manager, depthTexture, false);
+
     }
 
     public void initialize(RenderManager rm, ViewPort vp) {
@@ -101,7 +116,29 @@ public class SimpleWaterProcessor implements SceneProcessor {
 //        material.setColor("m_viewpos", new ColorRGBA(sceneCam.getLocation().x, sceneCam.getLocation().y, sceneCam.getLocation().z, 1.0f));
     }
 
+     //debug only : displays maps
+    public void displayMap(Renderer r, Picture pic,int left) {
+        Camera cam = vp.getCamera();
+        rm.setCamera(cam, true);
+        int h = cam.getHeight();
+
+        pic.setPosition(left, h / 20f);
+
+        pic.setWidth(128);
+        pic.setHeight(128);
+        pic.updateGeometricState();
+        rm.renderGeometry(pic);
+
+
+        rm.setCamera(cam, false);
+
+    }
+
     public void postFrame(FrameBuffer out) {
+        displayMap(rm.getRenderer(), dispRefraction, 64);
+        displayMap(rm.getRenderer(), dispReflection, 256);
+        displayMap(rm.getRenderer(), dispDepth, 448);
+
     }
 
     public void cleanup() {
@@ -133,6 +170,7 @@ public class SimpleWaterProcessor implements SceneProcessor {
         //setup framebuffer to use texture
         offBuffer.setDepthBuffer(Format.Depth);
         offBuffer.setColorTexture(reflectionTexture);
+        
         //set viewport to render to offscreen framebuffer
         offView.setOutputFrameBuffer(offBuffer);
         offView.addProcessor(new SimpleWaterReflectionProcessor());
@@ -150,6 +188,7 @@ public class SimpleWaterProcessor implements SceneProcessor {
         //setup framebuffer to use texture
         offBuffer.setDepthBuffer(Format.Depth);
         offBuffer.setColorTexture(refractionTexture);
+        offBuffer.setDepthTexture(depthTexture);
         //set viewport to render to offscreen framebuffer
         offView.setOutputFrameBuffer(offBuffer);
         offView.addProcessor(new SimpleWaterRefractionProcessor());

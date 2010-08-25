@@ -39,9 +39,9 @@ public class TestSimpleWater extends SimpleApplication {
 
         Quad quad = new Quad(10, 10);
         Geometry waterPlane = new Geometry("WaterPlane", quad);
-        waterPlane.setLocalRotation(new Quaternion().fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_X));
+//        waterPlane.setLocalRotation(new Quaternion().fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_X));
         waterPlane.setMaterial(waterProcessor.getMaterial());
-        waterPlane.setLocalTranslation(-5, 0, 5);
+//        waterPlane.setLocalTranslation(-5, 0, 5);
 
         rootNode.attachChild(waterPlane);
 

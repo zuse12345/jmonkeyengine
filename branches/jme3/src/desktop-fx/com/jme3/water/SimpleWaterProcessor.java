@@ -34,7 +34,8 @@ public class SimpleWaterProcessor implements SceneProcessor {
     Texture2D reflectionTexture = new Texture2D(512, 512, Format.RGB8);
     Texture2D refractionTexture = new Texture2D(512, 512, Format.RGB8);
     Texture2D depthTexture = new Texture2D(512, 512, Format.RGB8);
-    Texture2D normalTexture = new Texture2D(512, 512, Format.RGB8);
+    Texture2D normalTexture;// = new Texture2D(512, 512, Format.RGB8);
+    Texture2D dudvTexture;// = new Texture2D(512, 512, Format.RGB8);
     Spatial reflectionScene;
     float waterHeight;
     Plane plane = new Plane(Vector3f.UNIT_Y, 1);
@@ -46,6 +47,8 @@ public class SimpleWaterProcessor implements SceneProcessor {
     public SimpleWaterProcessor(AssetManager manager) {
         this.manager = manager;
         material = new Material(manager, "Common/MatDefs/Water/SimpleWater.j3md");
+        normalTexture = (Texture2D)manager.loadTexture("Textures/Water/gradient_map.jpg");
+        dudvTexture = (Texture2D)manager.loadTexture("Textures/Water/dudv_map.jpg");
         applyTextures(material);
     }
 
@@ -78,16 +81,25 @@ public class SimpleWaterProcessor implements SceneProcessor {
         //update refraction cam
         refractionCam.setLocation(sceneCam.getLocation());
         refractionCam.setRotation(sceneCam.getRotation());
+        refractionCam.setFrustum(sceneCam.getFrustumNear(),
+                sceneCam.getFrustumFar(),
+                sceneCam.getFrustumLeft(),
+                sceneCam.getFrustumRight(),
+                sceneCam.getFrustumTop(),
+                sceneCam.getFrustumBottom());
 
         //update reflection cam
         ray.intersectsWherePlane(plane, targetLocation);
         reflectionCam.setLocation(plane.reflect(sceneCam.getLocation(), new Vector3f()));
-//        reflectionCam.setAxes(Vector3f.UNIT_X.negate(), Vector3f.UNIT_Y.negate(), Vector3f.UNIT_Z.negate());
+        reflectionCam.setFrustum(sceneCam.getFrustumNear(),
+                sceneCam.getFrustumFar(),
+                sceneCam.getFrustumLeft(),
+                sceneCam.getFrustumRight(),
+                sceneCam.getFrustumTop(),
+                sceneCam.getFrustumBottom());
+//        reflectionCam.setAxes(Vector3f.UNIT_X, Vector3f.UNIT_Y.negate(), Vector3f.UNIT_Z);
         reflectionCam.lookAt(targetLocation, Vector3f.UNIT_Y);
-
-        material.setColor("m_viewpos", new ColorRGBA(sceneCam.getLocation().x, sceneCam.getLocation().y, sceneCam.getLocation().z, 1.0f));
-
-//        material.setMatrix4("", Matrix4f.IDENTITY);
+//        material.setColor("m_viewpos", new ColorRGBA(sceneCam.getLocation().x, sceneCam.getLocation().y, sceneCam.getLocation().z, 1.0f));
     }
 
     public void postFrame(FrameBuffer out) {
@@ -107,8 +119,9 @@ public class SimpleWaterProcessor implements SceneProcessor {
     protected void applyTextures(Material mat) {
         mat.setTexture("m_water_reflection", reflectionTexture);
         mat.setTexture("m_water_refraction", refractionTexture);
-        mat.setTexture("m_water_normalmap", normalTexture);
         mat.setTexture("m_water_depthmap", depthTexture);
+        mat.setTexture("m_water_normalmap", normalTexture);
+        mat.setTexture("m_water_dudvmap", dudvTexture);
     }
 
     protected void createReflectionView() {
@@ -118,9 +131,6 @@ public class SimpleWaterProcessor implements SceneProcessor {
         offView.setBackgroundColor(ColorRGBA.Black);
         // create offscreen framebuffer
         FrameBuffer offBuffer = new FrameBuffer(512, 512, 0);
-        //setup framebuffer's cam
-        reflectionCam.setFrustumPerspective(45f, 1f, 1f, 1000f);
-        //setup framebuffer's texture
         //setup framebuffer to use texture
         offBuffer.setDepthBuffer(Format.Depth);
         offBuffer.setColorTexture(reflectionTexture);
@@ -138,9 +148,6 @@ public class SimpleWaterProcessor implements SceneProcessor {
         offView.setBackgroundColor(ColorRGBA.Black);
         // create offscreen framebuffer
         FrameBuffer offBuffer = new FrameBuffer(512, 512, 0);
-        //setup framebuffer's cam
-        refractionCam.setFrustumPerspective(45f, 1f, 1f, 1000f);
-        //setup framebuffer's texture
         //setup framebuffer to use texture
         offBuffer.setDepthBuffer(Format.Depth);
         offBuffer.setColorTexture(refractionTexture);

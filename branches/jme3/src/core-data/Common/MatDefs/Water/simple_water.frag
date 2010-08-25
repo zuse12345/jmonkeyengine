@@ -64,7 +64,7 @@ void main(void)
      tmp = clamp(tmp, 0.001, 0.999);
 
      //load reflection,refraction and depth texture
-     vec4 refTex = texture2D(m_water_reflection, vec2(tmp));
+     vec4 refTex = texture2D(m_water_reflection, vec2(tmp.x,-tmp.y));
      vec4 refl = refTex;
      vec4 refr = texture2D(m_water_refraction, vec2(tmp));
      vec4 wdepth = texture2D(m_water_depthmap, vec2(tmp));

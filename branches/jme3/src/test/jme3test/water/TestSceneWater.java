@@ -1,6 +1,5 @@
 package jme3test.water;
 
-import jme3test.scene.*;
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.TextureKey;
 import com.jme3.asset.plugins.HttpZipLocator;
@@ -10,6 +9,7 @@ import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
@@ -80,7 +80,9 @@ public class TestSceneWater extends SimpleApplication {
         waterProcessor.setReflectionScene(mainScene);
 
 
-        Geometry water=new Geometry("water", new Quad(400,400));
+        Quad quad = new Quad(400,400);
+        quad.scaleTextureCoordinates(new Vector2f(10f,10f));
+        Geometry water=new Geometry("water", quad);
         water.updateGeometricState();
         water.updateModelBound();
         water.setShadowMode(ShadowMode.Recieve);

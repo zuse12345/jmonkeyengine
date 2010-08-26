@@ -17,10 +17,9 @@ import com.jme3.renderer.Renderer;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Spatial;
-import com.jme3.shader.Shader;
-import com.jme3.shader.VarType;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image.Format;
+import com.jme3.texture.Texture.WrapMode;
 import com.jme3.texture.Texture2D;
 import com.jme3.ui.Picture;
 
@@ -46,25 +45,25 @@ public class SimpleWaterProcessor implements SceneProcessor {
     Vector3f targetLocation = new Vector3f();
     AssetManager manager;
     Material material;
-     private Picture dispRefraction;
-     private Picture dispReflection;
-     private Picture dispDepth;
-
+    private Picture dispRefraction;
+    private Picture dispReflection;
+    private Picture dispDepth;
 
     public SimpleWaterProcessor(AssetManager manager) {
         this.manager = manager;
         material = new Material(manager, "Common/MatDefs/Water/SimpleWater.j3md");
-        normalTexture = (Texture2D)manager.loadTexture("Textures/Water/gradient_map.jpg");
-        dudvTexture = (Texture2D)manager.loadTexture("Textures/Water/dudv_map.jpg");
+        normalTexture = (Texture2D) manager.loadTexture("Textures/Water/gradient_map.jpg");
+        dudvTexture = (Texture2D) manager.loadTexture("Textures/Water/dudv_map.jpg");
+        normalTexture.setWrap(WrapMode.Repeat);
+        dudvTexture.setWrap(WrapMode.Repeat);
         applyTextures(material);
 
-          dispRefraction = new Picture("dispRefraction");
-          dispRefraction.setTexture(manager, refractionTexture, false);
-          dispReflection   = new Picture("dispRefraction");
-          dispReflection.setTexture(manager, reflectionTexture, false);
-          dispDepth   = new Picture("depthTexture");
-          dispDepth.setTexture(manager, depthTexture, false);
-
+        dispRefraction = new Picture("dispRefraction");
+        dispRefraction.setTexture(manager, refractionTexture, false);
+        dispReflection = new Picture("dispRefraction");
+        dispReflection.setTexture(manager, reflectionTexture, false);
+        dispDepth = new Picture("depthTexture");
+        dispDepth.setTexture(manager, depthTexture, false);
     }
 
     public void initialize(RenderManager rm, ViewPort vp) {
@@ -82,8 +81,15 @@ public class SimpleWaterProcessor implements SceneProcessor {
     public boolean isInitialized() {
         return rm != null;
     }
+    float time = 0;
 
     public void preFrame(float tpf) {
+        time = time + tpf / 20;
+        if (time > 1f) {
+            time = 0;
+        }
+        material.setFloat("m_time", time);
+        material.setFloat("m_time2", -time);
     }
 
     public void postQueue(RenderQueue rq) {
@@ -116,8 +122,8 @@ public class SimpleWaterProcessor implements SceneProcessor {
 //        material.setColor("m_viewpos", new ColorRGBA(sceneCam.getLocation().x, sceneCam.getLocation().y, sceneCam.getLocation().z, 1.0f));
     }
 
-     //debug only : displays maps
-    public void displayMap(Renderer r, Picture pic,int left) {
+    //debug only : displays maps
+    public void displayMap(Renderer r, Picture pic, int left) {
         Camera cam = vp.getCamera();
         rm.setCamera(cam, true);
         int h = cam.getHeight();
@@ -138,7 +144,6 @@ public class SimpleWaterProcessor implements SceneProcessor {
         displayMap(rm.getRenderer(), dispRefraction, 64);
         displayMap(rm.getRenderer(), dispReflection, 256);
         displayMap(rm.getRenderer(), dispDepth, 448);
-
     }
 
     public void cleanup() {
@@ -170,10 +175,10 @@ public class SimpleWaterProcessor implements SceneProcessor {
         //setup framebuffer to use texture
         offBuffer.setDepthBuffer(Format.Depth);
         offBuffer.setColorTexture(reflectionTexture);
-        
+
         //set viewport to render to offscreen framebuffer
         offView.setOutputFrameBuffer(offBuffer);
-        offView.addProcessor(new SimpleWaterReflectionProcessor());
+        offView.addProcessor(new SimpleWaterReflectionProcessor(manager));
         // attach the scene to the viewport to be rendered
         offView.attachScene(reflectionScene);
     }

@@ -8,6 +8,7 @@ import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Plane;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Ray;
 import com.jme3.math.Vector3f;
 import com.jme3.post.SceneProcessor;
@@ -17,6 +18,10 @@ import com.jme3.renderer.Renderer;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Spatial;
+import com.jme3.shader.DefineList;
+import com.jme3.shader.Shader;
+import com.jme3.shader.ShaderKey;
+import com.jme3.shader.VarType;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image.Format;
 import com.jme3.texture.Texture.WrapMode;
@@ -31,20 +36,26 @@ public class SimpleWaterProcessor implements SceneProcessor {
 
     RenderManager rm;
     ViewPort vp;
+    Spatial reflectionScene;
+    ViewPort reflectionView;
+    ViewPort refractionView;
+    FrameBuffer reflectionBuffer;
+    FrameBuffer refractionBuffer;
     Camera reflectionCam;
     Camera refractionCam;
-    Texture2D reflectionTexture = new Texture2D(512, 512, Format.RGB8);
-    Texture2D refractionTexture = new Texture2D(512, 512, Format.RGB8);
-    Texture2D depthTexture = new Texture2D(512, 512, Format.Depth);
-    Texture2D normalTexture;// = new Texture2D(512, 512, Format.RGB8);
-    Texture2D dudvTexture;// = new Texture2D(512, 512, Format.RGB8);
-    Spatial reflectionScene;
-    float waterHeight;
-    Plane plane = new Plane(Vector3f.UNIT_Y, Vector3f.ZERO.dot(Vector3f.UNIT_Y));
+    Texture2D reflectionTexture;
+    Texture2D refractionTexture;
+    Texture2D depthTexture;
+    Texture2D normalTexture;
+    Texture2D dudvTexture;
+    protected int textureWidth = 512;
+    protected int textureHeight = 512;
+    protected Plane plane = new Plane(Vector3f.UNIT_Y, Vector3f.ZERO.dot(Vector3f.UNIT_Y));
     Ray ray = new Ray();
     Vector3f targetLocation = new Vector3f();
     AssetManager manager;
     Material material;
+    protected boolean debug = false;
     private Picture dispRefraction;
     private Picture dispReflection;
     private Picture dispDepth;
@@ -52,11 +63,17 @@ public class SimpleWaterProcessor implements SceneProcessor {
     public SimpleWaterProcessor(AssetManager manager) {
         this.manager = manager;
         material = new Material(manager, "Common/MatDefs/Water/SimpleWater.j3md");
-        normalTexture = (Texture2D) manager.loadTexture("Textures/Water/gradient_map.jpg");
-        dudvTexture = (Texture2D) manager.loadTexture("Textures/Water/dudv_map.jpg");
-        normalTexture.setWrap(WrapMode.Repeat);
-        dudvTexture.setWrap(WrapMode.Repeat);
+    }
+
+    public void initialize(RenderManager rm, ViewPort vp) {
+        this.rm = rm;
+        this.vp = vp;
+
+        loadTextures(manager);
+        createTextures();
         applyTextures(material);
+
+        createPreViews();
 
         dispRefraction = new Picture("dispRefraction");
         dispRefraction.setTexture(manager, refractionTexture, false);
@@ -64,15 +81,6 @@ public class SimpleWaterProcessor implements SceneProcessor {
         dispReflection.setTexture(manager, reflectionTexture, false);
         dispDepth = new Picture("depthTexture");
         dispDepth.setTexture(manager, depthTexture, false);
-    }
-
-    public void initialize(RenderManager rm, ViewPort vp) {
-        this.rm = rm;
-        this.vp = vp;
-        reflectionCam = new Camera(512, 512);
-        refractionCam = new Camera(512, 512);
-        createReflectionView();
-        createRefractionView();
     }
 
     public void reshape(ViewPort vp, int w, int h) {
@@ -109,7 +117,12 @@ public class SimpleWaterProcessor implements SceneProcessor {
                 sceneCam.getFrustumBottom());
 
         //update reflection cam
-        ray.intersectsWherePlane(plane, targetLocation);
+        boolean inv=false;
+        if(!ray.intersectsWherePlane(plane, targetLocation)){
+            ray.setDirection(ray.getDirection().negateLocal());
+            ray.intersectsWherePlane(plane, targetLocation);
+            inv=true;
+        }
         reflectionCam.setLocation(plane.reflect(sceneCam.getLocation(), new Vector3f()));
         reflectionCam.setFrustum(sceneCam.getFrustumNear(),
                 sceneCam.getFrustumFar(),
@@ -117,13 +130,25 @@ public class SimpleWaterProcessor implements SceneProcessor {
                 sceneCam.getFrustumRight(),
                 sceneCam.getFrustumTop(),
                 sceneCam.getFrustumBottom());
-//        reflectionCam.setAxes(Vector3f.UNIT_X, Vector3f.UNIT_Y.negate(), Vector3f.UNIT_Z);
         reflectionCam.lookAt(targetLocation, Vector3f.UNIT_Y);
-//        material.setColor("m_viewpos", new ColorRGBA(sceneCam.getLocation().x, sceneCam.getLocation().y, sceneCam.getLocation().z, 1.0f));
+        if(inv){
+            reflectionCam.setAxes(reflectionCam.getLeft().negateLocal(),reflectionCam.getUp(),reflectionCam.getDirection().negateLocal());
+        }
+    }
+
+    public void postFrame(FrameBuffer out) {
+        if (debug) {
+            displayMap(rm.getRenderer(), dispRefraction, 64);
+            displayMap(rm.getRenderer(), dispReflection, 256);
+            displayMap(rm.getRenderer(), dispDepth, 448);
+        }
+    }
+
+    public void cleanup() {
     }
 
     //debug only : displays maps
-    public void displayMap(Renderer r, Picture pic, int left) {
+    protected void displayMap(Renderer r, Picture pic, int left) {
         Camera cam = vp.getCamera();
         rm.setCamera(cam, true);
         int h = cam.getHeight();
@@ -134,27 +159,32 @@ public class SimpleWaterProcessor implements SceneProcessor {
         pic.setHeight(128);
         pic.updateGeometricState();
         rm.renderGeometry(pic);
-
-
         rm.setCamera(cam, false);
-
-    }
-
-    public void postFrame(FrameBuffer out) {
-        displayMap(rm.getRenderer(), dispRefraction, 64);
-        displayMap(rm.getRenderer(), dispReflection, 256);
-        displayMap(rm.getRenderer(), dispDepth, 448);
-    }
-
-    public void cleanup() {
-    }
-
-    public Material getMaterial() {
-        return material;
     }
 
     public void setReflectionScene(Spatial spat) {
         reflectionScene = spat;
+    }
+
+    /**
+     * Get the water material from this processor, apply this to your water quad.
+     * @return
+     */
+    public Material getMaterial() {
+        return material;
+    }
+
+    protected void loadTextures(AssetManager manager) {
+        normalTexture = (Texture2D) manager.loadTexture("Textures/Water/gradient_map.jpg");
+        dudvTexture = (Texture2D) manager.loadTexture("Textures/Water/dudv_map.jpg");
+        normalTexture.setWrap(WrapMode.Repeat);
+        dudvTexture.setWrap(WrapMode.Repeat);
+    }
+
+    protected void createTextures() {
+        reflectionTexture = new Texture2D(textureWidth, textureHeight, Format.RGB8);
+        refractionTexture = new Texture2D(textureWidth, textureHeight, Format.RGB8);
+        depthTexture = new Texture2D(textureWidth, textureHeight, Format.Depth);
     }
 
     protected void applyTextures(Material mat) {
@@ -165,39 +195,174 @@ public class SimpleWaterProcessor implements SceneProcessor {
         mat.setTexture("m_water_dudvmap", dudvTexture);
     }
 
-    protected void createReflectionView() {
+    protected void createPreViews() {
+        reflectionCam = new Camera(textureWidth, textureHeight);
+        refractionCam = new Camera(textureWidth, textureHeight);
+
         // create a pre-view. a view that is rendered before the main view
-        ViewPort offView = rm.createPreView("Reflection View", reflectionCam);
-        offView.setClearEnabled(true);
-        offView.setBackgroundColor(ColorRGBA.Black);
+        reflectionView = rm.createPreView("Reflection View", reflectionCam);
+        reflectionView.setClearEnabled(true);
+        reflectionView.setBackgroundColor(ColorRGBA.Black);
         // create offscreen framebuffer
-        FrameBuffer offBuffer = new FrameBuffer(512, 512, 0);
+        reflectionBuffer = new FrameBuffer(textureWidth, textureHeight, 0);
         //setup framebuffer to use texture
-        offBuffer.setDepthBuffer(Format.Depth);
-        offBuffer.setColorTexture(reflectionTexture);
+        reflectionBuffer.setDepthBuffer(Format.Depth);
+        reflectionBuffer.setColorTexture(reflectionTexture);
 
         //set viewport to render to offscreen framebuffer
-        offView.setOutputFrameBuffer(offBuffer);
-        offView.addProcessor(new SimpleWaterReflectionProcessor(manager));
+        reflectionView.setOutputFrameBuffer(reflectionBuffer);
+        reflectionView.addProcessor(new ReflectionProcessor(manager));
         // attach the scene to the viewport to be rendered
-        offView.attachScene(reflectionScene);
+        reflectionView.attachScene(reflectionScene);
+
+        // create a pre-view. a view that is rendered before the main view
+        refractionView = rm.createPreView("Refraction View", refractionCam);
+        refractionView.setClearEnabled(true);
+        refractionView.setBackgroundColor(ColorRGBA.Black);
+        // create offscreen framebuffer
+        refractionBuffer = new FrameBuffer(textureWidth, textureHeight, 0);
+        //setup framebuffer to use texture
+        refractionBuffer.setDepthBuffer(Format.Depth);
+        refractionBuffer.setColorTexture(refractionTexture);
+        refractionBuffer.setDepthTexture(depthTexture);
+        //set viewport to render to offscreen framebuffer
+        refractionView.setOutputFrameBuffer(refractionBuffer);
+        refractionView.addProcessor(new RefractionProcessor());
+        // attach the scene to the viewport to be rendered
+        refractionView.attachScene(reflectionScene);
     }
 
-    protected void createRefractionView() {
-        // create a pre-view. a view that is rendered before the main view
-        ViewPort offView = rm.createPreView("Refraction View", refractionCam);
-        offView.setClearEnabled(true);
-        offView.setBackgroundColor(ColorRGBA.Black);
-        // create offscreen framebuffer
-        FrameBuffer offBuffer = new FrameBuffer(512, 512, 0);
-        //setup framebuffer to use texture
-        offBuffer.setDepthBuffer(Format.Depth);
-        offBuffer.setColorTexture(refractionTexture);
-        offBuffer.setDepthTexture(depthTexture);
-        //set viewport to render to offscreen framebuffer
-        offView.setOutputFrameBuffer(offBuffer);
-        offView.addProcessor(new SimpleWaterRefractionProcessor());
-        // attach the scene to the viewport to be rendered
-        offView.attachScene(reflectionScene);
+    protected void destroyViews() {
+        rm.removePreView(reflectionView);
+        rm.removePreView(refractionView);
+    }
+
+    public int getTextureWidth() {
+        return textureWidth;
+    }
+
+    /**
+     * Set the reflection Texture width,
+     * set before adding the processor!
+     * @param textureWidth
+     */
+    public void setTextureWidth(int textureWidth) {
+        this.textureWidth = textureWidth;
+    }
+
+    public int getTextureHeight() {
+        return textureHeight;
+    }
+
+    /**
+     * Set the reflection Texture height,
+     * set before adding the processor!
+     * @param textureWidth
+     */
+    public void setTextureHeight(int textureHeight) {
+        this.textureHeight = textureHeight;
+    }
+
+    public Plane getPlane() {
+        return plane;
+    }
+
+    /**
+     * Set the water plane for this processor,
+     * set before adding the processor!
+     * @param plane
+     */
+    public void setPlane(Plane plane) {
+        this.plane = plane;
+    }
+
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
+    }
+
+    /**
+     * Reflection Processor
+     */
+    public class ReflectionProcessor implements SceneProcessor {
+
+        RenderManager rm;
+        ViewPort vp;
+        Shader clipShader;
+        AssetManager manager;
+
+        public ReflectionProcessor(AssetManager manager) {
+            this.manager = manager;
+            DefineList defList = new DefineList();
+            Quaternion vec = new Quaternion(plane.getNormal().x, plane.getNormal().y, plane.getNormal().z, plane.getConstant());
+            ShaderKey key = new ShaderKey("Common/MatDefs/Water/clip_plane.vert", "Common/MatDefs/Water/clip_plane.frag", defList, "GLSL100");
+            clipShader = manager.loadShader(key);
+            clipShader.getUniform("u_clipPlane").setValue(VarType.Vector4, vec);
+        }
+
+        public void initialize(RenderManager rm, ViewPort vp) {
+            this.rm = rm;
+            this.vp = vp;
+        }
+
+        public void reshape(ViewPort vp, int w, int h) {
+        }
+
+        public boolean isInitialized() {
+            return rm != null;
+        }
+
+        public void preFrame(float tpf) {
+        }
+
+        public void postQueue(RenderQueue rq) {
+            rm.getRenderer().setShader(clipShader);
+        }
+
+        public void postFrame(FrameBuffer out) {
+        }
+
+        public void cleanup() {
+            rm.getRenderer().deleteShader(clipShader);
+        }
+    }
+
+    /**
+     * Refraction Processor
+     */
+    public class RefractionProcessor implements SceneProcessor {
+
+        RenderManager rm;
+        ViewPort vp;
+
+        public void initialize(RenderManager rm, ViewPort vp) {
+            this.rm = rm;
+            this.vp = vp;
+        }
+
+        public void reshape(ViewPort vp, int w, int h) {
+        }
+
+        public boolean isInitialized() {
+            return rm != null;
+        }
+
+        public void preFrame(float tpf) {
+        }
+
+        public void postQueue(RenderQueue rq) {
+//        rm.getRenderer().setClipPlane(0, -1, 0, 0);
+        }
+
+        public void postFrame(FrameBuffer out) {
+//        rm.getRenderer().clearClipPlane();
+        }
+
+        public void cleanup() {
+//        rm.getRenderer().clearClipPlane();
+        }
     }
 }

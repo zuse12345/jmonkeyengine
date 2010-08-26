@@ -81,6 +81,10 @@ public class RenderManager {
         return null;
     }
 
+    public boolean removePreView(ViewPort view){
+        return preViewPorts.remove(view);
+    }
+
     public ViewPort getMainView(String viewName){
         for (int i = 0; i < viewPorts.size(); i++){
             if (viewPorts.get(i).getName().equals(viewName))
@@ -89,12 +93,38 @@ public class RenderManager {
         return null;
     }
 
+    public boolean removeMainView(String viewName){
+        for (int i = 0; i < viewPorts.size(); i++){
+            if (viewPorts.get(i).getName().equals(viewName))
+                viewPorts.remove(i);
+                return true;
+        }
+        return false;
+    }
+
+    public boolean removeMainView(ViewPort view){
+        return viewPorts.remove(view);
+    }
+
     public ViewPort getPostView(String viewName){
         for (int i = 0; i < postViewPorts.size(); i++){
             if (postViewPorts.get(i).getName().equals(viewName))
                 return postViewPorts.get(i);
         }
         return null;
+    }
+
+    public boolean removePostView(String viewName){
+        for (int i = 0; i < postViewPorts.size(); i++){
+            if (postViewPorts.get(i).getName().equals(viewName))
+                postViewPorts.remove(i);
+                return true;
+        }
+        return false;
+    }
+
+    public boolean removePostView(ViewPort view){
+        return postViewPorts.remove(view);
     }
 
     public List<ViewPort> getPreViews(){

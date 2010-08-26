@@ -76,6 +76,7 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
         //create processor
         waterProcessor = new SimpleWaterProcessor(assetManager);
         waterProcessor.setReflectionScene(sceneNode);
+        waterProcessor.setDebug(true);
         viewPort.addProcessor(waterProcessor);
 
         //create water quad

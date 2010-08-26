@@ -48,8 +48,8 @@ public class SimpleWaterProcessor implements SceneProcessor {
     Texture2D depthTexture;
     Texture2D normalTexture;
     Texture2D dudvTexture;
-    protected int textureWidth = 512;
-    protected int textureHeight = 512;
+    protected int renderWidth = 512;
+    protected int renderHeight = 512;
     protected Plane plane = new Plane(Vector3f.UNIT_Y, Vector3f.ZERO.dot(Vector3f.UNIT_Y));
     Ray ray = new Ray();
     Vector3f targetLocation = new Vector3f();
@@ -117,11 +117,11 @@ public class SimpleWaterProcessor implements SceneProcessor {
                 sceneCam.getFrustumBottom());
 
         //update reflection cam
-        boolean inv=false;
-        if(!ray.intersectsWherePlane(plane, targetLocation)){
+        boolean inv = false;
+        if (!ray.intersectsWherePlane(plane, targetLocation)) {
             ray.setDirection(ray.getDirection().negateLocal());
             ray.intersectsWherePlane(plane, targetLocation);
-            inv=true;
+            inv = true;
         }
         reflectionCam.setLocation(plane.reflect(sceneCam.getLocation(), new Vector3f()));
         reflectionCam.setFrustum(sceneCam.getFrustumNear(),
@@ -131,8 +131,8 @@ public class SimpleWaterProcessor implements SceneProcessor {
                 sceneCam.getFrustumTop(),
                 sceneCam.getFrustumBottom());
         reflectionCam.lookAt(targetLocation, Vector3f.UNIT_Y);
-        if(inv){
-            reflectionCam.setAxes(reflectionCam.getLeft().negateLocal(),reflectionCam.getUp(),reflectionCam.getDirection().negateLocal());
+        if (inv) {
+            reflectionCam.setAxes(reflectionCam.getLeft().negateLocal(), reflectionCam.getUp(), reflectionCam.getDirection().negateLocal());
         }
     }
 
@@ -182,9 +182,9 @@ public class SimpleWaterProcessor implements SceneProcessor {
     }
 
     protected void createTextures() {
-        reflectionTexture = new Texture2D(textureWidth, textureHeight, Format.RGB8);
-        refractionTexture = new Texture2D(textureWidth, textureHeight, Format.RGB8);
-        depthTexture = new Texture2D(textureWidth, textureHeight, Format.Depth);
+        reflectionTexture = new Texture2D(renderWidth, renderHeight, Format.RGB8);
+        refractionTexture = new Texture2D(renderWidth, renderHeight, Format.RGB8);
+        depthTexture = new Texture2D(renderWidth, renderHeight, Format.Depth);
     }
 
     protected void applyTextures(Material mat) {
@@ -196,15 +196,15 @@ public class SimpleWaterProcessor implements SceneProcessor {
     }
 
     protected void createPreViews() {
-        reflectionCam = new Camera(textureWidth, textureHeight);
-        refractionCam = new Camera(textureWidth, textureHeight);
+        reflectionCam = new Camera(renderWidth, renderHeight);
+        refractionCam = new Camera(renderWidth, renderHeight);
 
         // create a pre-view. a view that is rendered before the main view
         reflectionView = rm.createPreView("Reflection View", reflectionCam);
         reflectionView.setClearEnabled(true);
         reflectionView.setBackgroundColor(ColorRGBA.Black);
         // create offscreen framebuffer
-        reflectionBuffer = new FrameBuffer(textureWidth, textureHeight, 0);
+        reflectionBuffer = new FrameBuffer(renderWidth, renderHeight, 0);
         //setup framebuffer to use texture
         reflectionBuffer.setDepthBuffer(Format.Depth);
         reflectionBuffer.setColorTexture(reflectionTexture);
@@ -220,7 +220,7 @@ public class SimpleWaterProcessor implements SceneProcessor {
         refractionView.setClearEnabled(true);
         refractionView.setBackgroundColor(ColorRGBA.Black);
         // create offscreen framebuffer
-        refractionBuffer = new FrameBuffer(textureWidth, textureHeight, 0);
+        refractionBuffer = new FrameBuffer(renderWidth, renderHeight, 0);
         //setup framebuffer to use texture
         refractionBuffer.setDepthBuffer(Format.Depth);
         refractionBuffer.setColorTexture(refractionTexture);
@@ -238,29 +238,40 @@ public class SimpleWaterProcessor implements SceneProcessor {
     }
 
     public int getTextureWidth() {
-        return textureWidth;
+        return renderWidth;
     }
 
     /**
-     * Set the reflection Texture width,
+     * Set the reflection Texture render width,
      * set before adding the processor!
      * @param textureWidth
      */
-    public void setTextureWidth(int textureWidth) {
-        this.textureWidth = textureWidth;
+    public void setRenderWidth(int textureWidth) {
+        this.renderWidth = textureWidth;
     }
 
     public int getTextureHeight() {
-        return textureHeight;
+        return renderHeight;
     }
 
     /**
-     * Set the reflection Texture height,
+     * Set the reflection Texture render height,
      * set before adding the processor!
      * @param textureWidth
      */
-    public void setTextureHeight(int textureHeight) {
-        this.textureHeight = textureHeight;
+    public void setRenderHeight(int textureHeight) {
+        this.renderHeight = textureHeight;
+    }
+
+    /**
+     * Set the reflection Texture render size,
+     * set before adding the processor!
+     * @param with
+     * @param height
+     */
+    public void setRenderSize(int width, int height) {
+        renderWidth = width;
+        renderHeight = height;
     }
 
     public Plane getPlane() {

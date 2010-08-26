@@ -79,6 +79,8 @@ public class TestSceneWater extends SimpleApplication {
         SimpleWaterProcessor waterProcessor = new SimpleWaterProcessor(assetManager);
         waterProcessor.setReflectionScene(mainScene);
         waterProcessor.setDebug(true);
+        //lower render size for higher performance
+//        waterProcessor.setRenderSize(64,64);
 
 
         Quad quad = new Quad(400,400);

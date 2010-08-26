@@ -6,10 +6,11 @@ MaterialDef SimpleWater {
         Texture2D m_water_depthmap
         Texture2D m_water_normalmap
         Texture2D m_water_dudvmap
+        Vector4 m_lightpos
         Vector4 m_waterColor
         Float m_time
         Float m_time2
-        Vector4 m_lightpos
+        Float m_waterDepth
     }
 
     Technique {

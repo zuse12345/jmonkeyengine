@@ -10,7 +10,8 @@ uniform sampler2D m_water_reflection;
 uniform sampler2D m_water_refraction;
 uniform sampler2D m_water_dudvmap;
 uniform sampler2D m_water_depthmap;
-uniform vec4 m_waterColor, m_waterDepth;
+uniform vec4 m_waterColor;
+uniform float m_waterDepth;
 
 varying vec4 waterTex0; //lightpos
 varying vec4 waterTex1; //moving texcoords
@@ -69,7 +70,7 @@ void main(void)
      vec4 refr = texture2D(m_water_refraction, vec2(tmp));
      vec4 wdepth = texture2D(m_water_depthmap, vec2(tmp));
 
-     wdepth = vec4(pow(wdepth.x, 4.0));
+     wdepth = vec4(pow(wdepth.x, m_waterDepth));
      vec4 invdepth = 1.0 - wdepth;
 
      //calculate specular highlight

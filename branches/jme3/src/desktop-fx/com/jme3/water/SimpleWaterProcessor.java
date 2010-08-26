@@ -51,6 +51,7 @@ public class SimpleWaterProcessor implements SceneProcessor {
     protected int renderWidth = 512;
     protected int renderHeight = 512;
     protected Plane plane = new Plane(Vector3f.UNIT_Y, Vector3f.ZERO.dot(Vector3f.UNIT_Y));
+    protected float speed = 0.05f;
     Ray ray = new Ray();
     Vector3f targetLocation = new Vector3f();
     AssetManager manager;
@@ -63,6 +64,8 @@ public class SimpleWaterProcessor implements SceneProcessor {
     public SimpleWaterProcessor(AssetManager manager) {
         this.manager = manager;
         material = new Material(manager, "Common/MatDefs/Water/SimpleWater.j3md");
+        material.setFloat("m_waterDepth", 4);
+        material.setColor("m_waterColor", invertColor(ColorRGBA.White));
     }
 
     public void initialize(RenderManager rm, ViewPort vp) {
@@ -92,7 +95,7 @@ public class SimpleWaterProcessor implements SceneProcessor {
     float time = 0;
 
     public void preFrame(float tpf) {
-        time = time + tpf / 20;
+        time = time + (tpf * speed);
         if (time > 1f) {
             time = 0;
         }
@@ -162,18 +165,6 @@ public class SimpleWaterProcessor implements SceneProcessor {
         rm.setCamera(cam, false);
     }
 
-    public void setReflectionScene(Spatial spat) {
-        reflectionScene = spat;
-    }
-
-    /**
-     * Get the water material from this processor, apply this to your water quad.
-     * @return
-     */
-    public Material getMaterial() {
-        return material;
-    }
-
     protected void loadTextures(AssetManager manager) {
         normalTexture = (Texture2D) manager.loadTexture("Textures/Water/gradient_map.jpg");
         dudvTexture = (Texture2D) manager.loadTexture("Textures/Water/dudv_map.jpg");
@@ -237,7 +228,35 @@ public class SimpleWaterProcessor implements SceneProcessor {
         rm.removePreView(refractionView);
     }
 
-    public int getTextureWidth() {
+    protected void invertColorLocal(ColorRGBA color) {
+        color.r = 1.0f - color.r;
+        color.g = 1.0f - color.g;
+        color.b = 1.0f - color.b;
+    }
+
+    protected ColorRGBA invertColor(ColorRGBA color) {
+        ColorRGBA ret = new ColorRGBA(1.0f - color.r, 1.0f - color.g, 1.0f - color.b, color.a);
+        return ret;
+    }
+
+    /**
+     * Get the water material from this processor, apply this to your water quad.
+     * @return
+     */
+    public Material getMaterial() {
+        return material;
+    }
+
+    /**
+     * Sets the reflected scene, should not include the water quad!
+     * Set before adding processor.
+     * @param spat
+     */
+    public void setReflectionScene(Spatial spat) {
+        reflectionScene = spat;
+    }
+
+    public int getRenderWidth() {
         return renderWidth;
     }
 
@@ -250,7 +269,7 @@ public class SimpleWaterProcessor implements SceneProcessor {
         this.renderWidth = textureWidth;
     }
 
-    public int getTextureHeight() {
+    public int getRenderHeight() {
         return renderHeight;
     }
 
@@ -285,6 +304,31 @@ public class SimpleWaterProcessor implements SceneProcessor {
      */
     public void setPlane(Plane plane) {
         this.plane = plane;
+    }
+
+    /**
+     * Set the color that will be added to the refraction texture.
+     * @param color
+     */
+    public void setWaterColor(ColorRGBA color) {
+        material.setColor("m_waterColor", invertColor(color));
+    }
+
+    /**
+     * Higher values make the refraction texture shine through earlier.
+     * Default is 4
+     * @param depth
+     */
+    public void setWaterDepth(float depth) {
+        material.setFloat("m_waterDepth", depth);
+    }
+
+    /**
+     * Sets the speed of the wave animation, default = 0.05f.
+     * @param speed
+     */
+    public void setWaveSpeed(float speed) {
+        this.speed = speed;
     }
 
     public boolean isDebug() {
@@ -330,14 +374,14 @@ public class SimpleWaterProcessor implements SceneProcessor {
         }
 
         public void postQueue(RenderQueue rq) {
-            rm.getRenderer().setShader(clipShader);
+//            rm.getRenderer().setShader(clipShader);
         }
 
         public void postFrame(FrameBuffer out) {
         }
 
         public void cleanup() {
-            rm.getRenderer().deleteShader(clipShader);
+//            rm.getRenderer().deleteShader(clipShader);
         }
     }
 
@@ -365,15 +409,12 @@ public class SimpleWaterProcessor implements SceneProcessor {
         }
 
         public void postQueue(RenderQueue rq) {
-//        rm.getRenderer().setClipPlane(0, -1, 0, 0);
         }
 
         public void postFrame(FrameBuffer out) {
-//        rm.getRenderer().clearClipPlane();
         }
 
         public void cleanup() {
-//        rm.getRenderer().clearClipPlane();
         }
     }
 }

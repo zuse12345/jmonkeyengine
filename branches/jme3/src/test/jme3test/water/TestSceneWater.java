@@ -79,12 +79,18 @@ public class TestSceneWater extends SimpleApplication {
         SimpleWaterProcessor waterProcessor = new SimpleWaterProcessor(assetManager);
         waterProcessor.setReflectionScene(mainScene);
         waterProcessor.setDebug(true);
+        
         //lower render size for higher performance
-//        waterProcessor.setRenderSize(64,64);
+//        waterProcessor.setRenderSize(128,128);
+        //raise depth to see through water
+//        waterProcessor.setWaterDepth(20);
 
 
         Quad quad = new Quad(400,400);
-        quad.scaleTextureCoordinates(new Vector2f(10f,10f));
+
+        //the texture coordinates define the general size of the waves
+        quad.scaleTextureCoordinates(new Vector2f(6f,6f));
+
         Geometry water=new Geometry("water", quad);
         water.updateGeometricState();
         water.updateModelBound();

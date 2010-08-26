@@ -6,7 +6,7 @@ import com.jme3.animation.Skeleton;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
-import com.jme3.bullet.joints.Physics6DofJoint;
+import com.jme3.bullet.joints.PhysicsConeJoint;
 import com.jme3.bullet.joints.PhysicsJoint;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.export.JmeExporter;
@@ -26,7 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jme3test.bullet.TestPhysicsRagdoll;
 
 public class PhysicsRagdollControl implements Control {
 
@@ -60,7 +59,7 @@ public class PhysicsRagdollControl implements Control {
 
             // TODO: still problems with overlapping bones..
 //            CapsuleCollisionShape shape = new CapsuleCollisionShape(.2f, height*0.6f,1);
-            BoxCollisionShape shape = new BoxCollisionShape(new Vector3f(.2f, 0.2f, .2f));
+            BoxCollisionShape shape = new BoxCollisionShape(new Vector3f(.2f, height*0.5f, .2f));
             PhysicsNode shapeNode = null;
 
             //TODO: remove cylinder when testing is over
@@ -92,21 +91,21 @@ public class PhysicsRagdollControl implements Control {
                 //local position from child
                 link.pivotB = new Vector3f(0,0,  -(height * .5f));
 
-//                PhysicsConeJoint joint = new PhysicsConeJoint(parent, shapeNode,
-//                        link.pivotA,
-//                        link.pivotB);
+                PhysicsConeJoint joint = new PhysicsConeJoint(parent, shapeNode,
+                        link.pivotA,
+                        link.pivotB);
                 //TODO:
 //                joint.setAngularOnly(true);
 //                joint.setLimit(FastMath.QUARTER_PI, FastMath.QUARTER_PI, 0);
 
-                Physics6DofJoint joint = new Physics6DofJoint(parent,shapeNode,
-                                                                            link.pivotA,
-                                                                            link.pivotB,true);
-                joint.getRotationalLimitMotor(0).setHiLimit(0);
-                joint.getRotationalLimitMotor(0).setLoLimit(0);
+//                Physics6DofJoint joint = new Physics6DofJoint(parent,shapeNode,
+//                                                                            link.pivotA,
+//                                                                            link.pivotB,true);
+//                joint.getRotationalLimitMotor(0).setHiLimit(0);
+//                joint.getRotationalLimitMotor(0).setLoLimit(0);
 
                 link.joint = joint;
-                joint.setCollisionBetweenLinkedBodys(false);
+                joint.setCollisionBetweenLinkedBodys(true);
                 space.addQueued(joint);
             }
             list.add(link);

@@ -24,8 +24,8 @@ varying vec4 waterTex4; //viewts
 //unit 3 = m_water_dudvmap
 //unit 4 = m_water_depthmap
 
- const vec4 sca = vec4(1.0, 1.0, 1.0, 1.0);
- const vec4 sca2 = vec4(1.0, 1.0, 1.0, 1.0);
+ const vec4 sca = vec4(0.2, 0.2, 0.2, 0.2);
+ const vec4 sca2 = vec4(0.5, 0.5, 0.5, 0.5);
  const vec4 tscale = vec4(1.0, 1.0, 1.0, 1.0);
  const vec4 two = vec4(2.0, 2.0, 2.0, 1.0);
  const vec4 mone = vec4(-1.0, -1.0, -1.0, 1.0);

@@ -85,6 +85,10 @@ public class TestSceneWater extends SimpleApplication {
         //raise depth to see through water
 //        waterProcessor.setWaterDepth(20);
 
+        //lower the distortion scale if the waves appear too strong
+//        waterProcessor.setDistortionScale(0.1f);
+        //lower the speed of the waves if they are too fast
+//        waterProcessor.setWaveSpeed(0.01f);
 
         Quad quad = new Quad(400,400);
 

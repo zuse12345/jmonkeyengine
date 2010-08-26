@@ -13,6 +13,12 @@ uniform sampler2D m_water_depthmap;
 uniform vec4 m_waterColor;
 uniform float m_waterDepth;
 
+uniform float m_waveStrength;
+
+uniform vec4 m_distortionScale;// = vec4(0.2, 0.2, 0.2, 0.2);
+uniform vec4 m_distortionScale2;// = vec4(0.5, 0.5, 0.5, 0.5);
+uniform vec4 m_texScale;// = vec4(1.0, 1.0, 1.0, 1.0);
+
 varying vec4 waterTex0; //lightpos
 varying vec4 waterTex1; //moving texcoords
 varying vec4 waterTex2; //moving texcoords
@@ -25,9 +31,6 @@ varying vec4 waterTex4; //viewts
 //unit 3 = m_water_dudvmap
 //unit 4 = m_water_depthmap
 
- const vec4 sca = vec4(0.2, 0.2, 0.2, 0.2);
- const vec4 sca2 = vec4(0.5, 0.5, 0.5, 0.5);
- const vec4 tscale = vec4(1.0, 1.0, 1.0, 1.0);
  const vec4 two = vec4(2.0, 2.0, 2.0, 1.0);
  const vec4 mone = vec4(-1.0, -1.0, -1.0, 1.0);
 
@@ -41,15 +44,15 @@ void main(void)
 
      vec4 lightTS = normalize(waterTex0);
      vec4 viewt = normalize(waterTex4);
-     vec4 disdis = texture2D(m_water_dudvmap, vec2(waterTex2 * tscale));
-     vec4 dist = texture2D(m_water_dudvmap, vec2(waterTex1 + disdis*sca2));
+     vec4 disdis = texture2D(m_water_dudvmap, vec2(waterTex2 * m_texScale));
+     vec4 dist = texture2D(m_water_dudvmap, vec2(waterTex1 + disdis*m_distortionScale2));
      vec4 fdist = dist;
      fdist = fdist * two + mone;
      fdist = normalize(fdist);
-     fdist *= sca;
+     fdist *= m_distortionScale;
 
      //load normalmap
-     vec4 nmap = texture2D(m_water_normalmap, vec2(waterTex1 + disdis*sca2));
+     vec4 nmap = texture2D(m_water_normalmap, vec2(waterTex1 + disdis*m_distortionScale2));
      nmap = (nmap-ofive) * two;
      vec4 vNorm = nmap;
      vNorm = normalize(nmap);

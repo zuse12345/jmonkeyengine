@@ -66,6 +66,11 @@ public class SimpleWaterProcessor implements SceneProcessor {
         material = new Material(manager, "Common/MatDefs/Water/SimpleWater.j3md");
         material.setFloat("m_waterDepth", 4);
         material.setColor("m_waterColor", invertColor(ColorRGBA.White));
+        material.setFloat("m_waveStrength", 0.5f);
+        
+        material.setColor("m_distortionScale", new ColorRGBA(0.2f,0.2f,0.2f,0.2f));
+        material.setColor("m_distortionScale2", new ColorRGBA(0.5f,0.5f,0.5f,0.5f));
+        material.setColor("m_texScale", new ColorRGBA(1.0f,1.0f,1.0f,1.0f));
     }
 
     public void initialize(RenderManager rm, ViewPort vp) {
@@ -329,6 +334,29 @@ public class SimpleWaterProcessor implements SceneProcessor {
      */
     public void setWaveSpeed(float speed) {
         this.speed = speed;
+    }
+
+    /**
+     * Sets the scale of distortion by the normal map, default = 0.2
+     */
+    public void setDistortionScale(float value){
+        material.setColor("m_distortionScale", new ColorRGBA(value,value,value,value));
+    }
+
+    /**
+     * Sets how the normal and dudv map are mixed to create the wave effect, default = 0.5
+     */
+    public void setDistortionMix(float value){
+        material.setColor("m_distortionScale2", new ColorRGBA(value,value,value,value));
+    }
+
+    /**
+     * Sets the scale of the normal/dudv texture, default = 1.
+     * Note that the waves should be scaled by the texture coordinates of the quad to avoid animation artifacts,
+     * use mesh.scaleTextureCoordinates(Vector2f) for that.
+     */
+    public void setTexScale(float value){
+        material.setColor("m_texScale", new ColorRGBA(value,value,value,value));
     }
 
     public boolean isDebug() {

@@ -41,7 +41,45 @@
                 <attr name="position" intvalue="150"/>
             </file>
         </folder>
-    </folder>
+        <folder name="JME Quaternions">
+            <file name="Yaw270.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/Yaw270.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="Yaw180.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/Yaw180.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="Yaw090.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/Yaw090.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="Yaw045.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/Yaw045.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="Roll270.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/Roll270.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="Roll180.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/Roll180.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="Roll090.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/Roll090.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="Roll045.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/Roll045.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="Pitch045.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/Pitch045.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="Pitch090.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/Pitch090.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="Pitch180.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/Pitch180.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="Pitch270.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/Pitch270.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+         </folder>
+   </folder>
    <folder name="Editors">
       <folder name="text">
             <folder name="x-java">

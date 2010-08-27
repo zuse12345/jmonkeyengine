@@ -40,14 +40,13 @@ import org.openide.text.ActiveEditorDrop;
  *
  * @author normenhansen
  */
-public class JmePaletteModel implements ActiveEditorDrop {
+public class JmePaletteHUDText implements ActiveEditorDrop {
 
-    public JmePaletteModel() {
+    public JmePaletteHUDText() {
     }
 
     private String createBody() {
-
-        String body = "        /** Load a model. Uses model and texture from jme3-test-data library! */ \n        Spatial teapot = assetManager.loadModel(\"Models/Teapot/Teapot.obj\");\n        Material mat_default = new Material( assetManager, \"Common/MatDefs/Misc/ShowNormals.j3md\");\n        teapot.setMaterial(mat_default);\n        rootNode.attachChild(teapot);";
+        String body = "        /** Write text on the screen (HUD) */\n        guiNode.detachAllChildren();\n        guiFont = assetManager.loadFont(\"Interface/Fonts/Default.fnt\");\n        BitmapText helloText = new BitmapText(guiFont, false);\n        helloText.setSize(guiFont.getCharSet().getRenderedSize());\n        helloText.setText(\"Hello World\");\n        helloText.setLocalTranslation(300, helloText.getLineHeight(), 0);\n        guiNode.attachChild(helloText);\n ";
         return body;
     }
 

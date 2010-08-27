@@ -2,11 +2,42 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="JavaPalette">
-        <folder name="JME">
+        <folder name="JME Effects">
+            <file name="Explosion.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/Explosion.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="Fire.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/Fire.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+        </folder>
+        <folder name="JME Material">
+            <file name="BleedCube.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/BleedCube.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="ShinySphere.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/ShinySphere.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="TextureCube.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/TextureCube.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="TrnspCube.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/TrnspCube.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+        </folder>
+        <folder name="JME Scene">
             <file name="Node.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/Node.xml">
                 <attr name="position" intvalue="150"/>
             </file>
             <file name="Model.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/Model.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="SunLight.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/SunLight.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="PointLight.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/PointLight.xml">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="HUDText.xml" url="nbresloc:/com/jme3/gde/codepalette/scene/HUDText.xml">
                 <attr name="position" intvalue="150"/>
             </file>
         </folder>

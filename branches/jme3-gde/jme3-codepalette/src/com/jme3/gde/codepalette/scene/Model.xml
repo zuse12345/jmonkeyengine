@@ -11,7 +11,7 @@
 
     <inline-description>
        <display-name>Model</display-name>
-       <tooltip>Model</tooltip>
+       <tooltip>loading model from assets</tooltip>
     </inline-description>
 
 </editor_palette_item>

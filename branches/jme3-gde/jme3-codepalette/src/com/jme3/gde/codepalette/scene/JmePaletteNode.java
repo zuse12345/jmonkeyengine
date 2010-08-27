@@ -46,7 +46,7 @@ public class JmePaletteNode implements ActiveEditorDrop {
     }
 
     private String createBody() {
-        String body = "Node node=new Node();";
+        String body = "Node node = new Node();";
         return body;
     }
 

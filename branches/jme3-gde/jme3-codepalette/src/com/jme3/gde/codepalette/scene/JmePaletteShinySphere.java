@@ -38,16 +38,16 @@ import org.openide.text.ActiveEditorDrop;
 
 /**
  *
- * @author normenhansen
+ * @author normenhansen, zathras
  */
-public class JmePaletteModel implements ActiveEditorDrop {
+public class JmePaletteShinySphere implements ActiveEditorDrop {
 
-    public JmePaletteModel() {
+    public JmePaletteShinySphere() {
     }
 
     private String createBody() {
 
-        String body = "        /** Load a model. Uses model and texture from jme3-test-data library! */ \n        Spatial teapot = assetManager.loadModel(\"Models/Teapot/Teapot.obj\");\n        Material mat_default = new Material( assetManager, \"Common/MatDefs/Misc/ShowNormals.j3md\");\n        teapot.setMaterial(mat_default);\n        rootNode.attachChild(teapot);";
+        String body = "    /** Bumpy rock with shiny light effect. Uses Texture from jme3-test-data library! Needs light source! */\n    Sphere rock = new Sphere(32,32, 2f);\n    Geometry shiny_rock = new Geometry(\"Shiny rock\", rock);\n    rock.setTextureMode(Sphere.TextureMode.Projected); // better quality on spheres\n    TangentBinormalGenerator.generate(rock);           // for lighting effect\n    Material mat_lit = new Material(assetManager, \"Common/MatDefs/Light/Lighting.j3md\");\n    mat_lit.setTexture(\"m_DiffuseMap\", assetManager.loadTexture(\"Textures/Terrain/Pond/Pond.png\"));\n    mat_lit.setTexture(\"m_NormalMap\", assetManager.loadTexture(\"Textures/Terrain/Pond/Pond_normal.png\"));\n    mat_lit.setFloat(\"m_Shininess\", 5f); // [0,128]\n    shiny_rock.setMaterial(mat_lit);\n    rootNode.attachChild(shiny_rock);\n ";
         return body;
     }
 

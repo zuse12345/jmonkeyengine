@@ -38,16 +38,16 @@ import org.openide.text.ActiveEditorDrop;
 
 /**
  *
- * @author normenhansen
+ * @author normenhansen, zathras
  */
-public class JmePaletteModel implements ActiveEditorDrop {
+public class JmePaletteTextureCube implements ActiveEditorDrop {
 
-    public JmePaletteModel() {
+    public JmePaletteTextureCube() {
     }
 
     private String createBody() {
 
-        String body = "        /** Load a model. Uses model and texture from jme3-test-data library! */ \n        Spatial teapot = assetManager.loadModel(\"Models/Teapot/Teapot.obj\");\n        Material mat_default = new Material( assetManager, \"Common/MatDefs/Misc/ShowNormals.j3md\");\n        teapot.setMaterial(mat_default);\n        rootNode.attachChild(teapot);";
+        String body = "/** A simple textured cube. Uses Texture from jme3-test-data library! */ \n    Box boxshape1 = new Box(Vector3f,ZERO, 1f,1f,1f); \n    Geometry cube = new Geometry(\"A Textured Box\", boxshape1); \n    Material mat_stl = new Material(assetManager, \"Common/MatDefs/Misc/SimpleTextured.j3md\"); \n    Texture tex_ml = assetManager.loadTexture(\"Interface/Logo/Monkey.jpg\"); \n    mat_stl.setTexture(\"m_ColorMap\", tex_ml); \n    cube.setMaterial(mat_stl); \n    rootNode.attachChild(cube); ";
         return body;
     }
 

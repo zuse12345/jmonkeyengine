@@ -40,14 +40,14 @@ import org.openide.text.ActiveEditorDrop;
  *
  * @author normenhansen
  */
-public class JmePaletteModel implements ActiveEditorDrop {
+public class JmePaletteBleedCube implements ActiveEditorDrop {
 
-    public JmePaletteModel() {
+    public JmePaletteBleedCube() {
     }
 
     private String createBody() {
 
-        String body = "        /** Load a model. Uses model and texture from jme3-test-data library! */ \n        Spatial teapot = assetManager.loadModel(\"Models/Teapot/Teapot.obj\");\n        Material mat_default = new Material( assetManager, \"Common/MatDefs/Misc/ShowNormals.j3md\");\n        teapot.setMaterial(mat_default);\n        rootNode.attachChild(teapot);";
+        String body = "    /** A cube with a color \"bleeding\" through  transparent texture. Uses Texture from jme3-test-data library! */ \n    Box boxshape4 = new Box(Vector3f.ZERO, 1f,1f,1f);\n    Geometry cube_leak = new Geometry(\"Bleed-through color cube\", boxshape4);\n    Material mat_tl = new Material(assetManager, \"Common/MatDefs/Misc/ColoredTextured.j3md\");\n    mat_tl.setTexture(\"m_ColorMap\", assetManager.loadTexture(\"Textures/ColoredTex/Monkey.png\"));\n    mat_tl.setColor(\"m_Color\", new ColorRGBA(1f,0f,1f, 1f)); // purple\n    cube_leak.setMaterial(mat_tl);\n    rootNode.attachChild(cube_leak); ";
         return body;
     }
 

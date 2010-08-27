@@ -38,16 +38,16 @@ import org.openide.text.ActiveEditorDrop;
 
 /**
  *
- * @author normenhansen
+ * @author normenhansen, zathras
  */
-public class JmePaletteModel implements ActiveEditorDrop {
+public class JmePaletteExplosion implements ActiveEditorDrop {
 
-    public JmePaletteModel() {
+    public JmePaletteExplosion() {
     }
 
     private String createBody() {
 
-        String body = "        /** Load a model. Uses model and texture from jme3-test-data library! */ \n        Spatial teapot = assetManager.loadModel(\"Models/Teapot/Teapot.obj\");\n        Material mat_default = new Material( assetManager, \"Common/MatDefs/Misc/ShowNormals.j3md\");\n        teapot.setMaterial(mat_default);\n        rootNode.attachChild(teapot);";
+        String body = "    /** Explosion effect. Uses Texture from jme3-test-data library! */ \n    ParticleEmitter debris = new ParticleEmitter(\"Debris\", ParticleMesh.Type.Triangle, 10);\n    Material debris_mat = new Material(assetManager, \"Common/MatDefs/Misc/Particle.j3md\");\n    debris_mat.setTexture(\"m_Texture\", assetManager.loadTexture(\"Effects/Explosion/Debris.png\"));\n    debris.setMaterial(debris_mat);\n    debris.setImagesX(3); debris.setImagesY(3); // 3x3 texture animation\n    debris.setRotateSpeed(4);\n    debris.setSelectRandomImage(true);\n    debris.setStartVel(new Vector3f(0, 4, 0));\n    debris.setStartColor(new ColorRGBA(1f, 1f, 1f, 1f));\n    debris.setGravity(6f);\n    debris.setVariation(.60f);\n    rootNode.attachChild(debris);\n    debris.emitAllParticles();\n";
         return body;
     }
 

@@ -38,16 +38,16 @@ import org.openide.text.ActiveEditorDrop;
 
 /**
  *
- * @author normenhansen
+ * @author normenhansen, zathras
  */
-public class JmePaletteModel implements ActiveEditorDrop {
+public class JmePalettePointLight implements ActiveEditorDrop {
 
-    public JmePaletteModel() {
+    public JmePalettePointLight() {
     }
 
     private String createBody() {
 
-        String body = "        /** Load a model. Uses model and texture from jme3-test-data library! */ \n        Spatial teapot = assetManager.loadModel(\"Models/Teapot/Teapot.obj\");\n        Material mat_default = new Material( assetManager, \"Common/MatDefs/Misc/ShowNormals.j3md\");\n        teapot.setMaterial(mat_default);\n        rootNode.attachChild(teapot);";
+        String body = "    /** A white, spot light source. */ \n    PointLight lamp = new PointLight();\n     lamp.setPosition(Vector3f.ZERO);\n    lamp.setColor(ColorRGBA.White);\n    rootNode.addLight(lamp); ";
         return body;
     }
 

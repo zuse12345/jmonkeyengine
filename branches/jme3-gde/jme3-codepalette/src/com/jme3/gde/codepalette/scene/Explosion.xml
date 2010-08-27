@@ -4,14 +4,14 @@
 
 <editor_palette_item version="1.0">
 
-    <class name="com.jme3.gde.codepalette.scene.JmePaletteNode" />
+    <class name="com.jme3.gde.codepalette.scene.JmePaletteExplosion" />
 
     <icon16 urlvalue="com/jme3/gde/core/sceneviewer/jme-logo.png" />
     <icon32 urlvalue="com/jme3/gde/core/sceneviewer/jme-logo.png" />
 
     <inline-description>
-       <display-name>Node</display-name>
-       <tooltip>new node</tooltip>
+       <display-name>Explosion</display-name>
+       <tooltip>explosion effect</tooltip>
     </inline-description>
 
 </editor_palette_item>

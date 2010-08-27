@@ -38,16 +38,16 @@ import org.openide.text.ActiveEditorDrop;
 
 /**
  *
- * @author normenhansen
+ * @author normenhansen, zathras
  */
-public class JmePaletteModel implements ActiveEditorDrop {
+public class JmePaletteFire implements ActiveEditorDrop {
 
-    public JmePaletteModel() {
+    public JmePaletteFire() {
     }
 
     private String createBody() {
 
-        String body = "        /** Load a model. Uses model and texture from jme3-test-data library! */ \n        Spatial teapot = assetManager.loadModel(\"Models/Teapot/Teapot.obj\");\n        Material mat_default = new Material( assetManager, \"Common/MatDefs/Misc/ShowNormals.j3md\");\n        teapot.setMaterial(mat_default);\n        rootNode.attachChild(teapot);";
+        String body = "    /** Uses Texture from jme3-test-data library! */\n    ParticleEmitter fire = new ParticleEmitter(\"Emitter\", ParticleMesh.Type.Triangle, 30);\n    Material mat_red = new Material(assetManager, \"Common/MatDefs/Misc/Particle.j3md\");\n    //mat_red.setTexture(\"m_Texture\", assetManager.loadTexture(\"Effects/Explosion/flame.png\"));\n    fire.setMaterial(mat_red);\n    fire.setImagesX(2); fire.setImagesY(2); // 2x2 texture animation\n    fire.setEndColor(  new ColorRGBA(1f, 0f, 0f, 1f));   // red\n    fire.setStartColor(new ColorRGBA(1f, 1f, 0f, 0.5f)); // yellow\n    fire.setStartVel(new Vector3f(0, 2, 0));\n    fire.setStartSize(0.6f);\n    fire.setEndSize(0.1f);\n    fire.setGravity(0);\n    fire.setLowLife(0.5f);\n    fire.setHighLife(3f);\n    fire.setVariation(0.3f);\n    rootNode.attachChild(fire);\n";
         return body;
     }
 

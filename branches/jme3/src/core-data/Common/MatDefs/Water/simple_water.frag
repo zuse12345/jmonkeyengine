@@ -12,7 +12,6 @@ uniform sampler2D m_water_dudvmap;
 uniform sampler2D m_water_depthmap;
 uniform vec4 m_waterColor;
 uniform float m_waterDepth;
-uniform float m_waveStrength;
 uniform vec4 m_distortionScale;
 uniform vec4 m_distortionMix;
 uniform vec4 m_texScale;

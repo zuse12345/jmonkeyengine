@@ -69,7 +69,6 @@ public class SimpleWaterProcessor implements SceneProcessor {
         material = new Material(manager, "Common/MatDefs/Water/SimpleWater.j3md");
         material.setFloat("m_waterDepth", 4);
         material.setColor("m_waterColor", invertColor(ColorRGBA.White));
-        material.setFloat("m_waveStrength", 0.5f);
 
         material.setColor("m_distortionScale", new ColorRGBA(0.2f, 0.2f, 0.2f, 0.2f));
         material.setColor("m_distortionMix", new ColorRGBA(0.5f, 0.5f, 0.5f, 0.5f));

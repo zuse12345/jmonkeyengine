@@ -25,8 +25,8 @@ uniform float m_time;
 void main(void)
 {
     viewpos.x = g_CameraPosition.x;
-    viewpos.y = g_CameraPosition.x;
-    viewpos.z = g_CameraPosition.x;
+    viewpos.y = g_CameraPosition.y;
+    viewpos.z = g_CameraPosition.z;
     viewpos.w = 1.0;
 
     vec4 mpos, temp;

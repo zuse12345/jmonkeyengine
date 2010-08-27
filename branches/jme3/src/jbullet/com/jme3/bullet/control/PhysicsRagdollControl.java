@@ -3,21 +3,31 @@ package com.jme3.bullet.control;
 import com.jme3.animation.AnimControl;
 import com.jme3.animation.Bone;
 import com.jme3.animation.Skeleton;
+import com.jme3.asset.AssetManager;
+import com.jme3.asset.DesktopAssetManager;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
-import com.jme3.bullet.collision.shapes.SphereCollisionShape;
+import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
+import com.jme3.bullet.collision.shapes.CylinderCollisionShape;
 import com.jme3.bullet.joints.PhysicsConeJoint;
 import com.jme3.bullet.joints.PhysicsJoint;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.Control;
+import com.jme3.texture.FrameBuffer;
+import com.jme3.texture.Image.Format;
+import com.jme3.texture.Texture2D;
+import com.jme3.ui.Picture;
 import com.jme3.util.TempVars;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,15 +43,19 @@ public class PhysicsRagdollControl implements Control {
     private List<PhysicsBoneLink> boneLinks;
     private Skeleton skeleton;
     private PhysicsSpace space;
+    protected boolean enabled = false;
     //TODO:remove after testing
-//    private TestPhysicsRagdoll root;
+    private AssetManager manager = new DesktopAssetManager(true);
+    private Camera offCamera = new Camera(512, 512);
+    private Picture debugPic;
+    private Node boneRoot = new Node("ragdolldebugnode");
+    protected boolean physicsActive = true;
 
-    public PhysicsRagdollControl(/*TestPhysicsRagdoll root, */PhysicsSpace space) {
+    public PhysicsRagdollControl(PhysicsSpace space) {
         this.space = space;
-//        this.root = root;
     }
 
-    private List<PhysicsBoneLink> boneRecursion(Bone bone, PhysicsNode parent, List<PhysicsBoneLink> list) {
+    private List<PhysicsBoneLink> boneRecursion(Bone bone, PhysicsNode parent, List<PhysicsBoneLink> list , int reccount) {
         ArrayList<Bone> children = bone.getChildren();
         bone.setUserControl(true);
         for (Iterator<Bone> it = children.iterator(); it.hasNext();) {
@@ -51,27 +65,30 @@ public class PhysicsRagdollControl implements Control {
             Vector3f childPos = childBone.getModelSpacePosition();
             //get location between the two bones (physicscapsule center)
             Vector3f jointCenter = parentPos.add(childPos).multLocal(0.5f);
+//            Quaternion jointRotation = parentBone.getModelSpaceRotation();
             Quaternion jointRotation = new Quaternion();
-            jointRotation.lookAt(childPos.subtract(parentPos),Vector3f.UNIT_Y );
+            jointRotation.lookAt(childPos.subtract(parentPos), Vector3f.UNIT_Y);
 //            jointRotation.lookAt(Vector3f.UNIT_Z, childPos.subtract(parentPos));
             // length of the joint
             float height = parentPos.distance(childPos);
 
-            // TODO: still problems with overlapping bones..
-//            CapsuleCollisionShape shape = new CapsuleCollisionShape(.2f, height*0.6f,1);
-            BoxCollisionShape shape = new BoxCollisionShape(new Vector3f(.2f, height*0.5f, .2f));
-            PhysicsNode shapeNode = null;
+            // TODO: joints act funny when bone is too thin??
+            CapsuleCollisionShape shape = new CapsuleCollisionShape(height*.18f, height*0.5f,2);
+//            BoxCollisionShape shape = new BoxCollisionShape(new Vector3f(height * 0.2f, height * 0.2f, height * 0.5f));
+//            CylinderCollisionShape shape = new CylinderCollisionShape(new Vector3f(height * .2f, height * .2f, height * 0.5f),2);
 
-            //TODO: remove cylinder when testing is over
-            shapeNode = new PhysicsNode(shape, 10);
+            PhysicsNode shapeNode = new PhysicsNode(shape, 10.0f/(float)reccount);
             shapeNode.setLocalTranslation(jointCenter);
-            shapeNode.setLocalRotation(jointRotation);//parentBone.getWorldRotation());
+            shapeNode.setLocalRotation(jointRotation);
             //TODO: only called to sync physics location with jme location
             shapeNode.updateGeometricState();
+            shapeNode.attachDebugShape(manager);
+//            shapeNode.getChild(0).setLocalScale(1, 1, 5);
+            boneRoot.attachChild(shapeNode);
 
-            //TODO: remove when testing is over, the shapeNode may not be in display tree (see update() method)
-//            root.getRootNode().attachChild(shapeNode);
-            space.addQueued(shapeNode);
+            if (physicsActive) {
+                space.addQueued(shapeNode);
+            }
 
             PhysicsBoneLink link = new PhysicsBoneLink();
             link.parentBone = parentBone;
@@ -87,77 +104,43 @@ public class PhysicsRagdollControl implements Control {
                     parentHeight = bone.getParent().getLocalPosition().distance(parentPos);
                 }
                 //local position from parent
-                link.pivotA = new Vector3f(0,0,  (parentHeight * .5f));
+                link.pivotA = new Vector3f(0, 0, (parentHeight * .5f));
                 //local position from child
-                link.pivotB = new Vector3f(0,0,  -(height * .5f));
+                link.pivotB = new Vector3f(0, 0, -(height * .5f));
 
-                PhysicsConeJoint joint = new PhysicsConeJoint(parent, shapeNode,
-                        link.pivotA,
-                        link.pivotB);
-                //TODO:
-//                joint.setAngularOnly(true);
-//                joint.setLimit(FastMath.QUARTER_PI, FastMath.QUARTER_PI, 0);
-
-//                Physics6DofJoint joint = new Physics6DofJoint(parent,shapeNode,
-//                                                                            link.pivotA,
-//                                                                            link.pivotB,true);
-//                joint.getRotationalLimitMotor(0).setHiLimit(0);
-//                joint.getRotationalLimitMotor(0).setLoLimit(0);
+                PhysicsConeJoint joint = new PhysicsConeJoint(parent, shapeNode, link.pivotA, link.pivotB);
+                joint.setLimit(FastMath.HALF_PI, FastMath.HALF_PI, 0.01f);
+//                PhysicsPoint2PointJoint joint=new PhysicsPoint2PointJoint(parent, shapeNode, link.pivotA, link.pivotB);
+//                Physics6DofJoint joint = new Physics6DofJoint(parent, shapeNode, link.pivotA, link.pivotB, true);
+//                joint.getRotationalLimitMotor(0).setHiLimit(0.1f);
+//                joint.getRotationalLimitMotor(0).setLoLimit(-0.1f);
+//                joint.getTranslationalLimitMotor().setUpperLimit(Vector3f.ZERO);
+//                joint.getTranslationalLimitMotor().setLowerLimit(Vector3f.ZERO);
 
                 link.joint = joint;
-                joint.setCollisionBetweenLinkedBodys(true);
-                space.addQueued(joint);
+                joint.setCollisionBetweenLinkedBodys(false);
+                if (physicsActive) {
+                    space.addQueued(joint);
+                }
             }
             list.add(link);
-            boneRecursion(childBone, shapeNode, list);
+            boneRecursion(childBone, shapeNode, list, reccount++);
         }
         return list;
     }
 
-    private Quaternion tempRot = new Quaternion();
-//    public void update(float tpf) {
-//        for (PhysicsBoneLink link : boneLinks) {
-//            //TODO: do updateGeometric here, remove nodes from scenegraph (is for debug now)
-//            //Looks bad updating here but the shapeNode is not in a display tree
-//            //maybe introduce new class or handle inside this class w/o PhysicsNodes
-////            link.shapeNode.updateGeometricState();
-//
-//            //TODO: bone location is not shapeNode location but add 0.5*dist in child direction
-//            //also rotation is different for bones..
-//            Bone superParent = link.parentBone.getParent();
-//            if (superParent != null) {
-//                Vector3f superPosition = superParent.getWorldPosition();
-//                Quaternion superRotation = superParent.getWorldRotation();
-//
-//                Vector3f localPosition = link.shapeNode.getWorldTranslation().subtract(superPosition);
-//                //todo:scale
-//                tempRot.set(superRotation).inverseLocal().multLocal(localPosition);
-//
-//                Quaternion localRotation = new Quaternion();
-//                localRotation.set(link.shapeNode.getWorldRotation());
-//                tempRot.set(superRotation).inverseLocal().mult(localRotation, localRotation);
-//
-//                link.parentBone.setUserTransformsWorld(localPosition, Quaternion.IDENTITY);
-////                link.parentBone.setUserTransforms(localPosition, localRotation, null);
-//            } else {
-//                link.parentBone.setUserTransformsWorld(link.shapeNode.getWorldTranslation(),
-//                                                       Quaternion.IDENTITY);
-////                link.parentBone.setUserTransforms(link.shapeNode.getWorldTranslation(),
-////                link.shapeNode.getWorldRotation(), null);
-//            }
-//        }
-////        skeleton.updateWorldVectors();
-//    }
-
-
     public void update(float tpf) {
+        if (!enabled) {
+            return;
+        }
+        boneRoot.updateGeometricState();
         TempVars vars = TempVars.get();
         assert vars.lock();
 
         skeleton.reset();
         for (PhysicsBoneLink link : boneLinks) {
-            link.shapeNode.updateGeometricState();
-            Vector3f p   = link.shapeNode.getWorldTranslation();
+//            link.shapeNode.updateGeometricState();
+            Vector3f p = link.shapeNode.getWorldTranslation();
             Quaternion q = link.shapeNode.getWorldRotation();
 
             q.toAxes(vars.tri);
@@ -165,17 +148,17 @@ public class PhysicsRagdollControl implements Control {
             Vector3f dir = vars.tri[2];
             float len = link.length;
 
-            Vector3f parentPos = new Vector3f(p).subtractLocal(dir.mult(len/2f));
-            Vector3f childPos  = new Vector3f(p).addLocal(dir.mult(len/2f));
+            Vector3f parentPos = new Vector3f(p).subtractLocal(dir.mult(len / 2f));
+            Vector3f childPos = new Vector3f(p).addLocal(dir.mult(len / 2f));
 
             Quaternion q2 = q.clone();
             Quaternion rot = new Quaternion();
             rot.fromAngles(FastMath.HALF_PI, 0, 0);
             q2.multLocal(rot);
             q2.normalize();
-            
+
             link.parentBone.setUserTransformsWorld(parentPos, q2);
-            if (link.childBone.getChildren().size() == 0){
+            if (link.childBone.getChildren().size() == 0) {
                 link.childBone.setUserTransformsWorld(childPos, q2.clone());
             }
         }
@@ -189,6 +172,8 @@ public class PhysicsRagdollControl implements Control {
     }
 
     public void setSpatial(Spatial model) {
+        space.removeAll(boneRoot);
+        enabled = true;
         //TODO: cleanup when adding new
         AnimControl animControl = model.getControl(AnimControl.class);
         skeleton = animControl.getSkeleton();
@@ -205,12 +190,15 @@ public class PhysicsRagdollControl implements Control {
             if (childBone.getParent() == null) {
                 Vector3f parentPos = childBone.getModelSpacePosition();
                 logger.log(Level.INFO, "Found root bone in skeleton {0}", skeleton);
-                PhysicsNode shapeNode = new PhysicsNode(null, new SphereCollisionShape(.1f), 1);
+                PhysicsNode shapeNode = new PhysicsNode(new BoxCollisionShape(Vector3f.UNIT_XYZ.multLocal(.1f)), 1);
                 shapeNode.setLocalTranslation(parentPos);
                 shapeNode.updateGeometricState();
-//                root.getRootNode().attachChild(shapeNode);
-                space.addQueued(shapeNode);
-                boneLinks = boneRecursion(childBone, shapeNode, list);
+                boneRoot.attachChild(shapeNode);
+                if (physicsActive) {
+                    space.addQueued(shapeNode);
+                }
+                boneLinks = boneRecursion(childBone, shapeNode, list,1);
+                return;
             }
 
         }
@@ -225,6 +213,20 @@ public class PhysicsRagdollControl implements Control {
     }
 
     public void render(RenderManager rm, ViewPort vp) {
+        if (debugPic != null) {
+            Camera cam = vp.getCamera();
+            offCamera.setLocation(cam.getLocation());
+            offCamera.setRotation(cam.getRotation());
+            rm.setCamera(cam, true);
+            int h = cam.getHeight();
+            int w = cam.getWidth();
+            debugPic.setPosition(w - 256, h / 20f);
+            debugPic.setWidth(256);
+            debugPic.setHeight(256);
+            debugPic.updateGeometricState();
+            rm.renderGeometry(debugPic);
+            rm.setCamera(cam, false);
+        }
     }
 
     public void write(JmeExporter ex) throws IOException {
@@ -233,6 +235,45 @@ public class PhysicsRagdollControl implements Control {
 
     public void read(JmeImporter im) throws IOException {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void createDebugView(RenderManager renderManager, AssetManager assetManager) {
+
+        // create a pre-view. a view that is rendered before the main view
+        ViewPort offView = renderManager.createPreView("Offscreen View", offCamera);
+        offView.setClearEnabled(true);
+        offView.setBackgroundColor(ColorRGBA.DarkGray);
+
+        // create offscreen framebuffer
+        FrameBuffer offBuffer = new FrameBuffer(512, 512, 0);
+
+        //setup framebuffer's cam
+        offCamera.setFrustumPerspective(45f, 1f, 1f, 1000f);
+        offCamera.setLocation(new Vector3f(0f, 0f, -5f));
+        offCamera.lookAt(new Vector3f(0f, 0f, 0f), Vector3f.UNIT_Y);
+
+        //setup framebuffer's texture
+        Texture2D offTex = new Texture2D(512, 512, Format.RGB8);
+
+        //setup framebuffer to use texture
+        offBuffer.setDepthBuffer(Format.Depth);
+        offBuffer.setColorTexture(offTex);
+
+        //set viewport to render to offscreen framebuffer
+        offView.setOutputFrameBuffer(offBuffer);
+
+        // attach the scene to the viewport to be rendered
+        offView.attachScene(boneRoot);
+
+        debugPic = new Picture("pic");
+        debugPic.setTexture(assetManager, offTex, false);
+    }
+
+    /**
+     * @param physicsActive the physicsActive to set
+     */
+    public void setPhysicsActive(boolean physicsActive) {
+        this.physicsActive = physicsActive;
     }
 
     private static class PhysicsBoneLink {

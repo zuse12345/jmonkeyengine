@@ -14,6 +14,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.debug.SkeletonDebugger;
+import com.jme3.scene.plugins.ogre.MeshLoader;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Cylinder;
 import com.jme3.texture.Texture;
@@ -30,7 +31,7 @@ public class TestPhysicsRagdoll  extends SimpleBulletApplication {
     }
 
     public void simpleInitApp() {
-
+//        speed=0.01f;
         DirectionalLight dl = new DirectionalLight();
         dl.setDirection(new Vector3f(-0.1f, -0.7f, -1).normalizeLocal());
         dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
@@ -52,7 +53,8 @@ public class TestPhysicsRagdoll  extends SimpleBulletApplication {
         getPhysicsSpace().add(node3);
 
         Node model = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
-//        Node model = (Node)MeshLoader.loadModel(manager, "ninja.meshxml", "ninja.material");
+//        Node model = (Node)assetManager.loadModel("Models/Ninja/Ninja.mesh.xml");
+//        model.scale(0.1f);
 
         //debug view
         AnimControl control= model.getControl(AnimControl.class);
@@ -65,11 +67,15 @@ public class TestPhysicsRagdoll  extends SimpleBulletApplication {
 
         //Note: PhysicsRagdollControl is still TODO, constructor will change
         PhysicsRagdollControl ragdoll = new PhysicsRagdollControl(getPhysicsSpace());
-        ragdoll.setSpatial(model);
+        
+        ragdoll.setPhysicsActive(true);
+
+//        ragdoll.setSpatial(model);
         model.addControl(ragdoll);
+        ragdoll.createDebugView(renderManager, assetManager);
 //        model.setLocalScale(0.2f);
 
-        speed = 0.4f;
+        speed = .2f;
 
 //        model.setCullHint(Spatial.CullHint.Always);
 

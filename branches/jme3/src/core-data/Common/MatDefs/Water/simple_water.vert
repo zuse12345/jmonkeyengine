@@ -43,21 +43,22 @@ void main(void)
 
 
 
-    temp = viewpos - inPosition;
+  //  temp = viewpos - inPosition;
+    temp =vec4(m_camDir,1.0);
     waterTex4.x = dot(temp, tangent);
     waterTex4.y = dot(temp, binormal);
     waterTex4.z = dot(temp, norm);
     waterTex4.w = 0.0;
 
     //Rémy : changes for highlights calculation
-    H = (m_camDir + m_lightDir) * vec3(0.5);
+//    H = (m_camDir + m_lightDir) * vec3(0.5);
 
-   /* temp = m_lightpos- inPosition;
+    temp = vec4(m_lightDir,1.0);//m_lightpos- inPosition;
     waterTex0.x = dot(temp, tangent);
     waterTex0.y = dot(temp, binormal);
     waterTex0.z = dot(temp, norm);
     waterTex0.w = 0.0;
-*/
+
     mpos = g_WorldViewProjectionMatrix * inPosition;
 
     vec4 t1 = vec4(0.0, -m_time, 0.0,0.0);

@@ -27,6 +27,7 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
 
     Material mat;
     Geometry waterPlane;
+    Geometry lightSphere;
     SimpleWaterProcessor waterProcessor;
     boolean useWater = true;
 
@@ -85,6 +86,12 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
 
         rootNode.attachChild(sceneNode);
 
+        //add lightPos Geometry
+        Sphere lite=new Sphere(8, 8, 0.1f);
+        lightSphere=new Geometry("lightsphere", lite);
+        lightSphere.setMaterial(mat);
+        rootNode.attachChild(lightSphere);
+
         //create processor
         waterProcessor = new SimpleWaterProcessor(assetManager);
         waterProcessor.setReflectionScene(sceneNode);
@@ -102,8 +109,9 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
 
     @Override
     public void simpleUpdate(float tpf) {
-        fpsText.setText("Light Position: "+lightPos.toString()+" (Change with [U],[H],[J],[K] (x,z) + [T],[G] (y)");
+        fpsText.setText("Light Position: "+lightPos.toString()+" ( Change with [U], [H], [J], [K] (x,z) and [T], [G] (y) )");
         waterProcessor.setLightPosition(lightPos);
+        lightSphere.setLocalTranslation(lightPos);
 //        waterProcessor.setLightPosition(cam.getLocation().add(lightPos));
     }
 

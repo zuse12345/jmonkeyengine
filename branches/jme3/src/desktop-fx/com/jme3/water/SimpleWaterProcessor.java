@@ -7,6 +7,7 @@ package com.jme3.water;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
 import com.jme3.math.Plane;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Ray;
@@ -17,7 +18,9 @@ import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.Renderer;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Quad;
 import com.jme3.shader.DefineList;
 import com.jme3.shader.Shader;
 import com.jme3.shader.ShaderKey;
@@ -364,6 +367,14 @@ public class SimpleWaterProcessor implements SceneProcessor {
 
     public void setDebug(boolean debug) {
         this.debug = debug;
+    }
+
+    public Geometry createWaterGeometry(float width, float height){
+        Quad quad=new Quad(width, height);
+        Geometry geom=new Geometry("WaterGeometry", quad);
+        geom.setLocalRotation(new Quaternion().fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_X));
+        geom.setMaterial(material);
+        return geom;
     }
 
     /**

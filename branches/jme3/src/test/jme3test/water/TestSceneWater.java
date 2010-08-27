@@ -8,6 +8,7 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
+import com.jme3.math.Plane;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
@@ -24,7 +25,7 @@ import java.io.File;
 
 public class TestSceneWater extends SimpleApplication {
 
-    private Sphere sphereMesh = new Sphere(32, 32, 10, false, true);
+    private Sphere sphereMesh = new Sphere(100, 100, 10, false, true);
     private Geometry sphere = new Geometry("Sky", sphereMesh);
     private static boolean useHttp = false;
 
@@ -45,7 +46,7 @@ public class TestSceneWater extends SimpleApplication {
     public void simpleInitApp() {
         this.flyCam.setMoveSpeed(10);
         Node mainScene=new Node();
-        cam.setLocation(new Vector3f(-27.0f, 4.0f, 75.0f));
+        cam.setLocation(new Vector3f(-27.0f, 1.0f, 75.0f));
         cam.setRotation(new Quaternion(0.03f, 0.9f, 0f, 0.4f));
 
         // load sky
@@ -79,12 +80,15 @@ public class TestSceneWater extends SimpleApplication {
         SimpleWaterProcessor waterProcessor = new SimpleWaterProcessor(assetManager);
         waterProcessor.setReflectionScene(mainScene);
         waterProcessor.setDebug(true);
+
+        //setting the water plane
+        Vector3f waterLocation=new Vector3f(0,-6,0);
+        waterProcessor.setPlane(new Plane(Vector3f.UNIT_Y, waterLocation.dot(Vector3f.UNIT_Y)));
         
         //lower render size for higher performance
 //        waterProcessor.setRenderSize(128,128);
         //raise depth to see through water
 //        waterProcessor.setWaterDepth(20);
-
         //lower the distortion scale if the waves appear too strong
 //        waterProcessor.setDistortionScale(0.1f);
         //lower the speed of the waves if they are too fast
@@ -96,14 +100,7 @@ public class TestSceneWater extends SimpleApplication {
         quad.scaleTextureCoordinates(new Vector2f(6f,6f));
 
         Geometry water=new Geometry("water", quad);
-        water.updateGeometricState();
-        water.updateModelBound();
         water.setShadowMode(ShadowMode.Recieve);
-
-
-        Material mat = assetManager.loadMaterial("Common/Materials/WhiteColor.j3m");
-       
-
         water.setLocalRotation(new Quaternion().fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_X));
         water.setMaterial(waterProcessor.getMaterial());
         water.setLocalTranslation(-200, -6, 250);

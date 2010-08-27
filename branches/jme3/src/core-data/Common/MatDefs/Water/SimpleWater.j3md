@@ -12,7 +12,7 @@ MaterialDef SimpleWater {
         Float m_waterDepth
         Float m_waveStrength
         Vector4 m_distortionScale
-        Vector4 m_distortionScale2
+        Vector4 m_distortionMix
         Vector4 m_texScale
     }
 

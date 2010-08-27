@@ -70,10 +70,10 @@ public class SimpleWaterProcessor implements SceneProcessor {
         material.setFloat("m_waterDepth", 4);
         material.setColor("m_waterColor", invertColor(ColorRGBA.White));
         material.setFloat("m_waveStrength", 0.5f);
-        
-        material.setColor("m_distortionScale", new ColorRGBA(0.2f,0.2f,0.2f,0.2f));
-        material.setColor("m_distortionScale2", new ColorRGBA(0.5f,0.5f,0.5f,0.5f));
-        material.setColor("m_texScale", new ColorRGBA(1.0f,1.0f,1.0f,1.0f));
+
+        material.setColor("m_distortionScale", new ColorRGBA(0.2f, 0.2f, 0.2f, 0.2f));
+        material.setColor("m_distortionMix", new ColorRGBA(0.5f, 0.5f, 0.5f, 0.5f));
+        material.setColor("m_texScale", new ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f));
     }
 
     public void initialize(RenderManager rm, ViewPort vp) {
@@ -267,26 +267,8 @@ public class SimpleWaterProcessor implements SceneProcessor {
         return renderWidth;
     }
 
-    /**
-     * Set the reflection Texture render width,
-     * set before adding the processor!
-     * @param textureWidth
-     */
-    public void setRenderWidth(int textureWidth) {
-        this.renderWidth = textureWidth;
-    }
-
     public int getRenderHeight() {
         return renderHeight;
-    }
-
-    /**
-     * Set the reflection Texture render height,
-     * set before adding the processor!
-     * @param textureWidth
-     */
-    public void setRenderHeight(int textureHeight) {
-        this.renderHeight = textureHeight;
     }
 
     /**
@@ -305,12 +287,15 @@ public class SimpleWaterProcessor implements SceneProcessor {
     }
 
     /**
-     * Set the water plane for this processor,
-     * set before adding the processor!
+     * Set the water plane for this processor.
      * @param plane
      */
     public void setPlane(Plane plane) {
         this.plane = plane;
+    }
+
+    public void setLightPosition(Vector3f position) {
+        material.setColor("m_lightpos", new ColorRGBA(position.x, position.y, position.z, 1.0f));
     }
 
     /**
@@ -341,15 +326,15 @@ public class SimpleWaterProcessor implements SceneProcessor {
     /**
      * Sets the scale of distortion by the normal map, default = 0.2
      */
-    public void setDistortionScale(float value){
-        material.setColor("m_distortionScale", new ColorRGBA(value,value,value,value));
+    public void setDistortionScale(float value) {
+        material.setColor("m_distortionScale", new ColorRGBA(value, value, value, value));
     }
 
     /**
      * Sets how the normal and dudv map are mixed to create the wave effect, default = 0.5
      */
-    public void setDistortionMix(float value){
-        material.setColor("m_distortionScale2", new ColorRGBA(value,value,value,value));
+    public void setDistortionMix(float value) {
+        material.setColor("m_distortionMix", new ColorRGBA(value, value, value, value));
     }
 
     /**
@@ -357,8 +342,8 @@ public class SimpleWaterProcessor implements SceneProcessor {
      * Note that the waves should be scaled by the texture coordinates of the quad to avoid animation artifacts,
      * use mesh.scaleTextureCoordinates(Vector2f) for that.
      */
-    public void setTexScale(float value){
-        material.setColor("m_texScale", new ColorRGBA(value,value,value,value));
+    public void setTexScale(float value) {
+        material.setColor("m_texScale", new ColorRGBA(value, value, value, value));
     }
 
     public boolean isDebug() {
@@ -369,9 +354,10 @@ public class SimpleWaterProcessor implements SceneProcessor {
         this.debug = debug;
     }
 
-    public Geometry createWaterGeometry(float width, float height){
-        Quad quad=new Quad(width, height);
-        Geometry geom=new Geometry("WaterGeometry", quad);
+    public Geometry createWaterGeometry(float width, float height) {
+        Quad quad = new Quad(width, height);
+        Geometry geom = new Geometry("WaterGeometry", quad);
+//        plane.getNormal().dot(targetLocation);
         geom.setLocalRotation(new Quaternion().fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_X));
         geom.setMaterial(material);
         return geom;

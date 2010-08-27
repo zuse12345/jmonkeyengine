@@ -4,18 +4,22 @@ http://www.bonzaisoftware.com/wfs.html
 Converted by Mars_999
 8/20/2005
 */
+uniform vec4 m_lightpos;
+uniform float m_time;
+
 uniform mat4 g_WorldViewProjectionMatrix;
+uniform vec3 g_CameraPosition;
+
 attribute vec4 inPosition;
 attribute vec2 inTexCoord;
+
 varying vec4 waterTex0;
 varying vec4 waterTex1;
 varying vec4 waterTex2;
 varying vec4 waterTex3;
 varying vec4 waterTex4;
 varying vec4 viewpos;
-uniform vec3 g_CameraPosition;
-uniform vec4 m_lightpos;
-uniform float m_time;
+
 //unit 0 = water_reflection
 //unit 1 = water_refraction
 //unit 2 = water_normalmap

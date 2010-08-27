@@ -10,14 +10,11 @@ import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
-import com.jme3.math.FastMath;
-import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
-import com.jme3.scene.shape.Quad;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 import com.jme3.water.SimpleWaterProcessor;
@@ -27,6 +24,7 @@ import com.jme3.water.SimpleWaterProcessor;
  * @author normenhansen
  */
 public class TestSimpleWater extends SimpleApplication implements ActionListener {
+
     Material mat;
     Geometry waterPlane;
     SimpleWaterProcessor waterProcessor;
@@ -39,9 +37,23 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
 
     @Override
     public void simpleInitApp() {
+        flyCam.setMoveSpeed(3);
         //init input
         inputManager.addMapping("use_water", new KeyTrigger(KeyInput.KEY_O));
         inputManager.addListener(this, "use_water");
+
+        inputManager.addMapping("lightup", new KeyTrigger(KeyInput.KEY_T));
+        inputManager.addListener(this, "lightup");
+        inputManager.addMapping("lightdown", new KeyTrigger(KeyInput.KEY_G));
+        inputManager.addListener(this, "lightdown");
+        inputManager.addMapping("lightleft", new KeyTrigger(KeyInput.KEY_H));
+        inputManager.addListener(this, "lightleft");
+        inputManager.addMapping("lightright", new KeyTrigger(KeyInput.KEY_K));
+        inputManager.addListener(this, "lightright");
+        inputManager.addMapping("lightforward", new KeyTrigger(KeyInput.KEY_U));
+        inputManager.addListener(this, "lightforward");
+        inputManager.addMapping("lightback", new KeyTrigger(KeyInput.KEY_J));
+        inputManager.addListener(this, "lightback");
 
         //init cam location
         cam.setLocation(new Vector3f(0, 10, 10));
@@ -79,12 +91,23 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
         waterProcessor.setDebug(true);
         viewPort.addProcessor(waterProcessor);
 
+        waterProcessor.setLightPosition(new Vector3f(1f, -1f, 1f));
+
         //create water quad
         waterPlane = waterProcessor.createWaterGeometry(10, 10);
         waterPlane.setLocalTranslation(-5, 0, 5);
 
         rootNode.attachChild(waterPlane);
     }
+
+    @Override
+    public void simpleUpdate(float tpf) {
+        fpsText.setText("Light Position: "+lightPos.toString()+" (Change with [U],[H],[J],[K] (x,z) + [T],[G] (y)");
+        waterProcessor.setLightPosition(lightPos);
+//        waterProcessor.setLightPosition(cam.getLocation().add(lightPos));
+    }
+
+    private Vector3f lightPos = new Vector3f();
 
     public void onAction(String name, boolean value, float tpf) {
         if (name.equals("use_water") && value) {
@@ -95,6 +118,18 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
                 useWater = false;
                 waterPlane.setMaterial(mat);
             }
+        } else if (name.equals("lightup") && value) {
+            lightPos.y++;
+        } else if (name.equals("lightdown") && value) {
+            lightPos.y--;
+        } else if (name.equals("lightleft") && value) {
+            lightPos.x--;
+        } else if (name.equals("lightright") && value) {
+            lightPos.x++;
+        } else if (name.equals("lightforward") && value) {
+            lightPos.z--;
+        } else if (name.equals("lightback") && value) {
+            lightPos.z++;
         }
     }
 }

@@ -25,7 +25,7 @@ import java.io.File;
 
 public class TestSceneWater extends SimpleApplication {
 
-    private Sphere sphereMesh = new Sphere(100, 100, 10, false, true);
+    private Sphere sphereMesh = new Sphere(10, 10, 100, false, true);
     private Geometry sphere = new Geometry("Sky", sphereMesh);
     private static boolean useHttp = false;
 

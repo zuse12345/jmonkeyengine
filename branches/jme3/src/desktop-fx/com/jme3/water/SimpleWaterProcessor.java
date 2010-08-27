@@ -69,6 +69,7 @@ public class SimpleWaterProcessor implements SceneProcessor {
         material = new Material(manager, "Common/MatDefs/Water/SimpleWater.j3md");
         material.setFloat("m_waterDepth", 4);
         material.setColor("m_waterColor", invertColor(ColorRGBA.White));
+        material.setVector3("m_lightDir", new Vector3f(1, -1, 1));
 
         material.setColor("m_distortionScale", new ColorRGBA(0.2f, 0.2f, 0.2f, 0.2f));
         material.setColor("m_distortionMix", new ColorRGBA(0.5f, 0.5f, 0.5f, 0.5f));
@@ -111,6 +112,9 @@ public class SimpleWaterProcessor implements SceneProcessor {
 
     public void postQueue(RenderQueue rq) {
         Camera sceneCam = rm.getCurrentCamera();
+        //update cam direction in shader
+        material.setVector3("m_camDir", sceneCam.getDirection());
+
         //update ray
         ray.setOrigin(sceneCam.getLocation());
         ray.setDirection(sceneCam.getDirection());
@@ -290,11 +294,21 @@ public class SimpleWaterProcessor implements SceneProcessor {
      * @param plane
      */
     public void setPlane(Plane plane) {
-        this.plane = plane;
+        this.plane.setConstant(plane.getConstant());
+        this.plane.setNormal(plane.getNormal());
     }
 
-    public void setLightPosition(Vector3f position) {
-        material.setColor("m_lightpos", new ColorRGBA(position.x, position.y, position.z, 1.0f));
+    /**
+     * Set the water plane using an origin (location) and a normal (reflection direction).
+     * @param origin Set to 0,-6,0 if your water quad is at that location for correct reflection
+     * @param normal Set to 0,1,0 (Vector3f.UNIT_Y) for normal planar water
+     */
+    public void setPlane(Vector3f origin, Vector3f normal) {
+        this.plane.setOriginNormal(origin, normal);
+    }
+
+    public void setLightDirection(Vector3f direction) {
+        material.setVector3("m_lightDir", direction);
     }
 
     /**
@@ -353,10 +367,15 @@ public class SimpleWaterProcessor implements SceneProcessor {
         this.debug = debug;
     }
 
+    /**
+     * Creates a quad with the water material applied to it.
+     * @param width
+     * @param height
+     * @return
+     */
     public Geometry createWaterGeometry(float width, float height) {
         Quad quad = new Quad(width, height);
         Geometry geom = new Geometry("WaterGeometry", quad);
-//        plane.getNormal().dot(targetLocation);
         geom.setLocalRotation(new Quaternion().fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_X));
         geom.setMaterial(material);
         return geom;

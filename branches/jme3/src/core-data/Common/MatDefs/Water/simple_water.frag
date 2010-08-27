@@ -15,12 +15,15 @@ uniform float m_waterDepth;
 uniform vec4 m_distortionScale;
 uniform vec4 m_distortionMix;
 uniform vec4 m_texScale;
+uniform vec3 m_camDir;
+uniform vec3 m_lightDir;
 
-varying vec4 waterTex0; //lightpos
+//varying vec4 waterTex0; //lightpos
 varying vec4 waterTex1; //moving texcoords
 varying vec4 waterTex2; //moving texcoords
 varying vec4 waterTex3; //for projection
 varying vec4 waterTex4; //viewts
+varying vec3 H;
 
 //unit 0 = m_water_reflection
 //unit 1 = m_water_refraction
@@ -35,11 +38,21 @@ varying vec4 waterTex4; //viewts
 
  const float exponent = 64.0;
 
+float tangDot(in vec3 v1, in vec3 v2){
+    float d = dot(v1,v2);
+    #ifdef V_TANGENT
+        d = 1.0 - d*d;
+        return step(0.0, d) * sqrt(d);
+    #else
+        return d;
+    #endif
+}
+
 void main(void)
 {
 
 
-     vec4 lightTS = normalize(waterTex0);
+    // vec4 lightTS = normalize(waterTex0);
      vec4 viewt = normalize(waterTex4);
      vec4 disdis = texture2D(m_water_dudvmap, vec2(waterTex2 * m_texScale));
      vec4 dist = texture2D(m_water_dudvmap, vec2(waterTex1 + disdis*m_distortionMix));
@@ -51,8 +64,7 @@ void main(void)
      //load normalmap
      vec4 nmap = texture2D(m_water_normalmap, vec2(waterTex1 + disdis*m_distortionMix));
      nmap = (nmap-ofive) * two;
-     vec4 vNorm = nmap;
-     vNorm = normalize(nmap);
+     vec3 vNorm = normalize(nmap.xyz);
 
      //get projective texcoords
      vec4 tmp = vec4(1.0 / waterTex3.w);
@@ -73,14 +85,19 @@ void main(void)
      wdepth = vec4(pow(wdepth.x, m_waterDepth));
      vec4 invdepth = 1.0 - wdepth;
 
+
+ // Standard Phong
+     vec3 R = reflect(-m_lightDir, vNorm);
+     vec3 specular = vec3(pow(max(tangDot(R, m_camDir), 0.0), 25.0));//25.0 is shininess parameter, it should be a uniform
+
      //calculate specular highlight
-     vec4 vRef = normalize(reflect(-lightTS, vNorm));
+   /*  vec4 vRef = normalize(reflect(-lightTS, vNorm));
      float stemp =max(0.0, dot(viewt, vRef) );
      stemp = pow(stemp, exponent);
      vec4 specular = vec4(stemp);
-
+*/
      //calculate fresnel and inverted fresnel
-     vec4 invfres = vec4( dot(vNorm, viewt) );
+     vec4 invfres = vec4( dot(vec4(vNorm,0.0), viewt) );
      vec4 fres = vec4(1.0) -invfres ;
 
      //calculate reflection and refraction
@@ -93,5 +110,5 @@ void main(void)
      //add reflection and refraction
      tmp = refr + refl;
 
-     gl_FragColor = tmp + specular;
+     gl_FragColor = tmp +vec4(specular,0.0);
 }

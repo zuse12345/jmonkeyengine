@@ -98,7 +98,7 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
         waterProcessor.setDebug(true);
         viewPort.addProcessor(waterProcessor);
 
-        waterProcessor.setLightPosition(new Vector3f(1f, -1f, 1f));
+        waterProcessor.setLightDirection( new Vector3f(0.5498224f, -0.82151467f, 0.15102655f));
 
         //create water quad
         waterPlane = waterProcessor.createWaterGeometry(10, 10);
@@ -110,8 +110,8 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
     @Override
     public void simpleUpdate(float tpf) {
         fpsText.setText("Light Position: "+lightPos.toString()+" ( Change with [U], [H], [J], [K] (x,z) and [T], [G] (y) )");
-        waterProcessor.setLightPosition(lightPos);
-        lightSphere.setLocalTranslation(lightPos);
+   //     waterProcessor.setLightPosition(lightPos);
+   //     lightSphere.setLocalTranslation(lightPos);
 //        waterProcessor.setLightPosition(cam.getLocation().add(lightPos));
     }
 

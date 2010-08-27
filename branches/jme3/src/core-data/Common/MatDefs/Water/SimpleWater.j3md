@@ -9,7 +9,6 @@ MaterialDef SimpleWater {
         Vector4 m_lightpos
         Vector4 m_waterColor
         Float m_time
-        Float m_time2
         Float m_waterDepth
         Float m_waveStrength
         Vector4 m_distortionScale

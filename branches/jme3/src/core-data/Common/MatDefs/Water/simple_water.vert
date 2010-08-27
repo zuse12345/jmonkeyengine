@@ -15,7 +15,7 @@ varying vec4 waterTex4;
 varying vec4 viewpos;
 uniform vec3 g_CameraPosition;
 uniform vec4 m_lightpos;
-uniform float m_time, m_time2;
+uniform float m_time;
 //unit 0 = water_reflection
 //unit 1 = water_refraction
 //unit 2 = water_normalmap
@@ -51,7 +51,7 @@ void main(void)
     mpos = g_WorldViewProjectionMatrix * inPosition;
 
     vec4 t1 = vec4(0.0, -m_time, 0.0,0.0);
-    vec4 t2 = vec4(0.0, -m_time2, 0.0,0.0);
+    vec4 t2 = vec4(0.0, m_time, 0.0,0.0);
 
     waterTex1 =vec4(inTexCoord,0.0,0.0) + t1;
     waterTex2 =vec4(inTexCoord ,0.0,0.0)+ t2;

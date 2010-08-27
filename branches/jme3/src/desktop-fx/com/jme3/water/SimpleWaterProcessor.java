@@ -105,7 +105,6 @@ public class SimpleWaterProcessor implements SceneProcessor {
             time = 0;
         }
         material.setFloat("m_time", time);
-        material.setFloat("m_time2", -time);
     }
 
     public void postQueue(RenderQueue rq) {

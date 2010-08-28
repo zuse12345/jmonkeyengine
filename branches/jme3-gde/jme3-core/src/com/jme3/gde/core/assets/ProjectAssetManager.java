@@ -32,8 +32,8 @@
 package com.jme3.gde.core.assets;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.asset.DesktopAssetManager;
 import com.jme3.system.JmeSystem;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import org.netbeans.api.project.Project;
@@ -79,7 +79,7 @@ public class ProjectAssetManager {
 
     public AssetManager getManager() {
         if (manager == null) {
-            manager = JmeSystem.newAssetManager();//new DesktopAssetManager(true);
+            manager = new DesktopAssetManager(true);
         }
         return manager;
     }

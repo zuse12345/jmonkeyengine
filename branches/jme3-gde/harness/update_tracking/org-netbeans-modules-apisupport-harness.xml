@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <module codename="org.netbeans.modules.apisupport.harness">
-    <module_version install_time="1276183744179" last="false" origin="installer" specification_version="1.22.1">
+    <module_version install_time="1280356465213" last="true" origin="installer" specification_version="1.22.2">
         <file crc="2850708878" name="README"/>
-        <file crc="2309339016" name="antlib/bindex-2.2.jar"/>
-        <file crc="623532342" name="antlib/jsearch-2.0_05.jar"/>
+        <file crc="2361081766" name="antlib/bindex-2.2.jar"/>
+        <file crc="101388545" name="antlib/jsearch-2.0_05.jar"/>
         <file crc="1051977518" name="build.xml"/>
         <file crc="2228609782" name="common.xml"/>
         <file crc="2967796174" name="config/Modules/org-netbeans-modules-apisupport-harness.xml"/>
@@ -12,43 +12,16 @@
         <file crc="2195682192" name="etc/applicationIcon.icns"/>
         <file crc="43866191" name="jdk.xml"/>
         <file crc="23098243" name="jnlp.xml"/>
-        <file crc="488926403" name="jnlp/jnlp-launcher.jar"/>
+        <file crc="4231949292" name="jnlp/jnlp-launcher.jar"/>
         <file crc="301521754" name="launchers/app.exe"/>
         <file crc="2994076804" name="launchers/app.sh"/>
         <file crc="1618502330" name="launchers/pre7_app.exe"/>
         <file crc="2223057369" name="launchers/pre7_app_w.exe"/>
-        <file crc="3680124745" name="modules/org-netbeans-modules-apisupport-harness.jar"/>
-        <file crc="1644352092" name="no-testcoverage.xml"/>
-        <file crc="4204904456" name="osgi.xml"/>
-        <file crc="661416126" name="run.xml"/>
-        <file crc="1353269826" name="suite.xml"/>
-        <file crc="3726897297" name="tasks.jar"/>
-    </module_version>
-    <module_version install_time="1281875656905" last="true" origin="NetBeans" specification_version="1.22.2">
-        <file crc="1969315067" name="modules/locale/org-netbeans-modules-apisupport-harness_ja.jar"/>
-        <file crc="120885505" name="modules/locale/org-netbeans-modules-apisupport-harness_pt_BR.jar"/>
-        <file crc="2589664065" name="modules/locale/org-netbeans-modules-apisupport-harness_zh_CN.jar"/>
-        <file crc="2850708878" name="README"/>
-        <file crc="2309339016" name="antlib/bindex-2.2.jar"/>
-        <file crc="623532342" name="antlib/jsearch-2.0_05.jar"/>
-        <file crc="1051977518" name="build.xml"/>
-        <file crc="2228609782" name="common.xml"/>
-        <file crc="2967796174" name="config/Modules/org-netbeans-modules-apisupport-harness.xml"/>
-        <file crc="1289644161" name="etc/Info.plist"/>
-        <file crc="271397868" name="etc/app.conf"/>
-        <file crc="2195682192" name="etc/applicationIcon.icns"/>
-        <file crc="43866191" name="jdk.xml"/>
-        <file crc="23098243" name="jnlp.xml"/>
-        <file crc="523890968" name="jnlp/jnlp-launcher.jar"/>
-        <file crc="301521754" name="launchers/app.exe"/>
-        <file crc="2994076804" name="launchers/app.sh"/>
-        <file crc="1618502330" name="launchers/pre7_app.exe"/>
-        <file crc="2223057369" name="launchers/pre7_app_w.exe"/>
-        <file crc="2805558424" name="modules/org-netbeans-modules-apisupport-harness.jar"/>
+        <file crc="3729658578" name="modules/org-netbeans-modules-apisupport-harness.jar"/>
         <file crc="1644352092" name="no-testcoverage.xml"/>
         <file crc="3539517711" name="osgi.xml"/>
         <file crc="661416126" name="run.xml"/>
         <file crc="919031094" name="suite.xml"/>
-        <file crc="2020871155" name="tasks.jar"/>
+        <file crc="1206961931" name="tasks.jar"/>
     </module_version>
 </module>

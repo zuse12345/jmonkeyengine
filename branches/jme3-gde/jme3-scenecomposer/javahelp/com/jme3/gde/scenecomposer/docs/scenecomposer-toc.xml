@@ -7,6 +7,6 @@ and open the template in the editor.
 <toc version="2.0">
     <tocitem text="Simple SceneComposer">
     <tocitem text="About Simple SceneComposer" target="com.jme3.gde.scenecomposer.about"/>
-    <tocitem text="Using Simple SceneComposer" target="com.jme3.gde.scenecomposer.usage"/>
+    <tocitem text="Using Simple SceneComposer (online)" target="com.jme3.gde.scenecomposer.usage"/>
     </tocitem>
 </toc>

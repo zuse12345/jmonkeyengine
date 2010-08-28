@@ -35,6 +35,21 @@
     <mapID target="com.jme3.gde.core.about" url="core-about.html"/>
     <mapID target="com.jme3.gde.core.tutorials" url="core-tutorials.html"/>
     <mapID target="com.jme3.gde.core.sceneviewer" url="core-sceneviewer.html"/>
-    <mapID target="com.jme3.gde.core.sceneexplorer" url="core-sceneexplorer.html"/>
-    <mapID target="com.jme3.gde.core.importing" url="core-importing.html"/>
+    <mapID target="com.jme3.gde.core.updating" url="core-updating.html"/>
+    <mapID target="com.jme3.gde.core.sceneexplorer" url="http://www.jmonkeyengine.com/wiki/doku.php/jme3:jmonkeyplatform:scene_explorer?do=export_xhtmlbody"/>
+    <mapID target="com.jme3.gde.core.importing" url="http://www.jmonkeyengine.com/wiki/doku.php/jme3:jmonkeyplatform:model_loader_and_viewer?do=export_xhtmlbody"/>
+
+    <mapID target="com.jme3.tutorials.helloapplication" url="http://jmonkeyengine.com/wiki/doku.php/jme3:beginner:hello_simpleapplication?do=export_xhtmlbody"/>
+    <mapID target="com.jme3.tutorials.hellonode" url="http://jmonkeyengine.com/wiki/doku.php/jme3:beginner:hello_node?do=export_xhtmlbody"/>
+    <mapID target="com.jme3.tutorials.helloassets" url="http://jmonkeyengine.com/wiki/doku.php/jme3:beginner:hello_asset?do=export_xhtmlbody"/>
+    <mapID target="com.jme3.tutorials.helloloop" url="http://jmonkeyengine.com/wiki/doku.php/jme3:beginner:hello_main_event_loop?do=export_xhtmlbody"/>
+    <mapID target="com.jme3.tutorials.helloinput" url="http://jmonkeyengine.com/wiki/doku.php/jme3:beginner:hello_input_system?do=export_xhtmlbody"/>
+    <mapID target="com.jme3.tutorials.hellomaterial" url="http://jmonkeyengine.com/wiki/doku.php/jme3:beginner:hello_material?do=export_xhtmlbody"/>
+    <mapID target="com.jme3.tutorials.helloanimation" url="http://jmonkeyengine.com/wiki/doku.php/jme3:beginner:hello_animation?do=export_xhtmlbody"/>
+    <mapID target="com.jme3.tutorials.hellopicking" url="http://jmonkeyengine.com/wiki/doku.php/jme3:beginner:hello_picking?do=export_xhtmlbody"/>
+    <mapID target="com.jme3.tutorials.hellocollision" url="http://jmonkeyengine.com/wiki/doku.php/jme3:beginner:hello_collision?do=export_xhtmlbody"/>
+    <mapID target="com.jme3.tutorials.helloaudio" url="http://jmonkeyengine.com/wiki/doku.php/jme3:beginner:hello_audio?do=export_xhtmlbody"/>
+    <mapID target="com.jme3.tutorials.helloeffects" url="http://jmonkeyengine.com/wiki/doku.php/jme3:beginner:hello_effects?do=export_xhtmlbody"/>
+    <mapID target="com.jme3.tutorials.hellophysics" url="http://jmonkeyengine.com/wiki/doku.php/jme3:beginner:hello_physics?do=export_xhtmlbody"/>
+
 </map>

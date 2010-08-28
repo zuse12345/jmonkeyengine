@@ -36,4 +36,5 @@
     <indexitem text="The SceneViewer" target="com.jme3.gde.core.sceneviewer"/>
     <indexitem text="The SceneExplorer" target="com.jme3.gde.core.sceneexplorer"/>
     <indexitem text="Importing Models" target="com.jme3.gde.core.importing"/>
+    <indexitem text="Updating jMP" target="com.jme3.gde.core.updating"/>
 </index>

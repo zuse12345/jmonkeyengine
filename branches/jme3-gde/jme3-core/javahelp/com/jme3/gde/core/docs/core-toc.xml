@@ -34,9 +34,14 @@
 <toc version="2.0">
     <tocitem text="jMonkeyPlatform Core">
         <tocitem text="About jMonkeyPlatform" target="com.jme3.gde.core.about"/>
+        <tocitem text="Creating a Project (online)" target="com.jme3.gde.core.projectcreation"/>
         <tocitem text="The SceneViewer" target="com.jme3.gde.core.sceneviewer"/>
         <tocitem text="The SceneExplorer (online)" target="com.jme3.gde.core.sceneexplorer"/>
         <tocitem text="Importing Models (online)" target="com.jme3.gde.core.importing"/>
+        <tocitem text="Code Editor (online)" target="com.jme3.gde.core.codeeditor"/>
+        <tocitem text="Version Control (online)" target="com.jme3.gde.core.versioncontrol"/>
+        <tocitem text="Debugging, Testing (online)" target="com.jme3.gde.core.debugging"/>
+        <tocitem text="Deployment (online)" target="com.jme3.gde.core.deployment"/>
         <tocitem text="Updating jMP" target="com.jme3.gde.core.updating"/>
     </tocitem>
     <tocitem text="jMonkeyEngine3 Tutorials (online)">

@@ -325,7 +325,7 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
         refreshSelectedParent();
     }
 
-    public void addModel(final AssetManager manager, final String assetName) {
+    public void addModel(final AssetManager manager, final String assetName, final Vector3f location) {
         if (selectedSpat == null) {
             return;
         }
@@ -335,14 +335,14 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
             SceneApplication.getApplication().enqueue(new Callable<Object>() {
 
                 public Object call() throws Exception {
-                    doAddModel(manager, assetName, selected);
+                    doAddModel(manager, assetName, selected, location);
                     return null;
                 }
             });
         }
     }
 
-    public void doAddModel(AssetManager manager, String assetName, Node selected) {
+    public void doAddModel(AssetManager manager, String assetName, Node selected, Vector3f location) {
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Adding Model..");
         progressHandle.start();
         try {
@@ -351,6 +351,11 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
             Spatial linkNode = manager.loadAsset(key);
             if (linkNode != null) {
                 selected.attachChild(linkNode);
+                if (location != null) {
+                    Vector3f localVec = new Vector3f();
+                    selected.worldToLocal(location, localVec);
+                    linkNode.setLocalTranslation(localVec);
+                }
             }
             refreshSelected();
         } catch (Exception ex) {
@@ -364,7 +369,7 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
 
     }
 
-    public void linkModel(final AssetManager manager, final String assetName) {
+    public void linkModel(final AssetManager manager, final String assetName, final Vector3f location) {
         if (selectedSpat == null) {
             return;
         }
@@ -374,14 +379,14 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
             SceneApplication.getApplication().enqueue(new Callable<Object>() {
 
                 public Object call() throws Exception {
-                    doLinkModel(manager, assetName, selected);
+                    doLinkModel(manager, assetName, selected, location);
                     return null;
                 }
             });
         }
     }
 
-    public void doLinkModel(AssetManager manager, String assetName, Node selected) {
+    public void doLinkModel(AssetManager manager, String assetName, Node selected, Vector3f location) {
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Adding Model..");
         progressHandle.start();
         try {
@@ -394,6 +399,11 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
                 AssetLinkNode linkNode = new AssetLinkNode(key);
                 linkNode.attachLinkedChildren(manager);
                 selected.attachChild(linkNode);
+                if (location != null) {
+                    Vector3f localVec = new Vector3f();
+                    selected.worldToLocal(location, localVec);
+                    linkNode.setLocalTranslation(localVec);
+                }
             }
             refreshSelected();
         } catch (Exception ex) {

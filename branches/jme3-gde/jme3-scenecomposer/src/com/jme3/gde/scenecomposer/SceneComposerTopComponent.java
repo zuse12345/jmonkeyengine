@@ -652,13 +652,13 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 
     void addModel(AssetManager manager, String assetName) {
         if (editorController != null) {
-            editorController.addModel(manager, assetName);
+            editorController.addModel(manager, assetName, toolController.getCursorLocation());
         }
     }
 
     void linkModel(AssetManager manager, String assetName) {
         if (editorController != null) {
-            editorController.linkModel(manager, assetName);
+            editorController.linkModel(manager, assetName, toolController.getCursorLocation());
         }
     }
 

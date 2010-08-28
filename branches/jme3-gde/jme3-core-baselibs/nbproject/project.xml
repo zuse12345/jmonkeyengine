@@ -85,6 +85,7 @@
                 <package>com.jme3.util.xml</package>
                 <package>com.jme3.video</package>
                 <package>com.jme3.video.plugins.jheora</package>
+                <package>com.jme3.water</package>
                 <package>jme3game.cubefield</package>
                 <package>jme3tools.converters</package>
                 <package>jme3tools.converters.model</package>

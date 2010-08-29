@@ -29,6 +29,7 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
     Geometry waterPlane;
     Geometry lightSphere;
     SimpleWaterProcessor waterProcessor;
+    Node sceneNode;
     boolean useWater = true;
 
     public static void main(String[] args) {
@@ -38,59 +39,8 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
 
     @Override
     public void simpleInitApp() {
-        flyCam.setMoveSpeed(3);
-        //init input
-        inputManager.addMapping("use_water", new KeyTrigger(KeyInput.KEY_O));
-        inputManager.addListener(this, "use_water");
-
-        inputManager.addMapping("lightup", new KeyTrigger(KeyInput.KEY_T));
-        inputManager.addListener(this, "lightup");
-        inputManager.addMapping("lightdown", new KeyTrigger(KeyInput.KEY_G));
-        inputManager.addListener(this, "lightdown");
-        inputManager.addMapping("lightleft", new KeyTrigger(KeyInput.KEY_H));
-        inputManager.addListener(this, "lightleft");
-        inputManager.addMapping("lightright", new KeyTrigger(KeyInput.KEY_K));
-        inputManager.addListener(this, "lightright");
-        inputManager.addMapping("lightforward", new KeyTrigger(KeyInput.KEY_U));
-        inputManager.addListener(this, "lightforward");
-        inputManager.addMapping("lightback", new KeyTrigger(KeyInput.KEY_J));
-        inputManager.addListener(this, "lightback");
-
-        //init cam location
-        cam.setLocation(new Vector3f(0, 10, 10));
-        cam.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
-
-        //init scene
-        Node sceneNode = new Node("Scene");
-        mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
-        mat.setTexture("m_ColorMap", assetManager.loadTexture("Interface/Logo/Monkey.jpg"));
-        Box b = new Box(Vector3f.ZERO, 1, 1, 1);
-        Geometry geom = new Geometry("Box", b);
-        geom.setMaterial(mat);
-        sceneNode.attachChild(geom);
-
-        // load sky
-        Sphere sphereMesh = new Sphere(32, 32, 10, false, true);
-        Geometry sphere = new Geometry("Sky", sphereMesh);
-        sphere.updateModelBound();
-        sphere.setQueueBucket(Bucket.Sky);
-        Material sky = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
-        TextureKey key = new TextureKey("Textures/Sky/Bright/BrightSky.dds", true);
-        key.setGenerateMips(true);
-        key.setAsCube(true);
-        Texture tex = assetManager.loadTexture(key);
-        sky.setTexture("m_Texture", tex);
-        sky.setVector3("m_NormalScale", Vector3f.UNIT_XYZ);
-        sphere.setMaterial(sky);
-        sceneNode.attachChild(sphere);
-
-        rootNode.attachChild(sceneNode);
-
-        //add lightPos Geometry
-        Sphere lite=new Sphere(8, 8, 0.1f);
-        lightSphere=new Geometry("lightsphere", lite);
-        lightSphere.setMaterial(mat);
-        rootNode.attachChild(lightSphere);
+        initInput();
+        initScene();
 
         //create processor
         waterProcessor = new SimpleWaterProcessor(assetManager);
@@ -107,12 +57,63 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
         rootNode.attachChild(waterPlane);
     }
 
+    private void initScene() {
+        //init cam location
+        cam.setLocation(new Vector3f(0, 10, 10));
+        cam.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
+        //init scene
+        sceneNode = new Node("Scene");
+        mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
+        mat.setTexture("m_ColorMap", assetManager.loadTexture("Interface/Logo/Monkey.jpg"));
+        Box b = new Box(Vector3f.ZERO, 1, 1, 1);
+        Geometry geom = new Geometry("Box", b);
+        geom.setMaterial(mat);
+        sceneNode.attachChild(geom);
+        // load sky
+        Sphere sphereMesh = new Sphere(32, 32, 10, false, true);
+        Geometry sphere = new Geometry("Sky", sphereMesh);
+        sphere.updateModelBound();
+        sphere.setQueueBucket(Bucket.Sky);
+        Material sky = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
+        TextureKey key = new TextureKey("Textures/Sky/Bright/BrightSky.dds", true);
+        key.setGenerateMips(true);
+        key.setAsCube(true);
+        Texture tex = assetManager.loadTexture(key);
+        sky.setTexture("m_Texture", tex);
+        sky.setVector3("m_NormalScale", Vector3f.UNIT_XYZ);
+        sphere.setMaterial(sky);
+        sceneNode.attachChild(sphere);
+        rootNode.attachChild(sceneNode);
+    }
+
+    protected void initInput() {
+        flyCam.setMoveSpeed(3);
+        //init input
+        inputManager.addMapping("use_water", new KeyTrigger(KeyInput.KEY_O));
+        inputManager.addListener(this, "use_water");
+        inputManager.addMapping("lightup", new KeyTrigger(KeyInput.KEY_T));
+        inputManager.addListener(this, "lightup");
+        inputManager.addMapping("lightdown", new KeyTrigger(KeyInput.KEY_G));
+        inputManager.addListener(this, "lightdown");
+        inputManager.addMapping("lightleft", new KeyTrigger(KeyInput.KEY_H));
+        inputManager.addListener(this, "lightleft");
+        inputManager.addMapping("lightright", new KeyTrigger(KeyInput.KEY_K));
+        inputManager.addListener(this, "lightright");
+        inputManager.addMapping("lightforward", new KeyTrigger(KeyInput.KEY_U));
+        inputManager.addListener(this, "lightforward");
+        inputManager.addMapping("lightback", new KeyTrigger(KeyInput.KEY_J));
+        inputManager.addListener(this, "lightback");
+        //add lightPos Geometry
+        Sphere lite=new Sphere(8, 8, 0.1f);
+        lightSphere=new Geometry("lightsphere", lite);
+        lightSphere.setMaterial(mat);
+        rootNode.attachChild(lightSphere);
+
+    }
+
     @Override
     public void simpleUpdate(float tpf) {
-        fpsText.setText("Light Position: "+lightPos.toString()+" ( Change with [U], [H], [J], [K] (x,z) and [T], [G] (y) )");
-   //     waterProcessor.setLightPosition(lightPos);
-   //     lightSphere.setLocalTranslation(lightPos);
-//        waterProcessor.setLightPosition(cam.getLocation().add(lightPos));
+        fpsText.setText("Light Position: "+lightPos.toString()+" Change Light position with [U], [H], [J], [K] and [T], [G] Turn off water with [O]");
     }
 
     private Vector3f lightPos = new Vector3f();

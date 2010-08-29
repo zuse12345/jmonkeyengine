@@ -67,6 +67,7 @@ public final class OpenModel implements ActionListener {
                 progressHandle.start();
                 final ProjectAssetManager manager = context.getLookup().lookup(ProjectAssetManager.class);
                 if (manager == null) {
+                    progressHandle.finish();
                     return;
                 }
                 final FileObject file = context.getPrimaryFile();

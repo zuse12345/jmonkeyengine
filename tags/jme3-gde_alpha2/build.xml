@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
+<!-- for some information on what you could do (e.g. targets to override). -->
+<!-- If you delete this file and reopen the project it will be recreated. -->
+<project name="jme-gde" basedir=".">
+    <description>Builds the module suite jme-gde.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <!--TODO: using the evil for loop from ant-contrib for loops and if, change that..-->
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+        <classpath>
+            <pathelement location="ant-lib/ant-contrib.jar"/>
+        </classpath>
+    </taskdef>
+
+    <!--zips up the templates and adds them to the template project-->
+    <target name="zip-templates" description="Updates the template zip files">
+        <zip basedir="BasicGameTemplate/" destfile="jme3-templates/src/com/jme3/gde/templates/BasicGameProject.zip">
+            <exclude name="**/build/"/>
+            <exclude name="**/dist/"/>
+            <exclude name="**/nbproject/private/"/>
+        </zip>
+        <zip basedir="JME3TestsTemplate/" destfile="jme3-tests-template/src/com/jme3/gde/templates/tests/JmeTestsProject.zip">
+            <exclude name="**/build/"/>
+            <exclude name="**/dist/"/>
+            <exclude name="**/nbproject/private/"/>
+        </zip>
+    </target>
+
+    <!--override build to include netbeans config file creation-->
+    <target name="build" depends="-create-netbeans-config, suite.build">
+    </target>
+
+    <!--replaces default values in jmonkeyplatform.conf file with run.args.extra from project.properties-->
+    <target name="-create-netbeans-config">
+        <property file="nbproject/project.properties"/>
+        <mkdir dir="build/launcher/etc"/>
+        <copy file="${harness.dir}/etc/app.conf" tofile="build/launcher/etc/${app.name}.conf">
+            <filterchain>
+                <replacestring from="$${branding.token}" to="${branding.token}"/>
+                <replacestring from="-J-Xmx64m" to="${run.args.extra}"/>
+            </filterchain>
+        </copy>
+    </target>
+
+    <!--creates linux/win and osx zip distributions of jMonkeyPlatform-->
+    <target name="dist-gde" depends="suite.clean, -create-netbeans-config, zip-templates, set-impl-version, jmp-release-zip, jmp-release-mac, unset-impl-version">
+    </target>
+
+    <!--creates update center version via hudson build server-->
+    <target name="dist-gde-hudson" depends="suite.clean, -revert-svn-changes, zip-templates, -set-impl-version-hudson, suite.nbms, -unset-impl-version-hudson">
+    </target>
+
+    <target name="jmp-release-zip" depends="build,build-launchers" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
+        <mkdir dir="${dist.dir}"/>
+        <!-- pathfileset does not support 'prefix' and 'filemode' parameters,
+             we have to copy them to temp location -->
+        <tempfile property="temp.dir.nbexec" destdir="${basedir}/build" deleteonexit="true" prefix="nbexec"/>
+        <tempfile property="temp.dir.rest" destdir="${basedir}/build" deleteonexit="delete" prefix="rest"/>
+        <subant genericantfile="${harness.dir}/suite.xml" target="copy-cluster" inheritrefs="true">
+            <property name="dest.dir" value="${temp.dir.rest}"/>
+            <property name="nbexec.dir" value="${temp.dir.nbexec}"/>
+            <property name="build.dir" value="${basedir}/build"/>
+            <resources refid="zip.platform.clusters"/>
+        </subant>
+        <zip destfile="${dist.dir}/${app.release.name}.zip">
+            <zipfileset dir="${build.launcher.dir}/bin/" filemode="755" prefix="${app.name}/bin"/>
+            <zipfileset dir="${build.launcher.dir}/etc/" prefix="${app.name}/etc"/>
+            <zipfileset dir="${temp.dir.nbexec}" filemode="755" prefix="${app.name}"/>
+            <zipfileset dir="${temp.dir.rest}" prefix="${app.name}"/>
+
+            <!-- Yes, the doubled app.name is a bit ugly, but better than the alternative; cf. #66441: -->
+            <zipfileset dir="${cluster}" prefix="${app.name}/${app.name}">
+                <exclude name="config/Modules/*.xml_hidden"/>
+            </zipfileset>
+
+            <!--add README.TXT-->
+            <zipfileset dir="${basedir}" prefix="${app.name}">
+                <include name="README.TXT"/>
+            </zipfileset>
+        </zip>
+    </target>
+
+    <!--zip up mac version using command line tool-->
+    <target name="jmp-release-mac" depends="build-mac" description="Build Mac OS X Application and zip it">
+        <exec executable="zip" dir="dist/">
+            <arg value="-yr"/>
+            <arg value="${app.release.name}-MacOSX.zip"/>
+            <arg value="jmonkeyplatform.app"/>
+            <arg value="../README.TXT"/>
+        </exec>
+    </target>
+
+    <target name="set-impl-version">
+        <property file="nbproject/project.properties"/>
+        <antcall target="-create-jme3-svn-properties" inheritall="true">
+            <param name="jme3_dir" value="../jme3/"/>
+        </antcall>
+        <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true">
+            <param name="set_impl_version" value="true"/>
+        </foreach>
+    </target>
+
+    <target name="unset-impl-version">
+        <property file="nbproject/project.properties"/>
+        <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true">
+            <param name="set_impl_version" value="false"/>
+        </foreach>
+    </target>
+
+    <target name="-set-impl-version-hudson">
+        <property file="nbproject/project.properties"/>
+        <antcall target="-create-jme3-svn-properties" inheritall="true">
+            <param name="jme3_dir" value="../../jme3/workspace/"/>
+        </antcall>
+        <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true">
+            <param name="set_impl_version" value="true"/>
+        </foreach>
+    </target>
+
+    <target name="-unset-impl-version-hudson">
+        <property file="nbproject/project.properties"/>
+        <foreach target="-do-impl-version" list="${modules}" delimiter=":" param="module_dir" inheritall="true">
+            <param name="set_impl_version" value="false"/>
+        </foreach>
+    </target>
+
+    <!--sets/unsets implementation version to svn revision for plugins-->
+    <target name="-do-impl-version">
+        <!--jme3 libraries-->
+        <if>
+            <or>
+                <equals arg1="${module_dir}" arg2="jme3-core-libraries"/>
+                <equals arg1="${module_dir}" arg2="jme3-project-libraries"/>
+            </or>
+            <then>
+                <!--set jme3 libraries svn revision-->
+                <property prefix="svn" file="build/jme3-lib-svn.properties"/>
+            </then>
+            <else>
+                <!--jme3 core-->
+                <if>
+                    <or>
+                        <equals arg1="${module_dir}" arg2="jme3-core-baselibs"/>
+                        <equals arg1="${module_dir}" arg2="jme3-project-baselibs"/>
+                    </or>
+                    <then>
+                        <!--set jme3 svn revision-->
+                        <property prefix="svn" file="build/jme3-svn.properties"/>
+                    </then>
+                    <else>
+                        <!--jme3 test data-->
+                        <if>
+                            <equals arg1="${module_dir}" arg2="jme3-project-testdata"/>
+                            <then>
+                                <!--set jme3 testdata svn revision-->
+                                <property prefix="svn" file="build/jme3-testdata-svn.properties"/>
+                            </then>
+                            <else>
+                                <!--jme3 tests-->
+                                <if>
+                                    <equals arg1="${module_dir}" arg2="jme3-tests-template"/>
+                                    <then>
+                                        <!--set jme3 tests svn revision-->
+                                        <property prefix="svn" file="build/jme3-tests-svn.properties"/>
+                                    </then>
+                                    <!--"normal" module-->
+                                    <else>
+                                        <!--load svn revision of this modules folder if we are setting the value-->
+                                        <if>
+                                            <equals arg1="${set_impl_version}" arg2="true"/>
+                                            <then>
+                                                <exec executable="svn" output="build/${module_dir}-svn.properties" dir="${module_dir}">
+                                                    <arg value="info" />
+                                                </exec>
+                                                <replace file="build/${module_dir}-svn.properties" token=" " value=""/>
+                                            </then>
+                                        </if>
+                                        <!--set svn revision of module-->
+                                        <property prefix="svn" file="build/${module_dir}-svn.properties"/>
+                                    </else>
+                                </if>
+                            </else>
+                        </if>
+                    </else>
+                </if>
+            </else>
+        </if>
+
+        <if>
+            <equals arg1="${set_impl_version}" arg2="true"/>
+            <then>
+                <echo>Setting implementation version for ${module_dir} to revision: ${svn.LastChangedRev}</echo>
+                <replace  file="${module_dir}/manifest.mf" token="OpenIDE-Module-Implementation-Version: 0" value="OpenIDE-Module-Implementation-Version: ${svn.LastChangedRev}"/>
+            </then>
+            <else>
+                <echo>Removing implementation version for ${module_dir} from revision: ${svn.LastChangedRev}</echo>
+                <replace file="${module_dir}/manifest.mf" token="OpenIDE-Module-Implementation-Version: ${svn.LastChangedRev}" value="OpenIDE-Module-Implementation-Version: 0"/>
+            </else>
+        </if>
+
+    </target>
+
+    <!--reverts svn changes (in case the revision numbers haven't been reset-->
+    <target name="-revert-svn-changes">
+        <!--remove changes from jMP (old version numbers)-->
+        <exec executable="svn" dir=".">
+            <arg value="revert" />
+            <arg value="." />
+            <arg value="-R" />
+        </exec>
+        <!--update gde svn revision-->
+        <exec executable="svn" dir=".">
+            <arg value="update" />
+        </exec>
+    </target>
+
+    <!--creates properties files containing svn info for the jme3 folders-->
+    <target name="-create-jme3-svn-properties">
+        <mkdir dir="build"/>
+        <!--jme3 svn properties-->
+        <exec executable="svn" dir="${jme3_dir}" output="build/jme3-svn.properties">
+            <arg value="info" />
+        </exec>
+        <replace file="build/jme3-svn.properties" token=" " value=""/>
+        <!--jme3 test data svn properties-->
+        <exec executable="svn" dir="${jme3_dir}/src/test-data/" output="build/jme3-testdata-svn.properties">
+            <arg value="info" />
+        </exec>
+        <replace file="build/jme3-testdata-svn.properties" token=" " value=""/>
+        <!--jme3 libraries svn properties-->
+        <exec executable="svn" dir="${jme3_dir}/lib/" output="build/jme3-lib-svn.properties">
+            <arg value="info" />
+        </exec>
+        <replace file="build/jme3-lib-svn.properties" token=" " value=""/>
+        <!--jme3 tests svn properties-->
+        <exec executable="svn" dir="${jme3_dir}/src/test/" output="build/jme3-tests-svn.properties">
+            <arg value="info" />
+        </exec>
+        <replace file="build/jme3-tests-svn.properties" token=" " value=""/>
+    </target>
+
+    <target name="create-private-config">
+        <exec executable="mkdir" dir="./nbproject/" failonerror="false">
+            <arg value="private" />
+        </exec>
+        <exec executable="echo" dir="." output="./nbproject/private/platform-private.properties">
+            <arg value="nbplatform.default.netbeans.dest.dir=/var/lib/hudson/.netbeans/6.9/NetBeans 6.9.app/Contents/Resources/NetBeans"/>
+        </exec>
+        <exec executable="echo" dir="." output="./nbproject/private/platform-private.properties" append="true">
+            <arg value="nbplatform.default.harness.dir=/var/lib/hudson/.netbeans/6.9/NetBeans 6.9.app/Contents/Resources/NetBeans/harness"/>
+        </exec>
+    </target>
+    
+</project>

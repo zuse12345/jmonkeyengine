@@ -58,7 +58,7 @@
 
     <mapID target="com.jme3.gde.development" url="core-development.html"/>
     <mapID target="com.jme3.gde.development.setup" url="http://www.jmonkeyengine.com/wiki/doku.php/jme3:jmonkeyplatform:development:setup?do=export_xhtmlbody"/>
-    <mapID target="com.jme3.gde.development.general" url="http://www.jmonkeyengine.com/wiki/doku.php/jme3:jmonkeyplatform:development:general"/>
+    <mapID target="com.jme3.gde.development.general" url="http://www.jmonkeyengine.com/wiki/doku.php/jme3:jmonkeyplatform:development:general?do=export_xhtmlbody"/>
     <mapID target="com.jme3.gde.development.scene" url="http://www.jmonkeyengine.com/wiki/doku.php/jme3:jmonkeyplatform:development:scene?do=export_xhtmlbody"/>
     <mapID target="com.jme3.gde.development.explorer" url="http://www.jmonkeyengine.com/wiki/doku.php/jme3:jmonkeyplatform:development:sceneexplorer?do=export_xhtmlbody"/>
     <mapID target="com.jme3.gde.development.extensionlibrary" url="http://www.jmonkeyengine.com/wiki/doku.php/jme3:jmonkeyplatform:development:extension_library?do=export_xhtmlbody"/>

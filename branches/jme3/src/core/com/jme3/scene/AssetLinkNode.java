@@ -92,7 +92,7 @@ public class AssetLinkNode extends Node {
 
     public void attachLinkedChild(AssetManager manager, AssetKey<Spatial> key) {
         addLinkedChild(key);
-        Spatial child=manager.loadAsset(key);
+        Spatial child = manager.loadAsset(key);
         assetChildren.put(key, child);
         attachChild(child);
     }
@@ -154,11 +154,12 @@ public class AssetLinkNode extends Node {
         for (Iterator<AssetKey<Spatial>> it = assetLoaderKeys.iterator(); it.hasNext();) {
             AssetKey<Spatial> modelKey = it.next();
             Spatial child = e.getAssetManager().loadAsset(modelKey);
-            if(child!=null){
-                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Could not load linked child spatial: "+modelKey.getName());
+            if (child != null) {
                 child.parent = this;
                 children.add(child);
                 assetChildren.put(modelKey, child);
+            } else {
+                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Could not load linked child spatial: " + modelKey.getName());
             }
         }
     }

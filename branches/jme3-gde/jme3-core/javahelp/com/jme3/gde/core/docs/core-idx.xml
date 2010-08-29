@@ -57,8 +57,8 @@
     <indexitem text="Hello Physics" target="com.jme3.tutorials.hellophysics"/>
 
     <indexitem text="About jMP Plugin Development" target="com.jme3.gde.development"/>
-    <indexitem text="Setting up jMP for plugin development (online)" target="com.jme3.gde.development.setup"/>
-    <indexitem text="Developing plugins for jMP (online)" target="com.jme3.gde.development.general"/>
+    <indexitem text="Creating a plugin (online)" target="com.jme3.gde.development.setup"/>
+    <indexitem text="Creating components (online)" target="com.jme3.gde.development.general"/>
     <indexitem text="Accessing the Scene (online)" target="com.jme3.gde.development.scene"/>
     <indexitem text="Extending the SceneExplorer (online)" target="com.jme3.gde.development.explorer"/>
     <indexitem text="Creating a library plugin from a jar file" target="com.jme3.gde.development.extensionlibrary"/>

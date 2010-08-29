@@ -60,8 +60,8 @@
     </tocitem>
     <tocitem text="jMP Plugin Development" expand="false">
         <tocitem text="About jMP Plugin Development" target="com.jme3.gde.development"/>
-        <tocitem text="Setting up jMP for plugin development (online)" target="com.jme3.gde.development.setup"/>
-        <tocitem text="Developing plugins for jMP (online)" target="com.jme3.gde.development.general"/>
+        <tocitem text="Creating a plugin (online)" target="com.jme3.gde.development.setup"/>
+        <tocitem text="Creating components (online)" target="com.jme3.gde.development.general"/>
         <tocitem text="Accessing the Scene (online)" target="com.jme3.gde.development.scene"/>
         <tocitem text="Extending the SceneExplorer (online)" target="com.jme3.gde.development.explorer"/>
         <tocitem text="Recipes (online)" expand="false">

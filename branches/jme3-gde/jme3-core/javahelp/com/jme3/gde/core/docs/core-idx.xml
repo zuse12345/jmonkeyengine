@@ -32,9 +32,35 @@
 -->
 <!DOCTYPE index PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Index Version 2.0//EN" "http://java.sun.com/products/javahelp/index_2_0.dtd">
 <index version="2.0">
-    <indexitem text="About jMonkeyPlatform Core" target="com.jme3.gde.core.about"/>
+    <indexitem text="About jMonkeyPlatform" target="com.jme3.gde.core.about"/>
+    <indexitem text="Creating a Project (online)" target="com.jme3.gde.core.projectcreation"/>
     <indexitem text="The SceneViewer" target="com.jme3.gde.core.sceneviewer"/>
-    <indexitem text="The SceneExplorer" target="com.jme3.gde.core.sceneexplorer"/>
-    <indexitem text="Importing Models" target="com.jme3.gde.core.importing"/>
+    <indexitem text="The SceneExplorer (online)" target="com.jme3.gde.core.sceneexplorer"/>
+    <indexitem text="Importing Models (online)" target="com.jme3.gde.core.importing"/>
+    <indexitem text="Code Editor (online)" target="com.jme3.gde.core.codeeditor"/>
+    <indexitem text="Version Control (online)" target="com.jme3.gde.core.versioncontrol"/>
+    <indexitem text="Debugging, Testing (online)" target="com.jme3.gde.core.debugging"/>
+    <indexitem text="Deployment (online)" target="com.jme3.gde.core.deployment"/>
     <indexitem text="Updating jMP" target="com.jme3.gde.core.updating"/>
+
+    <indexitem text="Hello SimpleApplication" target="com.jme3.tutorials.helloapplication"/>
+    <indexitem text="Hello Node" target="com.jme3.tutorials.hellonode"/>
+    <indexitem text="Hello Assets" target="com.jme3.tutorials.helloassets"/>
+    <indexitem text="Hello Event Loop" target="com.jme3.tutorials.helloloop"/>
+    <indexitem text="Hello Input System" target="com.jme3.tutorials.helloinput"/>
+    <indexitem text="Hello Material" target="com.jme3.tutorials.hellomaterial"/>
+    <indexitem text="Hello Animation" target="com.jme3.tutorials.helloanimation"/>
+    <indexitem text="Hello Picking" target="com.jme3.tutorials.hellopicking"/>
+    <indexitem text="Hello Collision" target="com.jme3.tutorials.hellocollision"/>
+    <indexitem text="Hello Audio" target="com.jme3.tutorials.helloaudio"/>
+    <indexitem text="Hello Effects" target="com.jme3.tutorials.helloeffects"/>
+    <indexitem text="Hello Physics" target="com.jme3.tutorials.hellophysics"/>
+
+    <indexitem text="About jMP Plugin Development" target="com.jme3.gde.development"/>
+    <indexitem text="Setting up jMP for plugin development (online)" target="com.jme3.gde.development.setup"/>
+    <indexitem text="Developing plugins for jMP (online)" target="com.jme3.gde.development.general"/>
+    <indexitem text="Accessing the Scene (online)" target="com.jme3.gde.development.scene"/>
+    <indexitem text="Extending the SceneExplorer (online)" target="com.jme3.gde.development.explorer"/>
+    <indexitem text="Creating a library plugin from a jar file" target="com.jme3.gde.development.extensionlibrary"/>
+    <indexitem text="Integrate a new model filetype and loader" target="com.jme3.gde.development.modelloader"/>
 </index>

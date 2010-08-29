@@ -58,4 +58,15 @@
         <tocitem text="Hello Effects" target="com.jme3.tutorials.helloeffects"/>
         <tocitem text="Hello Physics" target="com.jme3.tutorials.hellophysics"/>
     </tocitem>
+    <tocitem text="jMP Plugin Development" expand="false">
+        <tocitem text="About jMP Plugin Development" target="com.jme3.gde.development"/>
+        <tocitem text="Setting up jMP for plugin development (online)" target="com.jme3.gde.development.setup"/>
+        <tocitem text="Developing plugins for jMP (online)" target="com.jme3.gde.development.general"/>
+        <tocitem text="Accessing the Scene (online)" target="com.jme3.gde.development.scene"/>
+        <tocitem text="Extending the SceneExplorer (online)" target="com.jme3.gde.development.explorer"/>
+        <tocitem text="Recipes (online)" expand="false">
+            <tocitem text="Creating a library plugin from a jar file" target="com.jme3.gde.development.extensionlibrary"/>
+            <tocitem text="Integrate a new model filetype and loader" target="com.jme3.gde.development.modelloader"/>
+        </tocitem>
+    </tocitem>
 </toc>

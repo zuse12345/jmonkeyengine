@@ -84,6 +84,12 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
         sphere.setMaterial(sky);
         sceneNode.attachChild(sphere);
         rootNode.attachChild(sceneNode);
+
+        //add lightPos Geometry
+        Sphere lite=new Sphere(8, 8, 0.1f);
+        lightSphere=new Geometry("lightsphere", lite);
+        lightSphere.setMaterial(mat);
+        rootNode.attachChild(lightSphere);
     }
 
     protected void initInput() {
@@ -103,12 +109,6 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
         inputManager.addListener(this, "lightforward");
         inputManager.addMapping("lightback", new KeyTrigger(KeyInput.KEY_J));
         inputManager.addListener(this, "lightback");
-        //add lightPos Geometry
-        Sphere lite=new Sphere(8, 8, 0.1f);
-        lightSphere=new Geometry("lightsphere", lite);
-        lightSphere.setMaterial(mat);
-        rootNode.attachChild(lightSphere);
-
     }
 
     @Override

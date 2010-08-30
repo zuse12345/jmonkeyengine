@@ -11,6 +11,7 @@ import com.jme3.math.FastMath;
 import com.jme3.math.Plane;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Ray;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.post.SceneProcessor;
 import com.jme3.renderer.Camera;
@@ -37,43 +38,49 @@ import com.jme3.ui.Picture;
  */
 public class SimpleWaterProcessor implements SceneProcessor {
 
-    RenderManager rm;
-    ViewPort vp;
-    Spatial reflectionScene;
-    ViewPort reflectionView;
-    ViewPort refractionView;
-    FrameBuffer reflectionBuffer;
-    FrameBuffer refractionBuffer;
-    Camera reflectionCam;
-    Camera refractionCam;
-    Texture2D reflectionTexture;
-    Texture2D refractionTexture;
-    Texture2D depthTexture;
-    Texture2D normalTexture;
-    Texture2D dudvTexture;
+    protected RenderManager rm;
+    protected ViewPort vp;
+    protected Spatial reflectionScene;
+    protected ViewPort reflectionView;
+    protected ViewPort refractionView;
+    protected FrameBuffer reflectionBuffer;
+    protected FrameBuffer refractionBuffer;
+    protected Camera reflectionCam;
+    protected Camera refractionCam;
+    protected Texture2D reflectionTexture;
+    protected Texture2D refractionTexture;
+    protected Texture2D depthTexture;
+    protected Texture2D normalTexture;
+    protected Texture2D dudvTexture;
     protected int renderWidth = 512;
     protected int renderHeight = 512;
     protected Plane plane = new Plane(Vector3f.UNIT_Y, Vector3f.ZERO.dot(Vector3f.UNIT_Y));
     protected float speed = 0.05f;
-    Ray ray = new Ray();
-    Vector3f targetLocation = new Vector3f();
-    AssetManager manager;
-    Material material;
+    protected  Ray ray = new Ray();
+    protected Vector3f targetLocation = new Vector3f();
+    protected AssetManager manager;
+    protected Material material;
+    protected float waterDepth=1;
+    protected float waterTransparency=0.4f;
     protected boolean debug = false;
     private Picture dispRefraction;
     private Picture dispReflection;
     private Picture dispDepth;
 
+
     public SimpleWaterProcessor(AssetManager manager) {
         this.manager = manager;
         material = new Material(manager, "Common/MatDefs/Water/SimpleWater.j3md");
-        material.setFloat("m_waterDepth", 4);
-        material.setColor("m_waterColor", invertColor(ColorRGBA.White));
+        material.setFloat("m_waterDepth", waterDepth);
+        material.setFloat("m_waterTransparency",waterTransparency/10);
+        material.setColor("m_waterColor", ColorRGBA.White);
         material.setVector3("m_lightDir", new Vector3f(1, -1, 1));
 
         material.setColor("m_distortionScale", new ColorRGBA(0.2f, 0.2f, 0.2f, 0.2f));
         material.setColor("m_distortionMix", new ColorRGBA(0.5f, 0.5f, 0.5f, 0.5f));
         material.setColor("m_texScale", new ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f));
+
+        
     }
 
     public void initialize(RenderManager rm, ViewPort vp) {
@@ -86,12 +93,16 @@ public class SimpleWaterProcessor implements SceneProcessor {
 
         createPreViews();
 
-        dispRefraction = new Picture("dispRefraction");
-        dispRefraction.setTexture(manager, refractionTexture, false);
-        dispReflection = new Picture("dispRefraction");
-        dispReflection.setTexture(manager, reflectionTexture, false);
-        dispDepth = new Picture("depthTexture");
-        dispDepth.setTexture(manager, depthTexture, false);
+        material.setVector2("m_FrustumNearFar",new Vector2f(vp.getCamera().getFrustumNear(), vp.getCamera().getFrustumFar()));
+
+        if (debug){
+            dispRefraction = new Picture("dispRefraction");
+            dispRefraction.setTexture(manager, refractionTexture, false);
+            dispReflection = new Picture("dispRefraction");
+            dispReflection.setTexture(manager, reflectionTexture, false);
+            dispDepth = new Picture("depthTexture");
+            dispDepth.setTexture(manager, depthTexture, false);
+        }
     }
 
     public void reshape(ViewPort vp, int w, int h) {
@@ -316,7 +327,7 @@ public class SimpleWaterProcessor implements SceneProcessor {
      * @param color
      */
     public void setWaterColor(ColorRGBA color) {
-        material.setColor("m_waterColor", invertColor(color));
+        material.setColor("m_waterColor", color);
     }
 
     /**
@@ -325,8 +336,23 @@ public class SimpleWaterProcessor implements SceneProcessor {
      * @param depth
      */
     public void setWaterDepth(float depth) {
+        waterDepth=depth;
         material.setFloat("m_waterDepth", depth);
     }
+
+    public float getWaterDepth() {
+        return waterDepth;
+    }
+
+    public float getWaterTransparency() {
+        return waterTransparency;
+    }
+
+    public void setWaterTransparency(float waterTransparency) {
+        this.waterTransparency =Math.max(0, waterTransparency);
+        material.setFloat("m_waterTransparency", waterTransparency/10);
+    }
+
 
     /**
      * Sets the speed of the wave animation, default = 0.05f.

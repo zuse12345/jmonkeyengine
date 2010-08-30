@@ -17,13 +17,16 @@ uniform vec4 m_distortionMix;
 uniform vec4 m_texScale;
 uniform vec3 m_camDir;
 uniform vec3 m_lightDir;
+uniform vec2 m_FrustumNearFar;
+uniform float m_waterTransparency;
+
+
 
 varying vec4 waterTex0; //lightpos
 varying vec4 waterTex1; //moving texcoords
 varying vec4 waterTex2; //moving texcoords
 varying vec4 waterTex3; //for projection
 varying vec4 waterTex4; //viewts
-varying vec3 H;
 
 //unit 0 = m_water_reflection
 //unit 1 = m_water_refraction
@@ -48,9 +51,14 @@ float tangDot(in vec3 v1, in vec3 v2){
     #endif
 }
 
+vec4 readDepth(vec2 uv){
+    float depth= (2.0 * m_FrustumNearFar.x) / (m_FrustumNearFar.y + m_FrustumNearFar.x - texture2D(m_water_depthmap, uv).r* (m_FrustumNearFar.y-m_FrustumNearFar.x));
+    return vec4( depth);
+}
+
 void main(void)
 {
-
+ 
 
      vec4 lightTS = normalize(waterTex0);
      vec4 viewt = normalize(waterTex4);
@@ -77,11 +85,10 @@ void main(void)
      tmp = clamp(tmp, 0.001, 0.999);
 
      //load reflection,refraction and depth texture
-     vec4 refTex = texture2D(m_water_reflection, vec2(tmp.x,1.0-tmp.y));
-     vec4 refl = refTex;
+     vec4 refl = texture2D(m_water_reflection, vec2(tmp.x,1.0-tmp.y));
      vec4 refr = texture2D(m_water_refraction, vec2(tmp));
-     vec4 wdepth = texture2D(m_water_depthmap, vec2(tmp));
-
+     vec4 wdepth =readDepth(vec2(tmp));
+  
      wdepth = vec4(pow(wdepth.x, m_waterDepth));
      vec4 invdepth = 1.0 - wdepth;
 
@@ -101,19 +108,19 @@ void main(void)
      stemp = pow(stemp, exponent);
      vec4 specular = vec4(stemp);
 
-     //calculate fresnel and inverted fresnel
-     vec4 invfres = vec4( dot(vNorm, viewt) );
-     vec4 fres = vec4(1.0) -invfres ;
 
-     //calculate reflection and refraction
-     refr *= invfres;
-     refr *= invdepth;
-     temp = m_waterColor * wdepth * invfres;
-     refr += temp;
-     refl *= fres;
 
-     //add reflection and refraction
-     tmp = refr + refl;
+    vec4 fresnelTerm = 0.02f+0.97f*pow((1-dot(normalize(viewt), vNorm)),5);
 
-     gl_FragColor =tmp+specular;//tmp ;//+vec4(1.0,1.0,1.0,1.0);//*specular;
+
+    fresnelTerm=fresnelTerm*invdepth*m_waterTransparency;
+    fresnelTerm=clamp(fresnelTerm,0.0,1.0);
+
+    refr*=(fresnelTerm);
+    refr *= invdepth;
+    refr= refr+ m_waterColor*wdepth*fresnelTerm;
+
+    tmp = refr+ refl*(1.0-fresnelTerm);
+
+    gl_FragColor =tmp+specular;
 }

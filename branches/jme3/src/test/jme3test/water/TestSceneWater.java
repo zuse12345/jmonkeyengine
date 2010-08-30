@@ -79,12 +79,13 @@ public class TestSceneWater extends SimpleApplication {
 
         SimpleWaterProcessor waterProcessor = new SimpleWaterProcessor(assetManager);
         waterProcessor.setReflectionScene(mainScene);
-        waterProcessor.setDebug(true);
+        waterProcessor.setDebug(false);
 
         //setting the water plane
         Vector3f waterLocation=new Vector3f(0,-6,0);
         waterProcessor.setPlane(new Plane(Vector3f.UNIT_Y, waterLocation.dot(Vector3f.UNIT_Y)));
-        
+        WaterUI waterUi=new WaterUI(inputManager, waterProcessor);
+        waterProcessor.setWaterColor(ColorRGBA.Brown);
         //lower render size for higher performance
 //        waterProcessor.setRenderSize(128,128);
         //raise depth to see through water

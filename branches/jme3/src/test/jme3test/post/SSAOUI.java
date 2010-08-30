@@ -28,7 +28,7 @@ public class SSAOUI {
 //    protected boolean useOnlyAo = false;
 //    protected boolean useAo = true;
 
-        System.out.println("----------------- SSAO UI Debugger --------------------");
+        System.out.println("----------------- Water UI Debugger --------------------");
         System.out.println("-- Sample Radius : press Y to increase, H to decrease");
         System.out.println("-- AO Intensity : press U to increase, J to decrease");
         System.out.println("-- AO scale : press I to increase, K to decrease");

@@ -21,7 +21,6 @@ varying vec4 waterTex2;
 varying vec4 waterTex3;
 varying vec4 waterTex4;
 varying vec4 viewpos;
-varying vec3 H;
 
 //unit 0 = water_reflection
 //unit 1 = water_refraction
@@ -43,15 +42,12 @@ void main(void)
 
 
 
-  //  temp = viewpos - inPosition;
-    temp =vec4(m_camDir,1.0);
+    temp = viewpos - inPosition;
     waterTex4.x = dot(temp, tangent);
     waterTex4.y = dot(temp, binormal);
     waterTex4.z = dot(temp, norm);
     waterTex4.w = 0.0;
 
-    //Rémy : changes for highlights calculation
-//    H = (m_camDir + m_lightDir) * vec3(0.5);
 
     temp = vec4(m_lightDir,1.0);//m_lightpos- inPosition;
     waterTex0.x = dot(temp, tangent);

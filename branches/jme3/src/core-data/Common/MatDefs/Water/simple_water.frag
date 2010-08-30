@@ -110,7 +110,8 @@ void main(void)
 
 
 
-    vec4 fresnelTerm = 0.02f+0.97f*pow((1-dot(normalize(viewt), vNorm)),5);
+    vec4 fresnelTerm = vec4(0.02+0.97*pow((1.0-dot(normalize(viewt), vNorm)),5.0));
+
 
 
     fresnelTerm=fresnelTerm*invdepth*m_waterTransparency;

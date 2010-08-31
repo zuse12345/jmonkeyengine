@@ -7,7 +7,6 @@ import org.xml.sax.SAXException;
 
 /**
  * Utility methods for parsing XML data using SAX.
- * Applications wishing to use this class
  */
 public final class SAXUtil {
 

@@ -1,7 +1,6 @@
 package jme3test.audio;
 
 import com.jme3.audio.AudioNode;
-import com.jme3.audio.Environment;
 //import com.jme3.audio.PointAudioSource;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;

@@ -37,6 +37,7 @@ public class RenderContext {
     public int matrixMode = -1;
 
     public float pointSize = 1;
+    public float lineWidth = 1;
 
     public RenderState.BlendMode blendMode = RenderState.BlendMode.Off;
 

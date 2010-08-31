@@ -28,7 +28,9 @@ public class TestDebugShapes extends SimpleApplication {
     }
 
     public void putArrow(Vector3f pos, Vector3f dir, ColorRGBA color){
-        putShape(new Arrow(dir), color).setLocalTranslation(pos);
+        Arrow arrow = new Arrow(dir);
+        arrow.setLineWidth(4); // make arrow thicker
+        putShape(arrow, color).setLocalTranslation(pos);
     }
 
     public void putBox(Vector3f pos, float size, ColorRGBA color){

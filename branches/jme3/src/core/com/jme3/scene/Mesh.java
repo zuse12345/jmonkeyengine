@@ -60,6 +60,7 @@ public class Mesh implements Savable, Cloneable {
     private VertexBuffer[] lodLevels;
     private int lodLevel = 0;
     private float pointSize = 1;
+    private float lineWidth = 1;
 
     private transient int vertexArrayID = -1;
 
@@ -207,6 +208,14 @@ public class Mesh implements Savable, Cloneable {
 
     public void setPointSize(float pointSize) {
         this.pointSize = pointSize;
+    }
+
+    public float getLineWidth() {
+        return lineWidth;
+    }
+
+    public void setLineWidth(float lineWidth) {
+        this.lineWidth = lineWidth;
     }
 
     /**

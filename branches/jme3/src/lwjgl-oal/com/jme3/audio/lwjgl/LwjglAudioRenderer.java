@@ -77,6 +77,9 @@ public class LwjglAudioRenderer implements AudioRenderer {
         logger.finer("Audio Renderer: "+alGetString(AL_RENDERER));
         logger.finer("Audio Version: "+alGetString(AL_VERSION));
 
+//        AL10.alDopplerFactor(100);
+//        AL10.alDopplerVelocity(100);
+
         // Create channel sources
         ib.clear();
         ib.limit(channels.length);
@@ -174,7 +177,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
         f.clearUpdateNeeded();
     }
 
-    private void setSourceParams(int id, AudioNode src, boolean forceNonLoop){
+    private void setSourceParams(int id, AudioNode src, boolean forceNonLoop, boolean initial){
         if (src.isPositional()){
             AudioNode pointSrc = src;
             Vector3f pos = pointSrc.getWorldTranslation();
@@ -219,7 +222,9 @@ public class LwjglAudioRenderer implements AudioRenderer {
         }
         alSourcef(id,  AL_GAIN, src.getVolume());
         alSourcef(id,  AL_PITCH, src.getPitch());
-        alSourcef(id,  AL11.AL_SEC_OFFSET, src.getTimeOffset());
+        
+        if (initial)
+            alSourcef(id,  AL11.AL_SEC_OFFSET, src.getTimeOffset());
 
         if (src.isDirectional()){
             AudioNode das = src;
@@ -407,7 +412,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
 
             int state = alGetSourcei(sourceId, AL_SOURCE_STATE);
             boolean wantPlaying = src.getStatus() == Status.Playing;
-            boolean stopped = state == AL_STOPPED || state == AL_PAUSED;
+            boolean stopped = state == AL_STOPPED;
 
             if (streaming && wantPlaying){
                 AudioStream stream = (AudioStream) src.getAudioData();
@@ -415,6 +420,11 @@ public class LwjglAudioRenderer implements AudioRenderer {
                     fillStreamingSource(sourceId, stream);
                     if (stopped)
                         alSourcePlay(sourceId);
+
+                    if (src.isUpdateNeeded()){
+                        setSourceParams(sourceId, src, true, false);
+                        src.clearUpdateNeeded();
+                    }
                 }else{
                     if (stopped){
                         // became inactive
@@ -437,6 +447,9 @@ public class LwjglAudioRenderer implements AudioRenderer {
                     }
                     clearChannel(i);
                     freeChannel(i);
+                }else if (!paused && src.isUpdateNeeded()){
+                    setSourceParams(sourceId, src, false, false);
+                    src.clearUpdateNeeded();
                 }
             }
         }
@@ -477,7 +490,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
         clearChannel(index);
         
         // set parameters, like position and max distance
-        setSourceParams(sourceId, src, true);
+        setSourceParams(sourceId, src, true, true);
         attachAudioToSource(sourceId, src.getAudioData());
         chanSrcs[index] = src;
 
@@ -508,7 +521,7 @@ public class LwjglAudioRenderer implements AudioRenderer {
                 updateAudioData(data);
 
             chanSrcs[index] = src;
-            setSourceParams(channels[index], src, false);
+            setSourceParams(channels[index], src, false, true);
             attachAudioToSource(channels[index], data);
         }
 

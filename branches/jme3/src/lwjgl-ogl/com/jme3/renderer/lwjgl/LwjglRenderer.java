@@ -1936,6 +1936,10 @@ public class LwjglRenderer implements Renderer {
             glPointSize(mesh.getPointSize());
             context.pointSize = mesh.getPointSize();
         }
+        if (context.lineWidth != mesh.getLineWidth()){
+            glLineWidth(mesh.getLineWidth());
+            context.lineWidth = mesh.getLineWidth();
+        }
 
         statistics.onMeshDrawn(mesh, lod);
 //        if (GLContext.getCapabilities().GL_ARB_vertex_array_object){

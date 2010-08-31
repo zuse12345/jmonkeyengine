@@ -295,6 +295,7 @@ public class Application implements SystemListener {
     }
 
     public void restart(){
+        context.setSettings(settings);
         context.restart();
     }
 

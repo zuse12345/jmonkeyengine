@@ -5,6 +5,7 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import com.jme3.system.AppSettings;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.lwjgl.opengl.ContextAttribs;
@@ -14,12 +15,16 @@ public class LwjglDisplay extends LwjglAbstractDisplay {
 
     private static final Logger logger = Logger.getLogger(LwjglDisplay.class.getName());
 
+    private final AtomicBoolean needRestart = new AtomicBoolean(false);
+
     protected DisplayMode getFullscreenDisplayMode(int width, int height, int bpp, int freq){
         try {
             DisplayMode[] modes = Display.getAvailableDisplayModes();
             for (DisplayMode mode : modes){
-                if (mode.getWidth() == width && mode.getHeight() == height
-                 && mode.getBitsPerPixel() == bpp && mode.getFrequency() == freq){
+                if (mode.getWidth() == width
+                 && mode.getHeight() == height
+                 && (mode.getBitsPerPixel() == bpp || (bpp==24&&mode.getBitsPerPixel()==32))
+                 && mode.getFrequency() == freq){
                     return mode;
                 }
             }
@@ -32,8 +37,8 @@ public class LwjglDisplay extends LwjglAbstractDisplay {
     protected void createContext(AppSettings settings) throws LWJGLException{
         DisplayMode displayMode = null;
         if (settings.getWidth() <= 0 || settings.getHeight() <= 0){
-//            displayMode = org.lwjgl.opengl.Display.getDesktopDisplayMode();
-//            settings.setResolution(displayMode.getWidth(), displayMode.getHeight());
+            displayMode = Display.getDesktopDisplayMode();
+            settings.setResolution(displayMode.getWidth(), displayMode.getHeight());
         }else if (settings.isFullscreen()){
             displayMode = getFullscreenDisplayMode(settings.getWidth(), settings.getHeight(),
                                                    settings.getBitsPerPixel(), settings.getFrequency());
@@ -44,7 +49,7 @@ public class LwjglDisplay extends LwjglAbstractDisplay {
         }
 
         frameRate = settings.getFrameRate();
-        logger.info("Selected display mode: "+displayMode);
+        logger.log(Level.INFO, "Selected display mode: {0}", displayMode);
         
         Display.setTitle(settings.getTitle());
         if (displayMode != null)
@@ -53,18 +58,20 @@ public class LwjglDisplay extends LwjglAbstractDisplay {
         Display.setFullscreen(settings.isFullscreen());
         Display.setVSyncEnabled(settings.isVSync());
 
-        PixelFormat pf = new PixelFormat(settings.getBitsPerPixel(),
-                                         0,
-                                         settings.getDepthBits(),
-                                         settings.getStencilBits(),
-                                         settings.getSamples());
+        if (!created.get()){
+            PixelFormat pf = new PixelFormat(settings.getBitsPerPixel(),
+                                             0,
+                                             settings.getDepthBits(),
+                                             settings.getStencilBits(),
+                                             settings.getSamples());
 
-        if (settings.getBoolean("GraphicsDebug")){
-            ContextAttribs attr = new ContextAttribs();
-            attr = attr.withDebug(true);
-            Display.create(pf, attr);
-        }else{
-            Display.create(pf);
+            if (settings.getBoolean("GraphicsDebug")){
+                ContextAttribs attr = new ContextAttribs();
+                attr = attr.withDebug(true);
+                Display.create(pf, attr);
+            }else{
+                Display.create(pf);
+            }
         }
     }
 
@@ -80,18 +87,27 @@ public class LwjglDisplay extends LwjglAbstractDisplay {
     }
 
     @Override
+    public void runLoop(){
+        if (needRestart.getAndSet(false)){
+            try{
+                createContext(settings);
+            }catch (LWJGLException ex){
+                logger.log(Level.SEVERE, "Failed to set display settings!", ex);
+            }
+            listener.reshape(settings.getWidth(), settings.getHeight());
+            logger.info("Display restarted.");
+        }
+
+        super.runLoop();
+    }
+
+    @Override
     public void restart() {
-//        if (created.get()){
-//            try{
-//                createContext(settings);
-//            }catch (LWJGLException ex){
-//                logger.log(Level.SEVERE, "Failed to set display settings!", ex);
-//            }
-//            listener.reshape(settings.getWidth(), settings.getHeight());
-//            logger.info("Display restarted.");
-//        }else{
-//            logger.warning("Display is not created, cannot restart window.");
-//        }
+        if (created.get()){
+            needRestart.set(true);
+        }else{
+            logger.warning("Display is not created, cannot restart window.");
+        }
     }
 
     public Type getType() {

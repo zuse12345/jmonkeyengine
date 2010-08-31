@@ -1000,6 +1000,10 @@ public class JoglRenderer implements Renderer {
             gl.glPointSize(mesh.getPointSize());
             context.pointSize = mesh.getPointSize();
         }
+        if (context.lineWidth != mesh.getLineWidth()){
+            gl.glLineWidth(mesh.getLineWidth());
+            context.lineWidth = mesh.getLineWidth();
+        }
 
         checkTexturingUsed();
 

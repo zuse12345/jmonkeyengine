@@ -37,10 +37,11 @@ public class AudioNode extends Node {
     protected Vector3f direction = new Vector3f(0, 0, 1);
     protected float innerAngle = 360;
     protected float outerAngle = 360;
+    protected boolean updateNeeded = true;
     private boolean positional = true;
 
-    public enum Status {
 
+    public enum Status {
         Playing,
         Paused,
         Stopped,
@@ -86,6 +87,7 @@ public class AudioNode extends Node {
         }
 
         this.dryFilter = dryFilter;
+        updateNeeded = true;
     }
 
     public void setAudioData(AudioData ad, AudioKey key) {
@@ -95,6 +97,7 @@ public class AudioNode extends Node {
 
         data = ad;
         this.key = key;
+        updateNeeded = true;
     }
 
     public AudioData getAudioData() {
@@ -115,6 +118,7 @@ public class AudioNode extends Node {
 
     public void setLooping(boolean loop) {
         this.loop = loop;
+        updateNeeded = true;
     }
 
     public float getPitch() {
@@ -127,6 +131,7 @@ public class AudioNode extends Node {
         }
 
         this.pitch = pitch;
+        updateNeeded = true;
     }
 
     public float getVolume() {
@@ -139,6 +144,7 @@ public class AudioNode extends Node {
         }
 
         this.volume = volume;
+        updateNeeded = true;
     }
 
     public float getTimeOffset() {
@@ -151,6 +157,7 @@ public class AudioNode extends Node {
         }
 
         this.timeOffset = timeOffset;
+        updateNeeded = true;
     }
 
     public Vector3f getVelocity() {
@@ -159,6 +166,7 @@ public class AudioNode extends Node {
 
     public void setVelocity(Vector3f velocity) {
         this.velocity.set(velocity);
+        updateNeeded = true;
     }
 
     public boolean isReverbEnabled() {
@@ -167,6 +175,7 @@ public class AudioNode extends Node {
 
     public void setReverbEnabled(boolean reverbEnabled) {
         this.reverbEnabled = reverbEnabled;
+        updateNeeded = true;
     }
 
     public Filter getReverbFilter() {
@@ -179,6 +188,7 @@ public class AudioNode extends Node {
         }
 
         this.reverbFilter = reverbFilter;
+        updateNeeded = true;
     }
 
     public float getMaxDistance() {
@@ -191,6 +201,7 @@ public class AudioNode extends Node {
         }
 
         this.maxDistance = maxDistance;
+        updateNeeded = true;
     }
 
     public float getRefDistance() {
@@ -203,6 +214,7 @@ public class AudioNode extends Node {
         }
 
         this.refDistance = refDistance;
+        updateNeeded = true;
     }
 
     public boolean isDirectional() {
@@ -211,6 +223,7 @@ public class AudioNode extends Node {
 
     public void setDirectional(boolean directional) {
         this.directional = directional;
+        updateNeeded = true;
     }
 
     public Vector3f getDirection() {
@@ -219,6 +232,7 @@ public class AudioNode extends Node {
 
     public void setDirection(Vector3f direction) {
         this.direction = direction;
+        updateNeeded = true;
     }
 
     public float getInnerAngle() {
@@ -227,6 +241,7 @@ public class AudioNode extends Node {
 
     public void setInnerAngle(float innerAngle) {
         this.innerAngle = innerAngle;
+        updateNeeded = true;
     }
 
     public float getOuterAngle() {
@@ -235,6 +250,7 @@ public class AudioNode extends Node {
 
     public void setOuterAngle(float outerAngle) {
         this.outerAngle = outerAngle;
+        updateNeeded = true;
     }
 
     public boolean isPositional() {
@@ -243,6 +259,23 @@ public class AudioNode extends Node {
 
     public void setPositional(boolean inHeadspace) {
         this.positional = inHeadspace;
+        updateNeeded = true;
+    }
+
+    @Override
+    public void updateGeometricState(){
+        if ((refreshFlags & RF_TRANSFORM) != 0){
+            updateNeeded = true;
+        }
+        super.updateGeometricState();
+    }
+
+    public boolean isUpdateNeeded(){
+        return updateNeeded;
+    }
+
+    public void clearUpdateNeeded(){
+        updateNeeded = false;
     }
 
 //    @Override

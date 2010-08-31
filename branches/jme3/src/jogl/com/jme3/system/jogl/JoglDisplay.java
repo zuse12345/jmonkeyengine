@@ -23,6 +23,8 @@ public class JoglDisplay extends JoglAbstractDisplay {
 
     protected AtomicBoolean windowCloseRequest = new AtomicBoolean(false);
     protected AtomicBoolean needClose = new AtomicBoolean(false);
+    protected AtomicBoolean needRestart = new AtomicBoolean(false);
+    protected boolean wasInited = false;
     protected Frame frame;
 
     public Type getType() {
@@ -33,12 +35,62 @@ public class JoglDisplay extends JoglAbstractDisplay {
         for (DisplayMode mode : modes){
             if (mode.getWidth() == width
              && mode.getHeight() == height
-             && (mode.getBitDepth() == DisplayMode.BIT_DEPTH_MULTI || mode.getBitDepth() == bpp)
+             && (mode.getBitDepth() == DisplayMode.BIT_DEPTH_MULTI 
+                || mode.getBitDepth() == bpp
+                || (mode.getBitDepth() == 32 && bpp==24))
              && mode.getRefreshRate() == freq){
                 return mode;
             }
         }
         return null;
+    }
+
+    protected void createGLFrame(){
+        Container contentPane;
+        if (useAwt){
+            frame = new Frame(settings.getTitle());
+            contentPane = frame;
+        }else{
+            frame = new JFrame(settings.getTitle());
+            contentPane = ((JFrame)frame).getContentPane();
+        }
+
+        contentPane.setLayout(new BorderLayout());
+
+        applySettings(settings);
+
+        frame.setResizable(false);
+        frame.setFocusable(true);
+
+        // only add canvas after frame is visible
+        contentPane.add(canvas, BorderLayout.CENTER);
+        frame.pack();
+//        frame.setSize(contentPane.getPreferredSize());
+
+        if (device.getFullScreenWindow() == null){
+            // now that canvas is attached,
+            // determine optimal size to contain it
+           
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            frame.setLocation((screenSize.width - frame.getWidth()) / 2,
+                              (screenSize.height - frame.getHeight()) / 2);
+        }
+
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent evt) {
+                windowCloseRequest.set(true);
+            }
+            @Override
+            public void windowActivated(WindowEvent evt) {
+                active.set(true);
+            }
+
+            @Override
+            public void windowDeactivated(WindowEvent evt) {
+                active.set(false);
+            }
+        });
     }
 
     protected void applySettings(AppSettings settings){
@@ -65,10 +117,12 @@ public class JoglDisplay extends JoglAbstractDisplay {
 //        }
 
         frameRate = settings.getFrameRate();
-        logger.info("Selected display mode: "+displayMode.getWidth()
-                                             +"x"+displayMode.getHeight()+
-                                             "x"+displayMode.getBitDepth()+
-                                             " @"+displayMode.getRefreshRate());
+        logger.log(Level.INFO, "Selected display mode: {0}x{1}x{2} @{3}",
+                new Object[]{displayMode.getWidth(),
+                             displayMode.getHeight(),
+                             displayMode.getBitDepth(),
+                             displayMode.getRefreshRate()});
+        
         canvas.setSize(displayMode.getWidth(), displayMode.getHeight());
 
         DisplayMode prevDisplayMode = device.getDisplayMode();
@@ -89,6 +143,9 @@ public class JoglDisplay extends JoglAbstractDisplay {
         }else{
             if (!device.isFullScreenSupported()){
                 logger.warning("Fullscreen not supported.");
+            }else{
+                frame.setUndecorated(false);
+                device.setFullScreenWindow(null);
             }
 
             frame.setVisible(true);
@@ -98,66 +155,24 @@ public class JoglDisplay extends JoglAbstractDisplay {
     private void initInEDT(){
         initGLCanvas();
 
-        Container contentPane;
-        if (useAwt){
-            frame = new Frame(settings.getTitle());
-            contentPane = frame;
-        }else{
-            frame = new JFrame(settings.getTitle());
-            contentPane = ((JFrame)frame).getContentPane();
-        }
-        
-        contentPane.setLayout(new BorderLayout());
-
-        applySettings(settings);
-
-        frame.setResizable(false);
-        frame.setFocusable(true);
-
-        // only add canvas after frame is visible
-        contentPane.add(canvas, BorderLayout.CENTER);
-
-        if (device.getFullScreenWindow() == null){
-            // now that canvas is attached,
-            // determine optimal size to contain it
-            frame.setSize(contentPane.getPreferredSize());
-
-            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-            frame.setLocation((screenSize.width - frame.getWidth()) / 2,
-                              (screenSize.height - frame.getHeight()) / 2);
-        }
-
-        frame.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent evt) {
-                windowCloseRequest.set(true);
-            }
-            @Override
-            public void windowClosed(WindowEvent evt) {
-            }
-
-            @Override
-            public void windowActivated(WindowEvent evt) {
-                active.set(true);
-            }
-
-            @Override
-            public void windowDeactivated(WindowEvent evt) {
-                active.set(false);
-            }
-        });
+        createGLFrame();
 
         startGLCanvas();
     }
 
     public void init(GLAutoDrawable drawable){
-        canvas.requestFocus();
+        // prevent initializing twice on restart
+        if (!wasInited){
+            canvas.requestFocus();
 
-        super.internalCreate();
-        logger.info("Display created.");
+            super.internalCreate();
+            logger.info("Display created.");
 
-        renderer.initialize();
-        listener.initialize();
+            renderer.initialize();
+            listener.initialize();
+
+            wasInited = true;
+        }
     }
 
     public void create(boolean waitFor){
@@ -192,6 +207,11 @@ public class JoglDisplay extends JoglAbstractDisplay {
     }
 
     public void restart() {
+        if (created.get()){
+            needRestart.set(true);
+        }else{
+            throw new IllegalStateException("Display not started yet. Cannot restart");
+        }
     }
 
     public void setTitle(String title){
@@ -218,6 +238,16 @@ public class JoglDisplay extends JoglAbstractDisplay {
         if (windowCloseRequest.get()){
             listener.requestClose(false);
             windowCloseRequest.set(false);
+        }
+
+        if (needRestart.getAndSet(false)){
+            // for restarting contexts
+            if (frame.isVisible()){
+                animator.stop();
+                frame.dispose();
+                createGLFrame();
+                startGLCanvas();
+            }
         }
 
 //        boolean flush = autoFlush.get();

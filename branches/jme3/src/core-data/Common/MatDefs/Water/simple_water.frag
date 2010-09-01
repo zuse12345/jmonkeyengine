@@ -15,18 +15,16 @@ uniform float m_waterDepth;
 uniform vec4 m_distortionScale;
 uniform vec4 m_distortionMix;
 uniform vec4 m_texScale;
-uniform vec3 m_camDir;
-uniform vec3 m_lightDir;
 uniform vec2 m_FrustumNearFar;
 uniform float m_waterTransparency;
 
 
 
-varying vec4 waterTex0; //lightpos
+varying vec4 lightDir; //lightpos
 varying vec4 waterTex1; //moving texcoords
 varying vec4 waterTex2; //moving texcoords
-varying vec4 waterTex3; //for projection
-varying vec4 waterTex4; //viewts
+varying vec4 position; //for projection
+varying vec4 viewDir; //viewts
 
 //unit 0 = m_water_reflection
 //unit 1 = m_water_refraction
@@ -60,8 +58,8 @@ void main(void)
 {
  
 
-     vec4 lightTS = normalize(waterTex0);
-     vec4 viewt = normalize(waterTex4);
+     vec4 lightTS = normalize(lightDir);
+     vec4 viewt = normalize(viewDir);
      vec4 disdis = texture2D(m_water_dudvmap, vec2(waterTex2 * m_texScale));
      vec4 dist = texture2D(m_water_dudvmap, vec2(waterTex1 + disdis*m_distortionMix));
      vec4 fdist = dist;
@@ -74,40 +72,36 @@ void main(void)
      nmap = (nmap-ofive) * two;
      vec4 vNorm = normalize(nmap);
 
-     //get projective texcoords
-     vec4 tmp = vec4(1.0 / waterTex3.w);
-     vec4 temp = tmp;
-
-     vec4 projCoord = waterTex3 * tmp;
-     projCoord += vec4(1.0);
-     projCoord *= vec4(0.5);
-     tmp = projCoord + fdist;
-     tmp = clamp(tmp, 0.001, 0.999);
+     
+     vec4 projCoord = position / position.w;
+     projCoord =(projCoord+1.0)*0.5 + fdist;
+     projCoord = clamp(projCoord, 0.001, 0.999);
 
      //load reflection,refraction and depth texture
-     vec4 refl = texture2D(m_water_reflection, vec2(tmp.x,1.0-tmp.y));
-     vec4 refr = texture2D(m_water_refraction, vec2(tmp));
-     vec4 wdepth =readDepth(vec2(tmp));
+     vec4 refl = texture2D(m_water_reflection, vec2(projCoord.x,1.0-projCoord.y));
+     vec4 refr = texture2D(m_water_refraction, vec2(projCoord));
+     vec4 wdepth =readDepth(vec2(projCoord));
   
      wdepth = vec4(pow(wdepth.x, m_waterDepth));
      vec4 invdepth = 1.0 - wdepth;
 
 
- // Standard Phong
+ // Blinn - Phong
+ //     vec4 H = (viewt - lightTS);
+ //    vec4 specular =vec4(pow(max(dot(H, vNorm), 0.0), exponent));
 
-  //   vec3 specular =vec3(pow(max(tangDot(H, vNorm), 0.0), 25.0));//25.0 is shininess parameter, it should be a uniform
+// Standard Phong
 
-
-   //  vec3 R = reflect(-m_lightDir, vNorm);
-//     float specular = pow(max(tangDot(R, m_camDir), 0.0), 25.0);
+     vec4 R =reflect(-lightTS, vNorm);
+     vec4 specular =vec4( pow(max(dot(R, viewt), 0.0),exponent));
 
  
      //calculate specular highlight
-     vec4 vRef = normalize(reflect(-lightTS, vNorm));
+ /*    vec4 vRef = normalize(reflect(-lightTS, vNorm));
      float stemp =max(0.0, dot(viewt, vRef) );
      stemp = pow(stemp, exponent);
      vec4 specular = vec4(stemp);
-
+*/
 
 
     vec4 fresnelTerm = vec4(0.02+0.97*pow((1.0-dot(normalize(viewt), vNorm)),5.0));
@@ -121,7 +115,5 @@ void main(void)
     refr *= invdepth;
     refr= refr+ m_waterColor*wdepth*fresnelTerm;
 
-    tmp = refr+ refl*(1.0-fresnelTerm);
-
-    gl_FragColor =tmp+specular;
+    gl_FragColor =(refr+ refl*(1.0-fresnelTerm))+specular;
 }

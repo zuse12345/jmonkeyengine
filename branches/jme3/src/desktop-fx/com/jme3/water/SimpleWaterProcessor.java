@@ -74,7 +74,7 @@ public class SimpleWaterProcessor implements SceneProcessor {
         material.setFloat("m_waterDepth", waterDepth);
         material.setFloat("m_waterTransparency",waterTransparency/10);
         material.setColor("m_waterColor", ColorRGBA.White);
-        material.setVector3("m_lightDir", new Vector3f(1, -1, 1));
+        material.setVector3("m_lightPos", new Vector3f(1, -1, 1));
 
         material.setColor("m_distortionScale", new ColorRGBA(0.2f, 0.2f, 0.2f, 0.2f));
         material.setColor("m_distortionMix", new ColorRGBA(0.5f, 0.5f, 0.5f, 0.5f));
@@ -123,8 +123,6 @@ public class SimpleWaterProcessor implements SceneProcessor {
 
     public void postQueue(RenderQueue rq) {
         Camera sceneCam = rm.getCurrentCamera();
-        //update cam direction in shader
-        material.setVector3("m_camDir", sceneCam.getDirection());
 
         //update ray
         ray.setOrigin(sceneCam.getLocation());
@@ -318,8 +316,13 @@ public class SimpleWaterProcessor implements SceneProcessor {
         this.plane.setOriginNormal(origin, normal);
     }
 
-    public void setLightDirection(Vector3f direction) {
-        material.setVector3("m_lightDir", direction);
+    /**
+     * Set the light Position for the processor
+     * @param position
+     */
+    //TODO maybe we should provide a convenient method to compute position from direction
+    public void setLightPosition(Vector3f position) {
+        material.setVector3("m_lightPos", position);
     }
 
     /**

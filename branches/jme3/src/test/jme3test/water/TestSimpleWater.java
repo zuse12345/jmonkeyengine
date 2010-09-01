@@ -31,6 +31,8 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
     SimpleWaterProcessor waterProcessor;
     Node sceneNode;
     boolean useWater = true;
+    private Vector3f lightPos =  new Vector3f(33,12,-29);
+
 
     public static void main(String[] args) {
         TestSimpleWater app = new TestSimpleWater();
@@ -48,10 +50,10 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
         waterProcessor.setDebug(true);
         viewPort.addProcessor(waterProcessor);
 
-        waterProcessor.setLightDirection( new Vector3f(0.5498224f, -0.82151467f, 0.15102655f));
+        waterProcessor.setLightPosition(lightPos);
 
         //create water quad
-        waterPlane = waterProcessor.createWaterGeometry(10, 10);
+        waterPlane = waterProcessor.createWaterGeometry(100, 100);
         waterPlane.setLocalTranslation(-5, 0, 5);
 
         rootNode.attachChild(waterPlane);
@@ -86,9 +88,10 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
         rootNode.attachChild(sceneNode);
 
         //add lightPos Geometry
-        Sphere lite=new Sphere(8, 8, 0.1f);
+        Sphere lite=new Sphere(8, 8, 3.0f);
         lightSphere=new Geometry("lightsphere", lite);
         lightSphere.setMaterial(mat);
+        lightSphere.setLocalTranslation(lightPos);
         rootNode.attachChild(lightSphere);
     }
 
@@ -114,9 +117,11 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
     @Override
     public void simpleUpdate(float tpf) {
         fpsText.setText("Light Position: "+lightPos.toString()+" Change Light position with [U], [H], [J], [K] and [T], [G] Turn off water with [O]");
+        lightSphere.setLocalTranslation(lightPos);
+        waterProcessor.setLightPosition(lightPos);
     }
 
-    private Vector3f lightPos = new Vector3f();
+   
 
     public void onAction(String name, boolean value, float tpf) {
         if (name.equals("use_water") && value) {

@@ -4,23 +4,22 @@ http://www.bonzaisoftware.com/wfs.html
 Converted by Mars_999
 8/20/2005
 */
-uniform vec4 m_lightpos;
+uniform vec3 m_lightPos;
 uniform float m_time;
 
 uniform mat4 g_WorldViewProjectionMatrix;
 uniform vec3 g_CameraPosition;
-uniform vec3 m_camDir;
-uniform vec3 m_lightDir;
 
 attribute vec4 inPosition;
 attribute vec2 inTexCoord;
 
-varying vec4 waterTex0;
+varying vec4 lightDir;
 varying vec4 waterTex1;
 varying vec4 waterTex2;
-varying vec4 waterTex3;
-varying vec4 waterTex4;
+varying vec4 position;
+varying vec4 viewDir;
 varying vec4 viewpos;
+
 
 //unit 0 = water_reflection
 //unit 1 = water_refraction
@@ -35,27 +34,25 @@ void main(void)
     viewpos.z = g_CameraPosition.z;
     viewpos.w = 1.0;
 
-    vec4 mpos, temp;
+    vec4  temp;
     vec4 tangent = vec4(1.0, 0.0, 0.0, 0.0);
     vec4 norm = vec4(0.0, 1.0, 0.0, 0.0);
     vec4 binormal = vec4(0.0, 0.0, 1.0, 0.0);
 
-
-
     temp = viewpos - inPosition;
-    waterTex4.x = dot(temp, tangent);
-    waterTex4.y = dot(temp, binormal);
-    waterTex4.z = dot(temp, norm);
-    waterTex4.w = 0.0;
 
+    viewDir.x = dot(temp, tangent);
+    viewDir.y = dot(temp, binormal);
+    viewDir.z = dot(temp, norm);
+    viewDir.w = 0.0;
 
-    temp = vec4(m_lightDir,1.0);//m_lightpos- inPosition;
-    waterTex0.x = dot(temp, tangent);
-    waterTex0.y = dot(temp, binormal);
-    waterTex0.z = dot(temp, norm);
-    waterTex0.w = 0.0;
+    temp = vec4(m_lightPos,1.0);//- inPosition;
+    lightDir.x = dot(temp, tangent);
+    lightDir.y = dot(temp, binormal);
+    lightDir.z = dot(temp, norm);
+    lightDir.w = 0.0;
 
-    mpos = g_WorldViewProjectionMatrix * inPosition;
+  
 
     vec4 t1 = vec4(0.0, -m_time, 0.0,0.0);
     vec4 t2 = vec4(0.0, m_time, 0.0,0.0);
@@ -63,7 +60,6 @@ void main(void)
     waterTex1 =vec4(inTexCoord,0.0,0.0) + t1;
     waterTex2 =vec4(inTexCoord ,0.0,0.0)+ t2;
 
-    waterTex3 = mpos;
-
-    gl_Position =mpos;
+    position = g_WorldViewProjectionMatrix * inPosition;
+    gl_Position = position;
 }

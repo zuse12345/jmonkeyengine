@@ -73,9 +73,9 @@ public class LwjglAudioRenderer implements AudioRenderer {
             return;
         }
 
-        logger.finer("Audio Vendor: "+alGetString(AL_VENDOR));
-        logger.finer("Audio Renderer: "+alGetString(AL_RENDERER));
-        logger.finer("Audio Version: "+alGetString(AL_VERSION));
+        logger.log(Level.FINER, "Audio Vendor: {0}", alGetString(AL_VENDOR));
+        logger.log(Level.FINER, "Audio Renderer: {0}", alGetString(AL_RENDERER));
+        logger.log(Level.FINER, "Audio Version: {0}", alGetString(AL_VERSION));
 
 //        AL10.alDopplerFactor(100);
 //        AL10.alDopplerVelocity(100);

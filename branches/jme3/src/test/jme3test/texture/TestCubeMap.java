@@ -1,7 +1,6 @@
 package jme3test.texture;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.asset.AssetKey;
 import com.jme3.asset.ModelKey;
 import com.jme3.asset.TextureKey;
 import com.jme3.material.Material;
@@ -12,9 +11,7 @@ import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial.CullHint;
 import com.jme3.scene.shape.Sphere;
-import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
-import com.jme3.texture.TextureCubeMap;
 
 public class TestCubeMap extends SimpleApplication {
 
@@ -93,6 +90,7 @@ public class TestCubeMap extends SimpleApplication {
         skyMat.setVector3("m_NormalScale", new Vector3f(1, 1, 1));
         skyGeom.setMaterial(skyMat);
 
+        rootNode.setCullHint(CullHint.Never);
         rootNode.attachChild(skyGeom);
     }
 

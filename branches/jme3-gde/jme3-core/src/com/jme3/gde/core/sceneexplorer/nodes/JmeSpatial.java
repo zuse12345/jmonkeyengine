@@ -53,7 +53,7 @@ import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.RenameAction;
-import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
@@ -78,7 +78,7 @@ public class JmeSpatial extends AbstractSceneExplorerNode {
         this.spatial = spatial;
         getLookupContents().add(spatial);
         getLookupContents().add(this);
-        setName(spatial.getName());
+        super.setName(spatial.getName());
     }
 
     public JmeSpatial getChild(Spatial spat) {
@@ -112,7 +112,6 @@ public class JmeSpatial extends AbstractSceneExplorerNode {
                     SystemAction.get(DeleteAction.class)
                 };
     }
-
 
     @Override
     public boolean canCopy() {
@@ -318,9 +317,10 @@ public class JmeSpatial extends AbstractSceneExplorerNode {
         return JmeSpatial.class;
     }
 
-    public Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
+    public Node[] createNodes(Object key, DataObject key2, boolean cookie) {
         SceneExplorerChildren children = new SceneExplorerChildren((com.jme3.scene.Spatial) key);
-        children.setCookie(cookie);
-        return new Node[]{new JmeSpatial((Spatial) key, children).setSaveCookie(cookie)};
+        children.setReadOnly(cookie);
+        children.setDataObject(key2);
+        return new Node[]{new JmeSpatial((Spatial) key, children).setReadOnly(cookie)};
     }
 }

@@ -35,7 +35,7 @@ import com.jme3.material.Material;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import java.awt.Image;
-import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Sheet;
 import org.openide.util.ImageUtilities;
 
@@ -99,9 +99,10 @@ public class JmeGeometry extends JmeSpatial {
         return JmeGeometry.class;
     }
 
-    public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
+    public org.openide.nodes.Node[] createNodes(Object key, DataObject key2, boolean cookie) {
         SceneExplorerChildren children=new SceneExplorerChildren((com.jme3.scene.Spatial)key);
-        children.setCookie(cookie);
-        return new org.openide.nodes.Node[]{new JmeGeometry((Geometry) key, children).setSaveCookie(cookie)};
+        children.setReadOnly(cookie);
+        children.setDataObject(key2);
+        return new org.openide.nodes.Node[]{new JmeGeometry((Geometry) key, children).setReadOnly(cookie)};
     }
 }

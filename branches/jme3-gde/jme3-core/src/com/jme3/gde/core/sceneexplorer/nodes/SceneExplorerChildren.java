@@ -53,7 +53,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -66,8 +66,9 @@ import org.openide.util.Lookup;
 public class SceneExplorerChildren extends Children.Keys<Object> {
 
     protected Spatial spatial;
-    protected SaveCookie cookie;
+    protected boolean readOnly = true;
     protected HashMap<Object, Node> map = new HashMap<Object, Node>();
+    private DataObject dataObject;
 
     public SceneExplorerChildren() {
     }
@@ -81,8 +82,8 @@ public class SceneExplorerChildren extends Children.Keys<Object> {
         refresh();
     }
 
-    public void setCookie(SaveCookie cookie) {
-        this.cookie = cookie;
+    public void setReadOnly(boolean cookie) {
+        this.readOnly = cookie;
     }
 
     @Override
@@ -131,7 +132,7 @@ public class SceneExplorerChildren extends Children.Keys<Object> {
         for (SceneExplorerNode di : Lookup.getDefault().lookupAll(SceneExplorerNode.class)) {
             if (di.getExplorerObjectClass().getName().equals(key.getClass().getName())) {
                 System.out.println("Found " + di.getExplorerNodeClass());
-                Node[] ret = di.createNodes(key, null, cookie);
+                Node[] ret = di.createNodes(key, dataObject, readOnly);
                 if (ret != null) {
                     return ret;
                 }
@@ -141,57 +142,66 @@ public class SceneExplorerChildren extends Children.Keys<Object> {
         //TODO: go down in class hierarchy if class was not found, for now old checks are fallback
         if (key instanceof Spatial) {
             SceneExplorerChildren children = new SceneExplorerChildren((Spatial) key);
-            children.setCookie(cookie);
+            children.setReadOnly(readOnly);
+            children.setDataObject(dataObject);
             if (key instanceof PhysicsVehicleNode) {
-                return new Node[]{new JmePhysicsVehicleNode((PhysicsVehicleNode) key, children).setSaveCookie(cookie)};
+                return new Node[]{new JmePhysicsVehicleNode((PhysicsVehicleNode) key, children).setReadOnly(readOnly)};
             }
             if (key instanceof PhysicsNode) {
-                return new Node[]{new JmePhysicsNode((PhysicsNode) key, children).setSaveCookie(cookie)};
+                return new Node[]{new JmePhysicsNode((PhysicsNode) key, children).setReadOnly(readOnly)};
             }
             if (key instanceof PhysicsCharacterNode) {
-                return new Node[]{new JmePhysicsGhostNode((PhysicsGhostNode) key, children).setSaveCookie(cookie)};
+                return new Node[]{new JmePhysicsGhostNode((PhysicsGhostNode) key, children).setReadOnly(readOnly)};
             }
             if (key instanceof PhysicsGhostNode) {
-                return new Node[]{new JmePhysicsGhostNode((PhysicsGhostNode) key, children).setSaveCookie(cookie)};
+                return new Node[]{new JmePhysicsGhostNode((PhysicsGhostNode) key, children).setReadOnly(readOnly)};
             }
             if (key instanceof PhysicsCollisionObject) {
-                return new Node[]{new JmePhysicsCollisionObject((PhysicsCollisionObject) key, children).setSaveCookie(cookie)};
+                return new Node[]{new JmePhysicsCollisionObject((PhysicsCollisionObject) key, children).setReadOnly(readOnly)};
             }
             if (key instanceof PhysicsVehicleWheel) {
-                return new Node[]{new JmePhysicsVehicleWheel((PhysicsVehicleWheel) key, children).setSaveCookie(cookie)};
+                return new Node[]{new JmePhysicsVehicleWheel((PhysicsVehicleWheel) key, children).setReadOnly(readOnly)};
             }
             if (key instanceof com.jme3.audio.AudioNode) {
-                return new Node[]{new JmeAudioNode((com.jme3.audio.AudioNode) key, children).setSaveCookie(cookie)};
+                return new Node[]{new JmeAudioNode((com.jme3.audio.AudioNode) key, children).setReadOnly(readOnly)};
             }
             if (key instanceof com.jme3.scene.Node) {
-                return new Node[]{new JmeNode((com.jme3.scene.Node) key, children).setSaveCookie(cookie)};
+                return new Node[]{new JmeNode((com.jme3.scene.Node) key, children).setReadOnly(readOnly)};
             }
             if (key instanceof BitmapText) {
-                return new Node[]{new JmeBitmapText((BitmapText) key, children).setSaveCookie(cookie)};
+                return new Node[]{new JmeBitmapText((BitmapText) key, children).setReadOnly(readOnly)};
             }
             if (key instanceof Picture) {
-                return new Node[]{new JmePicture((Picture) key, children).setSaveCookie(cookie)};
+                return new Node[]{new JmePicture((Picture) key, children).setReadOnly(readOnly)};
             }
             if (key instanceof ParticleEmitter) {
-                return new Node[]{new JmeParticleEmitter((ParticleEmitter) key, children).setSaveCookie(cookie)};
+                return new Node[]{new JmeParticleEmitter((ParticleEmitter) key, children).setReadOnly(readOnly)};
             }
             if (key instanceof com.jme3.scene.Geometry) {
-                return new Node[]{new JmeGeometry((Geometry) key, children).setSaveCookie(cookie)};
+                return new Node[]{new JmeGeometry((Geometry) key, children).setReadOnly(readOnly)};
             }
-            return new Node[]{new JmeSpatial((Spatial) key, children).setSaveCookie(cookie)};
+            return new Node[]{new JmeSpatial((Spatial) key, children).setReadOnly(readOnly)};
         } else if (key instanceof LightSpatialPair) {
             LightSpatialPair pair = (LightSpatialPair) key;
             if (pair.getLight() instanceof PointLight) {
-                return new Node[]{new JmePointLight(pair.getSpatial(), (PointLight) pair.getLight()).setSaveCookie(cookie)};
+                return new Node[]{new JmePointLight(pair.getSpatial(), (PointLight) pair.getLight()).setReadOnly(readOnly)};
             }
             if (pair.getLight() instanceof DirectionalLight) {
-                return new Node[]{new JmeDirectionalLight(pair.getSpatial(), (DirectionalLight) pair.getLight()).setSaveCookie(cookie)};
+                return new Node[]{new JmeDirectionalLight(pair.getSpatial(), (DirectionalLight) pair.getLight()).setReadOnly(readOnly)};
             }
-            return new Node[]{new JmeLight(pair.getSpatial(), pair.getLight()).setSaveCookie(cookie)};
+            return new Node[]{new JmeLight(pair.getSpatial(), pair.getLight()).setReadOnly(readOnly)};
         } else if (key instanceof MeshGeometryPair) {
             MeshGeometryPair pair = (MeshGeometryPair) key;
-            return new Node[]{new JmeMesh(pair.getGeometry(), pair.getMesh()).setSaveCookie(cookie)};
+            return new Node[]{new JmeMesh(pair.getGeometry(), pair.getMesh()).setReadOnly(readOnly)};
         }
         return null;
+    }
+
+    public DataObject getDataObject() {
+        return dataObject;
+    }
+
+    public void setDataObject(DataObject dataObject) {
+        this.dataObject = dataObject;
     }
 }

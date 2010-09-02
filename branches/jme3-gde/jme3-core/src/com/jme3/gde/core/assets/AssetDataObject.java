@@ -29,10 +29,13 @@
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.gde.core.assets;
 
+import com.jme3.asset.AssetKey;
 import java.io.IOException;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
@@ -40,6 +43,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -50,17 +54,49 @@ import org.openide.util.lookup.ProxyLookup;
  * @author normenhansen
  */
 public class AssetDataObject extends MultiDataObject {
+
     protected final Lookup lookup;
     protected final InstanceContent lookupContents = new InstanceContent();
+    protected SaveCookie saveCookie;
+    protected DataNode dataNode;
 
     public AssetDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         lookup = new ProxyLookup(getCookieSet().getLookup(), new AbstractLookup(getLookupContents()));
+        FileObject file = getPrimaryFile();
+        while (file != null && file.getName() != "assets") {
+            file = file.getParent();
+        }
+        if (file != null) {
+            try {
+                Project project = ProjectManager.getDefault().findProject(file.getParent());
+                if (project != null) {
+                    ProjectAssetManager mgr = project.getLookup().lookup(ProjectAssetManager.class);
+                    if (mgr != null) {
+                        getLookupContents().add(mgr);
+                    }
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     @Override
     protected Node createNodeDelegate() {
         return new DataNode(this, Children.LEAF, getLookup());
+    }
+
+    @Override
+    public void setModified(boolean modif) {
+        super.setModified(modif);
+        if (modif && saveCookie != null) {
+            getCookieSet().assign(SaveCookie.class, saveCookie);
+        } else {
+            getCookieSet().assign(SaveCookie.class);
+        }
     }
 
     @Override
@@ -70,6 +106,20 @@ public class AssetDataObject extends MultiDataObject {
 
     public InstanceContent getLookupContents() {
         return lookupContents;
+    }
+
+    public void setSaveCookie(SaveCookie cookie) {
+        this.saveCookie = cookie;
+        getCookieSet().assign(SaveCookie.class, saveCookie);
+        setModified(false);
+    }
+
+    public Object loadAsset() {
+        return null;
+    }
+
+    public AssetKey<?> getAssetKey() {
+        return null;
     }
 
 }

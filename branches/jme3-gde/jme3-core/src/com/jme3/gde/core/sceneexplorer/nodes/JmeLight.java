@@ -41,6 +41,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import org.openide.actions.DeleteAction;
 import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
@@ -138,10 +139,6 @@ public class JmeLight extends AbstractSceneExplorerNode{
 
     public Class getExplorerNodeClass() {
         return JmeLight.class;
-    }
-
-    public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
-        return null;
     }
 
 }

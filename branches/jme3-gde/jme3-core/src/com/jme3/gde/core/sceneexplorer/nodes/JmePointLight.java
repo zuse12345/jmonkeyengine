@@ -36,6 +36,7 @@ import com.jme3.light.PointLight;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Sheet;
 
 /**
@@ -84,7 +85,7 @@ public class JmePointLight extends JmeLight{
         return JmePointLight.class;
     }
 
-    public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
+    public org.openide.nodes.Node[] createNodes(Object key, DataObject key2, SaveCookie cookie) {
         return null;
     }
 

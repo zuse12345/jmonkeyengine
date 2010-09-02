@@ -33,12 +33,10 @@ package com.jme3.gde.core.assets.nodes;
 
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.assets.AssetDataObject;
-import com.jme3.gde.core.assets.BinaryModelDataObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
@@ -63,8 +61,8 @@ public class AssetNode extends FilterNode {
         }
         return new ProxyLookup(
                 new Lookup[]{
-                    node.getLookup(),
-                    Lookups.fixed(manager)
+                    node.getLookup()
+                    /*,Lookups.fixed(manager)*/
                 });
     }
 }

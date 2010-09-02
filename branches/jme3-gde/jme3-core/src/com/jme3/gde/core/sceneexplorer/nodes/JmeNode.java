@@ -41,7 +41,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -65,7 +65,6 @@ public class JmeNode extends JmeSpatial {
         super(spatial, children);
         getLookupContents().add(spatial);
         this.node = spatial;
-        setName(spatial.getName());
     }
 
     @Override
@@ -151,9 +150,10 @@ public class JmeNode extends JmeSpatial {
         return JmeNode.class;
     }
 
-    public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
+    public org.openide.nodes.Node[] createNodes(Object key, DataObject key2, boolean cookie) {
         SceneExplorerChildren children=new SceneExplorerChildren((com.jme3.scene.Spatial)key);
-        children.setCookie(cookie);
-        return new org.openide.nodes.Node[]{new JmeNode((Node) key, children).setSaveCookie(cookie)};
+        children.setReadOnly(cookie);
+        children.setDataObject(key2);
+        return new org.openide.nodes.Node[]{new JmeNode((Node) key, children).setReadOnly(cookie)};
     }
 }

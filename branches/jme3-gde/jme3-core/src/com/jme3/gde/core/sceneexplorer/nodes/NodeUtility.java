@@ -32,8 +32,7 @@
 package com.jme3.gde.core.sceneexplorer.nodes;
 
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
-import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -43,39 +42,31 @@ public class NodeUtility {
 
     public static JmeNode createNode(Node node) {
         SceneExplorerChildren factory = new SceneExplorerChildren(node);
+        factory.setReadOnly(true);
         JmeNode jmeNode = new JmeNode(node, factory);
         return jmeNode;
     }
 
-    @Deprecated
-    public static JmeNode createNode(Node node, boolean includeLights) {
+    public static JmeNode createNode(Node node, boolean readOnly) {
         SceneExplorerChildren factory = new SceneExplorerChildren(node);
+        factory.setReadOnly(readOnly);
         JmeNode jmeNode = new JmeNode(node, factory);
         return jmeNode;
     }
 
-    public static JmeNode createNode(Node node, SaveCookie cookie) {
+    public static JmeNode createNode(Node node, DataObject dataObject) {
         SceneExplorerChildren factory = new SceneExplorerChildren(node);
-        factory.setCookie(cookie);
+        factory.setDataObject(dataObject);
+        factory.setReadOnly(true);
         JmeNode jmeNode = new JmeNode(node, factory);
-        jmeNode.setSaveCookie(cookie);
         return jmeNode;
     }
 
-    @Deprecated
-    public static JmeNode createNode(Node node, boolean includeLights, SaveCookie cookie) {
+    public static JmeNode createNode(Node node, DataObject dataObject, boolean readOnly) {
         SceneExplorerChildren factory = new SceneExplorerChildren(node);
-        factory.setCookie(cookie);
+        factory.setDataObject(dataObject);
+        factory.setReadOnly(readOnly);
         JmeNode jmeNode = new JmeNode(node, factory);
-        jmeNode.setSaveCookie(cookie);
         return jmeNode;
-    }
-
-    public static JmeSpatial createSpatial(Spatial node, SaveCookie cookie) {
-        SceneExplorerChildren factory = new SceneExplorerChildren(node);
-        factory.setCookie(cookie);
-        JmeSpatial jmeSpatial = new JmeSpatial(node, factory);
-        jmeSpatial.setSaveCookie(cookie);
-        return jmeSpatial;
     }
 }

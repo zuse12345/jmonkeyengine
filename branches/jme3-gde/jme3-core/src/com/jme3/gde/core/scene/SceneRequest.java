@@ -33,7 +33,8 @@ package com.jme3.gde.core.scene;
 
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.sceneexplorer.nodes.JmeNode;
-import com.jme3.scene.Node;
+import org.openide.loaders.DataObject;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 /**
@@ -43,12 +44,13 @@ import org.openide.util.Lookup;
 public class SceneRequest {
 
     private String windowTitle = "";
-    private String mimeType = "";
     private Object requester;
     private JmeNode rootNode;
     private com.jme3.scene.Node toolNode;
     private ProjectAssetManager manager;
     private boolean displayed = false;
+    private DataObject dataObject;
+    private HelpCtx helpCtx;
 
     public SceneRequest(Object requester, JmeNode rootNode, ProjectAssetManager manager) {
         this.requester = requester;
@@ -56,6 +58,10 @@ public class SceneRequest {
         this.manager = manager;
     }
 
+    /**
+     * returns the lookup of the root node
+     * @return
+     */
     public Lookup getLookup() {
         return rootNode.getLookup();
     }
@@ -68,24 +74,10 @@ public class SceneRequest {
     }
 
     /**
-     * @param windowTitle the windowTitle to set
+     * @param windowTitle the windowTitle to set in the SceneViewer window
      */
     public void setWindowTitle(String windowTitle) {
         this.windowTitle = windowTitle;
-    }
-
-    /**
-     * @return the mimeType
-     */
-    public String getMimeType() {
-        return mimeType;
-    }
-
-    /**
-     * @param mimeType the mimeType to set
-     */
-    public void setMimeType(String mimeType) {
-        this.mimeType = mimeType;
     }
 
     /**
@@ -103,7 +95,7 @@ public class SceneRequest {
     }
 
     /**
-     * @return the displayed
+     * @return the displayed status
      */
     public boolean isDisplayed() {
         return displayed;
@@ -117,8 +109,9 @@ public class SceneRequest {
     }
 
     /**
-     * @return the manager
+     * @return the projectassetmanager (deprecated, use lookup)
      */
+    @Deprecated
     public ProjectAssetManager getManager() {
         return manager;
     }
@@ -126,7 +119,7 @@ public class SceneRequest {
     /**
      * @return the toolScene
      */
-    public Node getToolNode() {
+    public com.jme3.scene.Node getToolNode() {
         return toolNode;
     }
 
@@ -135,8 +128,32 @@ public class SceneRequest {
      * used for displaying in-world tools, templates, previews etc.
      * @param toolScene the toolScene to set
      */
-    public void setToolNode(Node toolNode) {
+    public void setToolNode(com.jme3.scene.Node toolNode) {
         this.toolNode = toolNode;
+    }
+
+    public DataObject getDataObject() {
+        return dataObject;
+    }
+
+    /**
+     * sets the DataObject associated with this scene
+     * @param dataObject
+     */
+    public void setDataObject(DataObject dataObject) {
+        this.dataObject = dataObject;
+    }
+
+    public HelpCtx getHelpCtx() {
+        return helpCtx;
+    }
+
+    /**
+     * Set the help context for the SceneViewer window
+     * @param helpCtx
+     */
+    public void setHelpCtx(HelpCtx helpCtx) {
+        this.helpCtx = helpCtx;
     }
 
 }

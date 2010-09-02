@@ -31,7 +31,6 @@
  */
 package com.jme3.gde.core.assets.actions;
 
-import com.jme3.asset.DesktopAssetManager;
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.assets.SpatialAssetDataObject;
 import com.jme3.gde.core.scene.SceneApplication;
@@ -47,9 +46,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Confirmation;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 public final class OpenModel implements ActionListener {
 
@@ -60,47 +56,38 @@ public final class OpenModel implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent ev) {
+        final ProjectAssetManager manager = context.getLookup().lookup(ProjectAssetManager.class);
+        if (manager == null) {
+            return;
+        }
         Runnable call = new Runnable() {
 
             public void run() {
                 ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Opening Model");
                 progressHandle.start();
-                final ProjectAssetManager manager = context.getLookup().lookup(ProjectAssetManager.class);
-                if (manager == null) {
-                    progressHandle.finish();
-                    return;
-                }
-                final FileObject file = context.getPrimaryFile();
-                String assetName = manager.getRelativeAssetPath(file.getPath());
-                FileLock lock = null;
-                final Spatial spat;
-                try {
-                    ((DesktopAssetManager) manager.getManager()).clearCache();
-                    lock = file.lock();
-                    spat = manager.getManager().loadModel(assetName);
-                    if (spat instanceof Node) {
-                        //TODO: change scenecomposer to not depend on awt thread (move stuff from TopComponent)
-                        JmeNode jmeNode = NodeUtility.createNode((Node) spat);
-                        SceneApplication app = SceneApplication.getApplication();
-                        SceneRequest request = new SceneRequest(app, jmeNode, manager);
-                        request.setWindowTitle("SceneViewer - View Model");
-                        app.requestScene(request);
-                    } else {
-                    }
 
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
+                final Spatial asset = (Spatial) context.loadAsset();
+
+                if (asset != null) {
+                    Node node = null;
+                    if (asset instanceof Node) {
+                        node = (Node) asset;
+                    } else {
+                        node = new Node("RootNode");
+                    }
+                    JmeNode jmeNode = NodeUtility.createNode(node);
+                    SceneApplication app = SceneApplication.getApplication();
+                    SceneRequest request = new SceneRequest(app, jmeNode, manager);
+                    request.setWindowTitle("SceneViewer - View Model");
+                    app.requestScene(request);
+                } else {
                     Confirmation msg = new NotifyDescriptor.Confirmation(
-                            "Error opening " + file.getNameExt() + "\n" + ex.toString(),
+                            "Error opening " + context.getPrimaryFile().getNameExt(),
                             NotifyDescriptor.OK_CANCEL_OPTION,
                             NotifyDescriptor.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notify(msg);
-                } finally {
-                    if (lock != null) {
-                        lock.releaseLock();
-                    }
-                    progressHandle.finish();
                 }
+                progressHandle.finish();
             }
         };
         new Thread(call).start();

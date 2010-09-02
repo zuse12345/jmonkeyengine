@@ -5,7 +5,9 @@
 package com.jme3.gde.scenecomposer;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.gde.core.assets.AssetDataObject;
 import com.jme3.gde.core.assets.ProjectAssetManager;
+import com.jme3.gde.core.assets.SpatialAssetDataObject;
 import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
@@ -56,6 +58,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     SceneEditorController editorController;
     private SaveCookie saveCookie = new SaveCookieImpl();
     private SceneRequest currentRequest;
+    private HelpCtx ctx = new HelpCtx("com.jme3.gde.scenecomposer.usage");
 
     public SceneComposerTopComponent() {
         initComponents();
@@ -490,7 +493,6 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
 
     @Override
     public HelpCtx getHelpCtx() {
-        HelpCtx ctx = new HelpCtx("com.jme3.gde.scenecomposer.usage");
         //this call is for single components:
         //HelpCtx.setHelpIDString(this, "com.jme3.gde.core.sceneviewer");
         return ctx;
@@ -626,7 +628,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         });
     }
 
-    public void openScene(Spatial spat, FileObject file, ProjectAssetManager manager) {
+    public void openScene(Spatial spat, AssetDataObject file, ProjectAssetManager manager) {
         cleanupControllers();
         SceneApplication.getApplication().addSceneListener(this);
         result.addLookupListener(this);
@@ -638,21 +640,24 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
             node = new Node();
             node.attachChild(spat);
         }
-        JmeNode jmeNode = NodeUtility.createNode(node, saveCookie);
+        JmeNode jmeNode = NodeUtility.createNode(node, file, false);
         SceneRequest request = new SceneRequest(this, jmeNode, manager);
+        request.setDataObject(file);
+        request.setHelpCtx(ctx);
+        file.setSaveCookie(saveCookie);
         if (editorController != null) {
             editorController.cleanup();
         }
         editorController = new SceneEditorController(jmeNode, file);
         this.currentRequest = request;
-        request.setWindowTitle("SceneComposer - " + manager.getRelativeAssetPath(file.getPath()));
+        request.setWindowTitle("SceneComposer - " + manager.getRelativeAssetPath(file.getPrimaryFile().getPath()));
         request.setToolNode(new Node("SceneComposerToolNode"));
         SceneApplication.getApplication().requestScene(request);
     }
 
-    void addModel(AssetManager manager, String assetName) {
+    void addModel(SpatialAssetDataObject model) {
         if (editorController != null) {
-            editorController.addModel(manager, assetName, toolController.getCursorLocation());
+            editorController.addModel(model, toolController.getCursorLocation());
         }
     }
 
@@ -790,6 +795,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 currentRequest = null;
                 setSceneInfo(null, null, false);
                 java.awt.EventQueue.invokeLater(new Runnable() {
+
                     public void run() {
                         cleanupControllers();
                     }

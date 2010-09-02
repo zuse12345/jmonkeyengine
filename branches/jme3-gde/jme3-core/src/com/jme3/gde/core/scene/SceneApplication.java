@@ -66,6 +66,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -358,7 +359,10 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                     camController.disable();
                 }
                 currentSceneRequest = request;
-                setSelectedNode(request.getRootNode());
+                if (request.getDataObject() != null) {
+                    setSelectedNode(request.getDataObject().getNodeDelegate());
+                }
+                setHelpContext(request.getHelpCtx());
                 getCurrentSceneRequest().setDisplayed(true);
                 Node model = request.getLookup().lookup(Node.class);
                 if (model == null) {
@@ -414,6 +418,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         toolsNode.detachAllChildren();
         rootNode.detachAllChildren();
         setSelectedNode(null);
+        setHelpContext(null);
         resetCam();
         currentSceneRequest = null;
         return true;
@@ -442,6 +447,19 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                     SceneViewerTopComponent.findInstance().setActivatedNodes(new org.openide.nodes.Node[]{});
                 } else {
                     SceneViewerTopComponent.findInstance().setActivatedNodes(new org.openide.nodes.Node[]{node});
+                }
+            }
+        });
+    }
+
+    public void setHelpContext(final HelpCtx helpContext) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                if (helpContext == null) {
+                    SceneViewerTopComponent.findInstance().setHelpContext(new HelpCtx("com.jme3.gde.core.sceneviewer"));
+                } else {
+                    SceneViewerTopComponent.findInstance().setHelpContext(helpContext);
                 }
             }
         });

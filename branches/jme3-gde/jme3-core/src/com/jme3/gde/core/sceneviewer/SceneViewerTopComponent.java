@@ -35,10 +35,8 @@ import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
 import com.jme3.gde.core.scene.SceneRequest;
-import com.jme3.gde.core.sceneexplorer.nodes.JmeSpatial;
 import com.jme3.system.JmeCanvasContext;
 import com.jme3.system.SystemListener;
-import java.util.Collection;
 import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -67,6 +65,7 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     private SceneApplication app;
     private Lookup lookup;
     private final InstanceContent lookupContents = new InstanceContent();
+    private HelpCtx helpContext = new HelpCtx("com.jme3.gde.core.sceneviewer");
 
     public SceneViewerTopComponent() {
         initComponents();
@@ -186,10 +185,13 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 
     @Override
     public HelpCtx getHelpCtx() {
-        HelpCtx ctx = new HelpCtx("com.jme3.gde.core.sceneviewer");
         //this call is for single components:
         //HelpCtx.setHelpIDString(this, "com.jme3.gde.core.sceneviewer");
-        return ctx;
+        return helpContext;
+    }
+
+    public void setHelpContext(HelpCtx ctx) {
+        this.helpContext = ctx;
     }
 
     @Override
@@ -203,7 +205,7 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
                     "Error opening OpenGL window!\n"
                     + "Your graphics card needs to support at least OpenGL 2.0,\n"
                     + "if that is the case, please download the latest drivers.\n"
-                    + "("+e+")",
+                    + "(" + e + ")",
                     NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notifyLater(msg);
         } catch (Error err) {
@@ -211,7 +213,7 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
                     "Error opening OpenGL window!\n"
                     + "Your graphics card needs to support at least OpenGL 2.0,\n"
                     + "if that is the case, please download the latest drivers.\n"
-                    + "("+err+")",
+                    + "(" + err + ")",
                     NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notifyLater(msg);
         }
@@ -301,21 +303,6 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     public boolean sceneClose(SceneRequest request) {
         return true;
 //        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void nodeSelected(final JmeSpatial spatial) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                Collection<JmeSpatial> old = (Collection<JmeSpatial>) getLookup().lookupAll(JmeSpatial.class);
-                if (old.size() > 0) {
-                    for (JmeSpatial jmeSpatial : old) {
-                        lookupContents.remove(jmeSpatial);
-                    }
-                }
-                lookupContents.add(spatial.getLookup().lookupAll(JmeSpatial.class));
-            }
-        });
     }
 
     public void previewRequested(PreviewRequest request) {

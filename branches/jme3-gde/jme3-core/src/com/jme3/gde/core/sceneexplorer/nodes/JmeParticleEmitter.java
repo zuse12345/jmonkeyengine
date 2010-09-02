@@ -36,7 +36,7 @@ import com.jme3.effect.ParticleEmitter;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import java.awt.Image;
-import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.ImageUtilities;
@@ -59,7 +59,6 @@ public class JmeParticleEmitter extends JmeGeometry{
         super(spatial, children);
         getLookupContents().add(spatial);
         this.geom = spatial;
-        setName(spatial.getName());
     }
 
     @Override
@@ -122,10 +121,11 @@ public class JmeParticleEmitter extends JmeGeometry{
         return JmeParticleEmitter.class;
     }
 
-    public Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
+    public Node[] createNodes(Object key, DataObject key2, boolean cookie) {
         SceneExplorerChildren children=new SceneExplorerChildren((com.jme3.scene.Spatial)key);
-        children.setCookie(cookie);
-        return new Node[]{new JmeParticleEmitter((ParticleEmitter) key, children).setSaveCookie(cookie)};
+        children.setReadOnly(cookie);
+        children.setDataObject(key2);
+        return new Node[]{new JmeParticleEmitter((ParticleEmitter) key, children).setReadOnly(cookie)};
     }
 
 }

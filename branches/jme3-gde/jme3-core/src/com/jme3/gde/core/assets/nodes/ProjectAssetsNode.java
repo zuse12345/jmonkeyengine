@@ -66,8 +66,8 @@ public class ProjectAssetsNode extends FilterNode {
         }
         return new ProxyLookup(
                 new Lookup[]{
-                    node.getLookup(),
-                    Lookups.fixed(manager)
+                    node.getLookup()
+                    /*,Lookups.fixed(manager)*/
                 });
     }
 

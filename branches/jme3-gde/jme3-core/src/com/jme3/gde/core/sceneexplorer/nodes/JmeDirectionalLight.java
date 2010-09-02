@@ -83,10 +83,4 @@ public class JmeDirectionalLight extends JmeLight{
         return JmeDirectionalLight.class;
     }
 
-    public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
-        //TODO
-        return null;
-//        JmeChildren children=new JmeChildren((com.jme3.scene.Spatial)key);
-//        return new org.openide.nodes.Node[]{new JmePicture((Picture) key, children).setSaveCookie(cookie)};
-    }
 }

@@ -34,16 +34,13 @@ package com.jme3.gde.core.sceneexplorer.nodes;
 import com.jme3.gde.core.sceneexplorer.nodes.properties.SceneExplorerProperty;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.Confirmation;
-import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -53,7 +50,7 @@ public class AbstractSceneExplorerNode extends AbstractNode implements SceneExpl
 
     protected Children jmeChildren;
     protected final InstanceContent lookupContents;
-    protected SaveCookie saveCookie = null;
+    protected boolean readOnly = false;
 
     public AbstractSceneExplorerNode() {
         super(Children.LEAF, new SceneExplorerLookup(new InstanceContent()));
@@ -61,36 +58,31 @@ public class AbstractSceneExplorerNode extends AbstractNode implements SceneExpl
     }
 
     public AbstractSceneExplorerNode(Children children) {
-        super(children, new SceneExplorerLookup(new InstanceContent()));
+        //TODO: OMG!
+        super(children, children instanceof SceneExplorerChildren
+                ? (((SceneExplorerChildren) children).getDataObject() != null
+                ? new ProxyLookup(((SceneExplorerChildren) children).getDataObject().getLookup(), new SceneExplorerLookup(new InstanceContent()))
+                : new SceneExplorerLookup(new InstanceContent()))
+                : new SceneExplorerLookup(new InstanceContent()));
         this.jmeChildren = children;
-        lookupContents = ((SceneExplorerLookup) getLookup()).getInstanceContent();
+        lookupContents = getLookup().lookup(SceneExplorerLookup.class).getInstanceContent();
     }
 
     public InstanceContent getLookupContents() {
         return lookupContents;
     }
 
-    public void fireSave(boolean modified) {
-        fireSave(modified, false);
+    public AbstractSceneExplorerNode addToLookup(Object obj) {
+        lookupContents.add(obj);
+        return this;
     }
 
-    public void fireSave(boolean modified, boolean recursive) {
-        if (modified) {
-            if (saveCookie != null) {
-                lookupContents.add(saveCookie);
-            }
-        } else {
-            if (saveCookie != null) {
-                lookupContents.remove(saveCookie);
-            }
-        }
-        if (recursive) {
-            Node[] children = getChildren().getNodes();
-            for (int i = 0; i < children.length; i++) {
-                Node node = children[i];
-                if (node instanceof AbstractSceneExplorerNode) {
-                    ((AbstractSceneExplorerNode) node).fireSave(modified, recursive);
-                }
+    @Deprecated
+    protected void fireSave(boolean modified) {
+        if(jmeChildren instanceof SceneExplorerChildren){
+            DataObject dobj = ((SceneExplorerChildren)jmeChildren).getDataObject();
+            if(dobj!=null){
+                dobj.setModified(modified);
             }
         }
     }
@@ -98,8 +90,8 @@ public class AbstractSceneExplorerNode extends AbstractNode implements SceneExpl
     /**
      * @param saveCookie the saveCookie to set
      */
-    public AbstractSceneExplorerNode setSaveCookie(SaveCookie saveCookie) {
-        this.saveCookie = saveCookie;
+    public AbstractSceneExplorerNode setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
         return this;
     }
 
@@ -124,7 +116,7 @@ public class AbstractSceneExplorerNode extends AbstractNode implements SceneExpl
     protected Property makeProperty(Object obj, Class returntype, String method, String setter, String name) {
         Property prop = null;
         try {
-            if (saveCookie == null) {
+            if (readOnly) {
                 prop = new SceneExplorerProperty(getExplorerObjectClass().cast(obj), returntype, method, null);
             } else {
                 prop = new SceneExplorerProperty(getExplorerObjectClass().cast(obj), returntype, method, setter, this);
@@ -138,29 +130,11 @@ public class AbstractSceneExplorerNode extends AbstractNode implements SceneExpl
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if ((evt.getOldValue() == null && !(evt.getNewValue() == null)) || ((evt.getOldValue() != null) && !evt.getOldValue().equals(evt.getNewValue()))) {
+        System.out.println(evt.getPropertyName());
+        if ((evt.getOldValue() == null && evt.getNewValue() != null) || (evt.getOldValue() != null && !evt.getOldValue().equals(evt.getNewValue()))) {
             fireSave(true);
         }
         firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-    }
-
-    private class SaveCookieImpl implements SaveCookie {
-
-        public void save() throws IOException {
-            Confirmation msg = new NotifyDescriptor.Confirmation("Something went wrong!",
-                    NotifyDescriptor.OK_CANCEL_OPTION,
-                    NotifyDescriptor.QUESTION_MESSAGE);
-//
-            Object result = DialogDisplayer.getDefault().notify(msg);
-            //When user clicks "Yes", indicating they really want to save,
-            //we need to disable the Save button and Save menu item,
-            //so that it will only be usable when the next change is made
-            //to the text field:
-            if (NotifyDescriptor.YES_OPTION.equals(result)) {
-                fireSave(false);
-//            Implement your save functionality here.
-            }
-        }
     }
 
     public Class getExplorerNodeClass() {
@@ -171,7 +145,7 @@ public class AbstractSceneExplorerNode extends AbstractNode implements SceneExpl
         return Object.class;
     }
 
-    public Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
+    public Node[] createNodes(Object key, DataObject key2, boolean cookie) {
         return new Node[]{Node.EMPTY};
     }
 }

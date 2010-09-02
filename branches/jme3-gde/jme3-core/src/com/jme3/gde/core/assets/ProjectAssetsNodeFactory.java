@@ -60,6 +60,7 @@ public class ProjectAssetsNodeFactory implements NodeFactory {
             if (item != null) {
                 assetsFolder = DataObject.find(project.getProjectDirectory().getFileObject(item.getFolderName()));
                 Node node = assetsFolder.getNodeDelegate();
+//                return NodeFactorySupport.fixedNodeList(node);
                 try {
                     ProjectAssetsNode nd = new ProjectAssetsNode(item, proj, node);
                     return NodeFactorySupport.fixedNodeList(nd);

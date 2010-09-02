@@ -46,6 +46,7 @@ public class SceneExplorerLookup extends AbstractLookup{
     public SceneExplorerLookup(InstanceContent instanceContent) {
         super(instanceContent);
         this.instanceContent = instanceContent;
+        instanceContent.add(this);
     }
 
     public InstanceContent getInstanceContent() {

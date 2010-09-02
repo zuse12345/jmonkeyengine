@@ -34,7 +34,7 @@ package com.jme3.gde.core.sceneexplorer.nodes;
 import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import java.awt.Image;
-import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Sheet;
 import org.openide.util.ImageUtilities;
 
@@ -56,7 +56,6 @@ public class JmePhysicsCollisionObject extends JmeNode {
         super(spatial, children);
         getLookupContents().add(spatial);
         this.geom = spatial;
-        setName(spatial.getName());
     }
 
     @Override
@@ -97,9 +96,10 @@ public class JmePhysicsCollisionObject extends JmeNode {
         return JmePhysicsCollisionObject.class;
     }
 
-    public org.openide.nodes.Node[] createNodes(Object key, Object key2, SaveCookie cookie) {
+    public org.openide.nodes.Node[] createNodes(Object key, DataObject key2, boolean cookie) {
         SceneExplorerChildren children=new SceneExplorerChildren((com.jme3.scene.Spatial)key);
-        children.setCookie(cookie);
-        return new org.openide.nodes.Node[]{new JmePhysicsCollisionObject((PhysicsCollisionObject) key, children).setSaveCookie(cookie)};
+        children.setReadOnly(cookie);
+        children.setDataObject(key2);
+        return new org.openide.nodes.Node[]{new JmePhysicsCollisionObject((PhysicsCollisionObject) key, children).setReadOnly(cookie)};
     }
 }

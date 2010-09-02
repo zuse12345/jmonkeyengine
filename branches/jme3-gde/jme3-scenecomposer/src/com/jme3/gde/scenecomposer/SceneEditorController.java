@@ -16,6 +16,8 @@ import com.jme3.effect.EmitterSphereShape;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
 import com.jme3.export.binary.BinaryExporter;
+import com.jme3.gde.core.assets.AssetDataObject;
+import com.jme3.gde.core.assets.SpatialAssetDataObject;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.sceneexplorer.nodes.JmeSpatial;
 import com.jme3.light.DirectionalLight;
@@ -44,6 +46,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
@@ -58,10 +61,10 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
 
     private JmeSpatial jmeRootNode;
     private JmeSpatial selectedSpat;
-    private FileObject currentFileObject;
-    private boolean needSave = false;
+    private DataObject currentFileObject;
+//    private boolean needSave = false;
 
-    public SceneEditorController(JmeSpatial jmeRootNode, FileObject currentFileObject) {
+    public SceneEditorController(JmeSpatial jmeRootNode, DataObject currentFileObject) {
         this.jmeRootNode = jmeRootNode;
         this.currentFileObject = currentFileObject;
     }
@@ -84,13 +87,16 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
         }
         this.selectedSpat = selectedSpat;
         if (selectedSpat != null) {
-            selectedSpat.fireSave(needSave);
             selectedSpat.addPropertyChangeListener(this);//WeakListeners.propertyChange(this, selectedSpat));
             selectedSpat.addNodeListener(this);//WeakListeners.propertyChange(this, selectedSpat));
         }
     }
 
     public FileObject getCurrentFileObject() {
+        return currentFileObject.getPrimaryFile();
+    }
+
+    public DataObject getCurrentDataObject() {
         return currentFileObject;
     }
 
@@ -325,7 +331,7 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
         refreshSelectedParent();
     }
 
-    public void addModel(final AssetManager manager, final String assetName, final Vector3f location) {
+    public void addModel(final SpatialAssetDataObject file, final Vector3f location) {
         if (selectedSpat == null) {
             return;
         }
@@ -335,20 +341,18 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
             SceneApplication.getApplication().enqueue(new Callable<Object>() {
 
                 public Object call() throws Exception {
-                    doAddModel(manager, assetName, selected, location);
+                    doAddModel(file, selected, location);
                     return null;
                 }
             });
         }
     }
 
-    public void doAddModel(AssetManager manager, String assetName, Node selected, Vector3f location) {
+    public void doAddModel(SpatialAssetDataObject file, Node selected, Vector3f location) {
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Adding Model..");
         progressHandle.start();
         try {
-            ((DesktopAssetManager) manager).clearCache();
-            ModelKey key = new ModelKey(assetName);
-            Spatial linkNode = manager.loadAsset(key);
+            Spatial linkNode = (Spatial)file.loadAsset();
             if (linkNode != null) {
                 selected.attachChild(linkNode);
                 if (location != null) {
@@ -360,7 +364,7 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
             refreshSelected();
         } catch (Exception ex) {
             Confirmation msg = new NotifyDescriptor.Confirmation(
-                    "Error importing " + assetName + "\n" + ex.toString(),
+                    "Error importing " + file.getName() + "\n" + ex.toString(),
                     NotifyDescriptor.OK_CANCEL_OPTION,
                     NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notifyLater(msg);
@@ -418,20 +422,17 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
     }
 
     public void setNeedsSave(boolean state) {
-        if (selectedSpat != null) {
-            selectedSpat.fireSave(state);
-        }
-        needSave = state;
+        currentFileObject.setModified(state);
     }
 
     public boolean isNeedSave() {
-        return needSave;
+        return currentFileObject.isModified();
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if ((evt.getOldValue() == null && !(evt.getNewValue() == null)) || ((evt.getOldValue() != null) && !evt.getOldValue().equals(evt.getNewValue()))) {
-            setNeedsSave(true);
-        }
+//        if ((evt.getOldValue() == null && !(evt.getNewValue() == null)) || ((evt.getOldValue() != null) && !evt.getOldValue().equals(evt.getNewValue()))) {
+//            setNeedsSave(true);
+//        }
     }
 
     public void childrenAdded(NodeMemberEvent ev) {
@@ -452,7 +453,7 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
 
     public void saveScene() {
         final Node node = jmeRootNode.getLookup().lookup(Node.class);
-        final FileObject file = currentFileObject;
+        final FileObject file = currentFileObject.getPrimaryFile();
         if (node != null && file != null) {
             setNeedsSave(false);
             SceneApplication.getApplication().enqueue(new Callable() {

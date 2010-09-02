@@ -78,8 +78,8 @@ public class AssetLinkChildren extends SceneExplorerChildren {
         return null;
     }
 
-    public void setCookie(SaveCookie cookie) {
-        this.cookie = cookie;
+    public void setReadOnly(boolean cookie) {
+        this.readOnly = cookie;
     }
 
     @Override

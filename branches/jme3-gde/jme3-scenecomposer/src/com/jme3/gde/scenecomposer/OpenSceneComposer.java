@@ -19,6 +19,7 @@ import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import sun.misc.Perf.GetPerfAction;
 
 public final class OpenSceneComposer implements ActionListener {
 
@@ -29,43 +30,34 @@ public final class OpenSceneComposer implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent ev) {
+        final ProjectAssetManager manager = context.getLookup().lookup(ProjectAssetManager.class);
+        if (manager == null) {
+            return;
+        }
         Runnable call = new Runnable() {
 
             public void run() {
                 ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Opening in SceneComposer");
                 progressHandle.start();
-                final ProjectAssetManager manager = context.getLookup().lookup(ProjectAssetManager.class);
-                if (manager == null) {
-                    return;
-                }
-                final FileObject file = context.getPrimaryFile();
-                String assetName = manager.getRelativeAssetPath(file.getPath());
-                FileLock lock = null;
-                final Spatial spat;
-                try {
-                    ((DesktopAssetManager) manager.getManager()).clearCache();
-                    lock = file.lock();
-                    spat = manager.getManager().loadModel(assetName);
+
+                final Spatial asset = context.loadAsset();
+
+                if(asset!=null){
                     java.awt.EventQueue.invokeLater(new Runnable() {
 
                         public void run() {
                             SceneComposerTopComponent composer = SceneComposerTopComponent.findInstance();
-                            composer.openScene(spat, file, manager);
+                            composer.openScene(asset, context, manager);
                         }
                     });
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
+                }else {
                     Confirmation msg = new NotifyDescriptor.Confirmation(
-                            "Error opening " + file.getNameExt() + "\n" + ex.toString(),
+                            "Error opening " + context.getPrimaryFile().getNameExt(),
                             NotifyDescriptor.OK_CANCEL_OPTION,
                             NotifyDescriptor.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notify(msg);
-                } finally {
-                    if (lock != null) {
-                        lock.releaseLock();
-                    }
-                    progressHandle.finish();
                 }
+                progressHandle.finish();
             }
         };
         new Thread(call).start();

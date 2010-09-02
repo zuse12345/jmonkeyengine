@@ -154,8 +154,10 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
                     try {
                         reinitAuthLock.wait();
                     } catch (InterruptedException ex) {
-                        if (needClose.get())
+                        if (needClose.get()){
+                            logger.log(Level.INFO, "OGL: Re-init aborted. Closing display..");
                             return;
+                        }
 
                         logger.log(Level.SEVERE, "OGL: Interrupted! ", ex);
                     }
@@ -188,6 +190,16 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
                 listener.reshape(width, height);
         }
         super.runLoop();
+    }
+
+    @Override
+    public void destroy(boolean waitFor){
+        needClose.set(true);
+        if (renderThread != null && renderThread.isAlive()){
+            renderThread.interrupt();
+        }
+        if (waitFor)
+            waitFor(false);
     }
 
     private void pauseCanvas(){

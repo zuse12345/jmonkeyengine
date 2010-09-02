@@ -21,8 +21,6 @@ public class TestSphere extends SimpleApplication  {
         for (int y = -5; y < 5; y++){
             for (int x = -5; x < 5; x++){
                 Geometry sphere = new Geometry("sphere", sphMesh);
-                sphere.updateModelBound();
-
                 sphere.setMaterial(solidColor);
                 sphere.setLocalTranslation(x * 2, 0, y * 2);
                 rootNode.attachChild(sphere);

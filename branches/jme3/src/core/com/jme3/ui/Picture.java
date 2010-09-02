@@ -46,7 +46,8 @@ public class Picture extends Geometry {
     }
 
     public void setPosition(float x, float y){
-        setLocalTranslation(x, y, 0);
+        float z = getLocalTranslation().getZ();
+        setLocalTranslation(x, y, z);
     }
 
     public void setImage(AssetManager manager, String imgName, boolean useAlpha){

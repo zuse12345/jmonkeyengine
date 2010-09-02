@@ -294,6 +294,8 @@ public class Dome extends Mesh {
             ib.put((short)(vertCount - 1));
             ib.put((short)(bottomPlaneStart + samples + 1));
         }
+
+        updateBound();
     }
 
     public void read(JmeImporter e) throws IOException {

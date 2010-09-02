@@ -64,4 +64,13 @@ public class CollisionResults implements Iterable<CollisionResult> {
         return results.get(index);
     }
 
+    /**
+     * Internal use only.
+     * @param index
+     * @return
+     */
+    public CollisionResult getCollisionDirect(int index){
+        return results.get(index);
+    }
+
 }

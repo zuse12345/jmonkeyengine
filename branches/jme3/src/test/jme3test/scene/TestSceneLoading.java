@@ -39,7 +39,6 @@ public class TestSceneLoading extends SimpleApplication {
         this.flyCam.setMoveSpeed(10);
 
         // load sky
-        sphere.updateModelBound();
         sphere.setQueueBucket(Bucket.Sky);
         Material sky = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
         TextureKey key = new TextureKey("Textures/Sky/Bright/BrightSky.dds", true);

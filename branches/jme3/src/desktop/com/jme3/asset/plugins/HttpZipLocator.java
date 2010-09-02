@@ -4,10 +4,13 @@ import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetLocator;
 import com.jme3.asset.AssetManager;
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,7 +27,7 @@ public class HttpZipLocator implements AssetLocator {
     private int numEntries;
     private int tableOffset;
     private int tableLength;
-    private Hashtable<String, ZipEntry2> entries;
+    private HashMap<String, ZipEntry2> entries;
 
     private static class ZipEntry2 {
         String name;
@@ -33,21 +36,29 @@ public class HttpZipLocator implements AssetLocator {
         int compSize;
         long crc;
         boolean deflate;
+
+        @Override
+        public String toString(){
+            return "ZipEntry[name=" + name +
+                         ",  length=" + length +
+                         ",  compSize=" + compSize +
+                         ",  offset=" + offset + "]";
+        }
     }
 
-    private static final int get16(byte[] b, int off) {
+    private static int get16(byte[] b, int off) {
 	return  (b[off++] & 0xff) |
                ((b[off]   & 0xff) << 8);
     }
 
-    private static final int get32(byte[] b, int off) {
+    private static int get32(byte[] b, int off) {
 	return  (b[off++] & 0xff) |
                ((b[off++] & 0xff) << 8) |
                ((b[off++] & 0xff) << 16) |
                ((b[off] & 0xff) << 24);
     }
 
-    private static final long getu32(byte[] b, int off) throws IOException{
+    private static long getu32(byte[] b, int off) throws IOException{
         return (b[off++]&0xff) |
               ((b[off++]&0xff) << 8) |
               ((b[off++]&0xff) << 16) |
@@ -169,6 +180,7 @@ public class HttpZipLocator implements AssetLocator {
         String name = getUTF8String(table, offset + ZipEntry.CENHDR, nameLen);
         if (name.charAt(name.length()-1) == '/'){
             // ignore this entry, it is directory node
+            // or it has no name (?)
             return newOffset;
         }
 
@@ -189,13 +201,31 @@ public class HttpZipLocator implements AssetLocator {
         return newOffset;
     }
 
+    private void fillByteArray(byte[] array, InputStream source) throws IOException{
+        int total = 0;
+        int length = array.length;
+	while (total < length) {
+	    int read = source.read(array, total, length - total);
+            if (read < 0)
+                throw new IOException("Failed to read entire array");
+
+	    total += read;
+	}
+    }
+
     private void readCentralDirectory() throws IOException{
         InputStream in = readData(tableOffset, tableLength);
         byte[] header = new byte[tableLength];
-        in.read(header);
+
+        // Fix for "PK12 bug in town.zip": sometimes
+        // not entire byte array will be read with InputStream.read()
+        // (especially for big headers)
+        fillByteArray(header, in);
+
+//        in.read(header);
         in.close();
 
-        entries = new Hashtable<String, ZipEntry2>(numEntries);
+        entries = new HashMap<String, ZipEntry2>(numEntries);
         int offset = 0;
         for (int i = 0; i < numEntries; i++){
             offset = readTableEntry(header, offset);
@@ -203,18 +233,43 @@ public class HttpZipLocator implements AssetLocator {
     }
 
     private void readEndHeader() throws IOException{
-        InputStream in = readData(Integer.MAX_VALUE, ZipEntry.ENDHDR);
-        byte[] header = new byte[ZipEntry.ENDHDR];
-        in.read(header);
+
+//        InputStream in = readData(Integer.MAX_VALUE, ZipEntry.ENDHDR);
+//        byte[] header = new byte[ZipEntry.ENDHDR];
+//        fillByteArray(header, in);
+//        in.close();
+//
+//        if (get32(header, 0) != ZipEntry.ENDSIG){
+//            throw new IOException("End header error, expected 'PK56'");
+//        }
+
+        // Fix for "PK56 bug in town.zip":
+        // If there's a zip comment inside the end header,
+        // PK56 won't appear in the -22 position relative to the end of the
+        // file!
+        // In that case, we have to search for it.
+        // Increase search space to 200 bytes
+
+        InputStream in = readData(Integer.MAX_VALUE, 200);
+        byte[] header = new byte[200];
+        fillByteArray(header, in);
         in.close();
 
-        if (get32(header, 0) != ZipEntry.ENDSIG){
-            throw new IOException("End header error, expected 'PK56'");
+        int offset = -1;
+        for (int i = 200 - 22; i >= 0; i--){
+            if (header[i] == (byte) (ZipEntry.ENDSIG & 0xff)
+              && get32(header, i) == ZipEntry.ENDSIG){
+                // found location
+                offset = i;
+                break;
+            }
         }
+        if (offset == -1)
+            throw new IOException("Cannot find Zip End Header in file!");
 
-        numEntries  = get16(header, ZipEntry.ENDTOT);
-        tableLength = get32(header, ZipEntry.ENDSIZ);
-        tableOffset = get32(header, ZipEntry.ENDOFF);
+        numEntries  = get16(header, offset + ZipEntry.ENDTOT);
+        tableLength = get32(header, offset + ZipEntry.ENDSIZ);
+        tableOffset = get32(header, offset + ZipEntry.ENDOFF);
     }
 
     public void load(URL url) throws IOException {

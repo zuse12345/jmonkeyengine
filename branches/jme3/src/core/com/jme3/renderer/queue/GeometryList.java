@@ -64,12 +64,13 @@ public class GeometryList {
     }
 
     /**
-     * Sorts the elements in the list acording to their Comparator.
+     * Sorts the elements in the list according to their Comparator.
      */
     public void sort() {
         if (size > 1) {
             // sort the spatial list using the comparator
-            Arrays.sort(geometries, comparator);
+            Arrays.sort(geometries, 0, size, comparator);
+//            Arrays.sort(geometries, comparator);
         }
     }
 }

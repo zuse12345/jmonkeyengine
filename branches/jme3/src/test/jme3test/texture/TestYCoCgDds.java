@@ -24,7 +24,6 @@ public class TestYCoCgDds extends SimpleApplication {
 
     public Geometry createQuad(float side, String texName, boolean ycocg){
         Geometry quad = new Geometry("Textured Quad", quadMesh);
-        quad.updateModelBound();
 
         Texture tex = assetManager.loadTexture(texName);
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");

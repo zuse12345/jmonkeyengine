@@ -74,7 +74,6 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
         // load sky
         Sphere sphereMesh = new Sphere(32, 32, 10, false, true);
         Geometry sphere = new Geometry("Sky", sphereMesh);
-        sphere.updateModelBound();
         sphere.setQueueBucket(Bucket.Sky);
         Material sky = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
         TextureKey key = new TextureKey("Textures/Sky/Bright/BrightSky.dds", true);

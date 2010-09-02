@@ -482,8 +482,11 @@ public final class OBJLoader implements AssetLoader {
 
         if (matFaces.size() > 0){
             for (Entry<String, ArrayList<Face>> entry : matFaces.entrySet()){
-                Geometry geom = createGeometry(entry.getValue(), entry.getKey());
-                objNode.attachChild(geom);
+                ArrayList<Face> materialFaces = entry.getValue();
+                if (materialFaces.size() > 0){
+                    Geometry geom = createGeometry(materialFaces, entry.getKey());
+                    objNode.attachChild(geom);
+                }
             }
         }else if (faces.size() > 0){
             // generate final geometry

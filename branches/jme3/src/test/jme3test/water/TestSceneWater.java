@@ -50,7 +50,6 @@ public class TestSceneWater extends SimpleApplication {
         cam.setRotation(new Quaternion(0.03f, 0.9f, 0f, 0.4f));
 
         // load sky
-        sphere.updateModelBound();
         sphere.setQueueBucket(Bucket.Sky);
         Material sky = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
         TextureKey key = new TextureKey("Textures/Sky/Bright/BrightSky.dds", true);

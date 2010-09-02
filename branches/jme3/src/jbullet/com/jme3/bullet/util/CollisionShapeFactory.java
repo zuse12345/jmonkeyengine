@@ -189,7 +189,6 @@ public class CollisionShapeFactory {
         //TODO: this updateGeometric is not good, it could be called on a spatial
         //      with a parent when compound shapes are created.. why does it crash w/o?
         spatial.updateGeometricState();
-        spatial.updateModelBound();
         BoxCollisionShape shape = new BoxCollisionShape(
                 ((BoundingBox) spatial.getWorldBound()).getExtent(new Vector3f()));
         return shape;

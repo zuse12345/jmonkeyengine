@@ -49,7 +49,6 @@ public class TestPostFilters extends SimpleApplication {
         Geometry skyGeom = new Geometry("Sky", sky);
         skyGeom.setQueueBucket(Bucket.Sky);
         skyGeom.setShadowMode(ShadowMode.Off);
-        skyGeom.updateModelBound();
         skyGeom.setCullHint(CullHint.Never);
 
         Texture envMap;
@@ -94,7 +93,6 @@ public class TestPostFilters extends SimpleApplication {
         floor.scaleTextureCoordinates(new Vector2f(5, 5));
         Geometry floorGeom = new Geometry("Floor", floor);
         floorGeom.setMaterial(mat);
-        floorGeom.updateModelBound();
         floorGeom.setShadowMode(ShadowMode.Recieve);
         rootNode.attachChild(floorGeom);
     }

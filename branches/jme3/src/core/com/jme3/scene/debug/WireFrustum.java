@@ -50,6 +50,8 @@ public class WireFrustum extends Mesh {
         a.rewind();
 
         vb.setUpdateNeeded();
+        
+        updateBound();
     }
 
 }

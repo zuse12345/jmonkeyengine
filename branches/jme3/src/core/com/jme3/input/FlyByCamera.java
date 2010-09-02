@@ -68,6 +68,11 @@ public class FlyByCamera implements AnalogListener, ActionListener {
      * @param enable If false, the camera will ignore input.
      */
     public void setEnabled(boolean enable){
+        if (enabled && !enable){
+            if (!dragToRotate || (dragToRotate && canRotate)){
+                inputManager.setCursorVisible(true);
+            }
+        }
         enabled = enable;
     }
 
@@ -101,23 +106,13 @@ public class FlyByCamera implements AnalogListener, ActionListener {
     }
 
     /**
-     * Registers the FlyByCamera to recieve input events from the provided
+     * Registers the FlyByCamera to receive input events from the provided
      * Dispatcher.
      * @param dispacher
      */
     public void registerWithInput(InputManager inputManager){
         this.inputManager = inputManager;
         
-//        inputManager.registerJoystickAxisBinding("FLYCAM_Left",  2, JoyInput.AXIS_X, true);
-//        inputManager.registerJoystickAxisBinding("FLYCAM_Right", 2, JoyInput.AXIS_X, false);
-//        inputManager.registerJoystickAxisBinding("FLYCAM_Up",    2, JoyInput.AXIS_Y, true);
-//        inputManager.registerJoystickAxisBinding("FLYCAM_Down",  2, JoyInput.AXIS_Y, false);
-//
-//        inputManager.registerJoystickAxisBinding("FLYCAM_StrafeLeft",  2, JoyInput.POV_X, true);
-//        inputManager.registerJoystickAxisBinding("FLYCAM_StrafeRight", 2, JoyInput.POV_X, false);
-//        inputManager.registerJoystickAxisBinding("FLYCAM_Forward",     2, JoyInput.POV_Y, true);
-//        inputManager.registerJoystickAxisBinding("FLYCAM_Backward",    2, JoyInput.POV_Y, false);
-
         String[] mappings = new String[]{
             "FLYCAM_Left",
             "FLYCAM_Right",

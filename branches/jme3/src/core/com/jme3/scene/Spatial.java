@@ -208,7 +208,10 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
 
         if (frustrumIntersects == Camera.FrustumIntersect.Intersects) {
             int state = cam.getPlaneState();
-            frustrumIntersects = cam.contains(getWorldBound());  
+            
+            assert (refreshFlags & RF_BOUND) == 0;
+            frustrumIntersects = cam.contains(getWorldBound());
+            
             cam.setPlaneState(state);
         }
 
@@ -242,6 +245,13 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         return worldLights;
     }
 
+    private void checkUpdatedTransform(){
+        if ((refreshFlags & RF_TRANSFORM) != 0)
+            throw new IllegalStateException("updateGeometricState() must be"
+                                          + " called on the root node to retrieve"
+                                          + " updated world transforms.");
+    }
+
     /**
      * <code>getWorldRotation</code> retrieves the absolute rotation of the
      * Spatial.
@@ -249,6 +259,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      * @return the Spatial's world rotation matrix.
      */
     public Quaternion getWorldRotation() {
+        checkUpdatedTransform();
         return worldTransform.getRotation();
     }
 
@@ -259,6 +270,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      * @return the world's tranlsation vector.
      */
     public Vector3f getWorldTranslation() {
+        checkUpdatedTransform();
         return worldTransform.getTranslation();
     }
 
@@ -269,6 +281,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      * @return the world's scale factor.
      */
     public Vector3f getWorldScale() {
+        checkUpdatedTransform();
         return worldTransform.getScale();
     }
 
@@ -279,6 +292,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      * @return the world transform.
      */
     public Transform getWorldTransform(){
+        checkUpdatedTransform();
         return worldTransform;
     }
 
@@ -330,10 +344,6 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      *            1, 0} in jME.)
      */
     public void lookAt(Vector3f position, Vector3f upVector) {
-        if ((refreshFlags & RF_TRANSFORM) != 0){
-            updateGeometricState();
-        }
-
         assert TempVars.get().lock();
         Vector3f compVecA = TempVars.get().vect1;
         compVecA.set(position).subtractLocal(getWorldTranslation());

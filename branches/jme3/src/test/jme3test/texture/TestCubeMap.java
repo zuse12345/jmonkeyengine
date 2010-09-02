@@ -61,7 +61,6 @@ public class TestCubeMap extends SimpleApplication {
     public Geometry createReflectiveTeapot(){
         Geometry g = (Geometry) assetManager.loadAsset(new ModelKey("Models/Teapot/Teapot.obj"));
         g.setLocalScale(5);
-        g.updateModelBound();
 
         Material mat = new Material(assetManager, "Common/MatDefs/Light/Reflection.j3md");
         mat.setTexture("m_Texture", envMap);
@@ -86,7 +85,6 @@ public class TestCubeMap extends SimpleApplication {
 
     public void setupSkyBox(){
         skyGeom.setQueueBucket(Bucket.Sky);
-        skyGeom.updateModelBound();
         skyGeom.setCullHint(CullHint.Never);
 
         Material skyMat = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");

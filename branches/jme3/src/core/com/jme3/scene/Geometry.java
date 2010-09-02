@@ -200,7 +200,7 @@ public class Geometry extends Spatial {
             int added = mesh.collideWith(other, cachedWorldMat, worldBound, results);
             int newSize = results.size();
             for (int i = prevSize; i < newSize; i++){
-                results.getCollision(i).setGeometry(this);
+                results.getCollisionDirect(i).setGeometry(this);
             }
             return added;
         }

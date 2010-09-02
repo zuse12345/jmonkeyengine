@@ -515,7 +515,8 @@ public class RenderManager {
              float scaleY     = viewHeight == viewY ? 1f : 2f / (viewHeight - viewY);
              orthoMatrix.loadIdentity();
              orthoMatrix.setTranslation(translateX, translateY, 0);
-             orthoMatrix.setScale(scaleX, scaleY, -1f);
+             orthoMatrix.setScale(scaleX, scaleY, /*-1f*/0f);
+//             System.out.println(orthoMatrix);
          }
     }
 

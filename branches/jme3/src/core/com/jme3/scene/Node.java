@@ -254,9 +254,8 @@ public class Node extends Spatial implements Savable {
             child.setTransformRefresh();
             child.setLightListRefresh();
             if (logger.isLoggable(Level.INFO)) {
-                logger.info("Child (" + child.getName()
-                        + ") attached to this" + " node (" + getName()
-                        + ")");
+                logger.log(Level.INFO,"Child ({0}) attached to this node ({1})",
+                        new Object[]{child.getName(), getName()});
             }
         }
         
@@ -289,9 +288,8 @@ public class Node extends Spatial implements Savable {
             child.setTransformRefresh();
             child.setLightListRefresh();
             if (logger.isLoggable(Level.INFO)) {
-                logger.info("Child (" + child.getName()
-                        + ") attached to this" + " node (" + getName()
-                        + ")");
+                logger.log(Level.INFO,"Child ({0}) attached to this node ({1})",
+                        new Object[]{child.getName(), getName()});
             }
         }
         
@@ -390,7 +388,7 @@ public class Node extends Spatial implements Savable {
     }
 
     /**
-     * More efficent than e.g detaching and attaching as no updates are needed.
+     * More efficient than e.g detaching and attaching as no updates are needed.
      * @param index1
      * @param index2
      */
@@ -477,12 +475,14 @@ public class Node extends Spatial implements Savable {
         }
     }
 
+    @Override
     public void setMaterial(Material mat){
         for (int i = 0; i < children.size(); i++){
             children.get(i).setMaterial(mat);
         }
     }
 
+    @Override
     public void setLodLevel(int lod){
         super.setLodLevel(lod);
         for (int i = 0; i < children.size(); i++){

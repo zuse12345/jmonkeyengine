@@ -20,8 +20,6 @@ public class TestDdsLoading extends SimpleApplication {
         Quad quadMesh = new Quad(1, 1);
 
         Geometry quad = new Geometry("Textured Quad", quadMesh);
-        quad.updateModelBound();
-        
         Texture tex = assetManager.loadTexture("Textures/Sky/Night/Night_dxt1.dds");
 
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");

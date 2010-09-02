@@ -6,6 +6,7 @@ package com.jme3.ui;
  *
  * @author Momoko_Fan
  */
+@Deprecated
 public interface UIElement {
     public void setZOrder(int zOrder);
     public int getZOrder();

@@ -190,7 +190,7 @@ public final class BIHNode implements Savable {
                     int start = results.size() - added;
 
                     for (int j = start; j < results.size(); j++){
-                        CollisionResult cr = results.getCollision(j);
+                        CollisionResult cr = results.getCollisionDirect(j);
                         cr.setTriangleIndex(index);
                     }
 
@@ -375,6 +375,7 @@ public final class BIHNode implements Savable {
                     Vector3f contactPoint = new Vector3f(r.direction)
                                                 .multLocal(tHit)
                                                 .addLocal(r.origin);
+                    
                     CollisionResult cr = new CollisionResult(contactPoint, tHit);
                     cr.setTriangleIndex(tree.getTriangleIndex(i));
                     results.addCollision(cr);

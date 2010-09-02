@@ -48,7 +48,6 @@ public class TestShadow extends SimpleApplication {
         Geometry floorGeom = new Geometry("Floor", floor);
         floorGeom.setMaterial(mat);
         floorGeom.setLocalTranslation(0,-0.2f,0);
-        floorGeom.updateModelBound();
         floorGeom.setShadowMode(ShadowMode.Recieve);
         rootNode.attachChild(floorGeom);
 
@@ -82,7 +81,6 @@ public class TestShadow extends SimpleApplication {
         ShadowUtil.updateFrustumPoints2(shadowCam, points);
 
         frustum.update(points);
-        frustumMdl.updateModelBound();
         // rotate teapot around Y axis
         teapot.rotate(0, tpf * 0.25f, 0);
     }

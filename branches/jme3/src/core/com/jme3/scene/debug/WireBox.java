@@ -50,6 +50,7 @@ public class WireBox extends Mesh {
             setBuffer(pvb);
         }else{
             pb = (FloatBuffer) pvb.getData();
+            pvb.updateData(pb);
         }
         pb.rewind();
         pb.put(

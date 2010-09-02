@@ -67,7 +67,6 @@ public class Quad extends Mesh {
                                                  0, 2, 3});
         }
         
-
         updateBound();
     }
 

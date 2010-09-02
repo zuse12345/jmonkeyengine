@@ -18,7 +18,6 @@ public class TestCylinder extends SimpleApplication {
     public void simpleInitApp() {
         Cylinder t = new Cylinder(20, 50, 1, 2, true);
         Geometry geom = new Geometry("Cylinder", t);
-        geom.updateModelBound();
 
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         TextureKey key = new TextureKey("Interface/Logo/Monkey.jpg", true);

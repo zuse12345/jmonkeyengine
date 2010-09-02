@@ -41,6 +41,60 @@ import java.util.Comparator;
  */
 public class SortUtil
 {
+    public static void gsort(Object[] a, Comparator comp){
+        int p = 0;
+        int l = a.length;
+        while (p < l){
+            int pm1 = p-1;
+            if (p == 0 || comp.compare(a[p], a[pm1]) >= 0){
+                p++;
+            }else{
+                Object t = a[p];
+                a[p] = a[pm1];
+                a[pm1] = t;
+                p--;
+            }
+        }
+    }
+
+    private static void test(Float[] original, Float[] sorted, Comparator<Float> ic){
+        for (int i = 0; i < 1000000; i++){
+            System.arraycopy(original, 0, sorted, 0, original.length);
+            gsort(sorted, ic);
+        }
+
+        for (int i = 0; i < 1000000; i++){
+            System.arraycopy(original, 0, sorted, 0, original.length);
+            qsort(sorted, ic);
+        }
+
+        for (int i = 0; i < 1000000; i++){
+            System.arraycopy(original, 0, sorted, 0, original.length);
+            msort(original, sorted, ic);
+        }
+   
+        for (int i = 0; i < 1000000; i++){
+            System.arraycopy(original, 0, sorted, 0, original.length);
+            Arrays.sort(sorted, ic);
+        }
+    }
+
+    public static void main(String[] args){
+        Comparator<Float> ic = new Comparator<Float>() {
+            public int compare(Float o1, Float o2) {
+                return (int) (o1 - o2);
+            }
+        };
+        Float[] original = new Float[]{ 2f, 1f, 5f, 3f, 4f, 6f, 8f, 9f,
+                                        11f, 10f, 12f, 13f, 14f, 15f, 7f, 19f, 20f, 18f, 16f, 17f,
+                                        21f, 23f, 22f, 24f, 25f, 27f, 26f, 29f, 28f, 30f, 31f};
+        Float[] sorted   = new Float[original.length];
+
+        while (true){
+            test(original, sorted, ic);
+        }
+    }
+
     /**
      * Quick sorts the supplied array using the specified comparator.
      */

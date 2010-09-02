@@ -63,7 +63,6 @@ public class TestPssmShadow extends SimpleApplication {
 
         Geometry soil=new Geometry("soil", new Box(new Vector3f(0, -13, 550), 800, 10, 700));
         soil.updateGeometricState();
-        soil.updateModelBound();
         soil.setMaterial(matSoil);
         soil.setShadowMode(ShadowMode.CastAndRecieve);
         rootNode.attachChild(soil);

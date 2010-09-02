@@ -27,7 +27,6 @@ public class TestUrlLoading extends SimpleApplication {
         quadMesh.updateGeometry(1, 1, true);
 
         Geometry quad = new Geometry("Textured Quad", quadMesh);
-        quad.updateModelBound();
 
         assetManager.registerLocator("http://www.jmonkeyengine.com/images/",
                                 UrlLocator.class.getName());

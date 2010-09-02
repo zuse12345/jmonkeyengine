@@ -21,7 +21,6 @@ public class TestNormalLatc extends SimpleApplication {
 
     public Geometry createQuad(float side, String texName, boolean latc){
         Geometry quad = new Geometry("Textured Quad", quadMesh);
-        quad.updateModelBound();
 
         TextureKey key = new TextureKey(texName, true);
         key.setGenerateMips(false);

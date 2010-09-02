@@ -45,7 +45,6 @@ public class TestSSAO2 extends SimpleApplication {
         cam.setRotation(new Quaternion(0.0016069f, 0.9810479f, -0.008143323f, 0.19358753f));
 
         // load sky
-        sphere.updateModelBound();
         sphere.setQueueBucket(Bucket.Sky);
         Material sky = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
         TextureKey key = new TextureKey("Textures/Sky/Bright/BrightSky.dds", true);

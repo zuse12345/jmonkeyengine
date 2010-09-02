@@ -9,7 +9,6 @@ public class TestContextRestart {
         AppSettings settings = new AppSettings(true);
 
         final Application app = new Application();
-        settings.setRenderer(AppSettings.JOGL);
         app.setSettings(settings);
         app.start();
 

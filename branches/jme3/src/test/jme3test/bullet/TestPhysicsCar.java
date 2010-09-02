@@ -151,6 +151,7 @@ public class TestPhysicsCar extends SimpleBulletApplication implements ActionLis
     @Override
     public void simpleUpdate(float tpf) {
         Quaternion quat=new Quaternion();
+        rootNode.updateGeometricState();
         cam.lookAt(vehicle.getWorldTranslation(), Vector3f.UNIT_Y);
     }
 

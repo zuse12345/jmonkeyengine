@@ -143,6 +143,10 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
     }
 
     public void run(){
+        if (listener == null)
+            throw new IllegalStateException("SystemListener is not set on context!"
+                                          + "Must set with JmeContext.setSystemListner().");
+
         logger.log(Level.INFO, "Using LWJGL {0}", Sys.getVersion());
         initInThread();
         while (true){

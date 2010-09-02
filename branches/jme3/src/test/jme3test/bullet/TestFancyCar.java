@@ -247,6 +247,7 @@ public class TestFancyCar extends SimpleBulletApplication implements ActionListe
 
     @Override
     public void simpleUpdate(float tpf) {
+        rootNode.updateGeometricState();
         cam.lookAt(player.getWorldTranslation(), Vector3f.UNIT_Y);
     }
 

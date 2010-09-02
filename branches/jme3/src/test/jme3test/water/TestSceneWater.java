@@ -50,6 +50,7 @@ public class TestSceneWater extends SimpleApplication {
         cam.setRotation(new Quaternion(0.03f, 0.9f, 0f, 0.4f));
 
         // load sky
+        sphere.updateModelBound();
         sphere.setQueueBucket(Bucket.Sky);
         Material sky = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
         TextureKey key = new TextureKey("Textures/Sky/Bright/BrightSky.dds", true);
@@ -71,14 +72,26 @@ public class TestSceneWater extends SimpleApplication {
         Spatial scene = assetManager.loadModel("main.scene");
 
         DirectionalLight sun = new DirectionalLight();
-        sun.setDirection(new Vector3f(-0.4790551f, -0.39247334f, -0.7851566f));
+        Vector3f lightDir=new Vector3f(-0.37352666f, -0.50444174f, -0.7784704f);
+        sun.setDirection(lightDir);
         sun.setColor(ColorRGBA.White.clone().multLocal(2));
         scene.addLight(sun);
+
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
+        mat.setTexture("m_ColorMap", assetManager.loadTexture("Interface/Logo/Monkey.jpg"));
+           //add lightPos Geometry
+        Sphere lite=new Sphere(8, 8, 3.0f);
+        Geometry lightSphere=new Geometry("lightsphere", lite);
+        lightSphere.setMaterial(mat);
+        Vector3f lightPos=lightDir.multLocal(-400);
+        lightSphere.setLocalTranslation(lightPos);
+        rootNode.attachChild(lightSphere);
 
 
         SimpleWaterProcessor waterProcessor = new SimpleWaterProcessor(assetManager);
         waterProcessor.setReflectionScene(mainScene);
         waterProcessor.setDebug(false);
+        waterProcessor.setLightPosition(lightPos);
 
         //setting the water plane
         Vector3f waterLocation=new Vector3f(0,-6,0);

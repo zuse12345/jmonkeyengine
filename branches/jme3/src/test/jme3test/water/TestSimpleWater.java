@@ -14,6 +14,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
@@ -26,7 +27,7 @@ import com.jme3.water.SimpleWaterProcessor;
 public class TestSimpleWater extends SimpleApplication implements ActionListener {
 
     Material mat;
-    Geometry waterPlane;
+    Spatial waterPlane;
     Geometry lightSphere;
     SimpleWaterProcessor waterProcessor;
     Node sceneNode;
@@ -53,7 +54,10 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
         waterProcessor.setLightPosition(lightPos);
 
         //create water quad
-        waterPlane = waterProcessor.createWaterGeometry(100, 100);
+        //waterPlane = waterProcessor.createWaterGeometry(100, 100);
+        waterPlane=(Spatial)  assetManager.loadAsset("Models/Plane.mesh.xml");
+        waterPlane.setMaterial(waterProcessor.getMaterial());
+        waterPlane.setLocalScale(40);
         waterPlane.setLocalTranslation(-5, 0, 5);
 
         rootNode.attachChild(waterPlane);
@@ -74,6 +78,7 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
         // load sky
         Sphere sphereMesh = new Sphere(32, 32, 10, false, true);
         Geometry sphere = new Geometry("Sky", sphereMesh);
+        sphere.updateModelBound();
         sphere.setQueueBucket(Bucket.Sky);
         Material sky = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
         TextureKey key = new TextureKey("Textures/Sky/Bright/BrightSky.dds", true);
@@ -120,7 +125,7 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
         waterProcessor.setLightPosition(lightPos);
     }
 
-   
+
 
     public void onAction(String name, boolean value, float tpf) {
         if (name.equals("use_water") && value) {

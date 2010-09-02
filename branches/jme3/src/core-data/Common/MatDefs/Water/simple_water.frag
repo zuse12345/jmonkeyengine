@@ -25,6 +25,8 @@ varying vec4 waterTex1; //moving texcoords
 varying vec4 waterTex2; //moving texcoords
 varying vec4 position; //for projection
 varying vec4 viewDir; //viewts
+varying vec4 viewLightDir;
+varying vec4 viewCamDir;
 
 //unit 0 = m_water_reflection
 //unit 1 = m_water_refraction
@@ -61,15 +63,14 @@ void main(void)
      vec4 lightTS = normalize(lightDir);
      vec4 viewt = normalize(viewDir);
      vec4 disdis = texture2D(m_water_dudvmap, vec2(waterTex2 * m_texScale));
-     vec4 dist = texture2D(m_water_dudvmap, vec2(waterTex1 + disdis*m_distortionMix));
-     vec4 fdist = dist;
-     fdist = fdist * two + mone;
-     fdist = normalize(fdist);
-     fdist *= m_distortionScale;
+     vec4 fdist = texture2D(m_water_dudvmap, vec2(waterTex1 + disdis*m_distortionMix));
+     fdist =normalize( fdist * 2.0 - 1.0)* m_distortionScale;
+  
 
      //load normalmap
      vec4 nmap = texture2D(m_water_normalmap, vec2(waterTex1 + disdis*m_distortionMix));
      nmap = (nmap-ofive) * two;
+    // nmap = nmap*2.0-1.0;
      vec4 vNorm = normalize(nmap);
 
      
@@ -87,21 +88,26 @@ void main(void)
 
 
  // Blinn - Phong
- //     vec4 H = (viewt - lightTS);
- //    vec4 specular =vec4(pow(max(dot(H, vNorm), 0.0), exponent));
+  //    vec4 H = (viewt - lightTS);
+  //   vec4 specular =vec4(pow(max(dot(H, vNorm), 0.0), exponent));
 
 // Standard Phong
 
-     vec4 R =reflect(-lightTS, vNorm);
-     vec4 specular =vec4( pow(max(dot(R, viewt), 0.0),exponent));
+  //   vec4 R =reflect(-L, vNorm);
+ //    vec4 specular =vec4( pow(max(dot(R, E), 0.0),exponent));
 
  
      //calculate specular highlight
- /*    vec4 vRef = normalize(reflect(-lightTS, vNorm));
-     float stemp =max(0.0, dot(viewt, vRef) );
-     stemp = pow(stemp, exponent);
-     vec4 specular = vec4(stemp);
-*/
+     vec4 L=normalize(viewLightDir);  
+    vec4 E=normalize(viewCamDir);
+     vec4 vRef = normalize(reflect(-L,vNorm));
+     float stemp =max(0.0, dot( vRef,E) );
+     vec4 specular;
+    if(stemp>0.0){
+         stemp = pow(stemp, exponent);
+         specular = vec4(stemp);
+    }
+
 
 
     vec4 fresnelTerm = vec4(0.02+0.97*pow((1.0-dot(normalize(viewt), vNorm)),5.0));

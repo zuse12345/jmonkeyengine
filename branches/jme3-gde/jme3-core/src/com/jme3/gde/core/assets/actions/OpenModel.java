@@ -31,6 +31,7 @@
  */
 package com.jme3.gde.core.assets.actions;
 
+import com.jme3.asset.DesktopAssetManager;
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.assets.SpatialAssetDataObject;
 import com.jme3.gde.core.scene.SceneApplication;
@@ -65,6 +66,7 @@ public final class OpenModel implements ActionListener {
             public void run() {
                 ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Opening Model");
                 progressHandle.start();
+                ((DesktopAssetManager)manager.getManager()).clearCache();
 
                 final Spatial asset = (Spatial) context.loadAsset();
 

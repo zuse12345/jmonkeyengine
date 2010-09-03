@@ -57,7 +57,6 @@ public class VehicleEditorController {
             return;
         }
         try {
-            selectedSpat.fireSave(true);
             final Spatial node = selectedSpat.getLookup().lookup(Spatial.class);
             if (node != null) {
                 SceneApplication.getApplication().enqueue(new Callable() {

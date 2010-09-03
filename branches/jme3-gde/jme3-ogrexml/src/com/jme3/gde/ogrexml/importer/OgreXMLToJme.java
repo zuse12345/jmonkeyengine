@@ -65,8 +65,8 @@ public final class OgreXMLToJme implements ActionListener {
                         Spatial model = (Spatial) ((SpatialAssetDataObject) context).loadAsset();
                         //export model
                         String outputPath = file.getParent().getPath() + File.separator + file.getName() + ".j3o";
-                        FileObject obj = FileUtil.toFileObject(new File(outputPath));
-                        lock = obj.lock();
+//                        FileObject obj = FileUtil.toFileObject(new File(outputPath));
+//                        lock = obj.lock();
                         BinaryExporter exp = BinaryExporter.getInstance();
                         exp.save(model, new File(outputPath));
                         StatusDisplayer.getDefault().setStatusText("Created file " + file.getName() + ".j3o");

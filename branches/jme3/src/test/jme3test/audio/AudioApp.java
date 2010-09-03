@@ -2,6 +2,7 @@ package jme3test.audio;
 
 import com.jme3.audio.AudioRenderer;
 import com.jme3.asset.AssetManager;
+import com.jme3.asset.DesktopAssetManager;
 import com.jme3.audio.Listener;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeSystem;
@@ -20,7 +21,7 @@ public class AudioApp {
         settings.setAudioRenderer(AppSettings.LWJGL_OPENAL);
         ar = JmeSystem.newAudioRenderer(settings);
         ar.initialize();
-        manager = JmeSystem.newAssetManager();
+        manager = new DesktopAssetManager(true);
 
         listener = new Listener();
         ar.setListener(listener);

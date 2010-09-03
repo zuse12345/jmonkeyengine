@@ -247,6 +247,13 @@ public class VertexBuffer extends GLObject implements Savable, Cloneable {
         return components;
     }
 
+    public int getNumElements(){
+        int elements = data.capacity() / components;
+        if (format == Format.Half)
+            elements /= 2;
+        return elements;
+    }
+
     public void setupData(Usage usage, int components, Format format, Buffer data){
         if (id != -1)
             throw new UnsupportedOperationException("Data has already been sent. Cannot setupData again.");

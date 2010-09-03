@@ -120,7 +120,7 @@ public abstract class GLObject implements Cloneable {
     }
 
     /**
-     * This should create a deep clone. For a shall clone, use
+     * This should create a deep clone. For a shallow clone, use
      * createDestructableClone().
      *
      * @return

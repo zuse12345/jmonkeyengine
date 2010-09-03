@@ -76,9 +76,7 @@ public class CollisionResult implements Comparable<CollisionResult> {
     }
 
     public Vector3f getWorldContactPoint() {
-        // XXX: shouldn't this be geometry.getWorldTransform().apply(contactPoint) ??
-        // this one doesn't take into account scale.
-        return geometry.getWorldTranslation().add(geometry.getWorldRotation().mult(contactPoint));
+        return geometry.localToWorld(contactPoint, null);
     }
 
     public Vector3f getContactNormal() {

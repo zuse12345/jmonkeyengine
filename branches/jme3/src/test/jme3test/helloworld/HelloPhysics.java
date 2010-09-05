@@ -34,11 +34,11 @@ public class HelloPhysics extends SimpleBulletApplication {
     /** Activate custom rendering of shadows */
     BasicShadowRenderer bsr;
 
-    /** geometries and collisions shapes for bricks and bullet */
+    /** geometries and collisions shapes for bricks and cannon balls. */
     private static final Box    brick;
     private static final BoxCollisionShape boxCollisionShape;
-    private static final Sphere bullet;
-    private static final SphereCollisionShape bulletCollisionShape;
+    private static final Sphere cannonball;
+    private static final SphereCollisionShape cannonballCollisionShape;
 
     /** brick dimensions */
     private static final float brickLength = 0.48f;
@@ -47,14 +47,14 @@ public class HelloPhysics extends SimpleBulletApplication {
 
     /** Materials */
     Material wall_mat;
-    Material bullet_mat;
+    Material stone_mat;
     Material floor_mat;
 
     static {
-        /** initializing the bullet geometry that is reused later */
-        bullet = new Sphere(32, 32, 0.4f, true, false);
-        bullet.setTextureMode(TextureMode.Projected);
-        bulletCollisionShape=new SphereCollisionShape(0.4f);
+        /** initializing the cannon ball geometry that is reused later */
+        cannonball = new Sphere(32, 32, 0.4f, true, false);
+        cannonball.setTextureMode(TextureMode.Projected);
+        cannonballCollisionShape=new SphereCollisionShape(0.4f);
         /** initializing the brick geometry that is reused later */
         brick = new Box(Vector3f.ZERO, brickLength, brickHeight, brickWidth);
         brick.scaleTextureCoordinates(new Vector2f(1f, .5f));
@@ -84,13 +84,13 @@ public class HelloPhysics extends SimpleBulletApplication {
     }
 
     /**
-     * Every time the shoot action is triggered, a new bullet is produced.
-     * The bullet is set up to fly from the camera position in the camera direction.
+     * Every time the shoot action is triggered, a new cannon ball is produced.
+     * The ball is set up to fly from the camera position in the camera direction.
      */
     private ActionListener actionListener = new ActionListener() {
         public void onAction(String name, boolean keyPressed, float tpf) {
             if (name.equals("shoot") && !keyPressed) {
-                makeBullet();
+                makeCannonBall();
             }
         }
     };
@@ -103,11 +103,11 @@ public class HelloPhysics extends SimpleBulletApplication {
         Texture tex = assetManager.loadTexture(key);
         wall_mat.setTexture("m_ColorMap", tex);
 
-        bullet_mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
+        stone_mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         TextureKey key2 = new TextureKey("Textures/Terrain/Rock/Rock.PNG");
         key2.setGenerateMips(true);
         Texture tex2 = assetManager.loadTexture(key2);
-        bullet_mat.setTexture("m_ColorMap", tex2);
+        stone_mat.setTexture("m_ColorMap", tex2);
 
         floor_mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         TextureKey key3 = new TextureKey("Textures/Terrain/Pond/Pond.png");
@@ -151,10 +151,10 @@ public class HelloPhysics extends SimpleBulletApplication {
     /** This method creates one individual physical brick. */
     public void makeBrick(Vector3f ori) {
         /** create a new brick */
-        Geometry reBoxg = new Geometry("brick", brick);
-        reBoxg.setMaterial(wall_mat);
+        Geometry box_geo = new Geometry("brick", brick);
+        box_geo.setMaterial(wall_mat);
         PhysicsNode brickNode = new PhysicsNode(
-          reBoxg,            // geometry
+          box_geo,           // geometry
           boxCollisionShape, // collision shape
           1.5f);             // mass
         /** position the brick and activate shadows */
@@ -164,25 +164,25 @@ public class HelloPhysics extends SimpleBulletApplication {
         getPhysicsSpace().add(brickNode);
     }
 
-    /** This method creates one individual physical bullet.
-     *  By defaul, the bullet is accelerated and flies
+    /** This method creates one individual physical cannon ball.
+     *  By defaul, the ball is accelerated and flies
      *  from the camera position in the camera direction.*/
-    public void makeBullet() {
-        /** create a new bullet  */
-        Geometry bulletg = new Geometry("bullet", bullet);
-        bulletg.setMaterial(bullet_mat);
-        PhysicsNode bulletNode = new PhysicsNode(
-             bulletg,               // geometry
-             bulletCollisionShape,  // collision shape
-             1.0f);                 // mass
-        /** position the bullet and activate shadows */
-        bulletNode.setLocalTranslation(cam.getLocation());
-        bulletNode.updateGeometricState();
-        bulletNode.setShadowMode(ShadowMode.CastAndRecieve);
-        /** Accelerate the bullet and attach it to the scene. */
-        bulletNode.setLinearVelocity(cam.getDirection().mult(25));
-        rootNode.attachChild(bulletNode);
-        getPhysicsSpace().add(bulletNode);
+     public void makeCannonBall() {
+        /** create a new cannon ball. */
+        Geometry ball_geo = new Geometry("cannon ball", cannonball);
+        ball_geo.setMaterial(stone_mat);
+        PhysicsNode cannonballNode = new PhysicsNode(
+             ball_geo,                 // geometry
+             cannonballCollisionShape, // collision shape
+             1.0f);                    // mass
+        /** position the cannon ball and activate shadows */
+        cannonballNode.setLocalTranslation(cam.getLocation());
+        cannonballNode.updateGeometricState();
+        cannonballNode.setShadowMode(ShadowMode.CastAndRecieve);
+        /** Attach the cannon call to the scene and accelerate it. */
+        rootNode.attachChild(cannonballNode);
+        getPhysicsSpace().add(cannonballNode);
+        cannonballNode.setLinearVelocity(cam.getDirection().mult(25));
     }
 
     /** A plus sign used as crosshairs to help the player with aiming.*/

@@ -17,6 +17,7 @@ import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
 import com.jme3.export.binary.BinaryExporter;
 import com.jme3.gde.core.assets.AssetDataObject;
+import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.assets.SpatialAssetDataObject;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.sceneexplorer.nodes.JmeSpatial;
@@ -336,6 +337,10 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
             return;
         }
         final Node selected = selectedSpat.getLookup().lookup(Node.class);
+        ProjectAssetManager manager=file.getLookup().lookup(ProjectAssetManager.class);
+        if(manager!=null){
+            ((DesktopAssetManager)manager.getManager()).clearCache();
+        }
         if (selected != null) {
             setNeedsSave(true);
             SceneApplication.getApplication().enqueue(new Callable<Object>() {

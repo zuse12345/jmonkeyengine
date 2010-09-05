@@ -13,7 +13,7 @@ import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 import com.jme3.util.TangentBinormalGenerator;
 
-/** Sample 6 - how to give object's surface a material and texture.
+/** Sample 6 - how to give an object's surface a material and texture.
  * How to make objects transparent, or let colors "leak" through partially
  * transparent textures. How to make bumpy and shiny surfaces.  */
 public class HelloMaterial extends SimpleApplication {

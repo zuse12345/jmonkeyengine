@@ -35,16 +35,15 @@ public class HelloCollision
     app.start();
   }
 
-  public void simpleInitApp() {
-    renderer.setBackgroundColor(ColorRGBA.Cyan);
-    
+  public void simpleInitApp() {    
     // We re-use the flyby camera for rotation, while positioning is handled by physics
+    viewPort.setBackgroundColor(new ColorRGBA(0.7f,0.8f,1f,1f));
     flyCam.setMoveSpeed(100);
     setupKeys();
 
     // We add a light so we see the scene
     DirectionalLight dl = new DirectionalLight();
-    dl.setColor(ColorRGBA.White.clone().multLocal(2));
+    dl.setColor(ColorRGBA.White.clone().multLocal(2)); // bright white light
     dl.setDirection(new Vector3f(2.8f, -2.8f, -2.8f).normalize());
     rootNode.addLight(dl);
 
@@ -53,12 +52,12 @@ public class HelloCollision
     gameScene = assetManager.loadModel("main.scene");
     gameScene.setLocalScale(2f); 
 
-    // We set up collision detection by creating a 
-    // compound collision shape and a physics node for the scene.
+    // We set up collision detection for the scene by creating a
+    // compound collision shape and a physics node.
     CompoundCollisionShape sceneShape = CollisionShapeFactory.createMeshCompoundShape((Node) gameScene);
     PhysicsNode levelNode = new PhysicsNode(gameScene, sceneShape, 0);
 
-    // Here we set up collision detection for the player by creating
+    // We set up collision detection for the player by creating
     // a capsule collision shape and a physics character node.
     // The physics character node offers extra settings for
     // size, stepheight, jumping, falling, and gravity.

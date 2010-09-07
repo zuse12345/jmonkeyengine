@@ -36,11 +36,11 @@ import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
-import com.jme3.bullet.collision.shapes.CompoundCollisionShape.ChildCollisionShape;
 import com.jme3.bullet.collision.shapes.CylinderCollisionShape;
 import com.jme3.bullet.collision.shapes.GImpactCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
+import com.jme3.bullet.collision.shapes.infos.ChildCollisionShape;
 import com.jme3.math.FastMath;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Quaternion;
@@ -215,8 +215,8 @@ public class CollisionShapeFactory {
      * @param vector
      */
     public static void shiftCompoundShapeContents(CompoundCollisionShape compoundShape, Vector3f vector) {
-        for (Iterator<CompoundCollisionShape.ChildCollisionShape> it = compoundShape.getChildren().iterator(); it.hasNext();) {
-            CompoundCollisionShape.ChildCollisionShape childCollisionShape = it.next();
+        for (Iterator<ChildCollisionShape> it = compoundShape.getChildren().iterator(); it.hasNext();) {
+            ChildCollisionShape childCollisionShape = it.next();
             CollisionShape child = childCollisionShape.shape;
             Vector3f location = childCollisionShape.location;
             Matrix3f rotation = childCollisionShape.rotation;

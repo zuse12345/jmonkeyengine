@@ -40,6 +40,7 @@ import com.jme3.renderer.RenderManager;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
+import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
 import com.jme3.bullet.collision.shapes.CylinderCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
@@ -102,7 +103,9 @@ public class TestPhysicsReadWrite extends SimpleBulletApplication{
         getPhysicsSpace().add(physicsCylinder);
 
         // an obstacle mesh, does not move (mass=0)
-        PhysicsNode node2=new PhysicsNode(new MeshCollisionShape(new Sphere(16,16,1.2f)),0);
+        CompoundCollisionShape compShape=new CompoundCollisionShape();
+        compShape.addChildShape(new MeshCollisionShape(new Sphere(16,16,1.2f)), Vector3f.ZERO);
+        PhysicsNode node2=new PhysicsNode(compShape,0);
         node2.setLocalTranslation(new Vector3f(2.5f,-4,0f));
         node2.attachDebugShape(getAssetManager());
         physicsRootNode.attachChild(node2);

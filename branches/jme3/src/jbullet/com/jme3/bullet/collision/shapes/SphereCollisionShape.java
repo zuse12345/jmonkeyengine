@@ -79,6 +79,7 @@ public class SphereCollisionShape extends CollisionShape {
     protected void createShape() {
         cShape = new SphereShape(radius);
         cShape.setLocalScaling(Converter.convert(getScale()));
+        cShape.setMargin(margin);
     }
 
 }

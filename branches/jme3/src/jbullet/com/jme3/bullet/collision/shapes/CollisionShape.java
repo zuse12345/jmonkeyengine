@@ -50,6 +50,7 @@ public abstract class CollisionShape implements Savable {
 
     protected com.bulletphysics.collision.shapes.CollisionShape cShape;
     protected Vector3f scale = new Vector3f(1, 1, 1);
+    protected float margin = 0.0f;
 
     public CollisionShape() {
     }
@@ -87,18 +88,28 @@ public abstract class CollisionShape implements Savable {
         cShape.setLocalScaling(Converter.convert(scale));
     }
 
+    public float getMargin() {
+        return cShape.getMargin();
+    }
+
+    public void setMargin(float margin) {
+        cShape.setMargin(margin);
+        this.margin = margin;
+    }
+
     public Vector3f getScale() {
         return scale;
     }
-    
+
     public void write(JmeExporter ex) throws IOException {
         OutputCapsule capsule = ex.getCapsule(this);
         capsule.write(scale, "scale", new Vector3f(1, 1, 1));
+        capsule.write(getMargin(), "margin", 0.0f);
     }
 
     public void read(JmeImporter im) throws IOException {
         InputCapsule capsule = im.getCapsule(this);
         this.scale = (Vector3f) capsule.readSavable("scale", new Vector3f(1, 1, 1));
+        this.margin = capsule.readFloat("margin", 0.0f);
     }
-
 }

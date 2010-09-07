@@ -120,6 +120,7 @@ public class CapsuleCollisionShape extends CollisionShape{
             break;
         }
         cShape.setLocalScaling(Converter.convert(getScale()));
+        cShape.setMargin(margin);
     }
 
 }

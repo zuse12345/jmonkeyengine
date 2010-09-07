@@ -111,6 +111,7 @@ public class CylinderCollisionShape extends CollisionShape {
                 break;
         }
         cShape.setLocalScaling(Converter.convert(getScale()));
+        cShape.setMargin(margin);
     }
 
 }

@@ -81,6 +81,7 @@ public class BoxCollisionShape extends CollisionShape {
     protected void createShape() {
         cShape = new BoxShape(Converter.convert(halfExtents));
         cShape.setLocalScaling(Converter.convert(getScale()));
+        cShape.setMargin(margin);
     }
 
 }

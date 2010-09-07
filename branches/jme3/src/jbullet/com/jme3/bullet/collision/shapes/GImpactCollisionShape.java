@@ -127,6 +127,7 @@ public class GImpactCollisionShape extends CollisionShape{
         cShape.setLocalScaling(Converter.convert(worldScale));
         ((GImpactMeshShape)cShape).updateBound();
         cShape.setLocalScaling(Converter.convert(getScale()));
+        cShape.setMargin(margin);
     }
 
 }

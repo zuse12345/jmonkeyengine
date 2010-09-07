@@ -121,5 +121,6 @@ public class MeshCollisionShape extends CollisionShape {
         TriangleIndexVertexArray tiv = new TriangleIndexVertexArray(numTriangles, triangleIndexBase, triangleIndexStride, numVertices, vertexBase, vertexStride);
         cShape = new BvhTriangleMeshShape(tiv, true);
         cShape.setLocalScaling(Converter.convert(getScale()));
+        cShape.setMargin(margin);
     }
 }

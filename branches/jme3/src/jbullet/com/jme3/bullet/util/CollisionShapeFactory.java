@@ -124,6 +124,7 @@ public class CollisionShapeFactory {
      */
     public static CollisionShape createMeshShape(Spatial spatial) {
         if (spatial instanceof Geometry) {
+            spatial.updateGeometricState();
             return createSingleMeshShape((Geometry) spatial);
         } else if (spatial instanceof Node) {
             return createMeshCompoundShape((Node) spatial);

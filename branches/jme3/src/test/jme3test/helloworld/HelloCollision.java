@@ -25,7 +25,8 @@ public class HelloCollision
   extends SimpleBulletApplication
   implements ActionListener {
 
-  private Spatial gameScene;
+  private Spatial sceneModel;
+  private PhysicsNode landscape;
   private PhysicsCharacterNode player;
   private Vector3f walkDirection = new Vector3f();
   private boolean left = false, right = false, up = false, down = false;
@@ -49,13 +50,13 @@ public class HelloCollision
 
     // We load the scene from the zip file and adjust its size.
     assetManager.registerLocator("town.zip", ZipLocator.class.getName());
-    gameScene = assetManager.loadModel("main.scene");
-    gameScene.setLocalScale(2f); 
+    sceneModel = assetManager.loadModel("main.scene");
+    sceneModel.setLocalScale(2f);
 
     // We set up collision detection for the scene by creating a
     // compound collision shape and a physics node.
-    CompoundCollisionShape sceneShape = CollisionShapeFactory.createMeshCompoundShape((Node) gameScene);
-    PhysicsNode levelNode = new PhysicsNode(gameScene, sceneShape, 0);
+    CompoundCollisionShape sceneShape = CollisionShapeFactory.createMeshCompoundShape((Node) sceneModel);
+    landscape = new PhysicsNode(sceneModel, sceneShape, 0);
 
     // We set up collision detection for the player by creating
     // a capsule collision shape and a physics character node.
@@ -71,10 +72,10 @@ public class HelloCollision
 
     // We attach the scene and the player to the rootnode and the physics space,
     // to make them appear in the game world.
-    rootNode.attachChild(levelNode);
+    rootNode.attachChild(landscape);
     rootNode.attachChild(player);
     rootNode.updateGeometricState();
-    getPhysicsSpace().add(levelNode);
+    getPhysicsSpace().add(landscape);
     getPhysicsSpace().add(player);
   }
 

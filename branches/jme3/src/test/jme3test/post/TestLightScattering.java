@@ -1,10 +1,13 @@
 package jme3test.post;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.app.StatsView;
 import com.jme3.asset.TextureKey;
+import com.jme3.font.BitmapText;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.LightScatteringFilter;
@@ -13,6 +16,7 @@ import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Sphere;
+import com.jme3.shadow.PssmShadowRenderer;
 import com.jme3.texture.Texture;
 
 public class TestLightScattering extends SimpleApplication {
@@ -22,14 +26,31 @@ public class TestLightScattering extends SimpleApplication {
 
     public static void main(String[] args) {
         TestLightScattering app = new TestLightScattering();
+        
         app.start();
+    }
+
+   public void loadFPSText(){
+        guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
+        fpsText = new BitmapText(guiFont, false);
+        fpsText.setSize(guiFont.getCharSet().getRenderedSize());
+        fpsText.setLocalTranslation(0, fpsText.getLineHeight(), 0);
+        fpsText.setText("Frames per second");
+        guiNode.attachChild(fpsText);
+    }
+
+    public void loadStatsView(){
+        statsView = new StatsView("Statistics View", assetManager, renderer.getStatistics());
+//         move it up so it appears above fps text
+        statsView.setLocalTranslation(0, fpsText.getLineHeight(), 0);
+        guiNode.attachChild(statsView);
     }
 
     @Override
     public void simpleInitApp() {
         // put the camera in a bad position
-//        cam.setLocation(new Vector3f(-2.336393f, 11.91392f, -7.139601f));
-//        cam.setRotation(new Quaternion(0.23602544f, 0.11321983f, -0.027698677f, 0.96473104f));
+        cam.setLocation(new Vector3f(55.35316f, -0.27061665f, 27.092093f));
+        cam.setRotation(new Quaternion(0.010414706f, 0.9874893f, 0.13880467f, -0.07409228f));
 //        cam.setDirection(new Vector3f(0,-0.5f,1.0f));
 //        cam.setLocation(new Vector3f(0, 300, -500));
         //cam.setFrustumFar(1000);
@@ -63,10 +84,10 @@ public class TestLightScattering extends SimpleApplication {
         sun.setColor(ColorRGBA.White.clone().multLocal(2));
         scene.addLight(sun);
 
-//        PssmShadowRenderer pssmRenderer = new PssmShadowRenderer(assetManager,1024,4);
-//        pssmRenderer.setDirection(lightDir);
-//        pssmRenderer.setShadowIntensity(0.3f);
-//        viewPort.addProcessor(pssmRenderer);
+        PssmShadowRenderer pssmRenderer = new PssmShadowRenderer(assetManager,1024,4);
+        pssmRenderer.setDirection(lightDir);
+        pssmRenderer.setShadowIntensity(0.55f);
+     //   viewPort.addProcessor(pssmRenderer);
 
         FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
 //        SSAOFilter ssaoFilter= new SSAOFilter(viewPort, new SSAOConfig(0.36f,1.8f,0.84f,0.16f,false,true));
@@ -83,10 +104,8 @@ public class TestLightScattering extends SimpleApplication {
 //        lightSphere.setLocalTranslation(lightPos);
         // rootNode.attachChild(lightSphere);
         LightScatteringFilter filter = new LightScatteringFilter(lightPos);
-        filter.setNbSamples(80);
-        filter.setBlurStart(0.02f);
         LightScatteringUI ui = new LightScatteringUI(inputManager, filter);
-        fpp.addFilter(filter);
+      //  fpp.addFilter(filter);
 
         //fpp.addFilter(new RadialBlurFilter(0.3f,15.0f));
         //    SSAOUI ui=new SSAOUI(inputManager, ssaoFilter.getConfig());

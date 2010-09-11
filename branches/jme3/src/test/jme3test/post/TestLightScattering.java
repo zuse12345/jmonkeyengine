@@ -75,6 +75,7 @@ public class TestLightScattering extends SimpleApplication {
         sky.setTexture("m_Texture", tex);
         sky.setVector3("m_NormalScale", Vector3f.UNIT_XYZ);
         sphere.setMaterial(sky);
+        sphere.setCullHint(Spatial.CullHint.Never);
 
         rootNode.attachChild(sphere);
 
@@ -105,7 +106,7 @@ public class TestLightScattering extends SimpleApplication {
         // rootNode.attachChild(lightSphere);
         LightScatteringFilter filter = new LightScatteringFilter(lightPos);
         LightScatteringUI ui = new LightScatteringUI(inputManager, filter);
-      //  fpp.addFilter(filter);
+        fpp.addFilter(filter);
 
         //fpp.addFilter(new RadialBlurFilter(0.3f,15.0f));
         //    SSAOUI ui=new SSAOUI(inputManager, ssaoFilter.getConfig());

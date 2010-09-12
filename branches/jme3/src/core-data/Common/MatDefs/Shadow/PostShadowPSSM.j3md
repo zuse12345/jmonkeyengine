@@ -23,6 +23,16 @@ MaterialDef Post Shadow {
         Matrix4 m_LightViewProjectionMatrix6
         Matrix4 m_LightViewProjectionMatrix7
 
+        Float m_Splits0;
+        Float m_Splits1;
+        Float m_Splits2;
+        Float m_Splits3;
+        Float m_Splits4;
+        Float m_Splits5;
+        Float m_Splits6;
+        Float m_Splits7;
+
+
     }
 
     Technique {

@@ -267,8 +267,11 @@ public class PssmShadowRenderer implements SceneProcessor {
                 postshadowMat.setMatrix4("m_LightViewProjectionMatrix" + i, lightViewProjectionsMatrices[i]);
                 postshadowMat.setTexture("m_ShadowMap" + i, shadowMaps[i]);
             }
+            for (int i = 0; i < nbSplits; i++) {
 
-            postshadowMat.setParam("m_Splits", VarType.FloatArray, splits);
+                postshadowMat.setFloat("m_Splits"+i, splits[i+1]);
+            }
+            
           //  postshadowMat.setInt("m_NbSplits", nbSplits);
          //   postshadowMat.setFloat("m_TexSize", textureSize);
             postshadowMat.setFloat("m_ShadowIntensity", shadowIntensity);

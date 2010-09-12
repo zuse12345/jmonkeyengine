@@ -26,7 +26,14 @@ uniform SHADOWMAP m_ShadowMap6;
 uniform SHADOWMAP m_ShadowMap7;
 
 //uniform int m_NbSplits;
-uniform float[] m_Splits;
+uniform float m_Splits0;
+uniform float m_Splits1;
+uniform float m_Splits2;
+uniform float m_Splits3;
+uniform float m_Splits4;
+uniform float m_Splits5;
+uniform float m_Splits6;
+uniform float m_Splits7;
 uniform float m_ShadowIntensity;
 
 varying vec4 projCoord0;
@@ -98,21 +105,21 @@ void main() {
 
     // find the appropriate depth map to look up in
     // based on the depth of this fragment
-    if(shadowPosition < m_Splits[1]){
+    if(shadowPosition < m_Splits0){
        shad = getShadow(m_ShadowMap0, projCoord0);
-    }else if( shadowPosition <  m_Splits[2]){
+    }else if( shadowPosition <  m_Splits1){
        shad = getShadow(m_ShadowMap1, projCoord1);
-    }else if( shadowPosition <  m_Splits[3]){
+    }else if( shadowPosition <  m_Splits2){
        shad = getShadow(m_ShadowMap2, projCoord2);
-    }else if( shadowPosition <  m_Splits[4]){
+    }else if( shadowPosition <  m_Splits3){
        shad = getShadow(m_ShadowMap3, projCoord3);
-    }else if( shadowPosition <  m_Splits[5]){
+    }else if( shadowPosition <  m_Splits4){
        shad = getShadow(m_ShadowMap4, projCoord4);
-    }else if( shadowPosition <  m_Splits[6]){
+    }else if( shadowPosition <  m_Splits5){
        shad = getShadow(m_ShadowMap5, projCoord5);
-    }else if( shadowPosition <  m_Splits[7]){
+    }else if( shadowPosition <  m_Splits6){
        shad = getShadow(m_ShadowMap6, projCoord6);
-    }else if( shadowPosition <  m_Splits[8]){
+    }else if( shadowPosition <  m_Splits7){
        shad = getShadow(m_ShadowMap7, projCoord7);
     }
 

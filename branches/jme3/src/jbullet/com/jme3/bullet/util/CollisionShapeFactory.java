@@ -247,9 +247,11 @@ public class CollisionShapeFactory {
                 CollisionShape ccollisionShape = childCollisionShape.shape;
                 Geometry geometry = createDebugShape(ccollisionShape);
                 geometry.setLocalTranslation(childCollisionShape.location);
+                TempVars.get().lock();
                 TempVars.get().tempMat3.set(geometry.getLocalRotation());
-                childCollisionShape.rotation.add(TempVars.get().tempMat3);
+                childCollisionShape.rotation.mult(TempVars.get().tempMat3);
                 geometry.setLocalRotation(TempVars.get().tempMat3);
+                TempVars.get().unlock();
                 node.attachChild(geometry);
             }
             debugShape = node;

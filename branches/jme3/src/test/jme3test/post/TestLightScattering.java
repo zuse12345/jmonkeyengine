@@ -14,10 +14,12 @@ import com.jme3.post.filters.LightScatteringFilter;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.shadow.PssmShadowRenderer;
 import com.jme3.texture.Texture;
+import com.jme3.util.TangentBinormalGenerator;
 
 public class TestLightScattering extends SimpleApplication {
 
@@ -57,6 +59,7 @@ public class TestLightScattering extends SimpleApplication {
         flyCam.setMoveSpeed(10);
         Material mat = assetManager.loadMaterial("Textures/Terrain/Rocky/Rocky.j3m");
         Spatial scene = assetManager.loadModel("Models/Terrain/Terrain.mesh.xml");
+        TangentBinormalGenerator.generate(((Geometry)((Node)scene).getChild(0)).getMesh());
         scene.setMaterial(mat);
         scene.setShadowMode(ShadowMode.CastAndRecieve);
         scene.setLocalScale(400);

@@ -54,6 +54,7 @@ import com.jme3.scene.shape.Cylinder;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.util.TempVars;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -216,7 +217,7 @@ public class CollisionShapeFactory {
      * @param vector
      */
     public static void shiftCompoundShapeContents(CompoundCollisionShape compoundShape, Vector3f vector) {
-        for (Iterator<ChildCollisionShape> it = compoundShape.getChildren().iterator(); it.hasNext();) {
+        for (Iterator<ChildCollisionShape> it = new LinkedList(compoundShape.getChildren()).iterator(); it.hasNext();) {
             ChildCollisionShape childCollisionShape = it.next();
             CollisionShape child = childCollisionShape.shape;
             Vector3f location = childCollisionShape.location;

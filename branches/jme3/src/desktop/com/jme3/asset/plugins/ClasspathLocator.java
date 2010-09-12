@@ -1,6 +1,7 @@
 package com.jme3.asset.plugins;
 
 import com.jme3.asset.*;
+import com.jme3.system.JmeSystem;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -61,8 +62,12 @@ public class ClasspathLocator implements AssetLocator {
 //        if (!name.startsWith(root)){
 //            name = root + name;
 //        }
-        //url = ClasspathLocator.class.getResource(name);
-        url = Thread.currentThread().getContextClassLoader().getResource(name);
+
+        if (JmeSystem.isLowPermissions()){
+            url = ClasspathLocator.class.getResource("/" + name);
+        }else{
+            url = Thread.currentThread().getContextClassLoader().getResource(name);
+        }
         if (url == null)
             return null;
         

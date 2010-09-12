@@ -988,6 +988,7 @@ public final class Matrix3f implements Savable, Cloneable {
      * @param mat
      *            the matrix to add to this.
      */
+    @Deprecated
     public void add(Matrix3f mat) {
         m00 += mat.m00;
         m01 += mat.m01;

@@ -1,7 +1,12 @@
 package com.jme3.system;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 public class AppSettings extends HashMap<String, Object> {
 
@@ -47,7 +52,44 @@ public class AppSettings extends HashMap<String, Object> {
         this.putAll(other);
     }
 
-    public void save() throws IOException{
+    public void load(InputStream in) throws IOException{
+        Properties props = new Properties();
+        props.load(in);
+        for (Map.Entry<Object, Object> entry : props.entrySet()){
+            String key = (String) entry.getKey();
+            String val = (String) entry.getValue();
+            if (key.endsWith("(int)")){
+                key = key.substring(0, key.length()-5);
+                int iVal = Integer.parseInt(val);
+                putInteger(key, iVal);
+            }else if (key.endsWith("(string)")){
+                putString(key.substring(0, key.length()-8), val);
+            }else if (key.endsWith("(bool)")){
+                boolean bVal = Boolean.parseBoolean(val);
+                putBoolean(key.substring(0, key.length()-6), bVal);
+            }else{
+                throw new IOException("Cannot parse key: " + key);
+            }
+        }
+    }
+
+    public void save(OutputStream out) throws IOException{
+        Properties props = new Properties();
+        for (Map.Entry<String, Object> entry : entrySet()){
+            Object val = entry.getValue();
+            String type;
+            if (val instanceof Integer){
+                type = "(int)";
+            }else if (val instanceof String){
+                type = "(string)";
+            }else if (val instanceof Boolean){
+                type = "(bool)";
+            }else{
+                throw new UnsupportedEncodingException();
+            }
+            props.setProperty(entry.getKey() + type, val.toString());
+        }
+        props.store(out, "jME3 AppSettings");
     }
 
     public int getInteger(String key){

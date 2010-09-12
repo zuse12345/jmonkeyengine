@@ -223,7 +223,7 @@ public class CollisionShapeFactory {
             Vector3f location = childCollisionShape.location;
             Matrix3f rotation = childCollisionShape.rotation;
             compoundShape.removeChildShape(child);
-            compoundShape.addChildShape(child, location.addLocal(vector), rotation);
+            compoundShape.addChildShape(child, location.add(vector), rotation);
         }
     }
 
@@ -246,12 +246,21 @@ public class CollisionShapeFactory {
                 ChildCollisionShape childCollisionShape = it.next();
                 CollisionShape ccollisionShape = childCollisionShape.shape;
                 Geometry geometry = createDebugShape(ccollisionShape);
+
+                // apply translation
                 geometry.setLocalTranslation(childCollisionShape.location);
-                TempVars.get().lock();
-                TempVars.get().tempMat3.set(geometry.getLocalRotation());
-                childCollisionShape.rotation.mult(TempVars.get().tempMat3);
-                geometry.setLocalRotation(TempVars.get().tempMat3);
-                TempVars.get().unlock();
+
+                // apply rotation
+                TempVars vars = TempVars.get();
+                assert vars.lock();
+                Matrix3f tempRot = vars.tempMat3;
+
+                tempRot.set(geometry.getLocalRotation());
+                childCollisionShape.rotation.mult(tempRot, tempRot);
+                geometry.setLocalRotation(tempRot);
+
+                assert vars.unlock();
+                
                 node.attachChild(geometry);
             }
             debugShape = node;

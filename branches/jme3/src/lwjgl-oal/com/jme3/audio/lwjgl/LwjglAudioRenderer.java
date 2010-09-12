@@ -77,20 +77,29 @@ public class LwjglAudioRenderer implements AudioRenderer {
         logger.log(Level.FINER, "Audio Renderer: {0}", alGetString(AL_RENDERER));
         logger.log(Level.FINER, "Audio Version: {0}", alGetString(AL_VERSION));
 
-//        AL10.alDopplerFactor(100);
-//        AL10.alDopplerVelocity(100);
+        // Find maximum # of sources supported by this implementation
+        channels = new int[16];
+        for (int i = 0; i < 16; i++){
+            channels[i] = alGenSources();
+            if (alGetError() != 0){
+                int[] oldChans = channels;
+                channels = new int[i];
+                System.arraycopy(oldChans, 0, channels, 0, i);
+                chanSrcs = new AudioNode[i];
+                break;
+            }
+        }
 
-        // Create channel sources
-        ib.clear();
-        ib.limit(channels.length);
-        alGenSources(ib);
-        ib.clear();
-        ib.get(channels);
-        ib.clear();
+//        ib.clear();
+//        ib.limit(channels.length);
+//        alGenSources(ib);
+//        ib.clear();
+//        ib.get(channels);
+//        ib.clear();
 
         ALCdevice device = AL.getDevice();
         supportEfx = ALC10.alcIsExtensionPresent(device, "ALC_EXT_EFX");
-        logger.finer("Audio EFX support: " + supportEfx);
+        logger.log(Level.FINER, "Audio EFX support: {0}", supportEfx);
 
         if (supportEfx){
             ib.position(0).limit(1);
@@ -99,11 +108,11 @@ public class LwjglAudioRenderer implements AudioRenderer {
             ib.position(0).limit(1);
             ALC10.alcGetInteger(device, EFX10.ALC_EFX_MINOR_VERSION, ib);
             int minor = ib.get(0);
-            logger.info("Audio effect extension version: "+major+"."+minor);
+            logger.log(Level.INFO, "Audio effect extension version: {0}.{1}", new Object[]{major, minor});
 
             ALC10.alcGetInteger(device, EFX10.ALC_MAX_AUXILIARY_SENDS, ib);
             auxSends = ib.get(0);
-            logger.info("Audio max auxilary sends: "+auxSends);
+            logger.log(Level.INFO, "Audio max auxilary sends: {0}", auxSends);
 
             // create slot
             ib.position(0).limit(1);
@@ -122,8 +131,10 @@ public class LwjglAudioRenderer implements AudioRenderer {
     }
 
     public void cleanup(){
-        if (audioDisabled)
+        if (audioDisabled){
+            AL.destroy();
             return;
+        }
 
         // delete channel-based sources
         ib.clear();
@@ -446,9 +457,9 @@ public class LwjglAudioRenderer implements AudioRenderer {
                         src.setChannel(-1);
                     }
                     clearChannel(i);
-                    freeChannel(i);
+                    freeChannel(i);  
                 }else if (!paused && src.isUpdateNeeded()){
-                    setSourceParams(sourceId, src, false, false);
+                    setSourceParams(sourceId, src, !boundSource, false);
                     src.clearUpdateNeeded();
                 }
             }
@@ -485,6 +496,9 @@ public class LwjglAudioRenderer implements AudioRenderer {
 
         // create a new index for an audio-channel
         int index = newChannel();
+        if (index == -1)
+            return;
+        
         int sourceId = channels[index];
 
         clearChannel(index);

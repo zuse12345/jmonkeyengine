@@ -27,12 +27,14 @@ public class TestSceneWater extends SimpleApplication {
 
     private Sphere sphereMesh = new Sphere(10, 10, 100, false, true);
     private Geometry sphere = new Geometry("Sky", sphereMesh);
-    private static boolean useHttp = false;
+
+    // set default for applets
+    private static boolean useHttp = true;
 
     public static void main(String[] args) {
         File file = new File("wildhouse.zip");
-        if (!file.exists()) {
-            useHttp = true;
+        if (file.exists()) {
+            useHttp = false;
         }
         TestSceneWater app = new TestSceneWater();
         app.start();

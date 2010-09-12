@@ -43,6 +43,7 @@ public class TestReverb extends AudioApp {
             v.subtractLocal(20, 1, 20);
 
             src.setLocalTranslation(v);
+            src.updateGeometricState();
             ar.playSourceInstance(src);
             time = 0;
             nextTime = FastMath.nextRandomFloat() * 2 + 0.5f;

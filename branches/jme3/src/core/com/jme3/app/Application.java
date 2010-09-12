@@ -14,6 +14,7 @@ import com.jme3.audio.Listener;
 import com.jme3.input.InputManager;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -36,10 +37,6 @@ public class Application implements SystemListener {
 
     private static final Logger logger = Logger.getLogger(Application.class.getName());
 
-    /**
-     * The asset manager. Typically initialized outside the GL thread
-     * to allow offline loading of content.
-     */
     protected AssetManager assetManager;
     
     protected AudioRenderer audioRenderer;
@@ -69,17 +66,7 @@ public class Application implements SystemListener {
     /**
      * Create a new instance of <code>Application</code>.
      */
-    public Application(URL assetConfigFile){
-        // Why initialize it here? 
-        // Because it allows offline loading of content.
-        assetManager = JmeSystem.newAssetManager(assetConfigFile);
-    }
-
-    /**
-     * Create a new instance of <code>Application</code>.
-     */
     public Application(){
-        this(Thread.currentThread().getContextClassLoader().getResource("com/jme3/asset/Desktop.cfg"));
     }
 
     public boolean isPauseOnLostFocus() {
@@ -90,10 +77,39 @@ public class Application implements SystemListener {
         this.pauseOnFocus = pauseOnLostFocus;
     }
 
+    public void setAssetManager(AssetManager assetManager){
+        if (this.assetManager != null)
+            throw new IllegalStateException("Can only set asset manager"
+                                          + " before initialization.");
+
+        this.assetManager = assetManager;
+    }
+
+    private void initAssetManager(){
+        if (settings != null){
+            String assetCfg = settings.getString("AssetConfigURL");
+            try {
+                if (assetCfg != null){
+                    URL url = new URL(assetCfg);
+                    assetManager = JmeSystem.newAssetManager(url);
+                }
+            } catch (MalformedURLException ex) {
+                logger.log(Level.SEVERE, "Unable to parse URL in asset config:"
+                        +assetCfg, ex);
+                return;
+            }
+        }
+        if (assetManager == null){
+            assetManager = JmeSystem.newAssetManager(
+                    Thread.currentThread().getContextClassLoader()
+                    .getResource("com/jme3/asset/Desktop.cfg"));
+        }
+    }
+
     /**
      * Set the display settings to define the display created. Examples of
      * display parameters include display pixel width and height,
-     * color bit depth, z-buffer bits, antialiasing samples, and update freqency.
+     * color bit depth, z-buffer bits, anti-aliasing samples, and update frequency.
      *
      * @param settings The settings to set.
      */
@@ -279,6 +295,7 @@ public class Application implements SystemListener {
 
         logger.log(Level.FINE, "Starting application: {0}", getClass().getName());
         context = JmeSystem.newContext(settings, JmeContext.Type.Canvas);
+        context.setSystemListener(this);
     }
 
     public void startCanvas(){
@@ -286,7 +303,6 @@ public class Application implements SystemListener {
     }
 
     public void startCanvas(boolean waitFor){
-        context.setSystemListener(this);
         context.create(waitFor);
     }
 
@@ -323,6 +339,10 @@ public class Application implements SystemListener {
      * and far values 1 and 1000 units respectively.
      */
     public void initialize(){
+        if (assetManager == null){
+            initAssetManager();
+        }
+
         initDisplay();
         initCamera();
         

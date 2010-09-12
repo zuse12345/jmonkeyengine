@@ -414,12 +414,12 @@ public final class SettingsDialog extends JDialog {
             source.setVSync(vsync);
             source.setRenderer(renderer);
             source.setSamples(multisample);
-            try {
-                source.save();
-            } catch (IOException ioe) {
-                logger.log(Level.WARNING,
-                        "Failed to save setting changes", ioe);
-            }
+//            try {
+//                source.save();
+//            } catch (IOException ioe) {
+//                logger.log(Level.WARNING,
+//                        "Failed to save setting changes", ioe);
+//            }
         } else
             showError(
                     this,

@@ -6,6 +6,7 @@ import com.jme3.system.AppSettings;
 import com.jme3.system.JmeCanvasContext;
 import com.jme3.system.JmeSystem;
 import java.awt.Canvas;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -15,6 +16,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
@@ -41,6 +43,30 @@ public class TestCanvas {
 
         JMenu menuFile = new JMenu("File");
         menuBar.add(menuFile);
+
+        final JMenuItem itemRemoveCanvas = new JMenuItem("Remove Canvas");
+        menuFile.add(itemRemoveCanvas);
+        itemRemoveCanvas.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (itemRemoveCanvas.getText().equals("Remove Canvas")){
+                    frame.getContentPane().remove(canvas);
+
+                    // force OS to repaint over canvas ..
+                    // this is needed since AWT does not handle
+                    // that when a heavy-weight component is removed.
+                    frame.setVisible(false);
+                    frame.setVisible(true);
+                    frame.requestFocus();
+
+                    itemRemoveCanvas.setText("Add Canvas");
+                }else if (itemRemoveCanvas.getText().equals("Add Canvas")){
+                    frame.getContentPane().add(canvas);
+                    
+                    itemRemoveCanvas.setText("Remove Canvas");
+                }
+            }
+        });
+
         JMenuItem itemExit = new JMenuItem("Exit");
         menuFile.add(itemExit);
         itemExit.addActionListener(new ActionListener() {

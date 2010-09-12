@@ -35,6 +35,7 @@ public class TestAmbient extends AudioApp {
         waves.setLocalTranslation(new Vector3f(4, -1, 30));
         waves.setMaxDistance(5);
         waves.setRefDistance(1);
+        waves.updateGeometricState();
         
         nature.setVolume(3);
         ar.playSourceInstance(waves);

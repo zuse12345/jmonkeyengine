@@ -163,12 +163,12 @@ public class PssmShadowRenderer implements SceneProcessor {
             return;
         }
 
-        GeometryList recievers = rq.getShadowQueueContent(ShadowMode.Recieve);
+        GeometryList receivers = rq.getShadowQueueContent(ShadowMode.Receive);
         Camera viewCam = viewPort.getCamera();
 
         float zFar = zFarOverride;
         if (zFar == 0) {
-            zFar = PssmShadowUtil.computeZFar(occluders, recievers, viewCam);
+            zFar = PssmShadowUtil.computeZFar(occluders, receivers, viewCam);
         }
         //  System.out.println("Zfar : "+zFar);
         ShadowUtil.updateFrustumPoints(viewCam, viewCam.getFrustumNear(), zFar, 1.0f, points);
@@ -195,7 +195,7 @@ public class PssmShadowRenderer implements SceneProcessor {
 
             //Updating shadow cam with curent slip frustra
 //           System.out.println("split "+i);
-            ShadowUtil.updateShadowCamera(occluders, recievers, shadowCam, points);
+            ShadowUtil.updateShadowCamera(occluders, receivers, shadowCam, points);
 
             //displaying the current splitted frustrum and the associated croped light frustrums in wireframe.
             //only for debuging purpose
@@ -280,7 +280,7 @@ public class PssmShadowRenderer implements SceneProcessor {
             renderManager.setForcedMaterial(postshadowMat);
 
 
-            viewPort.getQueue().renderShadowQueue(ShadowMode.Recieve, renderManager, cam, true);
+            viewPort.getQueue().renderShadowQueue(ShadowMode.Receive, renderManager, cam, true);
             renderManager.setForcedMaterial(null);
             renderManager.setCamera(cam, false);
 
@@ -319,7 +319,7 @@ public class PssmShadowRenderer implements SceneProcessor {
 
     /**
      * Set the distance from the eye where the shadows will be rendered
-     * default value is dynamicaly computed to the shadow casters/recievers union bound zFar, capped to view frustum far value.
+     * default value is dynamicaly computed to the shadow casters/receivers union bound zFar, capped to view frustum far value.
      * @param zFar the zFar values that override the computed one
      */
     public void setShadowZextend(float zFar) {

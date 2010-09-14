@@ -274,7 +274,7 @@ public class ShadowUtil {
      * @param points
      */
     public static void updateShadowCamera(GeometryList occluders,
-                                          GeometryList recievers,
+                                          GeometryList receivers,
                                           Camera shadowCam,
                                           Vector3f[] points){
 
@@ -293,14 +293,14 @@ public class ShadowUtil {
         Matrix4f viewProjMatrix = shadowCam.getViewProjectionMatrix();
 
 //        BoundingBox casterBB   = computeUnionBound(occluders, viewProjMatrix);
-//        BoundingBox recieverBB = computeUnionBound(recievers, viewProjMatrix);
+//        BoundingBox receiverBB = computeUnionBound(receivers, viewProjMatrix);
         BoundingBox splitBB    = computeBoundForPoints(points, viewProjMatrix);
 
         ArrayList<BoundingVolume> visRecvList = new ArrayList<BoundingVolume>();
-        for (int i = 0; i < recievers.size(); i++){
+        for (int i = 0; i < receivers.size(); i++){
             // convert bounding box to light's viewproj space
-            Geometry reciever = recievers.get(i);
-            BoundingVolume bv = reciever.getWorldBound();
+            Geometry receiver = receivers.get(i);
+            BoundingVolume bv = receiver.getWorldBound();
             BoundingVolume recvBox = bv.transform(viewProjMatrix, null);
 
             if (splitBB.intersects(recvBox)){
@@ -321,7 +321,7 @@ public class ShadowUtil {
         }
 
         BoundingBox casterBB   = computeUnionBound(visOccList);
-        BoundingBox recieverBB = computeUnionBound(visRecvList);
+        BoundingBox receiverBB = computeUnionBound(visRecvList);
 
         //Nehon 08/18/2010 this is to avoid shadow bleeding when the ground is set to only receive shadows
         if (visOccList.size() != visRecvList.size()) {
@@ -333,8 +333,8 @@ public class ShadowUtil {
         Vector3f casterMin = casterBB.getMin(null);
         Vector3f casterMax = casterBB.getMax(null);
 
-        Vector3f recieverMin = recieverBB.getMin(null);
-        Vector3f recieverMax = recieverBB.getMax(null);
+        Vector3f receiverMin = receiverBB.getMin(null);
+        Vector3f receiverMax = receiverBB.getMax(null);
 
         Vector3f splitMin = splitBB.getMin(null);
         Vector3f splitMax = splitBB.getMax(null);
@@ -355,14 +355,14 @@ public class ShadowUtil {
         Vector3f cropMax = new Vector3f();
 
         // IMPORTANT: Special handling for Z values
-        cropMin.x = max(max(casterMin.x, recieverMin.x), splitMin.x);
-        cropMax.x = min(min(casterMax.x, recieverMax.x), splitMax.x);
+        cropMin.x = max(max(casterMin.x, receiverMin.x), splitMin.x);
+        cropMax.x = min(min(casterMax.x, receiverMax.x), splitMax.x);
 
-        cropMin.y = max(max(casterMin.y, recieverMin.y), splitMin.y);
-        cropMax.y = min(min(casterMax.y, recieverMax.y), splitMax.y);
+        cropMin.y = max(max(casterMin.y, receiverMin.y), splitMin.y);
+        cropMax.y = min(min(casterMax.y, receiverMax.y), splitMax.y);
 
         cropMin.z = min(casterMin.z, splitMin.z);
-        cropMax.z = min(recieverMax.z, splitMax.z);
+        cropMax.z = min(receiverMax.z, splitMax.z);
 
 //        cropMin.set(splitMin);
 //        cropMax.set(splitMax);

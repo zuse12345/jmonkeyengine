@@ -700,7 +700,7 @@ public class LwjglRenderer implements Renderer {
             // create id
             id = glCreateShader(convertShaderType(source.getType()));
             if (id <= 0)
-                throw new RendererException("Invalid ID recieved when trying to create shader.");
+                throw new RendererException("Invalid ID received when trying to create shader.");
 
             source.setId(id);
         }
@@ -778,7 +778,7 @@ public class LwjglRenderer implements Renderer {
             // create program
             id = glCreateProgram();
             if (id <= 0)
-                throw new RendererException("Invalid ID recieved when trying to create shader program.");
+                throw new RendererException("Invalid ID received when trying to create shader program.");
 
             shader.setId(id);
             needRegister = true;

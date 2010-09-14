@@ -86,7 +86,7 @@ public class TestFancyCar extends SimpleBulletApplication implements ActionListe
         Box floor = new Box(Vector3f.ZERO, 40, 1f, 40);
         floor.scaleTextureCoordinates(new Vector2f(12.0f, 12.0f));
         Geometry floorGeom = new Geometry("Floor", floor);
-        floorGeom.setShadowMode(ShadowMode.Recieve);
+        floorGeom.setShadowMode(ShadowMode.Receive);
         floorGeom.setMaterial(mat);
 
         PhysicsNode tb=new PhysicsNode(floorGeom,new MeshCollisionShape(floorGeom.getMesh()),0);

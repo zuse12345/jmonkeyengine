@@ -132,7 +132,7 @@ public class TestCollisionListener extends SimpleBulletApplication implements Ac
             bulletNode.setName("bullet");
             bulletNode.setLocalTranslation(cam.getLocation());
             bulletNode.updateGeometricState();
-            bulletNode.setShadowMode(ShadowMode.CastAndRecieve);
+            bulletNode.setShadowMode(ShadowMode.CastAndReceive);
             bulletNode.setLinearVelocity(cam.getDirection().mult(25));
             rootNode.attachChild(bulletNode);
             getPhysicsSpace().add(bulletNode);

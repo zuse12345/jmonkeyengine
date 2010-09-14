@@ -35,7 +35,7 @@ public interface Input {
     public boolean isInitialized();
 
     /**
-     * Sets the input listener to recieve events from this device. The
+     * Sets the input listener to receive events from this device. The
      * appropriate events should be dispatched through the callbacks
      * in RawInputListener.
      * @param listener

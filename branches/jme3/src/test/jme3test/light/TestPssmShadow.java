@@ -49,7 +49,7 @@ public class TestPssmShadow extends SimpleApplication {
         teapot.setLocalTranslation(0,0,10);
         
         teapot.setMaterial(mat);
-        teapot.setShadowMode(ShadowMode.CastAndRecieve);
+        teapot.setShadowMode(ShadowMode.CastAndReceive);
         rootNode.attachChild(teapot);
 
          for (int i = 0; i < 30; i++) {
@@ -61,7 +61,7 @@ public class TestPssmShadow extends SimpleApplication {
         Geometry soil=new Geometry("soil", new Box(new Vector3f(0, -13, 550), 800, 10, 700));
         soil.updateGeometricState();
         soil.setMaterial(matSoil);
-        soil.setShadowMode(ShadowMode.CastAndRecieve);
+        soil.setShadowMode(ShadowMode.CastAndReceive);
         rootNode.attachChild(soil);
 
         for (int i = 0; i < 30; i++) {

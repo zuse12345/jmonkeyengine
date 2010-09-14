@@ -48,13 +48,13 @@ public class TestShadow extends SimpleApplication {
         Geometry floorGeom = new Geometry("Floor", floor);
         floorGeom.setMaterial(mat);
         floorGeom.setLocalTranslation(0,-0.2f,0);
-        floorGeom.setShadowMode(ShadowMode.Recieve);
+        floorGeom.setShadowMode(ShadowMode.Receive);
         rootNode.attachChild(floorGeom);
 
         teapot = assetManager.loadModel("Models/Teapot/Teapot.obj");
         teapot.setLocalScale(2f);
         teapot.setMaterial(mat);
-        teapot.setShadowMode(ShadowMode.CastAndRecieve);
+        teapot.setShadowMode(ShadowMode.CastAndReceive);
         rootNode.attachChild(teapot);
 //        lightMdl = new Geometry("Light", new Sphere(10, 10, 0.1f));
 //        lightMdl.setMaterial(mat);

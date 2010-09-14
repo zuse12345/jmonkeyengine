@@ -63,7 +63,7 @@ public class ParticleEmitter extends Geometry implements Control {
         // ignore world transform, unless user sets inLocalSpace
         setIgnoreTransform(true);
 
-        // particles neither recieve nor cast shadows
+        // particles neither receive nor cast shadows
         setShadowMode(ShadowMode.Off);
 
         // particles are usually transparent

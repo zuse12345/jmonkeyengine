@@ -87,7 +87,7 @@ public class BasicShadowRenderer implements SceneProcessor {
             noOccluders = false;
         }
 
-        GeometryList recievers = rq.getShadowQueueContent(ShadowMode.Recieve);
+        GeometryList receivers = rq.getShadowQueueContent(ShadowMode.Receive);
 
         // update frustum points based on current camera
         Camera viewCam = viewPort.getCamera();
@@ -115,7 +115,7 @@ public class BasicShadowRenderer implements SceneProcessor {
         shadowCam.updateViewProjection();
 
         // render shadow casters to shadow map
-        ShadowUtil.updateShadowCamera(occluders, recievers, shadowCam, points);
+        ShadowUtil.updateShadowCamera(occluders, receivers, shadowCam, points);
 
         Renderer r = renderManager.getRenderer();
         renderManager.setCamera(shadowCam, false);
@@ -138,7 +138,7 @@ public class BasicShadowRenderer implements SceneProcessor {
         if (!noOccluders){
             postshadowMat.setMatrix4("m_LightViewProjectionMatrix", shadowCam.getViewProjectionMatrix());
             renderManager.setForcedMaterial(postshadowMat);
-            viewPort.getQueue().renderShadowQueue(ShadowMode.Recieve, renderManager, viewPort.getCamera(), true);
+            viewPort.getQueue().renderShadowQueue(ShadowMode.Receive, renderManager, viewPort.getCamera(), true);
             renderManager.setForcedMaterial(null);
         }
     }

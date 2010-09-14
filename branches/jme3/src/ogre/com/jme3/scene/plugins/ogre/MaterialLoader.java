@@ -245,7 +245,7 @@ public class MaterialLoader implements AssetLoader {
             readTechnique();
             return true;
         }else if (scan.hasNext("receive_shadows")){
-            // skip "recieve_shadows"
+            // skip "receive_shadows"
             scan.next();
             String isOn = scan.next();
             if (isOn != null && isOn.equals("true")){

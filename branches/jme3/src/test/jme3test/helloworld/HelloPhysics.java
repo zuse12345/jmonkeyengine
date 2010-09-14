@@ -123,7 +123,7 @@ public class HelloPhysics extends SimpleBulletApplication {
         floorBox.scaleTextureCoordinates(new Vector2f(3, 6));
         Geometry floor = new Geometry("floor", floorBox);
         floor.setMaterial(floor_mat);
-        floor.setShadowMode(ShadowMode.Recieve);
+        floor.setShadowMode(ShadowMode.Receive);
         PhysicsNode floorNode = new PhysicsNode(
           floor,
           new BoxCollisionShape(new Vector3f(10f, 0.1f, 5f)),
@@ -159,7 +159,7 @@ public class HelloPhysics extends SimpleBulletApplication {
           1.5f);             // mass
         /** position the brick and activate shadows */
         brickNode.setLocalTranslation(ori);
-        brickNode.setShadowMode(ShadowMode.CastAndRecieve);
+        brickNode.setShadowMode(ShadowMode.CastAndReceive);
         rootNode.attachChild(brickNode);
         getPhysicsSpace().add(brickNode);
     }
@@ -178,7 +178,7 @@ public class HelloPhysics extends SimpleBulletApplication {
         /** position the cannon ball and activate shadows */
         cannonballNode.setLocalTranslation(cam.getLocation());
         cannonballNode.updateGeometricState();
-        cannonballNode.setShadowMode(ShadowMode.CastAndRecieve);
+        cannonballNode.setShadowMode(ShadowMode.CastAndReceive);
         /** Attach the cannon call to the scene and accelerate it. */
         rootNode.attachChild(cannonballNode);
         getPhysicsSpace().add(cannonballNode);

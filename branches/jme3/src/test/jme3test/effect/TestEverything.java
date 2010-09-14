@@ -115,7 +115,7 @@ public class TestEverything extends SimpleApplication {
         floor.scaleTextureCoordinates(new Vector2f(5, 5));
         Geometry floorGeom = new Geometry("Floor", floor);
         floorGeom.setMaterial(mat);
-        floorGeom.setShadowMode(ShadowMode.Recieve);
+        floorGeom.setShadowMode(ShadowMode.Receive);
         rootNode.attachChild(floorGeom);
     }
 
@@ -132,7 +132,7 @@ public class TestEverything extends SimpleApplication {
 //            t.setLocalTranslation(85, -15, 0);
 //            t.setMaterial(mat);
 //            t.updateModelBound();
-//            t.setShadowMode(ShadowMode.Recieve);
+//            t.setShadowMode(ShadowMode.Receive);
 //            rootNode.attachChild(t);
 //        }catch (IOException ex){
 //            ex.printStackTrace();
@@ -147,7 +147,7 @@ public class TestEverything extends SimpleApplication {
 //        model.setAnimation("Walk");
         model.setLocalTranslation(30, 10.5f, 30);
         model.setLocalScale(2);
-        model.setShadowMode(ShadowMode.CastAndRecieve);
+        model.setShadowMode(ShadowMode.CastAndReceive);
         rootNode.attachChild(model);
     }
 
@@ -158,7 +158,7 @@ public class TestEverything extends SimpleApplication {
         signpost.rotate(0, FastMath.HALF_PI, 0);
         signpost.setLocalTranslation(12, 3.5f, 30);
         signpost.setLocalScale(4);
-        signpost.setShadowMode(ShadowMode.CastAndRecieve);
+        signpost.setShadowMode(ShadowMode.CastAndReceive);
         rootNode.attachChild(signpost);
     }
 

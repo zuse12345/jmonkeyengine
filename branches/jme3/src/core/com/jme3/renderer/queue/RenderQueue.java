@@ -34,8 +34,8 @@ public class RenderQueue {
     public enum ShadowMode {
         Off,
         Cast,
-        Recieve,
-        CastAndRecieve,
+        Receive,
+        CastAndReceive,
         Inherit
     }
 
@@ -46,10 +46,10 @@ public class RenderQueue {
             case Cast:
                 shadowCast.add(g);
                 break;
-            case Recieve:
+            case Receive:
                 shadowRecv.add(g);
                 break;
-            case CastAndRecieve:
+            case CastAndReceive:
                 shadowCast.add(g);
                 shadowRecv.add(g);
                 break;
@@ -81,7 +81,7 @@ public class RenderQueue {
         switch (shadBucket){
             case Cast:
                 return shadowCast;
-            case Recieve:
+            case Receive:
                 return shadowRecv;
             default:
                 return null;
@@ -113,7 +113,7 @@ public class RenderQueue {
             case Cast:
                 renderGeometryList(shadowCast, rm, cam, clear);
                 break;
-            case Recieve:
+            case Receive:
                 renderGeometryList(shadowRecv, rm, cam, clear);
                 break;
         }

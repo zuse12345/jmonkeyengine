@@ -53,7 +53,7 @@ public class FirstPersonCamera {
     }
 
     /**
-     * Registers the FirstPersonCamera to recieve input events from the provided
+     * Registers the FirstPersonCamera to receive input events from the provided
      * InputManager.
      * @param dispacher
      */

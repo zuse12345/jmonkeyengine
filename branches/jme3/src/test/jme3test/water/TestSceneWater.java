@@ -115,7 +115,7 @@ public class TestSceneWater extends SimpleApplication {
         quad.scaleTextureCoordinates(new Vector2f(6f,6f));
 
         Geometry water=new Geometry("water", quad);
-        water.setShadowMode(ShadowMode.Recieve);
+        water.setShadowMode(ShadowMode.Receive);
         water.setLocalRotation(new Quaternion().fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_X));
         water.setMaterial(waterProcessor.getMaterial());
         water.setLocalTranslation(-200, -6, 250);

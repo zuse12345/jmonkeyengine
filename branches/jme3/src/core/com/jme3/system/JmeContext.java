@@ -58,7 +58,7 @@ public interface JmeContext {
     public void setSettings(AppSettings settings);
 
     /**
-     * Sets the listener that will recieve events relating to context
+     * Sets the listener that will receive events relating to context
      * creation, update, and destroy.
      */
     public void setSystemListener(SystemListener listener);

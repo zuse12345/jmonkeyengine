@@ -1,7 +1,7 @@
 package com.jme3.animation;
 
 /**
- * <code>AnimEventListener</code> allows user code to recieve various
+ * <code>AnimEventListener</code> allows user code to receive various
  * events regarding an AnimControl. For example, when an animation cycle is done.
  * 
  * @author Kirill Vainer

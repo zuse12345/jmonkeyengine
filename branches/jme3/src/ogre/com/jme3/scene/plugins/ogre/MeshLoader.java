@@ -158,9 +158,9 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
         if (mat.isTransparent())
             geom.setQueueBucket(Bucket.Transparent);
 //        else
-//            geom.setShadowMode(ShadowMode.CastAndRecieve);
+//            geom.setShadowMode(ShadowMode.CastAndReceive);
         
-//        if (mat.isRecievesShadows())
+//        if (mat.isReceivesShadows())
             
             
         geom.setMaterial(mat);

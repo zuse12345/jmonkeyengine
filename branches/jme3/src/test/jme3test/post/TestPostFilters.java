@@ -93,7 +93,7 @@ public class TestPostFilters extends SimpleApplication {
         floor.scaleTextureCoordinates(new Vector2f(5, 5));
         Geometry floorGeom = new Geometry("Floor", floor);
         floorGeom.setMaterial(mat);
-        floorGeom.setShadowMode(ShadowMode.Recieve);
+        floorGeom.setShadowMode(ShadowMode.Receive);
         rootNode.attachChild(floorGeom);
     }
 
@@ -105,7 +105,7 @@ public class TestPostFilters extends SimpleApplication {
         signpost.rotate(0, FastMath.HALF_PI, 0);
         signpost.setLocalTranslation(12, 3.5f, 30);
         signpost.setLocalScale(4);
-        signpost.setShadowMode(ShadowMode.CastAndRecieve);
+        signpost.setShadowMode(ShadowMode.CastAndReceive);
         rootNode.attachChild(signpost);
     }
 

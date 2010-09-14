@@ -214,7 +214,7 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
     }
 
     /**
-     * Adds a new listener to recieve animation related events.
+     * Adds a new listener to receive animation related events.
      * @param listener The listener to add.
      */
     public void addListener(AnimEventListener listener){

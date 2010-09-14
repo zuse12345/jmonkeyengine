@@ -126,7 +126,7 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
         }
         
         if (reinitNeeded){
-            logger.log(Level.INFO, "OGL: Re-init request recieved!");
+            logger.log(Level.INFO, "OGL: Re-init request received!");
             listener.loseFocus();
 
             boolean mouseActive = Mouse.isCreated();
@@ -166,7 +166,7 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
                 reinitAuth.set(false);
             }
             
-            logger.log(Level.INFO, "OGL: Re-init authorization recieved. Re-initializing..");
+            logger.log(Level.INFO, "OGL: Re-init authorization received. Re-initializing..");
             restoreCanvas();
 
             try {

@@ -2,7 +2,7 @@ package com.jme3.system;
 
 /**
  * The <code>ContextListener> provides a means for an application
- * to recieve events relating to a context.
+ * to receive events relating to a context.
  */
 public interface SystemListener {
 

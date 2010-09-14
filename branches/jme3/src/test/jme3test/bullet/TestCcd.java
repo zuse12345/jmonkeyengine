@@ -102,7 +102,7 @@ public class TestCcd extends SimpleBulletApplication implements ActionListener{
             bulletNode.setName("bullet");
             bulletNode.setLocalTranslation(cam.getLocation());
             bulletNode.updateGeometricState();
-            bulletNode.setShadowMode(ShadowMode.CastAndRecieve);
+            bulletNode.setShadowMode(ShadowMode.CastAndReceive);
             bulletNode.setLinearVelocity(cam.getDirection().mult(40));
             rootNode.attachChild(bulletNode);
             getPhysicsSpace().add(bulletNode);
@@ -114,7 +114,7 @@ public class TestCcd extends SimpleBulletApplication implements ActionListener{
             bulletNode.setName("bullet");
             bulletNode.setLocalTranslation(cam.getLocation());
             bulletNode.updateGeometricState();
-            bulletNode.setShadowMode(ShadowMode.CastAndRecieve);
+            bulletNode.setShadowMode(ShadowMode.CastAndReceive);
             bulletNode.setLinearVelocity(cam.getDirection().mult(40));
             rootNode.attachChild(bulletNode);
             getPhysicsSpace().add(bulletNode);

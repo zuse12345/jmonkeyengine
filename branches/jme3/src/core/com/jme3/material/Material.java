@@ -55,7 +55,7 @@ public class Material implements Cloneable, Savable {
     private int nextTexUnit = 0;
     private RenderState additionalState = null;
     private boolean transparent = false;
-    private boolean recievesShadows = false;
+    private boolean receivesShadows = false;
 
     public static class MatParamTexture extends MatParam {
 
@@ -156,12 +156,12 @@ public class Material implements Cloneable, Savable {
         this.transparent = transparent;
     }
 
-    public boolean isRecievesShadows() {
-        return recievesShadows;
+    public boolean isReceivesShadows() {
+        return receivesShadows;
     }
 
-    public void setRecievesShadows(boolean recievesShadows) {
-        this.recievesShadows = recievesShadows;
+    public void setReceivesShadows(boolean receivesShadows) {
+        this.receivesShadows = receivesShadows;
     }
     
     public RenderState getAdditionalRenderState(){

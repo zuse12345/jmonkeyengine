@@ -148,7 +148,7 @@ public class TestPhysicsCharacter extends SimpleBulletApplication implements Act
             PhysicsNode bulletNode = new PhysicsNode(bulletg, bulletCollisionShape, 1);
             bulletNode.setLocalTranslation(cam.getLocation());
             bulletNode.updateGeometricState();
-            bulletNode.setShadowMode(ShadowMode.CastAndRecieve);
+            bulletNode.setShadowMode(ShadowMode.CastAndReceive);
             bulletNode.setLinearVelocity(cam.getDirection().mult(25));
             rootNode.attachChild(bulletNode);
             getPhysicsSpace().add(bulletNode);

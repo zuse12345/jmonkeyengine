@@ -134,6 +134,7 @@ public class Application implements SystemListener {
         // from the context
         settings = context.getSettings();
         timer = context.getTimer();
+       
         renderer = context.getRenderer();
     }
 
@@ -160,6 +161,8 @@ public class Application implements SystemListener {
         cam.lookAt(new Vector3f(0f, 0f, 0f), Vector3f.UNIT_Y);
 
         renderManager = new RenderManager(renderer);
+        //Remy - 09/14/2010 setted the timer in the renderManager
+        renderManager.setTimer(timer);
         viewPort = renderManager.createMainView("Default", cam);
         viewPort.setClearEnabled(true);
 

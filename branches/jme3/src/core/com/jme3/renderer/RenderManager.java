@@ -71,6 +71,7 @@ public class RenderManager {
     public RenderManager(Renderer renderer){
         this.renderer = renderer;
         this.shader = renderer.getCaps().contains(Caps.GLSL100);
+
     }
 
     public ViewPort getPreView(String viewName){
@@ -630,4 +631,10 @@ public class RenderManager {
          }
      }
 
+     //Remy - 09/14/2010 - added a setter for the timer in order to correctly populate g_Time and g_Tpf in the shaders
+    public void setTimer(Timer timer) {
+        this.timer = timer;
+    }
+
+     
 }

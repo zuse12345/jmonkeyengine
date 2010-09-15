@@ -50,7 +50,7 @@ public class TerrainTest extends SimpleApplication {
                 // First, we load up our textures and the heightmap texture for the terrain
 
 		// TERRAIN TEXTURE material
-		matRock = new Material(assetManager, "com/jme3/terrain/MatDefs/Terrain.j3md");
+		matRock = new Material(assetManager, "Common/MatDefs/Terrain/Terrain.j3md");
 
 		// ALPHA map (for splat textures)
 		matRock.setTexture("Alpha", assetManager.loadTexture("Textures/Terrain/splat/alphamap.png"));

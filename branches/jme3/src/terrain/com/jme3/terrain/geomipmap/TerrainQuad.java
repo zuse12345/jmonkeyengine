@@ -20,6 +20,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.terrain.LodThreshold;
+import com.jme3.terrain.Terrain;
 
 /**
  * A terrain quad is a node in the quad tree of the terrain system.
@@ -30,7 +31,7 @@ import com.jme3.terrain.LodThreshold;
  * 
  * @author Brent Owens
  */
-public class TerrainQuad extends Node {
+public class TerrainQuad extends Node implements Terrain {
 
 	protected Vector2f offset;
 
@@ -48,6 +49,7 @@ public class TerrainQuad extends Node {
 	
 	protected Vector3f lastCameraLocation; // used for LOD calc
 	private boolean lodCalcRunning = false;
+        private boolean usingLOD = true;
 	
 	private ExecutorService executor = Executors.newSingleThreadExecutor(new ThreadFactory() {
 		           public Thread newThread(Runnable r) {
@@ -59,6 +61,8 @@ public class TerrainQuad extends Node {
 	
 	private HashMap<String,UpdatedTerrainPatch> updatedPatches;
 	private Object updatePatchesLock = new Object();
+        private int maxLod = -1;
+
 	
 	public TerrainQuad() {
 		super("Terrain");
@@ -956,9 +960,41 @@ public class TerrainQuad extends Node {
 	}
 	
 	@Override
-    public Node clone(){
+        public Node clone(){
 		//TODO use importer and exporter to clone it
 		return null;
+	}
+
+
+	@Override
+	public int getMaxLod() {
+		if (maxLod < 0)
+			maxLod = Math.max(1, (int) (FastMath.log(size-1)/FastMath.log(2)) -1); // -1 forces our minimum of 4 triangles wide
+
+		return maxLod;
+	}
+
+	@Override
+	public void useLOD(boolean useLod) {
+		usingLOD = useLod;
+	}
+
+	@Override
+	public boolean isUsingLOD() {
+		return usingLOD;
+	}
+
+
+	@Override
+	public void setHeight(Vector2f xzCoordinate, float height) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public float getHeight(Vector2f xz) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }
 

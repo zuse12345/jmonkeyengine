@@ -149,7 +149,7 @@ public class TerrainPatch extends Geometry {
 	 */
 	public int getMaxLod() {
 		if (maxLod < 0)
-			maxLod = Math.max(1, (int) (FastMath.log(size-1)/FastMath.log(2)) -1); // -2 forces our minimum of 4 triangles wide
+			maxLod = Math.max(1, (int) (FastMath.log(size-1)/FastMath.log(2)) -1); // -1 forces our minimum of 4 triangles wide
 		//System.out.println("max lod = "+lod);
 		return maxLod;
 	}

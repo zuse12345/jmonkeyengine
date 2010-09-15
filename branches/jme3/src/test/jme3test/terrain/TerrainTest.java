@@ -13,13 +13,17 @@ import com.jme3.light.PointLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.Camera;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Sphere;
+import com.jme3.terrain.geomipmap.TerrainLodControl;
 import com.jme3.terrain.heightmap.AbstractHeightMap;
 import com.jme3.terrain.heightmap.ImageBasedHeightMap;
 import com.jme3.terrain.geomipmap.TerrainQuad;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture.WrapMode;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TerrainTest extends SimpleApplication {
 
@@ -107,6 +111,10 @@ public class TerrainTest extends SimpleApplication {
 		 * size=2049, it got really slow. But that is a jump from 2 million to 8 million triangles...
 		 */
 		terrain = new TerrainQuad("terrain", 65, 513, new Vector3f(1, 1, 1), heightmap.getHeightMap());
+                List<Camera> cameras = new ArrayList<Camera>();
+                cameras.add(getCamera());
+                TerrainLodControl control = new TerrainLodControl(terrain, cameras);
+                terrain.addControl(control);
 		terrain.setMaterial(matRock);
 		terrain.setModelBound(new BoundingBox());
 		terrain.updateModelBound();
@@ -147,12 +155,6 @@ public class TerrainTest extends SimpleApplication {
 		flyCam.setMoveSpeed(50);
 		inputManager.addMapping("wireframe", new KeyTrigger(KeyInput.KEY_T));
 		inputManager.addListener(actionListener, "wireframe");
-	}
-
-	@Override
-	public void simpleUpdate(float tpf) {
-                // This update must be called if you want the LOD of the terrain to update
-		terrain.update(getCamera().getLocation()); // calculate its lod levels relative to the camera
 	}
 
 	private ActionListener actionListener = new ActionListener() {

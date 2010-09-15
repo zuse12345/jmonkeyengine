@@ -8,5 +8,6 @@ and open the template in the editor.
     <tocitem text="Material Support">
     <tocitem text="About Material Support" target="com.jme3.gde.materials.about"/>
     <tocitem text="Using the Material Editor (online)" target="com.jme3.gde.materials.usage"/>
+    <tocitem text="Shaders and Materials in jME3 (online)" target="com.jme3.gde.materials.shaders"/>
     </tocitem>
 </toc>

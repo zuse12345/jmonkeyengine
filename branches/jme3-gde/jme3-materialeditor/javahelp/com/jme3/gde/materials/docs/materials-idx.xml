@@ -7,4 +7,5 @@ and open the template in the editor.
 <index version="2.0">
     <indexitem text="About Material Support" target="com.jme3.gde.materials.about"/>
     <indexitem text="Using the Material Editor" target="com.jme3.gde.materials.usage"/>
+    <indexitem text="Shaders and Materials in jME3" target="com.jme3.gde.materials.shaders"/>
 </index>

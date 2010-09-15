@@ -6,10 +6,10 @@
             <name>jMonkeyEngine3</name>
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <source-roots>
-                <root id="src.terrain.dir" name="Terrain"/>
                 <root id="src.core.dir" name="Core"/>
                 <root id="src.core-data.dir" name="Core-Data"/>
                 <root id="src.core-plugins.dir" name="Core-Plugins"/>
+                <root id="src.terrain.dir" name="Terrain"/>
                 <root id="src.desktop.dir" name="Desktop"/>
                 <root id="src.desktop-fx.dir" name="Desktop-FX"/>
                 <root id="src.games.dir" name="Games"/>

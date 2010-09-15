@@ -4,12 +4,11 @@ import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
 public class SharedBufferGeomap extends AbstractGeomap implements SharedGeomap {
 
     protected final BufferGeomap parent;
-    protected final IntBuffer hdata;
+    protected final FloatBuffer hdata;
     protected final ByteBuffer ndata;
     protected final int startX, startY, width, height;
 

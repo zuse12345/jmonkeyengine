@@ -5,18 +5,17 @@ import com.jme3.util.BufferUtils;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
 /**
  * Implementation of the Geomap interface which stores data in memory as native buffers
  */
 public class BufferGeomap extends AbstractGeomap implements Geomap {
 
-    protected final IntBuffer hdata;
-    protected final ByteBuffer ndata;
-    protected final int width, height, maxval;
+    protected FloatBuffer hdata;
+    protected ByteBuffer ndata;
+    protected int width, height, maxval;
 
-    public BufferGeomap(IntBuffer heightData, ByteBuffer normalData, int width, int height, int maxval){
+    public BufferGeomap(FloatBuffer heightData, ByteBuffer normalData, int width, int height, int maxval){
         this.hdata = heightData;
         this.ndata = normalData;
         this.width = width;
@@ -25,10 +24,10 @@ public class BufferGeomap extends AbstractGeomap implements Geomap {
     }
 
     public BufferGeomap(int width, int height, int maxval) {
-        this(ByteBuffer.allocateDirect(width*height*4).asIntBuffer(),null,width,height,maxval);
+        this(ByteBuffer.allocateDirect(width*height*4).asFloatBuffer(),null,width,height,maxval);
     }
 
-    public IntBuffer getHeightData(){
+    public FloatBuffer getHeightData(){
         if (!isLoaded())
             return null;
 
@@ -47,11 +46,11 @@ public class BufferGeomap extends AbstractGeomap implements Geomap {
     }
 
     public int getValue(int x, int y) {
-        return hdata.get(y*width+x);
+        return (int) hdata.get(y*width+x);
     }
 
     public int getValue(int i) {
-        return hdata.get(i);
+        return (int) hdata.get(i);
     }
 
     public Vector3f getNormal(int x, int y, Vector3f store) {
@@ -85,7 +84,7 @@ public class BufferGeomap extends AbstractGeomap implements Geomap {
     }
 
     public Geomap copySubGeomap(int x, int y, int w, int h){
-        IntBuffer nhdata = ByteBuffer.allocateDirect(w*h*4).asIntBuffer();
+        FloatBuffer nhdata = ByteBuffer.allocateDirect(w*h*4).asFloatBuffer();
         hdata.position(y*width+x);
         for (int cy = 0; cy < height; cy++){
             hdata.limit(hdata.position()+w);

@@ -1,0 +1,25 @@
+MaterialDef Terrain {
+
+	MaterialParameters {
+		Texture2D Alpha
+		Texture2D Texture1
+		Texture2D Texture2
+		Texture2D Texture3
+		Float Texture1Scale
+		Float Texture2Scale
+		Float Texture3Scale
+	}
+
+	Technique {
+		VertexShader GLSL100:   com/jme3/terrain/MatDefs/Terrain.vert
+		FragmentShader GLSL100: com/jme3/terrain/MatDefs/Terrain.frag
+		
+		WorldParameters {
+			WorldViewProjectionMatrix
+		}
+	}
+	
+	Technique FixedFunc {
+    }
+
+}

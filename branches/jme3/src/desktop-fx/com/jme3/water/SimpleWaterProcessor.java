@@ -8,6 +8,7 @@ import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
+import com.jme3.math.Matrix4f;
 import com.jme3.math.Plane;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Ray;
@@ -22,10 +23,6 @@ import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Quad;
-import com.jme3.shader.DefineList;
-import com.jme3.shader.Shader;
-import com.jme3.shader.ShaderKey;
-import com.jme3.shader.VarType;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image.Format;
 import com.jme3.texture.Texture.WrapMode;
@@ -221,7 +218,7 @@ public class SimpleWaterProcessor implements SceneProcessor {
 
         //set viewport to render to offscreen framebuffer
         reflectionView.setOutputFrameBuffer(reflectionBuffer);
-        reflectionView.addProcessor(new ReflectionProcessor(manager));
+        reflectionView.addProcessor(new ReflectionProcessor());
         // attach the scene to the viewport to be rendered
         reflectionView.attachScene(reflectionScene);
 
@@ -417,17 +414,6 @@ public class SimpleWaterProcessor implements SceneProcessor {
 
         RenderManager rm;
         ViewPort vp;
-        Shader clipShader;
-        AssetManager manager;
-
-        public ReflectionProcessor(AssetManager manager) {
-            this.manager = manager;
-            DefineList defList = new DefineList();
-            Quaternion vec = new Quaternion(plane.getNormal().x, plane.getNormal().y, plane.getNormal().z, plane.getConstant());
-            ShaderKey key = new ShaderKey("Common/MatDefs/Water/clip_plane.vert", "Common/MatDefs/Water/clip_plane.frag", defList, "GLSL100");
-            clipShader = manager.loadShader(key);
-            clipShader.getUniform("u_clipPlane").setValue(VarType.Vector4, vec);
-        }
 
         public void initialize(RenderManager rm, ViewPort vp) {
             this.rm = rm;
@@ -442,17 +428,41 @@ public class SimpleWaterProcessor implements SceneProcessor {
         }
 
         public void preFrame(float tpf) {
+            //Java code
+//            Camera cam = rm.getCurrentCamera();
+//            Matrix4f projMatrix=cam.getProjectionMatrix();
+//            Matrix4f modelViewMatrix=new Matrix4f();
+//            Matrix4f invtransMVP=projMatrix.mult(modelViewMatrix).invertLocal();
+
+            //C++ code
+//            get_matrix(GL_PROJECTION_MATRIX);
+//            M = get_matrix(GL_MODELVIEW_MATRIX);
+//            matrix4f invtrans_MVP = (P * M).inverse().transpose();
+//            vec4f oplane(0,0,-1,0);
+//            vec4f cplane;
+//            invtrans_MVP.mult_matrix_vec(oplane, cplane);
+//
+//            cplane /= abs(cplane[2]); // normalize such that depth is not scaled
+//            cplane[3] -= 1;
+//
+//            if(cplane[2] < 0)
+//                cplane *= -1;
+//
+//            matrix4f suffix;
+//            suffix.set_row(2, cplane);
+//            matrix4f newP = suffix * P;
+//            glMatrixMode(GL_PROJECTION);
+//            glLoadMatrixf(newP.m);
+//            glMatrixMode(GL_MODELVIEW);
         }
 
         public void postQueue(RenderQueue rq) {
-//            rm.getRenderer().setShader(clipShader);
         }
 
         public void postFrame(FrameBuffer out) {
         }
 
         public void cleanup() {
-//            rm.getRenderer().deleteShader(clipShader);
         }
     }
 

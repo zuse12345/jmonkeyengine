@@ -4,13 +4,18 @@ import com.jme3.network.events.ConnectionListener;
 import com.jme3.network.events.MessageListener;
 import com.jme3.network.message.ClientRegistrationMessage;
 import com.jme3.network.message.DisconnectMessage;
+import com.jme3.network.message.DiscoverHostMessage;
 import com.jme3.network.message.Message;
+import com.jme3.network.serializing.Serializer;
 import com.jme3.network.service.ServiceManager;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
+import java.net.*;
+import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -272,6 +277,49 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         thread = null;
 
         isConnected = false;
+    }
+
+    public List<InetAddress> discoverHosts(int port, int timeout) throws Exception {
+        ArrayList<InetAddress> addresses = new ArrayList<InetAddress>();
+
+        DatagramSocket socket = new DatagramSocket();
+
+        ByteBuffer buffer = ByteBuffer.allocate(4);
+        DiscoverHostMessage host = new DiscoverHostMessage();
+
+        Serializer.writeClass(buffer, DiscoverHostMessage.class);
+
+        buffer.flip();
+        byte[] data = new byte[buffer.limit()];
+        buffer.get(data);
+
+        for (NetworkInterface iface : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+            for (InetAddress address : Collections.list(iface.getInetAddresses())) {
+                if (address instanceof Inet6Address || address.isLoopbackAddress()) continue;
+                byte[] ip = address.getAddress();
+                ip[3] = -1;
+                socket.send(new DatagramPacket(data, data.length, InetAddress.getByAddress(ip), port));
+                ip[2] = -1;
+                socket.send(new DatagramPacket(data, data.length, InetAddress.getByAddress(ip), port));
+            }
+        }
+        log.log(Level.FINE, "[{0}][UDP] Started discovery on port {1}.", new Object[]{label, port});
+
+        long targetTime = System.currentTimeMillis() + timeout;
+
+        DatagramPacket packet = new DatagramPacket(new byte[0], 0);
+        socket.setSoTimeout(1000);
+        while (System.currentTimeMillis() < targetTime) {
+            try {
+                socket.receive(packet);
+                addresses.add(packet.getAddress());
+                log.log(Level.FINE, "[{0}][UDP] Discovered server on {1}.", new Object[]{label, packet.getAddress()});
+            } catch (SocketTimeoutException ste) {
+                
+            }
+        }
+
+        return addresses;
     }
 
     public void setLabel(String label) {

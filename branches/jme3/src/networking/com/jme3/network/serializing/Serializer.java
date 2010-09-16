@@ -59,6 +59,7 @@ public abstract class Serializer {
         registerClass(Message.class);
         registerClass(DisconnectMessage.class);
         registerClass(ClientRegistrationMessage.class);
+        registerClass(DiscoverHostMessage.class);
 
     }
 

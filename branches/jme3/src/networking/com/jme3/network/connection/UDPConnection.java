@@ -1,5 +1,6 @@
 package com.jme3.network.connection;
 
+import com.jme3.network.message.DiscoverHostMessage;
 import com.jme3.network.message.Message;
 import com.jme3.network.serializing.Serializer;
 import java.io.IOException;
@@ -91,6 +92,13 @@ public class UDPConnection extends Connection {
 
         if (object instanceof Message) {
             Message message = (Message)object;
+
+            if (message instanceof DiscoverHostMessage) {
+                connections.remove(key.attachment());
+                log.log(Level.FINE, "[{0}][UDP] Responded to a discover host message by {1}.", new Object[]{label, address});
+                send(address, message);
+                return;
+            }
 
             Object attachment = socketChannel.keyFor(selector).attachment();
             if (attachment instanceof Client) message.setClient((Client)attachment);

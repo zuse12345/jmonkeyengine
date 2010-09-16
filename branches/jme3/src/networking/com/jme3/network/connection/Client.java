@@ -412,16 +412,48 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         if (udp != null) udp.addMessageListener(listener);
     }
 
+    public void addMessageListener(MessageListener listener, Class... classes) {
+        for (Class c : classes) {
+            if (tcp != null) tcp.addMessageListener(c, listener);
+            if (udp != null) udp.addMessageListener(c, listener);
+        }
+    }
+
     public void removeMessageListener(MessageListener listener) {
         if (tcp != null) tcp.removeMessageListener(listener);
         if (udp != null) udp.removeMessageListener(listener);
     }
 
+    public void removeMessageListener(MessageListener listener, Class... classes) {
+        for (Class c : classes) {
+            if (tcp != null) tcp.removeMessageListener(c, listener);
+            if (udp != null) udp.removeMessageListener(c, listener);
+        }
+    }
+
+    ///
+
+    /**
+     * Add a message listener for a specific class.
+     *
+     * @param messageClass The class to listen for.
+     * @param listener The listener.
+     * @deprecated Use addMessageListener(MessageListener, Class...) instead.
+     */
+    @Deprecated
     public void addIndividualMessageListener(Class messageClass, MessageListener listener) {
         if (tcp != null) tcp.addIndividualMessageListener(messageClass, listener);
         if (udp != null) udp.addIndividualMessageListener(messageClass, listener);
     }
 
+    /**
+     * Add a message listener for specific classes.
+     *
+     * @param messageClass The classes to listen for.
+     * @param listener The listener.
+     * @deprecated Use addMessageListener(MessageListener, Class...) instead.
+     */
+    @Deprecated
     public void addIndividualMessageListener(Class[] messageClass, MessageListener listener) {
         for (Class c : messageClass) {
             if (tcp != null) tcp.addIndividualMessageListener(c, listener);
@@ -429,11 +461,27 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         }
     }
 
+    /**
+     * Remove a message listener for a specific class.
+     *
+     * @param messageClass The class to what this listener is registered.
+     * @param listener The listener.
+     * @deprecated Use removeMessageListener(MessageListener, Class...) instead.
+     */
+    @Deprecated
     public void removeIndividualMessageListener(Class messageClass, MessageListener listener) {
         if (tcp != null) tcp.removeIndividualMessageListener(messageClass, listener);
         if (udp != null) udp.removeIndividualMessageListener(messageClass, listener);
     }
 
+    /**
+     *Remove a message listener for specific classes.
+     *
+     * @param messageClass The classes to remove for.
+     * @param listener The listener.
+     * @deprecated Use addMessageListener(MessageListener, Class...) instead.
+     */
+    @Deprecated
     public void removeIndividualMessageListener(Class[] messageClass, MessageListener listener) {
         for (Class c : messageClass) {
             if (tcp != null) tcp.removeIndividualMessageListener(c, listener);

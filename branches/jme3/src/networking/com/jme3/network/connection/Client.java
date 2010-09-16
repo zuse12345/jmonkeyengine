@@ -86,8 +86,8 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         udp.connect(udpAddress);
         isConnected = true;
 
-        tcp.addIndividualMessageListener(DisconnectMessage.class, this);
-        udp.addIndividualMessageListener(DisconnectMessage.class, this);
+        tcp.addMessageListener(DisconnectMessage.class, this);
+        udp.addMessageListener(DisconnectMessage.class, this);
         tcp.addConnectionListener(this);
     }
 
@@ -105,7 +105,7 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         tcp.connect(tcpAddress);
         isConnected = true;
 
-        tcp.addIndividualMessageListener(DisconnectMessage.class, this);
+        tcp.addMessageListener(DisconnectMessage.class, this);
         tcp.addConnectionListener(this);
     }
 
@@ -123,7 +123,7 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         udp.connect(updAddress);
         isConnected = true;
 
-        udp.addIndividualMessageListener(DisconnectMessage.class, this);
+        udp.addMessageListener(DisconnectMessage.class, this);
     }
 
     /**
@@ -145,8 +145,8 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         udp.connect(new InetSocketAddress(ip, udpPort));
         isConnected = true;
 
-        tcp.addIndividualMessageListener(DisconnectMessage.class, this);
-        udp.addIndividualMessageListener(DisconnectMessage.class, this);
+        tcp.addMessageListener(DisconnectMessage.class, this);
+        udp.addMessageListener(DisconnectMessage.class, this);
         tcp.addConnectionListener(this);
     }
 
@@ -164,12 +164,12 @@ public class Client extends ServiceManager implements MessageListener, Connectio
 
         if (tcpPort != -1) {
             tcp.connect(new InetSocketAddress(ip, tcpPort));
-            tcp.addIndividualMessageListener(DisconnectMessage.class, this);
+            tcp.addMessageListener(DisconnectMessage.class, this);
             tcp.addConnectionListener(this);
         }
         if (udpPort != -1) {
             udp.connect(new InetSocketAddress(ip, udpPort));
-            udp.addIndividualMessageListener(DisconnectMessage.class, this);
+            udp.addMessageListener(DisconnectMessage.class, this);
         }
         isConnected = true;
     }
@@ -279,7 +279,7 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         isConnected = false;
     }
 
-    public List<InetAddress> discoverHosts(int port, int timeout) throws Exception {
+    public List<InetAddress> discoverHosts(int port, int timeout) throws IOException {
         ArrayList<InetAddress> addresses = new ArrayList<InetAddress>();
 
         DatagramSocket socket = new DatagramSocket();
@@ -312,6 +312,7 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         while (System.currentTimeMillis() < targetTime) {
             try {
                 socket.receive(packet);
+                if (addresses.contains(packet.getAddress())) continue;
                 addresses.add(packet.getAddress());
                 log.log(Level.FINE, "[{0}][UDP] Discovered server on {1}.", new Object[]{label, packet.getAddress()});
             } catch (SocketTimeoutException ste) {

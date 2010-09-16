@@ -258,6 +258,25 @@ public abstract class Connection implements Runnable {
         messageListeners.remove(listener);
     }
 
+    public void addMessageListener(Class messageClass, MessageListener listener) {
+        if (individualMessageListeners.containsKey(messageClass)) {
+            individualMessageListeners.get(messageClass).add(listener);
+        } else {
+            List<MessageListener> list = new ArrayList<MessageListener>();
+            list.add(listener);
+            individualMessageListeners.put(messageClass, list);
+        }
+    }
+
+    public void removeMessageListener(Class messageClass, MessageListener listener) {
+        if (individualMessageListeners.containsKey(messageClass)) {
+            individualMessageListeners.get(messageClass).remove(listener);
+        }
+    }
+
+    //
+
+    @Deprecated
     public void addIndividualMessageListener(Class messageClass, MessageListener listener) {
         if (individualMessageListeners.containsKey(messageClass)) {
             individualMessageListeners.get(messageClass).add(listener);
@@ -268,6 +287,7 @@ public abstract class Connection implements Runnable {
         }
     }
 
+    @Deprecated
     public void removeIndividualMessageListener(Class messageClass, MessageListener listener) {
         if (individualMessageListeners.containsKey(messageClass)) {
             individualMessageListeners.get(messageClass).remove(listener);

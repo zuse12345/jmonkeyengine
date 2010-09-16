@@ -13,8 +13,8 @@ To get started with JME, you can download the library and sources from the "Down
 
 You can find documentation, help and a nice community around JME on the jMonkeyEngine Homepage, Wiki and Forum (you can login with your google account):
   * http://www.jmonkeyengine.com
-  * http://www.jmonkeyengine.com/wiki/
-  * http://www.jmonkeyengine.com/forum/
+  * http://www.jmonkeyengine.org/wiki/
+  * http://www.jmonkeyengine.org/forums/
 
 == JME Development ==
 

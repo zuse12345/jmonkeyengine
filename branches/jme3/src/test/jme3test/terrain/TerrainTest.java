@@ -51,13 +51,13 @@ public class TerrainTest extends SimpleApplication {
 	public void simpleInitApp() {
 		setupKeys();
 
-                // First, we load up our textures and the heightmap texture for the terrain
+        // First, we load up our textures and the heightmap texture for the terrain
 
 		// TERRAIN TEXTURE material
 		matRock = new Material(assetManager, "Common/MatDefs/Terrain/Terrain.j3md");
 
 		// ALPHA map (for splat textures)
-		matRock.setTexture("Alpha", assetManager.loadTexture("Textures/Terrain/splat/alphamap.png"));
+		matRock.setTexture("m_Alpha", assetManager.loadTexture("Textures/Terrain/splat/alphamap.png"));
 
 		// HEIGHTMAP image (for the terrain heightmap)
 		Texture heightMapImage = assetManager.loadTexture("Textures/Terrain/splat/mountains512.png");
@@ -65,20 +65,20 @@ public class TerrainTest extends SimpleApplication {
 		// GRASS texture
 		Texture grass = assetManager.loadTexture("Textures/Terrain/splat/grass.jpg");
 		grass.setWrap(WrapMode.Repeat);
-		matRock.setTexture("Texture1", grass);
-		matRock.setFloat("Texture1Scale", 64f);
+		matRock.setTexture("m_Tex1", grass);
+		matRock.setFloat("m_Tex1Scale", 64f);
 
 		// DIRT texture
 		Texture dirt = assetManager.loadTexture("Textures/Terrain/splat/dirt.jpg");
 		dirt.setWrap(WrapMode.Repeat);
-		matRock.setTexture("Texture2", dirt);
-		matRock.setFloat("Texture2Scale", 32f);
+		matRock.setTexture("m_Tex2", dirt);
+		matRock.setFloat("m_Tex2Scale", 32f);
 
 		// ROCK texture
 		Texture rock = assetManager.loadTexture("Textures/Terrain/splat/road.jpg");
 		rock.setWrap(WrapMode.Repeat);
-		matRock.setTexture("Texture3", rock);
-		matRock.setFloat("Texture3Scale", 128f);
+		matRock.setTexture("m_Tex3", rock);
+		matRock.setFloat("m_Tex3Scale", 128f);
 
 		// WIREFRAME material
 		matWire = new Material(assetManager, "Common/MatDefs/Misc/WireColor.j3md");
@@ -111,10 +111,10 @@ public class TerrainTest extends SimpleApplication {
 		 * size=2049, it got really slow. But that is a jump from 2 million to 8 million triangles...
 		 */
 		terrain = new TerrainQuad("terrain", 65, 513, new Vector3f(1, 1, 1), heightmap.getHeightMap());
-                List<Camera> cameras = new ArrayList<Camera>();
-                cameras.add(getCamera());
-                TerrainLodControl control = new TerrainLodControl(terrain, cameras);
-                terrain.addControl(control);
+		List<Camera> cameras = new ArrayList<Camera>();
+		cameras.add(getCamera());
+		TerrainLodControl control = new TerrainLodControl(terrain, cameras);
+		terrain.addControl(control);
 		terrain.setMaterial(matRock);
 		terrain.setModelBound(new BoundingBox());
 		terrain.updateModelBound();

@@ -1,5 +1,6 @@
 package com.jme3.terrain.geomipmap;
 
+import com.jme3.math.Vector3f;
 import java.util.List;
 
 import com.jme3.renderer.Camera;
@@ -9,6 +10,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
 import com.jme3.terrain.Terrain;
+import java.util.ArrayList;
 
 /**
  * Tells the terrain to update its Level of Detail.
@@ -44,8 +46,11 @@ public class TerrainLodControl extends AbstractControl {
 
 	@Override
 	protected void controlUpdate(float tpf) {
-		//TODO when terrain supports multiple cameras (ie split screen) then pass all of them in
-		terrain.update(cameras.get(0).getLocation());
+		//list of cameras for when terrain supports multiple cameras (ie split screen)
+                List<Vector3f> cameraLocations = new ArrayList<Vector3f>();
+                for (Camera c : cameras)
+                    cameraLocations.add(c.getLocation());
+		terrain.update(cameraLocations);
 	}
 
 	@Override

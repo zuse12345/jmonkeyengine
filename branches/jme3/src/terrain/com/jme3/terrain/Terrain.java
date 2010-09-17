@@ -2,6 +2,7 @@ package com.jme3.terrain;
 
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
+import java.util.List;
 
 public interface Terrain {
 
@@ -42,7 +43,6 @@ public interface Terrain {
 	 * terrain patch.
 	 * @param location often the Camera's location
 	 */
-	public void update(Vector3f location);
+	public void update(List<Vector3f> location);
 	
-	public void setLodThreshold(LodThreshold thresholdCalculator);
 }

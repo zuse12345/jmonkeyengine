@@ -1,4 +1,4 @@
-package com.jme3.terrain;
+package com.jme3.terrain.geomipmap.LodCalc;
 
 
 /**

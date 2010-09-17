@@ -34,7 +34,7 @@ public class UpdatedTerrainPatch {
 		
 	}
 
-	protected String getName() {
+	public String getName() {
 		return updatedPatch.getName();
 	}
 	
@@ -109,27 +109,27 @@ public class UpdatedTerrainPatch {
 		this.bottomLod = bottomLod;
 	}
 
-	protected boolean isReIndexNeeded() {
+	public boolean isReIndexNeeded() {
 		return reIndexNeeded;
 	}
 
-	protected void setReIndexNeeded(boolean reIndexNeeded) {
+	public void setReIndexNeeded(boolean reIndexNeeded) {
 		this.reIndexNeeded = reIndexNeeded;
 	}
 
-	protected boolean isFixEdges() {
+	public boolean isFixEdges() {
 		return fixEdges;
 	}
 
-	protected void setFixEdges(boolean fixEdges) {
+	public void setFixEdges(boolean fixEdges) {
 		this.fixEdges = fixEdges;
 	}
 
-	protected int getPreviousLod() {
+	public int getPreviousLod() {
 		return previousLod;
 	}
 
-	protected void setPreviousLod(int previousLod) {
+	public void setPreviousLod(int previousLod) {
 		this.previousLod = previousLod;
 	}
 

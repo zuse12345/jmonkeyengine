@@ -10,8 +10,9 @@ import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
-import com.jme3.terrain.LodThreshold;
+import com.jme3.terrain.geomipmap.LodCalc.LodCalculator;
 import com.jme3.util.BufferUtils;
+import java.util.List;
 
 
 /**
@@ -59,8 +60,11 @@ public class TerrainPatch extends Geometry {
 
 	// amount the block has been shifted.
 	protected float offsetAmount;
-	
-	protected LodThreshold lodThresholdCalculator = new SimpleLodThreshold(size);
+
+    protected LodCalculator lodCalculator;
+
+    protected TerrainPatch leftNeighbour, topNeighbour, rightNeighbour, bottomNeighbour;
+    protected boolean searchedForNeighboursAlready = false;
 		
 	public TerrainPatch(String name) {
 		super(name);
@@ -154,14 +158,18 @@ public class TerrainPatch extends Geometry {
 		return maxLod;
 	}
 	
-	public Vector3f getCenterLocation() {
-		Vector3f loc = getWorldTranslation().clone();
-		loc.x += size/2;
-		loc.z += size/2;
-		return loc;
-	}
-	
-	protected boolean calculateLod(Vector3f location, HashMap<String,UpdatedTerrainPatch> updates) {
+
+        /**
+         * Delegates to the lodCalculator that was passed in.
+         * @param locations all possible camera locations
+         * @param updates update objects that may or may not contain this terrain patch
+         * @return true if the geometry needs re-indexing
+         */
+	protected boolean calculateLod(List<Vector3f> locations, HashMap<String,UpdatedTerrainPatch> updates) {
+            return lodCalculator.calculateLod(locations, updates);
+        }
+
+	/*protected boolean calculateLod(Vector3f location, HashMap<String,UpdatedTerrainPatch> updates) {
 		
 		float distance = getCenterLocation().distance(location);
 		
@@ -210,7 +218,7 @@ public class TerrainPatch extends Geometry {
 		utp.setReIndexNeeded(reIndexNeeded);
 		
 		return reIndexNeeded;
-	}
+	}*/
 	
 	protected void reIndexGeometry(HashMap<String,UpdatedTerrainPatch> updated) {
 		
@@ -434,47 +442,19 @@ public class TerrainPatch extends Geometry {
 		this.quadrant = quadrant;
 	}
 
-	/*protected boolean isReIndexNeeded() {
-		return reIndexNeeded;
-	}*/
-
-	/**
-	 * geometry should re-index and fix its edges since a neighbour's lod changed even though
-	 * this one's lod did not.
-	 * @param fixEdges
-	 */
-	/*protected void setFixEdges(boolean fixEdges) {
-		this.fixEdges = fixEdges;
-	}*/
-	
-	/*protected boolean lodChanged() {
-		if (reIndexNeeded && previousLod != lod)
-			return true;
-		else
-			return false;
-	}*/
-
-	protected LodThreshold getLodThreshold() {
-		return lodThresholdCalculator;
-	}
-
-	protected void setLodThreshold(LodThreshold lodThresholdCalculator) {
-		this.lodThresholdCalculator = lodThresholdCalculator;
-	}
-
-	protected int getLod() {
+	public int getLod() {
 		return lod;
 	}
 
-	protected void setLod(int lod) {
+	public void setLod(int lod) {
 		this.lod = lod;
 	}
 
-	protected int getPreviousLod() {
+	public int getPreviousLod() {
 		return previousLod;
 	}
 
-	protected void setPreviousLod(int previousLod) {
+	public void setPreviousLod(int previousLod) {
 		this.previousLod = previousLod;
 	}
 
@@ -509,5 +489,12 @@ public class TerrainPatch extends Geometry {
 	protected void setLodBottom(int lodBottom) {
 		this.lodBottom = lodBottom;
 	}
-	
+
+        public LodCalculator getLodCalculator() {
+            return lodCalculator;
+        }
+
+        public void setLodCalculator(LodCalculator lodCalculator) {
+            this.lodCalculator = lodCalculator;
+        }
 }

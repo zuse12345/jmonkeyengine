@@ -59,6 +59,8 @@
             <zipfileset dir="${src.test.dir}" prefix="source"/>
             <zipfileset dir="${src.tools.dir}" prefix="source"/>
             <zipfileset dir="${src.xml.dir}" prefix="source"/>
+            <zipfileset dir="${src.terrain.dir}" prefix="source"/>
+            <zipfileset dir="${src.networking.dir}" prefix="source"/>
         </zip>
     </target>
     
@@ -148,6 +150,8 @@
             <zipfileset dir="${src.test.dir}"/>
             <zipfileset dir="${src.tools.dir}"/>
             <zipfileset dir="${src.xml.dir}"/>
+            <zipfileset dir="${src.terrain.dir}"/>
+            <zipfileset dir="${src.networking.dir}"/>
         </zip>
         <copy file="dist/jMonkeyEngine3-sources.zip" toDir="${jmp_dir}/jme3-project-baselibs/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
         

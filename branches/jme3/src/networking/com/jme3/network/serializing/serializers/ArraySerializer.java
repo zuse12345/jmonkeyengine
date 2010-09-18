@@ -39,6 +39,9 @@ public class ArraySerializer extends Serializer {
 
     public <T> T readObject(ByteBuffer data, Class<T> c) throws IOException {
         byte dimensionCount = data.get();
+        if (dimensionCount == 0)
+            return null;
+
         int[] dimensions = new int[dimensionCount];
         for (int i = 0; i < dimensionCount; i++)
                 dimensions[i] = data.getInt();
@@ -57,6 +60,11 @@ public class ArraySerializer extends Serializer {
     }
 
     public void writeObject(ByteBuffer buffer, Object object) throws IOException {
+        if (object == null){
+            buffer.put((byte)0);
+            return;
+        }
+
         int[] dimensions = getDimensions(object);
         buffer.put((byte)dimensions.length);
         for (int dimension : dimensions) buffer.putInt(dimension);

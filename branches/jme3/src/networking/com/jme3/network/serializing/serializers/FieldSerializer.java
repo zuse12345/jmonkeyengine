@@ -84,7 +84,9 @@ public class FieldSerializer extends Serializer {
 
     public void writeObject(ByteBuffer buffer, Object object) throws IOException {
         SavedField[] fields = savedFields.get(object.getClass());
-
+        if (fields == null)
+            throw new IOException("The " + object.getClass() + " is not registered"
+                                + " in the serializer!");
 
         for (SavedField savedField : fields) {
             Object val = null;

@@ -16,12 +16,25 @@ public class Message {
     // The connector this message is meant for.
     private transient Client        connector;
     private transient Connection    connection;
+    private transient boolean       reliable = false;
 
     public Message(Connection connection) {
         this.connection = connection;
     }
 
     public Message() {}
+
+    public Message(boolean reliable) {
+        this.reliable = reliable;
+    }
+
+    public boolean isReliable() {
+        return reliable;
+    }
+
+    public void setReliable(boolean reliable) {
+        this.reliable = reliable;
+    }
 
     public Client getClient() {
         return connector;

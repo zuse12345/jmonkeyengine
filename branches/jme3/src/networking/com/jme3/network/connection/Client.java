@@ -2,12 +2,14 @@ package com.jme3.network.connection;
 
 import com.jme3.network.events.ConnectionListener;
 import com.jme3.network.events.MessageListener;
-import com.jme3.network.message.ClientRegistrationMessage;
-import com.jme3.network.message.DisconnectMessage;
-import com.jme3.network.message.DiscoverHostMessage;
-import com.jme3.network.message.Message;
+import com.jme3.network.filestreaming.FileListener;
+import com.jme3.network.filestreaming.FileMessage;
+import com.jme3.network.filestreaming.FileReceiver;
+import com.jme3.network.filestreaming.FileSender;
+import com.jme3.network.message.*;
 import com.jme3.network.serializing.Serializer;
 import com.jme3.network.service.ServiceManager;
+import java.io.File;
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
@@ -33,6 +35,8 @@ public class Client extends ServiceManager implements MessageListener, Connectio
 
     protected ConnectionRunnable
                                 thread;
+
+    protected FileReceiver      fileReceiver;
 
     // Client (connector) related.
     protected SocketChannel     tcpChannel;
@@ -65,6 +69,8 @@ public class Client extends ServiceManager implements MessageListener, Connectio
 
         if (tcp == null) tcp = new TCPConnection(label);
         if (udp == null) udp = new UDPConnection(label);
+
+        if (!isConnector) fileReceiver = new FileReceiver();
     }
 
     /**
@@ -86,9 +92,7 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         udp.connect(udpAddress);
         isConnected = true;
 
-        tcp.addMessageListener(DisconnectMessage.class, this);
-        udp.addMessageListener(DisconnectMessage.class, this);
-        tcp.addConnectionListener(this);
+        registerInternalListeners();
     }
 
     /**
@@ -105,8 +109,7 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         tcp.connect(tcpAddress);
         isConnected = true;
 
-        tcp.addMessageListener(DisconnectMessage.class, this);
-        tcp.addConnectionListener(this);
+        registerInternalListeners();
     }
 
     /**
@@ -123,7 +126,7 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         udp.connect(updAddress);
         isConnected = true;
 
-        udp.addMessageListener(DisconnectMessage.class, this);
+        registerInternalListeners();
     }
 
     /**
@@ -145,9 +148,7 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         udp.connect(new InetSocketAddress(ip, udpPort));
         isConnected = true;
 
-        tcp.addMessageListener(DisconnectMessage.class, this);
-        udp.addMessageListener(DisconnectMessage.class, this);
-        tcp.addConnectionListener(this);
+        registerInternalListeners();
     }
 
     /**
@@ -164,14 +165,46 @@ public class Client extends ServiceManager implements MessageListener, Connectio
 
         if (tcpPort != -1) {
             tcp.connect(new InetSocketAddress(ip, tcpPort));
-            tcp.addMessageListener(DisconnectMessage.class, this);
-            tcp.addConnectionListener(this);
         }
         if (udpPort != -1) {
             udp.connect(new InetSocketAddress(ip, udpPort));
-            udp.addMessageListener(DisconnectMessage.class, this);
         }
+        registerInternalListeners();
         isConnected = true;
+    }
+
+    private void registerInternalListeners() {
+        if (tcp != null) {
+            tcp.addConnectionListener(this);
+        }
+        addMessageListener(this, DisconnectMessage.class);
+        addMessageListener(fileReceiver, StreamMessage.class, FileMessage.class);
+    }
+
+    /**
+     * Send a message. Whether it's over TCP or UDP is determined by the message flag.
+     *
+     * @param message The message to send.
+     * @throws IOException When a writing error occurs.
+     */
+    public void send(Message message) throws IOException {
+        if (!isConnected) throw new IOException("Not connected yet. Use connect() first.");
+
+        if (message.isReliable()) {
+            if (tcp == null) throw new IOException("No TCP client/server.");
+            if (isConnector) {
+                tcp.sendObject(this, message);
+            } else {
+                tcp.sendObject(message);
+            }
+        } else {
+            if (udp == null) throw new IOException("No UDP client/server.");
+            if (isConnector) {
+                udp.sendObject(this, message);
+            } else {
+                udp.sendObject(message);
+            }
+        }
     }
 
     /**
@@ -180,7 +213,9 @@ public class Client extends ServiceManager implements MessageListener, Connectio
      *
      * @param object The object to send.
      * @throws IOException When a writing error occurs.
+     * @deprecated Use send with the reliable message flag set to true.
      */
+    @Deprecated
     public void sendTCP(Object object) throws IOException {
         if (tcp == null) throw new IOException("No TCP client/server.");
         if (!isConnected) throw new IOException("Not connected yet. Use connect() first.");
@@ -197,7 +232,9 @@ public class Client extends ServiceManager implements MessageListener, Connectio
      *
      * @param object The object to send.
      * @throws IOException When a writing error occurs.
+     * @deprecated Use send.
      */
+    @Deprecated
     public void sendUDP(Object object) throws IOException {
         if (udp == null) throw new IOException("No UDP client/server.");
         if (!isConnected) throw new IOException("Not connected yet. Use connect() first.");
@@ -206,6 +243,16 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         } else {
             udp.sendObject(object);
         }
+    }
+
+    /**
+     * Send a file to the client.
+     *
+     * @param file The file to send.
+     */
+    public void sendFile(File file) {
+        if (!isConnector) return;
+        FileSender.sendFile(this, file);
     }
 
     /**
@@ -252,7 +299,8 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         DisconnectMessage message = new DisconnectMessage();
         message.setType(DisconnectMessage.KICK);
         message.setReason(reason);
-        sendTCP(message);
+        message.setReliable(true);
+        send(message);
 
         tcp.addToDisconnectionQueue(this);
 
@@ -397,6 +445,14 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         return label;
     }
 
+    public void addFileListener(FileListener listener) {
+        fileReceiver.addFileListener(listener);
+    }
+
+    public void removeFileListener(FileListener listener) {
+        fileReceiver.removeFileListener(listener);
+    }
+
     public void addConnectionListener(ConnectionListener listener) {
         if (tcp != null) tcp.addConnectionListener(listener);
         if (udp != null) udp.addConnectionListener(listener);
@@ -414,6 +470,7 @@ public class Client extends ServiceManager implements MessageListener, Connectio
 
     public void addMessageListener(MessageListener listener, Class... classes) {
         for (Class c : classes) {
+            System.out.println("Registering " + listener + " for class " + c);
             if (tcp != null) tcp.addMessageListener(c, listener);
             if (udp != null) udp.addMessageListener(c, listener);
         }
@@ -517,8 +574,9 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         ClientRegistrationMessage message = new ClientRegistrationMessage();
         message.setId(time);
         try {
-            sendTCP(message);
-            sendUDP(message);
+            send(message);
+            message.setReliable(true);
+            send(message);
         } catch (Exception e) {
             e.printStackTrace();
             log.log(Level.SEVERE, "[{0}][???] Could not sent client registration message. Disconnecting.", label);

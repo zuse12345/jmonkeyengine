@@ -143,13 +143,13 @@ public class Server extends ServiceManager implements MessageListener {
 
     private void registerInternalListeners() {
         if (tcp != null) {
-            tcp.addIndividualMessageListener(DisconnectMessage.class, this);
-            tcp.addIndividualMessageListener(ClientRegistrationMessage.class, clientManager);
+            tcp.addMessageListener(DisconnectMessage.class, this);
+            tcp.addMessageListener(ClientRegistrationMessage.class, clientManager);
             tcp.addConnectionListener(clientManager);
         }
         if (udp != null) {
-            udp.addIndividualMessageListener(DisconnectMessage.class, this);
-            udp.addIndividualMessageListener(ClientRegistrationMessage.class, clientManager);
+            udp.addMessageListener(DisconnectMessage.class, this);
+            udp.addMessageListener(ClientRegistrationMessage.class, clientManager);
             udp.addConnectionListener(clientManager);
         }
     }
@@ -178,12 +178,48 @@ public class Server extends ServiceManager implements MessageListener {
     }
 
     /**
+     * Broadcast a message.
+     *
+     * @param message The message to broadcast.
+     * @throws IOException When a writing error occurs.
+     */
+    public void broadcast(Message message) throws IOException {
+        if (!isBound) throw new IOException("Not bound yet. Use bind() first.");
+        if (message.isReliable()) {
+            if (tcp == null) throw new IOException("No TCP server.");
+            tcp.sendObject(message);
+        } else {
+            if (udp == null) throw new IOException("No UDP server.");
+            udp.sendObject(message);
+        }
+    }
+
+    /**
+     * Broadcast a message, except to the given client.
+     *
+     * @param except The client to refrain from sending the message to.
+     * @param message The message to send.
+     * @throws IOException When a writing error occurs.
+     */
+    public void broadcastExcept(Client except, Message message) throws IOException {
+        if (!isBound) throw new IOException("Not bound yet. Use bind() first.");
+
+        // We don't have to check for reliable or not here, since client.send does that.
+        for (Client con : tcp.getConnectors()) {
+            if (con == except) continue;
+            con.send(message);
+        }
+    }
+
+    /**
      * Send a TCP message to the given connector.
      *
      * @param connector The connector to send the message to.
      * @param object The object to send.
      * @throws IOException When a writing error occurs.
+     * @deprecated Unnecessary, use client.send().
      */
+    @Deprecated
     public void sendTCP(Client connector, Object object) throws IOException {
         if (tcp == null) throw new IOException("No TCP server.");
         if (!isBound) throw new IOException("Not bound yet. Use bind() first.");
@@ -196,7 +232,9 @@ public class Server extends ServiceManager implements MessageListener {
      * @param connector The connector to send to.
      * @param object The object to send.
      * @throws IOException When a writing error occurs.
+     * @deprecated Unnecessary, use client.send().
      */
+    @Deprecated
     public void sendUDP(Client connector, Object object) throws IOException {
         if (udp == null) throw new IOException("No UDP server.");
         if (!isBound) throw new IOException("Not bound yet. Use bind() first.");
@@ -208,7 +246,9 @@ public class Server extends ServiceManager implements MessageListener {
      *
      * @param object The message to broadcast.
      * @throws IOException When a writing error occurs.
+     * @deprecated Use broadcast() instead.
      */
+    @Deprecated
     public void broadcastTCP(Object object) throws IOException {
         if (tcp == null) throw new IOException("No TCP server.");
         if (!isBound) throw new IOException("Not bound yet. Use bind() first.");
@@ -220,7 +260,9 @@ public class Server extends ServiceManager implements MessageListener {
      *
      * @param object The message to broadcast.
      * @throws IOException
+     * @deprecated Use broadcast() instead.
      */
+    @Deprecated
     public void broadcastUDP(Object object) throws IOException {
         if (udp == null) throw new IOException("No UDP server.");
         if (!isBound) throw new IOException("Not bound yet. Use bind() first.");
@@ -233,7 +275,9 @@ public class Server extends ServiceManager implements MessageListener {
      * @param except The client to refrain from sending the object to.
      * @param object The object to send.
      * @throws IOException When a writing error occurs.
+     * @deprecated Use broadcastExcept() instead.
      */
+    @Deprecated
     public void broadcastExceptTCP(Client except, Object object) throws IOException {
         if (tcp == null) throw new IOException("No TCP server.");
         if (!isBound) throw new IOException("Not bound yet. Use bind() first.");
@@ -249,7 +293,9 @@ public class Server extends ServiceManager implements MessageListener {
      * @param except The client to refrain from sending the object to.
      * @param object The object to send.
      * @throws IOException When a writing error occurs.
+     * @deprecated Use broadcastExcept() instead.
      */
+    @Deprecated
     public void broadcastExceptUDP(Client except, Object object) throws IOException {
         if (udp == null) throw new IOException("No UDP server.");
         if (!isBound) throw new IOException("Not bound yet. Use bind() first.");
@@ -284,8 +330,9 @@ public class Server extends ServiceManager implements MessageListener {
         DisconnectMessage message = new DisconnectMessage();
         message.setType(DisconnectMessage.KICK);
         message.setReason("Server is shutting down.");
+        message.setReliable(true);
 
-        broadcastTCP(message);
+        broadcast(message);
 
         for (Client client : getConnectors()) {
             tcp.addToDisconnectionQueue(client);

@@ -11,6 +11,11 @@ import java.lang.reflect.Method;
 public class LocalObject {
 
     /**
+     * Object name
+     */
+    String objectName;
+
+    /**
      * The RMI interface implementation
      */
     Object theObject;

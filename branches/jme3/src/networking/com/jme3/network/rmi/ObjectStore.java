@@ -3,16 +3,18 @@ package com.jme3.network.rmi;
 
 import com.jme3.network.connection.Client;
 import com.jme3.network.connection.Server;
+import com.jme3.network.events.ConnectionListener;
 import com.jme3.network.events.MessageListener;
 import com.jme3.network.message.Message;
 import com.jme3.network.serializing.Serializer;
 import com.jme3.util.IntMap;
+import com.jme3.util.IntMap.Entry;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 
-public class ObjectStore implements MessageListener {
+public class ObjectStore implements MessageListener, ConnectionListener {
 
     private static final class Invocation {
         Object retVal;
@@ -52,6 +54,7 @@ public class ObjectStore implements MessageListener {
         client.addMessageListener(this, RemoteObjectDefMessage.class, 
                                         RemoteMethodCallMessage.class,
                                         RemoteMethodReturnMessage.class);
+        client.addConnectionListener(this);
     }
 
     public ObjectStore(Server server){
@@ -59,11 +62,21 @@ public class ObjectStore implements MessageListener {
         server.addMessageListener(this, RemoteObjectDefMessage.class, 
                                         RemoteMethodCallMessage.class,
                                         RemoteMethodReturnMessage.class);
+        server.addConnectionListener(this);
+    }
+
+    private ObjectDef makeObjectDef(LocalObject localObj){
+        ObjectDef def = new ObjectDef();
+        def.objectName = localObj.objectName;
+        def.objectId   = localObj.objectId;
+        def.methods    = localObj.methods;
+        return def;
     }
 
     public void exposeObject(String name, Object obj) throws IOException{
         // Create a local object
         LocalObject localObj = new LocalObject();
+        localObj.objectName = name;
         localObj.objectId  = objectIdCounter++;
         localObj.theObject = obj;
         localObj.methods   = obj.getClass().getMethods();
@@ -72,15 +85,13 @@ public class ObjectStore implements MessageListener {
         localObjects.put(localObj.objectId, localObj);
 
         // Inform the others of its existance
-        RemoteObjectDefMessage def = new RemoteObjectDefMessage();
-        def.objectName = name;
-        def.objectId   = localObj.objectId;
-        def.methods    = localObj.methods;
-        
+        RemoteObjectDefMessage defMsg = new RemoteObjectDefMessage();
+        defMsg.objects = new ObjectDef[]{ makeObjectDef(localObj) };
+
         if (client != null)
-            client.sendTCP(def);
+            client.sendTCP(defMsg);
         else
-            server.broadcastTCP(def);
+            server.broadcastTCP(defMsg);
     }
 
     public <T> T getExposedObject(String name, Class<T> type, boolean waitFor) throws InterruptedException{
@@ -152,12 +163,16 @@ public class ObjectStore implements MessageListener {
 
     public void messageReceived(Message message) {
         if (message instanceof RemoteObjectDefMessage){
-            RemoteObjectDefMessage def = (RemoteObjectDefMessage) message;
-            RemoteObject remoteObject = new RemoteObject(this, message.getClient());
-            remoteObject.objectId = def.objectId;
-            remoteObject.methodDefs = def.methodDefs;
-            remoteObjects.put(def.objectName, remoteObject);
-            remoteObjectsById.put(def.objectId, remoteObject);
+            RemoteObjectDefMessage defMsg = (RemoteObjectDefMessage) message;
+
+            ObjectDef[] defs = defMsg.objects;
+            for (ObjectDef def : defs){
+                RemoteObject remoteObject = new RemoteObject(this, message.getClient());
+                remoteObject.objectId = def.objectId;
+                remoteObject.methodDefs = def.methodDefs;
+                remoteObjects.put(def.objectName, remoteObject);
+                remoteObjectsById.put(def.objectId, remoteObject);
+            }
             
             synchronized (recieveObjectLock){
                 recieveObjectLock.notifyAll();
@@ -203,6 +218,33 @@ public class ObjectStore implements MessageListener {
                 invoke.notifyAll();
             }
         }
+    }
+
+    public void clientConnected(Client client) {
+        if (localObjects.size() > 0){
+            // send a object definition message
+            ObjectDef[] defs = new ObjectDef[localObjects.size()];
+            int i = 0;
+            for (Entry<LocalObject> entry : localObjects){
+                defs[i] = makeObjectDef(entry.getValue());
+                i++;
+            }
+
+            RemoteObjectDefMessage defMsg = new RemoteObjectDefMessage();
+            defMsg.objects = defs;
+            try {
+                if (this.client != null)
+                    client.sendTCP(defMsg);
+                else
+                    server.sendTCP(client, defMsg);
+            } catch (IOException ex){
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    public void clientDisconnected(Client client) {
+
     }
 
     public void messageSent(Message message) {

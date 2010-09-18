@@ -3,6 +3,7 @@ package com.jme3.network.rmi;
 import com.jme3.network.connection.Client;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -45,6 +46,21 @@ public class RemoteObject implements InvocationHandler {
         this.client = client;
     }
 
+    private boolean methodEquals(MethodDef methodDef, Method method){
+        Class<?>[] interfaceTypes = method.getParameterTypes();
+        Class<?>[] defTypes       = methodDef.paramTypes;
+
+        if (interfaceTypes.length == defTypes.length){
+            for (int i = 0; i < interfaceTypes.length; i++){
+                if (!defTypes[i].isAssignableFrom(interfaceTypes[i])){
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Generates mappings from the given interface into the remote RMI
      * interface's implementation.
@@ -52,13 +68,29 @@ public class RemoteObject implements InvocationHandler {
      * @param interfaceClass
      */
     public void loadMethods(Class<?> interfaceClass){
-        for (int i = 0; i < methodDefs.length; i++){
-            try {
-                MethodDef methodDef = methodDefs[i];
-                Method method = interfaceClass.getMethod(methodDef.name, methodDef.paramTypes);
-                methodMap.put(method, i);
-            } catch (NoSuchMethodException ex){
-                // ignore undefined methods
+        HashMap<String, ArrayList<Method>> nameToMethods
+                = new HashMap<String, ArrayList<Method>>();
+
+        for (Method method : interfaceClass.getDeclaredMethods()){
+            ArrayList<Method> list = nameToMethods.get(method.getName());
+            if (list == null){
+                list = new ArrayList<Method>();
+                nameToMethods.put(method.getName(), list);
+            }
+            list.add(method);
+        }
+
+        mapping_search: for (int i = 0; i < methodDefs.length; i++){
+            MethodDef methodDef = methodDefs[i];
+            ArrayList<Method> methods = nameToMethods.get(methodDef.name);
+            if (methods == null)
+                continue;
+            
+            for (Method method : methods){
+                if (methodEquals(methodDef, method)){
+                    methodMap.put(method, i);
+                    continue mapping_search;
+                }
             }
         }
     }

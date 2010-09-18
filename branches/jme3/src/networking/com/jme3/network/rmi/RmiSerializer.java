@@ -91,7 +91,7 @@ public class RmiSerializer extends Serializer {
         return def;
     }
 
-    private void writeObjectDef(ByteBuffer buffer, RemoteObjectDefMessage def) throws IOException{
+    private void writeObjectDef(ByteBuffer buffer, ObjectDef def) throws IOException{
         buffer.putShort(def.objectId);
         writeString(buffer, def.objectName);
         Method[] methods = def.methods;
@@ -101,8 +101,8 @@ public class RmiSerializer extends Serializer {
         }
     }
 
-    private RemoteObjectDefMessage readObjectDef(ByteBuffer buffer) throws IOException{
-        RemoteObjectDefMessage def = new RemoteObjectDefMessage();
+    private ObjectDef readObjectDef(ByteBuffer buffer) throws IOException{
+        ObjectDef def = new ObjectDef();
 
         def.objectId = buffer.getShort();
         def.objectName = readString(buffer);
@@ -114,6 +114,24 @@ public class RmiSerializer extends Serializer {
         }
         def.methodDefs = methodDefs;
         return def;
+    }
+
+    private void writeObjectDefs(ByteBuffer buffer, RemoteObjectDefMessage defMsg) throws IOException{
+        ObjectDef[] defs = defMsg.objects;
+        buffer.put( (byte) defs.length );
+        for (ObjectDef def : defs)
+            writeObjectDef(buffer, def);
+    }
+
+    private RemoteObjectDefMessage readObjectDefs(ByteBuffer buffer) throws IOException{
+        RemoteObjectDefMessage defMsg = new RemoteObjectDefMessage();
+        int numObjs = buffer.get() & 0xff;
+        ObjectDef[] defs = new ObjectDef[numObjs];
+        for (int i = 0; i < numObjs; i++){
+            defs[i] = readObjectDef(buffer);
+        }
+        defMsg.objects = defs;
+        return defMsg;
     }
 
     private void writeMethodCall(ByteBuffer buffer, RemoteMethodCallMessage call) throws IOException{
@@ -175,7 +193,7 @@ public class RmiSerializer extends Serializer {
     @Override
     public <T> T readObject(ByteBuffer data, Class<T> c) throws IOException {
         if (c == RemoteObjectDefMessage.class){
-            return (T) readObjectDef(data);
+            return (T) readObjectDefs(data);
         }else if (c == RemoteMethodCallMessage.class){
             return (T) readMethodCall(data);
         }else if (c == RemoteMethodReturnMessage.class){
@@ -189,7 +207,7 @@ public class RmiSerializer extends Serializer {
 //        int p = buffer.position();
         if (object instanceof RemoteObjectDefMessage){
             RemoteObjectDefMessage def = (RemoteObjectDefMessage) object;
-            writeObjectDef(buffer, def);
+            writeObjectDefs(buffer, def);
         }else if (object instanceof RemoteMethodCallMessage){
             RemoteMethodCallMessage call = (RemoteMethodCallMessage) object;
             writeMethodCall(buffer, call);

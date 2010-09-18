@@ -18,14 +18,14 @@ void main(void)
        float factor=(m_BlurWidth/float(m_NbSamples-1.0));
        float scale;
        vec2 texCoo=texCoord-lightPos;
-       //vec2 scaledCoord;
+       vec2 scaledCoord;
        vec4 res = vec4(0.0);
        for(int i=0; i<m_NbSamples; i++) {
             scale = i * factor + m_BlurStart ;
-            
-           // if(texture2D(m_DepthTexture,scaledCoord).r==1.0){
-                res += texture2D(m_Texture, texCoo*scale+lightPos);
-           // }
+            scaledCoord=texCoo*scale+lightPos;
+            if(texture2D(m_DepthTexture,scaledCoord).r==1.0){
+                res += texture2D(m_Texture,scaledCoord);
+            }
         }
         res /= m_NbSamples;
 

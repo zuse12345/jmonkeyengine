@@ -233,14 +233,15 @@ public class JmeSystem {
     public static JmeContext newContext(AppSettings settings, JmeContext.Type contextType) {
         initialize(settings);
         JmeContext ctx;
-        if (settings.getRenderer().startsWith("LWJGL")){
+        if (settings.getRenderer().equals("NULL")
+         || contextType == JmeContext.Type.Headless){
+            ctx = new NullContext();
+            ctx.setSettings(settings);
+        }else if (settings.getRenderer().startsWith("LWJGL")){
             ctx = newContextLwjgl(settings, contextType);
             ctx.setSettings(settings);
         }else if (settings.getRenderer().startsWith("JOGL")){
             ctx = newContextJogl(settings, contextType);
-            ctx.setSettings(settings);
-        }else if (settings.getRenderer().equals("NULL")){
-            ctx = new NullContext();
             ctx.setSettings(settings);
         }else{
             throw new UnsupportedOperationException(

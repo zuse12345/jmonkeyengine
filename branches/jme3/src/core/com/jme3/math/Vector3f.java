@@ -390,6 +390,12 @@ public final class Vector3f implements Savable, Cloneable {
         return this;
     }
 
+    public Vector3f project(Vector3f other){
+        float n = this.dot(other); // A . B
+        float d = other.lengthSquared(); // |B|^2
+        return new Vector3f(other).normalizeLocal().multLocal(n/d);
+    }
+
     /**
      * <code>length</code> calculates the magnitude of this vector.
      *

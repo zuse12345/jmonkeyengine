@@ -122,21 +122,20 @@ public class TerrainTest extends SimpleApplication {
 		terrain.setLocalScale(2f, 1f, 2f);
 		rootNode.attachChild(terrain);
 
-		lightMdl = new Geometry("Light", new Sphere(10, 10, 0.1f));
-		lightMdl.setMaterial((Material) assetManager.loadAsset(new AssetKey("Common/Materials/RedColor.j3m")));
-		rootNode.attachChild(lightMdl);
-
+//		lightMdl = new Geometry("Light", new Sphere(10, 10, 0.1f));
+//		lightMdl.setMaterial((Material) assetManager.loadAsset(new AssetKey("Common/Materials/RedColor.j3m")));
+//		rootNode.attachChild(lightMdl);
 
 		// flourescent main light
-		pl = new PointLight();
-		pl.setColor(new ColorRGBA(0.88f, 0.92f, 0.95f, 1.0f));
-		pl.setPosition(new Vector3f(0, 0, 15));
-		rootNode.addLight(pl);
-
-		DirectionalLight dl = new DirectionalLight();
-		dl.setDirection(new Vector3f(1, -0.5f, -0.1f).normalizeLocal());
-		dl.setColor(new ColorRGBA(0.50f, 0.40f, 0.50f, 1.0f));
-		rootNode.addLight(dl);
+//		pl = new PointLight();
+//		pl.setColor(new ColorRGBA(0.88f, 0.92f, 0.95f, 1.0f));
+//		pl.setPosition(new Vector3f(0, 0, 15));
+//		rootNode.addLight(pl);
+//
+//		DirectionalLight dl = new DirectionalLight();
+//		dl.setDirection(new Vector3f(1, -0.5f, -0.1f).normalizeLocal());
+//		dl.setColor(new ColorRGBA(0.50f, 0.40f, 0.50f, 1.0f));
+//		rootNode.addLight(dl);
 
 
 		getCamera().getLocation().y = 10;

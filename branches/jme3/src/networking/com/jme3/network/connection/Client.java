@@ -445,7 +445,6 @@ public class Client extends ServiceManager implements MessageListener, Connectio
 
     public void addMessageListener(MessageListener listener, Class... classes) {
         for (Class c : classes) {
-            System.out.println("Registering " + listener + " for class " + c);
             if (tcp != null) tcp.addMessageListener(c, listener);
             if (udp != null) udp.addMessageListener(c, listener);
         }

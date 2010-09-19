@@ -28,7 +28,7 @@ public abstract class Serializer {
     private static final Serializer                         serializableSerializer  = new SerializableSerializer();
     private static final Serializer                         arraySerializer         = new ArraySerializer();
 
-    private static short                                    nextId                  = 0;
+    private static short                                    nextId                  = -1;
 
 
 
@@ -194,7 +194,9 @@ public abstract class Serializer {
      * @return The SerializerRegistration, or null if non-existant.
      */
     public static SerializerRegistration readClass(ByteBuffer buffer) {
-        return idRegistrations.get(buffer.getShort());
+        short classID = buffer.getShort();
+        if (classID == -1) return null;
+        return idRegistrations.get(classID);
     }
 
     /**
@@ -206,6 +208,7 @@ public abstract class Serializer {
      */
     public static Object readClassAndObject(ByteBuffer buffer) throws IOException {
         SerializerRegistration reg = readClass(buffer);
+        if (reg == null) return null;
         return reg.getSerializer().readObject(buffer, reg.getType());
     }
 
@@ -234,6 +237,10 @@ public abstract class Serializer {
      * @throws IOException If serializing fails.
      */
     public static void writeClassAndObject(ByteBuffer buffer, Object object) throws IOException {
+        if (object == null) {
+            buffer.putShort((short)-1);
+            return;
+        }
         SerializerRegistration reg = writeClass(buffer, object.getClass());
         reg.getSerializer().writeObject(buffer, object);
     }

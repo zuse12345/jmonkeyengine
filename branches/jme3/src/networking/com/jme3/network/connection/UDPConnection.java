@@ -25,6 +25,8 @@ public class UDPConnection extends Connection {
 
     protected SocketAddress target = null;
 
+    protected final Object  writeLock = new Object();
+
     public UDPConnection(String label) {
         this.label = label;
 
@@ -113,19 +115,21 @@ public class UDPConnection extends Connection {
 
     protected void send(SocketAddress dest, Object object) {
         try {
-            Serializer.writeClassAndObject(writeBuffer, object);
-            writeBuffer.flip();
+            synchronized (writeLock){
+                Serializer.writeClassAndObject(writeBuffer, object);
+                writeBuffer.flip();
 
-            int bytes = datagramChannel.send(writeBuffer, dest);
+                int bytes = datagramChannel.send(writeBuffer, dest);
 
-            if (object instanceof Message) {
-                this.fireMessageSent((Message)object);
-            } else {
-                this.fireObjectSent(object);
+                if (object instanceof Message) {
+                    this.fireMessageSent((Message)object);
+                } else {
+                    this.fireObjectSent(object);
+                }
+
+                log.log(Level.FINE, "[{0}][UDP] Wrote {1} bytes to {2}.", new Object[]{label, bytes, dest});
+                writeBuffer.clear();
             }
-
-            log.log(Level.FINE, "[{0}][UDP] Wrote {1} bytes to {2}.", new Object[]{label, bytes, dest});
-            writeBuffer.clear();
         } catch (IOException e) {
             e.printStackTrace();
         }

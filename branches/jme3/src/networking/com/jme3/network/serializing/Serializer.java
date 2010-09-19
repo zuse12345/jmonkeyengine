@@ -54,6 +54,8 @@ public abstract class Serializer {
 
         registerClass(Date.class,      new DateSerializer());
         registerClass(Collection.class, new CollectionSerializer());
+        registerClass(Map.class,       new MapSerializer());
+        registerClass(Enum.class,      new EnumSerializer());
         registerClass(GZIPCompressedMessage.class, new GZIPSerializer());
         registerClass(ZIPCompressedMessage.class, new ZIPSerializer());
 

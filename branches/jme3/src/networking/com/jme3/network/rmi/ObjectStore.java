@@ -89,9 +89,9 @@ public class ObjectStore implements MessageListener, ConnectionListener {
         defMsg.objects = new ObjectDef[]{ makeObjectDef(localObj) };
 
         if (client != null)
-            client.sendTCP(defMsg);
+            client.send(defMsg);
         else
-            server.broadcastTCP(defMsg);
+            server.broadcast(defMsg);
     }
 
     public <T> T getExposedObject(String name, Class<T> type, boolean waitFor) throws InterruptedException{
@@ -136,9 +136,9 @@ public class ObjectStore implements MessageListener, ConnectionListener {
 
         try{
             if (server != null){
-                server.sendTCP(remoteObj.client, call);
+                remoteObj.client.send(call);
             }else{
-                client.sendTCP(call);
+                client.send(call);
             }
         } catch (IOException ex){
             ex.printStackTrace();
@@ -197,10 +197,11 @@ public class ObjectStore implements MessageListener, ConnectionListener {
                 retMsg.invocationID = invocationIdCounter++;
                 retMsg.retVal = ret;
                 try {
-                    if (server != null)
-                        server.sendTCP(call.getClient(), retMsg);
-                    else
-                        client.sendTCP(retMsg);
+                    if (server != null){
+                        call.getClient().send(retMsg);
+                    } else{
+                        client.send(retMsg);
+                    }
                 } catch (IOException ex){
                     ex.printStackTrace();
                 }
@@ -233,10 +234,11 @@ public class ObjectStore implements MessageListener, ConnectionListener {
             RemoteObjectDefMessage defMsg = new RemoteObjectDefMessage();
             defMsg.objects = defs;
             try {
-                if (this.client != null)
-                    client.sendTCP(defMsg);
-                else
-                    server.sendTCP(client, defMsg);
+                if (this.client != null){
+                    this.client.send(defMsg);
+                } else{
+                    client.send(defMsg);
+                }
             } catch (IOException ex){
                 ex.printStackTrace();
             }

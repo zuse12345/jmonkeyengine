@@ -12,6 +12,10 @@ import com.jme3.network.serializing.Serializable;
 @Serializable
 public class RemoteMethodCallMessage extends Message {
 
+    public RemoteMethodCallMessage(){
+        super(true);
+    }
+
     /**
      * The object ID on which the call is being made.
      */

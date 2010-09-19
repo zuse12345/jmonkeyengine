@@ -11,6 +11,11 @@ import com.jme3.network.serializing.Serializable;
  */
 @Serializable
 public class RemoteMethodReturnMessage extends Message {
+
+    public RemoteMethodReturnMessage(){
+        super(true);
+    }
+
     /**
      * Invocation ID that was set in the {@link RemoteMethodCallMessage}.
      */

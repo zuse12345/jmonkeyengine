@@ -10,5 +10,11 @@ import com.jme3.network.serializing.Serializable;
  */
 @Serializable
 public class RemoteObjectDefMessage extends Message {
+
     ObjectDef[] objects;
+    
+    public RemoteObjectDefMessage(){
+        super(true);
+    }
+
 }

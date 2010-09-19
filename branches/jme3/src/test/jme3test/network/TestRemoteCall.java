@@ -11,7 +11,7 @@ import com.jme3.scene.Spatial;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 
-public class TestJmeServer {
+public class TestRemoteCall {
 
     private static SimpleApplication serverApp;
 
@@ -19,7 +19,7 @@ public class TestJmeServer {
         public void attachChild(String model);
     }
 
-    public static class ServerAccessImpl {
+    public static class ServerAccessImpl implements ServerAccess {
         public void attachChild(String model) {
             final String finalModel = model;
             serverApp.enqueue(new Callable<Void>() {

@@ -99,7 +99,7 @@ public class FieldSerializer extends Serializer {
 
             try {
                 if (serializer != null) {
-                serializer.writeObject(buffer, val);
+                    serializer.writeObject(buffer, val);
                 } else {
                     Serializer.writeClassAndObject(buffer, val);
                 }

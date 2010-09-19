@@ -52,7 +52,6 @@ public class CollectionSerializer extends Serializer {
         buffer.putInt(length);
         if (length == 0) return;
 
-
         Iterator it = collection.iterator();
         Class elementClass = it.next().getClass();
         while (it.hasNext()) {

@@ -1,8 +1,6 @@
 package jme3test.network;
 
-import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
-import com.jme3.asset.AssetManager;
 import com.jme3.export.Savable;
 import com.jme3.network.connection.Client;
 import com.jme3.network.connection.Server;
@@ -10,7 +8,6 @@ import com.jme3.network.rmi.ObjectStore;
 import com.jme3.network.serializing.Serializer;
 import com.jme3.network.serializing.serializers.SavableSerializer;
 import com.jme3.scene.Spatial;
-import com.jme3.system.JmeSystem;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 

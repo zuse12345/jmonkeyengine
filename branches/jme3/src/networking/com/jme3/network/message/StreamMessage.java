@@ -1,32 +1,19 @@
 package com.jme3.network.message;
 
-import com.jme3.network.serializing.Serializable;
-
-/**
- * Stream message contains the data for the stream.
- *
- * @author Lars Wesselius
- */
-@Serializable()
 public class StreamMessage extends Message {
-    private byte[] data;
-    private short id;
-
-    public StreamMessage() { }
+    private short streamID;
 
     public StreamMessage(short id) {
-        this.id = id;
+        streamID = id;
     }
 
-    public void setData(byte[] data) {
-        this.data = data;
+    public StreamMessage() {}
+
+    public short getStreamID() {
+        return streamID;
     }
 
-    public byte[] getData() { return data; }
-
-    public void setID(short id) {
-        this.id = id;
+    public void setStreamID(short streamID) {
+        this.streamID = streamID;
     }
-
-    public short getID() { return id; }
 }

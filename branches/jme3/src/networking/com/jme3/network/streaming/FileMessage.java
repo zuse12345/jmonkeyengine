@@ -1,8 +1,7 @@
-package com.jme3.network.filestreaming;
+package com.jme3.network.streaming;
 
-import com.jme3.network.message.Message;
+import com.jme3.network.message.StreamMessage;
 import com.jme3.network.serializing.Serializable;
-import java.io.File;
 
 /**
  * The File message is sent when a file send has been completed.
@@ -10,19 +9,9 @@ import java.io.File;
  * @author Lars Wesselius
  */
 @Serializable()
-public class FileMessage extends Message {
-    private short streamID;
+public class FileMessage extends StreamMessage {
     private String fileName;
     private String filePath;
-    private transient File file;
-
-    public short getStreamID() {
-        return streamID;
-    }
-
-    public void setStreamID(short streamID) {
-        this.streamID = streamID;
-    }
 
     public String getFileName() {
         return fileName;
@@ -38,13 +27,5 @@ public class FileMessage extends Message {
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
-    }
-
-    public File getFile() {
-        return file;
-    }
-
-    public void setFile(File file) {
-        this.file = file;
     }
 }

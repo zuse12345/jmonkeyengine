@@ -2,14 +2,12 @@ package com.jme3.network.connection;
 
 import com.jme3.network.events.ConnectionListener;
 import com.jme3.network.events.MessageListener;
-import com.jme3.network.filestreaming.FileListener;
-import com.jme3.network.filestreaming.FileMessage;
-import com.jme3.network.filestreaming.FileReceiver;
-import com.jme3.network.filestreaming.FileSender;
-import com.jme3.network.message.*;
+import com.jme3.network.message.ClientRegistrationMessage;
+import com.jme3.network.message.DisconnectMessage;
+import com.jme3.network.message.DiscoverHostMessage;
+import com.jme3.network.message.Message;
 import com.jme3.network.serializing.Serializer;
 import com.jme3.network.service.ServiceManager;
-import java.io.File;
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
@@ -35,8 +33,6 @@ public class Client extends ServiceManager implements MessageListener, Connectio
 
     protected ConnectionRunnable
                                 thread;
-
-    protected FileReceiver      fileReceiver;
 
     // Client (connector) related.
     protected SocketChannel     tcpChannel;
@@ -69,8 +65,6 @@ public class Client extends ServiceManager implements MessageListener, Connectio
 
         if (tcp == null) tcp = new TCPConnection(label);
         if (udp == null) udp = new UDPConnection(label);
-
-        if (!isConnector) fileReceiver = new FileReceiver();
     }
 
     /**
@@ -178,7 +172,6 @@ public class Client extends ServiceManager implements MessageListener, Connectio
             tcp.addConnectionListener(this);
         }
         addMessageListener(this, DisconnectMessage.class);
-        addMessageListener(fileReceiver, StreamMessage.class, FileMessage.class);
     }
 
     /**
@@ -243,16 +236,6 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         } else {
             udp.sendObject(object);
         }
-    }
-
-    /**
-     * Send a file to the client.
-     *
-     * @param file The file to send.
-     */
-    public void sendFile(File file) {
-        if (!isConnector) return;
-        FileSender.sendFile(this, file);
     }
 
     /**
@@ -443,14 +426,6 @@ public class Client extends ServiceManager implements MessageListener, Connectio
 
     public String toString() {
         return label;
-    }
-
-    public void addFileListener(FileListener listener) {
-        fileReceiver.addFileListener(listener);
-    }
-
-    public void removeFileListener(FileListener listener) {
-        fileReceiver.removeFileListener(listener);
     }
 
     public void addConnectionListener(ConnectionListener listener) {

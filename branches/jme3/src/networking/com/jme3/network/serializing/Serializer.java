@@ -1,7 +1,5 @@
 package com.jme3.network.serializing;
 
-import com.jme3.network.streaming.DataMessage;
-import com.jme3.network.streaming.FileMessage;
 import com.jme3.network.message.*;
 import com.jme3.network.serializing.serializers.*;
 import java.io.File;
@@ -64,9 +62,7 @@ public abstract class Serializer {
         registerClass(DisconnectMessage.class);
         registerClass(ClientRegistrationMessage.class);
         registerClass(DiscoverHostMessage.class);
-        registerClass(FileMessage.class);
         registerClass(StreamDataMessage.class);
-        registerClass(DataMessage.class);
 
     }
 

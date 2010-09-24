@@ -6,8 +6,8 @@ package com.jme3.gde.materials.multiview;
 
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.DesktopAssetManager;
+import com.jme3.gde.core.assets.AssetDataObject;
 import com.jme3.gde.core.assets.ProjectAssetManager;
-import com.jme3.gde.core.assets.nodes.SaveNode;
 import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
@@ -61,7 +61,7 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
     private static final String PREFERRED_ID = "MaterialEditorTopComponent";
     private Lookup lookup;
     private final InstanceContent lookupContents = new InstanceContent();
-    private SaveNode saveNode;
+//    private SaveNode saveNode;
     private DataObject dataObject;
     private MaterialProperties properties;
     private String materialFileName;
@@ -84,8 +84,8 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
         initComponents();
         setName(NbBundle.getMessage(MaterialEditorTopComponent.class, "CTL_MaterialEditorTopComponent"));
         setToolTipText(NbBundle.getMessage(MaterialEditorTopComponent.class, "HINT_MaterialEditorTopComponent"));
-        saveNode = new SaveNode(new SaveCookieImpl());
-
+        ((AssetDataObject)dataObject).setSaveCookie(new SaveCookieImpl());
+        
         try {
             jTextArea1.setText(dataObject.getPrimaryFile().asText());
         } catch (IOException ex) {
@@ -98,7 +98,7 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
 
         updateProperties();
 
-        setActivatedNodes(new Node[]{saveNode});
+        setActivatedNodes(new Node[]{dataObject.getNodeDelegate()});
 
         sphMesh = new Sphere(32, 32, 2.5f);
         sphMesh.setTextureMode(Sphere.TextureMode.Projected);
@@ -321,19 +321,19 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
         String newline = "\n";
 
         public void insertUpdate(DocumentEvent e) {
-            saveNode.fire(true);
+            dataObject.setModified(true);
         }
 
         public void removeUpdate(DocumentEvent e) {
-            saveNode.fire(true);
+            dataObject.setModified(true);
         }
 
         public void changedUpdate(DocumentEvent e) {
-            saveNode.fire(true);
+            dataObject.setModified(true);
         }
 
         public void updateLog(DocumentEvent e, String action) {
-            saveNode.fire(true);
+            dataObject.setModified(true);
         }
     }
 
@@ -345,7 +345,7 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
             OutputStreamWriter out = new OutputStreamWriter(file.getOutputStream());
             out.write(text, 0, text.length());
             out.close();
-            saveNode.fire(false);
+            dataObject.setModified(false);
             properties.read();
             updateProperties();
             showMaterial();
@@ -377,6 +377,7 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
         jComboBox1.addItem("Common/MatDefs/Hdr/ToneMap.j3md");
         jComboBox1.addItem("Common/MatDefs/Shadow/PreShadow.j3md");
         jComboBox1.addItem("Common/MatDefs/Shadow/PostShadow.j3md");
+        jComboBox1.addItem("Common/MatDefs/Terrain/Terrain.j3md");
         jComboBox1.setSelectedItem(selected);
 
         properties=prop;

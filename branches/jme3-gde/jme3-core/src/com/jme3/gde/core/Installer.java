@@ -33,6 +33,7 @@ package com.jme3.gde.core;
 
 import com.jme3.gde.core.scene.SceneApplication;
 import java.io.File;
+import javax.swing.JPopupMenu;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Utilities;
 
@@ -75,5 +76,8 @@ public class Installer extends ModuleInstall {
             file.mkdirs();
             com.jme3.system.Natives.setExtractionDir(jmpDir);
         }
+
+        //avoid problems with lightweight popups
+        JPopupMenu.setDefaultLightWeightPopupEnabled(false);
     }
 }

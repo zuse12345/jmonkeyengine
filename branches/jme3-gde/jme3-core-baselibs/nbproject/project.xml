@@ -31,6 +31,7 @@
                 <package>com.jme3.bullet</package>
                 <package>com.jme3.bullet.collision</package>
                 <package>com.jme3.bullet.collision.shapes</package>
+                <package>com.jme3.bullet.collision.shapes.infos</package>
                 <package>com.jme3.bullet.control</package>
                 <package>com.jme3.bullet.joints</package>
                 <package>com.jme3.bullet.joints.motors</package>
@@ -55,6 +56,14 @@
                 <package>com.jme3.material</package>
                 <package>com.jme3.material.plugins</package>
                 <package>com.jme3.math</package>
+                <package>com.jme3.network.connection</package>
+                <package>com.jme3.network.events</package>
+                <package>com.jme3.network.message</package>
+                <package>com.jme3.network.rmi</package>
+                <package>com.jme3.network.serializing</package>
+                <package>com.jme3.network.serializing.serializers</package>
+                <package>com.jme3.network.service</package>
+                <package>com.jme3.network.streaming</package>
                 <package>com.jme3.niftygui</package>
                 <package>com.jme3.post</package>
                 <package>com.jme3.post.filters</package>
@@ -78,6 +87,9 @@
                 <package>com.jme3.system.jogl</package>
                 <package>com.jme3.system.lwjgl</package>
                 <package>com.jme3.terrain</package>
+                <package>com.jme3.terrain.geomipmap</package>
+                <package>com.jme3.terrain.geomipmap.LodCalc</package>
+                <package>com.jme3.terrain.heightmap</package>
                 <package>com.jme3.texture</package>
                 <package>com.jme3.texture.plugins</package>
                 <package>com.jme3.ui</package>

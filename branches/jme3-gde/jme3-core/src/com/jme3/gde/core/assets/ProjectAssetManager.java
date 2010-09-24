@@ -33,11 +33,9 @@ package com.jme3.gde.core.assets;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.DesktopAssetManager;
-import com.jme3.system.JmeSystem;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import org.netbeans.api.project.Project;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -47,7 +45,6 @@ import org.openide.filesystems.FileObject;
 public class ProjectAssetManager {
 
     private Project project;
-    //TODO: one assetmanager per project
     private AssetManager manager;
     private String folderName;
 
@@ -55,7 +52,6 @@ public class ProjectAssetManager {
         this.project = prj;
         this.folderName = folderName;
         AssetManager manager = getManager();
-        StatusDisplayer.getDefault().setStatusText("adding asset folder from " + prj.getProjectDirectory() + "/" + folderName + " to assetmanager");
 
         manager.registerLoader("com.jme3.export.binary.BinaryImporter", "j3s");
 

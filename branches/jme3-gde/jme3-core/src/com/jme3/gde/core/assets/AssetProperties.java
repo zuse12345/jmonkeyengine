@@ -31,54 +31,64 @@
  */
 package com.jme3.gde.core.assets;
 
-import com.jme3.asset.AssetKey;
-import com.jme3.scene.Spatial;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import org.openide.filesystems.FileLock;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Properties;
+import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiFileLoader;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author normenhansen
  */
-public class SpatialAssetDataObject extends AssetDataObject {
+public class AssetProperties extends Properties {
 
-    public SpatialAssetDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
+    private DataObject file;
+    private final String extension;
+
+    public AssetProperties(DataObject file, String extension) {
+        this.file = file;
+        this.extension = extension;
     }
 
-    @Override
-    public AssetKey<Spatial> getAssetKey() {
-        ProjectAssetManager mgr = getLookup().lookup(ProjectAssetManager.class);
-        if (mgr == null) {
-            return null;
+    public void loadProperties() {
+        clear();
+        FileObject myFile = FileUtil.findBrother(file.getPrimaryFile(), extension);
+        if (myFile == null) {
+            return;
         }
-        String assetKey = mgr.getRelativeAssetPath(getPrimaryFile().getPath());
-        return new AssetKey<Spatial>(assetKey);
-    }
-
-    @Override
-    public Spatial loadAsset() {
-        ProjectAssetManager mgr = getLookup().lookup(ProjectAssetManager.class);
-        if (mgr == null) {
-            return null;
-        }
-        String assetKey = mgr.getRelativeAssetPath(getPrimaryFile().getPath());
-        FileLock lock = null;
+        InputStream in = null;
         try {
-            lock = getPrimaryFile().lock();
-            Spatial spatial = mgr.getManager().loadModel(assetKey);
-            lock.releaseLock();
-            return spatial;
-        } catch (IOException ex) {
+            in = myFile.getInputStream();
+            try {
+                load(in);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } catch (FileNotFoundException ex) {
             Exceptions.printStackTrace(ex);
-            if (lock != null) {
-                lock.releaseLock();
+        } finally {
+            try {
+                in.close();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
-        return null;
+    }
+
+    public void saveProperties() throws FileAlreadyLockedException, IOException {
+        FileObject pFile = file.getPrimaryFile();
+        FileObject myFile = FileUtil.findBrother(pFile, extension);
+        if (myFile == null) {
+            myFile = FileUtil.createData(pFile.getParent(), pFile.getName() + "." + extension);
+        }
+        OutputStream out = myFile.getOutputStream();
+        store(out, "");
+        out.close();
     }
 }

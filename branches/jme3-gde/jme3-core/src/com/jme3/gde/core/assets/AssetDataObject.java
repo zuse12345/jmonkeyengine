@@ -63,30 +63,36 @@ public class AssetDataObject extends MultiDataObject {
     public AssetDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         lookup = new ProxyLookup(getCookieSet().getLookup(), new AbstractLookup(getLookupContents()));
+        findAssetManager();
+    }
+
+    protected void findAssetManager(){
         FileObject file = getPrimaryFile();
-        while (file != null && file.getName() != "assets") {
-            file = file.getParent();
-        }
-        if (file != null) {
-            try {
-                Project project = ProjectManager.getDefault().findProject(file.getParent());
-                if (project != null) {
-                    ProjectAssetManager mgr = project.getLookup().lookup(ProjectAssetManager.class);
-                    if (mgr != null) {
-                        getLookupContents().add(mgr);
+        ProjectManager pm = ProjectManager.getDefault();
+        while (file != null) {
+            if (file.isFolder() && pm.isProject(file)) {
+                try {
+                    Project project = ProjectManager.getDefault().findProject(file.getParent());
+                    if (project != null) {
+                        ProjectAssetManager mgr = project.getLookup().lookup(ProjectAssetManager.class);
+                        if (mgr != null) {
+                            getLookupContents().add(mgr);
+                            return;
+                        }
                     }
+                } catch (IOException ex) {
+                } catch (IllegalArgumentException ex) {
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
             }
+            file = file.getParent();
         }
     }
 
     @Override
     protected Node createNodeDelegate() {
-        return new DataNode(this, Children.LEAF, getLookup());
+        DataNode node=new DataNode(this, Children.LEAF, getLookup());
+        node.setIconBaseWithExtension("com/jme3/gde/core/assets/jme-logo.png");
+        return node;
     }
 
     @Override
@@ -119,7 +125,11 @@ public class AssetDataObject extends MultiDataObject {
     }
 
     public AssetKey<?> getAssetKey() {
-        return null;
+        ProjectAssetManager mgr = getLookup().lookup(ProjectAssetManager.class);
+        if (mgr == null) {
+            return null;
+        }
+        String assetKey = mgr.getRelativeAssetPath(getPrimaryFile().getPath());
+        return new AssetKey<Object>(assetKey);
     }
-
 }

@@ -166,7 +166,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         getProgressHandle().progress("Prepare Camera", 4);
         camLight = new PointLight();
         camLight.setColor(ColorRGBA.White);
-//        rootNode.addLight(camLight);
 
         getProgressHandle().progress("Prepare Stats View", 5);
         guiNode.setQueueBucket(Bucket.Gui);
@@ -225,6 +224,20 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             getStateManager().render(renderManager);
             renderManager.render(tpf);
         } catch (Exception e) {
+            String msg = e.getMessage();
+            if (msg == null) {
+                msg = "null";
+            }
+            if (!lastError.equals(msg)) {
+                Message mesg = new NotifyDescriptor.Message(
+                        "Exception in scene!\n"
+                        + "(" + e + ")",
+                        NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(mesg);
+                e.printStackTrace();
+                lastError = msg;
+            }
+        } catch(Error e){
             String msg = e.getMessage();
             if (msg == null) {
                 msg = "null";

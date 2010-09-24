@@ -4,8 +4,8 @@
  */
 package com.jme3.gde.wavefront.importer;
 
-import com.jme3.asset.DesktopAssetManager;
 import com.jme3.export.binary.BinaryExporter;
+import com.jme3.gde.core.assets.AssetProperties;
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.assets.SpatialAssetDataObject;
 import com.jme3.scene.Spatial;
@@ -66,10 +66,17 @@ public final class WavefrontOBJToJme implements ActionListener {
                         Spatial model = (Spatial) ((SpatialAssetDataObject) context).loadAsset();
                         //export model
                         String outputPath = file.getParent().getPath() + File.separator + file.getName() + ".j3o";
-//                        FileObject obj = FileUtil.toFileObject(new File(outputPath));
-//                        lock = obj.lock();
                         BinaryExporter exp = BinaryExporter.getInstance();
-                        exp.save(model, new File(outputPath));
+                        File outFile=new File(outputPath);
+                        exp.save(model, outFile);
+
+                        //store original asset path interface properties
+                        DataObject targetModel=DataObject.find(FileUtil.toFileObject(outFile));
+                        AssetProperties properties=targetModel.getLookup().lookup(AssetProperties.class);
+                        properties.loadProperties();
+                        properties.setProperty("ORIGINAL_PATH", manager.getRelativeAssetPath(file.getPath()));
+                        properties.saveProperties();
+                        
                         StatusDisplayer.getDefault().setStatusText("Created file " + file.getName() + ".j3o");
                         //update the tree
                         context.getPrimaryFile().getParent().refresh();

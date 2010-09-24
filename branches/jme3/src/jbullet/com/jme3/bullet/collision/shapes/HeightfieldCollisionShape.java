@@ -7,9 +7,14 @@ package com.jme3.bullet.collision.shapes;
 
 import com.bulletphysics.dom.HeightfieldTerrainShape;
 import com.jme3.bullet.util.Converter;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Mesh;
+import java.io.IOException;
 
 /**
  * Uses Bullet Physics Heightfield terrain collision system. This is MUCH faster
@@ -95,6 +100,33 @@ public class HeightfieldCollisionShape extends CollisionShape {
 	public Mesh createJmeMesh(){
         //TODO return Converter.convert(bulletMesh);
 		return null;
+    }
+
+    public void write(JmeExporter ex) throws IOException {
+        super.write(ex);
+        OutputCapsule capsule = ex.getCapsule(this);
+        capsule.write(heightStickWidth, "heightStickWidth", 0);
+        capsule.write(heightStickLength, "heightStickLength", 0);
+        capsule.write(heightScale, "heightScale", 0);
+        capsule.write(minHeight, "minHeight", 0);
+        capsule.write(maxHeight, "maxHeight", 0);
+        capsule.write(upAxis, "upAxis", 1);
+        capsule.write(heightfieldData, "heightfieldData", new float[0]);
+        capsule.write(flipQuadEdges, "flipQuadEdges", false);
+    }
+
+    public void read(JmeImporter im) throws IOException {
+        super.read(im);
+        InputCapsule capsule = im.getCapsule(this);
+        heightStickWidth = capsule.readInt("heightStickWidth", 0);
+        heightStickLength = capsule.readInt("heightStickLength", 0);
+        heightScale = capsule.readFloat("heightScale", 0);
+        minHeight = capsule.readFloat("minHeight", 0);
+        maxHeight = capsule.readFloat("maxHeight", 0);
+        upAxis = capsule.readInt("upAxis", 1);
+        heightfieldData = capsule.readFloatArray("heightfieldData", new float[0]);
+        flipQuadEdges = capsule.readBoolean("flipQuadEdges", false);
+        createShape();
     }
 
 }

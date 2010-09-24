@@ -244,7 +244,8 @@ public abstract class PhysicsCollisionObject extends Node {
      * Detaches the debug shape
      */
     public void detachDebugShape() {
-        this.detachChild(debugShape);
+		if (debugShape != null)
+			this.detachChild(debugShape);
         debugShape = null;
     }
 

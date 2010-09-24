@@ -38,6 +38,7 @@ import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
 import com.jme3.bullet.collision.shapes.CylinderCollisionShape;
 import com.jme3.bullet.collision.shapes.GImpactCollisionShape;
+import com.jme3.bullet.collision.shapes.HeightfieldCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.collision.shapes.infos.ChildCollisionShape;
@@ -297,6 +298,13 @@ public class CollisionShapeFactory {
             MeshCollisionShape meshCollisionShape = (MeshCollisionShape) shape;
             Mesh mesh = meshCollisionShape.createJmeMesh();
             Vector3f scale = meshCollisionShape.getScale();
+            geom.setMesh(mesh);
+            geom.setLocalScale(scale);
+        } else if (shape instanceof HeightfieldCollisionShape) {
+            geom.setName("HeightfieldDebugShape");
+            HeightfieldCollisionShape heightfieldCollisionShape = (HeightfieldCollisionShape) shape;
+            Mesh mesh = heightfieldCollisionShape.createJmeMesh();
+            Vector3f scale = heightfieldCollisionShape.getScale();
             geom.setMesh(mesh);
             geom.setLocalScale(scale);
         } else if (shape instanceof GImpactCollisionShape) {

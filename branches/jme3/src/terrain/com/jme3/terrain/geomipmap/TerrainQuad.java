@@ -24,6 +24,7 @@ import com.jme3.terrain.geomipmap.LodCalc.LodCalculatorFactory;
 import com.jme3.terrain.geomipmap.LodCalc.LodDistanceCalculatorFactory;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A terrain quad is a node in the quad tree of the terrain system.
@@ -49,10 +50,15 @@ public class TerrainQuad extends Node implements Terrain {
 	protected short quadrant = 1;
 	
 	protected LodCalculatorFactory lodCalculatorFactory;
-	
+
+	protected float[] heightMap;
 	protected List<Vector3f> lastCameraLocations; // used for LOD calc
 	private boolean lodCalcRunning = false;
-        private boolean usingLOD = true;
+	private boolean usingLOD = true;
+	private int maxLod = -1;
+	private HashMap<String,UpdatedTerrainPatch> updatedPatches;
+	private Object updatePatchesLock = new Object();
+
 	
 	private ExecutorService executor = Executors.newSingleThreadExecutor(new ThreadFactory() {
 		           public Thread newThread(Runnable r) {
@@ -62,10 +68,6 @@ public class TerrainQuad extends Node implements Terrain {
 		           }
 		    });
 	
-	private HashMap<String,UpdatedTerrainPatch> updatedPatches;
-	private Object updatePatchesLock = new Object();
-        private int maxLod = -1;
-
 	
 	public TerrainQuad() {
 		super("Terrain");
@@ -122,7 +124,6 @@ public class TerrainQuad extends Node implements Terrain {
 	 */
 	private float[] generateDefaultHeightMap(int size) {
 		float[] heightMap = new float[size*size];
-		
 		return heightMap;
 	}
 
@@ -446,8 +447,11 @@ public class TerrainQuad extends Node implements Terrain {
 		Vector2f tempOffset = new Vector2f();
 		offsetAmount += quarterSize;
 
-                if (lodCalculatorFactory == null)
-                    lodCalculatorFactory = new LodDistanceCalculatorFactory(); // set a default one
+		if (lodCalculatorFactory == null)
+			lodCalculatorFactory = new LodDistanceCalculatorFactory(); // set a default one
+
+		if (getParent() == null || !(getParent() instanceof TerrainQuad))
+			this.heightMap = heightMap; // save the overall heightmap for the root quad only
 
 		// 1 upper left
 		float[] heightBlock1 = createHeightSubBlock(heightMap, 0, 0, split);
@@ -539,7 +543,7 @@ public class TerrainQuad extends Node implements Terrain {
 		int split = (size + 1) >> 1;
 
 		if (lodCalculatorFactory == null)
-                    lodCalculatorFactory = new LodDistanceCalculatorFactory(); // set a default one
+			lodCalculatorFactory = new LodDistanceCalculatorFactory(); // set a default one
 
 		offsetAmount += quarterSize;
 
@@ -968,6 +972,37 @@ public class TerrainQuad extends Node implements Terrain {
 		*/
 	}
 	
+	/**
+	 * Retrieve all Terrain Patches from all children and store them
+	 * in the 'holder' list
+	 * @param holder must not be null, will be populated when returns
+	 */
+	public void getAllTerrainPatches(List<TerrainPatch> holder) {
+		if (children != null) {
+			for (int i = children.size(); --i >= 0;) {
+				Spatial child = children.get(i);
+				if (child instanceof TerrainQuad) {
+					((TerrainQuad) child).getAllTerrainPatches(holder);
+				} else if (child instanceof TerrainPatch) {
+					holder.add((TerrainPatch)child);
+				}
+			}
+		}
+	}
+
+	public void getAllTerrainPatchesWithTranslation(Map<TerrainPatch,Vector3f> holder, Vector3f translation) {
+		if (children != null) {
+			for (int i = children.size(); --i >= 0;) {
+				Spatial child = children.get(i);
+				if (child instanceof TerrainQuad) {
+					((TerrainQuad) child).getAllTerrainPatchesWithTranslation(holder, translation.clone().add(child.getLocalTranslation()));
+				} else if (child instanceof TerrainPatch) {
+					//if (holder.size() < 4)
+					holder.put((TerrainPatch)child, translation.clone().add(child.getLocalTranslation()));
+				}
+			}
+		}
+	}
 	
 	@Override
 	public void read(JmeImporter e) throws IOException {
@@ -1027,6 +1062,11 @@ public class TerrainQuad extends Node implements Terrain {
 	public float getHeight(Vector2f xz) {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	@Override
+	public float[] getHeightMap() {
+		return heightMap;
 	}
 }
 

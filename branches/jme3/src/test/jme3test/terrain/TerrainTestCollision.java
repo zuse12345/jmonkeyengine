@@ -1,9 +1,10 @@
 package jme3test.terrain;
 
 import jme3tools.converters.ImageToAwt;
-import com.jme3.app.SimpleApplication;
-import com.jme3.asset.AssetKey;
+import com.jme3.app.SimpleBulletApplication;
 import com.jme3.bounding.BoundingBox;
+import com.jme3.bullet.collision.shapes.SphereCollisionShape;
+import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
@@ -15,28 +16,37 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.shape.Sphere;
+import com.jme3.scene.Node;
 import com.jme3.terrain.geomipmap.TerrainLodControl;
 import com.jme3.terrain.heightmap.AbstractHeightMap;
 import com.jme3.terrain.heightmap.ImageBasedHeightMap;
 import com.jme3.terrain.geomipmap.TerrainQuad;
+import com.jme3.terrain.jbullet.TerrainPhysicsShapeFactory;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture.WrapMode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TerrainTest extends SimpleApplication {
+/**
+ * Creates a terrain object and a collision node to go with it. Then
+ * drops several balls from the sky that collide with the terrain
+ * and roll around.
+ *
+ * @author Brent Owens
+ */
+public class TerrainTestCollision extends SimpleBulletApplication {
 
-	private TerrainQuad terrain;
+	TerrainQuad terrain;
+	Node terrainPhysicsNode;
 	Material matRock;
 	Material matWire;
-	boolean wireframe = true;
+	boolean wireframe = false;
 	protected BitmapText hintText;
 	PointLight pl;
 	Geometry lightMdl;
 
 	public static void main(String[] args) {
-		TerrainTest app = new TerrainTest();
+		TerrainTestCollision app = new TerrainTestCollision();
 		app.start();
 	}
 
@@ -89,7 +99,7 @@ public class TerrainTest extends SimpleApplication {
 		try {
 			//heightmap = new HillHeightMap(1025, 1000, 50, 100, (byte) 3);
 
-			heightmap = new ImageBasedHeightMap(ImageToAwt.convert(heightMapImage.getImage(), false, true, 0), 1f);
+			heightmap = new ImageBasedHeightMap(ImageToAwt.convert(heightMapImage.getImage(), false, true, 0), 0.25f);
 			heightmap.load();
 
 		} catch (Exception e) {
@@ -100,16 +110,6 @@ public class TerrainTest extends SimpleApplication {
 		 * Here we create the actual terrain. The tiles will be 65x65, and the total size of the
 		 * terrain will be 513x513. It uses the heightmap we created to generate the height values.
 		 */
-		/**
-		 * Optimal terrain patch size is 65 (64x64)
-		 * If you go for small patch size, it will definitely slow down because the depth of
-		 * the quad tree will increase, and more is done on the CPU then to traverse it.
-		 * I plan to give each node in the tree a reference to its neighbours so that should
-		 * resolve any of these slowdowns. -Brent
-		 *
-		 * The total size is up to you. At 1025 it ran fine for me (200+FPS), however at
-		 * size=2049, it got really slow. But that is a jump from 2 million to 8 million triangles...
-		 */
 		terrain = new TerrainQuad("terrain", 65, 513, new Vector3f(1, 1, 1), heightmap.getHeightMap());
 		List<Camera> cameras = new ArrayList<Camera>();
 		cameras.add(getCamera());
@@ -118,35 +118,54 @@ public class TerrainTest extends SimpleApplication {
 		terrain.setMaterial(matRock);
 		terrain.setModelBound(new BoundingBox());
 		terrain.updateModelBound();
-		terrain.setLocalTranslation(0, -100, 0);
-		terrain.setLocalScale(2f, 1f, 2f);
+		terrain.setLocalScale(new Vector3f(2,2,2));
 		rootNode.attachChild(terrain);
 
-//		lightMdl = new Geometry("Light", new Sphere(10, 10, 0.1f));
-//		lightMdl.setMaterial((Material) assetManager.loadAsset(new AssetKey("Common/Materials/RedColor.j3m")));
-//		rootNode.attachChild(lightMdl);
-
+		/**
+		 * Now we use the TerrainPhysicsShapeFactory to generate a heightfield
+		 * collision shape for us, and then add it to the physics node.
+		 */
+		TerrainPhysicsShapeFactory factory = new TerrainPhysicsShapeFactory();
+		terrainPhysicsNode = factory.createPhysicsMesh(terrain);
+		rootNode.attachChild(terrainPhysicsNode);
+		getPhysicsSpace().addAll(terrainPhysicsNode);
+		
+		// Add 5 physics spheres to the world, with random sizes and positions
+		// let them drop from the sky
+		for (int i=0; i<5; i++) {
+			float r = (float) (5*Math.random());
+			PhysicsNode physicsSphere=new PhysicsNode(new SphereCollisionShape(1+r),1);
+			float x = (float) (20*Math.random())-20;
+			float y = (float) (20*Math.random())-10;
+			float z = (float) (20*Math.random())-20;
+			physicsSphere.setLocalTranslation(new Vector3f(x,100+y,z));
+			physicsSphere.attachDebugShape(getAssetManager());
+			rootNode.attachChild(physicsSphere);
+			getPhysicsSpace().add(physicsSphere);
+		}
+		
 		// flourescent main light
-//		pl = new PointLight();
-//		pl.setColor(new ColorRGBA(0.88f, 0.92f, 0.95f, 1.0f));
-//		pl.setPosition(new Vector3f(0, 0, 15));
-//		rootNode.addLight(pl);
-//
-//		DirectionalLight dl = new DirectionalLight();
-//		dl.setDirection(new Vector3f(1, -0.5f, -0.1f).normalizeLocal());
-//		dl.setColor(new ColorRGBA(0.50f, 0.40f, 0.50f, 1.0f));
-//		rootNode.addLight(dl);
+		pl = new PointLight();
+		pl.setColor(new ColorRGBA(0.88f, 0.92f, 0.95f, 1.0f));
+		pl.setPosition(new Vector3f(0, 0, 15));
+		rootNode.addLight(pl);
+
+		DirectionalLight dl = new DirectionalLight();
+		dl.setDirection(new Vector3f(1, -0.5f, -0.1f).normalizeLocal());
+		dl.setColor(new ColorRGBA(0.50f, 0.40f, 0.50f, 1.0f));
+		rootNode.addLight(dl);
 
 
-		getCamera().getLocation().y = 10;
-		getCamera().setDirection(new Vector3f(0, -1.5f, -1));
+		getCamera().getLocation().y = 25;
+		getCamera().setDirection(new Vector3f(-1, 0, -1));
 	}
 
 	public void loadHintText() {
 		hintText = new BitmapText(guiFont, false);
 		hintText.setSize(guiFont.getCharSet().getRenderedSize());
 		hintText.setLocalTranslation(0, getCamera().getHeight(), 0);
-		hintText.setText("Hit T to switch to wireframe");
+		//hintText.setText("Hit T to switch to wireframe");
+		hintText.setText("");
 		guiNode.attachChild(hintText);
 	}
 
@@ -154,6 +173,11 @@ public class TerrainTest extends SimpleApplication {
 		flyCam.setMoveSpeed(50);
 		inputManager.addMapping("wireframe", new KeyTrigger(KeyInput.KEY_T));
 		inputManager.addListener(actionListener, "wireframe");
+	}
+
+	public void update() {
+		super.update();
+		hintText.setText("cam location: "+getCamera().getLocation());
 	}
 
 	private ActionListener actionListener = new ActionListener() {

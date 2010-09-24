@@ -21,6 +21,12 @@ public interface Terrain {
 	public void setHeight(Vector2f xzCoordinate, float height);
 	
 	/**
+	 * Get the heightmap of the entire terrain.
+	 * This can return null if that terrain object does not store the height data
+	 */
+	public float[] getHeightMap();
+
+	/**
 	 * Tell the terrain system to use/not use Level of Detail algorithms.
 	 */
 	public void useLOD(boolean useLod);

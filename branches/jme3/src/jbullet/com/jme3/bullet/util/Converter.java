@@ -32,6 +32,7 @@
 package com.jme3.bullet.util;
 
 import com.bulletphysics.collision.shapes.IndexedMesh;
+import com.bulletphysics.dom.HeightfieldTerrainShape;
 import com.jme3.scene.mesh.IndexBuffer;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.VertexBuffer.Type;
@@ -195,4 +196,9 @@ public class Converter {
 
         return jmeMesh;
     }
+
+	public static Mesh convert(HeightfieldTerrainShape heightfieldShape) {
+		return null; //TODO!!
+	}
+
 }

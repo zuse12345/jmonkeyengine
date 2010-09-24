@@ -143,6 +143,10 @@ public class TerrainPatch extends Geometry {
 		setMesh(mesh);
 		
 	}
+
+	public FloatBuffer getHeightmap() {
+		return geomap.getHeightData();
+	}
 	
 	/**
 	 * The maximum lod supported by this terrain patch.

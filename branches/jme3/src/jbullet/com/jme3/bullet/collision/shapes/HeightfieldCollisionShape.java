@@ -95,6 +95,7 @@ public class HeightfieldCollisionShape extends CollisionShape {
 		shape.setLocalScaling(new javax.vecmath.Vector3f(scale.x, scale.y, scale.z));
 		cShape = shape;
 		cShape.setLocalScaling(Converter.convert(getScale()));
+                cShape.setMargin(margin);
 	}
 
 	public Mesh createJmeMesh(){

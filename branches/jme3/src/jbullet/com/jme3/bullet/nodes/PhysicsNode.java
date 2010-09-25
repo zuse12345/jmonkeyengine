@@ -278,6 +278,11 @@ public class PhysicsNode extends PhysicsCollisionObject {
         rBody.setCcdSweptSphereRadius(radius);
     }
 
+    /**
+     * Sets the amount of motion that has to happen in one physics tick to trigger the continuous motion detection<br/>
+     * Set to zero to disable (default)
+     * @param threshold
+     */
     public void setCcdMotionThreshold(float threshold){
         rBody.setCcdMotionThreshold(threshold);
     }

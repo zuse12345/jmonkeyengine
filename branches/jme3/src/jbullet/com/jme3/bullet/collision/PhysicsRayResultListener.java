@@ -39,6 +39,14 @@ import com.jme3.math.Vector3f;
  * @author normenhansen
  */
 public interface PhysicsRayResultListener {
+
+    /**
+     * Called when this listener has been used in a rayTest() call on thePhysicsSpace for each collision found. <i>Called from he physics thread</i>
+     * @param collisionObject
+     * @param hitNormalLocal
+     * @param hitFraction
+     * @param normalInWorldSpace
+     */
     public void rayCollision(PhysicsCollisionObject collisionObject, Vector3f hitNormalLocal, float hitFraction, boolean normalInWorldSpace);
 
 }

@@ -208,8 +208,12 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
 
         if (frustrumIntersects == Camera.FrustumIntersect.Intersects) {
             int state = cam.getPlaneState();
-            
-            assert (refreshFlags & RF_BOUND) == 0;
+
+            if ((refreshFlags & RF_BOUND) != 0){
+                throw new IllegalStateException("Scene graph is not properly updated for rendering."
+                                              + "Make sure scene graph state was not changed after"
+                                              + " updateGeometricState() call.");
+            }
             frustrumIntersects = cam.contains(getWorldBound());
             
             cam.setPlaneState(state);

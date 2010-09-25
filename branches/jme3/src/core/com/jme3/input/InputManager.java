@@ -13,6 +13,7 @@ import com.jme3.input.event.KeyInputEvent;
 import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
 import com.jme3.math.FastMath;
+import com.jme3.math.Vector2f;
 import com.jme3.util.IntMap;
 import com.jme3.util.IntMap.Entry;
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ public class InputManager implements RawInputListener {
     private boolean safeMode = false;
 
     private float axisDeadZone = 0.05f;
+    private Vector2f cursorPos = new Vector2f();
 
     private final IntMap<ArrayList<Mapping>> bindings = new IntMap<ArrayList<Mapping>>();
     private final HashMap<String, Mapping> mappings = new HashMap<String, Mapping>();
@@ -241,6 +243,7 @@ public class InputManager implements RawInputListener {
         if (!eventsPermitted)
             throw new UnsupportedOperationException("MouseInput has raised an event at an illegal time.");
 
+        cursorPos.set(evt.getX(), evt.getY());
         for (int i = 0; i < rawListeners.size(); i++){
             rawListeners.get(i).onMouseMotionEvent(evt);
         }
@@ -362,6 +365,10 @@ public class InputManager implements RawInputListener {
             mouseVisible = visible;
             mouse.setCursorVisible(mouseVisible);
         }
+    }
+
+    public Vector2f getCursorPosition(){
+        return cursorPos;
     }
 
     public void addRawInputListener(RawInputListener listener){

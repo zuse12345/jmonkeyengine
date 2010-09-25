@@ -30,10 +30,12 @@ public class TestCanvas {
     private static void createFrame(){
         frame = new JFrame("Test");
         frame.setResizable(false);
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter(){
             @Override
-            public void windowClosed(WindowEvent e) {
+            public void windowClosing(WindowEvent e) {
+                frame.setVisible(false);
+                frame.dispose();
                 app.stop();
             }
         });

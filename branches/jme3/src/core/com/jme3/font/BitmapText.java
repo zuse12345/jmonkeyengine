@@ -129,6 +129,9 @@ public class BitmapText extends Geometry {
     }
 
     public float getLineWidth(){
+        if (needRefresh){
+            assemble();
+        }
         return lineWidth;
     }
 
@@ -144,7 +147,7 @@ public class BitmapText extends Geometry {
         if (block.getTextBox() == null){
             lineWidth = font.updateText(block, quadList, rightToLeft);
         }else{
-            font.updateTextRect(block, quadList);
+            lineWidth = font.updateTextRect(block, quadList);
         }
 
         Mesh m = getMesh();
@@ -202,6 +205,8 @@ public class BitmapText extends Geometry {
         ftb.rewind();
         sib.rewind();
         bcb.rewind();
+
+        needRefresh = false;
     }
 
 }

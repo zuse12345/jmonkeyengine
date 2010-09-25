@@ -77,6 +77,23 @@ public class Box extends AbstractBox {
     /**
      * Creates a new box.
      * <p>
+     * The box has a center of 0,0,0 and extends in the out from the center by
+     * the given amount in <em>each</em> direction. So, for example, a box
+     * with extent of 0.5 would be the unit cube.
+     *
+     * @param name the name of the box.
+     * @param x the size of the box along the x axis, in both directions.
+     * @param y the size of the box along the y axis, in both directions.
+     * @param z the size of the box along the z axis, in both directions.
+     */
+    public Box(float x, float y, float z) {
+        super();
+        updateGeometry(Vector3f.ZERO, x, y, z);
+    }
+
+    /**
+     * Creates a new box.
+     * <p>
      * The box has the given center and extends in the out from the center by
      * the given amount in <em>each</em> direction. So, for example, a box
      * with extent of 0.5 would be the unit cube.

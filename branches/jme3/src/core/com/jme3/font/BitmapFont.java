@@ -246,7 +246,7 @@ public class BitmapFont implements Savable {
         return lineWidth;
     }
 
-    public void updateTextRect(StringBlock b, QuadList target) {
+    public float updateTextRect(StringBlock b, QuadList target) {
 
         String text = b.getText();
         float x = b.getTextBox().x;
@@ -254,6 +254,7 @@ public class BitmapFont implements Savable {
         float maxWidth = b.getTextBox().width;
         float lastLineWidth = 0f;
         float lineWidth = 0f;
+        float maxLineWidth = 0f;
         float sizeScale = b.getSize() / charSet.getRenderedSize();
         char lastChar = 0;
         int lineNumber = 1;
@@ -274,6 +275,7 @@ public class BitmapFont implements Savable {
                 y -= charSet.getLineHeight() * sizeScale;
 
                 firstCharOfLine = true;
+                maxLineWidth = Math.max(lineWidth, maxLineWidth);
                 lastLineWidth = lineWidth;
                 lineWidth = 0f;
 
@@ -297,8 +299,10 @@ public class BitmapFont implements Savable {
                         // Next character extends past text box width
                         // We have to move the last word down one line
                         char newLineLastChar = 0;
+                        maxLineWidth = Math.max(lineWidth, maxLineWidth);
                         lastLineWidth = lineWidth;
                         lineWidth = 0f;
+
 
                         for (int j = 0; j <= quadIndex; j++){
                             FontQuad q = target.getQuad(j);
@@ -354,6 +358,7 @@ public class BitmapFont implements Savable {
                     }else{
                         // New line without any "carry-down" word
                         firstCharOfLine = true;
+                        maxLineWidth = Math.max(lineWidth, maxLineWidth);
                         lastLineWidth = lineWidth;
                         lineWidth = 0f;
                     }
@@ -438,6 +443,8 @@ public class BitmapFont implements Savable {
                 }
             }
         }
+
+        return maxLineWidth;
     }
 
 }

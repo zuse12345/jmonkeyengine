@@ -496,7 +496,11 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
         }else if (qName.equals("faces")){
             startFaces(attribs.getValue("count"));
         }else if (qName.equals("geometry")){
-            startGeometry(attribs.getValue("vertexcount"));
+            String count = attribs.getValue("vertexcount");
+            if (count == null)
+                count = attribs.getValue("count");
+
+            startGeometry(count);
         }else if (qName.equals("vertexbuffer")){
             startVertexBuffer(attribs);
         }else if (qName.equals("lodfacelist")){
@@ -514,7 +518,12 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
                       attribs.getValue("use32bitindexes"),
                       attribs.getValue("operationtype"));
         }else if (qName.equals("sharedgeometry")){
-            startSharedGeom(attribs.getValue("vertexcount"));
+            String count = attribs.getValue("vertexcount");
+            if (count == null)
+                count = attribs.getValue("count");
+
+            if (count != null && !count.equals("0"))
+                startSharedGeom(count);
         }else if (qName.equals("submeshes")){
             // ok
         }else if (qName.equals("skeletonlink")){

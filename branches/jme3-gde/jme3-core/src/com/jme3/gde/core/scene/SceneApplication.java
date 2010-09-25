@@ -220,7 +220,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
             guiNode.updateGeometricState();
             toolsNode.updateGeometricState();
 
-
             getStateManager().render(renderManager);
             renderManager.render(tpf);
         } catch (Exception e) {

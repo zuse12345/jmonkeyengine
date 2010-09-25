@@ -127,8 +127,8 @@ public class ScenePreviewProcessor implements SceneProcessor {
         currentPreviewRequest = previewQueue.poll();
         if (currentPreviewRequest != null) {
             previewNode.attachChild(currentPreviewRequest.getSpatial());
-            update(0);
         }
+        update(f);
     }
 
     public void postQueue(RenderQueue rq) {

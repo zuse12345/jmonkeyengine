@@ -72,7 +72,6 @@ public class TestPhysicsCar extends SimpleBulletApplication implements ActionLis
         PhysicsNode tb = new PhysicsNode(floorGeom, new MeshCollisionShape(floorGeom.getMesh()), 0);
         rootNode.attachChild(tb);
         tb.setLocalTranslation(new Vector3f(0f, -3, 0f));
-        tb.updateGeometricState();
         getPhysicsSpace().add(tb);
     }
 

@@ -80,7 +80,6 @@ public class TestAttachDriver extends SimpleBulletApplication implements ActionL
         PhysicsNode tb = new PhysicsNode(floorGeom, new MeshCollisionShape(floorGeom.getMesh()), 0);
         rootNode.attachChild(tb);
         tb.setLocalTranslation(new Vector3f(0f, -3, 0f));
-        tb.updateGeometricState();
         getPhysicsSpace().add(tb);
     }
 
@@ -177,11 +176,8 @@ public class TestAttachDriver extends SimpleBulletApplication implements ActionL
         bridge=new PhysicsNode(new BoxCollisionShape(new Vector3f(2.5f,0.2f,0.2f)));
         bridge.attachDebugShape(assetManager);
         pole1.setLocalTranslation(new Vector3f(-2,-1,4));
-        pole1.updateGeometricState();
         pole2.setLocalTranslation(new Vector3f(2,-1,4));
-        pole2.updateGeometricState();
         bridge.setLocalTranslation(new Vector3f(0,1.4f,4));
-        bridge.updateGeometricState();
 
         rootNode.attachChild(pole1);
         rootNode.attachChild(pole2);

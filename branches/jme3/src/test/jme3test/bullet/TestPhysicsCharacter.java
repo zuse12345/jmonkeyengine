@@ -2,7 +2,6 @@ package jme3test.bullet;
 
 import com.jme3.app.SimpleBulletApplication;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
-import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.nodes.PhysicsCharacterNode;
@@ -78,7 +77,6 @@ public class TestPhysicsCharacter extends SimpleBulletApplication implements Act
         physicsBox.setFriction(0.1f);
         physicsBox.setLocalTranslation(new Vector3f(.6f, 4, .5f));
         physicsBox.attachDebugShape(assetManager);
-        physicsBox.updateGeometricState();
         rootNode.attachChild(physicsBox);
         getPhysicsSpace().add(physicsBox);
 
@@ -93,7 +91,6 @@ public class TestPhysicsCharacter extends SimpleBulletApplication implements Act
         PhysicsNode node3 = new PhysicsNode(new BoxCollisionShape(new Vector3f(100, 1, 100)), 0);
         node3.setLocalTranslation(new Vector3f(0f, -6, 0f));
         node3.attachDebugShape(assetManager);
-        node3.updateGeometricState();
         rootNode.attachChild(node3);
         getPhysicsSpace().add(node3);
     }
@@ -147,7 +144,6 @@ public class TestPhysicsCharacter extends SimpleBulletApplication implements Act
             bulletg.setMaterial(mat);
             PhysicsNode bulletNode = new PhysicsNode(bulletg, bulletCollisionShape, 1);
             bulletNode.setLocalTranslation(cam.getLocation());
-            bulletNode.updateGeometricState();
             bulletNode.setShadowMode(ShadowMode.CastAndReceive);
             bulletNode.setLinearVelocity(cam.getDirection().mult(25));
             rootNode.attachChild(bulletNode);

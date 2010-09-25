@@ -59,7 +59,6 @@ public class TestAttachGhostObject extends SimpleBulletApplication implements An
         PhysicsNode holderNode = new PhysicsNode(new BoxCollisionShape(new Vector3f(.1f, .1f, .1f)), 0);
         holderNode.setLocalTranslation(new Vector3f(0f, 0, 0f));
         holderNode.attachDebugShape(mat);
-        holderNode.updateGeometricState();
         rootNode.attachChild(holderNode);
         getPhysicsSpace().add(holderNode);
 
@@ -67,7 +66,6 @@ public class TestAttachGhostObject extends SimpleBulletApplication implements An
         PhysicsNode hammerNode = new PhysicsNode(new BoxCollisionShape(new Vector3f(.3f, .3f, .3f)), 1);
         hammerNode.setLocalTranslation(new Vector3f(0f, -1, 0f));
         hammerNode.attachDebugShape(assetManager);
-        hammerNode.updateGeometricState();
         rootNode.attachChild(hammerNode);
         getPhysicsSpace().add(hammerNode);
 
@@ -75,7 +73,6 @@ public class TestAttachGhostObject extends SimpleBulletApplication implements An
         collisionNode = new PhysicsNode(new BoxCollisionShape(new Vector3f(.3f, .3f, .3f)), 0);
         collisionNode.setLocalTranslation(new Vector3f(1.8f, 0, 0f));
         collisionNode.attachDebugShape(assetManager);
-        collisionNode.updateGeometricState();
         rootNode.attachChild(collisionNode);
         getPhysicsSpace().add(collisionNode);
 

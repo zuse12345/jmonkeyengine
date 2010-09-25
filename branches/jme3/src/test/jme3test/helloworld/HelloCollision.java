@@ -68,13 +68,11 @@ public class HelloCollision
     player.setFallSpeed(30);
     player.setGravity(30);
     player.setLocalTranslation(new Vector3f(0, 10, 0));
-    player.updateGeometricState();
 
     // We attach the scene and the player to the rootnode and the physics space,
     // to make them appear in the game world.
     rootNode.attachChild(landscape);
     rootNode.attachChild(player);
-    rootNode.updateGeometricState();
     getPhysicsSpace().add(landscape);
     getPhysicsSpace().add(player);
   }

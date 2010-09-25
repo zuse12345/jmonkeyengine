@@ -74,11 +74,9 @@ public class TestQ3 extends SimpleBulletApplication implements ActionListener {
         player.setGravity(30);
 
         player.setLocalTranslation(new Vector3f(60, 10, -60));
-        player.updateGeometricState();
 
         rootNode.attachChild(levelNode);
         rootNode.attachChild(player);
-        rootNode.updateGeometricState();
 
         getPhysicsSpace().add(levelNode);
         getPhysicsSpace().add(player);

@@ -1,9 +1,6 @@
 package jme3test.bullet;
 
 import com.jme3.app.SimpleBulletApplication;
-import com.jme3.bullet.collision.PhysicsCollisionEvent;
-import com.jme3.bullet.collision.PhysicsCollisionListener;
-import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
@@ -72,7 +69,6 @@ public class TestCcd extends SimpleBulletApplication implements ActionListener{
         PhysicsNode node3 = new PhysicsNode(new BoxCollisionShape(new Vector3f(100, 1, 100)), 0);
         node3.setLocalTranslation(new Vector3f(0f, -6, 0f));
         node3.attachDebugShape(assetManager);
-        node3.updateGeometricState();
         rootNode.attachChild(node3);
         getPhysicsSpace().add(node3);
 
@@ -101,7 +97,6 @@ public class TestCcd extends SimpleBulletApplication implements ActionListener{
             bulletNode.setCcdMotionThreshold(0.1f);
             bulletNode.setName("bullet");
             bulletNode.setLocalTranslation(cam.getLocation());
-            bulletNode.updateGeometricState();
             bulletNode.setShadowMode(ShadowMode.CastAndReceive);
             bulletNode.setLinearVelocity(cam.getDirection().mult(40));
             rootNode.attachChild(bulletNode);
@@ -113,7 +108,6 @@ public class TestCcd extends SimpleBulletApplication implements ActionListener{
             PhysicsNode bulletNode = new PhysicsNode(bulletg, bulletCollisionShape, 1);
             bulletNode.setName("bullet");
             bulletNode.setLocalTranslation(cam.getLocation());
-            bulletNode.updateGeometricState();
             bulletNode.setShadowMode(ShadowMode.CastAndReceive);
             bulletNode.setLinearVelocity(cam.getDirection().mult(40));
             rootNode.attachChild(bulletNode);

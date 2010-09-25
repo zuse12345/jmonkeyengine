@@ -49,7 +49,6 @@ public class TestGhostObject extends SimpleBulletApplication {
         physicsBox.setFriction(0.1f);
         physicsBox.setLocalTranslation(new Vector3f(.6f, 4, .5f));
         physicsBox.attachDebugShape(assetManager);
-        physicsBox.updateGeometricState();
         rootNode.attachChild(physicsBox);
         getPhysicsSpace().add(physicsBox);
 
@@ -58,7 +57,6 @@ public class TestGhostObject extends SimpleBulletApplication {
         physicsBox1.setFriction(0.1f);
         physicsBox1.setLocalTranslation(new Vector3f(0, 40, 0));
         physicsBox1.attachDebugShape(assetManager);
-        physicsBox1.updateGeometricState();
         rootNode.attachChild(physicsBox1);
         getPhysicsSpace().add(physicsBox1);
 
@@ -67,7 +65,6 @@ public class TestGhostObject extends SimpleBulletApplication {
         physicsBox2.setFriction(0.1f);
         physicsBox2.setLocalTranslation(new Vector3f(.5f, 80, -.8f));
         physicsBox2.attachDebugShape(assetManager);
-        physicsBox2.updateGeometricState();
         rootNode.attachChild(physicsBox2);
         getPhysicsSpace().add(physicsBox2);
 
@@ -77,7 +74,6 @@ public class TestGhostObject extends SimpleBulletApplication {
         node.setLocalTranslation(new Vector3f(0f, -6, 0f));
         node.attachDebugShape(assetManager);
         rootNode.attachChild(node);
-        node.updateGeometricState();
         getPhysicsSpace().add(node);
 
         initGhostObject();

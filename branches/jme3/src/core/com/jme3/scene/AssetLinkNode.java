@@ -153,7 +153,12 @@ public class AssetLinkNode extends Node {
         assetLoaderKeys = (ArrayList<AssetKey<Spatial>>) capsule.readSavableArrayList("assetLoaderKeys", new ArrayList<AssetKey<Spatial>>());
         for (Iterator<AssetKey<Spatial>> it = assetLoaderKeys.iterator(); it.hasNext();) {
             AssetKey<Spatial> modelKey = it.next();
-            Spatial child = e.getAssetManager().loadAsset(modelKey);
+            Spatial child = null;
+            try {
+                child = e.getAssetManager().loadAsset(modelKey);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
             if (child != null) {
                 child.parent = this;
                 children.add(child);

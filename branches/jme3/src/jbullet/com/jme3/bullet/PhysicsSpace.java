@@ -43,6 +43,8 @@ import com.bulletphysics.collision.broadphase.DbvtBroadphase;
 import com.bulletphysics.collision.broadphase.OverlapFilterCallback;
 import com.bulletphysics.collision.broadphase.SimpleBroadphase;
 import com.bulletphysics.collision.dispatch.CollisionDispatcher;
+import com.bulletphysics.collision.dispatch.CollisionWorld;
+import com.bulletphysics.collision.dispatch.CollisionWorld.LocalRayResult;
 import com.bulletphysics.collision.dispatch.DefaultCollisionConfiguration;
 import com.bulletphysics.collision.dispatch.GhostObject;
 import com.bulletphysics.collision.dispatch.GhostPairCallback;
@@ -62,6 +64,7 @@ import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionEventFactory;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.PhysicsCollisionObject;
+import com.jme3.bullet.collision.PhysicsRayResultListener;
 import com.jme3.bullet.joints.PhysicsJoint;
 import com.jme3.bullet.nodes.PhysicsGhostNode;
 import com.jme3.bullet.nodes.PhysicsCharacterNode;
@@ -192,6 +195,7 @@ public class PhysicsSpace {
         physicsSpaceTL.set(this);
         setTickCallback();
         setContactCallbacks();
+//        dynamicsWorld.ra
     }
 
     private void setOverlapFilterCallback() {
@@ -646,6 +650,27 @@ public class PhysicsSpace {
 
     public void removeCollisionGroupListener(int collisionGroup) {
         collisionGroupListeners.remove(collisionGroup);
+    }
+
+    /* Performs a ray collision test on the next physics tick and reports the results to the listener */
+    public void rayTest(Vector3f from, Vector3f to, PhysicsRayResultListener listener){
+        dynamicsWorld.rayTest(Converter.convert(from), Converter.convert(to), new InternalRayListener(listener));
+    }
+
+    private class InternalRayListener extends CollisionWorld.RayResultCallback{
+        private PhysicsRayResultListener listener;
+
+        public InternalRayListener(PhysicsRayResultListener listener) {
+            this.listener = listener;
+        }
+
+        @Override
+        public float addSingleResult(LocalRayResult lrr, boolean bln) {
+            PhysicsCollisionObject obj=(PhysicsCollisionObject)lrr.collisionObject.getUserPointer();
+            listener.rayCollision(obj, Converter.convert(lrr.hitNormalLocal), lrr.hitFraction, bln);
+            return lrr.hitFraction;
+        }
+
     }
 
     /**

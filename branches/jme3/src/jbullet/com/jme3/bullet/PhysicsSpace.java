@@ -652,7 +652,9 @@ public class PhysicsSpace {
         collisionGroupListeners.remove(collisionGroup);
     }
 
-    /* Performs a ray collision test on the next physics tick and reports the results to the listener */
+    /**
+     * Performs a ray collision test on the next physics tick and reports the results to the listener
+     */
     public void rayTest(Vector3f from, Vector3f to, PhysicsRayResultListener listener){
         dynamicsWorld.rayTest(Converter.convert(from), Converter.convert(to), new InternalRayListener(listener));
     }

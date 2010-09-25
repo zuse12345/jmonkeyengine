@@ -62,6 +62,7 @@ import com.jme3.math.Vector3f;
 //import com.jme3.util.GameTaskQueueManager;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionEventFactory;
+import com.jme3.bullet.collision.PhysicsCollisionGroupListener;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.PhysicsRayResultListener;
@@ -122,7 +123,7 @@ public class PhysicsSpace {
     private List<PhysicsJoint> physicsJoints = new LinkedList<PhysicsJoint>();
     private List<PhysicsCollisionListener> collisionListeners = new LinkedList<PhysicsCollisionListener>();
     private List<PhysicsCollisionEvent> collisionEvents = new LinkedList<PhysicsCollisionEvent>();
-    private Map<Integer, PhysicsCollisionListener> collisionGroupListeners = new ConcurrentHashMap<Integer, PhysicsCollisionListener>();
+    private Map<Integer, PhysicsCollisionGroupListener> collisionGroupListeners = new ConcurrentHashMap<Integer, PhysicsCollisionGroupListener>();
     private ConcurrentLinkedQueue<PhysicsTickListener> tickListeners = new ConcurrentLinkedQueue<PhysicsTickListener>();
     private PhysicsCollisionEventFactory eventFactory=new PhysicsCollisionEventFactory();
     private Vector3f worldMin = new Vector3f(-10000f, -10000f, -10000f);
@@ -215,8 +216,8 @@ public class PhysicsSpace {
                     PhysicsCollisionObject collisionObject1 = (PhysicsCollisionObject) colOb1.getUserPointer();
                     if ((collisionObject.getCollideWithGroups() & collisionObject1.getCollisionGroup()) > 0
                             || (collisionObject1.getCollideWithGroups() & collisionObject.getCollisionGroup()) > 0) {
-                        PhysicsCollisionListener listener = collisionGroupListeners.get(collisionObject.getCollisionGroup());
-                        PhysicsCollisionListener listener1 = collisionGroupListeners.get(collisionObject1.getCollisionGroup());
+                        PhysicsCollisionGroupListener listener = collisionGroupListeners.get(collisionObject.getCollisionGroup());
+                        PhysicsCollisionGroupListener listener1 = collisionGroupListeners.get(collisionObject1.getCollisionGroup());
                         if (listener != null) {
                             return listener.collide(collisionObject, collisionObject1);
                         } else if (listener1 != null) {
@@ -644,7 +645,7 @@ public class PhysicsSpace {
      * @param listener
      * @param collisionGroup
      */
-    public void addCollisionGroupListener(PhysicsCollisionListener listener, int collisionGroup) {
+    public void addCollisionGroupListener(PhysicsCollisionGroupListener listener, int collisionGroup) {
         collisionGroupListeners.put(collisionGroup, listener);
     }
 

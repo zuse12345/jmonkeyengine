@@ -4,6 +4,7 @@ import jme3tools.converters.ImageToAwt;
 import com.jme3.app.SimpleBulletApplication;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
+import com.jme3.bullet.nodes.PhysicsCharacterNode;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
@@ -143,6 +144,12 @@ public class TerrainTestCollision extends SimpleBulletApplication {
 			rootNode.attachChild(physicsSphere);
 			getPhysicsSpace().add(physicsSphere);
 		}
+
+                PhysicsCharacterNode character=new PhysicsCharacterNode(new SphereCollisionShape(1),0.1f);
+                character.setLocalTranslation(new Vector3f(0,100,0));
+                character.attachDebugShape(assetManager);
+                rootNode.attachChild(character);
+                getPhysicsSpace().add(character);
 		
 		// flourescent main light
 		pl = new PointLight();

@@ -2,6 +2,7 @@ package jme3test.bullet;
 
 import com.jme3.app.SimpleBulletApplication;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
+import com.jme3.bullet.collision.PhysicsCollisionGroupListener;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
@@ -23,7 +24,7 @@ import com.jme3.scene.shape.Sphere.TextureMode;
  *
  * @author normenhansen
  */
-public class TestCollisionListener extends SimpleBulletApplication implements ActionListener, PhysicsCollisionListener {
+public class TestCollisionListener extends SimpleBulletApplication implements ActionListener, PhysicsCollisionListener, PhysicsCollisionGroupListener {
 
     private Material mat;
     private static final Sphere bullet;

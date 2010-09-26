@@ -1,6 +1,11 @@
 package com.jme3.terrain.geomipmap;
 
 
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
+import com.jme3.material.Material;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.HashMap;
@@ -10,8 +15,10 @@ import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
+import com.jme3.terrain.geomipmap.LodCalc.DistanceLodCalculator;
 import com.jme3.terrain.geomipmap.LodCalc.LodCalculator;
 import com.jme3.util.BufferUtils;
+import java.io.IOException;
 import java.util.List;
 
 
@@ -40,10 +47,7 @@ public class TerrainPatch extends Geometry {
 	protected LODGeomap geomap;
 	protected int lod = -1; // this terrain patch's LOD
 	private int maxLod = -1;
-	//protected boolean reIndexNeeded = false;
-	//protected boolean fixEdges = false;
 	protected int previousLod = -1;
-	//private boolean firstLoad = true; // so we can reset the lod based on where the camera starts, or else the far away tiles can be full detail
 	protected int lodLeft, lodTop, lodRight, lodBottom; // it's neighbour's LODs
 	
 	protected int size;
@@ -72,7 +76,6 @@ public class TerrainPatch extends Geometry {
 	
 	public TerrainPatch(String name, int size) {
 		this(name, size, new Vector3f(1,1,1), null, new Vector3f(0,0,0));
-		
 	}
 	
 	/**
@@ -131,10 +134,6 @@ public class TerrainPatch extends Geometry {
 
 		setLocalTranslation(origin);
 		
-		//int[] height = new int[heightMap.length];
-		//for (int i=0; i<heightMap.length; i++)
-		//	height[i] = (int) heightMap[i];
-		
 		FloatBuffer heightBuffer = BufferUtils.createFloatBuffer(size*size);
 		heightBuffer.put(heightMap);
 		
@@ -158,72 +157,21 @@ public class TerrainPatch extends Geometry {
 	public int getMaxLod() {
 		if (maxLod < 0)
 			maxLod = Math.max(1, (int) (FastMath.log(size-1)/FastMath.log(2)) -1); // -1 forces our minimum of 4 triangles wide
-		//System.out.println("max lod = "+lod);
+		
 		return maxLod;
 	}
 	
 
-        /**
-         * Delegates to the lodCalculator that was passed in.
-         * @param locations all possible camera locations
-         * @param updates update objects that may or may not contain this terrain patch
-         * @return true if the geometry needs re-indexing
-         */
+    /**
+     * Delegates to the lodCalculator that was passed in.
+     * @param locations all possible camera locations
+     * @param updates update objects that may or may not contain this terrain patch
+     * @return true if the geometry needs re-indexing
+     */
 	protected boolean calculateLod(List<Vector3f> locations, HashMap<String,UpdatedTerrainPatch> updates) {
-            return lodCalculator.calculateLod(locations, updates);
-        }
+        return lodCalculator.calculateLod(locations, updates);
+    }
 
-	/*protected boolean calculateLod(Vector3f location, HashMap<String,UpdatedTerrainPatch> updates) {
-		
-		float distance = getCenterLocation().distance(location);
-		
-		// go through each lod level to find the one we are in
-		for (int i=0; i<=getMaxLod(); i++) {
-			if (distance < lodThresholdCalculator.getLodDistanceThreshold()*(i+1)) {
-				boolean reIndexNeeded = false;
-				if (i != lod) {
-					reIndexNeeded = true;
-					//System.out.println("lod change: "+lod+" > "+i+"    dist: "+distance);
-				}
-				int prevLOD = lod;
-				//previousLod = lod;
-				//lod = i;
-				UpdatedTerrainPatch utp = updates.get(this.getName());
-				if (utp == null) {
-					utp = new UpdatedTerrainPatch(this, i);//save in here, do not update actual variables
-					updates.put(utp.getName(), utp);
-				}
-				utp.setPreviousLod(prevLOD);
-				utp.setReIndexNeeded(reIndexNeeded);
-				return reIndexNeeded;
-			}
-		}
-		
-		int newLOD = lod;
-		int prevLOD = previousLod;
-		
-		if (newLOD != getMaxLod())
-			prevLOD = newLOD;
-		
-		// max lod (least detailed)
-		newLOD = getMaxLod();
-		
-		boolean reIndexNeeded = false;
-		
-		if (prevLOD != newLOD)
-			reIndexNeeded = true;
-		
-		UpdatedTerrainPatch utp = updates.get(this.getName());
-		if (utp == null) {
-			utp = new UpdatedTerrainPatch(this, newLOD);// save in here, do not update actual variables
-			updates.put(utp.getName(), utp);
-		}
-		utp.setPreviousLod(prevLOD);
-		utp.setReIndexNeeded(reIndexNeeded);
-		
-		return reIndexNeeded;
-	}*/
-	
 	protected void reIndexGeometry(HashMap<String,UpdatedTerrainPatch> updated) {
 		
 		UpdatedTerrainPatch utp = updated.get(getName());
@@ -236,31 +184,10 @@ public class TerrainPatch extends Geometry {
 			boolean bottom = utp.getBottomLod() > utp.getNewLod();
 			IntBuffer ib = geomap.writeIndexArrayLodDiff(null, pow, right, top, left, bottom);
 			utp.setNewIndexBuffer(ib);
-			//getMesh().clearBuffer(Type.Index);
-			//getMesh().setBuffer(Type.Index, 3, ib);
 		}
 		
-		/*
-		if (reIndexNeeded || fixEdges) {
-			int pow = (int) Math.pow(2, lod);
-			IntBuffer ib = geomap.writeIndexArrayLodDiff(null, pow, lodRight>lod, lodTop>lod, lodLeft>lod, lodBottom>lod);
-			getMesh().clearBuffer(Type.Index);
-			getMesh().setBuffer(Type.Index, 3, ib);
-			// reset:
-			reIndexNeeded = false;
-			fixEdges = false;
-		}
-		*/
 	}
 
-	
-	/**
-	 * Find what the other neighbour's LODs are.
-	 * Stored in the lodLeft, lodTop, LodRight, lodBottom variables
-	 */
-	/*protected void findNeighboursLod() {
-		
-	}*/
 	
 	public float getHeight(Vector2f position) {
 		return getHeight(position.x, position.y);
@@ -494,11 +421,35 @@ public class TerrainPatch extends Geometry {
 		this.lodBottom = lodBottom;
 	}
 
-        public LodCalculator getLodCalculator() {
-            return lodCalculator;
-        }
+    public LodCalculator getLodCalculator() {
+        return lodCalculator;
+    }
 
-        public void setLodCalculator(LodCalculator lodCalculator) {
-            this.lodCalculator = lodCalculator;
-        }
+    public void setLodCalculator(LodCalculator lodCalculator) {
+        this.lodCalculator = lodCalculator;
+    }
+
+    @Override
+    public void write(JmeExporter ex) throws IOException {
+        super.write(ex);
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(geomap.getHeightData(), "heightmap", null);
+
+    }
+
+    @Override
+    public void read(JmeImporter im) throws IOException {
+        super.read(im);
+        InputCapsule ic = im.getCapsule(this);
+        size = ic.readInt("size", 16);
+        totalSize = ic.readInt("totalSize", 16);
+        quadrant = ic.readShort("quadrant", (short)0);
+        stepScale = (Vector3f) ic.readSavable("stepScale", Vector3f.UNIT_XYZ);
+        offset = (Vector2f) ic.readSavable("offset", Vector3f.UNIT_XYZ);
+        offsetAmount = ic.readFloat("offsetAmount", 0);
+        lodCalculator = (LodCalculator) ic.readSavable("lodCalculator", new DistanceLodCalculator());
+        lodCalculator.setTerrainPatch(this);
+        FloatBuffer fb = (FloatBuffer) ic.readSavable("heightmap", null);
+        geomap = new LODGeomap(size, fb);
+    }
 }

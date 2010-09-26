@@ -73,12 +73,12 @@ public class TerrainQuad extends Node implements Terrain {
 		super("Terrain");
 	}
 	
-	public TerrainQuad(String name, int blockSize, int size, Vector3f stepScale, float[] heightMap) {
-		this(name, blockSize, size, stepScale, heightMap, size, new Vector2f(), 0, null);
+	public TerrainQuad(String name, int blockSize, int size, float[] heightMap) {
+		this(name, blockSize, size, Vector3f.UNIT_XYZ, heightMap, size, new Vector2f(), 0, null);
 	}
 	
-	public TerrainQuad(String name, int blockSize, int size, Vector3f stepScale, float[] heightMap, LodCalculatorFactory lodCalculatorFactory) {
-		this(name, blockSize, size, stepScale, heightMap, size, new Vector2f(), 0, lodCalculatorFactory);
+	public TerrainQuad(String name, int blockSize, int size, Vector3f scale, float[] heightMap, LodCalculatorFactory lodCalculatorFactory) {
+		this(name, blockSize, size, scale, heightMap, size, new Vector2f(), 0, lodCalculatorFactory);
 	}
 	
 	protected TerrainQuad(String name, int blockSize, int size,
@@ -1013,6 +1013,9 @@ public class TerrainQuad extends Node implements Terrain {
 		offset = (Vector2f) c.readSavable("offset", new Vector2f(0,0));
 		offsetAmount = c.readInt("offsetAmount", 0);
 		quadrant = c.readShort("quadrant", (short) 0);
+
+		this.totalSize = totalSize;
+		this.lodCalculatorFactory = lodCalculatorFactory;
 	}
 
 	@Override

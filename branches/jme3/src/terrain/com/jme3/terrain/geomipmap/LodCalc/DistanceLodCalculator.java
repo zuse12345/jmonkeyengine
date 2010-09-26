@@ -5,9 +5,14 @@
 
 package com.jme3.terrain.geomipmap.LodCalc;
 
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
 import com.jme3.math.Vector3f;
 import com.jme3.terrain.geomipmap.TerrainPatch;
 import com.jme3.terrain.geomipmap.UpdatedTerrainPatch;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -101,6 +106,16 @@ public class DistanceLodCalculator implements LodCalculator {
 
     protected void setLodThreshold(LodThreshold lodThresholdCalculator) {
         this.lodThresholdCalculator = lodThresholdCalculator;
+    }
+
+    public void write(JmeExporter ex) throws IOException {
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(lodThresholdCalculator, "lodThresholdCalculator", null);
+    }
+
+    public void read(JmeImporter im) throws IOException {
+        InputCapsule ic = im.getCapsule(this);
+        lodThresholdCalculator = (LodThreshold) ic.readSavable("lodThresholdCalculator", null);
     }
 
 }

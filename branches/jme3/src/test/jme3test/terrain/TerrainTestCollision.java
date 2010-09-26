@@ -93,6 +93,7 @@ public class TerrainTestCollision extends SimpleBulletApplication {
 
 		// WIREFRAME material
 		matWire = new Material(assetManager, "Common/MatDefs/Misc/WireColor.j3md");
+        matWire.setColor("m_Color", ColorRGBA.Green);
 
 
 		// CREATE HEIGHTMAP
@@ -111,7 +112,7 @@ public class TerrainTestCollision extends SimpleBulletApplication {
 		 * Here we create the actual terrain. The tiles will be 65x65, and the total size of the
 		 * terrain will be 513x513. It uses the heightmap we created to generate the height values.
 		 */
-		terrain = new TerrainQuad("terrain", 65, 513, new Vector3f(1, 1, 1), heightmap.getHeightMap());
+		terrain = new TerrainQuad("terrain", 65, 513, heightmap.getHeightMap());
 		List<Camera> cameras = new ArrayList<Camera>();
 		cameras.add(getCamera());
 		TerrainLodControl control = new TerrainLodControl(terrain, cameras);
@@ -151,17 +152,6 @@ public class TerrainTestCollision extends SimpleBulletApplication {
                 rootNode.attachChild(character);
                 getPhysicsSpace().add(character);
 		
-		// flourescent main light
-		pl = new PointLight();
-		pl.setColor(new ColorRGBA(0.88f, 0.92f, 0.95f, 1.0f));
-		pl.setPosition(new Vector3f(0, 0, 15));
-		rootNode.addLight(pl);
-
-		DirectionalLight dl = new DirectionalLight();
-		dl.setDirection(new Vector3f(1, -0.5f, -0.1f).normalizeLocal());
-		dl.setColor(new ColorRGBA(0.50f, 0.40f, 0.50f, 1.0f));
-		rootNode.addLight(dl);
-
 
 		getCamera().getLocation().y = 25;
 		getCamera().setDirection(new Vector3f(-1, 0, -1));

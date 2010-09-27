@@ -138,7 +138,6 @@ public class DesktopAssetManager implements AssetManager {
     }
 
     public AssetInfo locateAsset(AssetKey<?> key){
-        Object o = key.shouldCache() ? cache.getFromCache(key) : null;
         AssetLoader loader = handler.aquireLoader(key);
         if (loader == null){
             logger.log(Level.WARNING,"No loader registered for type {0}.",

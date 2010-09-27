@@ -99,13 +99,17 @@ public abstract class PhysicsCollisionObject extends Node {
         }
     }
 
+    /**
+     * @return the CollisionShape of this PhysicsNode, to be able to reuse it with
+     * other physics nodes (increases performance)
+     */
     public CollisionShape getCollisionShape() {
         return collisionShape;
     }
 
     /**
-     * @return the CollisionShape of this PhysicsNode, to be able to reuse it with
-     * other physics nodes (increases performance)
+     * Returns the collision group for this collision shape
+     * @return
      */
     public int getCollisionGroup() {
         return collisionGroup;
@@ -116,7 +120,7 @@ public abstract class PhysicsCollisionObject extends Node {
      * The groups are integer bit masks and some pre-made variables are available in CollisionObject.
      * All physics objects are by default in COLLISION_GROUP_01.<br>
      * Two object will collide when <b>one</b> of the partys has the
-     * collisionGroup of the other in its collideWithGroups set.<br>
+     * collisionGroup of the other in its collideWithGroups set.
      * @param collisionGroup the collisionGroup to set
      */
     public void setCollisionGroup(int collisionGroup) {
@@ -145,8 +149,8 @@ public abstract class PhysicsCollisionObject extends Node {
      * Directly set the bitmask for collision groups that this object collides with.
      * @param collisionGroup
      */
-    public void setCollideWithGroups(int collisionGroup) {
-        this.collisionGroupsMask = collisionGroup;
+    public void setCollideWithGroups(int collisionGroups) {
+        this.collisionGroupsMask = collisionGroups;
     }
 
     /**

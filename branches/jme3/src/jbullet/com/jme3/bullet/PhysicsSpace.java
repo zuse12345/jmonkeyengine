@@ -615,6 +615,12 @@ public class PhysicsSpace {
         dynamicsWorld.setGravity(Converter.convert(gravity));
     }
 
+    /**
+     * Adds the specified listener to the physics tick listeners.
+     * The listeners are called on each physics step, which is not necessarily
+     * each frame but is determined by the accuracy of the physics space.
+     * @param listener
+     */
     public void addTickListener(PhysicsTickListener listener) {
         tickListeners.add(listener);
     }
@@ -654,7 +660,7 @@ public class PhysicsSpace {
     }
 
     /**
-     * Performs a ray collision test on the next physics tick and reports the results to the listener
+     * Performs a ray collision test and reports the results to the listener
      */
     public void rayTest(Vector3f from, Vector3f to, PhysicsRayResultListener listener){
         dynamicsWorld.rayTest(Converter.convert(from), Converter.convert(to), new InternalRayListener(listener));

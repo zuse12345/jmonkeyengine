@@ -29,6 +29,8 @@ public interface AssetManager {
 
     public void setAssetEventListener(AssetEventListener listener);
 
+    public AssetInfo locateAsset(AssetKey<?> key);
+
     /**
      * Load an asset from a key, the asset will be located
      * by one of the {@link AssetLocator} implementations provided in the

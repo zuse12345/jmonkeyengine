@@ -137,6 +137,33 @@ public class DesktopAssetManager implements AssetManager {
         cache.addToCache(key, asset);
     }
 
+    public AssetInfo locateAsset(AssetKey<?> key){
+        Object o = key.shouldCache() ? cache.getFromCache(key) : null;
+        AssetLoader loader = handler.aquireLoader(key);
+        if (loader == null){
+            logger.log(Level.WARNING,"No loader registered for type {0}.",
+                                        key.getExtension());
+            return null;
+        }
+
+        if (handler.getLocatorCount() == 0){
+            logger.warning("There are no locators currently"+
+                           " registered. Use AssetManager."+
+                           "registerLocator() to register a"+
+                           " locator.");
+            return null;
+        }
+
+        AssetInfo info = handler.tryLocate(key);
+        if (info == null){
+            logger.log(Level.WARNING, "Cannot locate resource: {0}", key);
+        }
+
+        // object o is the asset
+        // create an instance for user
+        return info;
+    }
+
     /**
      * This method is thread-safe.
      * @param name

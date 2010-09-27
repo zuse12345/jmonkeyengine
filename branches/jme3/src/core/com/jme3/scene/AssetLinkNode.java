@@ -31,12 +31,14 @@
  */
 package com.jme3.scene;
 
+import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
+import com.jme3.export.binary.BinaryImporter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -150,14 +152,16 @@ public class AssetLinkNode extends Node {
     public void read(JmeImporter e) throws IOException {
         super.read(e);
         InputCapsule capsule = e.getCapsule(this);
+        BinaryImporter importer = BinaryImporter.getInstance();
+        AssetManager loaderManager = e.getAssetManager();
+
         assetLoaderKeys = (ArrayList<AssetKey<Spatial>>) capsule.readSavableArrayList("assetLoaderKeys", new ArrayList<AssetKey<Spatial>>());
         for (Iterator<AssetKey<Spatial>> it = assetLoaderKeys.iterator(); it.hasNext();) {
             AssetKey<Spatial> modelKey = it.next();
+            AssetInfo info = loaderManager.locateAsset(modelKey);
             Spatial child = null;
-            try {
-                child = e.getAssetManager().loadAsset(modelKey);
-            } catch (Exception ex) {
-                ex.printStackTrace();
+            if (info != null) {
+                child = (Spatial) importer.load(info);
             }
             if (child != null) {
                 child.parent = this;
@@ -172,7 +176,7 @@ public class AssetLinkNode extends Node {
     @Override
     public void write(JmeExporter e) throws IOException {
         ArrayList<Spatial> childs = children;
-        children = new ArrayList<Spatial>(assetLoaderKeys.size());
+        children = new ArrayList<Spatial>();
         super.write(e);
         OutputCapsule capsule = e.getCapsule(this);
         capsule.writeSavableArrayList(assetLoaderKeys, "assetLoaderKeys", null);

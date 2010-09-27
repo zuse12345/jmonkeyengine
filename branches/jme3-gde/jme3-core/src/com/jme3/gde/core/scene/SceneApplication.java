@@ -211,6 +211,11 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                 fpsText.setText("Frames per second: " + fps);
                 secondCounter = 0.0f;
             }
+
+            rootNode.updateGeometricState();
+            guiNode.updateGeometricState();
+            toolsNode.updateGeometricState();
+
             getStateManager().update(tpf);
 
             rootNode.updateLogicalState(tpf);

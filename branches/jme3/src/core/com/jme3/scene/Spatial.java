@@ -212,7 +212,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
             if ((refreshFlags & RF_BOUND) != 0){
                 throw new IllegalStateException("Scene graph is not properly updated for rendering."
                                               + "Make sure scene graph state was not changed after"
-                                              + " rootNode.updateGeometricState() call.");
+                                              + " rootNode.updateGeometricState() call. Problem spatial name: "+getName());
             }
             frustrumIntersects = cam.contains(getWorldBound());
             

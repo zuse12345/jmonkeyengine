@@ -47,7 +47,7 @@ public class ZIPSerializer extends Serializer {
         }
         catch (Exception e) {
             e.printStackTrace();
-            throw new IOException(e);
+            throw new IOException(e.toString());
         }
     }
 

@@ -60,7 +60,7 @@ public class FieldSerializer extends Serializer {
         try {
             object = c.newInstance();
         } catch (Exception e) {
-            throw new IOException(e);
+            throw new IOException(e.toString());
         }
 
         for (SavedField savedField : fields) {
@@ -76,7 +76,7 @@ public class FieldSerializer extends Serializer {
             try {
                 field.set(object, value);
             } catch (IllegalAccessException e) {
-                throw new IOException(e);
+                throw new IOException(e.toString());
             }
         }
         return object;
@@ -105,7 +105,7 @@ public class FieldSerializer extends Serializer {
                 }
             } catch (Exception e) {
                 log.log(Level.WARNING, "[FieldSerializer][???] Exception occured on writing. Maybe you've forgotten to register a class, or maybe a class member does not have a serializer.");
-                throw new IOException(e);
+                throw new IOException(e.toString());
             }
         }
     }

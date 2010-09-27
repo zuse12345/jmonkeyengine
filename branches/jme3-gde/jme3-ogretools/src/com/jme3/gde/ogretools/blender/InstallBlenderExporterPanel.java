@@ -299,7 +299,6 @@ public class InstallBlenderExporterPanel extends javax.swing.JDialog {
         jLabel4 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setIconImage(null);
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/ogretools/blender/ogre-logo24.png"))); // NOI18N
         jLabel1.setText(org.openide.util.NbBundle.getMessage(InstallBlenderExporterPanel.class, "InstallBlenderExporterPanel.jLabel1.text")); // NOI18N

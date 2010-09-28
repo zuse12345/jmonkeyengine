@@ -142,7 +142,11 @@ void main(){
 
     #ifdef VERTEX_LIGHTING
        vec2 light = computeLighting(wvPosition, wvNormal, viewDir, wvLightPos);
-       DiffuseSum *= light.x;
-       SpecularSum *= light.y;
+       //DiffuseSum *= light.x;
+       //SpecularSum *= light.y;
+
+       DiffuseSum.a  = AmbientSum.a * DiffuseSum.a * SpecularSum.a;
+       AmbientSum.a  = light.x;
+       SpecularSum.a = light.y;
     #endif
 }

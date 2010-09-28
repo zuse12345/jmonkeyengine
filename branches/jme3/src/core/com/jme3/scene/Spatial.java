@@ -404,6 +404,51 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         }
     }
 
+    void updateOwnWorldBounds(){
+        updateOwnWorldTransforms();
+    }
+
+    void updateOwnWorldTransforms(){
+        if (parent == null){
+            worldTransform.set(localTransform);
+            refreshFlags &= ~RF_TRANSFORM;
+        }else{
+            TempVars vars = TempVars.get();
+            assert vars.lock();
+
+            Spatial[] stack = vars.spatialStack;
+            Spatial rootNode = this;
+            int i = 0;
+            while (true){
+                Spatial hisParent = rootNode.parent;
+                if (hisParent == null){
+                    rootNode.worldTransform.set(rootNode.localTransform);
+                    rootNode.refreshFlags &= ~RF_TRANSFORM;
+                    i--;
+                    break;
+                }
+
+                stack[i] = rootNode;
+
+                if ( (hisParent.refreshFlags & RF_TRANSFORM) == 0 ){
+                    break;
+                }
+
+                rootNode = hisParent;
+                i++;
+            }
+
+            for (int j = i; j >= 0; j--){
+                rootNode = stack[j];
+                rootNode.worldTransform.set(rootNode.localTransform);
+                rootNode.worldTransform.combineWithParent(rootNode.parent.worldTransform);
+                rootNode.refreshFlags &= ~RF_TRANSFORM;
+            }
+
+            assert vars.unlock();
+        }
+    }
+
     private void runControlUpdate(float tpf){
         if (controls.size() == 0)
             return;

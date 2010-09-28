@@ -37,10 +37,7 @@ import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
-import java.io.Externalizable;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.logging.Logger;
 
 /*
@@ -60,22 +57,20 @@ public final class Vector3f implements Savable, Cloneable {
 
     private static final Logger logger = Logger.getLogger(Vector3f.class.getName());
 
-    private static final long serialVersionUID = 1L;
-
-	public final static Vector3f ZERO = new Vector3f(0, 0, 0);
-        public final static Vector3f NAN  = new Vector3f(Float.NaN, Float.NaN, Float.NaN);
-	public final static Vector3f UNIT_X = new Vector3f(1, 0, 0);
-	public final static Vector3f UNIT_Y = new Vector3f(0, 1, 0);
+    public final static Vector3f ZERO = new Vector3f(0, 0, 0);
+    public final static Vector3f NAN = new Vector3f(Float.NaN, Float.NaN, Float.NaN);
+    public final static Vector3f UNIT_X = new Vector3f(1, 0, 0);
+    public final static Vector3f UNIT_Y = new Vector3f(0, 1, 0);
     public final static Vector3f UNIT_Z = new Vector3f(0, 0, 1);
     public final static Vector3f UNIT_XYZ = new Vector3f(1, 1, 1);
     public final static Vector3f POSITIVE_INFINITY = new Vector3f(
-                                                        Float.POSITIVE_INFINITY,
-                                                        Float.POSITIVE_INFINITY,
-                                                        Float.POSITIVE_INFINITY);
+            Float.POSITIVE_INFINITY,
+            Float.POSITIVE_INFINITY,
+            Float.POSITIVE_INFINITY);
     public final static Vector3f NEGATIVE_INFINITY = new Vector3f(
-                                                        Float.NEGATIVE_INFINITY,
-                                                        Float.NEGATIVE_INFINITY,
-                                                        Float.NEGATIVE_INFINITY);
+            Float.NEGATIVE_INFINITY,
+            Float.NEGATIVE_INFINITY,
+            Float.NEGATIVE_INFINITY);
 
     
 	/**
@@ -970,32 +965,6 @@ public final class Vector3f implements Savable, Cloneable {
         return "(" + x + ", " + y + ", " + z + ")";
     }
 
-
-    /**
-     * Used with serialization.  Not to be called manually.
-     * @param in input
-     * @throws IOException
-     * @throws ClassNotFoundException
-     * @see java.io.Externalizable
-     */
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        x=in.readFloat();
-        y=in.readFloat();
-        z=in.readFloat();
-    }
-
-    /**
-     * Used with serialization.  Not to be called manually.
-     * @param out output
-     * @throws IOException
-     * @see java.io.Externalizable
-     */
-    public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeFloat(x);
-        out.writeFloat(y);
-        out.writeFloat(z);
-    }
-
     public void write(JmeExporter e) throws IOException {
         OutputCapsule capsule = e.getCapsule(this);
         capsule.write(x, "x", 0);
@@ -1008,10 +977,6 @@ public final class Vector3f implements Savable, Cloneable {
         x = capsule.readFloat("x", 0);
         y = capsule.readFloat("y", 0);
         z = capsule.readFloat("z", 0);
-    }
-    
-    public Class<? extends Vector3f> getClassTag() {
-        return this.getClass();
     }
 
     public float getX() {
@@ -1082,4 +1047,5 @@ public final class Vector3f implements Savable, Cloneable {
         }
         throw new IllegalArgumentException("index must be either 0, 1 or 2");
     }
+
 }

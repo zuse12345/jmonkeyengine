@@ -9,6 +9,7 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Triangle;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Spatial;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -148,6 +149,11 @@ public class TempVars {
     public final float[] fDdU = new float[3];
     public final float[] fADdU = new float[3];
     public final float[] fAWxDdU = new float[3];
+
+    /**
+     * Maximum tree depth .. 32 levels??
+     */
+    public final Spatial[] spatialStack = new Spatial[32];
 
     /**
      * BIHTree

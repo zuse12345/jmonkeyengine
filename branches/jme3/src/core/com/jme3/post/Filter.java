@@ -17,7 +17,6 @@ import com.jme3.texture.Texture2D;
  */
 public abstract class Filter {
 
-
     private String name;
     private boolean requiresDepthTexture=false;
     protected Pass defaultPass=new Pass();
@@ -58,7 +57,7 @@ public abstract class Filter {
     }
 
     protected Format getDefaultPassTextureFormat(){
-        return Format.RGBA8;
+        return Format.RGB8;
     }
 
     protected Format getDefaultPassDepthFormat(){

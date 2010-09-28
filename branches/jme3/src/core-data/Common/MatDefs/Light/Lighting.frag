@@ -160,10 +160,14 @@ void main(){
        alpha = texture2D(m_AlphaMap, newTexCoord).r;
     #endif
     #ifdef VERTEX_LIGHTING
-       gl_FragColor = (AmbientSum + DiffuseSum) * diffuseColor
-                     + SpecularSum * specularColor;
+       vec2 light = vec2(AmbientSum.a, SpecularSum.a);
+       #ifdef COLORRAMP
+           light.x = texture2D(m_ColorRamp, vec2(light.x, 0.0)).r;
+           light.y = texture2D(m_ColorRamp, vec2(light.y, 0.0)).r;
+       #endif
 
-       
+       gl_FragColor =  (AmbientSum + DiffuseSum) * light.x * diffuseColor
+                     + (SpecularSum) * light.y * specularColor;
     #else
        vec4 lightDir = vLightDir;
        lightDir.xyz = normalize(lightDir.xyz);

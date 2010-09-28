@@ -58,7 +58,6 @@ public class HelloPicking extends SimpleApplication {
   /** Defining the "Shoot" action: Determine what was hit and how to respond. */
   private ActionListener actionListener = new ActionListener() {
 
-    @Override
     public void onAction(String name, boolean keyPressed, float tpf) {
       if (name.equals("Shoot") && !keyPressed) {
         // 1. Reset results list.

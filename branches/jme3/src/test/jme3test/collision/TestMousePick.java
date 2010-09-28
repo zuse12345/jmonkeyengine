@@ -56,7 +56,6 @@ public class TestMousePick extends SimpleApplication {
     /** Defining the "Shoot" action: Determine what was hit and how to respond. */
     private ActionListener actionListener = new ActionListener() {
 
-        @Override
         public void onAction(String name, boolean keyPressed, float tpf) {
             if (name.equals("Shoot") && !keyPressed) {
                 Vector3f origin    = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.0f);

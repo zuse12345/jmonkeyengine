@@ -144,7 +144,6 @@ public class TerrainTest extends SimpleApplication {
 
 	private ActionListener actionListener = new ActionListener() {
 
-		@Override
 		public void onAction(String name, boolean pressed, float tpf) {
 			if (name.equals("wireframe") && !pressed) {
 				wireframe = !wireframe;

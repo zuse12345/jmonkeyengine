@@ -281,7 +281,6 @@ public class TerrainTestCollision extends SimpleBulletApplication {
     }
     private ActionListener actionListener = new ActionListener() {
 
-        @Override
         public void onAction(String binding, boolean value, float tpf) {
             if (binding.equals("wireframe") && !value) {
                 wireframe = !wireframe;

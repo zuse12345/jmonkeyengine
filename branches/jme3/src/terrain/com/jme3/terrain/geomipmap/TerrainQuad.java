@@ -47,7 +47,7 @@ public class TerrainQuad extends Node implements Terrain {
 
 	protected float offsetAmount;
 
-	protected short quadrant = 1;
+	protected int quadrant = 1;
 	
 	protected LodCalculatorFactory lodCalculatorFactory;
 
@@ -200,7 +200,6 @@ public class TerrainQuad extends Node implements Terrain {
 			camLocations = location;
 		}
 		
-		@Override
 		public void run() {
 			long start = System.currentTimeMillis();
 			if (isLodCalcRunning()) {
@@ -719,7 +718,7 @@ public class TerrainQuad extends Node implements Terrain {
 	}
 	
 	
-	public short getQuadrant() {
+	public int getQuadrant() {
 		return quadrant;
 	}
 
@@ -1011,11 +1010,14 @@ public class TerrainQuad extends Node implements Terrain {
 		size = c.readInt("size", 0);
 		stepScale = (Vector3f) c.readSavable("stepScale", null);
 		offset = (Vector2f) c.readSavable("offset", new Vector2f(0,0));
-		offsetAmount = c.readInt("offsetAmount", 0);
-		quadrant = c.readShort("quadrant", (short) 0);
-
-		this.totalSize = totalSize;
-		this.lodCalculatorFactory = lodCalculatorFactory;
+		offsetAmount = c.readFloat("offsetAmount", 0);
+		quadrant = c.readInt("quadrant", 0);
+		totalSize = c.readInt("totalSize", 0);
+		lodCalculatorFactory = (LodCalculatorFactory) c.readSavable("lodCalculatorFactory", null);
+        heightMap = c.readFloatArray("heightMap", heightMap);
+        TerrainLodControl lodControl = getControl(TerrainLodControl.class);
+        if (lodControl != null && !(getParent() instanceof TerrainQuad))
+            lodControl.setTerrain(this);
 	}
 
 	@Override
@@ -1023,10 +1025,13 @@ public class TerrainQuad extends Node implements Terrain {
 		super.write(e);
 		OutputCapsule c = e.getCapsule(this);
 		c.write(size, "size", 0);
+        c.write(totalSize, "totalSize", 0);
 		c.write(stepScale, "stepScale", null);
 		c.write(offset, "offset", new Vector2f(0,0));
 		c.write(offsetAmount, "offsetAmount", 0);
 		c.write(quadrant, "quadrant", 0);
+        c.write(lodCalculatorFactory, "lodCalculatorFactory", null);
+        c.write(heightMap, "heightMap", null);
 	}
 	
 	@Override
@@ -1036,7 +1041,6 @@ public class TerrainQuad extends Node implements Terrain {
 	}
 
 
-	@Override
 	public int getMaxLod() {
 		if (maxLod < 0)
 			maxLod = Math.max(1, (int) (FastMath.log(size-1)/FastMath.log(2)) -1); // -1 forces our minimum of 4 triangles wide
@@ -1044,30 +1048,24 @@ public class TerrainQuad extends Node implements Terrain {
 		return maxLod;
 	}
 
-	@Override
 	public void useLOD(boolean useLod) {
 		usingLOD = useLod;
 	}
 
-	@Override
 	public boolean isUsingLOD() {
 		return usingLOD;
 	}
 
-
-	@Override
 	public void setHeight(Vector2f xzCoordinate, float height) {
 		// TODO Auto-generated method stub
 
 	}
 
-	@Override
 	public float getHeight(Vector2f xz) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
-	@Override
 	public float[] getHeightMap() {
 		return heightMap;
 	}

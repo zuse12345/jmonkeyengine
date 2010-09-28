@@ -69,7 +69,11 @@ public class TerrainPatch extends Geometry {
 
     protected TerrainPatch leftNeighbour, topNeighbour, rightNeighbour, bottomNeighbour;
     protected boolean searchedForNeighboursAlready = false;
-		
+
+    public TerrainPatch() {
+        super("TerrainPatch");
+    }
+    
 	public TerrainPatch(String name) {
 		super(name);
 	}
@@ -431,10 +435,24 @@ public class TerrainPatch extends Geometry {
 
     @Override
     public void write(JmeExporter ex) throws IOException {
+
+        // we don't want to save the mesh. We just save the heightmap and rebuild it on load
+        // this is much faster and makes way smaller save files
+        Mesh tempMesh = getMesh();
+        mesh = null;
+
         super.write(ex);
         OutputCapsule oc = ex.getCapsule(this);
+        oc.write(size, "size", 16);
+        oc.write(totalSize, "totalSize", 16);
+        oc.write(quadrant, "quadrant", (short)0);
+        oc.write(stepScale, "stepScale", Vector3f.UNIT_XYZ);
+        oc.write(offset, "offset", Vector3f.UNIT_XYZ);
+        oc.write(offsetAmount, "offsetAmount", 0);
+        oc.write(lodCalculator, "lodCalculator", null);
         oc.write(geomap.getHeightData(), "heightmap", null);
 
+        setMesh(tempMesh); // add the mesh back
     }
 
     @Override
@@ -449,7 +467,9 @@ public class TerrainPatch extends Geometry {
         offsetAmount = ic.readFloat("offsetAmount", 0);
         lodCalculator = (LodCalculator) ic.readSavable("lodCalculator", new DistanceLodCalculator());
         lodCalculator.setTerrainPatch(this);
-        FloatBuffer fb = (FloatBuffer) ic.readSavable("heightmap", null);
-        geomap = new LODGeomap(size, fb);
+        FloatBuffer heightBuffer = ic.readFloatBuffer("heightmap", null);
+        geomap = new LODGeomap(size, heightBuffer);
+        Mesh m = geomap.createMesh(stepScale, Vector2f.UNIT_XY, offset, offsetAmount, totalSize, false);
+        setMesh(m);
     }
 }

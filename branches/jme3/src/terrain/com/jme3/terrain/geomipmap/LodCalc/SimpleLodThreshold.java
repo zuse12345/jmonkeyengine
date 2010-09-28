@@ -46,7 +46,6 @@ public class SimpleLodThreshold implements LodThreshold {
     }
 	
 
-	@Override
 	public float getLodDistanceThreshold() {
 		return size*lodMultiplier;
 	}

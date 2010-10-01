@@ -9,7 +9,7 @@ MaterialDef Normal {
 
         WorldParameters {
             WorldViewProjectionMatrix
-            WorldViewMatrix
+            NormalMatrix
         }
 
         RenderState {         

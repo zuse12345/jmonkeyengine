@@ -4,6 +4,7 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.post.FilterPostProcessor;
@@ -42,8 +43,8 @@ public class TestCartoonEdge extends SimpleApplication {
             Material m = g.getMaterial();
             if (m.getMaterialDef().getName().equals("Phong Lighting")){
                 Texture t = assetManager.loadTexture("Textures/ColorRamp/toon.png");
-                t.setMinFilter(Texture.MinFilter.NearestNoMipMaps);
-                t.setMagFilter(Texture.MagFilter.Nearest);
+//                t.setMinFilter(Texture.MinFilter.NearestNoMipMaps);
+//                t.setMagFilter(Texture.MagFilter.Nearest);
                 m.setTexture("m_ColorRamp", t);
                 m.setBoolean("m_UseMaterialColors", true);
                 m.setColor("m_Specular", ColorRGBA.Black);
@@ -56,25 +57,25 @@ public class TestCartoonEdge extends SimpleApplication {
     public void setupLighting(){
    
         DirectionalLight dl = new DirectionalLight();
-        dl.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
-        dl.setColor(new ColorRGBA(1,1,1,1));
+        dl.setDirection(new Vector3f(-1, -1, 1).normalizeLocal());
+        dl.setColor(new ColorRGBA(2,2,2,1));
 
         rootNode.addLight(dl);
     }
 
-    public void setupSpaceCraft(){
-        Spatial spacecraft = assetManager.loadModel("Models/SpaceCraft/SpaceCraft.mesh.xml");
-        makeToonish(spacecraft);
-//        signpost.rotate(0, FastMath.HALF_PI, 0);
+    public void setupModel(){
+        Spatial model = assetManager.loadModel("Models/MonkeyHead/MonkeyHead.mesh.xml");
+        makeToonish(model);
+        model.rotate(0, FastMath.PI, 0);
 //        signpost.setLocalTranslation(12, 3.5f, 30);
-//        signpost.setLocalScale(4);
+//        model.scale(0.10f);
 //        signpost.setShadowMode(ShadowMode.CastAndReceive);
-        rootNode.attachChild(spacecraft);
+        rootNode.attachChild(model);
     }
 
     @Override
     public void simpleInitApp() {
-        viewPort.setBackgroundColor(ColorRGBA.White);
+        viewPort.setBackgroundColor(ColorRGBA.Gray);
 
         cam.setLocation(new Vector3f(-5.6310086f, 5.0892987f, -13.000479f));
         cam.setRotation(new Quaternion(0.1779095f, 0.20036356f, -0.03702727f, 0.96272093f));
@@ -86,7 +87,7 @@ public class TestCartoonEdge extends SimpleApplication {
         rootNode.setCullHint(CullHint.Never);
 
         setupLighting();
-        setupSpaceCraft();
+        setupModel();
         setupFilters();
     }
 

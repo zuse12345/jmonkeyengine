@@ -750,6 +750,14 @@ public class BoundingBox extends BoundingVolume {
         if (other instanceof Ray){
             Ray ray = (Ray) other;
             return collideWithRay(ray, results);
+        }else if (other instanceof Triangle){
+            Triangle t = (Triangle) other;
+            if (intersects(t.get1(), t.get2(), t.get3())){
+                CollisionResult r = new CollisionResult();
+                results.addCollision(r);
+                return 1;
+            }
+            return 0;
         }else{
             throw new UnsupportedCollisionException("With: "+other.getClass().getSimpleName());
         }

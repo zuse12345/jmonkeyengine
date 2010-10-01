@@ -104,7 +104,7 @@ public final class BIHNode implements Savable {
         right = (BIHNode) ic.readSavable("right_node", null);
     }
 
-    public static class BIHStackData {
+    public static final class BIHStackData {
 
         private final BIHNode node;
         private final float min, max;
@@ -148,7 +148,7 @@ public final class BIHNode implements Savable {
                 float maxExt = maxExts[a];
                 float minExt = minExts[a];
 
-                if (node.leftPlane <= node.rightPlane){
+                if (node.leftPlane < node.rightPlane){
                     // means there's a gap in the middle
                     // if the box is in that gap, we stop there
                     if (minExt > node.leftPlane
@@ -270,7 +270,7 @@ public final class BIHNode implements Savable {
         ArrayList<BIHStackData> stack = TempVars.get().bihStack;
         stack.clear();
 
-        float tHit = Float.POSITIVE_INFINITY;
+//        float tHit = Float.POSITIVE_INFINITY;
 
         Vector3f o = r.getOrigin().clone();
         Vector3f d = r.getDirection().clone();
@@ -362,28 +362,28 @@ public final class BIHNode implements Savable {
             for (int i = node.leftIndex; i <= node.rightIndex; i++){
                 tree.getTriangle(i, v1,v2,v3);
 
-//                if (worldMatrix != null){
-//                    worldMatrix.mult(v1, v1);
-//                    worldMatrix.mult(v2, v2);
-//                    worldMatrix.mult(v3, v3);
-//                }
-
                 float t = r.intersects(v1,v2,v3);
-                if (t < tHit){
-                    tHit = t;
-                    tMax = min(tMax, tHit);
-                    Vector3f contactPoint = new Vector3f(r.direction)
-                                                .multLocal(tHit)
-                                                .addLocal(r.origin);
+                if (!Float.isInfinite(t)){
+
+                    if (worldMatrix != null) {
+                        worldMatrix.mult(v1, v1);
+                        worldMatrix.mult(v2, v2);
+                        worldMatrix.mult(v3, v3);
+                        float t_world = new Ray(o,d).intersects(v1,v2,v3);
+                        t = t_world;
+                    }
                     
-                    CollisionResult cr = new CollisionResult(contactPoint, tHit);
+                    Vector3f contactPoint = new Vector3f(d)
+                                                .multLocal(t)
+                                                .addLocal(o);
+                    float worldSpaceDist  = o.distance(contactPoint);
+
+                    CollisionResult cr = new CollisionResult(contactPoint, worldSpaceDist);
                     cr.setTriangleIndex(tree.getTriangleIndex(i));
                     results.addCollision(cr);
                     cols ++;
                 }
             }
-//            if (results.size() > 0)
-//                return cols;
         }
 
         r.setOrigin(o);

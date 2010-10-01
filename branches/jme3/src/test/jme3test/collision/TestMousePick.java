@@ -33,7 +33,7 @@ public class TestMousePick extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        initKeys();       // load custom key mappings
+        flyCam.setEnabled(false);
         initMark();       // a red sphere to mark the hit
 
         /** create four colored boxes and a floor to shoot at: */
@@ -47,44 +47,35 @@ public class TestMousePick extends SimpleApplication {
         shootables.attachChild(makeCharacter());
     }
 
-    /** Declaring the "Shoot" action and mapping to its triggers. */
-    private void initKeys() {
-        flyCam.setEnabled(false);
-        inputManager.addMapping("Shoot", new MouseButtonTrigger(0));
-        inputManager.addListener(actionListener, "Shoot");
-    }
-    /** Defining the "Shoot" action: Determine what was hit and how to respond. */
-    private ActionListener actionListener = new ActionListener() {
+    @Override
+    public void simpleUpdate(float tpf){
+        rootNode.updateGeometricState();
 
-        public void onAction(String name, boolean keyPressed, float tpf) {
-            if (name.equals("Shoot") && !keyPressed) {
-                Vector3f origin    = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.0f);
-                Vector3f direction = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.3f);
-                direction.subtractLocal(origin).normalizeLocal();
+        Vector3f origin    = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.0f);
+        Vector3f direction = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.3f);
+        direction.subtractLocal(origin).normalizeLocal();
 
-                Ray ray = new Ray(origin, direction);
-                CollisionResults results = new CollisionResults();
-                shootables.collideWith(ray, results);
-                System.out.println("----- Collisions? " + results.size() + "-----");
-                for (int i = 0; i < results.size(); i++) {
-                    // For each hit, we know distance, impact point, name of geometry.
-                    float dist = results.getCollision(i).getDistance();
-                    Vector3f pt = results.getCollision(i).getWorldContactPoint();
-                    String hit = results.getCollision(i).getGeometry().getName();
-                    System.out.println("* Collision #" + i);
-                    System.out.println("  You shot " + hit + " at " + pt + ", " + dist + " wu away.");
-                }
-                if (results.size() > 0) {
-                    CollisionResult closest = results.getClosestCollision();
-                    mark.setLocalTranslation(closest.getWorldContactPoint());
-                    rootNode.attachChild(mark);
-                } else {
-                    rootNode.detachChild(mark);
-                }
-            }
+        Ray ray = new Ray(origin, direction);
+        CollisionResults results = new CollisionResults();
+        shootables.collideWith(ray, results);
+//        System.out.println("----- Collisions? " + results.size() + "-----");
+//        for (int i = 0; i < results.size(); i++) {
+//            // For each hit, we know distance, impact point, name of geometry.
+//            float dist = results.getCollision(i).getDistance();
+//            Vector3f pt = results.getCollision(i).getWorldContactPoint();
+//            String hit = results.getCollision(i).getGeometry().getName();
+//            System.out.println("* Collision #" + i);
+//            System.out.println("  You shot " + hit + " at " + pt + ", " + dist + " wu away.");
+//        }
+        if (results.size() > 0) {
+            CollisionResult closest = results.getClosestCollision();
+            mark.setLocalTranslation(closest.getContactPoint());
+            rootNode.attachChild(mark);
+        } else {
+            rootNode.detachChild(mark);
         }
-    };
-
+    }
+ 
     /** A cube object for target practice */
     protected Geometry makeCube(String name, float x, float y, float z) {
         Box box = new Box(new Vector3f(x, y, z), 1, 1, 1);

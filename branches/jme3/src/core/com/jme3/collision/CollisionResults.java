@@ -73,4 +73,18 @@ public class CollisionResults implements Iterable<CollisionResult> {
         return results.get(index);
     }
 
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("CollisionResults[");
+        for (CollisionResult result : results){
+            sb.append(result).append(", ");
+        }
+        if (results.size() > 0)
+            sb.setLength(sb.length()-2);
+
+        sb.append("]");
+        return sb.toString();
+    }
+
 }

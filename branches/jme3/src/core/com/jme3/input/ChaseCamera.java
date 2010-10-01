@@ -285,4 +285,22 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
         maxDistance = ic.readFloat("maxDistance", 40);
         minDistance = ic.readFloat("minDistance", 1);
     }
+
+    public float getMaxHeight() {
+        return maxHeight;
+    }
+
+    public void setMaxHeight(float maxHeight) {
+        this.maxHeight = maxHeight;
+    }
+
+    public float getMinHeight() {
+        return minHeight;
+    }
+
+    public void setMinHeight(float minHeight) {
+        this.minHeight = minHeight;
+    }
+
+
 }

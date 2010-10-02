@@ -94,6 +94,14 @@ public class FilterPostProcessor implements SceneProcessor {
         Texture2D tex = filterTexture;
         for (Iterator<Filter> it = filters.iterator(); it.hasNext();) {
             Filter filter = it.next();
+
+            if(filter.getPostRenderPasses()!=null){
+                for (Iterator<Filter.Pass> it1 = filter.getPostRenderPasses().iterator(); it1.hasNext();) {
+                    Filter.Pass pass = it1.next();
+                    pass.getPassMaterial().setTexture("m_Texture", tex);
+                    renderProcessing(r, pass.getRenderFrameBuffer(), pass.getPassMaterial());
+                }
+            }
             
             Material mat = filter.getMaterial();
             if(computeDepth && filter.isRequiresDepthTexture()){

@@ -168,7 +168,7 @@ public class ObjectStore implements MessageListener, ConnectionListener {
             ObjectDef[] defs = defMsg.objects;
             for (ObjectDef def : defs){
                 RemoteObject remoteObject = new RemoteObject(this, message.getClient());
-                remoteObject.objectId = def.objectId;
+                remoteObject.objectId = (short)def.objectId;
                 remoteObject.methodDefs = def.methodDefs;
                 remoteObjects.put(def.objectName, remoteObject);
                 remoteObjectsById.put(def.objectId, remoteObject);

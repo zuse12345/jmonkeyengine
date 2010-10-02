@@ -92,7 +92,7 @@ public class RmiSerializer extends Serializer {
     }
 
     private void writeObjectDef(ByteBuffer buffer, ObjectDef def) throws IOException{
-        buffer.putShort(def.objectId);
+        buffer.putShort((short)def.objectId);
         writeString(buffer, def.objectName);
         Method[] methods = def.methods;
         buffer.put( (byte) methods.length );
@@ -135,7 +135,7 @@ public class RmiSerializer extends Serializer {
     }
 
     private void writeMethodCall(ByteBuffer buffer, RemoteMethodCallMessage call) throws IOException{
-        buffer.putShort(call.objectId);
+        buffer.putShort((short)call.objectId);
         buffer.putShort(call.methodId);
         buffer.putShort(call.invocationId);
         if (call.args == null){

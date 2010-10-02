@@ -19,6 +19,8 @@
 	<classpathentry kind="src" path="src/test-data"/>
 	<classpathentry kind="src" path="src/tools"/>
 	<classpathentry kind="src" path="src/xml"/>
+	<classpathentry kind="src" path="src/terrain"/>
+	<classpathentry kind="src" path="src/networking"/>
 	<classpathentry kind="lib" path="lib/jbullet/asm-all-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/jbullet/jbullet.jar"/>
 	<classpathentry kind="lib" path="lib/jbullet/stack-alloc.jar"/>
@@ -37,7 +39,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/lwjgl/2.5_jar/jinput.jar"/>
 	<classpathentry kind="lib" path="lib/lwjgl/2.5_jar/lwjgl.jar"/>
-	<classpathentry kind="lib" path="lib/lwjgl/jME3-lwjgl-natives-2.5.jar"/>
+	<classpathentry kind="lib" path="lib/lwjgl/jME3-lwjgl-natives.jar"/>
 	<classpathentry kind="lib" path="lib/niftygui/nifty-1.2-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/niftygui/nifty-default-controls-1.2-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/niftygui/nifty-style-black-1.2-SNAPSHOT.jar"/>

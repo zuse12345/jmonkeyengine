@@ -249,12 +249,12 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         return worldLights;
     }
 
-    private void checkUpdatedTransform(){
-        if ((refreshFlags & RF_TRANSFORM) != 0)
-            throw new IllegalStateException("updateGeometricState() must be"
-                                          + " called on the root node to retrieve"
-                                          + " updated world transforms.");
-    }
+//    private void checkUpdatedTransform(){
+//        if ((refreshFlags & RF_TRANSFORM) != 0)
+//            throw new IllegalStateException("updateGeometricState() must be"
+//                                          + " called on the root node to retrieve"
+//                                          + " updated world transforms.");
+//    }
 
     /**
      * <code>getWorldRotation</code> retrieves the absolute rotation of the
@@ -263,7 +263,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      * @return the Spatial's world rotation matrix.
      */
     public Quaternion getWorldRotation() {
-        checkUpdatedTransform();
+        checkDoTransformUpdate();
         return worldTransform.getRotation();
     }
 
@@ -274,7 +274,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      * @return the world's tranlsation vector.
      */
     public Vector3f getWorldTranslation() {
-        checkUpdatedTransform();
+        checkDoTransformUpdate();
         return worldTransform.getTranslation();
     }
 
@@ -285,7 +285,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      * @return the world's scale factor.
      */
     public Vector3f getWorldScale() {
-        checkUpdatedTransform();
+        checkDoTransformUpdate();
         return worldTransform.getScale();
     }
 
@@ -296,7 +296,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      * @return the world transform.
      */
     public Transform getWorldTransform(){
-        checkUpdatedTransform();
+        checkDoTransformUpdate();
         return worldTransform;
     }
 
@@ -404,11 +404,10 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         }
     }
 
-    void updateOwnWorldBounds(){
-        updateOwnWorldTransforms();
-    }
+    void checkDoTransformUpdate(){
+        if ( (refreshFlags & RF_TRANSFORM) == 0 )
+            return;
 
-    void updateOwnWorldTransforms(){
         if (parent == null){
             worldTransform.set(localTransform);
             refreshFlags &= ~RF_TRANSFORM;

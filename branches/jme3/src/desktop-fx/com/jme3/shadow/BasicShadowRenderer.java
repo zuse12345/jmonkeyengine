@@ -153,7 +153,6 @@ public class BasicShadowRenderer implements SceneProcessor {
         dispPic.setPosition(w / 20f, h / 20f);
         dispPic.setWidth(w / 5f);
         dispPic.setHeight(h / 5f);
-        dispPic.updateGeometricState();
     }
 
 }

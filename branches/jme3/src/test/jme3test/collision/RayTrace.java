@@ -43,6 +43,8 @@ public class RayTrace {
         float wr = (float) cam.getWidth()  / image.getWidth();
         float hr = (float) cam.getHeight() / image.getHeight();
 
+        scene.updateGeometricState();
+
         for (int y = 0; y < h; y++){
             for (int x = 0; x < w; x++){
                 Vector2f v = new Vector2f(x * wr,y * hr);

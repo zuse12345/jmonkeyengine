@@ -101,10 +101,6 @@ public class TestCubeMap extends SimpleApplication {
         setupSkyBox();
 
         rootNode.attachChild(createReflectiveTeapot());
-//        rootNode.updateGeometricState();
- 
-//        cam.setLocation(new Vector3f(6, 6, -4));
-//        cam.lookAt(rootNode.getWorldBound().getCenter(), Vector3f.UNIT_Y);
     }
 
 }

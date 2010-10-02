@@ -139,9 +139,7 @@ public class HelloPicking extends SimpleApplication {
     Spatial golem = assetManager.loadModel("Models/Oto/Oto.mesh.xml");
     golem.scale(0.5f);
     golem.setLocalTranslation(-1.0f, -1.5f, -0.6f);
-    golem.updateGeometricState();
-    golem.setModelBound(new BoundingBox());
-    golem.updateModelBound();
+
     // We must add a light to make the model visible
     DirectionalLight sun = new DirectionalLight();
     sun.setDirection(new Vector3f(-0.1f, -0.7f, -1.0f));

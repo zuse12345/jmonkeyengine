@@ -49,7 +49,6 @@ public class TestRayCasting extends SimpleApplication {
         teapot.rotate(FastMath.HALF_PI, FastMath.HALF_PI, FastMath.HALF_PI);
         teapot.setMaterial(mat);
         rootNode.attachChild(teapot);
-        rootNode.updateGeometricState();
 
 //        cam.setLocation(cam.getLocation().add(0,1,0));
 //        cam.lookAt(teapot.getWorldBound().getCenter(), Vector3f.UNIT_Y);
@@ -62,8 +61,6 @@ public class TestRayCasting extends SimpleApplication {
     @Override
     public void simpleUpdate(float tpf){
         teapot.rotate(0,tpf,0);
-        rootNode.updateGeometricState();
-
         tracer.update();
     }
 

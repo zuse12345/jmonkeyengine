@@ -64,7 +64,6 @@ public class TestSSAO extends SimpleApplication {
 
 
         Geometry soil=new Geometry("soil", new Box(new Vector3f(0, -13, 550), 800, 10, 700));
-        soil.updateGeometricState();
         soil.setMaterial(matSoil);
         soil.setShadowMode(ShadowMode.CastAndReceive);
         rootNode.attachChild(soil);

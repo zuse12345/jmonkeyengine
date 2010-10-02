@@ -182,12 +182,14 @@ public final class ColorRGBA implements Savable, Cloneable {
      * @param g the green component of this color.
      * @param b the blue component of this color.
      * @param a the alpha component of this color.
+     * @return this
      */
-    public void set(float r, float g, float b, float a) {
+    public ColorRGBA set(float r, float g, float b, float a) {
       this.r = r;
       this.g = g;
       this.b = b;
       this.a = a;
+      return this;
     }
 
     /**

@@ -74,17 +74,21 @@ public final class Transform implements Savable, Cloneable {
     /**
      * Sets this rotation to the given Quaternion value.
      * @param rot The new rotation for this matrix.
+     * @return this
      */
-    public void setRotation(Quaternion rot) {
+    public Transform setRotation(Quaternion rot) {
         this.rot.set(rot);
+        return this;
     }
 
     /**
      * Sets this translation to the given value.
      * @param trans The new translation for this matrix.
+     * @return this
      */
-    public void setTranslation(Vector3f trans) {
+    public Transform setTranslation(Vector3f trans) {
         this.translation.set(trans);
+        return this;
     }
 
     /**
@@ -98,17 +102,21 @@ public final class Transform implements Savable, Cloneable {
     /**
      * Sets this scale to the given value.
      * @param scale The new scale for this matrix.
+     * @return this
      */
-    public void setScale(Vector3f scale) {
+    public Transform setScale(Vector3f scale) {
         this.scale.set(scale);
+        return this;
     }
 
     /**
      * Sets this scale to the given value.
      * @param scale The new scale for this matrix.
+     * @return this
      */
-    public void setScale(float scale) {
+    public Transform setScale(float scale) {
         this.scale.set(scale, scale, scale);
+        return this;
     }
 
     /**
@@ -198,9 +206,11 @@ public final class Transform implements Savable, Cloneable {
      * @param x This matrix's new x translation.
      * @param y This matrix's new y translation.
      * @param z This matrix's new z translation.
+     * @return this
      */
-    public void setTranslation(float x,float y, float z) {
+    public Transform setTranslation(float x,float y, float z) {
         translation.set(x,y,z);
+        return this;
     }
 
     /**
@@ -208,9 +218,11 @@ public final class Transform implements Savable, Cloneable {
      * @param x This matrix's new x scale.
      * @param y This matrix's new y scale.
      * @param z This matrix's new z scale.
+     * @return this
      */
-    public void setScale(float x, float y, float z) {
+    public Transform setScale(float x, float y, float z) {
         scale.set(x,y,z);
+        return this;
     }
 
     public Vector3f transformVector(final Vector3f in, Vector3f store){
@@ -249,11 +261,13 @@ public final class Transform implements Savable, Cloneable {
     /**
      * Sets this matrix to be equal to the given matrix.
      * @param matrixQuat The matrix to be equal to.
+     * @return this
      */
-    public void set(Transform matrixQuat) {
+    public Transform set(Transform matrixQuat) {
         this.translation.set(matrixQuat.translation);
         this.rot.set(matrixQuat.rot);
         this.scale.set(matrixQuat.scale);
+        return this;
     }
 
     public void write(JmeExporter e) throws IOException {

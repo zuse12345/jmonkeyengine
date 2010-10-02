@@ -133,12 +133,14 @@ public final class Quaternion implements Savable, Cloneable {
      *            the z value of the quaternion.
      * @param w
      *            the w value of the quaternion.
+     * @return this
      */
-    public void set(float x, float y, float z, float w) {
+    public Quaternion set(float x, float y, float z, float w) {
         this.x = x;
         this.y = y;
         this.z = z;
         this.w = w;
+        return this;
     }
 
     /**
@@ -148,7 +150,7 @@ public final class Quaternion implements Savable, Cloneable {
      *
      * @param q
      *            The Quaternion to copy values from.
-     * @return this for chaining
+     * @return this
      */
     public Quaternion set(Quaternion q) {
         this.x = q.x;

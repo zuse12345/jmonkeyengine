@@ -330,8 +330,16 @@ public class RenderManager {
             // use forced material
             forcedMaterial.render(g, this);
         }else{
-            // use geometry's material
-            g.getMaterial().render(g, this);
+            if(forcedRenderState!=null){
+                g.getMaterial().setAdditionalState(forcedRenderState);
+                // use geometry's material
+                g.getMaterial().render(g, this);
+                g.getMaterial().setAdditionalState(null);
+            }else{
+                // use geometry's material
+                g.getMaterial().render(g, this);
+            }
+            
         }
     }
 

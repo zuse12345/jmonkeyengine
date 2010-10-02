@@ -313,7 +313,21 @@ public class Material implements Cloneable, Savable {
         setParam(name, VarType.Vector3, value);
     }
 
+    /**
+     * get the additional state on this material
+     * @return additionalState
+     */
+    public RenderState getAdditionalState() {
+        return additionalState;
+    }
 
+    /**
+     * set an additional state to the material
+     * @param additionalState
+     */
+    public void setAdditionalState(RenderState additionalState) {
+        this.additionalState = additionalState;
+    }
 
     /**
      * Uploads the lights in the light list as two uniform arrays.<br/><br/>

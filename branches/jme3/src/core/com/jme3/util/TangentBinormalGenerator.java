@@ -110,6 +110,10 @@ public class TangentBinormalGenerator {
         
         IndexBuffer indexBuffer = mesh.getIndexBuffer();
         FloatBuffer vertexBuffer = (FloatBuffer) mesh.getBuffer(Type.Position).getData();
+        if (mesh.getBuffer(Type.TexCoord) == null)
+            throw new IllegalArgumentException("Can only generate tangents for "
+                                             + "meshes with texture coordinates");
+        
         FloatBuffer textureBuffer = (FloatBuffer) mesh.getBuffer(Type.TexCoord).getData();
 
         VertexData[] vertices = initVertexData(vertexBuffer.capacity() / 3);

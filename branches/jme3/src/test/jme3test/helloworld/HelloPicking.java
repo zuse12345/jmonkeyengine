@@ -71,7 +71,7 @@ public class HelloPicking extends SimpleApplication {
         for (int i = 0; i < results.size(); i++) {
           // For each hit, we know distance, impact point, name of geometry.
           float dist = results.getCollision(i).getDistance();
-          Vector3f pt = results.getCollision(i).getWorldContactPoint();
+          Vector3f pt = results.getCollision(i).getContactPoint();
           String hit = results.getCollision(i).getGeometry().getName();
           System.out.println("* Collision #" + i);
           System.out.println("  You shot " + hit + " at " + pt + ", " + dist + " wu away.");
@@ -81,7 +81,7 @@ public class HelloPicking extends SimpleApplication {
           // The closest collision point is what was truly hit:
           CollisionResult closest = results.getClosestCollision();
           // Let's interact - we mark the hit with a red dot.
-          mark.setLocalTranslation(closest.getWorldContactPoint());
+          mark.setLocalTranslation(closest.getContactPoint());
           rootNode.attachChild(mark);
         } else {
           // No hits? Then remove the red mark.

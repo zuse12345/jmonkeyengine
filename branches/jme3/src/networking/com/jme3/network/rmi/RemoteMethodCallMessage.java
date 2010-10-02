@@ -10,7 +10,7 @@ import com.jme3.network.serializing.Serializable;
  * @author Kirill Vainer
  */
 @Serializable
-public class RemoteMethodCallMessage extends Message {
+class RemoteMethodCallMessage extends Message {
 
     public RemoteMethodCallMessage(){
         super(true);
@@ -19,7 +19,7 @@ public class RemoteMethodCallMessage extends Message {
     /**
      * The object ID on which the call is being made.
      */
-    short objectId;
+    int objectId;
 
     /**
      * The method ID used for look-up in the LocalObject.methods array.

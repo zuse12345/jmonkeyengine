@@ -9,7 +9,7 @@ import com.jme3.network.serializing.Serializable;
  * @author Kirill Vainer
  */
 @Serializable
-public class RemoteObjectDefMessage extends Message {
+class RemoteObjectDefMessage extends Message {
 
     ObjectDef[] objects;
     

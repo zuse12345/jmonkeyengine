@@ -6,7 +6,7 @@ package com.jme3.network.rmi;
  *
  * @author Kirill Vainer
  */
-public class MethodDef {
+class MethodDef {
 
     /**
      * Method name

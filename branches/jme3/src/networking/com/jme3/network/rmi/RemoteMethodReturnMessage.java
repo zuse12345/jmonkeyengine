@@ -10,7 +10,7 @@ import com.jme3.network.serializing.Serializable;
  * @author Kirill Vainer.
  */
 @Serializable
-public class RemoteMethodReturnMessage extends Message {
+class RemoteMethodReturnMessage extends Message {
 
     public RemoteMethodReturnMessage(){
         super(true);
@@ -25,6 +25,7 @@ public class RemoteMethodReturnMessage extends Message {
      * The return value, could be null.
      */
     Object retVal;
+
 
     @Override
     public String toString(){

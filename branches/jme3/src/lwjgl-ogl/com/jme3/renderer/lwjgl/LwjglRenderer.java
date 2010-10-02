@@ -33,6 +33,7 @@ import com.jme3.texture.Texture.WrapAxis;
 import com.jme3.util.BufferUtils;
 import com.jme3.util.IntMap;
 import com.jme3.util.IntMap.Entry;
+import com.jme3.util.ListMap;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
@@ -551,7 +552,7 @@ public class LwjglRenderer implements Renderer {
         if (loc < 0){
             uniform.setLocation(-1);
             // uniform is not declared in shader
-            logger.warning("Uniform "+uniform.getName()+" is not declared in shader.");
+            logger.log(Level.WARNING, "Uniform {0} is not declared in shader.", uniform.getName());
         }else{
             uniform.setLocation(loc);
         }
@@ -661,7 +662,10 @@ public class LwjglRenderer implements Renderer {
     }
 
     protected void updateShaderUniforms(Shader shader){
-        for (Uniform uniform : shader.getUniforms()){
+        ListMap<String, Uniform> uniforms = shader.getUniformMap();
+//        for (Uniform uniform : shader.getUniforms()){
+        for (int i = 0; i < uniforms.size(); i++){
+            Uniform uniform = uniforms.getValue(i);
             if (uniform.isUpdateNeeded())
                 updateUniform(shader, uniform);
         }
@@ -669,7 +673,10 @@ public class LwjglRenderer implements Renderer {
 
 
     protected void resetUniformLocations(Shader shader){
-        for (Uniform uniform : shader.getUniforms()){
+        ListMap<String, Uniform> uniforms = shader.getUniformMap();
+//        for (Uniform uniform : shader.getUniforms()){
+        for (int i = 0; i < uniforms.size(); i++){
+            Uniform uniform = uniforms.getValue(i);
             uniform.reset(); // e.g check location again
         }
     }

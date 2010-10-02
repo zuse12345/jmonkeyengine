@@ -7,12 +7,13 @@ import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
 import com.jme3.renderer.GLObject;
 import com.jme3.renderer.Renderer;
+import com.jme3.util.ListMap;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-public class Shader extends GLObject implements Savable {
+public final class Shader extends GLObject implements Savable {
 
     private String language;
 
@@ -30,7 +31,8 @@ public class Shader extends GLObject implements Savable {
     /**
      * Maps uniform name to the uniform variable.
      */
-    private HashMap<String, Uniform> uniforms;
+//    private HashMap<String, Uniform> uniforms;
+    private ListMap<String, Uniform> uniforms;
 
     /**
      * Maps attribute name to the location of the attribute in the shader.
@@ -184,7 +186,8 @@ public class Shader extends GLObject implements Savable {
         super(Type.Shader);
         this.language = language;
         shaderList = new ArrayList<ShaderSource>();
-        uniforms = new HashMap<String, Uniform>();
+//        uniforms = new HashMap<String, Uniform>();
+        uniforms = new ListMap<String, Uniform>();
         attribs = new HashMap<String, Attribute>();
     }
 
@@ -198,10 +201,11 @@ public class Shader extends GLObject implements Savable {
     protected Shader(Shader s){
         super(Type.Shader, s.id);
         shaderList = new ArrayList<ShaderSource>();
-        uniforms = new HashMap<String, Uniform>();
+//        uniforms = new HashMap<String, Uniform>();
+        uniforms = new ListMap<String, Uniform>();
         attribs = new HashMap<String, Attribute>();
         for (ShaderSource source : s.shaderList){
-            this.addSource((ShaderSource) source.createDestructableClone());
+            addSource((ShaderSource) source.createDestructableClone());
         }
     }
 
@@ -218,7 +222,9 @@ public class Shader extends GLObject implements Savable {
         language = ic.readString("language", null);
         shaderList = ic.readSavableArrayList("shaderList", null);
         attribs = (HashMap<String, Attribute>) ic.readStringSavableMap("attribs", null);
-        uniforms = (HashMap<String, Uniform>) ic.readStringSavableMap("uniforms", null);
+
+        HashMap<String, Uniform> uniMap = (HashMap<String, Uniform>) ic.readStringSavableMap("uniforms", null);
+        uniforms = new ListMap<String, Uniform>(uniMap);
     }
 
     /**
@@ -299,8 +305,12 @@ public class Shader extends GLObject implements Savable {
         return attrib;
     }
 
-    public Collection<Uniform> getUniforms(){
-        return uniforms.values();
+//    public Collection<Uniform> getUniforms(){
+//        return uniforms.values();
+//    }
+
+    public ListMap<String, Uniform> getUniformMap(){
+        return uniforms;
     }
 
     public Collection<Attribute> getAttributes() {
@@ -315,6 +325,7 @@ public class Shader extends GLObject implements Savable {
         return language;
     }
 
+    @Override
     public String toString(){
         return getClass().getSimpleName() + "[language="+language
                                            + ", numSources="+shaderList.size()

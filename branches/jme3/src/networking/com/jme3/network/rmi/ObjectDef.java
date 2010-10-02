@@ -4,7 +4,7 @@ import com.jme3.network.serializing.Serializable;
 import java.lang.reflect.Method;
 
 @Serializable
-public class ObjectDef {
+class ObjectDef {
 
     /**
      * The object name, can be null if undefined.
@@ -14,7 +14,7 @@ public class ObjectDef {
     /**
      * Object ID
      */
-    short    objectId;
+    int    objectId;
 
     /**
      * Methods of the implementation on the local client. Set to null

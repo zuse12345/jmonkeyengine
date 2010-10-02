@@ -23,8 +23,8 @@ public final class ListMap<K, V> implements Map<K, V>, Cloneable, Serializable {
 
     public static void main(String[] args){
         Map<String, String> map = new ListMap<String, String>();
-        map.put(new String("bob"), "hello");
-        System.out.println(map.get(new String("bob")));
+        map.put( "bob", "hello");
+        System.out.println(map.get("bob"));
         map.remove("bob");
         System.out.println(map.size());
 

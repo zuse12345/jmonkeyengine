@@ -25,9 +25,11 @@ import com.jme3.shader.Shader;
 import com.jme3.shader.Uniform;
 import com.jme3.shader.VarType;
 import com.jme3.texture.Texture;
+import com.jme3.util.ListMap;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,7 +50,8 @@ public class Material implements Cloneable, Savable {
     }
 
     private MaterialDef def;
-    private HashMap<String, MatParam> paramValues = new HashMap<String, MatParam>();
+    private ListMap<String, MatParam> paramValues = new ListMap<String, MatParam>();
+//    private HashMap<String, MatParam> paramValues = new HashMap<String, MatParam>();
 
     private Technique technique;
     private HashMap<String, Technique> techniques = new HashMap<String, Technique>();
@@ -129,7 +132,16 @@ public class Material implements Cloneable, Savable {
             }
             mat.technique = null;
             mat.techniques = new HashMap<String, Technique>();
-            mat.paramValues = new HashMap<String, MatParam>(paramValues);
+//            mat.paramValues = new HashMap<String, MatParam>(paramValues);
+//            mat.paramValues = new ListMap<String, MatParam>(paramValues);
+
+//            mat.paramValues = new HashMap<String, MatParam>();
+            mat.paramValues = new ListMap<String, MatParam>();
+            for (int i = 0; i < paramValues.size(); i++){
+                Map.Entry<String, MatParam> entry = paramValues.getEntry(i);
+                mat.paramValues.put(entry.getKey(), entry.getValue().clone());
+            }
+
             return mat;
         }catch (CloneNotSupportedException ex){
             throw new AssertionError();
@@ -414,7 +426,13 @@ public class Material implements Cloneable, Savable {
 
                 Light l = lightList.get(i);
                 ColorRGBA color = l.getColor();
-                ColorRGBA color2 = new ColorRGBA(color);
+                ColorRGBA color2;
+                if (lightColor.getValue() != null){
+                    color2 = (ColorRGBA) lightColor.getValue();
+                }else{
+                    color2 = new ColorRGBA();
+                }
+                color2.set(color);
                 color2.a = l.getType().getId();
                 lightColor.setValue(VarType.Vector4, color2);
 
@@ -422,7 +440,13 @@ public class Material implements Cloneable, Savable {
                     case Directional:
                         DirectionalLight dl = (DirectionalLight) l;
                         Vector3f dir = dl.getDirection();
-                        Quaternion q1 = new Quaternion(dir.getX(), dir.getY(), dir.getZ(), -1);
+                        Quaternion q1;
+                        if (lightPos.getValue() != null){
+                            q1 = (Quaternion) lightPos.getValue();
+                        }else{
+                            q1 = new Quaternion();
+                        }
+                        q1.set(dir.getX(), dir.getY(), dir.getZ(), -1);
                         lightPos.setValue(VarType.Vector4, q1);
                         break;
                     case Point:
@@ -432,7 +456,13 @@ public class Material implements Cloneable, Savable {
                         if (invRadius != 0){
                             invRadius = 1f / invRadius;
                         }
-                        Quaternion q2 = new Quaternion(pos.getX(), pos.getY(), pos.getZ(), invRadius);
+                        Quaternion q2;
+                        if (lightPos.getValue() != null){
+                            q2 = (Quaternion) lightPos.getValue();
+                        }else{
+                            q2 = new Quaternion();
+                        }
+                        q2.set(pos.getX(), pos.getY(), pos.getZ(), invRadius);
                         lightPos.setValue(VarType.Vector4, q2);
                         break;
                     default:
@@ -519,8 +549,10 @@ public class Material implements Cloneable, Savable {
             rm.updateUniformBindings(technique.getWorldBindUniforms());
 
         // setup textures
-        Collection<MatParam> params = paramValues.values();
-        for (MatParam param : params){
+//        Collection<MatParam> params = paramValues.values();
+//        for (MatParam param : params){
+        for (int i = 0; i < paramValues.size(); i++){
+            MatParam param = paramValues.getValue(i);
             if (param instanceof MatParamTexture){
                 MatParamTexture texParam = (MatParamTexture) param;
                 r.setTexture(texParam.getUnit(), texParam.getTextureValue());
@@ -580,7 +612,10 @@ public class Material implements Cloneable, Savable {
         def = (MaterialDef) im.getAssetManager().loadAsset(new AssetKey(defName));
         additionalState = (RenderState) ic.readSavable("render_state", null);
         transparent = ic.readBoolean("is_transparent", false);
-        paramValues = (HashMap<String, MatParam>) ic.readStringSavableMap("parameters", null);
+
+        HashMap<String, MatParam> params = (HashMap<String, MatParam>) ic.readStringSavableMap("parameters", null);
+        paramValues.putAll(params);
+//        paramValues = (HashMap<String, MatParam>)
 
         // load the textures and update nextTexUnit
         for (MatParam param : paramValues.values()){

@@ -6,6 +6,7 @@ import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
 import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
+import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
@@ -52,7 +53,7 @@ public class HelloPicking extends SimpleApplication {
   private void initKeys() {
     inputManager.addMapping("Shoot",
       new KeyTrigger(KeyInput.KEY_SPACE), // trigger 1: spacebar
-      new MouseButtonTrigger(0));         // trigger 2: left-button click
+      new MouseButtonTrigger(MouseInput.BUTTON_LEFT)); // trigger 2: left-button click
     inputManager.addListener(actionListener, "Shoot");
   }
   /** Defining the "Shoot" action: Determine what was hit and how to respond. */

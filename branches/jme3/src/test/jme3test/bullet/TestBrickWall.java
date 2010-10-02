@@ -6,6 +6,7 @@ import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.font.BitmapText;
+import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.material.Material;
@@ -62,7 +63,7 @@ public class TestBrickWall extends SimpleBulletApplication {
         this.cam.setLocation(new Vector3f(0, 6f, 6f));
         cam.lookAt(Vector3f.ZERO, new Vector3f(0, 1, 0));
         cam.setFrustumFar(15);
-        inputManager.addMapping("shoot", new MouseButtonTrigger(0));
+        inputManager.addMapping("shoot", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
         inputManager.addListener(actionListener, "shoot");
 
         rootNode.setShadowMode(ShadowMode.Off);
@@ -152,7 +153,7 @@ public class TestBrickWall extends SimpleBulletApplication {
     }
 
     protected void initCrossHairs() {
-        guiNode.detachAllChildren();
+//        guiNode.detachAllChildren();
         guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
         BitmapText ch = new BitmapText(guiFont, false);
         ch.setSize(guiFont.getCharSet().getRenderedSize() * 2);

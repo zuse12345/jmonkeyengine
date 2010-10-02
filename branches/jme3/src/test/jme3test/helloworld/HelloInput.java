@@ -7,6 +7,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 import com.jme3.math.ColorRGBA;
 import com.jme3.input.KeyInput;
+import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
@@ -40,7 +41,7 @@ public class HelloInput extends SimpleApplication {
     inputManager.addMapping("Left",   new KeyTrigger(KeyInput.KEY_J));
     inputManager.addMapping("Right",  new KeyTrigger(KeyInput.KEY_K));
     inputManager.addMapping("Rotate", new KeyTrigger(KeyInput.KEY_SPACE), // spacebar!
-                                      new MouseButtonTrigger(0) );        // left click!
+                                      new MouseButtonTrigger(MouseInput.BUTTON_LEFT) );        // left click!
     /** Add the named mappings to the action listeners. */
     inputManager.addListener(actionListener, new String[]{"Pause"});
     inputManager.addListener(analogListener, new String[]{"Left", "Right", "Rotate"});

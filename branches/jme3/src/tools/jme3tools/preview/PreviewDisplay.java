@@ -1,6 +1,7 @@
 package jme3tools.preview;
 
 import com.jme3.app.Application;
+import com.jme3.input.MouseInput;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
@@ -96,9 +97,9 @@ public class PreviewDisplay extends Application implements AnalogListener {
         inputManager.addMapping("MOUSE_W+", new MouseAxisTrigger(2, false));
         inputManager.addMapping("MOUSE_W-", new MouseAxisTrigger(2, true));
 
-        inputManager.addMapping("MOUSE_LEFT", new MouseButtonTrigger(0));
-        inputManager.addMapping("MOUSE_RIGHT", new MouseButtonTrigger(1));
-        inputManager.addMapping("MOUSE_MIDDLE", new MouseButtonTrigger(2));
+        inputManager.addMapping("MOUSE_LEFT", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addMapping("MOUSE_RIGHT", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
+        inputManager.addMapping("MOUSE_MIDDLE", new MouseButtonTrigger(MouseInput.BUTTON_MIDDLE));
     }
 
     private Quaternion rot = new Quaternion();

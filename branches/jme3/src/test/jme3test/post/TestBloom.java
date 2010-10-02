@@ -78,7 +78,7 @@ public class TestBloom extends SimpleApplication {
         }
 
 
-            // load sky
+        // load sky
         sphere.updateModelBound();
         sphere.setQueueBucket(Bucket.Sky);
         Material sky = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");

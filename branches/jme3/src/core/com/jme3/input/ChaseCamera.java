@@ -113,8 +113,8 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
         inputManager.addMapping("ZoomOut", new MouseAxisTrigger(2, false));
         inputManager.addMapping("mouseLeft", new MouseAxisTrigger(0, true));
         inputManager.addMapping("mouseRight", new MouseAxisTrigger(0, false));
-        inputManager.addMapping("toggleRotate", new MouseButtonTrigger(0));
-        inputManager.addMapping("toggleRotate", new MouseButtonTrigger(1));
+        inputManager.addMapping("toggleRotate", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addMapping("toggleRotate", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
 
         inputManager.addListener(this, inputs);
 

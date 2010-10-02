@@ -7,6 +7,7 @@ import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.nodes.PhysicsCharacterNode;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.input.KeyInput;
+import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
@@ -48,7 +49,7 @@ public class TestPhysicsCharacter extends SimpleBulletApplication implements Act
         inputManager.addMapping("Ups", new KeyTrigger(KeyInput.KEY_U));
         inputManager.addMapping("Downs", new KeyTrigger(KeyInput.KEY_J));
         inputManager.addMapping("Space", new KeyTrigger(KeyInput.KEY_SPACE));
-        inputManager.addMapping("shoot", new MouseButtonTrigger(0));
+        inputManager.addMapping("shoot", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
         inputManager.addListener(this, "shoot");
         inputManager.addListener(this, "Lefts");
         inputManager.addListener(this, "Rights");

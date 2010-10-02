@@ -148,7 +148,7 @@ public class FlyByCamera implements AnalogListener, ActionListener {
         // mouse only - zoom in/out with wheel, and rotate drag
         inputManager.addMapping("FLYCAM_ZoomIn", new MouseAxisTrigger(2, false));
         inputManager.addMapping("FLYCAM_ZoomOut", new MouseAxisTrigger(2, true));
-        inputManager.addMapping("FLYCAM_RotateDrag", new MouseButtonTrigger(0));
+        inputManager.addMapping("FLYCAM_RotateDrag", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
 
         // keyboard only WASD for movement and WZ for rise/lower height
         inputManager.addMapping("FLYCAM_StrafeLeft", new KeyTrigger(KeyInput.KEY_A));

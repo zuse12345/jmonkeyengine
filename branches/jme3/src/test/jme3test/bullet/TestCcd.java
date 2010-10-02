@@ -5,6 +5,7 @@ import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.nodes.PhysicsNode;
+import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.material.Material;
@@ -40,8 +41,8 @@ public class TestCcd extends SimpleBulletApplication implements ActionListener{
     }
 
     private void setupKeys() {
-        inputManager.addMapping("shoot", new MouseButtonTrigger(0));
-        inputManager.addMapping("shoot2", new MouseButtonTrigger(1));
+        inputManager.addMapping("shoot", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addMapping("shoot2", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
         inputManager.addListener(this, "shoot");
         inputManager.addListener(this, "shoot2");
     }

@@ -346,7 +346,9 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     /**
-     * Set the local gravity of this PhysicsNode
+     * Set the local gravity of this PhysicsNode<br/>
+     * Set this after adding the node to the PhysicsSpace,
+     * the PhysicsSpace assigns its current gravity to the physics node when its added.
      * @param gravity the gravity vector to set
      */
     public void setGravity(Vector3f gravity) {

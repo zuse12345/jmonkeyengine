@@ -99,7 +99,7 @@ public class RemoteObject implements InvocationHandler {
      * Callback from InvocationHandler.
      */
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        return store.invokeRemoteMethod(this, method, args);
+        return null;//store.invokeRemoteMethod(this, method, args);
     }
 
 }

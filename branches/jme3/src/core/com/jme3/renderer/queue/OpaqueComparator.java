@@ -1,3 +1,35 @@
+/*
+ * Copyright (c) 2009-2010 jMonkeyEngine
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * * Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ *
+ * * Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the distribution.
+ *
+ * * Neither the name of 'jMonkeyEngine' nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
+ *   without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package com.jme3.renderer.queue;
 
 import com.jme3.material.Material;
@@ -9,12 +41,13 @@ import com.jme3.scene.Geometry;
 public class OpaqueComparator implements GeometryComparator {
 
     private Camera cam;
+    private final Vector3f tempVec = new Vector3f();
 
     public void setCamera(Camera cam){
         this.cam = cam;
     }
 
-    public float distanceToCam(Geometry spat, Vector3f tempVec){
+    public float distanceToCam(Geometry spat){
         if (spat == null)
             return Float.NEGATIVE_INFINITY;
 
@@ -36,7 +69,7 @@ public class OpaqueComparator implements GeometryComparator {
 
         float retval = Math.abs(tempVec.dot(viewVector)
                 / viewVector.dot(viewVector));
-        tempVec = viewVector.mult(retval, tempVec);
+        viewVector.mult(retval, tempVec);
 
         spat.queueDistance = tempVec.length();
 
@@ -46,12 +79,6 @@ public class OpaqueComparator implements GeometryComparator {
     public int compare(Geometry o1, Geometry o2) {
         if (o1 == null || o2 == null)
             return -1;
-
-//        assert TempVars.get().lock();
-//        Vector3f tempVec = TempVars.get().vect1;
-//        float d1 = distanceToCam(o1, tempVec);
-//        float d2 = distanceToCam(o2, tempVec);
-//        assert TempVars.get().unlock();
 
         Material m1 = o1.getMaterial();
         Material m2 = o2.getMaterial();
@@ -78,9 +105,21 @@ public class OpaqueComparator implements GeometryComparator {
 //        sid1 += d1 * 1000;
 //        sid2 += d2 * 1000;
 
-        if (sid1 == sid2)
-            return 0;
-        else if (sid1 < sid2)
+        if (sid1 == sid2){
+            // use the same shader.
+            // sort front-to-back then.
+            
+            float d1 = distanceToCam(o1);
+            float d2 = distanceToCam(o2);
+            
+            if (d1 == d2)
+                return 0;
+            else if (d1 < d2)
+                return -1;
+            else
+                return 1;
+            
+        } else if (sid1 < sid2)
             return 1;
         else
             return -1;

@@ -8,7 +8,7 @@ import java.lang.reflect.Method;
  *
  * @author Kirill Vainer
  */
-public class LocalObject {
+class LocalInterface {
 
     /**
      * Object name
@@ -23,7 +23,7 @@ public class LocalObject {
     /**
      * Shared Object ID
      */
-    short objectId;
+    int objectId;
 
     /**
      * Methods exposed by the RMI interface. The "methodID" is used

@@ -79,7 +79,6 @@ public class PhysicsNode extends PhysicsCollisionObject {
     protected boolean applyForce = false;
     protected boolean applyTorque = false;
     private ArrayList<PhysicsJoint> joints = new ArrayList<PhysicsJoint>();
-
     protected static final int RF_PHYSICS = 0x10; // changes in translation
 
     public PhysicsNode() {
@@ -168,7 +167,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     @Override
-    protected void setTransformRefresh(){
+    protected void setTransformRefresh() {
         super.setTransformRefresh();
         refreshFlags |= RF_PHYSICS;
     }
@@ -183,10 +182,11 @@ public class PhysicsNode extends PhysicsCollisionObject {
             // combine with parent transforms- same for all spatial
             // subclasses.
             updateWorldTransforms();
-            if ((refreshFlags & RF_PHYSICS) != 0) {
-                motionState.setWorldTransform(getWorldTranslation(), getWorldRotation());
-                refreshFlags &= ~RF_PHYSICS;
-            }
+            motionState.setWorldTransform(getWorldTranslation(), getWorldRotation());
+            refreshFlags &= ~RF_PHYSICS;
+        } else if ((refreshFlags & RF_PHYSICS) != 0) {
+            motionState.setWorldTransform(getWorldTranslation(), getWorldRotation());
+            refreshFlags &= ~RF_PHYSICS;
         } else if (motionState.applyTransform(this)) {
             updateWorldTransforms();
         }
@@ -285,7 +285,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
         return kinematic;
     }
 
-    public void setCcdSweptSphereRadius(float radius){
+    public void setCcdSweptSphereRadius(float radius) {
         rBody.setCcdSweptSphereRadius(radius);
     }
 
@@ -294,19 +294,19 @@ public class PhysicsNode extends PhysicsCollisionObject {
      * Set to zero to disable (default)
      * @param threshold
      */
-    public void setCcdMotionThreshold(float threshold){
+    public void setCcdMotionThreshold(float threshold) {
         rBody.setCcdMotionThreshold(threshold);
     }
 
-    public float getCcdSweptSphereRadius(){
+    public float getCcdSweptSphereRadius() {
         return rBody.getCcdSweptSphereRadius();
     }
 
-    public float getCcdMotionThreshold(){
+    public float getCcdMotionThreshold() {
         return rBody.getCcdMotionThreshold();
     }
 
-    public float getCcdSquareMotionThreshold(){
+    public float getCcdSquareMotionThreshold() {
         return rBody.getCcdSquareMotionThreshold();
     }
 

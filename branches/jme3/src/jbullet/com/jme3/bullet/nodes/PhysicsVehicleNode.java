@@ -95,6 +95,13 @@ public class PhysicsVehicleNode extends PhysicsNode {
     @Override
     public void updatePhysicsState() {
         super.updatePhysicsState();
+        updateWheels();
+    }
+
+    /**
+     * used internally
+     */
+    public void updateWheels(){
         if (wheels != null) {
             for (int i = 0; i < wheels.size(); i++) {
                 vehicle.updateWheelTransform(i, true);

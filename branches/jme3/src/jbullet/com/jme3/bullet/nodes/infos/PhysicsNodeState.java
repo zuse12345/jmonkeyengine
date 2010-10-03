@@ -37,6 +37,7 @@ import com.bulletphysics.linearmath.Transform;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.bullet.nodes.PhysicsNode;
+import com.jme3.bullet.nodes.PhysicsVehicleNode;
 import com.jme3.bullet.util.Converter;
 import com.jme3.math.Matrix3f;
 
@@ -138,6 +139,9 @@ public class PhysicsNodeState extends MotionState {
         } else {
             spatial.setLocalTranslation(worldLocation);
             spatial.setLocalRotation(worldRotationQuat);
+        }
+        if(spatial instanceof PhysicsVehicleNode){
+            ((PhysicsVehicleNode)spatial).updateWheels();
         }
         physicsLocationDirty = false;
         return true;

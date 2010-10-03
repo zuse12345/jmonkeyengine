@@ -391,16 +391,11 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
             worldTransform.set(localTransform);
             refreshFlags &= ~RF_TRANSFORM;
         }else{
-            if ((parent.refreshFlags & RF_TRANSFORM) == 0){
-                // transform for parent is updated, can combine
-                worldTransform.set(localTransform);
-                worldTransform.combineWithParent(parent.worldTransform);
-                refreshFlags &= ~RF_TRANSFORM;
-            }else{
-                // This part shouldn't really happen if the update
-                // propegated from the top to bottom.
-                assert false;
-            }
+            // check if transform for parent is updated
+            assert ((parent.refreshFlags & RF_TRANSFORM) == 0);
+            worldTransform.set(localTransform);
+            worldTransform.combineWithParent(parent.worldTransform);
+            refreshFlags &= ~RF_TRANSFORM;
         }
     }
 
@@ -930,6 +925,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      * @return The spatial on which this method is called, e.g <code>this</code>.
      */
     public Spatial center(){
+        assert(parent == null);
         if ((refreshFlags & RF_BOUND) != 0){
             updateGeometricState();
         }

@@ -115,11 +115,20 @@ public class PhysicsGhostNode extends PhysicsCollisionObject {
             synchronized (jmeTrans) {
                 jmeTrans.set(getWorldTransform());
                 locationDirty = true;
+                refreshFlags &= ~RF_PHYSICS;
+            }
+        } else if ((refreshFlags & RF_PHYSICS) != 0) {
+            synchronized (jmeTrans) {
+                jmeTrans.set(getWorldTransform());
+                locationDirty = true;
+                refreshFlags &= ~RF_PHYSICS;
             }
         } else {
             synchronized (jmeTrans) {
                 setWorldTranslation(jmeTrans.getTranslation());
                 setWorldRotation(jmeTrans.getRotation());
+                setTransformRefresh();
+                refreshFlags &= ~RF_PHYSICS;
             }
             updateWorldTransforms();
         }
@@ -129,10 +138,6 @@ public class PhysicsGhostNode extends PhysicsCollisionObject {
         // a round-trip later on.
         for (int i = 0, cSize = children.size(); i < cSize; i++) {
             Spatial child = children.get(i);
-            if (!locationDirty) {
-                // force children to update transform from this physics node
-                child.setLocalScale(child.getLocalScale());
-            }
             child.updateGeometricState();
 
         }
@@ -240,23 +245,23 @@ public class PhysicsGhostNode extends PhysicsCollisionObject {
         return overlappingObjects.get(index);
     }
 
-    public void setCcdSweptSphereRadius(float radius){
+    public void setCcdSweptSphereRadius(float radius) {
         gObject.setCcdSweptSphereRadius(radius);
     }
 
-    public void setCcdMotionThreshold(float threshold){
+    public void setCcdMotionThreshold(float threshold) {
         gObject.setCcdMotionThreshold(threshold);
     }
 
-    public float getCcdSweptSphereRadius(){
+    public float getCcdSweptSphereRadius() {
         return gObject.getCcdSweptSphereRadius();
     }
 
-    public float getCcdMotionThreshold(){
+    public float getCcdMotionThreshold() {
         return gObject.getCcdMotionThreshold();
     }
 
-    public float getCcdSquareMotionThreshold(){
+    public float getCcdSquareMotionThreshold() {
         return gObject.getCcdSquareMotionThreshold();
     }
 

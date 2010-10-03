@@ -79,7 +79,6 @@ public class PhysicsNode extends PhysicsCollisionObject {
     protected boolean applyForce = false;
     protected boolean applyTorque = false;
     private ArrayList<PhysicsJoint> joints = new ArrayList<PhysicsJoint>();
-    protected static final int RF_PHYSICS = 0x10; // changes in translation
 
     public PhysicsNode() {
     }
@@ -184,11 +183,13 @@ public class PhysicsNode extends PhysicsCollisionObject {
             updateWorldTransforms();
             motionState.setWorldTransform(getWorldTranslation(), getWorldRotation());
             refreshFlags &= ~RF_PHYSICS;
-        } else if ((refreshFlags & RF_PHYSICS) != 0) {
+        }
+        else if((refreshFlags & RF_PHYSICS) != 0) {
             motionState.setWorldTransform(getWorldTranslation(), getWorldRotation());
             refreshFlags &= ~RF_PHYSICS;
         } else if (motionState.applyTransform(this)) {
             updateWorldTransforms();
+            refreshFlags &= ~RF_PHYSICS;
         }
 
         // the important part- make sure child geometric state is refreshed

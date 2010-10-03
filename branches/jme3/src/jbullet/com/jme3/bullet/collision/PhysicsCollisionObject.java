@@ -77,6 +77,7 @@ public abstract class PhysicsCollisionObject extends Node {
     public static final int COLLISION_GROUP_16 = 0x00008000;
     protected int collisionGroup = 0x00000001;
     protected int collisionGroupsMask = 0x00000001;
+    protected static final int RF_PHYSICS = 0x10; // changes in translation
 
     @Override
     public void updateGeometricState() {

@@ -608,7 +608,7 @@ public class PhysicsSpace {
     }
 
     /**
-     * sets the gravity of the PhysicsSpace
+     * Sets the gravity of the PhysicsSpace, set before adding PhysicsNodes!
      * @param gravity
      */
     public void setGravity(Vector3f gravity) {

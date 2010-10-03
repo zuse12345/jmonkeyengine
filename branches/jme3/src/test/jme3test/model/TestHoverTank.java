@@ -13,7 +13,12 @@ import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
+import com.jme3.post.HDRConfig;
+import com.jme3.post.HDRRenderer;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.control.LodControl;
 import com.jme3.util.TangentBinormalGenerator;
 
 /**
@@ -28,42 +33,43 @@ public class TestHoverTank extends SimpleApplication{
 
     @Override
     public void simpleInitApp() {
-        Material lowResMaterial = assetManager.loadMaterial("Models/HoverTank/tank_lowRes.j3m");
-        Material highResMaterial = assetManager.loadMaterial("Models/HoverTank/tank_highRes.j3m");
-        Spatial tank = assetManager.loadModel("Models/HoverTank/Tank.mesh.j3o");
-        tank.setMaterial(highResMaterial);
+        Node tank = (Node) assetManager.loadModel("Models/HoverTank/Tank2.mesh.xml");
+
         flyCam.setEnabled(false);
         ChaseCamera chaseCam = new ChaseCamera(cam, tank, inputManager);
+        chaseCam.setMaxDistance(100000);
         chaseCam.setMinHeight(-FastMath.PI / 2);
         viewPort.setBackgroundColor(ColorRGBA.DarkGray);
-        TangentBinormalGenerator.generate(tank);
+
+        
+
+        Geometry tankGeom = (Geometry) tank.getChild(0);
+        LodControl control = new LodControl(tankGeom);
+        tankGeom.addControl(control);
+        rootNode.attachChild(tank);
 
         Vector3f lightDir = new Vector3f(-0.8719428f, -0.46824604f, 0.14304268f);
         DirectionalLight dl = new DirectionalLight();
-        dl.setColor(ColorRGBA.White.clone().multLocal(1));
-
+        dl.setColor(new ColorRGBA(1.0f, 0.92f, 0.75f, 1f));
         dl.setDirection(lightDir);
-
 
         Vector3f lightDir2 = new Vector3f(0.70518064f, 0.5902297f, -0.39287305f);
         DirectionalLight dl2 = new DirectionalLight();
-        dl2.setColor(ColorRGBA.White.clone().multLocal(1));
-
+        dl2.setColor(new ColorRGBA(0.7f, 0.85f, 1.0f, 1f));
         dl2.setDirection(lightDir2);
 
-        PointLight pl = new PointLight();
-        pl.setPosition(new Vector3f(0,0,30));
-        pl.setColor(ColorRGBA.White.clone().multLocal(1.2f));
-        pl.setRadius(100f);
+//        PointLight pl = new PointLight();
+//        pl.setPosition(new Vector3f(0,0,30));
+//        pl.setColor(ColorRGBA.White.clone().multLocal(1.2f));
+//        pl.setRadius(100f);
+//
+//        PointLight pl2 = new PointLight();
+//        pl2.setPosition(new Vector3f(0,0,-30));
+//        pl2.setColor(ColorRGBA.White.clone().multLocal(1.2f));
+//        pl2.setRadius(100f);
 
-        PointLight pl2 = new PointLight();
-        pl2.setPosition(new Vector3f(0,0,-30));
-        pl2.setColor(ColorRGBA.White.clone().multLocal(1.2f));
-        pl2.setRadius(100f);
-
-
-        rootNode.addLight(pl);
-        rootNode.addLight(pl2);
+//        rootNode.addLight(pl);
+//        rootNode.addLight(pl2);
         rootNode.addLight(dl);
         rootNode.addLight(dl2);
         rootNode.attachChild(tank);

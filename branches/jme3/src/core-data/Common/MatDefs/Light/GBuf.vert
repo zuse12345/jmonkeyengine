@@ -18,6 +18,10 @@ attribute vec3 inPosition;
 attribute vec2 inTexCoord;
 attribute vec3 inNormal;
 
+#ifdef NORMALMAP
+attribute vec3 inTangent;
+#endif
+
 #ifdef VERTEX_COLOR
   attribute vec4 inColor;
 #endif
@@ -42,7 +46,7 @@ void main(){
      #ifdef V_TANGENT
         vNormal = normalize(g_NormalMatrix * inTangent);
      #else
-        vNormal = normalize(g_NormalMatrix * inNormal);;
+        vNormal = normalize(g_NormalMatrix * inNormal);
      #endif
    #endif
 

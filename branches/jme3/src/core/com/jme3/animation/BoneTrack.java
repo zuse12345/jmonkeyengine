@@ -63,6 +63,12 @@ public final class BoneTrack implements Savable {
     private transient final Vector3f tempV = new Vector3f();
     private transient final Quaternion tempQ = new Quaternion();
 
+    /**
+     * Serialization-only. Do not use.
+     */
+    public BoneTrack(){
+    }
+
     public BoneTrack(int targetBoneIndex, float[] times, Vector3f[] translations, Quaternion[] rotations){
         this.targetBoneIndex = targetBoneIndex;
         setKeyframes(times, translations, rotations);
@@ -76,6 +82,18 @@ public final class BoneTrack implements Savable {
         return targetBoneIndex;
     }
 
+    public Quaternion[] getRotations() {
+        return rotations;
+    }
+
+    public float[] getTimes() {
+        return times;
+    }
+
+    public Vector3f[] getTranslations() {
+        return translations;
+    }
+
     public void setKeyframes(float[] times, Vector3f[] translations, Quaternion[] rotations){
         if (times.length == 0)
             throw new RuntimeException("BoneTrack with no keyframes!");
@@ -85,13 +103,7 @@ public final class BoneTrack implements Savable {
         this.times = times;
         this.translations = translations;
         this.rotations = rotations;
-    }
-
-    /**
-     * Serialization-only. Do not use.
-     */
-    public BoneTrack(){
-    }
+    }  
 
     /**
      * Modify the bone which this track modifies in the skeleton to contain

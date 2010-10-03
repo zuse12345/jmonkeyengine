@@ -26,6 +26,20 @@ varying vec3 vNormal;
   uniform sampler2D m_NormalMap;
 #endif
 
+vec2 encodeNormal(in vec3 n){
+    vec2 enc = normalize(n.xy) * (sqrt(-n.z*0.5+0.5));
+    enc = enc*vec2(0.5)+vec2(0.5);
+    return enc;
+}
+
+vec3 decodeNormal(in vec4 enc){
+    vec4 nn = enc * vec4(2.0,2.0,0.0,0.0) + vec4(-1.0,-1.0,1.0,-1.0);
+    float l = dot(nn.xyz, -nn.xyw);
+    nn.z = l;
+    nn.xy *= sqrt(l);
+    return nn.xyz * vec3(2.0) + vec3(0.0,0.0,-1.0);
+}
+
 void main(){
     vec2 newTexCoord = texCoord;
     float height = 0.0;
@@ -72,8 +86,11 @@ void main(){
     diffuseColor.rgb  *= DiffuseSum.rgb;
     specularColor.rgb *= SpecularSum.rgb;
 
-    gl_FragData[1] = vec4(diffuseColor.rgb, height);
-    gl_FragData[2] = vec4(Optics_SphereCoord(vNormal),
-                          Optics_SphereCoord(normal));
-    gl_FragData[0] = vec4(specularColor.rgb, m_Shininess / 128.0);
+    //gl_FragData[1] = vec4(diffuseColor.rgb, height);
+    //gl_FragData[2] = vec4(Optics_SphereCoord(vNormal),
+    //                      Optics_SphereCoord(normal));
+    //gl_FragData[0] = vec4(specularColor.rgb, m_Shininess / 128.0);
+
+    //vec4 enc = vec4(encodeNormal(normal), 0.0, 0.0);
+    gl_FragColor = vec4(  (normal + vec3(1.0)) * vec3(0.5) , 1.0);
 }

@@ -186,21 +186,12 @@ public final class Bone implements Savable {
         return worldRot;
     }
 
-
-    /**
-     * @deprecated Please use {@link Bone#getModelSpacePosition()} instead.
-     */
-    @Deprecated
-    public Vector3f getWorldPosition(){
-        return getModelSpacePosition();
+    public Vector3f getWorldBindInversePosition() {
+        return worldBindInversePos;
     }
 
-    /**
-     * @deprecated Please use {@link Bone#getModelSpaceRotation()} instead.
-     */
-    @Deprecated
-    public Quaternion getWorldRotation(){
-        return getModelSpaceRotation();
+    public Quaternion getWorldBindInverseRotation() {
+        return worldBindInverseRot;
     }
 
     /**

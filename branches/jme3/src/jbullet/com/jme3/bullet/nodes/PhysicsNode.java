@@ -80,6 +80,8 @@ public class PhysicsNode extends PhysicsCollisionObject {
     protected boolean applyTorque = false;
     private ArrayList<PhysicsJoint> joints = new ArrayList<PhysicsJoint>();
 
+    protected static final int RF_PHYSICS = 0x10; // changes in translation
+
     public PhysicsNode() {
     }
 
@@ -166,6 +168,12 @@ public class PhysicsNode extends PhysicsCollisionObject {
     }
 
     @Override
+    protected void setTransformRefresh(){
+        super.setTransformRefresh();
+        refreshFlags |= RF_PHYSICS;
+    }
+
+    @Override
     public void updateGeometricState() {
         if ((refreshFlags & RF_LIGHTLIST) != 0) {
             updateWorldLightList();
@@ -175,7 +183,10 @@ public class PhysicsNode extends PhysicsCollisionObject {
             // combine with parent transforms- same for all spatial
             // subclasses.
             updateWorldTransforms();
-            motionState.setWorldTransform(getWorldTranslation(), getWorldRotation());
+            if ((refreshFlags & RF_PHYSICS) != 0) {
+                motionState.setWorldTransform(getWorldTranslation(), getWorldRotation());
+                refreshFlags &= ~RF_PHYSICS;
+            }
         } else if (motionState.applyTransform(this)) {
             updateWorldTransforms();
         }

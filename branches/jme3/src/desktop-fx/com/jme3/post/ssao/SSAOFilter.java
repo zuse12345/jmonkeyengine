@@ -34,6 +34,7 @@ package com.jme3.post.ssao;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
+import com.jme3.material.RenderState;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
@@ -83,12 +84,12 @@ public class SSAOFilter extends Filter {
     @Override
     public void init(AssetManager manager, int width, int height) {
         super.init(manager, width, height);
-        normalPass.init(width, height, Format.RGB32F, Format.Depth);
+        normalPass.init(width, height, Format.RGBA8, Format.Depth);
     }
 
     @Override
     protected Format getDefaultPassDepthFormat() {
-        return Format.Depth32F;
+        return Format.Depth;
     }
 
     @Override
@@ -100,6 +101,10 @@ public class SSAOFilter extends Filter {
         renderManager.renderViewPortQueues(viewPort, false);
         renderManager.setForcedMaterial(null);
         renderManager.getRenderer().setFrameBuffer(viewPort.getOutputFrameBuffer());
+//        RenderState state=new RenderState();
+//        state.setAlphaTest(true);
+//        state.setAlphaFallOff(0.9f);
+//        renderManager.setForcedRenderState(state);
 
     }
 

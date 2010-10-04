@@ -752,17 +752,20 @@ public class LwjglRenderer implements Renderer {
 
         if (compiledOK){
             if (infoLog != null){
-                logger.info(source.getName()+" compile success\n" + infoLog);
+                logger.log(Level.INFO, "{0} compile success\n{1}",
+                        new Object[]{source.getName(), infoLog});
             }else{
-                logger.fine(source.getName()+" compile success");
+                logger.log(Level.FINE, "{0} compile success", source.getName());
             }
         }else{
             if (infoLog != null){
-                logger.warning(source.getName()+" compile error: "+infoLog);
+                logger.log(Level.WARNING, "{0} compile error: {1}",
+                        new Object[]{source.getName(), infoLog});
             }else{
-                logger.warning(source.getName()+" compile error: ?");
+                logger.log(Level.WARNING, "{0} compile error: ?", source.getName());
             }
-            logger.warning(source.getDefines() + source.getSource() );
+            logger.log(Level.WARNING, "{0}{1}",
+                    new Object[]{source.getDefines(), source.getSource()});
         }
 
         source.clearUpdateNeeded();
@@ -829,13 +832,13 @@ public class LwjglRenderer implements Renderer {
 
         if (linkOK){
             if (infoLog != null){
-                logger.info("shader link success. \n"+infoLog);
+                logger.log(Level.INFO, "shader link success. \n{0}", infoLog);
             }else{
                 logger.fine("shader link success");
             }
         }else{
             if (infoLog != null){
-                logger.warning("shader link failure. \n"+infoLog);
+                logger.log(Level.WARNING, "shader link failure. \n{0}", infoLog);
             }else{
                 logger.warning("shader link failure");
             }
@@ -1114,8 +1117,8 @@ public class LwjglRenderer implements Renderer {
             updateFrameBufferAttachment(fb, depthBuf);
         }
 
-        FrameBuffer.RenderBuffer colorBuf = fb.getColorBuffer();
-        if (colorBuf != null){
+        for (int i = 0; i < fb.getNumColorBuffers(); i++){
+            FrameBuffer.RenderBuffer colorBuf = fb.getColorBuffer(i);
             updateFrameBufferAttachment(fb, colorBuf);
         }
 
@@ -1160,7 +1163,7 @@ public class LwjglRenderer implements Renderer {
             }else{
                 statistics.onFrameBufferUse(fb, false);
             }
-            if (fb.getColorBuffer() == null){
+            if (fb.getNumColorBuffers() == 0){
                 // make sure to select NONE as draw buf
                 // no color buffer attached. select NONE
                 if (context.boundDrawBuf != -2){
@@ -1172,11 +1175,28 @@ public class LwjglRenderer implements Renderer {
                     context.boundReadBuf = -2;
                 }
             }else{
-                RenderBuffer rb = fb.getColorBuffer();
-                // select this draw buffer
-                if (context.boundDrawBuf != rb.getSlot()){
-                    glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT + rb.getSlot());
-                    context.boundDrawBuf = rb.getSlot();
+                if (fb.isMultiTarget()){
+                    if (fb.getNumColorBuffers() > maxMRTFBOAttachs)
+                        throw new UnsupportedOperationException("Framebuffer has more"
+                                                              + " targets than are supported"
+                                                              + " on the system!");
+
+                    if (context.boundDrawBuf != 100 + fb.getNumColorBuffers()){
+                        intBuf16.clear();
+                        for (int i = 0; i < fb.getNumColorBuffers(); i++)
+                            intBuf16.put( GL_COLOR_ATTACHMENT0_EXT + i );
+
+                        intBuf16.flip();
+                        glDrawBuffers(intBuf16);
+                        context.boundDrawBuf = 100 + fb.getNumColorBuffers();
+                    }
+                }else{
+                    RenderBuffer rb = fb.getColorBuffer(fb.getTargetIndex());
+                    // select this draw buffer
+                    if (context.boundDrawBuf != rb.getSlot()){
+                        glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT + rb.getSlot());
+                        context.boundDrawBuf = rb.getSlot();
+                    }
                 }
             }
 

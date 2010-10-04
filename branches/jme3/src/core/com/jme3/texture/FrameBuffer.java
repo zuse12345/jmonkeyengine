@@ -12,6 +12,7 @@ public class FrameBuffer extends GLObject {
     private int samples = 0;
     private ArrayList<RenderBuffer> colorBufs = new ArrayList<RenderBuffer>();
     private RenderBuffer depthBuf = null;
+    private int colorBufIndex = 0;
 
     public class RenderBuffer {
 
@@ -111,7 +112,39 @@ public class FrameBuffer extends GLObject {
             throw new IllegalStateException("Cannot attach texture to multisampled FB");
     }
 
-    public void setColorTexture(Texture2D tex) {
+    public void setMultiTarget(boolean enabled){
+        if (enabled) colorBufIndex = -1;
+        else colorBufIndex = 0;
+    }
+
+    public void setTargetIndex(int index){
+        if (index < 0 || index >= 16)
+            throw new IllegalArgumentException();
+
+        if (colorBufs.size() >= index)
+            throw new IndexOutOfBoundsException("The target at " + index + " is not set!");
+
+        colorBufIndex = index;
+    }
+
+    public boolean isMultiTarget(){
+        return colorBufIndex == -1;
+    }
+
+    public int getTargetIndex(){
+        return colorBufIndex;
+    }
+
+    public void setColorTexture(Texture2D tex){
+        clearColorTargets();
+        addColorTexture(tex);
+    }
+
+    public void clearColorTargets(){
+        colorBufs.clear();
+    }
+
+    public void addColorTexture(Texture2D tex) {
         if (id != -1)
             throw new UnsupportedOperationException("FrameBuffer already initialized.");
 
@@ -119,11 +152,10 @@ public class FrameBuffer extends GLObject {
         checkSetTexture(tex, false);
 
         RenderBuffer colorBuf = new RenderBuffer();
-        colorBuf.slot = 0;
+        colorBuf.slot = colorBufs.size();
         colorBuf.tex = tex;
         colorBuf.format = img.getFormat();
 
-        colorBufs.clear();
         colorBufs.add(colorBuf);
     }
 

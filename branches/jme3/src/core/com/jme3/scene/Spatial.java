@@ -219,6 +219,13 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      * (should be rendered), false if outside.
      */
     public boolean checkCulling(Camera cam){
+        if (refreshFlags != 0){
+            throw new IllegalStateException("Scene graph is not properly updated for rendering.\n"
+                                          + "Make sure scene graph state was not changed after\n"
+                                          + " rootNode.updateGeometricState() call. \n"
+                                          + "Problem spatial name: "+getName());
+        }
+
         CullHint cm = getCullHint();
         assert cm != CullHint.Inherit;
         if (cm == Spatial.CullHint.Always){
@@ -236,11 +243,6 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         if (frustrumIntersects == Camera.FrustumIntersect.Intersects) {
             int state = cam.getPlaneState();
 
-            if ((refreshFlags & RF_BOUND) != 0){
-                throw new IllegalStateException("Scene graph is not properly updated for rendering."
-                                              + "Make sure scene graph state was not changed after"
-                                              + " rootNode.updateGeometricState() call. Problem spatial name: "+getName());
-            }
             frustrumIntersects = cam.contains(getWorldBound());
             
             cam.setPlaneState(state);

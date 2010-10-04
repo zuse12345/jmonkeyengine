@@ -20,6 +20,7 @@ attribute vec3 inNormal;
 
 #ifdef NORMALMAP
 attribute vec3 inTangent;
+varying mat3 tbnMat;
 #endif
 
 #ifdef VERTEX_COLOR
@@ -35,13 +36,15 @@ void main(){
    vDepth = (posView.z - g_FrustumNearFar.x) / (g_FrustumNearFar.y - g_FrustumNearFar.x);
 
    gl_Position = g_WorldViewProjectionMatrix * pos;
+   //gl_Position = vec4(gl_Position.xy, 0.0, posView.z);
    texCoord = inTexCoord;
 
    #if defined(NORMALMAP)
      vec3 wvNormal   = normalize(g_NormalMatrix * inNormal);
      vec3 wvTangent  = normalize(g_NormalMatrix * inTangent);
      vec3 wvBinormal = cross(wvNormal, wvTangent);
-     mat3 tbnMat = mat3(wvTangent, wvBinormal, wvNormal);
+     tbnMat = mat3(wvTangent, wvBinormal, wvNormal);
+     vNormal = normalize(g_NormalMatrix * inNormal);
    #else
      #ifdef V_TANGENT
         vNormal = normalize(g_NormalMatrix * inTangent);

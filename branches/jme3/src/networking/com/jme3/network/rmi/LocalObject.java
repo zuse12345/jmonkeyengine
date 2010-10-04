@@ -1,6 +1,5 @@
 package com.jme3.network.rmi;
 
-
 import java.lang.reflect.Method;
 
 /**
@@ -8,7 +7,7 @@ import java.lang.reflect.Method;
  *
  * @author Kirill Vainer
  */
-class LocalInterface {
+public class LocalObject {
 
     /**
      * Object name
@@ -23,7 +22,7 @@ class LocalInterface {
     /**
      * Shared Object ID
      */
-    int objectId;
+    short objectId;
 
     /**
      * Methods exposed by the RMI interface. The "methodID" is used

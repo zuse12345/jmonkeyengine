@@ -93,7 +93,7 @@ vec2 computeLighting(in vec3 wvPos, in vec3 wvNorm, in vec3 wvViewDir, in vec3 w
    float diffuseFactor = lightComputeDiffuse(wvNorm, wvLightDir, wvViewDir);
    float specularFactor = 1.0;
    specularFactor = //step(0.001, m_Shininess) * min(1.0, diffuseFactor * 10.0)
-                  /***/ lightComputeSpecular(wvNorm, wvViewDir, wvLightDir, m_Shininess);
+                    lightComputeSpecular(wvNorm, wvViewDir, wvLightDir, m_Shininess);
 
    #ifdef HQ_ATTENUATION
     float att = clamp(1.0 - g_LightPosition.w * length(lightVec), 0.0, 1.0);

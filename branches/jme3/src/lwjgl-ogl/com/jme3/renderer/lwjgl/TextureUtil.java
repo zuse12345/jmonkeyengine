@@ -74,6 +74,8 @@ public class TextureUtil {
                 return EXTTextureSharedExponent.GL_RGB9_E5_EXT;
             case RGB16F:
                 return ARBTextureFloat.GL_RGB16F_ARB;
+            case RGBA16F:
+                return ARBTextureFloat.GL_RGBA16F_ARB;
             case RGB32F:
                 return ARBTextureFloat.GL_RGB32F_ARB;
             case RGB5A1:
@@ -265,6 +267,11 @@ public class TextureUtil {
             case RGB16F:
                 internalFormat = ARBTextureFloat.GL_RGB16F_ARB;
                 format = GL_RGB;
+                dataType = ARBHalfFloatPixel.GL_HALF_FLOAT_ARB;
+                break;
+            case RGBA16F:
+                internalFormat = ARBTextureFloat.GL_RGBA16F_ARB;
+                format = GL_RGBA;
                 dataType = ARBHalfFloatPixel.GL_HALF_FLOAT_ARB;
                 break;
             case RGB32F:

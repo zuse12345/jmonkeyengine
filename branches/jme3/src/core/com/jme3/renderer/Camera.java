@@ -46,6 +46,7 @@ import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.util.TempVars;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -271,7 +272,7 @@ public class Camera implements Savable, Cloneable {
         onViewPortChange();
         onFrameChange();
 
-        logger.info("Camera created (W: "+width+", H: "+height+")");
+        logger.log(Level.INFO, "Camera created (W: {0}, H: {1})", new Object[]{width, height});
     }
 
     @Override

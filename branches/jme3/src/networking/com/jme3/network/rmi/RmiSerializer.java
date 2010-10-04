@@ -1,11 +1,11 @@
 package com.jme3.network.rmi;
 
 
+
 import com.jme3.network.serializing.Serializer;
 import com.jme3.network.serializing.SerializerRegistration;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.nio.ByteBuffer;
 
 /**
@@ -14,28 +14,9 @@ import java.nio.ByteBuffer;
  *
  * @author Kirill Vainer
  */
-class RmiSerializer extends Serializer {
+public class RmiSerializer extends Serializer {
 
     private char[] chrBuf = new char[256];
-    private static final RmiSerializer instance = new RmiSerializer();
-
-    private ObjectStore serverStore;
-    private ObjectStore clientStore;
-
-    private RmiSerializer(){
-    }
-
-    public static RmiSerializer getInstance(){
-        return instance;
-    }
-
-    public void setClientStore(ObjectStore clientStore) {
-        this.clientStore = clientStore;
-    }
-
-    public void setServerStore(ObjectStore serverStore) {
-        this.serverStore = serverStore;
-    }
 
     private void writeString(ByteBuffer buffer, String string) throws IOException{
         int length = string.length();
@@ -112,7 +93,7 @@ class RmiSerializer extends Serializer {
     }
 
     private void writeObjectDef(ByteBuffer buffer, ObjectDef def) throws IOException{
-        buffer.putInt(def.objectId);
+        buffer.putShort((short)def.objectId);
         writeString(buffer, def.objectName);
         Method[] methods = def.methods;
         buffer.put( (byte) methods.length );
@@ -124,7 +105,7 @@ class RmiSerializer extends Serializer {
     private ObjectDef readObjectDef(ByteBuffer buffer) throws IOException{
         ObjectDef def = new ObjectDef();
 
-        def.objectId = buffer.getInt();
+        def.objectId = buffer.getShort();
         def.objectName = readString(buffer);
 
         int numMethods = buffer.get() & 0xff;
@@ -155,7 +136,7 @@ class RmiSerializer extends Serializer {
     }
 
     private void writeMethodCall(ByteBuffer buffer, RemoteMethodCallMessage call) throws IOException{
-        buffer.putInt(call.objectId);
+        buffer.putShort((short)call.objectId);
         buffer.putShort(call.methodId);
         buffer.putShort(call.invocationId);
         if (call.args == null){
@@ -175,7 +156,7 @@ class RmiSerializer extends Serializer {
 
     private RemoteMethodCallMessage readMethodCall(ByteBuffer buffer) throws IOException{
         RemoteMethodCallMessage call = new RemoteMethodCallMessage();
-        call.objectId = buffer.getInt();
+        call.objectId = buffer.getShort();
         call.methodId = buffer.getShort();
         call.invocationId = buffer.getShort();
         int numArgs = buffer.get() & 0xff;
@@ -209,39 +190,7 @@ class RmiSerializer extends Serializer {
         }
         return ret;
     }
-
-    private void writeRemoteObjectRef(ByteBuffer buffer, Object object) throws IOException{
-        int objectId = 0;
-        boolean isOwner = false;
-        if (object instanceof Proxy){
-            RemoteInterface obj = (RemoteInterface) Proxy.getInvocationHandler(object);
-            objectId = obj.objectId;
-        }else{
-            // retrieve from store
-            if (serverStore != null){
-                //objectId = serverStore.acquireLocalObject(object);
-            }else{
-                //objectId = clientStore.acquireLocalObject(object);
-            }
-            isOwner = true;
-        }
-        buffer.put( isOwner ? (byte)1 : (byte)0 );
-        buffer.putInt( objectId );
-    }
-
-    private Remote readRemoteObjectRef(ByteBuffer buffer){
-        boolean senderIsOwner = buffer.get() == 0x01;
-        int objectId = buffer.getInt();
-        if (senderIsOwner){
-            // I am definetly not the owner
-            boolean ownerIsServer = (objectId & 0xffff0000) == 0;
-
-            // I am the client, and server owns the object ...
-
-        }
-        return null;
-    }
-
+            
     @Override
     public <T> T readObject(ByteBuffer data, Class<T> c) throws IOException {
         if (c == RemoteObjectDefMessage.class){
@@ -253,8 +202,6 @@ class RmiSerializer extends Serializer {
         }
         return null;
     }
-
-
 
     @Override
     public void writeObject(ByteBuffer buffer, Object object) throws IOException {
@@ -268,8 +215,6 @@ class RmiSerializer extends Serializer {
         }else if (object instanceof RemoteMethodReturnMessage){
             RemoteMethodReturnMessage ret = (RemoteMethodReturnMessage) object;
             writeMethodReturn(buffer, ret);
-        }else if (object instanceof Remote){
-            writeRemoteObjectRef(buffer, object);
         }
 //        p = buffer.position() - p;
 //        System.out.println(object+": uses " + p + " bytes");

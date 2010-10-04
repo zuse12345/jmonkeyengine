@@ -1,5 +1,6 @@
 package com.jme3.network.rmi;
 
+
 import com.jme3.network.connection.Client;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -99,7 +100,7 @@ public class RemoteObject implements InvocationHandler {
      * Callback from InvocationHandler.
      */
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        return null;//store.invokeRemoteMethod(this, method, args);
+        return store.invokeRemoteMethod(this, method, args);
     }
 
 }

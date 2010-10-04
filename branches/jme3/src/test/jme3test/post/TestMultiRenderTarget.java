@@ -5,17 +5,21 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.light.PointLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
+import com.jme3.math.Matrix4f;
+import com.jme3.math.Quaternion;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.post.SceneProcessor;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.shape.Quad;
+import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image.Format;
-import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 import com.jme3.ui.Picture;
 import com.jme3.util.TangentBinormalGenerator;
@@ -23,9 +27,16 @@ import com.jme3.util.TangentBinormalGenerator;
 public class TestMultiRenderTarget extends SimpleApplication implements SceneProcessor {
 
     private FrameBuffer fb;
-    private Texture2D t1, t2, t3, t4;
+    private Texture2D diffuseData, normalData, specularData, depthData;
     private Geometry sphere;
+    private Picture display1, display2, display3, display4;
+    
     private Picture display;
+    private Material mat;
+
+    float angle;
+    PointLight pl;
+    Spatial lightMdl;
 
     public static void main(String[] args){
         TestMultiRenderTarget app = new TestMultiRenderTarget();
@@ -36,54 +47,120 @@ public class TestMultiRenderTarget extends SimpleApplication implements ScenePro
     public void simpleInitApp() {
         viewPort.addProcessor(this);
 
+//        flyCam.setEnabled(false);
+//        cam.setLocation(new Vector3f(1.8324817f, 0.23943897f, 1.9401197f));
+//        cam.setRotation(new Quaternion(-0.0181917f, 0.92379856f, -0.044238973f, -0.37987918f));
+
         Sphere sphMesh = new Sphere(32, 32, 1);
         sphMesh.setTextureMode(Sphere.TextureMode.Projected);
         sphMesh.updateGeometry(32, 32, 1, false, false);
         TangentBinormalGenerator.generate(sphMesh);
 
         sphere = new Geometry("Rock Ball", sphMesh);
-        Material mat = assetManager.loadMaterial("Textures/Terrain/Pond/Pond.j3m");
-        mat.selectTechnique("GBuf");
-        sphere.setMaterial(mat);
+        Material material = assetManager.loadMaterial("Textures/Terrain/Pond/Pond.j3m");
+        material.selectTechnique("GBuf");
+        sphere.setMaterial(material);
         rootNode.attachChild(sphere);
 
-        PointLight pl = new PointLight();
+        pl = new PointLight();
         pl.setColor(ColorRGBA.White);
-        pl.setPosition(new Vector3f(0f, 0f, 4f));
-        rootNode.addLight(pl);
+        pl.setPosition(new Vector3f(4f, 0f, 0f));
+        guiNode.addLight(pl);
 
-        DirectionalLight dl = new DirectionalLight();
-        dl.setDirection(new Vector3f(1,-1,1).normalizeLocal());
-        dl.setColor(new ColorRGBA(0.22f, 0.15f, 0.1f, 1.0f));
-        rootNode.addLight(dl);
+        lightMdl = new Geometry("Light", new Sphere(10, 10, 0.1f));
+        lightMdl.setMaterial(assetManager.loadMaterial("Common/Materials/RedColor.j3m"));
+        lightMdl.setQueueBucket(Bucket.Opaque);
+        guiNode.attachChild(lightMdl);
 
-        display = new Picture("Picture");
-        display.move(0, 0, -1); // make it appear behind stats view
-        display.setPosition(0, 0);
-        display.setWidth(settings.getWidth());
-        display.setHeight(settings.getHeight());
+//        DirectionalLight dl = new DirectionalLight();
+//        dl.setDirection(new Vector3f(1,-1,1).normalizeLocal());
+//        dl.setColor(new ColorRGBA(0.22f, 0.15f, 0.1f, 1.0f));
+//        guiNode.addLight(dl);
+
+        display1 = new Picture("Picture");
+        display1.move(0, 0, -1); // make it appear behind stats view
+//        display2 = (Picture) display1.clone();
+//        display3 = (Picture) display1.clone();
+//        display4 = (Picture) display1.clone();
+        display  = (Picture) display1.clone();
+//        display.setQueueBucket(Bucket.Opaque);
     }
 
     public void initialize(RenderManager rm, ViewPort vp) {
         reshape(vp, vp.getCamera().getWidth(), vp.getCamera().getHeight());
         viewPort.setOutputFrameBuffer(fb);
         guiViewPort.setClearEnabled(true);
+        guiNode.attachChild(display);
+//        guiNode.attachChild(display1);
+//        guiNode.attachChild(display2);
+//        guiNode.attachChild(display3);
+//        guiNode.attachChild(display4);
+        guiNode.updateGeometricState();
     }
 
     public void reshape(ViewPort vp, int w, int h) {
-        t1 = new Texture2D(w, h, Format.RGB8);
-        display.setTexture(assetManager, t1, false);
+        diffuseData  = new Texture2D(w, h, Format.RGBA16F);
+        normalData   = new Texture2D(w, h, Format.RGBA16F);
+        specularData = new Texture2D(w, h, Format.RGBA16F);
+        depthData    = new Texture2D(w, h, Format.Depth);
+
+//        float farY = cam.getFrustumTop();
+//        float farX = cam.getFrustumRight();
+       
+        mat = new Material(assetManager, "Common/MatDefs/Light/Deferred.j3md");
+        mat.setTexture("m_DiffuseData",  diffuseData);
+        mat.setTexture("m_SpecularData", specularData);
+        mat.setTexture("m_NormalData",   normalData);
+        mat.setTexture("m_DepthData",    depthData);
+//        mat.setVector2("m_FrustumNearFar", new Vector2f(cam.getFrustumNear(), cam.getFrustumFar()));
+//        mat.setVector3("m_FrustumCorner",  new Vector3f(farX, farY, vp.getCamera().getFrustumFar()));
+
+        display.setMaterial(mat);
+        display.setPosition(0, 0);
+        display.setWidth(w);
+        display.setHeight(h);
+        
+//        display1.setTexture(assetManager, diffuseData, false);
+//        display2.setTexture(assetManager, normalData, false);
+//        display3.setTexture(assetManager, specularData, false);
+//        display4.setTexture(assetManager, depthData, false);
+//
+//        display1.setPosition(0, 0);
+//        display2.setPosition(w/2, 0);
+//        display3.setPosition(0, h/2);
+//        display4.setPosition(w/2, h/2);
+//
+//        display1.setWidth(w/2);
+//        display1.setHeight(h/2);
+//
+//        display2.setWidth(w/2);
+//        display2.setHeight(h/2);
+//
+//        display3.setWidth(w/2);
+//        display3.setHeight(h/2);
+//
+//        display4.setWidth(w/2);
+//        display4.setHeight(h/2);
+
+        guiNode.updateGeometricState();
         
         fb = new FrameBuffer(w, h, 0);
-        fb.setDepthBuffer(Format.Depth);
-        fb.setColorTexture(t1);
+        fb.setDepthTexture(depthData);
+        fb.addColorTexture(diffuseData);
+        fb.addColorTexture(normalData);
+        fb.addColorTexture(specularData);
+        fb.setMultiTarget(true);
     }
 
     public boolean isInitialized() {
-        return true;
+        return diffuseData != null;
     }
 
     public void preFrame(float tpf) {
+        Matrix4f view = cam.getViewMatrix();
+        Matrix4f proj = cam.getProjectionMatrix();
+        mat.setMatrix4("m_ViewMatrix", view);
+        mat.setMatrix4("m_ProjectionMatrixInverse", proj.invert());
     }
 
     public void postQueue(RenderQueue rq) {
@@ -94,6 +171,15 @@ public class TestMultiRenderTarget extends SimpleApplication implements ScenePro
     }
 
     public void cleanup() {
+    }
+
+    @Override
+    public void simpleUpdate(float tpf){
+//        angle += tpf * 0.25f;
+//        angle %= FastMath.TWO_PI;
+//
+//        pl.setPosition(new Vector3f(FastMath.cos(angle) * 4f, 0.5f, FastMath.sin(angle) * 4f));
+//        lightMdl.setLocalTranslation(pl.getPosition());
     }
 
 }

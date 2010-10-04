@@ -1,6 +1,5 @@
 package com.jme3.network.rmi;
 
-
 import com.jme3.network.message.Message;
 import com.jme3.network.serializing.Serializable;
 

@@ -1,6 +1,5 @@
 /*
- * blaine
- * Copyright (c) 2003-2009 jMonkeyEngine
+ * Copyright (c) 2009-2010 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +29,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 package com.jme3.export.xml;
 
 import com.jme3.export.InputCapsule;
@@ -60,6 +60,7 @@ import org.w3c.dom.NodeList;
  *
  * @author Kai Rabien (hevee) - original author of the code.google.com jmexml project
  * @author Doug Daniels (dougnukem) - adjustments for jME 2.0 and Java 1.5
+ * @author blaine
  */
 public class DOMInputCapsule implements InputCapsule {
     private static final Logger logger =

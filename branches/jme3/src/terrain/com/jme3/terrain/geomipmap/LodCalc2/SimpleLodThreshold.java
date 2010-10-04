@@ -30,57 +30,68 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jme3.terrain;
+package com.jme3.terrain.geomipmap.LodCalc2;
 
-import com.jme3.math.Vector2f;
-import com.jme3.math.Vector3f;
-import java.util.List;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
+import java.io.IOException;
 
-public interface Terrain {
 
-	/**
-	 * Get the height of the terrain at the specified X-Z coorindate.
-	 * @param xz the X-Z coordinate
-	 * @return
-	 */
-	public float getHeight(Vector2f xz);
+/**
+ * Just multiplies the terrain patch size by 2. So every two
+ * patches away the camera is, the LOD changes.
+ * 
+ * Set it higher to have the LOD change less frequently.
+ * 
+ * @author bowens
+ */
+public class SimpleLodThreshold implements LodThreshold {
 	
-	/**
-	 * Set the height at the specified X-Z coordinate.
-	 * @param xzCoordinate coordinate to set the height
-	 * @param height that will be set at the coordinate
-	 */
-	public void setHeight(Vector2f xzCoordinate, float height);
-	
-	/**
-	 * Get the heightmap of the entire terrain.
-	 * This can return null if that terrain object does not store the height data
-	 */
-	public float[] getHeightMap();
+	private int size; // size of a terrain patch
+    private float lodMultiplier = 2;
 
-	/**
-	 * Tell the terrain system to use/not use Level of Detail algorithms.
-	 */
-	public void useLOD(boolean useLod);
+    
+    public SimpleLodThreshold() {
+
+    }
+
+	public SimpleLodThreshold(int patchSize, float lodMultiplier) {
+		this.size = patchSize;
+	}
+
+    public float getLodMultiplier() {
+        return lodMultiplier;
+    }
+
+    public void setLodMultiplier(float lodMultiplier) {
+        this.lodMultiplier = lodMultiplier;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
+    }
 	
-	public boolean isUsingLOD();
-	
-	/**
-	 * This is calculated by the specific LOD algorithm.
-	 * A value of one means that the terrain is showing full detail.
-	 * The higher the value, the more the terrain has been generalized 
-	 * and the less detailed it will be.
-	 */
-	public int getMaxLod();
-	
-	/**
-	 * Called in the update (pre or post, up to you) method of your game.
-	 * Calculates the level of detail of the terrain and adjusts its geometry.
-	 * This is where the Terrain's LOD algorithm will change the detail of 
-	 * the terrain based on how far away this position is from the particular
-	 * terrain patch.
-	 * @param location often the Camera's location
-	 */
-	public void update(List<Vector3f> location);
-	
+
+	public float getLodDistanceThreshold() {
+		return size*lodMultiplier;
+	}
+
+    public void write(JmeExporter ex) throws IOException {
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(size, "size", 16);
+        oc.write(lodMultiplier, "lodMultiplier", 2);
+    }
+
+    public void read(JmeImporter im) throws IOException {
+        InputCapsule ic = im.getCapsule(this);
+        size = ic.readInt("size", 16);
+        lodMultiplier = ic.readInt("lodMultiplier", 2);
+    }
+
 }

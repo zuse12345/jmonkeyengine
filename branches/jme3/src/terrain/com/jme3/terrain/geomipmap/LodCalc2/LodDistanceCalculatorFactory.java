@@ -30,63 +30,54 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jme3.system;
+package com.jme3.terrain.geomipmap.LodCalc2;
+
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
+import com.jme3.terrain.geomipmap.TerrainPatch;
+import java.io.IOException;
 
 /**
- * <code>NanoTimer</code> is a System.nanoTime implementation of <code>Timer</code>.
- * This is primarily useful for headless applications running on a server.
- * 
- * @author Matthew D. Hicks
+ *
+ * @author bowens
  */
-public class NanoTimer extends Timer {
-    
-    private static final long TIMER_RESOLUTION = 1000000000L;
-    private static final float INVERSE_TIMER_RESOLUTION = 1f/1000000000L;
-    
-    private long startTime;
-    private long previousTime;
-    private float tpf;
-    private float fps;
-    
-    public NanoTimer() {
-        startTime = System.nanoTime();
-    }
+public class LodDistanceCalculatorFactory implements LodCalculatorFactory {
 
-    /**
-     * Returns the time in seconds. The timer starts
-     * at 0.0 seconds.
-     *
-     * @return the current time in seconds
-     */
-    @Override
-    public float getTimeInSeconds() {
-        return getTime() * INVERSE_TIMER_RESOLUTION;
-    }
+    private float lodThresholdSize = 2f;
+    private LodThreshold lodThreshold = null;
 
-    public long getTime() {
-        return System.nanoTime() - startTime;
-    }
 
-    public long getResolution() {
-        return TIMER_RESOLUTION;
-    }
+    public LodDistanceCalculatorFactory() {
 
-    public float getFrameRate() {
-        return fps;
-    }
-
-    public float getTimePerFrame() {
-        return tpf;
-    }
-
-    public void update() {
-        tpf = (getTime() - previousTime) * (1.0f / TIMER_RESOLUTION);
-        fps = 1.0f / tpf;
-        previousTime = getTime();
     }
     
-    public void reset() {
-        startTime = System.nanoTime();
-        previousTime = getTime();
+    public LodDistanceCalculatorFactory(LodThreshold lodThreshold) {
+        this.lodThreshold = lodThreshold;
     }
+
+    
+    public LodCalculator createCalculator() {
+        return new DistanceLodCalculator();
+    }
+
+    public LodCalculator createCalculator(TerrainPatch terrainPatch) {
+        if (lodThreshold == null)
+            lodThreshold = new SimpleLodThreshold(terrainPatch.getSize(), lodThresholdSize);
+        return new DistanceLodCalculator(terrainPatch, lodThreshold);
+    }
+
+    public void write(JmeExporter ex) throws IOException {
+		OutputCapsule c = ex.getCapsule(this);
+		c.write(lodThreshold, "lodThreshold", null);
+        c.write(lodThresholdSize, "lodThresholdSize", 2);
+    }
+
+    public void read(JmeImporter im) throws IOException {
+        InputCapsule c = im.getCapsule(this);
+		lodThresholdSize = c.readInt("lodThresholdSize", 2);
+        lodThreshold = (LodThreshold) c.readSavable("lodThreshold", null);
+    }
+
 }

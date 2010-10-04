@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2009 jMonkeyEngine
+ * Copyright (c) 2009-2010 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,8 +13,8 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  *
- * * Neither the name of 'jMonkeyEngine' nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of 'jMonkeyEngine' nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -32,40 +32,69 @@
 
 package jme3tools.converters.model.strip;
 
+import java.util.Arrays;
 
 
-public class IntVec {
+class VertexCache {
 
-    private int[] data;
-    private int count = 0;
+    int[] entries;
+    int numEntries;
     
-    public IntVec() {
-        data = new int[16];
+    public VertexCache() {
+        this(16);
     }
     
-    public IntVec(int startSize) {
-        data = new int[startSize];
+    public VertexCache(int size) {
+        numEntries = size;
+        entries = new int[numEntries];
+        clear();
     }
     
-    public int size() {
-        return count;
-    }
-    
-    public int get(int i) {
-        return data[i];
-    }
-    
-    public void add(int val) {
-        if ( count == data.length ) {
-            int[] ndata = new int[count*2];
-            System.arraycopy(data,0,ndata,0,count);
-            data = ndata;
+    public boolean inCache(int entry) {
+        for(int i = 0; i < numEntries; i++)
+        {
+            if(entries[i] == entry)
+            {
+                return true;
+            }
         }
-        data[count] = val;
-        count++;
+        return false;
     }
     
-    public void clear() {
-        count = 0;
+    public int addEntry(int entry) {
+        int removed;
+        
+        removed = entries[numEntries - 1];
+        
+        //push everything right one
+        for(int i = numEntries - 2; i >= 0; i--)
+           {
+            entries[i + 1] = entries[i];
+        }
+        
+        entries[0] = entry;
+        
+        return removed;
     }
+
+    public void clear() {
+        Arrays.fill(entries,-1);
+    }
+    
+    public int at(int index) {
+        return entries[index];
+    }
+    
+    public void set(int index, int value) {
+        entries[index] = value;
+    }
+        
+    public void copy(VertexCache inVcache)
+    {
+        for(int i = 0; i < numEntries; i++)
+           {
+            inVcache.set(i, entries[i]);
+        }
+    }
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2009 jMonkeyEngine
+ * Copyright (c) 2009-2010 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,8 +13,8 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  *
- * * Neither the name of 'jMonkeyEngine' nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of 'jMonkeyEngine' nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -32,69 +32,20 @@
 
 package jme3tools.converters.model.strip;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 
 
-class VertexCache {
+class StripInfoVec extends ArrayList<StripInfo> {
 
-    int[] entries;
-    int numEntries;
-    
-    public VertexCache() {
-        this(16);
-    }
-    
-    public VertexCache(int size) {
-        numEntries = size;
-        entries = new int[numEntries];
-        clear();
-    }
-    
-    public boolean inCache(int entry) {
-        for(int i = 0; i < numEntries; i++)
-        {
-            if(entries[i] == entry)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    public int addEntry(int entry) {
-        int removed;
-        
-        removed = entries[numEntries - 1];
-        
-        //push everything right one
-        for(int i = numEntries - 2; i >= 0; i--)
-           {
-            entries[i + 1] = entries[i];
-        }
-        
-        entries[0] = entry;
-        
-        return removed;
-    }
 
-    public void clear() {
-        Arrays.fill(entries,-1);
-    }
-    
-    public int at(int index) {
-        return entries[index];
-    }
-    
-    public void set(int index, int value) {
-        entries[index] = value;
-    }
-        
-    public void copy(VertexCache inVcache)
-    {
-        for(int i = 0; i < numEntries; i++)
-           {
-            inVcache.set(i, entries[i]);
-        }
-    }
+    private static final long serialVersionUID = 1L;
 
+	public StripInfoVec() {
+        super();
+    }
+    
+    public StripInfo at(int index) {
+        return get(index);
+    }
+    
 }

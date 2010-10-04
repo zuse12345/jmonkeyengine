@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2009 jMonkeyEngine
+ * Copyright (c) 2009-2010 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,8 +13,8 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  *
- * * Neither the name of 'jMonkeyEngine' nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of 'jMonkeyEngine' nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -32,19 +32,22 @@
 
 package jme3tools.converters.model.strip;
 
-import java.util.ArrayList;
+/**
+ *  
+ */
+class EdgeInfo {
 
-class EdgeInfoVec extends ArrayList<EdgeInfo> {
+    FaceInfo m_face0, m_face1;
+    int m_v0, m_v1;
+    EdgeInfo m_nextV0, m_nextV1;
 
-    private static final long serialVersionUID = 1L;
+    public EdgeInfo(int v0, int v1) {
+        m_v0 = v0;
+        m_v1 = v1;
+        m_face0 = null;
+        m_face1 = null;
+        m_nextV0 = null;
+        m_nextV1 = null;
 
-	public EdgeInfoVec() {
-        super();
     }
-    
-    public EdgeInfo at(int index) {
-        return get(index);
-    }
-
-
 }

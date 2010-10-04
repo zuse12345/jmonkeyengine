@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2009 jMonkeyEngine
+ * Copyright (c) 2009-2010 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,8 +13,8 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
  *
- * * Neither the name of 'jMonkeyEngine' nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of 'jMonkeyEngine' nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -30,30 +30,23 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jme3tools.converters.model.strip;
+package com.jme3.terrain.geomipmap.LodCalc2;
+
+import com.jme3.export.Savable;
 
 
-class FaceInfo {
+/**
+ * Calculates the LOD value based on where the camera is.
+ * This is plugged into the Terrain system and any terrain
+ * using LOD will use this to determine when a patch of the 
+ * terrain should switch Levels of Detail.
+ * 
+ * @author bowens
+ */
+public interface LodThreshold extends Savable {
 
-    int   m_v0, m_v1, m_v2;
-    int   m_stripId;      // real strip Id
-    int   m_testStripId;  // strip Id in an experiment
-    int   m_experimentId; // in what experiment was it given an experiment Id?
-    
-    public FaceInfo(int v0, int v1, int v2){
-        m_v0 = v0; m_v1 = v1; m_v2 = v2;
-        m_stripId      = -1;
-        m_testStripId  = -1;
-        m_experimentId = -1;
-    }
-    
-    public void set(FaceInfo o) {
-        m_v0 = o.m_v0;
-        m_v1 = o.m_v1;
-        m_v2 = o.m_v2;
-        
-        m_stripId = o.m_stripId;
-        m_testStripId = o.m_testStripId;
-        m_experimentId = o.m_experimentId;
-    }
+	/**
+	 * A distance of how far between each LOD threshold.
+	 */
+	public float getLodDistanceThreshold();
 }

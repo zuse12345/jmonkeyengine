@@ -108,9 +108,7 @@ MaterialDef Phong Lighting {
 
         WorldParameters {
             WorldViewProjectionMatrix
-            NormalMatrix
-            WorldViewMatrix
-            FrustumNearFar
+            WorldMatrix
         }
 
         Defines {

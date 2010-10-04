@@ -25,8 +25,7 @@ MaterialDef Phong Lighting Deferred {
 
         Vector3 m_FrustumCorner
         Vector2 m_FrustumNearFar
-        Matrix4 m_ViewMatrix
-        Matrix4 m_ProjectionMatrixInverse
+        Matrix4 m_ViewProjectionMatrixInverse
 
         // Color ramp, will map diffuse and specular values through it.
         Texture2D m_ColorRamp
@@ -42,6 +41,7 @@ MaterialDef Phong Lighting Deferred {
             WorldViewProjectionMatrix
             WorldViewMatrix
             ViewMatrix
+            CameraPosition
         }
 
         Defines {

@@ -13,9 +13,9 @@ uniform vec2 m_FrustumNearFar;
 
 uniform vec4 g_LightColor;
 uniform vec4 g_LightPosition;
+uniform vec3 g_CameraPosition;
 
-uniform mat4 m_ViewMatrix;
-uniform mat4 m_ProjectionMatrixInverse;
+uniform mat4 m_ViewProjectionMatrixInverse;
 
 #ifdef COLORRAMP
   uniform sampler2D m_ColorRamp;
@@ -75,7 +75,7 @@ vec2 computeLighting(in vec3 wvPos, in vec3 wvNorm, in vec3 wvViewDir, in vec4 w
     float att = wvLightDir.w;
    #endif
 
-   specularFactor = 0.0;
+   //specularFactor = 0.0;
 
    return vec2(diffuseFactor, specularFactor) * vec2(att);
 }
@@ -101,11 +101,11 @@ vec3 getPosition(in vec2 newTexCoord){
 
   //return depth * vec3(x, y, m_FrustumCorner.z);
   vec4 pos;
-  pos.xy = gl_FragCoord.xy;
+  pos.xy = (newTexCoord * vec2(2.0)) - vec2(1.0);
   pos.z  = depth;
   pos.w  = 1.0;
-  pos    = m_ProjectionMatrixInverse * pos;
-  pos.z  *= pos.w;
+  pos    = m_ViewProjectionMatrixInverse * pos;
+  //pos   /= pos.w;
   return pos;
 }
 
@@ -128,18 +128,15 @@ void lightComputeDir(in vec3 worldPos, in vec4 color, in vec4 position, out vec4
 void main(){
     vec2 newTexCoord = texCoord;
 
-    vec3 wvPosition = getPosition(newTexCoord);
-    vec3 vViewDir  = normalize(-wvPosition);
-
-    vec4 wvLightPos = (m_ViewMatrix * vec4(g_LightPosition.xyz, g_LightColor.w));
-    wvLightPos.w = g_LightPosition.w;
+    vec3 worldPosition = getPosition(newTexCoord);
+    vec3 viewDir  = normalize(g_CameraPosition - worldPosition);
 
     // ***********************
     // Read from textures
     // ***********************
     vec4 normalInfo = texture2D(m_NormalData, newTexCoord);
     normalInfo.zw = vec2(0.0);
-    vec3 normal = decodeNormal(normalInfo/*.zwxy*/);
+    vec3 normal = decodeNormal(normalInfo);
     #if !defined(LOW_QUALITY) && !defined(V_TANGENT)
        normal = normalize(normal);
     #endif
@@ -148,15 +145,18 @@ void main(){
     vec4 specularColor = texture2D(m_SpecularData, newTexCoord);
 
     vec4 lightDir;
-    lightComputeDir(wvPosition, g_LightColor, wvLightPos, lightDir);
+    lightComputeDir(worldPosition, g_LightColor, g_LightPosition, lightDir);
 
-    vec2 light = computeLighting(wvPosition, normal, vViewDir.xyz, lightDir, specularColor.w*128.0);
+    vec2 light = computeLighting(worldPosition, normal, viewDir, lightDir, specularColor.w*128.0);
     #ifdef COLORRAMP
         diffuseColor.rgb  *= texture2D(m_ColorRamp, vec2(light.x, 0.0)).rgb;
         specularColor.rgb *= texture2D(m_ColorRamp, vec2(light.y, 0.0)).rgb;
     #endif
-    gl_FragColor = vec4(light.x * diffuseColor.xyz + light.y * specularColor.xyz, 1.0);
 
+    gl_FragColor = vec4(light.x * diffuseColor.xyz + light.y * specularColor.xyz, 1.0);
+    gl_FragColor.xyz *= g_LightColor.xyz;
+
+   // gl_FragColor = vec4(viewDir, 1.0);
     //vec3 len = vec3(length(normal));
     //gl_FragColor = vec4( (normalize(wvPosition.xyz)*len + vec3(1.0)) * vec3(0.5) , 1.0 );
 }

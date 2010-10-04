@@ -80,11 +80,7 @@ void main(){
     specularColor.rgb *= SpecularSum.rgb;
 
     gl_FragData[0] = vec4(diffuseColor.rgb, height);
-
-    //gl_FragData[0] = vec4(dot(normal, vec3(0.0, 1.0, 0.0)));
-    //normal = (normal + vec3(1.0)) * vec3(0.5);
-
-    gl_FragData[1] = vec4(encodeNormal(vNormal),
-                          encodeNormal(normal));
+    gl_FragData[1] = vec4(encodeNormal(normal), 0.0, 0.0);
+                          /*encodeNormal(vNormal));*/
     gl_FragData[2] = vec4(specularColor.rgb, m_Shininess / 128.0);
 }

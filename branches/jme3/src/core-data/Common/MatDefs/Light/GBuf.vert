@@ -1,7 +1,5 @@
 uniform mat4 g_WorldViewProjectionMatrix;
-uniform mat4 g_WorldViewMatrix;
-uniform mat3 g_NormalMatrix;
-uniform vec2 g_FrustumNearFar;
+uniform mat4 g_WorldMatrix;
 
 uniform vec4 m_Ambient;
 uniform vec4 m_Diffuse;
@@ -32,24 +30,26 @@ varying float vDepth;
 
 void main(){
    vec4 pos = vec4(inPosition, 1.0);
-   vec3 posView = (g_WorldViewMatrix * pos).xyz;
-   vDepth = (posView.z - g_FrustumNearFar.x) / (g_FrustumNearFar.y - g_FrustumNearFar.x);
-
    gl_Position = g_WorldViewProjectionMatrix * pos;
-   //gl_Position = vec4(gl_Position.xy, 0.0, posView.z);
    texCoord = inTexCoord;
 
    #if defined(NORMALMAP)
-     vec3 wvNormal   = normalize(g_NormalMatrix * inNormal);
-     vec3 wvTangent  = normalize(g_NormalMatrix * inTangent);
-     vec3 wvBinormal = cross(wvNormal, wvTangent);
-     tbnMat = mat3(wvTangent, wvBinormal, wvNormal);
-     vNormal = normalize(g_NormalMatrix * inNormal);
+     vec4 wvNormal, wvTangent, wvBinormal;
+
+     wvNormal   = vec4(inNormal, 0.0);
+     wvTangent  = vec4(inTangent, 0.0);
+
+     wvNormal.xyz   = normalize( (g_WorldMatrix * wvNormal).xyz   );
+     wvTangent.xyz  = normalize( (g_WorldMatrix * wvTangent).xyz  );
+     wvBinormal.xyz = cross(wvNormal.xyz, wvTangent.xyz);
+     tbnMat = mat3(wvTangent.xyz, wvBinormal.xyz, wvNormal.xyz);
+
+     vNormal = wvNormal.xyz;
    #else
      #ifdef V_TANGENT
-        vNormal = normalize(g_NormalMatrix * inTangent);
+       // vNormal = normalize(g_WorldMatrix * inTangent);
      #else
-        vNormal = normalize(g_NormalMatrix * inNormal);
+      //  vNormal = normalize(g_WorldMatrix * inNormal);
      #endif
    #endif
 

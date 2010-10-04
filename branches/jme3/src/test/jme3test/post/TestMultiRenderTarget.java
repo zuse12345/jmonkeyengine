@@ -40,21 +40,17 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Matrix4f;
 import com.jme3.math.Quaternion;
-import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.post.SceneProcessor;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Spatial;
-import com.jme3.scene.shape.Sphere;
+import com.jme3.scene.Node;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image.Format;
 import com.jme3.texture.Texture2D;
 import com.jme3.ui.Picture;
-import com.jme3.util.TangentBinormalGenerator;
 
 public class TestMultiRenderTarget extends SimpleApplication implements SceneProcessor {
 
@@ -66,10 +62,6 @@ public class TestMultiRenderTarget extends SimpleApplication implements ScenePro
     private Picture display;
     private Material mat;
 
-    float angle;
-    PointLight pl;
-    Spatial lightMdl;
-
     public static void main(String[] args){
         TestMultiRenderTarget app = new TestMultiRenderTarget();
         app.start();
@@ -80,42 +72,44 @@ public class TestMultiRenderTarget extends SimpleApplication implements ScenePro
         viewPort.addProcessor(this);
 
 //        flyCam.setEnabled(false);
-//        cam.setLocation(new Vector3f(1.8324817f, 0.23943897f, 1.9401197f));
-//        cam.setRotation(new Quaternion(-0.0181917f, 0.92379856f, -0.044238973f, -0.37987918f));
+        cam.setLocation(new Vector3f(4.8037705f, 4.851632f, 10.789033f));
+        cam.setRotation(new Quaternion(-0.05143692f, 0.9483723f, -0.21131563f, -0.230846f));
 
-        Sphere sphMesh = new Sphere(32, 32, 1);
-        sphMesh.setTextureMode(Sphere.TextureMode.Projected);
-        sphMesh.updateGeometry(32, 32, 1, false, false);
-        TangentBinormalGenerator.generate(sphMesh);
-
-        sphere = new Geometry("Rock Ball", sphMesh);
-        Material material = assetManager.loadMaterial("Textures/Terrain/Pond/Pond.j3m");
-        material.selectTechnique("GBuf");
-        sphere.setMaterial(material);
-        rootNode.attachChild(sphere);
-
-        pl = new PointLight();
-        pl.setColor(ColorRGBA.White);
-        pl.setPosition(new Vector3f(4f, 0f, 0f));
-        guiNode.addLight(pl);
-
-        lightMdl = new Geometry("Light", new Sphere(10, 10, 0.1f));
-        lightMdl.setMaterial(assetManager.loadMaterial("Common/Materials/RedColor.j3m"));
-        lightMdl.setQueueBucket(Bucket.Opaque);
-        guiNode.attachChild(lightMdl);
-
-//        DirectionalLight dl = new DirectionalLight();
-//        dl.setDirection(new Vector3f(1,-1,1).normalizeLocal());
-//        dl.setColor(new ColorRGBA(0.22f, 0.15f, 0.1f, 1.0f));
-//        guiNode.addLight(dl);
+        Node tank = (Node) assetManager.loadModel("Models/HoverTank/Tank2.mesh.xml");
+        Geometry tankMesh = (Geometry)tank.getChild(0);
+        tankMesh.getMaterial().selectTechnique("GBuf");
+        tankMesh.getMaterial().setColor("m_Specular", ColorRGBA.Black);
+        rootNode.attachChild(tank);
 
         display1 = new Picture("Picture");
         display1.move(0, 0, -1); // make it appear behind stats view
-//        display2 = (Picture) display1.clone();
-//        display3 = (Picture) display1.clone();
-//        display4 = (Picture) display1.clone();
+        display2 = (Picture) display1.clone();
+        display3 = (Picture) display1.clone();
+        display4 = (Picture) display1.clone();
         display  = (Picture) display1.clone();
-//        display.setQueueBucket(Bucket.Opaque);
+
+        ColorRGBA[] colors = new ColorRGBA[]{
+            ColorRGBA.Blue,
+            ColorRGBA.Brown,
+            ColorRGBA.Cyan,
+            ColorRGBA.DarkGray,
+            ColorRGBA.Green,
+            ColorRGBA.Magenta,
+            ColorRGBA.Orange,
+            ColorRGBA.Pink,
+            ColorRGBA.Red,
+            ColorRGBA.Yellow
+        };
+
+        for (int i = 0; i < 10; i++){
+            PointLight pl = new PointLight();
+            float angle = 0.314159265f * i;
+            pl.setPosition( new Vector3f(FastMath.cos(angle)*4f, FastMath.nextRandomFloat() * 4f - 2f,
+                                         FastMath.sin(angle)*4f));
+            pl.setColor(colors[i]);
+            rootNode.addLight(pl);
+            display.addLight(pl);
+        }
     }
 
     public void initialize(RenderManager rm, ViewPort vp) {
@@ -131,48 +125,43 @@ public class TestMultiRenderTarget extends SimpleApplication implements ScenePro
     }
 
     public void reshape(ViewPort vp, int w, int h) {
-        diffuseData  = new Texture2D(w, h, Format.RGBA16F);
-        normalData   = new Texture2D(w, h, Format.RGBA16F);
-        specularData = new Texture2D(w, h, Format.RGBA16F);
+        diffuseData  = new Texture2D(w, h, Format.RGBA8);
+        normalData   = new Texture2D(w, h, Format.RGBA8);
+        specularData = new Texture2D(w, h, Format.RGBA8);
         depthData    = new Texture2D(w, h, Format.Depth);
 
-//        float farY = cam.getFrustumTop();
-//        float farX = cam.getFrustumRight();
-       
         mat = new Material(assetManager, "Common/MatDefs/Light/Deferred.j3md");
         mat.setTexture("m_DiffuseData",  diffuseData);
         mat.setTexture("m_SpecularData", specularData);
         mat.setTexture("m_NormalData",   normalData);
         mat.setTexture("m_DepthData",    depthData);
-//        mat.setVector2("m_FrustumNearFar", new Vector2f(cam.getFrustumNear(), cam.getFrustumFar()));
-//        mat.setVector3("m_FrustumCorner",  new Vector3f(farX, farY, vp.getCamera().getFrustumFar()));
 
         display.setMaterial(mat);
         display.setPosition(0, 0);
         display.setWidth(w);
         display.setHeight(h);
-        
-//        display1.setTexture(assetManager, diffuseData, false);
-//        display2.setTexture(assetManager, normalData, false);
-//        display3.setTexture(assetManager, specularData, false);
-//        display4.setTexture(assetManager, depthData, false);
-//
-//        display1.setPosition(0, 0);
-//        display2.setPosition(w/2, 0);
-//        display3.setPosition(0, h/2);
-//        display4.setPosition(w/2, h/2);
-//
-//        display1.setWidth(w/2);
-//        display1.setHeight(h/2);
-//
-//        display2.setWidth(w/2);
-//        display2.setHeight(h/2);
-//
-//        display3.setWidth(w/2);
-//        display3.setHeight(h/2);
-//
-//        display4.setWidth(w/2);
-//        display4.setHeight(h/2);
+
+        display1.setTexture(assetManager, diffuseData, false);
+        display2.setTexture(assetManager, normalData, false);
+        display3.setTexture(assetManager, specularData, false);
+        display4.setTexture(assetManager, depthData, false);
+
+        display1.setPosition(0, 0);
+        display2.setPosition(w/2, 0);
+        display3.setPosition(0, h/2);
+        display4.setPosition(w/2, h/2);
+
+        display1.setWidth(w/2);
+        display1.setHeight(h/2);
+
+        display2.setWidth(w/2);
+        display2.setHeight(h/2);
+
+        display3.setWidth(w/2);
+        display3.setHeight(h/2);
+
+        display4.setWidth(w/2);
+        display4.setHeight(h/2);
 
         guiNode.updateGeometricState();
         
@@ -189,29 +178,17 @@ public class TestMultiRenderTarget extends SimpleApplication implements ScenePro
     }
 
     public void preFrame(float tpf) {
-        Matrix4f view = cam.getViewMatrix();
-        Matrix4f proj = cam.getProjectionMatrix();
-        mat.setMatrix4("m_ViewMatrix", view);
-        mat.setMatrix4("m_ProjectionMatrixInverse", proj.invert());
+        Matrix4f inverseViewProj = cam.getViewProjectionMatrix().invert();
+        mat.setMatrix4("m_ViewProjectionMatrixInverse", inverseViewProj);
     }
 
     public void postQueue(RenderQueue rq) {
     }
 
     public void postFrame(FrameBuffer out) {
-        //renderManager.getRenderer().setFrameBuffer(null);
     }
 
     public void cleanup() {
-    }
-
-    @Override
-    public void simpleUpdate(float tpf){
-//        angle += tpf * 0.25f;
-//        angle %= FastMath.TWO_PI;
-//
-//        pl.setPosition(new Vector3f(FastMath.cos(angle) * 4f, 0.5f, FastMath.sin(angle) * 4f));
-//        lightMdl.setLocalTranslation(pl.getPosition());
     }
 
 }

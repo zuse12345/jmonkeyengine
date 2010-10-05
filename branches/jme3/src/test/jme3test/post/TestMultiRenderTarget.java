@@ -116,11 +116,11 @@ public class TestMultiRenderTarget extends SimpleApplication implements ScenePro
         reshape(vp, vp.getCamera().getWidth(), vp.getCamera().getHeight());
         viewPort.setOutputFrameBuffer(fb);
         guiViewPort.setClearEnabled(true);
-        guiNode.attachChild(display);
-//        guiNode.attachChild(display1);
-//        guiNode.attachChild(display2);
-//        guiNode.attachChild(display3);
-//        guiNode.attachChild(display4);
+//        guiNode.attachChild(display);
+        guiNode.attachChild(display1);
+        guiNode.attachChild(display2);
+        guiNode.attachChild(display3);
+        guiNode.attachChild(display4);
         guiNode.updateGeometricState();
     }
 

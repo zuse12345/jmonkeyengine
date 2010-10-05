@@ -106,7 +106,7 @@ vec3 getPosition(in vec2 newTexCoord){
   pos.w  = 1.0;
   pos    = m_ViewProjectionMatrixInverse * pos;
   //pos   /= pos.w;
-  return pos;
+  return pos.xyz;
 }
 
 // JME3 lights in world space

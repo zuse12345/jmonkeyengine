@@ -159,6 +159,11 @@ public class FilterPostProcessor implements SceneProcessor {
         if (filters.size() == 0) {
             viewPort.setOutputFrameBuffer(null);
         }
+        for (Iterator<Filter> it = filters.iterator(); it.hasNext();) {
+            Filter filter = it.next();
+            filter.preFrame(tpf);
+        }
+
     }
 
     public void cleanup() {

@@ -133,6 +133,10 @@ public abstract class Filter {
 
     public abstract void preRender(RenderManager renderManager, ViewPort viewPort);
 
+    public void preFrame(float tpf){
+        
+    }
+
     public String getName() {
         return name;
     }

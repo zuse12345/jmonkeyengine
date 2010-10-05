@@ -33,6 +33,9 @@
 package jme3test.post;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.input.KeyInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -42,6 +45,7 @@ import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.ColorOverlayFilter;
+import com.jme3.post.filters.FadeFilter;
 import com.jme3.post.filters.RadialBlurFilter;
 import com.jme3.renderer.Caps;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
@@ -54,12 +58,12 @@ import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture.WrapMode;
 
-public class TestPostFilters extends SimpleApplication {
+public class TestPostFilters extends SimpleApplication implements ActionListener{
 
 
     private FilterPostProcessor fpp;
     private Vector3f lightDir = new Vector3f(-1, -1, .5f).normalizeLocal();
-
+    FadeFilter fade;
     public static void main(String[] args){
         TestPostFilters app = new TestPostFilters();
         app.start();
@@ -68,8 +72,12 @@ public class TestPostFilters extends SimpleApplication {
     public void setupFilters(){
         if (renderer.getCaps().contains(Caps.GLSL100)){
             fpp=new FilterPostProcessor(assetManager);
-            fpp.addFilter(new RadialBlurFilter());
             fpp.addFilter(new ColorOverlayFilter(ColorRGBA.LightGray));
+            fpp.addFilter(new RadialBlurFilter());
+            fade=new FadeFilter(1.0f);
+            fpp.addFilter(fade);
+            
+
             viewPort.addProcessor(fpp);
         }
     }
@@ -161,6 +169,33 @@ public class TestPostFilters extends SimpleApplication {
 
         setupFilters();
 
+        initInput();
+
     }
+
+    protected void initInput() {
+        flyCam.setMoveSpeed(3);
+        //init input
+        inputManager.addMapping("fadein", new KeyTrigger(KeyInput.KEY_I));
+        inputManager.addListener(this, "fadein");
+        inputManager.addMapping("fadeout", new KeyTrigger(KeyInput.KEY_O));
+        inputManager.addListener(this, "fadeout");
+
+    }
+
+    public void onAction(String name, boolean value, float tpf) {
+        if(name.equals("fadein") && value){
+            fade.fadeIn();
+            System.out.println("fade in");
+
+        }
+        if(name.equals("fadeout") && value){
+            fade.fadeOut();
+            System.out.println("fade out");
+        }
+    }
+
+
+
 
 }

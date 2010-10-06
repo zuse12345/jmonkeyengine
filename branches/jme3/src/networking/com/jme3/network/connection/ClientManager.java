@@ -91,7 +91,6 @@ public class ClientManager extends MessageAdapter implements ConnectionListener 
         Connection conOne = regMessage.getConnection();
         Connection conTwo = existingMessage.getConnection();
 
-
         if (conOne instanceof TCPConnection) {
             fillInTCPInfo(client, regMessage);
         } else if (conOne instanceof UDPConnection) {

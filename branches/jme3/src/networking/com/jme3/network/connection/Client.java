@@ -93,10 +93,12 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         this.label = "Client#" + clientID;
 
         isConnector = connector;
-        if (connector) isConnected = true;
-
-        if (tcp == null) tcp = new TCPConnection(label);
-        if (udp == null) udp = new UDPConnection(label);
+        if (connector)  {
+            isConnected = true;
+        } else {
+            if (tcp == null) tcp = new TCPConnection(label);
+            if (udp == null) udp = new UDPConnection(label);
+        }
     }
 
     /**
@@ -580,6 +582,7 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         ClientRegistrationMessage message = new ClientRegistrationMessage();
         message.setId(time);
         try {
+            message.setReliable(false);
             send(message);
             message.setReliable(true);
             send(message);

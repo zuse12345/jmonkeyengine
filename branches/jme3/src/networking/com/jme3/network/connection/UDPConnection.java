@@ -57,7 +57,7 @@ public class UDPConnection extends Connection {
 
     protected SocketAddress target = null;
 
-    protected final Object  writeLock = new Object();
+    protected final Object writeLock = new Object();
 
     public UDPConnection(String label) {
         this.label = label;
@@ -119,6 +119,7 @@ public class UDPConnection extends Connection {
         }
 
         readBuffer.flip();
+
 
         Object object = Serializer.readClassAndObject(readBuffer);
 

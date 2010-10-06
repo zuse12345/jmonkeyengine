@@ -47,19 +47,17 @@ public class ConnectionRunnable implements Runnable {
 
     private TCPConnection tcp;
     private UDPConnection udp;
-    private int delay = 30;
+    private int delay = 2;
     private boolean keepAlive = true;
     private boolean alive = true;
 
-    public ConnectionRunnable(TCPConnection tcp, UDPConnection udp, int delay)
-    {
+    public ConnectionRunnable(TCPConnection tcp, UDPConnection udp, int delay) {
         this.tcp = tcp;
         this.udp = udp;
         this.delay = delay;
     }
 
-    public ConnectionRunnable(TCPConnection tcp, UDPConnection udp)
-    {
+    public ConnectionRunnable(TCPConnection tcp, UDPConnection udp) {
         this.tcp = tcp;
         this.udp = udp;
     }

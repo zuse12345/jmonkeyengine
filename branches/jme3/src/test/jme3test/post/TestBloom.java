@@ -40,6 +40,7 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.BloomFilter;
+import com.jme3.post.filters.LightScatteringFilter;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
@@ -77,7 +78,7 @@ public class TestBloom extends SimpleApplication {
 
         Material mat = assetManager.loadMaterial("Common/Materials/RedColor.j3m");
         Material matSoil = new Material(assetManager,"Common/MatDefs/Misc/SolidColor.j3md");
-        matSoil.setColor("m_Color", ColorRGBA.LightGray);
+        matSoil.setColor("m_Color", ColorRGBA.White);
 
 
         teapot = assetManager.loadModel("Models/Teapot/Teapot.obj");
@@ -125,7 +126,10 @@ public class TestBloom extends SimpleApplication {
         rootNode.attachChild(sphere);
 
         FilterPostProcessor fpp=new FilterPostProcessor(assetManager);
-        fpp.addFilter(new BloomFilter(cam.getWidth(),cam.getHeight()));
+        BloomFilter bloom=new BloomFilter(cam.getWidth(),cam.getHeight());
+        BloomUI ui=new BloomUI(inputManager, bloom);
+        fpp.addFilter(bloom);
+
         viewPort.addProcessor(fpp);
 
     }

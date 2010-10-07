@@ -29,7 +29,6 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.post.filters;
 
 import com.jme3.asset.AssetManager;
@@ -38,65 +37,152 @@ import com.jme3.post.Filter;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.texture.Image.Format;
-import com.jme3.texture.Texture.MagFilter;
-import com.jme3.texture.Texture.MinFilter;
 import java.util.ArrayList;
 
 /**
  *
  * @author Nehon
  */
-public class BloomFilter extends Filter{
+public class BloomFilter extends Filter {
 
-    private Pass pass32=new Pass();
-    private Pass pass64=new Pass();
-    private Pass pass128=new Pass();
-    private Pass pass256=new Pass();
-    private MinFilter fbMinFilter = MinFilter.BilinearNoMipMaps;
-    private MagFilter fbMagFilter = MagFilter.Bilinear;
+    //Bloom parameters
+    private float blurScale = 1.5f;
+    private float exposurePower = 5.0f;
+    private float exposureCutOff = 0.0f;
+    private float bloomIntensity = 2.0f;
+
+    
+    private Pass extractPass;
+    private Pass horizontalBlur = new Pass();
+    private Pass verticalalBlur = new Pass();
+    private Material extractMat;
+    private Material vBlurMat;
+    private Material hBlurMat;
     private int screenWidth;
     private int screenHeight;
-    
-    public BloomFilter(int width,int height) {
+
+    public BloomFilter(int width, int height) {
         super("Bloom");
-        screenWidth=width;
-        screenHeight=height;
+        screenWidth = width;
+        screenHeight = height;
     }
 
     @Override
     public void initMaterial(AssetManager manager) {
-       material = new Material(manager, "Common/MatDefs/Post/BloomFinal.j3md");
-       postRenderPasses=new ArrayList<Pass>();
 
-       initPass(manager, screenWidth/16,screenHeight/16, pass32);
-       initPass(manager, screenWidth/8,screenHeight/8, pass64);
-       initPass(manager, screenWidth/4,screenHeight/4, pass128);
-       initPass(manager,screenWidth/2,screenHeight/2, pass256);
+        postRenderPasses = new ArrayList<Pass>();
+        //configuring extractPass
+        extractMat = new Material(manager, "Common/MatDefs/Post/BloomExtract.j3md");
+        extractPass = new Pass() {
 
-    }
+            @Override
+            public boolean requiresSceneAsTexture() {
+                return true;
+            }
+               @Override
+            public void beforeRender() {
+                extractMat.setFloat("m_ExposurePow", exposurePower);
+                extractMat.setFloat("m_ExposureCutoff", exposureCutOff);
+            }
+        };
+        
+        extractPass.init(screenWidth, screenHeight, Format.RGBA8, Format.Depth, extractMat);
+        postRenderPasses.add(extractPass);
 
-    private void initPass(AssetManager manager,int width,int height,Pass pass) {
-        Material postMaterial = new Material(manager, "Common/MatDefs/Post/Bloom.j3md");
-        postMaterial.setFloat("m_Size", height);
-        pass.init(width, height, Format.RGBA8, Format.Depth, postMaterial);
-        pass.getRenderedTexture().setMagFilter(fbMagFilter);
-        pass.getRenderedTexture().setMinFilter(fbMinFilter);
-        postRenderPasses.add(pass);
+        //configuring horizontal blur pass
+        hBlurMat = new Material(manager, "Common/MatDefs/Blur/HGaussianBlur.j3md");
+        horizontalBlur = new Pass() {
+
+            @Override
+            public void beforeRender() {
+                hBlurMat.setTexture("m_Texture", extractPass.getRenderedTexture());
+                hBlurMat.setFloat("m_Size", screenWidth);
+                hBlurMat.setFloat("m_Scale", blurScale);
+            }
+        };
+        horizontalBlur.init(screenWidth, screenHeight, Format.RGBA8, Format.Depth, hBlurMat);
+        postRenderPasses.add(horizontalBlur);
+
+        //configuring vertical blur pass
+        vBlurMat = new Material(manager, "Common/MatDefs/Blur/VGaussianBlur.j3md");
+        verticalalBlur = new Pass() {
+
+            @Override
+            public void beforeRender() {
+                vBlurMat.setTexture("m_Texture", horizontalBlur.getRenderedTexture());
+                vBlurMat.setFloat("m_Size", screenHeight);
+                vBlurMat.setFloat("m_Scale", blurScale);
+            }
+        };
+        verticalalBlur.init(screenWidth, screenHeight, Format.RGBA8, Format.Depth, vBlurMat);
+        postRenderPasses.add(verticalalBlur);
+
+
+        //final material
+        material = new Material(manager, "Common/MatDefs/Post/BloomFinal.j3md");
+        material.setTexture("m_BloomTex", verticalalBlur.getRenderedTexture());
 
     }
 
     @Override
     public Material getMaterial() {
-        material.setTexture("m_Tex32", pass32.getRenderedTexture());
-        material.setTexture("m_Tex64", pass64.getRenderedTexture());
-        material.setTexture("m_Tex128", pass128.getRenderedTexture());
-        material.setTexture("m_Tex256", pass256.getRenderedTexture());
+    
+        material.setFloat("m_BloomIntensity", bloomIntensity);
+        
         return material;
     }
 
     @Override
     public void preRender(RenderManager renderManager, ViewPort viewPort) {
+    }
 
+    public float getBloomIntensity() {
+        return bloomIntensity;
+    }
+
+    /**
+     *
+     * intensity of the bloom effect
+     * @param bloomIntensity
+     */
+    public void setBloomIntensity(float bloomIntensity) {
+        this.bloomIntensity = bloomIntensity;
+    }
+
+    public float getBlurScale() {
+        return blurScale;
+    }
+
+    /**
+     * The spread of the bloom
+     * @param blurScale
+     */
+    public void setBlurScale(float blurScale) {
+        this.blurScale = blurScale;
+    }
+
+    public float getExposureCutOff() {
+        return exposureCutOff;
+    }
+
+    /**
+     * Define the color threshold on which the bloom will be applied (0.0 to 1.0)
+     * @param exposureCutOff
+     */
+    public void setExposureCutOff(float exposureCutOff) {
+        this.exposureCutOff = exposureCutOff;
+    }
+
+    public float getExposurePower() {
+        return exposurePower;
+    }
+
+    /**
+     * the power of the bloomed color
+     * @param exposurePower
+     */
+    public void setExposurePower(float exposurePower) {
+        this.exposurePower = exposurePower;
     }
 
 

@@ -57,15 +57,15 @@ import com.jme3.renderer.Camera;
  */
 public class FlyByCamera implements AnalogListener, ActionListener {
 
-    private Camera cam;
-    private Vector3f initialUpVec;
-    private float rotationSpeed = 1f;
-    private float moveSpeed = 3f;
-    private MotionAllowedListener motionAllowed = null;
-    private boolean enabled = true;
-    private boolean dragToRotate = false;
-    private boolean canRotate = false;
-    private InputManager inputManager;
+    protected Camera cam;
+    protected Vector3f initialUpVec;
+    protected float rotationSpeed = 1f;
+    protected float moveSpeed = 3f;
+    protected MotionAllowedListener motionAllowed = null;
+    protected boolean enabled = true;
+    protected boolean dragToRotate = false;
+    protected boolean canRotate = false;
+    protected InputManager inputManager;
     
     /**
      * Creates a new FlyByCamera to control the given Camera object.
@@ -194,7 +194,7 @@ public class FlyByCamera implements AnalogListener, ActionListener {
         inputManager.setCursorVisible(dragToRotate);
     }
 
-    private void rotateCamera(float value, Vector3f axis){
+    protected void rotateCamera(float value, Vector3f axis){
         if (dragToRotate){
             if (canRotate){
 //                value = -value;
@@ -221,7 +221,7 @@ public class FlyByCamera implements AnalogListener, ActionListener {
         cam.setAxes(q);
     }
 
-    private void zoomCamera(float value){
+    protected void zoomCamera(float value){
         // derive fovY value
         float h = cam.getFrustumTop();
         float w = cam.getFrustumRight();
@@ -242,7 +242,7 @@ public class FlyByCamera implements AnalogListener, ActionListener {
         cam.setFrustumRight(w);
     }
 
-    private void riseCamera(float value){
+    protected void riseCamera(float value){
         Vector3f vel = new Vector3f(0, value * moveSpeed, 0);
         Vector3f pos = cam.getLocation().clone();
 
@@ -254,7 +254,7 @@ public class FlyByCamera implements AnalogListener, ActionListener {
         cam.setLocation(pos);
     }
 
-    private void moveCamera(float value, boolean sideways){
+    protected void moveCamera(float value, boolean sideways){
         Vector3f vel = new Vector3f();
         Vector3f pos = cam.getLocation().clone();
 

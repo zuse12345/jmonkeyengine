@@ -32,12 +32,14 @@
 
 package com.jme3.renderer.lwjgl;
 
+import org.lwjgl.opengl.EXTAbgr;
 import com.jme3.texture.Image;
 import com.jme3.texture.Image.Format;
 import java.nio.ByteBuffer;
 import org.lwjgl.opengl.ARBDepthBufferFloat;
 import org.lwjgl.opengl.ARBHalfFloatPixel;
 import org.lwjgl.opengl.ARBTextureFloat;
+import org.lwjgl.opengl.ARBTextureRg;
 import org.lwjgl.opengl.EXTPackedFloat;
 import org.lwjgl.opengl.EXTTextureArray;
 import org.lwjgl.opengl.EXTTextureSharedExponent;
@@ -334,6 +336,11 @@ public class TextureUtil {
             case RGBA8:
                 internalFormat = GL_RGBA8;
                 format = GL_RGBA;
+                dataType = GL_UNSIGNED_BYTE;
+                break;
+            case ABGR8:
+                internalFormat = GL_RGBA8;
+                format = EXTAbgr.GL_ABGR_EXT;
                 dataType = GL_UNSIGNED_BYTE;
                 break;
             default:

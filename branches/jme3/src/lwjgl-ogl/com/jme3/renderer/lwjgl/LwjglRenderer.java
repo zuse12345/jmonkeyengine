@@ -1011,7 +1011,13 @@ public class LwjglRenderer implements Renderer {
                                  GL_NEAREST);
             
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, prevFBO);
-            checkFrameBufferError();
+            try {
+                checkFrameBufferError();
+            } catch (IllegalStateException ex){
+                logger.log(Level.SEVERE, "Source FBO:\n{0}", src);
+                logger.log(Level.SEVERE, "Dest FBO:\n{0}", dst);
+                throw ex;
+            }
         }else{
             throw new UnsupportedOperationException("EXT_framebuffer_blit required.");
               // TODO: support non-blit copies?
@@ -1236,8 +1242,13 @@ public class LwjglRenderer implements Renderer {
             assert context.boundFBO == fb.getId();
             lastFb = fb;
         }
-        
-        checkFrameBufferError();
+
+        try {
+            checkFrameBufferError();
+        } catch (IllegalStateException ex){
+            logger.log(Level.SEVERE, "Problem FBO:\n{0}", fb);
+            throw ex;
+        }
     }
 
     public void readFrameBuffer(FrameBuffer fb, ByteBuffer byteBuf){

@@ -98,22 +98,28 @@ public class PssmShadowRenderer implements SceneProcessor {
         dispPic = new Picture[nbSplits];
         lightViewProjectionsMatrices = new Matrix4f[nbSplits];
         splits = new float[nbSplits + 1];
-        dummyTex= new Texture2D(size, size, Format.RGB8);
-        for (int i = 0; i < nbSplits; i++) {
+//        dummyTex= new Texture2D(size, size, Format.RGB8);
 
+        preshadowMat = new Material(manager, "Common/MatDefs/Shadow/PreShadow.j3md");
+        postshadowMat = new Material(manager, "Common/MatDefs/Shadow/PostShadowPSSM.j3md");
+
+
+        for (int i = 0; i < nbSplits; i++) {
+            lightViewProjectionsMatrices[i] = new Matrix4f();
             shadowFB[i] = new FrameBuffer(size, size, 0);
-            shadowMaps[i] = new Texture2D(size, size, Format.Depth);
+            shadowMaps[i] = new Texture2D(size, size, Format.Depth16);
 
             shadowFB[i].setDepthTexture(shadowMaps[i]);
-            shadowFB[i].setColorTexture(dummyTex);
+//            shadowFB[i].setColorTexture(dummyTex);
+
+            postshadowMat.setTexture("m_ShadowMap" + i, shadowMaps[i]);
             
 
             //quads for debuging purpose
             dispPic[i] = new Picture("Picture" + i);
             dispPic[i].setTexture(manager, shadowMaps[i], false);
         }
-        preshadowMat = new Material(manager, "Common/MatDefs/Shadow/PreShadow.j3md");
-        postshadowMat = new Material(manager, "Common/MatDefs/Shadow/PostShadowPSSM.j3md");
+        
         
 
 
@@ -136,9 +142,10 @@ public class PssmShadowRenderer implements SceneProcessor {
     public PssmShadowRenderer(AssetManager manager, int size, int nbSplits, String edgeFiltering) {
         this(manager, size, nbSplits);
         if (edgeFiltering.equals(EDGE_FILTERING_DITHER) || edgeFiltering.equals(EDGE_FILTERING_PCF)) {
-            postshadowMat.selectTechnique("Default");
-            postshadowMat.getActiveTechnique().getDef().addShaderParamDefine(edgeFiltering, edgeFiltering);
-            postshadowMat.setParam(edgeFiltering, VarType.Boolean, true);
+            postshadowMat.setBoolean("m_DoDither", edgeFiltering.equals(EDGE_FILTERING_DITHER));
+            //postshadowMat.selectTechnique("Default");
+            //postshadowMat.getActiveTechnique().getDef().addShaderParamDefine(edgeFiltering, edgeFiltering);
+            //postshadowMat.setParam(edgeFiltering, VarType.Boolean, true);
         }
     }
 
@@ -189,6 +196,7 @@ public class PssmShadowRenderer implements SceneProcessor {
     }
 
     public void postQueue(RenderQueue rq) {
+        
         GeometryList occluders = rq.getShadowQueueContent(ShadowMode.Cast);
         noOccluders = occluders.size() == 0;
         if (noOccluders) {
@@ -261,8 +269,7 @@ public class PssmShadowRenderer implements SceneProcessor {
         r.setFrameBuffer(viewPort.getOutputFrameBuffer());
         renderManager.setForcedMaterial(null);
         renderManager.setCamera(viewCam, false);
-
-
+        
     }
 
     //debug only : displays depth shadow maps
@@ -297,7 +304,7 @@ public class PssmShadowRenderer implements SceneProcessor {
 
             for (int i = 0; i < nbSplits; i++) {
                 postshadowMat.setMatrix4("m_LightViewProjectionMatrix" + i, lightViewProjectionsMatrices[i]);
-                postshadowMat.setTexture("m_ShadowMap" + i, shadowMaps[i]);
+                //postshadowMat.setTexture("m_ShadowMap" + i, shadowMaps[i]);
             }
             for (int i = 0; i < nbSplits; i++) {
 

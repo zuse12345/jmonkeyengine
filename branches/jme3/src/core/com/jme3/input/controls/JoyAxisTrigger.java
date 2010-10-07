@@ -32,34 +32,40 @@
 
 package com.jme3.input.controls;
 
-/**
- * A <code>KeyTrigger</code> is used as a mapping to keyboard keys.
- *
- * @author Kirill Vainer
- */
-public class KeyTrigger implements Trigger {
+public class JoyAxisTrigger implements Trigger {
 
-    private final int keyCode;
+    private final int joyId, axisId;
+    private final boolean negative;
 
-    public KeyTrigger(int keyCode){
-        this.keyCode = keyCode;
+    public JoyAxisTrigger(int joyId, int axisId, boolean negative) {
+        this.joyId = joyId;
+        this.axisId = axisId;
+        this.negative = negative;
     }
 
-    public String getName() {
-        return "KeyCode " + keyCode;
-    }
-
-    public int getKeyCode(){
-        return keyCode;
-    }
-
-    public static int keyHash(int keyCode){
-        return keyCode & 0xff;
+    public static int joyAxisHash(int joyAxis, boolean negative){
+        return (negative ? 1280 : 1024) | (joyAxis & 0xff);
     }
 
     @Override
     public int hashCode(){
-        return keyHash(keyCode);
+        return joyAxisHash(axisId, negative);
     }
 
+    public int getAxisId() {
+        return axisId;
+    }
+
+    public int getJoyId() {
+        return joyId;
+    }
+
+    public boolean isNegative() {
+        return negative;
+    }
+
+    public String getName() {
+        return "JoyAxis[joyId="+joyId+", axisId="+axisId+", neg="+negative+"]";
+    }
+    
 }

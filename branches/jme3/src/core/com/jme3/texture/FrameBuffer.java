@@ -80,6 +80,15 @@ public class FrameBuffer extends GLObject {
         public void resetObject(){
             id = -1;
         }
+
+        @Override
+        public String toString(){
+            if (tex != null){
+                return "TextureTarget[format=" + format + "]";
+            }else{
+                return "BufferTarget[format=" + format + "]";
+            }
+        }
     }
 
     public FrameBuffer(int width, int height, int samples){
@@ -233,6 +242,21 @@ public class FrameBuffer extends GLObject {
 
     public int getSamples() {
         return samples;
+    }
+
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        String mrtStr = colorBufIndex >= 0 ? "" + colorBufIndex : "mrt";
+        sb.append("FrameBuffer[format=").append(width).append("x").append(height)
+          .append("x").append(samples).append(", drawBuf=").append(mrtStr).append("]\n");
+        if (depthBuf != null)
+            sb.append("Depth => ").append(depthBuf).append("\n");
+        for (RenderBuffer colorBuf : colorBufs){
+            sb.append("Color(").append(colorBuf.slot)
+              .append(") => ").append(colorBuf).append("\n");
+        }
+        return sb.toString();
     }
 
     @Override

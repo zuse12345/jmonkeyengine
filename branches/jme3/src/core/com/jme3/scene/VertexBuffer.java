@@ -124,7 +124,12 @@ public class VertexBuffer extends GLObject implements Savable, Cloneable {
         /** 
          * Bone indices, used with animation
          */
-        BoneIndex;
+        BoneIndex,
+
+        /**
+         * Texture coordinate #2
+         */
+        TexCoord2;
     }
 
     /**

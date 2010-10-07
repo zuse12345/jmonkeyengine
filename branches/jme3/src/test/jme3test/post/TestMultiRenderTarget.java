@@ -78,7 +78,7 @@ public class TestMultiRenderTarget extends SimpleApplication implements ScenePro
         Node tank = (Node) assetManager.loadModel("Models/HoverTank/Tank2.mesh.xml");
         Geometry tankMesh = (Geometry)tank.getChild(0);
         tankMesh.getMaterial().selectTechnique("GBuf");
-        tankMesh.getMaterial().setColor("m_Specular", ColorRGBA.Black);
+        //tankMesh.getMaterial().setColor("m_Specular", ColorRGBA.Black);
         rootNode.attachChild(tank);
 
         display1 = new Picture("Picture");
@@ -89,8 +89,8 @@ public class TestMultiRenderTarget extends SimpleApplication implements ScenePro
         display  = (Picture) display1.clone();
 
         ColorRGBA[] colors = new ColorRGBA[]{
+            ColorRGBA.White,
             ColorRGBA.Blue,
-            ColorRGBA.Brown,
             ColorRGBA.Cyan,
             ColorRGBA.DarkGray,
             ColorRGBA.Green,
@@ -101,12 +101,13 @@ public class TestMultiRenderTarget extends SimpleApplication implements ScenePro
             ColorRGBA.Yellow
         };
 
-        for (int i = 0; i < 10; i++){
+        for (int i = 0; i < 3; i++){
             PointLight pl = new PointLight();
             float angle = 0.314159265f * i;
-            pl.setPosition( new Vector3f(FastMath.cos(angle)*4f, FastMath.nextRandomFloat() * 4f - 2f,
-                                         FastMath.sin(angle)*4f));
+            pl.setPosition( new Vector3f(FastMath.cos(angle)*2f, 0,
+                                         FastMath.sin(angle)*2f));
             pl.setColor(colors[i]);
+            pl.setRadius(5);
             rootNode.addLight(pl);
             display.addLight(pl);
         }
@@ -116,11 +117,11 @@ public class TestMultiRenderTarget extends SimpleApplication implements ScenePro
         reshape(vp, vp.getCamera().getWidth(), vp.getCamera().getHeight());
         viewPort.setOutputFrameBuffer(fb);
         guiViewPort.setClearEnabled(true);
-//        guiNode.attachChild(display);
-        guiNode.attachChild(display1);
-        guiNode.attachChild(display2);
-        guiNode.attachChild(display3);
-        guiNode.attachChild(display4);
+        guiNode.attachChild(display);
+//        guiNode.attachChild(display1);
+//        guiNode.attachChild(display2);
+//        guiNode.attachChild(display3);
+//        guiNode.attachChild(display4);
         guiNode.updateGeometricState();
     }
 
@@ -171,6 +172,35 @@ public class TestMultiRenderTarget extends SimpleApplication implements ScenePro
         fb.addColorTexture(normalData);
         fb.addColorTexture(specularData);
         fb.setMultiTarget(true);
+
+        /*
+         * Marks pixels in front of the far light boundary
+            Render back-faces of light volume
+            Depth test GREATER-EQUAL
+            Write to stencil on depth pass
+            Skipped for very small distant lights
+         */
+        
+        /*
+         * Find amount of lit pixels inside the volume
+             Start pixel query
+             Render front faces of light volume
+             Depth test LESS-EQUAL
+             Don’t write anything – only EQUAL stencil test
+         */
+
+        /*
+         * Enable conditional rendering
+            Based on query results from previous stage
+            GPU skips rendering for invisible lights
+         */
+
+        /*
+         * Render front-faces of light volume
+            Depth test - LESS-EQUAL
+            Stencil test - EQUAL
+            Runs only on marked pixels inside light
+         */
     }
 
     public boolean isInitialized() {

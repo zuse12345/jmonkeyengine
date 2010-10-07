@@ -75,11 +75,9 @@ public class BloomFilter extends Filter {
         extractMat = new Material(manager, "Common/MatDefs/Post/BloomExtract.j3md");
         extractPass = new Pass() {
 
-            @Override
             public boolean requiresSceneAsTexture() {
                 return true;
             }
-               @Override
             public void beforeRender() {
                 extractMat.setFloat("m_ExposurePow", exposurePower);
                 extractMat.setFloat("m_ExposureCutoff", exposureCutOff);
@@ -93,7 +91,6 @@ public class BloomFilter extends Filter {
         hBlurMat = new Material(manager, "Common/MatDefs/Blur/HGaussianBlur.j3md");
         horizontalBlur = new Pass() {
 
-            @Override
             public void beforeRender() {
                 hBlurMat.setTexture("m_Texture", extractPass.getRenderedTexture());
                 hBlurMat.setFloat("m_Size", screenWidth);
@@ -107,7 +104,6 @@ public class BloomFilter extends Filter {
         vBlurMat = new Material(manager, "Common/MatDefs/Blur/VGaussianBlur.j3md");
         verticalalBlur = new Pass() {
 
-            @Override
             public void beforeRender() {
                 vBlurMat.setTexture("m_Texture", horizontalBlur.getRenderedTexture());
                 vBlurMat.setFloat("m_Size", screenHeight);

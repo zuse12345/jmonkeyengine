@@ -35,6 +35,7 @@ package com.jme3.input;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.InputListener;
+import com.jme3.input.controls.JoyAxisTrigger;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
@@ -126,9 +127,7 @@ public class InputManager implements RawInputListener {
         return 1536 | (joyButton & 0xff);
     }
 
-    static final int joyAxisHash(int joyAxis, boolean negative){
-        return (negative ? 1280 : 1024) | (joyAxis & 0xff);
-    }
+    
 
     private void invokeActions(int hash, boolean pressed){
         ArrayList<Mapping> maps = bindings.get(hash);
@@ -252,9 +251,9 @@ public class InputManager implements RawInputListener {
         int axis    = evt.getAxisIndex();
         float value = evt.getValue();
         if (value < 0){
-            invokeAnalogsAndActions(joyAxisHash(axis, true), -value);
+            invokeAnalogsAndActions(JoyAxisTrigger.joyAxisHash(axis, true), -value);
         }else{
-            invokeAnalogsAndActions(joyAxisHash(axis, false), value);
+            invokeAnalogsAndActions(JoyAxisTrigger.joyAxisHash(axis, false), value);
         }
     }
 

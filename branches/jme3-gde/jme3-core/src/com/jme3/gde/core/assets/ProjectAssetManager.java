@@ -37,6 +37,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -52,6 +54,10 @@ public class ProjectAssetManager {
         this.project = prj;
         this.folderName = folderName;
         AssetManager manager = getManager();
+
+        for (AssetManagerConfigurator di : Lookup.getDefault().lookupAll(AssetManagerConfigurator.class)) {
+            di.prepareManager(manager);
+        }
 
         manager.registerLoader("com.jme3.export.binary.BinaryImporter", "j3s");
 

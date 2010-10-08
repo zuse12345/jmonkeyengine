@@ -130,7 +130,10 @@ public class FilterPostProcessor implements SceneProcessor {
             if(filter.getPostRenderPasses()!=null){
                 for (Iterator<Filter.Pass> it1 = filter.getPostRenderPasses().iterator(); it1.hasNext();) {
                     Filter.Pass pass = it1.next();
-                    pass.getPassMaterial().setTexture("m_Texture", tex);
+                    pass.beforeRender();
+                    if(pass.requiresSceneAsTexture()){
+                         pass.getPassMaterial().setTexture("m_Texture", tex);
+                    }
                     renderProcessing(r, pass.getRenderFrameBuffer(), pass.getPassMaterial());
                 }
             }

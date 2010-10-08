@@ -78,6 +78,13 @@ public abstract class Filter {
             passMaterial = material;
         }
 
+        public boolean requiresSceneAsTexture(){
+            return false;
+        }
+
+        public void beforeRender(){
+        }
+
         public FrameBuffer getRenderFrameBuffer() {
             return renderFrameBuffer;
         }

@@ -61,7 +61,6 @@ import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial.CullHint;
-import com.jme3.scene.shape.Quad;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.scene.shape.Sphere.TextureMode;
 import com.jme3.terrain.geomipmap.TerrainLodControl;
@@ -73,6 +72,7 @@ import com.jme3.texture.Texture;
 import com.jme3.texture.Texture.WrapMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import jme3tools.converters.ImageToAwt;
 
 /**
@@ -99,6 +99,9 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
     Material mat;
     ParticleEmitter effect;
 
+    private static final int COUNT_FACTOR = 1;
+    private static final float COUNT_FACTOR_F = 1f;
+
     public static void main(String[] args) {
         TestWalkingChar app = new TestWalkingChar();
         app.start();
@@ -107,8 +110,8 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
     @Override
     public void simpleInitApp() {
         setupKeys();
-        prepareEffect();
         prepareBullet();
+        prepareEffect();
         createLight();
         createSky();
         createTerrain();
@@ -144,9 +147,9 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
     }
 
     private void prepareEffect() {
-        effect = new ParticleEmitter("Flame", Type.Triangle, 32);
+        effect = new ParticleEmitter("Flame", Type.Triangle, 32 * COUNT_FACTOR);
         effect.setSelectRandomImage(true);
-        effect.setStartColor(new ColorRGBA(1f, 0.4f, 0.05f, 1f));
+        effect.setStartColor(new ColorRGBA(1f, 0.4f, 0.05f, (float) (1f / COUNT_FACTOR_F)));
         effect.setEndColor(new ColorRGBA(.4f, .22f, .12f, 0f));
         effect.setStartSize(1.3f);
         effect.setEndSize(2f);
@@ -162,7 +165,9 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
         mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/flame.png"));
         effect.setMaterial(mat);
-//        rootNode.attachChild(effect);
+        effect.setLocalScale(100);
+        effect.setCullHint(CullHint.Never);
+        rootNode.attachChild(effect);
     }
 
     private void createLight() {
@@ -257,6 +262,7 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
 
     @Override
     public void simpleUpdate(float tpf) {
+        rootNode.updateLogicalState(tpf);
         rootNode.updateGeometricState();
         //Die walkDirection des Charakters
         Vector3f camDir = cam.getDirection().clone().multLocal(0.1f);
@@ -318,38 +324,50 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
         } else if (binding.equals("CharSpace")) {
             character.jump();
         } else if (binding.equals("CharShoot") && !value) {
-            Geometry bulletg = new Geometry("bullet", bullet);
-            bulletg.setMaterial(mat);
-            PhysicsNode bulletNode = new PhysicsNode(bulletg, bulletCollisionShape, 1);
-            bulletNode.setCcdMotionThreshold(0.1f);
-            bulletNode.setName("bullet");
-            bulletNode.setLocalTranslation(character.getLocalTranslation().add(modelDirection));
-            bulletNode.setShadowMode(ShadowMode.CastAndReceive);
-            bulletNode.setLinearVelocity(modelDirection.mult(40));
-            rootNode.attachChild(bulletNode);
-            getPhysicsSpace().add(bulletNode);
+            shootBullet();
         }
+    }
+
+    private void shootBullet() {
+        Geometry bulletg = new Geometry("bullet", bullet);
+        bulletg.setMaterial(mat);
+        PhysicsNode bulletNode = new PhysicsNode(bulletg, bulletCollisionShape, 1);
+        bulletNode.setCcdMotionThreshold(0.1f);
+        bulletNode.setName("bullet");
+        bulletNode.setLocalTranslation(character.getLocalTranslation().add(modelDirection));
+        bulletNode.setShadowMode(ShadowMode.CastAndReceive);
+        bulletNode.setLinearVelocity(modelDirection.mult(40));
+        rootNode.attachChild(bulletNode);
+        getPhysicsSpace().add(bulletNode);
     }
 
     public void collision(PhysicsCollisionEvent event) {
         if ("bullet".equals(event.getNodeA().getName())) {
-            Node node = event.getNodeA();
-            getPhysicsSpace().remove(node);
-            node.removeFromParent();
-            effect.killAllParticles();
-            effect.setLocalTranslation(node.getLocalTranslation());
-            effect.emitAllParticles();
-            //this is only needed because the physics collision events arrive after updating
-            rootNode.updateGeometricState();
+            final Node node = event.getNodeA();
+            enqueue(new Callable(){
+                public Object call() throws Exception {
+                    getPhysicsSpace().remove(node);
+                    node.removeFromParent();
+                    effect.killAllParticles();
+                    effect.setLocalTranslation(node.getLocalTranslation());
+                    effect.emitAllParticles();
+                    return null;
+                }
+
+            });
         } else if ("bullet".equals(event.getNodeB().getName())) {
-            Node node = event.getNodeB();
-            getPhysicsSpace().remove(node);
-            node.removeFromParent();
-            effect.killAllParticles();
-            effect.setLocalTranslation(node.getLocalTranslation());
-            effect.emitAllParticles();
-            //this is only needed because the physics collision events arrive after updating
-            rootNode.updateGeometricState();
+            final Node node = event.getNodeB();
+            enqueue(new Callable(){
+                public Object call() throws Exception {
+                    getPhysicsSpace().remove(node);
+                    node.removeFromParent();
+                    effect.killAllParticles();
+                    effect.setLocalTranslation(node.getLocalTranslation());
+                    effect.emitAllParticles();
+                    return null;
+                }
+
+            });
         }
     }
 }

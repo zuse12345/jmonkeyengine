@@ -103,6 +103,12 @@ public class PhysicsGhostNode extends PhysicsCollisionObject {
     }
 
     @Override
+    protected void setTransformRefresh() {
+        super.setTransformRefresh();
+        refreshFlags |= RF_PHYSICS;
+    }
+    
+    @Override
     public void updateGeometricState() {
         if ((refreshFlags & RF_LIGHTLIST) != 0) {
             updateWorldLightList();

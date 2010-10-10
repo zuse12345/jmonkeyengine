@@ -37,6 +37,8 @@ import com.jme3.export.JmeImporter;
 import com.jme3.math.Vector3f;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.util.Converter;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.OutputCapsule;
 import java.io.IOException;
 
 /**
@@ -46,7 +48,7 @@ import java.io.IOException;
  * A chain of rigidbodies can be connected using this constraint.
  * @author normenhansen
  */
-public class PhysicsPoint2PointJoint extends PhysicsJoint{
+public class PhysicsPoint2PointJoint extends PhysicsJoint {
 
     public PhysicsPoint2PointJoint() {
     }
@@ -60,18 +62,50 @@ public class PhysicsPoint2PointJoint extends PhysicsJoint{
         createJoint();
     }
 
+    public void setDamping(float value) {
+        ((Point2PointConstraint) constraint).setting.damping = value;
+    }
+
+    public void setImpulseClamp(float value) {
+        ((Point2PointConstraint) constraint).setting.impulseClamp = value;
+    }
+
+    public void setTau(float value) {
+        ((Point2PointConstraint) constraint).setting.tau = value;
+    }
+
+    public float getDamping() {
+        return ((Point2PointConstraint) constraint).setting.damping;
+    }
+
+    public float getImpulseClamp() {
+        return ((Point2PointConstraint) constraint).setting.impulseClamp;
+    }
+
+    public float getTau() {
+        return ((Point2PointConstraint) constraint).setting.tau;
+    }
+
     @Override
     public void write(JmeExporter ex) throws IOException {
         super.write(ex);
+        OutputCapsule cap = ex.getCapsule(this);
+        cap.write(getDamping(), "damping", 1.0f);
+        cap.write(getTau(), "tau", 0.3f);
+        cap.write(getImpulseClamp(), "impulseClamp", 0f);
     }
 
     @Override
     public void read(JmeImporter im) throws IOException {
         super.read(im);
         createJoint();
+        InputCapsule cap=im.getCapsule(this);
+        setDamping(cap.readFloat("damping", 1.0f));
+        setDamping(cap.readFloat("tau", 0.3f));
+        setDamping(cap.readFloat("impulseClamp", 0f));
     }
 
-    protected void createJoint(){
-        constraint=new Point2PointConstraint(nodeA.getRigidBody(), nodeB.getRigidBody(), Converter.convert(pivotA), Converter.convert(pivotB));
+    protected void createJoint() {
+        constraint = new Point2PointConstraint(nodeA.getRigidBody(), nodeB.getRigidBody(), Converter.convert(pivotA), Converter.convert(pivotB));
     }
 }

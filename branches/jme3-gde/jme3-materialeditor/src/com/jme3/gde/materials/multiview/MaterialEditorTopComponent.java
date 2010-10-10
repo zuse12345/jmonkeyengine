@@ -373,10 +373,6 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
         jComboBox1.addItem("Common/MatDefs/Light/Lighting.j3md");
         jComboBox1.addItem("Common/MatDefs/Light/Reflection.j3md");
         jComboBox1.addItem("Common/MatDefs/Misc/ShowNormals.j3md");
-        jComboBox1.addItem("Common/MatDefs/Hdr/LogLum.j3md");
-        jComboBox1.addItem("Common/MatDefs/Hdr/ToneMap.j3md");
-        jComboBox1.addItem("Common/MatDefs/Shadow/PreShadow.j3md");
-        jComboBox1.addItem("Common/MatDefs/Shadow/PostShadow.j3md");
         jComboBox1.addItem("Common/MatDefs/Terrain/Terrain.j3md");
         jComboBox1.setSelectedItem(selected);
 

@@ -66,6 +66,7 @@ import com.jme3.scene.Spatial.CullHint;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.scene.shape.Sphere.TextureMode;
+import com.jme3.shadow.BasicShadowRenderer;
 import com.jme3.terrain.geomipmap.TerrainLodControl;
 import com.jme3.terrain.geomipmap.TerrainQuad;
 import com.jme3.terrain.heightmap.AbstractHeightMap;
@@ -168,13 +169,11 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
     }
 
     private void addBrick(Vector3f ori) {
-
         Geometry reBoxg = new Geometry("brick", brick);
         reBoxg.setMaterial(matRock);
         PhysicsNode brickNode = new PhysicsNode(reBoxg, new BoxCollisionShape(new Vector3f(bLength, bHeight, bWidth)), 1.5f);
         brickNode.setLocalTranslation(ori);
         brickNode.setShadowMode(ShadowMode.CastAndReceive);
-        // brickNode.setFriction(1f);
         this.rootNode.attachChild(brickNode);
         this.getPhysicsSpace().add(brickNode);
     }
@@ -191,7 +190,6 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
     private void prepareEffect() {
         int COUNT_FACTOR = 1;
         float COUNT_FACTOR_F = 1f;
-
         effect = new ParticleEmitter("Flame", Type.Triangle, 32 * COUNT_FACTOR);
         effect.setSelectRandomImage(true);
         effect.setStartColor(new ColorRGBA(1f, 0.4f, 0.05f, (float) (1f / COUNT_FACTOR_F)));
@@ -216,8 +214,9 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
     }
 
     private void createLight() {
+        Vector3f direction=new Vector3f(-0.1f, -0.7f, -1).normalizeLocal();
         DirectionalLight dl = new DirectionalLight();
-        dl.setDirection(new Vector3f(-0.1f, -0.7f, -1).normalizeLocal());
+        dl.setDirection(direction);
         dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
         rootNode.addLight(dl);
     }
@@ -275,10 +274,10 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
         terrain.setModelBound(new BoundingBox());
         terrain.updateModelBound();
         terrain.setLocalScale(new Vector3f(2, 2, 2));
-        rootNode.attachChild(terrain);
 
         TerrainPhysicsShapeFactory factory = new TerrainPhysicsShapeFactory();
         terrainPhysicsNode = factory.createPhysicsMesh(terrain);
+        terrainPhysicsNode.attachChild(terrain);
         rootNode.attachChild(terrainPhysicsNode);
         getPhysicsSpace().add(terrainPhysicsNode);
     }

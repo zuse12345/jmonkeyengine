@@ -334,7 +334,7 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
         PhysicsNode bulletNode = new PhysicsNode(bulletg, bulletCollisionShape, 1);
         bulletNode.setCcdMotionThreshold(0.1f);
         bulletNode.setName("bullet");
-        bulletNode.setLocalTranslation(character.getLocalTranslation().add(modelDirection));
+        bulletNode.setLocalTranslation(character.getLocalTranslation().add(modelDirection.mult(2)));
         bulletNode.setShadowMode(ShadowMode.CastAndReceive);
         bulletNode.setLinearVelocity(modelDirection.mult(40));
         rootNode.attachChild(bulletNode);

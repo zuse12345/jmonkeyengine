@@ -32,20 +32,42 @@
 
 package com.jme3.effect;
 
-import com.jme3.math.ColorRGBA;
-import com.jme3.math.Vector3f;
+import com.jme3.renderer.Camera;
+import java.util.Comparator;
 
-public class Particle {
+class ParticleComparator implements Comparator<Particle> {
 
-    final Vector3f velocity = new Vector3f();
-    final Vector3f position = new Vector3f();
-    final ColorRGBA color = new ColorRGBA(0,0,0,0);
-    float size = 0f;
-    float life;
-    float startlife;
-    float angle;
-    float rotateSpeed;
-    int imageIndex = 0;
-    float distToCam;
+    private Camera cam;
 
+    public void setCamera(Camera cam){
+        this.cam = cam;
+    }
+
+    public int compare(Particle p1, Particle p2) {
+        if (p1.life <= 0 || p2.life <= 0)
+            return 0;
+
+//        if (p1.life <= 0)
+//            return 1;
+//        else if (p2.life <= 0)
+//            return -1;
+
+        float d1 = p1.distToCam, d2 = p2.distToCam;
+
+        if (d1 == -1){
+            d1 = cam.distanceToNearPlane(p1.position);
+            p1.distToCam = d1;
+        }
+        if (d2 == -1){
+            d2 = cam.distanceToNearPlane(p2.position);
+            p2.distToCam = d2;
+        }
+
+        if (d1 < d2)
+            return 1;
+        else if (d1 > d2)
+            return -1;
+        else
+            return 0;
+    }
 }

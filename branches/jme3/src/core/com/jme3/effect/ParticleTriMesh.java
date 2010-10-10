@@ -43,7 +43,6 @@ import com.jme3.util.SortUtil;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
-import java.util.Comparator;
 
 public class ParticleTriMesh extends ParticleMesh {
 
@@ -53,31 +52,6 @@ public class ParticleTriMesh extends ParticleMesh {
     private ParticleComparator comparator = new ParticleComparator();
     private ParticleEmitter emitter;
     private Particle[] particlesCopy;
-
-    private class ParticleComparator implements Comparator<Particle> {
-
-        private Camera cam;
-
-        public void setCamera(Camera cam){
-            this.cam = cam;
-        }
-
-        public int compare(Particle p1, Particle p2) {
-            if (p1.life <= 0)
-                return 1;
-            else if (p2.life <= 0)
-                return -1;
-
-            float d1 = cam.distanceToNearPlane(p1.position);
-            float d2 = cam.distanceToNearPlane(p2.position);
-            if (d1 < d2)
-                return 1;
-            else if (d1 > d2)
-                return -1;
-            else
-                return 0;
-        }
-    }
 
     @Override
     public void initParticleData(ParticleEmitter emitter, int numParticles, int imagesX, int imagesY) {

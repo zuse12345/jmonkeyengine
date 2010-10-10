@@ -60,6 +60,11 @@ public class LwjglJoyInput implements JoyInput {
             }
             logger.info("Joysticks created.");
             enabled = true;
+
+//            for (int i = 0; i < Controllers.getControllerCount(); i++){
+//                Controller c = Controllers.getController(i);
+//                printController(c);
+//            }
         } catch (LWJGLException ex) {
             logger.log(Level.SEVERE, "Failed to create joysticks", ex);
         }
@@ -105,7 +110,7 @@ public class LwjglJoyInput implements JoyInput {
         Controllers.poll();
         while (Controllers.next()){
             Controller c = Controllers.getEventSource();
-            if (Controllers.isEventXAxis()){
+            /*if (Controllers.isEventXAxis()){
                 JoyAxisEvent evt = new JoyAxisEvent(c.getIndex(),
                                                     JoyInput.AXIS_X,
                                                     Controllers.getEventControlIndex(),
@@ -117,17 +122,17 @@ public class LwjglJoyInput implements JoyInput {
                                                     Controllers.getEventControlIndex(),
                                                     c.getYAxisValue());
                 listener.onJoyAxisEvent(evt);
-            }else if (Controllers.isEventAxis()){
+            }else*/ if (Controllers.isEventAxis()){
                 int realAxis = Controllers.getEventControlIndex();
-                String axisName = c.getAxisName(realAxis);
-                int axisId = -1;
-                if (axisName.equals("Z Axis")){
-                    axisId = JoyInput.AXIS_Z;
-                }else if (axisName.equals("Z Rotation")){
-                    axisId = JoyInput.AXIS_Z_ROT;
-                }
+//                String axisName = c.getAxisName(realAxis);
+//                int axisId = -1;
+//                if (axisName.equals("Z Axis")){
+//                    axisId = JoyInput.AXIS_Z;
+//                }else if (axisName.equals("Z Rotation")){
+//                    axisId = JoyInput.AXIS_Z_ROT;
+//                }
                 JoyAxisEvent evt = new JoyAxisEvent(c.getIndex(),
-                                                    axisId,
+                                                    realAxis /*axisId*/,
                                                     realAxis,
                                                     c.getAxisValue(realAxis));
                 listener.onJoyAxisEvent(evt);

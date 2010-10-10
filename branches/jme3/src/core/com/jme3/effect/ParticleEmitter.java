@@ -415,6 +415,7 @@ public class ParticleEmitter extends Geometry implements Control {
             }
 
             // position += velocity * tpf
+            p.distToCam = -1;
             float g = gravity * tpf;
             p.velocity.y -= g;
             temp.set(p.velocity).multLocal(tpf);
@@ -495,6 +496,15 @@ public class ParticleEmitter extends Geometry implements Control {
 
     public void render(RenderManager rm, ViewPort vp) {
         Camera cam = vp.getCamera();
+
+        if (meshType == ParticleMesh.Type.Point){
+            float C = cam.getProjectionMatrix().m00;
+            C *= cam.getWidth() * 0.5f;
+
+            // send attenuation params
+            getMaterial().setFloat("m_Quadratic", C);
+        }
+
         particleMesh.updateParticleData(particles, cam);
         updateModelBound();
     }

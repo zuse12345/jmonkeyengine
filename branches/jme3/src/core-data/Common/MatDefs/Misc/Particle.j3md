@@ -2,6 +2,8 @@ MaterialDef Point Sprite {
 
     MaterialParameters {
         Texture2D m_Texture
+        Float m_Quadratic
+        Boolean m_PointSprite
     }
 
     Technique {
@@ -11,24 +13,28 @@ MaterialDef Point Sprite {
 
         WorldParameters {
             WorldViewProjectionMatrix
+            WorldViewMatrix
+            WorldMatrix
+            CameraPosition
         }
 
         RenderState {
             Blend AlphaAdditive
             DepthWrite Off
-            AlphaTestFalloff 0.01
+            // AlphaTestFalloff 0.01
         }
 
         Defines {
             USE_TEXTURE : m_Texture
+            POINT_SPRITE : m_PointSprite
         }
     }
 
     Technique FixedFunc {
         RenderState {
             Blend AlphaAdditive
-            DepthWrite Off
-            AlphaTestFalloff 0.01
+            // DepthWrite Off
+            // AlphaTestFalloff 0.01
         }
     }
 

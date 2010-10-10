@@ -1442,13 +1442,21 @@ public class LwjglRenderer implements Renderer {
             if (!img.hasMipmaps() && tex.getMinFilter().usesMipMapLevels()){
                 // No pregenerated mips available,
                 // generate from base level if required
-                glTexParameteri(target, GL_GENERATE_MIPMAP, GL_TRUE);
+                if (!GLContext.getCapabilities().GL_EXT_framebuffer_multisample){
+                    glTexParameteri(target, GL_GENERATE_MIPMAP, GL_TRUE);
+                }
+            }else{
+                glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0 );
+                if (img.getMipMapSizes() != null){
+                    glTexParameteri(target, GL_TEXTURE_MAX_LEVEL,  img.getMipMapSizes().length );
+                }
             }
+
             if (target == GL_TEXTURE_CUBE_MAP){
                 List<ByteBuffer> data = img.getData();
                 if (data.size() != 6){
-                    logger.warning("Invalid texture: "+tex+
-                                   "Cubemap textures must contain 6 data units.");
+                    logger.log(Level.WARNING, "Invalid texture: {0}\n"
+                            + "Cubemap textures must contain 6 data units.", tex);
                     return;
                 }
                 for (int i = 0; i < 6; i++){
@@ -1465,6 +1473,10 @@ public class LwjglRenderer implements Renderer {
                 }
             }else{
                 TextureUtil.uploadTexture(img, target, tex.getImageDataIndex(), 0, tdc);
+            }
+            
+            if (GLContext.getCapabilities().GL_EXT_framebuffer_multisample){
+                glGenerateMipmapEXT(target);
             }
         }
 

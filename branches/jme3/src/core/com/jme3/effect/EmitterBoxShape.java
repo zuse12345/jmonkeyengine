@@ -52,6 +52,7 @@ public class EmitterBoxShape implements EmitterShape {
             throw new NullPointerException();
 
         this.min = min;
+        this.len = new Vector3f();
         this.len.set(max).subtractLocal(min);
     }
     

@@ -30,22 +30,36 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jme3.effect;
+package com.jme3.input.controls;
 
-import com.jme3.math.ColorRGBA;
-import com.jme3.math.Vector3f;
+public class JoyButtonTrigger implements Trigger {
 
-public class Particle {
+    private final int joyId, buttonId;
 
-    final Vector3f velocity = new Vector3f();
-    final Vector3f position = new Vector3f();
-    final ColorRGBA color = new ColorRGBA(0,0,0,0);
-    float size = 0f;
-    float life;
-    float startlife;
-    float angle;
-    float rotateSpeed;
-    int imageIndex = 0;
-    float distToCam;
+    public JoyButtonTrigger(int joyId, int axisId) {
+        this.joyId = joyId;
+        this.buttonId = axisId;
+    }
+
+    public static final int joyButtonHash(int joyButton){
+        return 1536 | (joyButton & 0xff);
+    }
+
+    @Override
+    public int hashCode(){
+        return joyButtonHash(buttonId);
+    }
+
+    public int getAxisId() {
+        return buttonId;
+    }
+
+    public int getJoyId() {
+        return joyId;
+    }
+
+    public String getName() {
+        return "JoyButton[joyId="+joyId+", axisId="+buttonId+"]";
+    }
 
 }

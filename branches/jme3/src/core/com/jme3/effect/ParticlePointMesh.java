@@ -37,13 +37,21 @@ import com.jme3.scene.VertexBuffer;
 import com.jme3.scene.VertexBuffer.Format;
 import com.jme3.scene.VertexBuffer.Usage;
 import com.jme3.util.BufferUtils;
+import com.jme3.util.SortUtil;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.Arrays;
 
 public class ParticlePointMesh extends ParticleMesh {
 
     private ParticleEmitter emitter;
+
+    private int imagesX;
+    private int imagesY;
+
+    private ParticleComparator comparator = new ParticleComparator();
+    private Particle[] particlesCopy;
 
     @Override
     public void initParticleData(ParticleEmitter emitter, int numParticles, int imagesX, int imagesY) {
@@ -51,7 +59,11 @@ public class ParticlePointMesh extends ParticleMesh {
         setVertexCount(numParticles);
         setTriangleCount(numParticles);
 
+        this.imagesX = imagesX;
+        this.imagesY = imagesY;
         this.emitter = emitter;
+
+//        particlesCopy = new Particle[numParticles];
 
         // set positions
         FloatBuffer pb = BufferUtils.createVector3Buffer(numParticles);
@@ -67,26 +79,27 @@ public class ParticlePointMesh extends ParticleMesh {
         setBuffer(cvb);
 
         // set sizes
-        ByteBuffer sb = BufferUtils.createByteBuffer(numParticles);
+        ShortBuffer sb = BufferUtils.createShortBuffer(numParticles);
         VertexBuffer svb = new VertexBuffer(VertexBuffer.Type.Size);
-        svb.setupData(Usage.Stream, 1, Format.UnsignedByte, sb);
-        svb.setNormalized(true);
+        svb.setupData(Usage.Stream, 1, Format.UnsignedShort, sb);
         setBuffer(svb);
 
-        // set indices
-        ShortBuffer ib = BufferUtils.createShortBuffer(numParticles);
-        for (int i = 0; i < numParticles; i++){
-            ib.put((short) i);
-        }
-        ib.flip();
-
-        VertexBuffer ivb = new VertexBuffer(VertexBuffer.Type.Index);
-        ivb.setupData(Usage.Static, 1, Format.UnsignedShort, ib);
-        setBuffer(ivb);
+        // set UV-scale
+        FloatBuffer tb = BufferUtils.createFloatBuffer(numParticles*4);
+        VertexBuffer tvb = new VertexBuffer(VertexBuffer.Type.TexCoord);
+        tvb.setupData(Usage.Stream, 4, Format.Float, tb);
+        setBuffer(tvb);
     }
 
     @Override
     public void updateParticleData(Particle[] particles, Camera cam) {
+//        System.arraycopy(particles, 0, particlesCopy, 0, particlesCopy.length);
+//        comparator.setCamera(cam);
+//        SortUtil.msort(particles, particlesCopy, comparator);
+//        Arrays.sort(particles, comparator);
+//        SortUtil.qsort(particles, comparator);
+//        particles = particlesCopy;
+
         VertexBuffer pvb = getBuffer(VertexBuffer.Type.Position);
         FloatBuffer positions = (FloatBuffer) pvb.getData();
 
@@ -94,27 +107,46 @@ public class ParticlePointMesh extends ParticleMesh {
         ByteBuffer colors = (ByteBuffer) cvb.getData();
 
         VertexBuffer svb = getBuffer(VertexBuffer.Type.Size);
-        ByteBuffer sizes = (ByteBuffer) svb.getData();
+        ShortBuffer sizes = (ShortBuffer) svb.getData();
+
+        VertexBuffer tvb = getBuffer(VertexBuffer.Type.TexCoord);
+        FloatBuffer texcoords = (FloatBuffer) tvb.getData();
 
         // update data in vertex buffers
         positions.rewind();
         colors.rewind();
         sizes.rewind();
-        for (Particle p : particles){
+        texcoords.rewind();
+        for (int i = 0; i < particles.length; i++){
+            Particle p = particles[i];
+            
             positions.put(p.position.x)
                      .put(p.position.y)
                      .put(p.position.z);
-            sizes.put((byte) ((int) (p.size * 255) & 0xFF));
-            colors.putInt(p.color.asIntRGBA());
+            
+            sizes.put((short) (p.size * 65536f));
+            colors.putInt(p.color.asIntABGR());
+
+            int imgX = p.imageIndex % imagesX;
+            int imgY = (p.imageIndex - imgX) / imagesY;
+
+            float startX = ((float) imgX) / imagesX;
+            float startY = ((float) imgY) / imagesY;
+            float endX   = startX + (1f / imagesX);
+            float endY   = startY + (1f / imagesY);
+
+            texcoords.put(startX).put(startY).put(endX).put(endY);
         }
         positions.flip();
         colors.flip();
         sizes.flip();
+        texcoords.flip();
 
         // force renderer to re-send data to GPU
         pvb.updateData(positions);
         cvb.updateData(colors);
         svb.updateData(sizes);
+        tvb.updateData(texcoords);
     }
 
 }

@@ -36,6 +36,7 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.InputListener;
 import com.jme3.input.controls.JoyAxisTrigger;
+import com.jme3.input.controls.JoyButtonTrigger;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
@@ -122,12 +123,6 @@ public class InputManager implements RawInputListener {
 
         firstTime = keys.getInputTimeNanos();
     }
-
-    static final int joyButtonHash(int joyButton){
-        return 1536 | (joyButton & 0xff);
-    }
-
-    
 
     private void invokeActions(int hash, boolean pressed){
         ArrayList<Mapping> maps = bindings.get(hash);
@@ -265,7 +260,7 @@ public class InputManager implements RawInputListener {
             rawListeners.get(i).onJoyButtonEvent(evt);
         }
 
-        int hash = joyButtonHash(evt.getButtonIndex());
+        int hash = JoyButtonTrigger.joyButtonHash(evt.getButtonIndex());
         invokeActions(hash, evt.isPressed());
         invokeTimedActions(hash, evt.getTime(), evt.isPressed());
     }

@@ -37,8 +37,15 @@ import com.jme3.animation.LoopMode;
 import com.jme3.app.SimpleBulletApplication;
 import com.jme3.asset.TextureKey;
 import com.jme3.bounding.BoundingBox;
+import com.jme3.bullet.collision.PhysicsCollisionEvent;
+import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
+import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.nodes.PhysicsCharacterNode;
+import com.jme3.bullet.nodes.PhysicsNode;
+import com.jme3.effect.EmitterSphereShape;
+import com.jme3.effect.ParticleEmitter;
+import com.jme3.effect.ParticleMesh.Type;
 import com.jme3.input.ChaseCamera;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
@@ -50,10 +57,13 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial.CullHint;
+import com.jme3.scene.shape.Quad;
 import com.jme3.scene.shape.Sphere;
+import com.jme3.scene.shape.Sphere.TextureMode;
 import com.jme3.terrain.geomipmap.TerrainLodControl;
 import com.jme3.terrain.geomipmap.TerrainQuad;
 import com.jme3.terrain.heightmap.AbstractHeightMap;
@@ -69,7 +79,8 @@ import jme3tools.converters.ImageToAwt;
  *
  * @author normenhansen
  */
-public class TestWalkingChar extends SimpleBulletApplication implements ActionListener {
+public class TestWalkingChar extends SimpleBulletApplication implements ActionListener, PhysicsCollisionListener {
+
     PhysicsCharacterNode character;
     Node model;
     TerrainQuad terrain;
@@ -81,7 +92,12 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
     boolean left = false, right = false, up = false, down = false;
     ChaseCamera chaseCam;
     Vector3f walkDirection = new Vector3f();
-    Quaternion rotation = new Quaternion();
+    Quaternion modelRotation = new Quaternion();
+    Vector3f modelDirection = new Vector3f();
+    Sphere bullet;
+    SphereCollisionShape bulletCollisionShape;
+    Material mat;
+    ParticleEmitter effect;
 
     public static void main(String[] args) {
         TestWalkingChar app = new TestWalkingChar();
@@ -91,6 +107,8 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
     @Override
     public void simpleInitApp() {
         setupKeys();
+        prepareEffect();
+        prepareBullet();
         createLight();
         createSky();
         createTerrain();
@@ -100,7 +118,6 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
     }
 
     private void setupKeys() {
-        flyCam.setMoveSpeed(50);
         inputManager.addMapping("wireframe", new KeyTrigger(KeyInput.KEY_T));
         inputManager.addListener(this, "wireframe");
         inputManager.addMapping("CharLeft", new KeyTrigger(KeyInput.KEY_A));
@@ -108,13 +125,44 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
         inputManager.addMapping("CharUp", new KeyTrigger(KeyInput.KEY_W));
         inputManager.addMapping("CharDown", new KeyTrigger(KeyInput.KEY_S));
         inputManager.addMapping("CharSpace", new KeyTrigger(KeyInput.KEY_SPACE));
-        inputManager.addMapping("CharReset", new KeyTrigger(KeyInput.KEY_RETURN));
+        inputManager.addMapping("CharShoot", new KeyTrigger(KeyInput.KEY_RETURN));
         inputManager.addListener(this, "CharLeft");
         inputManager.addListener(this, "CharRight");
         inputManager.addListener(this, "CharUp");
         inputManager.addListener(this, "CharDown");
         inputManager.addListener(this, "CharSpace");
-        inputManager.addListener(this, "CharReset");
+        inputManager.addListener(this, "CharShoot");
+    }
+
+    private void prepareBullet() {
+        bullet = new Sphere(32, 32, 0.4f, true, false);
+        bullet.setTextureMode(TextureMode.Projected);
+        bulletCollisionShape = new SphereCollisionShape(0.4f);
+        mat = new Material(getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
+        mat.setColor("m_Color", ColorRGBA.Green);
+        getPhysicsSpace().addCollisionListener(this);
+    }
+
+    private void prepareEffect() {
+        effect = new ParticleEmitter("Flame", Type.Triangle, 32);
+        effect.setSelectRandomImage(true);
+        effect.setStartColor(new ColorRGBA(1f, 0.4f, 0.05f, 1f));
+        effect.setEndColor(new ColorRGBA(.4f, .22f, .12f, 0f));
+        effect.setStartSize(1.3f);
+        effect.setEndSize(2f);
+        effect.setShape(new EmitterSphereShape(Vector3f.ZERO, 1f));
+        effect.setParticlesPerSec(0);
+        effect.setGravity(-5f);
+        effect.setLowLife(.4f);
+        effect.setHighLife(.5f);
+        effect.setStartVel(new Vector3f(0, 7, 0));
+        effect.setVariation(1f);
+        effect.setImagesX(2);
+        effect.setImagesY(2);
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+        mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/flame.png"));
+        effect.setMaterial(mat);
+//        rootNode.attachChild(effect);
     }
 
     private void createLight() {
@@ -124,7 +172,7 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
         rootNode.addLight(dl);
     }
 
-    private void createSky(){
+    private void createSky() {
         Sphere sphereMesh = new Sphere(32, 32, 10, false, true);
         Geometry sphere = new Geometry("Sky", sphereMesh);
         sphere.setQueueBucket(Bucket.Sky);
@@ -213,9 +261,10 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
         //Die walkDirection des Charakters
         Vector3f camDir = cam.getDirection().clone().multLocal(0.1f);
         Vector3f camLeft = cam.getLeft().clone().multLocal(0.05f);
-        camDir.y=0;
-        camLeft.y=0;
+        camDir.y = 0;
+        camLeft.y = 0;
         walkDirection.set(0, 0, 0);
+        modelDirection.set(0,0,2);
         if (left) {
             walkDirection.addLocal(camLeft);
         }
@@ -231,12 +280,13 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
         if (walkDirection.length() == 0) {
             animationChannel.setAnim("stand");
         } else {
-            rotation.lookAt(walkDirection, Vector3f.UNIT_Y);
+            modelRotation.lookAt(walkDirection, Vector3f.UNIT_Y);
             if (!animationChannel.getAnimationName().equals("Walk")) {
                 animationChannel.setAnim("Walk");
             }
         }
-        model.setLocalRotation(rotation);
+        model.setLocalRotation(modelRotation);
+        modelRotation.multLocal(modelDirection);
         character.setWalkDirection(walkDirection);
     }
 
@@ -267,6 +317,39 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
             }
         } else if (binding.equals("CharSpace")) {
             character.jump();
+        } else if (binding.equals("CharShoot") && !value) {
+            Geometry bulletg = new Geometry("bullet", bullet);
+            bulletg.setMaterial(mat);
+            PhysicsNode bulletNode = new PhysicsNode(bulletg, bulletCollisionShape, 1);
+            bulletNode.setCcdMotionThreshold(0.1f);
+            bulletNode.setName("bullet");
+            bulletNode.setLocalTranslation(character.getLocalTranslation().add(modelDirection));
+            bulletNode.setShadowMode(ShadowMode.CastAndReceive);
+            bulletNode.setLinearVelocity(modelDirection.mult(40));
+            rootNode.attachChild(bulletNode);
+            getPhysicsSpace().add(bulletNode);
+        }
+    }
+
+    public void collision(PhysicsCollisionEvent event) {
+        if ("bullet".equals(event.getNodeA().getName())) {
+            Node node = event.getNodeA();
+            getPhysicsSpace().remove(node);
+            node.removeFromParent();
+            effect.killAllParticles();
+            effect.setLocalTranslation(node.getLocalTranslation());
+            effect.emitAllParticles();
+            //this is only needed because the physics collision events arrive after updating
+            rootNode.updateGeometricState();
+        } else if ("bullet".equals(event.getNodeB().getName())) {
+            Node node = event.getNodeB();
+            getPhysicsSpace().remove(node);
+            node.removeFromParent();
+            effect.killAllParticles();
+            effect.setLocalTranslation(node.getLocalTranslation());
+            effect.emitAllParticles();
+            //this is only needed because the physics collision events arrive after updating
+            rootNode.updateGeometricState();
         }
     }
 }

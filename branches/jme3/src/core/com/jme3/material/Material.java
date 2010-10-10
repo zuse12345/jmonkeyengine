@@ -274,6 +274,12 @@ public class Material implements Cloneable, Savable {
                                       name, type.name(), paramDef.getVarType());
     }
 
+    /**
+     * Pass a parameter to the material shader
+     * @param name the name of the parameter defined in the material definition (j3md)
+     * @param type the type of the parameter @see com.jme3.shaderVarType
+     * @param value the value of the param
+     */
     public void setParam(String name, VarType type, Object value){
         checkSetParam(type, name);
 
@@ -304,6 +310,11 @@ public class Material implements Cloneable, Savable {
         }
     }
 
+    /**
+     * Pass a texture to the material shader
+     * @param name the name of the texture defined in the material definition (j3md) (for example m_Texture for Lighting.j3md)
+     * @param value the Texture object previously loaded by the asset manager
+     */
     public void setTexture(String name, Texture value){
         if (value == null)
             throw new NullPointerException();
@@ -329,30 +340,65 @@ public class Material implements Cloneable, Savable {
         setTextureParam(name, paramType, value);
     }
 
+    /**
+     * Pass a Matrix4f to the material shader
+     * @param name the name of the matrix defined in the material definition (j3md)
+     * @param value the Matrix4f object
+     */
     public void setMatrix4(String name, Matrix4f value) {
         setParam(name, VarType.Matrix4, value);
     }
-    
+
+    /**
+     * Pass a boolean to the material shader
+     * @param name the name of the boolean defined in the material definition (j3md)
+     * @param value the boolean value
+     */
     public void setBoolean(String name, boolean value){
         setParam(name, VarType.Boolean, value);
     }
 
+    /**
+     * Pass a float to the material shader
+     * @param name the name of the float defined in the material definition (j3md)
+     * @param value the float value
+     */
     public void setFloat(String name, float value){
         setParam(name, VarType.Float, value);
     }
 
+    /**
+     * Pass an int to the material shader
+     * @param name the name of the int defined in the material definition (j3md)
+     * @param value the int value
+     */
     public void setInt(String name, int value){
         setParam(name, VarType.Int, value);
     }
 
+    /**
+     * Pass a Color to the material shader
+     * @param name the name of the color defined in the material definition (j3md)
+     * @param value the ColorRGBA value
+     */
     public void setColor(String name, ColorRGBA value){
         setParam(name, VarType.Vector4, value);
     }
 
+    /**
+     * Pass a Vector2f to the material shader
+     * @param name the name of the Vector2f defined in the material definition (j3md)
+     * @param value the Vector2f value
+     */
     public void setVector2(String name, Vector2f value) {
         setParam(name, VarType.Vector2, value);
     }
-    
+
+    /**
+    * Pass a Vector3f to the material shader
+    * @param name the name of the Vector3f defined in the material definition (j3md)
+    * @param value the Vector3f value
+    */
     public void setVector3(String name, Vector3f value) {
         setParam(name, VarType.Vector3, value);
     }

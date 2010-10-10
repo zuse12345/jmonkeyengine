@@ -35,6 +35,7 @@ import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.animation.LoopMode;
 import com.jme3.app.SimpleBulletApplication;
+import com.jme3.asset.TextureKey;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.nodes.PhysicsCharacterNode;
@@ -48,7 +49,11 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial.CullHint;
+import com.jme3.scene.shape.Sphere;
 import com.jme3.terrain.geomipmap.TerrainLodControl;
 import com.jme3.terrain.geomipmap.TerrainQuad;
 import com.jme3.terrain.heightmap.AbstractHeightMap;
@@ -65,10 +70,7 @@ import jme3tools.converters.ImageToAwt;
  * @author normenhansen
  */
 public class TestWalkingChar extends SimpleBulletApplication implements ActionListener {
-    //Der Physik-basierte Charakter
-
     PhysicsCharacterNode character;
-    //Das Modell
     Node model;
     TerrainQuad terrain;
     Node terrainPhysicsNode;
@@ -88,29 +90,23 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
 
     @Override
     public void simpleInitApp() {
-        createLight();
         setupKeys();
+        createLight();
+        createSky();
         createTerrain();
         createCharacter();
         setupChaseCamera();
         setupAnimationController();
     }
 
-    private void createLight() {
-        DirectionalLight dl = new DirectionalLight();
-        dl.setDirection(new Vector3f(-0.1f, -0.7f, -1).normalizeLocal());
-        dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
-        rootNode.addLight(dl);
-    }
-
     private void setupKeys() {
         flyCam.setMoveSpeed(50);
         inputManager.addMapping("wireframe", new KeyTrigger(KeyInput.KEY_T));
         inputManager.addListener(this, "wireframe");
-        inputManager.addMapping("CharLeft", new KeyTrigger(KeyInput.KEY_H));
-        inputManager.addMapping("CharRight", new KeyTrigger(KeyInput.KEY_K));
-        inputManager.addMapping("CharUp", new KeyTrigger(KeyInput.KEY_U));
-        inputManager.addMapping("CharDown", new KeyTrigger(KeyInput.KEY_J));
+        inputManager.addMapping("CharLeft", new KeyTrigger(KeyInput.KEY_A));
+        inputManager.addMapping("CharRight", new KeyTrigger(KeyInput.KEY_D));
+        inputManager.addMapping("CharUp", new KeyTrigger(KeyInput.KEY_W));
+        inputManager.addMapping("CharDown", new KeyTrigger(KeyInput.KEY_S));
         inputManager.addMapping("CharSpace", new KeyTrigger(KeyInput.KEY_SPACE));
         inputManager.addMapping("CharReset", new KeyTrigger(KeyInput.KEY_RETURN));
         inputManager.addListener(this, "CharLeft");
@@ -121,46 +117,50 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
         inputManager.addListener(this, "CharReset");
     }
 
+    private void createLight() {
+        DirectionalLight dl = new DirectionalLight();
+        dl.setDirection(new Vector3f(-0.1f, -0.7f, -1).normalizeLocal());
+        dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
+        rootNode.addLight(dl);
+    }
+
+    private void createSky(){
+        Sphere sphereMesh = new Sphere(32, 32, 10, false, true);
+        Geometry sphere = new Geometry("Sky", sphereMesh);
+        sphere.setQueueBucket(Bucket.Sky);
+        Material sky = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
+        TextureKey key = new TextureKey("Textures/Sky/Bright/BrightSky.dds", true);
+        key.setGenerateMips(true);
+        key.setAsCube(true);
+        Texture tex = assetManager.loadTexture(key);
+        sky.setTexture("m_Texture", tex);
+        sky.setVector3("m_NormalScale", Vector3f.UNIT_XYZ);
+        sphere.setMaterial(sky);
+        sphere.setCullHint(CullHint.Never);
+        rootNode.attachChild(sphere);
+    }
+
     private void createTerrain() {
-        // First, we load up our textures and the heightmap texture for the terrain
-
-        // TERRAIN TEXTURE material
         matRock = new Material(assetManager, "Common/MatDefs/Terrain/Terrain.j3md");
-
-        // ALPHA map (for splat textures)
         matRock.setTexture("m_Alpha", assetManager.loadTexture("Textures/Terrain/splat/alphamap.png"));
-
-        // HEIGHTMAP image (for the terrain heightmap)
         Texture heightMapImage = assetManager.loadTexture("Textures/Terrain/splat/mountains512.png");
-
-        // GRASS texture
         Texture grass = assetManager.loadTexture("Textures/Terrain/splat/grass.jpg");
         grass.setWrap(WrapMode.Repeat);
         matRock.setTexture("m_Tex1", grass);
         matRock.setFloat("m_Tex1Scale", 64f);
-
-        // DIRT texture
         Texture dirt = assetManager.loadTexture("Textures/Terrain/splat/dirt.jpg");
         dirt.setWrap(WrapMode.Repeat);
         matRock.setTexture("m_Tex2", dirt);
         matRock.setFloat("m_Tex2Scale", 32f);
-
-        // ROCK texture
         Texture rock = assetManager.loadTexture("Textures/Terrain/splat/road.jpg");
         rock.setWrap(WrapMode.Repeat);
         matRock.setTexture("m_Tex3", rock);
         matRock.setFloat("m_Tex3Scale", 128f);
-
-        // WIREFRAME material
         matWire = new Material(assetManager, "Common/MatDefs/Misc/WireColor.j3md");
         matWire.setColor("m_Color", ColorRGBA.Green);
 
-
-        // CREATE HEIGHTMAP
         AbstractHeightMap heightmap = null;
         try {
-            //heightmap = new HillHeightMap(1025, 1000, 50, 100, (byte) 3);
-
             heightmap = new ImageBasedHeightMap(ImageToAwt.convert(heightMapImage.getImage(), false, true, 0), 0.25f);
             heightmap.load();
 
@@ -168,10 +168,6 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
             e.printStackTrace();
         }
 
-        /*
-         * Here we create the actual terrain. The tiles will be 65x65, and the total size of the
-         * terrain will be 513x513. It uses the heightmap we created to generate the height values.
-         */
         terrain = new TerrainQuad("terrain", 65, 513, heightmap.getHeightMap());
         List<Camera> cameras = new ArrayList<Camera>();
         cameras.add(getCamera());
@@ -183,10 +179,6 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
         terrain.setLocalScale(new Vector3f(2, 2, 2));
         rootNode.attachChild(terrain);
 
-        /**
-         * Now we use the TerrainPhysicsShapeFactory to generate a heightfield
-         * collision shape for us, and then add it to the physics node.
-         */
         TerrainPhysicsShapeFactory factory = new TerrainPhysicsShapeFactory();
         terrainPhysicsNode = factory.createPhysicsMesh(terrain);
         rootNode.attachChild(terrainPhysicsNode);
@@ -194,17 +186,10 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
     }
 
     private void createCharacter() {
-        //Der Charakter wird durch eine Kapsel dargestellt, diese einfache Form
-        //ist ideal für Charakter Modelle.
         CapsuleCollisionShape capsule = new CapsuleCollisionShape(1.5f, 2f);
-        //Erstellen der PhysicsCharacterNode
         character = new PhysicsCharacterNode(capsule, 0.01f);
-        //Zum debuggen zeigen wir die Kapsel als WireFrame
-//        character.attachDebugShape(assetManager);
-        //Direktes konvertieren und laden eines OgreXML Modells
         model = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
         model.setLocalScale(0.5f);
-        //Anhängen des modells an den charakter
         character.attachChild(model);
         character.setLocalTranslation(new Vector3f(0, 60, 0));
         rootNode.attachChild(character);

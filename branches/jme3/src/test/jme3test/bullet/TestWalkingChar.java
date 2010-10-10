@@ -33,6 +33,7 @@ package jme3test.bullet;
 
 import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
+import com.jme3.animation.AnimEventListener;
 import com.jme3.animation.LoopMode;
 import com.jme3.app.SimpleBulletApplication;
 import com.jme3.asset.TextureKey;
@@ -54,6 +55,7 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
@@ -66,7 +68,6 @@ import com.jme3.scene.Spatial.CullHint;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.scene.shape.Sphere.TextureMode;
-import com.jme3.shadow.BasicShadowRenderer;
 import com.jme3.terrain.geomipmap.TerrainLodControl;
 import com.jme3.terrain.geomipmap.TerrainQuad;
 import com.jme3.terrain.heightmap.AbstractHeightMap;
@@ -83,7 +84,9 @@ import jme3tools.converters.ImageToAwt;
  *
  * @author normenhansen
  */
-public class TestWalkingChar extends SimpleBulletApplication implements ActionListener, PhysicsCollisionListener {
+public class TestWalkingChar extends SimpleBulletApplication implements ActionListener, PhysicsCollisionListener, AnimEventListener {
+
+    static final Quaternion ROTATE_LEFT = new Quaternion();
     //character
     PhysicsCharacterNode character;
     Node model;
@@ -91,6 +94,7 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
     Vector3f walkDirection = new Vector3f();
     Quaternion modelRotation = new Quaternion();
     Vector3f modelDirection = new Vector3f();
+    Vector3f modelRight = new Vector3f();
     //terrain
     TerrainQuad terrain;
     Node terrainPhysicsNode;
@@ -100,6 +104,7 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
     Material matBullet;
     //animation
     AnimChannel animationChannel;
+    AnimChannel shootingChannel;
     AnimControl animationControl;
     //camera
     boolean left = false, right = false, up = false, down = false;
@@ -114,6 +119,10 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
     float bLength = 0.8f;
     float bWidth = 0.4f;
     float bHeight = 0.4f;
+
+    static {
+        ROTATE_LEFT.fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_Y);
+    }
 
     public static void main(String[] args) {
         TestWalkingChar app = new TestWalkingChar();
@@ -152,8 +161,8 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
     }
 
     private void createWall() {
-        float xOff=-144;
-        float zOff=-40;
+        float xOff = -144;
+        float zOff = -40;
         float startpt = bLength / 4 - xOff;
         float height = 6.1f;
         brick = new Box(Vector3f.ZERO, bLength, bHeight, bWidth);
@@ -214,7 +223,7 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
     }
 
     private void createLight() {
-        Vector3f direction=new Vector3f(-0.1f, -0.7f, -1).normalizeLocal();
+        Vector3f direction = new Vector3f(-0.1f, -0.7f, -1).normalizeLocal();
         DirectionalLight dl = new DirectionalLight();
         dl.setDirection(direction);
         dl.setColor(new ColorRGBA(1f, 1f, 1f, 1.0f));
@@ -300,15 +309,19 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
 
     private void setupAnimationController() {
         animationControl = model.getControl(AnimControl.class);
+        animationControl.addListener(this);
         animationChannel = animationControl.createChannel();
-        animationChannel.setLoopMode(LoopMode.Cycle);
+        shootingChannel = animationControl.createChannel();
+//        System.out.println(animationControl.getSkeleton());
+        shootingChannel.addBone(animationControl.getSkeleton().getBone("uparm.right"));
+        shootingChannel.addBone(animationControl.getSkeleton().getBone("arm.right"));
+        shootingChannel.addBone(animationControl.getSkeleton().getBone("hand.right"));
     }
 
     @Override
     public void simpleUpdate(float tpf) {
         rootNode.updateLogicalState(tpf);
         rootNode.updateGeometricState();
-        //Die walkDirection des Charakters
         Vector3f camDir = cam.getDirection().clone().multLocal(0.2f);
         Vector3f camLeft = cam.getLeft().clone().multLocal(0.1f);
         camDir.y = 0;
@@ -328,15 +341,22 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
             walkDirection.addLocal(camDir.negate());
         }
         if (walkDirection.length() == 0) {
-            animationChannel.setAnim("stand");
+            if (!"stand".equals(animationChannel.getAnimationName())) {
+                animationChannel.setAnim("stand", 1f);
+            }
         } else {
             modelRotation.lookAt(walkDirection, Vector3f.UNIT_Y);
-            if (!animationChannel.getAnimationName().equals("Walk")) {
-                animationChannel.setAnim("Walk");
+            if (!character.onGround() && !"stand".equals(animationChannel.getAnimationName())) {
+                animationChannel.setAnim("stand");
+            }
+            if (character.onGround() && !"Walk".equals(animationChannel.getAnimationName())) {
+                animationChannel.setAnim("Walk", 0.7f);
             }
         }
         model.setLocalRotation(modelRotation);
         modelRotation.multLocal(modelDirection);
+        modelRight.set(modelDirection);
+        ROTATE_LEFT.multLocal(modelRight);
         character.setWalkDirection(walkDirection);
     }
 
@@ -373,12 +393,14 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
     }
 
     private void shootBullet() {
+        shootingChannel.setAnim("Dodge", 0.1f);
+        shootingChannel.setLoopMode(LoopMode.DontLoop);
         Geometry bulletg = new Geometry("bullet", bullet);
         bulletg.setMaterial(matBullet);
         PhysicsNode bulletNode = new PhysicsNode(bulletg, bulletCollisionShape, 1);
         bulletNode.setCcdMotionThreshold(0.1f);
         bulletNode.setName("bullet");
-        bulletNode.setLocalTranslation(character.getLocalTranslation().add(modelDirection.mult(2)));
+        bulletNode.setLocalTranslation(character.getLocalTranslation().add(modelDirection.mult(1.8f).addLocal(modelRight.mult(0.9f))));
         bulletNode.setShadowMode(ShadowMode.CastAndReceive);
         bulletNode.setLinearVelocity(modelDirection.mult(40));
         rootNode.attachChild(bulletNode);
@@ -413,5 +435,14 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
                 }
             });
         }
+    }
+
+    public void onAnimCycleDone(AnimControl control, AnimChannel channel, String animName) {
+        if (channel == shootingChannel) {
+            channel.setAnim("stand");
+        }
+    }
+
+    public void onAnimChange(AnimControl control, AnimChannel channel, String animName) {
     }
 }

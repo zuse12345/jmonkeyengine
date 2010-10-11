@@ -1,6 +1,8 @@
 MaterialDef Post Shadow {
 
     MaterialParameters {
+        Boolean m_DoDither
+
         Texture2D m_ShadowMap0
         Texture2D m_ShadowMap1
         Texture2D m_ShadowMap2
@@ -45,7 +47,7 @@ MaterialDef Post Shadow {
         }
 
         Defines {
-            
+            EDGE_FILTERING_DITHER : m_DoDither
         }
 
         RenderState {

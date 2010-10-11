@@ -60,6 +60,7 @@ public class FilterPostProcessor implements SceneProcessor {
     private Camera filterCam = new Camera(1, 1);
     private Picture fsQuad;
     private boolean computeDepth=false;
+    private FrameBuffer outputBuffer;
 
     public FilterPostProcessor(AssetManager assetManager) {
         this.assetManager = assetManager;
@@ -144,7 +145,7 @@ public class FilterPostProcessor implements SceneProcessor {
             }
             
             mat.setTexture("m_Texture", tex);
-            FrameBuffer buff = null;
+            FrameBuffer buff = outputBuffer;
             if (it.hasNext()) {
                 buff = filter.getRenderFrameBuffer();
                 tex = filter.getRenderedTexture();
@@ -160,7 +161,7 @@ public class FilterPostProcessor implements SceneProcessor {
 
     public void preFrame(float tpf) {
         if (filters.size() == 0) {
-            viewPort.setOutputFrameBuffer(null);
+            viewPort.setOutputFrameBuffer(outputBuffer);
         }
         for (Iterator<Filter> it = filters.iterator(); it.hasNext();) {
             Filter filter = it.next();
@@ -172,7 +173,7 @@ public class FilterPostProcessor implements SceneProcessor {
     public void cleanup() {
 
         if (viewPort != null) {
-            viewPort.setOutputFrameBuffer(null);
+            viewPort.setOutputFrameBuffer(outputBuffer);
             viewPort = null;
         }
 
@@ -207,6 +208,7 @@ public class FilterPostProcessor implements SceneProcessor {
            
 
         }
+        outputBuffer=viewPort.getOutputFrameBuffer();     
         viewPort.setOutputFrameBuffer(renderFrameBuffer);
     }
 }

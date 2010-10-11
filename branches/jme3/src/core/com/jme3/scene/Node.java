@@ -188,6 +188,8 @@ public class Node extends Spatial implements Savable {
         if ((refreshFlags & RF_BOUND) != 0){
             updateWorldBound();
         }
+
+        assert refreshFlags == 0;
     }
 
     /**

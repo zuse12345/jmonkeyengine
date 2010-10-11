@@ -278,13 +278,6 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         return worldLights;
     }
 
-//    private void checkUpdatedTransform(){
-//        if ((refreshFlags & RF_TRANSFORM) != 0)
-//            throw new IllegalStateException("updateGeometricState() must be"
-//                                          + " called on the root node to retrieve"
-//                                          + " updated world transforms.");
-//    }
-
     /**
      * <code>getWorldRotation</code> retrieves the absolute rotation of the
      * Spatial.
@@ -461,14 +454,15 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
                 i++;
             }
 
+            assert vars.unlock();
+
             for (int j = i; j >= 0; j--){
                 rootNode = stack[j];
-                rootNode.worldTransform.set(rootNode.localTransform);
-                rootNode.worldTransform.combineWithParent(rootNode.parent.worldTransform);
-                rootNode.refreshFlags &= ~RF_TRANSFORM;
+                //rootNode.worldTransform.set(rootNode.localTransform);
+                //rootNode.worldTransform.combineWithParent(rootNode.parent.worldTransform);
+                //rootNode.refreshFlags &= ~RF_TRANSFORM;
+                rootNode.updateWorldTransforms();
             }
-
-            assert vars.unlock();
         }
     }
 
@@ -624,6 +618,8 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         if ((refreshFlags & RF_BOUND) != 0){
             updateWorldBound();
         }
+
+        assert refreshFlags == 0;
     }
 
     /**

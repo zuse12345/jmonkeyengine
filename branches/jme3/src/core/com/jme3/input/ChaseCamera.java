@@ -200,12 +200,12 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
     /**
      * Update the camera, should only be called internally
      */
-    public void updateCamera() {
+    protected void updateCamera() {
         float hDistance = distance * FastMath.sin((FastMath.PI / 2) - vRotation);
         Vector3f pos = new Vector3f(hDistance * FastMath.cos(rotation), distance * FastMath.sin(vRotation), hDistance * FastMath.sin(rotation));
-        pos = pos.add(target.getLocalTranslation());
+        pos = pos.add(target.getWorldTranslation());
         cam.setLocation(pos);
-        cam.lookAt(target.getLocalTranslation(), initialUpVec);
+        cam.lookAt(target.getWorldTranslation(), initialUpVec);
     }
 
     /**

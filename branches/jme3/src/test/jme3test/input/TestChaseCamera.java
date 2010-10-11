@@ -29,11 +29,11 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package jme3test.input;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.input.ChaseCamera;
+import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
@@ -41,13 +41,16 @@ import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
 import com.jme3.scene.shape.Quad;
 
-public class TestChaseCamera extends SimpleApplication implements AnalogListener {
+public class TestChaseCamera extends SimpleApplication implements AnalogListener,ActionListener {
 
     private Geometry teaGeom;
     private ChaseCamera chaseCam;
-    public static void main(String[] args){
+    private Node pivot;
+
+    public static void main(String[] args) {
         TestChaseCamera app = new TestChaseCamera();
         app.start();
     }
@@ -55,49 +58,82 @@ public class TestChaseCamera extends SimpleApplication implements AnalogListener
     public void simpleInitApp() {
         // Load a teapot model
         teaGeom = (Geometry) assetManager.loadModel("Models/Teapot/Teapot.obj");
+        pivot=new Node("pivot");
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
         teaGeom.setMaterial(mat);
-        rootNode.attachChild(teaGeom);
+        pivot.attachChild(teaGeom);
         mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         mat.setTexture("m_ColorMap", assetManager.loadTexture("Interface/Logo/Monkey.jpg"));
-        Geometry ground=new Geometry("ground", new Quad(50, 50));
+        Geometry ground = new Geometry("ground", new Quad(50, 50));
         ground.setLocalRotation(new Quaternion().fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_X));
         ground.setLocalTranslation(-25, -1, 25);
         ground.setMaterial(mat);
-        rootNode.attachChild(ground);
+        pivot.attachChild(ground);
         // Disable the flyby cam
         flyCam.setEnabled(false);
 
         // Enable a chase cam
-        chaseCam = new ChaseCamera(cam, teaGeom,inputManager);
+        chaseCam = new ChaseCamera(cam, teaGeom, inputManager);
         regsiterInput();
+        rootNode.attachChild(pivot);
     }
 
-    public void regsiterInput(){
-        inputManager.addMapping("moveForward",new KeyTrigger(keyInput.KEY_UP));
-        inputManager.addMapping("moveBackward",new KeyTrigger(keyInput.KEY_DOWN));
-        inputManager.addMapping("moveRight",new KeyTrigger(keyInput.KEY_RIGHT));
-        inputManager.addMapping("moveLeft",new KeyTrigger(keyInput.KEY_LEFT));
-        inputManager.addListener(this, "moveForward","moveBackward","moveRight","moveLeft");
+    public void regsiterInput() {
+        inputManager.addMapping("moveForward", new KeyTrigger(keyInput.KEY_UP));
+        inputManager.addMapping("moveBackward", new KeyTrigger(keyInput.KEY_DOWN));
+        inputManager.addMapping("moveRight", new KeyTrigger(keyInput.KEY_RIGHT));
+        inputManager.addMapping("moveLeft", new KeyTrigger(keyInput.KEY_LEFT));
+        inputManager.addMapping("displayPosition", new KeyTrigger(keyInput.KEY_P));
+        inputManager.addListener(this, "moveForward", "moveBackward", "moveRight", "moveLeft");
+        inputManager.addListener(this, "displayPosition");
     }
 
     public void onAnalog(String name, float value, float tpf) {
-        if(name.equals("moveForward")){
-            teaGeom.move(0, 0, -5*tpf);
+        if (name.equals("moveForward")) {
+            teaGeom.move(0, 0, -5 * tpf);
         }
-        if(name.equals("moveBackward")){
-            teaGeom.move(0, 0, 5*tpf);
+        if (name.equals("moveBackward")) {
+            teaGeom.move(0, 0, 5 * tpf);
         }
-        if(name.equals("moveRight")){
-            teaGeom.move(5*tpf, 0, 0);
+        if (name.equals("moveRight")) {
+            teaGeom.move(5 * tpf, 0, 0);
         }
-        if(name.equals("moveLeft")){
-            teaGeom.move(-5*tpf, 0, 0);
+        if (name.equals("moveLeft")) {
+            teaGeom.move(-5 * tpf, 0, 0);
+            
         }
 
     }
 
-    
+    public void onAction(String name, boolean keyPressed, float tpf) {
+        if(name.equals("displayPosition") && keyPressed){
+            System.err.println("world pos : "+teaGeom.getWorldTranslation());
+            System.err.println("local pos : "+teaGeom.getLocalTranslation());
+            System.err.println("cam location : "+cam.getLocation());
+
+        }
+    }
+
+    @Override
+    public void simpleUpdate(float tpf) {
+        super.simpleUpdate(tpf);
+        
+      //  teaGeom.move(new Vector3f(0.001f, 0, 0));
+        pivot.rotate(0, 0.00001f, 0);
+     //   rootNode.updateGeometricState();
+    }
 
 
+
+
+
+//    public void update() {
+//        super.update();
+//// render the viewports
+//        float tpf = timer.getTimePerFrame();
+//        state.getRootNode().rotate(0, 0.000001f, 0);
+//        stateManager.update(tpf);
+//        stateManager.render(renderManager);
+//        renderManager.render(tpf);
+//    }
 }

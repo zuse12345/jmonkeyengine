@@ -36,7 +36,9 @@ class CodelessProject implements Project {
     public CodelessProject(FileObject projectDir, ProjectState state) {
         this.projectDir = projectDir;
         this.state = state;
-        projectAssetManager = new ProjectAssetManager(this, "assets");
+        Properties properties=getProperties();
+        String assetsFolder=properties.getProperty("assets.folder.name","assets");
+        projectAssetManager = new ProjectAssetManager(this, assetsFolder);
     }
 
     @Override
@@ -44,25 +46,25 @@ class CodelessProject implements Project {
         return projectDir;
     }
 
-    public FileObject getConfigFolder(boolean create) {
-        FileObject result =
-                projectDir.getFileObject(CodelessProjectFactory.PROJECT_DIR);
-        if (result == null && create) {
-            try {
-                result = projectDir.createFolder(CodelessProjectFactory.PROJECT_DIR);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-        }
-        return result;
-    }
+//    public FileObject getConfigFolder(boolean create) {
+//        FileObject result =
+//                projectDir.getFileObject(CodelessProjectFactory.PROJECT_DIR);
+//        if (result == null && create) {
+//            try {
+//                result = projectDir.createFolder(CodelessProjectFactory.PROJECT_DIR);
+//            } catch (IOException ioe) {
+//                Exceptions.printStackTrace(ioe);
+//            }
+//        }
+//        return result;
+//    }
 
     public FileObject getConfigFile(boolean create){
-        FileObject folder=getConfigFolder(create);
-        FileObject file=folder.getFileObject("assets.properties");
+        FileObject folder=projectDir;//getConfigFolder(create);
+        FileObject file=folder.getFileObject(CodelessProjectFactory.CONFIG_NAME);
         if(file==null){
             try {
-                return folder.createData("assets.properties");
+                return folder.createData(CodelessProjectFactory.CONFIG_NAME);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -90,7 +92,7 @@ class CodelessProject implements Project {
 
     private void saveProperties(Properties prop){
         try {
-            prop.store(getConfigFile(true).getOutputStream(), "asset properties");
+            prop.store(getConfigFile(true).getOutputStream(), "jMonkeyPlatform Properties");
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

@@ -31,7 +31,10 @@
  */
 package com.jme3.gde.core.codeless.wizard;
 
+import java.awt.event.ActionListener;
+import java.io.File;
 import javax.swing.JPanel;
+import org.openide.filesystems.FileChooserBuilder;
 
 public final class CodelessProjectWizardVisualPanel1 extends JPanel {
 
@@ -42,7 +45,20 @@ public final class CodelessProjectWizardVisualPanel1 extends JPanel {
 
     @Override
     public String getName() {
-        return "Step #1";
+        return "Specify Folders";
+    }
+
+    public String getProjectPath(){
+        return jTextField1.getText();
+    }
+
+    public String getAssetsPath(){
+        return jTextField2.getText();
+    }
+
+    public void setListener(ActionListener listener){
+        jTextField1.addActionListener(listener);
+        jTextField2.addActionListener(listener);
     }
 
     /** This method is called from within the constructor to
@@ -54,6 +70,9 @@ public final class CodelessProjectWizardVisualPanel1 extends JPanel {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jToolBar1 = new javax.swing.JToolBar();
         jLabel1 = new javax.swing.JLabel();
@@ -69,15 +88,33 @@ public final class CodelessProjectWizardVisualPanel1 extends JPanel {
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CodelessProjectWizardVisualPanel1.class, "CodelessProjectWizardVisualPanel1.jPanel1.border.title"))); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(CodelessProjectWizardVisualPanel1.class, "CodelessProjectWizardVisualPanel1.jLabel5.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(CodelessProjectWizardVisualPanel1.class, "CodelessProjectWizardVisualPanel1.jLabel6.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(CodelessProjectWizardVisualPanel1.class, "CodelessProjectWizardVisualPanel1.jLabel7.text")); // NOI18N
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 435, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel6)
+                    .addComponent(jLabel7)
+                    .addComponent(jLabel5))
+                .addContainerGap(23, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 159, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jLabel6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel7)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel5)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jLabel3.setFont(new java.awt.Font("Lucida Grande", 0, 12)); // NOI18N
@@ -106,6 +143,11 @@ public final class CodelessProjectWizardVisualPanel1 extends JPanel {
         jToolBar1.add(jTextField1);
 
         org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(CodelessProjectWizardVisualPanel1.class, "CodelessProjectWizardVisualPanel1.jButton1.text")); // NOI18N
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
         jToolBar1.add(jButton1);
 
         jToolBar2.setFloatable(false);
@@ -133,6 +175,11 @@ public final class CodelessProjectWizardVisualPanel1 extends JPanel {
         jToolBar2.add(jTextField2);
 
         org.openide.awt.Mnemonics.setLocalizedText(jButton2, org.openide.util.NbBundle.getMessage(CodelessProjectWizardVisualPanel1.class, "CodelessProjectWizardVisualPanel1.jButton2.text")); // NOI18N
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
         jToolBar2.add(jButton2);
 
         jLabel4.setFont(new java.awt.Font("Lucida Grande", 0, 12)); // NOI18N
@@ -169,11 +216,38 @@ public final class CodelessProjectWizardVisualPanel1 extends JPanel {
                 .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jToolBar2, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 83, Short.MAX_VALUE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        FileChooserBuilder builder = new FileChooserBuilder(System.getProperty("user.home"));
+        builder.setDirectoriesOnly(true);
+        builder.setTitle("Select Project Folder");
+        File file = builder.showOpenDialog();
+        if (file != null) {
+            jTextField1.setText(file.getPath());
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        File path=new File(jTextField1.getText());
+        if(path.isDirectory()){
+            FileChooserBuilder builder = new FileChooserBuilder(path.getAbsolutePath());
+            builder.setDirectoriesOnly(true);
+            builder.setTitle("Select Assets Folder");
+            File file = builder.showOpenDialog();
+            if (file != null) {
+                try {
+                    jTextField2.setText(file.getAbsolutePath().substring(path.getAbsolutePath().length(), file.getAbsolutePath().length()));
+                } catch (Exception e) {
+                }
+            }
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
@@ -181,6 +255,9 @@ public final class CodelessProjectWizardVisualPanel1 extends JPanel {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

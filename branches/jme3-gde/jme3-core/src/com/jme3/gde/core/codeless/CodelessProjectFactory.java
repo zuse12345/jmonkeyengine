@@ -9,17 +9,13 @@ import org.openide.filesystems.FileObject;
 
 public class CodelessProjectFactory implements ProjectFactory {
 
-    public static final String PROJECT_DIR = "nbproject";
+    public static final String CONFIG_NAME="assets.jmp";
 
-    //Specifies when a project is a project, i.e.,
-    //if the project directory "texts" is present:
+    //Specifies when a project is a project, i.e. properties file exists
     @Override
     public boolean isProject(FileObject projectDirectory) {
-        FileObject configDir=projectDirectory.getFileObject(PROJECT_DIR);
-        if(configDir != null){
-            if(configDir.getFileObject("assets.properties")!=null){
-                return true;
-            }
+        if(projectDirectory.getFileObject(CONFIG_NAME)!=null){
+            return true;
         }
         return false;
     }
@@ -34,13 +30,11 @@ public class CodelessProjectFactory implements ProjectFactory {
     @Override
     public void saveProject(final Project project) throws IOException, ClassCastException {
         FileObject projectRoot = project.getProjectDirectory();
-        if (projectRoot.getFileObject(PROJECT_DIR) == null) {
-            throw new IOException("Project dir " + projectRoot.getPath() +
+        if (projectRoot.getFileObject(CONFIG_NAME) == null) {
+            throw new IOException("Project Settings " + projectRoot.getPath() +
                     " deleted," +
                     " cannot save project");
         }
-        //Force creation of the texts dir if it was deleted:
-        ((CodelessProject) project).getConfigFolder(true);
     }
     
 }

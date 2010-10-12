@@ -31,18 +31,31 @@
  */
 package com.jme3.gde.core.codeless.wizard;
 
+import com.jme3.gde.core.codeless.CodelessProjectFactory;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.MessageFormat;
+import java.util.Properties;
 import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 
 // An example action demonstrating how the wizard could be called from within
 // your code. You can copy-paste the code below wherever you need.
-public final class CodelessProjectWizardWizardAction extends CallableSystemAction {
+public final class CodelessProjectWizardAction extends CallableSystemAction {
 
     private WizardDescriptor.Panel[] panels;
 
@@ -50,13 +63,41 @@ public final class CodelessProjectWizardWizardAction extends CallableSystemActio
         WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-        wizardDescriptor.setTitle("Your wizard dialog title here");
+        wizardDescriptor.setTitle("Import External Project Assets");
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
-            // do something
+            createProjectSettings(wizardDescriptor);
+        }
+    }
+
+    private void createProjectSettings(WizardDescriptor wizardDescriptor) {
+        String projectFolder = (String) wizardDescriptor.getProperty("PROJECT_FOLDER");
+        String assetsFolder = (String) wizardDescriptor.getProperty("ASSETS_FOLDER");
+        FileObject project = FileUtil.toFileObject(new File(projectFolder));
+        try {
+            FileObject properties = project.createData(CodelessProjectFactory.CONFIG_NAME);
+            Properties propertiesObj = new Properties();
+            FileLock lock=properties.lock();
+            InputStream in=properties.getInputStream();
+            propertiesObj.load(in);
+            in.close();
+            propertiesObj.setProperty("assets.folder.name", assetsFolder);
+            OutputStream out=properties.getOutputStream(lock);
+            propertiesObj.store(out, "assets properties");
+            out.close();
+            lock.releaseLock();
+
+            Project theProject = ProjectManager.getDefault().findProject(project);
+            if(theProject!=null){
+                Project[] array = new Project[1];
+                array[0] = theProject;
+                OpenProjects.getDefault().open(array, false);
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -97,7 +138,7 @@ public final class CodelessProjectWizardWizardAction extends CallableSystemActio
     }
 
     public String getName() {
-        return "Start Sample Wizard";
+        return "External Project Assets..";
     }
 
     @Override

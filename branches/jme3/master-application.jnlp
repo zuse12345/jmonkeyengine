@@ -19,4 +19,8 @@
     <application-desc main-class="${jnlp.main.class}">
 <!--${JNLP.APPLICATION.ARGS}-->
     </application-desc>
+    <shortcut online="false">
+  	<desktop />
+  	<menu submenu="jMonkeyEngine 3.0"/>
+    </shortcut>
 </jnlp>

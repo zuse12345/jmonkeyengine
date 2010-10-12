@@ -6,6 +6,12 @@
 
     <!--this target creates the assets jar file and modifies the classpath to include it-->
     <target name="-pre-jar">
+        <!--separate test classes-->
+        <mkdir dir="build/testclasses/"/>
+        <move file="build/classes/jme3test" todir="build/testclasses/" failonerror="false"/>
+        <move file="build/classes/jme3game" todir="build/testclasses/" failonerror="false"/>
+        <jar jarfile="build/jme3test.jar" basedir="build/testclasses/" compress="true"/>
+
         <!--create jar from assets-->
         <jar jarfile="build/jme3testdata.jar" basedir="src/test-data" compress="true"/>
         <!--resolve assets and assets jar location-->
@@ -14,14 +20,16 @@
         <!--this sets properties that would normally later be created in the build-impl.xml-->
         <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
         <pathconvert property="run.classpath.without.build.classes.dir">
-            <!--remove build.classes.dir and replace assets folder in dist classpath-->
             <path path="${run.classpath}"/>
             <map from="${build.classes.dir.resolved}" to=""/>
+            <!--replace assets folder in dist classpath-->
             <map from="${testdata.dir.resolved}" to="${testdata.jar.resolved}"/>
+            <!--add tests jar to dist classpath-->
+            <path path="build/jme3test.jar"/>
         </pathconvert>
     </target>
 
-    <!-- puts jme3 jars, libs and javadoc in a dated zip file -->
+    <!-- puts jme3 jars, libs, source and javadoc in a dated zip file -->
     <target name="dist" depends="clean, jar, javadoc">
         <!-- create date in the format MM-dd-yyyy -->
         <tstamp>
@@ -108,6 +116,7 @@
             <!--exclude jme3 test data from core-->
             <fileset dir="dist/lib/">
                 <exclude name="jme3testdata.jar"/>
+                <exclude name="jme3test.jar"/>
                 <exclude name="jME3-lwjgl-natives.jar"/>
                 <exclude name="jME3-jogl-natives.jar"/>
                 <exclude name="jME3-natives-joal.jar"/>
@@ -117,6 +126,7 @@
             <!--exclude jme3 test data from libs-->
             <fileset dir="dist/lib/">
                 <exclude name="jme3testdata.jar"/>
+                <exclude name="jme3test.jar"/>
             </fileset>
         </copy>
 

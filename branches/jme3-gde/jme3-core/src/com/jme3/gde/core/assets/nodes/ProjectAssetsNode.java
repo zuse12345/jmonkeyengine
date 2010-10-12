@@ -57,6 +57,7 @@ public class ProjectAssetsNode extends FilterNode {
         super(node, new AssetChildren(manager, node), createLookupProxy(manager, node));
         enableDelegation(DELEGATE_GET_ACTIONS);
         enableDelegation(DELEGATE_GET_CONTEXT_ACTIONS);
+        setDisplayName("Project Assets");
     }
 
     public static Lookup createLookupProxy(ProjectAssetManager manager, Node node) {
@@ -69,10 +70,6 @@ public class ProjectAssetsNode extends FilterNode {
                     node.getLookup()
                     /*,Lookups.fixed(manager)*/
                 });
-    }
-
-    public String getDisplayName() {
-        return "Project Assets";
     }
 
     public Image getIcon(int type) {

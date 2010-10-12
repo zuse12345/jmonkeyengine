@@ -46,7 +46,7 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author normenhansen
  */
-public class AbstractSceneExplorerNode extends AbstractNode implements SceneExplorerNode, PropertyChangeListener {
+public abstract class AbstractSceneExplorerNode extends AbstractNode implements SceneExplorerNode, PropertyChangeListener {
 
     protected Children jmeChildren;
     protected final InstanceContent lookupContents;
@@ -141,9 +141,7 @@ public class AbstractSceneExplorerNode extends AbstractNode implements SceneExpl
         return this.getClass();
     }
 
-    public Class getExplorerObjectClass() {
-        return Object.class;
-    }
+    public abstract Class getExplorerObjectClass();
 
     public Node[] createNodes(Object key, DataObject key2, boolean cookie) {
         return new Node[]{Node.EMPTY};

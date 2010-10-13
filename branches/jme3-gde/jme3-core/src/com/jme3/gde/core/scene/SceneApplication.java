@@ -111,24 +111,32 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 
     public SceneApplication() {
         progressHandle.start(7);
-        AppSettings newSetting = new AppSettings(true);
-        newSetting.setFrameRate(30);
+        try {
+            AppSettings newSetting = new AppSettings(true);
+            newSetting.setFrameRate(30);
 //        settings.setVSync(true);
 //        settings.setRenderer("JOGL");
-        setSettings(newSetting);
+            setSettings(newSetting);
 
-        Logger.getLogger("com.jme3").addHandler(logHandler);
+            Logger.getLogger("com.jme3").addHandler(logHandler);
 
-        setPauseOnLostFocus(false);
+            setPauseOnLostFocus(false);
 
-        //add listener for project selection
-        nodeSelectionResult = Utilities.actionsGlobalContext().lookupResult(JmeSpatial.class);
-        nodeSelectionResult.addLookupListener(this);
+            //add listener for project selection
+            nodeSelectionResult = Utilities.actionsGlobalContext().lookupResult(JmeSpatial.class);
+            nodeSelectionResult.addLookupListener(this);
 
-        createCanvas();
-        getContext().setAutoFlushFrames(true);
-        getContext().setSystemListener(this);
-        progressHandle.progress("initialize Base Application", 1);
+            createCanvas();
+            getContext().setAutoFlushFrames(true);
+            getContext().setSystemListener(this);
+            progressHandle.progress("initialize Base Application", 1);
+        } catch (Exception e) {
+            getProgressHandle().finish();
+            SceneViewerTopComponent.showOpenGLError(e.toString());
+        } catch (Error e) {
+            getProgressHandle().finish();
+            SceneViewerTopComponent.showOpenGLError(e.toString());
+        }
     }
 
     private void loadFPSText() {
@@ -150,47 +158,55 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 
     @Override
     public void initialize() {
-        super.initialize();
-        getProgressHandle().progress("Setup Camera Controller", 2);
-        //create camera controler
-        camController = new SceneCameraController(cam, inputManager);
-        //create preview view
-        getProgressHandle().progress("Setup Preview Scene", 3);
+        try {
+            super.initialize();
+            getProgressHandle().progress("Setup Camera Controller", 2);
+            //create camera controler
+            camController = new SceneCameraController(cam, inputManager);
+            //create preview view
+            getProgressHandle().progress("Setup Preview Scene", 3);
 
-        previewProcessor = new ScenePreviewProcessor();
-        previewProcessor.setupPreviewView();
+            previewProcessor = new ScenePreviewProcessor();
+            previewProcessor.setupPreviewView();
 
-        // enable depth test and back-face culling for performance
-        renderer.applyRenderState(RenderState.DEFAULT);
+            // enable depth test and back-face culling for performance
+            renderer.applyRenderState(RenderState.DEFAULT);
 
-        getProgressHandle().progress("Prepare Camera", 4);
-        camLight = new PointLight();
-        camLight.setColor(ColorRGBA.White);
+            getProgressHandle().progress("Prepare Camera", 4);
+            camLight = new PointLight();
+            camLight.setColor(ColorRGBA.White);
 
-        getProgressHandle().progress("Prepare Stats View", 5);
-        guiNode.setQueueBucket(Bucket.Gui);
-        guiNode.setCullHint(CullHint.Never);
-        loadFPSText();
-        loadStatsView();
-        getProgressHandle().progress("Attach Scene to Viewport", 6);
-        viewPort.attachScene(rootNode);
-        viewPort.attachScene(toolsNode);
-        guiViewPort.attachScene(guiNode);
-        cam.setLocation(new Vector3f(0, 0, 10));
+            getProgressHandle().progress("Prepare Stats View", 5);
+            guiNode.setQueueBucket(Bucket.Gui);
+            guiNode.setCullHint(CullHint.Never);
+            loadFPSText();
+            loadStatsView();
+            getProgressHandle().progress("Attach Scene to Viewport", 6);
+            viewPort.attachScene(rootNode);
+            viewPort.attachScene(toolsNode);
+            guiViewPort.attachScene(guiNode);
+            cam.setLocation(new Vector3f(0, 0, 10));
 
-        getProgressHandle().progress("Create", 6);
-        wireProcessor = new WireProcessor(assetManager);
-        getProgressHandle().finish();
+            getProgressHandle().progress("Create", 6);
+            wireProcessor = new WireProcessor(assetManager);
+            getProgressHandle().finish();
 
-        inputManager.addMapping("MouseAxisX", new MouseAxisTrigger(MouseInput.AXIS_X, false));
-        inputManager.addMapping("MouseAxisY", new MouseAxisTrigger(MouseInput.AXIS_Y, false));
-        inputManager.addMapping("MouseAxisX-", new MouseAxisTrigger(MouseInput.AXIS_X, true));
-        inputManager.addMapping("MouseAxisY-", new MouseAxisTrigger(MouseInput.AXIS_Y, true));
-        inputManager.addMapping("MouseWheel", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
-        inputManager.addMapping("MouseWheel-", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
-        inputManager.addMapping("MouseButtonLeft", new MouseButtonTrigger(0));
-        inputManager.addMapping("MouseButtonMiddle", new MouseButtonTrigger(2));
-        inputManager.addMapping("MouseButtonRight", new MouseButtonTrigger(1));
+            inputManager.addMapping("MouseAxisX", new MouseAxisTrigger(MouseInput.AXIS_X, false));
+            inputManager.addMapping("MouseAxisY", new MouseAxisTrigger(MouseInput.AXIS_Y, false));
+            inputManager.addMapping("MouseAxisX-", new MouseAxisTrigger(MouseInput.AXIS_X, true));
+            inputManager.addMapping("MouseAxisY-", new MouseAxisTrigger(MouseInput.AXIS_Y, true));
+            inputManager.addMapping("MouseWheel", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
+            inputManager.addMapping("MouseWheel-", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
+            inputManager.addMapping("MouseButtonLeft", new MouseButtonTrigger(0));
+            inputManager.addMapping("MouseButtonMiddle", new MouseButtonTrigger(2));
+            inputManager.addMapping("MouseButtonRight", new MouseButtonTrigger(1));
+        } catch (Exception e) {
+            getProgressHandle().finish();
+            SceneViewerTopComponent.showOpenGLError(e.toString());
+        } catch (Error e) {
+            getProgressHandle().finish();
+            SceneViewerTopComponent.showOpenGLError(e.toString());
+        }
     }
 
     @Override
@@ -241,7 +257,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                 e.printStackTrace();
                 lastError = msg;
             }
-        } catch(Error e){
+        } catch (Error e) {
             String msg = e.getMessage();
             if (msg == null) {
                 msg = "null";

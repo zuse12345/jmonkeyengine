@@ -178,6 +178,16 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
         return getDefault();
     }
 
+    public static void showOpenGLError(String e) {
+        Message msg = new NotifyDescriptor.Message(
+                "Error opening OpenGL window!\n"
+                + "Your graphics card needs to support at least OpenGL 2.0,\n"
+                + "if that is the case, please download the latest drivers.\n"
+                + "(" + e + ")",
+                NotifyDescriptor.ERROR_MESSAGE);
+        DialogDisplayer.getDefault().notifyLater(msg);
+    }
+
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
@@ -201,21 +211,9 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
             oGLPanel.add(((JmeCanvasContext) app.getContext()).getCanvas());
             app.setSceneActive(true);
         } catch (Exception e) {
-            Message msg = new NotifyDescriptor.Message(
-                    "Error opening OpenGL window!\n"
-                    + "Your graphics card needs to support at least OpenGL 2.0,\n"
-                    + "if that is the case, please download the latest drivers.\n"
-                    + "(" + e + ")",
-                    NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notifyLater(msg);
+            showOpenGLError(e.toString());
         } catch (Error err) {
-            Message msg = new NotifyDescriptor.Message(
-                    "Error opening OpenGL window!\n"
-                    + "Your graphics card needs to support at least OpenGL 2.0,\n"
-                    + "if that is the case, please download the latest drivers.\n"
-                    + "(" + err + ")",
-                    NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notifyLater(msg);
+            showOpenGLError(err.toString());
         }
     }
 

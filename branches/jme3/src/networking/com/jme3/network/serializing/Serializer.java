@@ -95,7 +95,7 @@ public abstract class Serializer {
         registerClass(ClientRegistrationMessage.class);
         registerClass(DiscoverHostMessage.class);
         registerClass(StreamDataMessage.class);
-
+        registerClass(StreamMessage.class);
     }
 
     public static SerializerRegistration registerClass(Class cls) {

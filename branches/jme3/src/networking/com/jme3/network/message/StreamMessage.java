@@ -32,6 +32,9 @@
 
 package com.jme3.network.message;
 
+import com.jme3.network.serializing.Serializable;
+
+@Serializable()
 public class StreamMessage extends Message {
     private short streamID;
 

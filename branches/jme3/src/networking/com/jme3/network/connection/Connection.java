@@ -260,13 +260,22 @@ public abstract class Connection implements Runnable {
     private void disconnect(Client client) throws IOException {
         if (client == null) return;
 
+        // Find the correct client.
+
+        for (Client localClient : connections) {
+            if (localClient.getTCPConnection() == client.getTCPConnection()) {
+                client = localClient;
+                break;
+            }
+        }
+
         SocketChannel chan = client.getSocketChannel();
         if (chan != null) {
             SelectionKey key = chan.keyFor(selector);
             if (key != null) key.cancel();
             chan.close();
         }
-
+        
         connections.remove(client);
         fireClientDisconnected(client);
     }

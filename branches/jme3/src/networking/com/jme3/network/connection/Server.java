@@ -38,10 +38,10 @@ import com.jme3.network.message.ClientRegistrationMessage;
 import com.jme3.network.message.DisconnectMessage;
 import com.jme3.network.message.Message;
 import com.jme3.network.service.ServiceManager;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,9 +75,6 @@ public class Server extends ServiceManager implements MessageListener {
 
     protected ClientManager clientManager = new ClientManager();
 
-    // Internal list of clients.
-    protected List<Client>  clients = new ArrayList<Client>();
-
     /**
      * Default constructor. Sets the label to
      * <code>Server#[serverID]</code>
@@ -86,7 +83,6 @@ public class Server extends ServiceManager implements MessageListener {
         super(ServiceManager.SERVER);
         serverID = ++serverIDCounter;
         this.label = "Server#" + serverID;
-
     }
 
     /**

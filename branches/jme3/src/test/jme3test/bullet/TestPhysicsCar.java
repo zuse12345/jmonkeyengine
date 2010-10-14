@@ -32,8 +32,10 @@
 
 package jme3test.bullet;
 
-import com.jme3.app.SimpleBulletApplication;
+import com.jme3.app.BulletAppState;
+import com.jme3.app.SimpleApplication;
 import com.jme3.asset.TextureKey;
+import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
@@ -53,8 +55,9 @@ import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Cylinder;
 import com.jme3.texture.Texture;
 
-public class TestPhysicsCar extends SimpleBulletApplication implements ActionListener {
+public class TestPhysicsCar extends SimpleApplication implements ActionListener {
 
+    private BulletAppState bulletAppState;
     private PhysicsVehicleNode vehicle;
     private final float accelerationForce = 1000.0f;
     private final float brakeForce = 100.0f;
@@ -69,9 +72,15 @@ public class TestPhysicsCar extends SimpleBulletApplication implements ActionLis
 
     @Override
     public void simpleInitApp() {
+        bulletAppState = new BulletAppState();
+        stateManager.attach(bulletAppState);
         setupKeys();
         setupFloor();
         buildPlayer();
+    }
+
+    private PhysicsSpace getPhysicsSpace(){
+        return bulletAppState.getPhysicsSpace();
     }
 
     private void setupKeys() {

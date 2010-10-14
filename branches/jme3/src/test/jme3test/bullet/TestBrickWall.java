@@ -32,8 +32,10 @@
 
 package jme3test.bullet;
 
-import com.jme3.app.SimpleBulletApplication;
+import com.jme3.app.BulletAppState;
+import com.jme3.app.SimpleApplication;
 import com.jme3.asset.TextureKey;
+import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.nodes.PhysicsNode;
@@ -57,7 +59,7 @@ import com.jme3.texture.Texture.WrapMode;
  *
  * @author double1984
  */
-public class TestBrickWall extends SimpleBulletApplication {
+public class TestBrickWall extends SimpleApplication {
 
     static float bLength = 0.48f;
     static float bWidth = 0.24f;
@@ -81,6 +83,8 @@ public class TestBrickWall extends SimpleBulletApplication {
         brick.scaleTextureCoordinates(new Vector2f(1f, .5f));
     }
 
+    private BulletAppState bulletAppState;
+
     public static void main(String args[]) {
         TestBrickWall f = new TestBrickWall();
         f.start();
@@ -88,6 +92,8 @@ public class TestBrickWall extends SimpleBulletApplication {
 
     @Override
     public void simpleInitApp() {
+        bulletAppState = new BulletAppState();
+        stateManager.attach(bulletAppState);
         initMaterial();
         initWall();
         initFloor();
@@ -106,7 +112,9 @@ public class TestBrickWall extends SimpleBulletApplication {
         this.getPhysicsSpace().setAccuracy(0.005f);
     }
 
-
+    private PhysicsSpace getPhysicsSpace(){
+        return bulletAppState.getPhysicsSpace();
+    }
 
     private ActionListener actionListener = new ActionListener() {
 

@@ -32,8 +32,10 @@
 
 package jme3test.bullet;
 
-import com.jme3.app.SimpleBulletApplication;
+import com.jme3.app.BulletAppState;
+import com.jme3.app.SimpleApplication;
 import com.jme3.bounding.BoundingBox;
+import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
@@ -57,8 +59,9 @@ import com.jme3.scene.shape.Box;
 import com.jme3.shadow.BasicShadowRenderer;
 import com.jme3.texture.Texture.WrapMode;
 
-public class TestFancyCar extends SimpleBulletApplication implements ActionListener {
+public class TestFancyCar extends SimpleApplication implements ActionListener {
     
+    private BulletAppState bulletAppState;
     private PhysicsVehicleNode player;
     private PhysicsVehicleWheel fr, fl, br, bl;
     private Node node_fr, node_fl, node_br, node_bl;
@@ -88,6 +91,8 @@ public class TestFancyCar extends SimpleBulletApplication implements ActionListe
 
     @Override
     public void simpleInitApp() {
+        bulletAppState = new BulletAppState();
+        stateManager.attach(bulletAppState);
         if (settings.getRenderer().startsWith("LWJGL")){
             BasicShadowRenderer bsr = new BasicShadowRenderer(assetManager, 512);
             bsr.setDirection(new Vector3f(-0.5f, -0.3f, -0.3f).normalizeLocal());
@@ -108,6 +113,9 @@ public class TestFancyCar extends SimpleBulletApplication implements ActionListe
         rootNode.addLight(dl);
     }
 
+    private PhysicsSpace getPhysicsSpace(){
+        return bulletAppState.getPhysicsSpace();
+    }
 
     public void setupFloor() {
         Material mat = assetManager.loadMaterial("Textures/Terrain/BrickWall/BrickWall.j3m");

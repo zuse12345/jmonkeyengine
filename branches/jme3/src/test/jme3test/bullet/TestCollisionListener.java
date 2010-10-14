@@ -32,7 +32,9 @@
 
 package jme3test.bullet;
 
-import com.jme3.app.SimpleBulletApplication;
+import com.jme3.app.BulletAppState;
+import com.jme3.app.SimpleApplication;
+import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionGroupListener;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
@@ -57,8 +59,9 @@ import com.jme3.scene.shape.Sphere.TextureMode;
  *
  * @author normenhansen
  */
-public class TestCollisionListener extends SimpleBulletApplication implements ActionListener, PhysicsCollisionListener, PhysicsCollisionGroupListener {
+public class TestCollisionListener extends SimpleApplication implements ActionListener, PhysicsCollisionListener, PhysicsCollisionGroupListener {
 
+    private BulletAppState bulletAppState;
     private Material mat;
     private static final Sphere bullet;
     private static final SphereCollisionShape bulletCollisionShape;
@@ -81,6 +84,8 @@ public class TestCollisionListener extends SimpleBulletApplication implements Ac
 
     @Override
     public void simpleInitApp() {
+        bulletAppState = new BulletAppState();
+        stateManager.attach(bulletAppState);
 
         setupKeys();
 
@@ -119,13 +124,12 @@ public class TestCollisionListener extends SimpleBulletApplication implements Ac
         getPhysicsSpace().addCollisionGroupListener(this, PhysicsNode.COLLISION_GROUP_02);
     }
 
-    @Override
-    public void simpleUpdate(float tpf) {
-        //TODO: add update code
+    private PhysicsSpace getPhysicsSpace(){
+        return bulletAppState.getPhysicsSpace();
     }
 
     @Override
-    public void simplePhysicsUpdate(float tpf) {
+    public void simpleUpdate(float tpf) {
         //TODO: add update code
     }
 

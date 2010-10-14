@@ -121,15 +121,12 @@ public class BulletAppState implements AppState, PhysicsTickListener {
     }
 
     public void stateAttached(AppStateManager stateManager) {
+        if (!initialized) {
+            startPhysics();
+        }
     }
 
     public void stateDetached(AppStateManager stateManager) {
-        if (executor != null) {
-            executor.shutdown();
-            executor = null;
-        }
-        pSpace.destroy();
-        initialized = false;
     }
 
     public void update(float tpf) {
@@ -137,6 +134,7 @@ public class BulletAppState implements AppState, PhysicsTickListener {
         if (physicsFuture != null) {
             try {
                 physicsFuture.get();
+                physicsFuture = null;
             } catch (InterruptedException ex) {
                 Logger.getLogger(BulletAppState.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ExecutionException ex) {

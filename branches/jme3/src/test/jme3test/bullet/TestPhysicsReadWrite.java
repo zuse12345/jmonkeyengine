@@ -33,8 +33,9 @@
 package jme3test.bullet;
 
 
-import com.jme3.app.SimpleBulletApplication;
-import com.jme3.asset.DesktopAssetManager;
+import com.jme3.app.BulletAppState;
+import com.jme3.app.SimpleApplication;
+import com.jme3.bullet.PhysicsSpace;
 
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
@@ -61,7 +62,8 @@ import java.util.logging.Logger;
  *
  * @author normenhansen
  */
-public class TestPhysicsReadWrite extends SimpleBulletApplication{
+public class TestPhysicsReadWrite extends SimpleApplication{
+    private BulletAppState bulletAppState;
     private Node physicsRootNode;
     public static void main(String[] args){
         TestPhysicsReadWrite app = new TestPhysicsReadWrite();
@@ -70,6 +72,8 @@ public class TestPhysicsReadWrite extends SimpleBulletApplication{
 
     @Override
     public void simpleInitApp() {
+        bulletAppState = new BulletAppState();
+        stateManager.attach(bulletAppState);
         physicsRootNode=new Node("PhysicsRootNode");
         rootNode.attachChild(physicsRootNode);
 
@@ -144,6 +148,10 @@ public class TestPhysicsReadWrite extends SimpleBulletApplication{
             Logger.getLogger(TestPhysicsReadWrite.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+    }
+
+    private PhysicsSpace getPhysicsSpace(){
+        return bulletAppState.getPhysicsSpace();
     }
 
     @Override

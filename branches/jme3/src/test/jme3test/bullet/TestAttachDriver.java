@@ -32,8 +32,10 @@
 
 package jme3test.bullet;
 
-import com.jme3.app.SimpleBulletApplication;
+import com.jme3.app.BulletAppState;
+import com.jme3.app.SimpleApplication;
 import com.jme3.asset.TextureKey;
+import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
@@ -58,7 +60,7 @@ import com.jme3.texture.Texture;
  * Tests attaching/detaching nodes via joints
  * @author normenhansen
  */
-public class TestAttachDriver extends SimpleBulletApplication implements ActionListener {
+public class TestAttachDriver extends SimpleApplication implements ActionListener {
 
     private PhysicsVehicleNode vehicle;
     private PhysicsNode driver;
@@ -69,6 +71,7 @@ public class TestAttachDriver extends SimpleBulletApplication implements ActionL
     private float steeringValue = 0;
     private float accelerationValue = 0;
     private Vector3f jumpForce = new Vector3f(0, 3000, 0);
+    private BulletAppState bulletAppState;
     
     public static void main(String[] args) {
         TestAttachDriver app = new TestAttachDriver();
@@ -77,9 +80,15 @@ public class TestAttachDriver extends SimpleBulletApplication implements ActionL
 
     @Override
     public void simpleInitApp() {
+        bulletAppState = new BulletAppState();
+        stateManager.attach(bulletAppState);
         setupKeys();
         setupFloor();
         buildPlayer();
+    }
+
+    private PhysicsSpace getPhysicsSpace(){
+        return bulletAppState.getPhysicsSpace();
     }
 
     private void setupKeys() {

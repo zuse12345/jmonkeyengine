@@ -35,9 +35,11 @@ import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
 import com.jme3.animation.AnimEventListener;
 import com.jme3.animation.LoopMode;
-import com.jme3.app.SimpleBulletApplication;
+import com.jme3.app.BulletAppState;
+import com.jme3.app.SimpleApplication;
 import com.jme3.asset.TextureKey;
 import com.jme3.bounding.BoundingBox;
+import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
@@ -84,8 +86,9 @@ import jme3tools.converters.ImageToAwt;
  *
  * @author normenhansen
  */
-public class TestWalkingChar extends SimpleBulletApplication implements ActionListener, PhysicsCollisionListener, AnimEventListener {
+public class TestWalkingChar extends SimpleApplication implements ActionListener, PhysicsCollisionListener, AnimEventListener {
 
+    private BulletAppState bulletAppState;
     static final Quaternion ROTATE_LEFT = new Quaternion();
     //character
     PhysicsCharacterNode character;
@@ -131,6 +134,8 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
 
     @Override
     public void simpleInitApp() {
+        bulletAppState = new BulletAppState();
+        stateManager.attach(bulletAppState);
         setupKeys();
         prepareBullet();
         prepareEffect();
@@ -141,6 +146,10 @@ public class TestWalkingChar extends SimpleBulletApplication implements ActionLi
         createCharacter();
         setupChaseCamera();
         setupAnimationController();
+    }
+
+    private PhysicsSpace getPhysicsSpace(){
+        return bulletAppState.getPhysicsSpace();
     }
 
     private void setupKeys() {

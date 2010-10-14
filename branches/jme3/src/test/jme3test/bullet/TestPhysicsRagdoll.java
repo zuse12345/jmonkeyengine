@@ -33,8 +33,10 @@
 package jme3test.bullet;
 
 import com.jme3.animation.AnimControl;
-import com.jme3.app.SimpleBulletApplication;
+import com.jme3.app.BulletAppState;
+import com.jme3.app.SimpleApplication;
 import com.jme3.asset.TextureKey;
+import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.control.PhysicsRagdollControl;
 import com.jme3.bullet.nodes.PhysicsNode;
@@ -46,7 +48,6 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.debug.SkeletonDebugger;
-import com.jme3.scene.plugins.ogre.MeshLoader;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Cylinder;
 import com.jme3.texture.Texture;
@@ -55,7 +56,9 @@ import com.jme3.texture.Texture;
  * PHYSICS RAGDOLLS ARE NOT WORKING PROPERLY YET!
  * @author normenhansen
  */
-public class TestPhysicsRagdoll  extends SimpleBulletApplication {
+public class TestPhysicsRagdoll  extends SimpleApplication {
+
+    private BulletAppState bulletAppState;
 
     public static void main(String[] args){
         TestPhysicsRagdoll app = new TestPhysicsRagdoll();
@@ -63,6 +66,8 @@ public class TestPhysicsRagdoll  extends SimpleBulletApplication {
     }
 
     public void simpleInitApp() {
+        bulletAppState = new BulletAppState();
+        stateManager.attach(bulletAppState);
 //        speed=0.01f;
         DirectionalLight dl = new DirectionalLight();
         dl.setDirection(new Vector3f(-0.1f, -0.7f, -1).normalizeLocal());
@@ -113,6 +118,10 @@ public class TestPhysicsRagdoll  extends SimpleBulletApplication {
 
         rootNode.attachChild(model);
         rootNode.attachChild(skeletonDebug);
+    }
+
+    private PhysicsSpace getPhysicsSpace(){
+        return bulletAppState.getPhysicsSpace();
     }
 
     public Spatial createCylinder(float radius, float height){

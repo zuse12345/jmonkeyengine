@@ -32,7 +32,9 @@
 
 package jme3test.bullet;
 
-import com.jme3.app.SimpleBulletApplication;
+import com.jme3.app.BulletAppState;
+import com.jme3.app.SimpleApplication;
+import com.jme3.bullet.PhysicsSpace;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
@@ -47,7 +49,8 @@ import com.jme3.bullet.nodes.PhysicsNode;
  *
  * @author normenhansen
  */
-public class TestSimplePhysics extends SimpleBulletApplication{
+public class TestSimplePhysics extends SimpleApplication{
+    private BulletAppState bulletAppState;
 
     public static void main(String[] args){
         TestSimplePhysics app = new TestSimplePhysics();
@@ -56,6 +59,8 @@ public class TestSimplePhysics extends SimpleBulletApplication{
 
     @Override
     public void simpleInitApp() {
+        bulletAppState = new BulletAppState();
+        stateManager.attach(bulletAppState);
 
         // Add a physics sphere to the world
         PhysicsNode physicsSphere=new PhysicsNode(new SphereCollisionShape(1),1);
@@ -107,4 +112,7 @@ public class TestSimplePhysics extends SimpleBulletApplication{
 
     }
 
+    private PhysicsSpace getPhysicsSpace(){
+        return bulletAppState.getPhysicsSpace();
+    }
 }

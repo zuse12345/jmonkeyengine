@@ -32,7 +32,9 @@
 
 package jme3test.bullet;
 
-import com.jme3.app.SimpleBulletApplication;
+import com.jme3.app.BulletAppState;
+import com.jme3.app.SimpleApplication;
+import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.joints.PhysicsHingeJoint;
@@ -49,11 +51,13 @@ import com.jme3.math.Vector3f;
  * Tests attaching ghost nodes to physicsnodes via the scenegraph
  * @author normenhansen
  */
-public class TestAttachGhostObject extends SimpleBulletApplication implements AnalogListener {
+public class TestAttachGhostObject extends SimpleApplication implements AnalogListener {
 
     private PhysicsHingeJoint joint;
     private PhysicsGhostNode gNode;
     private PhysicsNode collisionNode;
+
+    private BulletAppState bulletAppState;
 
     public static void main(String[] args) {
         TestAttachGhostObject app = new TestAttachGhostObject();
@@ -79,8 +83,14 @@ public class TestAttachGhostObject extends SimpleBulletApplication implements An
 
     @Override
     public void simpleInitApp() {
+        bulletAppState = new BulletAppState();
+        stateManager.attach(bulletAppState);
         setupKeys();
         setupJoint();
+    }
+
+    private PhysicsSpace getPhysicsSpace(){
+        return bulletAppState.getPhysicsSpace();
     }
 
     public void setupJoint() {

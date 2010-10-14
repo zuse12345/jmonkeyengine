@@ -32,7 +32,9 @@
 
 package jme3test.bullet;
 
-import com.jme3.app.SimpleBulletApplication;
+import com.jme3.app.BulletAppState;
+import com.jme3.app.SimpleApplication;
+import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
@@ -56,8 +58,9 @@ import com.jme3.scene.shape.Sphere.TextureMode;
  *
  * @author normenhansen
  */
-public class TestPhysicsCharacter extends SimpleBulletApplication implements ActionListener {
+public class TestPhysicsCharacter extends SimpleApplication implements ActionListener {
 
+    private BulletAppState bulletAppState;
     private PhysicsCharacterNode physicsCharacter;
     private Vector3f walkDirection = new Vector3f();
     private Material mat;
@@ -92,6 +95,8 @@ public class TestPhysicsCharacter extends SimpleBulletApplication implements Act
 
     @Override
     public void simpleInitApp() {
+        bulletAppState = new BulletAppState();
+        stateManager.attach(bulletAppState);
 
         setupKeys();
 
@@ -128,15 +133,12 @@ public class TestPhysicsCharacter extends SimpleBulletApplication implements Act
         getPhysicsSpace().add(node3);
     }
 
-    @Override
-    public void simpleUpdate(float tpf) {
-        //TODO: add update code
+    private PhysicsSpace getPhysicsSpace(){
+        return bulletAppState.getPhysicsSpace();
     }
 
     @Override
-    public void simplePhysicsUpdate(float tpf) {
-        //note that it is not necessary to set the walkDirection each frame
-        //its only done here to reflect the constant mouse movements of the user
+    public void simpleUpdate(float tpf) {
         physicsCharacter.setWalkDirection(walkDirection);
     }
 

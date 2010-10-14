@@ -32,7 +32,9 @@
 
 package jme3test.bullet;
 
-import com.jme3.app.SimpleBulletApplication;
+import com.jme3.app.BulletAppState;
+import com.jme3.app.SimpleApplication;
+import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.joints.PhysicsHingeJoint;
 import com.jme3.bullet.nodes.PhysicsNode;
@@ -43,7 +45,8 @@ import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 
-public class TestPhysicsHingeJoint extends SimpleBulletApplication implements AnalogListener {
+public class TestPhysicsHingeJoint extends SimpleApplication implements AnalogListener {
+    private BulletAppState bulletAppState;
     private PhysicsHingeJoint joint;
 
     public static void main(String[] args) {
@@ -78,8 +81,14 @@ public class TestPhysicsHingeJoint extends SimpleBulletApplication implements An
 
     @Override
     public void simpleInitApp() {
+        bulletAppState = new BulletAppState();
+        stateManager.attach(bulletAppState);
         setupKeys();
         setupJoint();
+    }
+
+    private PhysicsSpace getPhysicsSpace(){
+        return bulletAppState.getPhysicsSpace();
     }
 
     public void setupJoint() {

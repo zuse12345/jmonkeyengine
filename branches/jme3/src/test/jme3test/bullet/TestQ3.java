@@ -32,9 +32,11 @@
 
 package jme3test.bullet;
 
-import com.jme3.app.SimpleBulletApplication;
+import com.jme3.app.BulletAppState;
+import com.jme3.app.SimpleApplication;
 import com.jme3.asset.plugins.HttpZipLocator;
 import com.jme3.asset.plugins.ZipLocator;
+import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.nodes.PhysicsCharacterNode;
@@ -54,8 +56,9 @@ import com.jme3.scene.plugins.ogre.OgreMeshKey;
 import com.jme3.scene.shape.Sphere;
 import java.io.File;
 
-public class TestQ3 extends SimpleBulletApplication implements ActionListener {
+public class TestQ3 extends SimpleApplication implements ActionListener {
 
+    private BulletAppState bulletAppState;
     private Sphere sphereMesh = new Sphere(32, 32, 10f, false, true);
     private Geometry sphere = new Geometry("Sky", sphereMesh);
     private Spatial gameLevel;
@@ -74,6 +77,8 @@ public class TestQ3 extends SimpleBulletApplication implements ActionListener {
     }
 
     public void simpleInitApp() {
+        bulletAppState = new BulletAppState();
+        stateManager.attach(bulletAppState);
         flyCam.setMoveSpeed(100);
         setupKeys();
 
@@ -112,6 +117,10 @@ public class TestQ3 extends SimpleBulletApplication implements ActionListener {
 
         getPhysicsSpace().add(levelNode);
         getPhysicsSpace().add(player);
+    }
+
+    private PhysicsSpace getPhysicsSpace(){
+        return bulletAppState.getPhysicsSpace();
     }
 
     @Override

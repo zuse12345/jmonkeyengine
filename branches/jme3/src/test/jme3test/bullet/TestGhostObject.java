@@ -33,7 +33,9 @@
 package jme3test.bullet;
 
 import com.jme3.app.Application;
-import com.jme3.app.SimpleBulletApplication;
+import com.jme3.app.BulletAppState;
+import com.jme3.app.SimpleApplication;
+import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.nodes.PhysicsGhostNode;
@@ -42,14 +44,14 @@ import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.shape.Box;
-import java.util.logging.Logger;
 
 /**
  *
  * @author tim8dev [at] gmail [dot com]
  */
-public class TestGhostObject extends SimpleBulletApplication {
+public class TestGhostObject extends SimpleApplication {
 
+    private BulletAppState bulletAppState;
     private PhysicsGhostNode ghostNode;
 
     public static void main(String[] args) {
@@ -57,18 +59,10 @@ public class TestGhostObject extends SimpleBulletApplication {
         app.start();
     }
 
-    private void initGhostObject() {
-        Vector3f halfExtents = new Vector3f(3, 4.2f, 1);
-        Material mat = new Material(getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
-        mat.setColor("m_Color", ColorRGBA.Red);
-        ghostNode = new PhysicsGhostNode(new BoxCollisionShape(halfExtents));
-        ghostNode.attachDebugShape(mat);
-        rootNode.attachChild(ghostNode);
-        getPhysicsSpace().add(ghostNode);
-    }
-
     @Override
     public void simpleInitApp() {
+        bulletAppState = new BulletAppState();
+        stateManager.attach(bulletAppState);
 
         // Mesh to be shared across several boxes.
         Box boxGeom = new Box(Vector3f.ZERO, 1f, 1f, 1f);
@@ -109,6 +103,20 @@ public class TestGhostObject extends SimpleBulletApplication {
         getPhysicsSpace().add(node);
 
         initGhostObject();
+    }
+
+    private PhysicsSpace getPhysicsSpace(){
+        return bulletAppState.getPhysicsSpace();
+    }
+
+    private void initGhostObject() {
+        Vector3f halfExtents = new Vector3f(3, 4.2f, 1);
+        Material mat = new Material(getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
+        mat.setColor("m_Color", ColorRGBA.Red);
+        ghostNode = new PhysicsGhostNode(new BoxCollisionShape(halfExtents));
+        ghostNode.attachDebugShape(mat);
+        rootNode.attachChild(ghostNode);
+        getPhysicsSpace().add(ghostNode);
     }
 
     @Override

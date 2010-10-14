@@ -32,7 +32,9 @@
 
 package jme3test.bullet;
 
-import com.jme3.app.SimpleBulletApplication;
+import com.jme3.app.BulletAppState;
+import com.jme3.app.SimpleApplication;
+import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.nodes.PhysicsNode;
@@ -40,7 +42,6 @@ import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 
@@ -48,7 +49,9 @@ import com.jme3.scene.shape.Sphere;
  *
  * @author normenhansen
  */
-public class TestCollisionGroups extends SimpleBulletApplication{
+public class TestCollisionGroups extends SimpleApplication{
+
+    private BulletAppState bulletAppState;
 
     public static void main(String[] args){
         TestCollisionGroups app = new TestCollisionGroups();
@@ -57,6 +60,8 @@ public class TestCollisionGroups extends SimpleBulletApplication{
 
     @Override
     public void simpleInitApp() {
+        bulletAppState = new BulletAppState();
+        stateManager.attach(bulletAppState);
         Material mat = new Material(getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
         mat.setColor("m_Color", ColorRGBA.Red);
         Material mat2 = new Material(getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
@@ -92,6 +97,10 @@ public class TestCollisionGroups extends SimpleBulletApplication{
         node3.attachDebugShape(assetManager);
         rootNode.attachChild(node3);
         getPhysicsSpace().add(node3);
+    }
+
+    private PhysicsSpace getPhysicsSpace(){
+        return bulletAppState.getPhysicsSpace();
     }
 
     @Override

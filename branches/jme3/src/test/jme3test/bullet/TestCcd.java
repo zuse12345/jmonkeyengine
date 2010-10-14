@@ -32,7 +32,9 @@
 
 package jme3test.bullet;
 
-import com.jme3.app.SimpleBulletApplication;
+import com.jme3.app.BulletAppState;
+import com.jme3.app.SimpleApplication;
+import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
@@ -54,12 +56,13 @@ import com.jme3.scene.shape.Sphere.TextureMode;
  *
  * @author normenhansen
  */
-public class TestCcd extends SimpleBulletApplication implements ActionListener{
+public class TestCcd extends SimpleApplication implements ActionListener{
 
     private Material mat;
     private Material mat2;
     private static final Sphere bullet;
     private static final SphereCollisionShape bulletCollisionShape;
+    private BulletAppState bulletAppState;
 
     static {
         bullet = new Sphere(32, 32, 0.4f, true, false);
@@ -81,7 +84,8 @@ public class TestCcd extends SimpleBulletApplication implements ActionListener{
 
     @Override
     public void simpleInitApp() {
-
+        bulletAppState = new BulletAppState();
+        stateManager.attach(bulletAppState);
         setupKeys();
 
         mat = new Material(getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
@@ -107,13 +111,12 @@ public class TestCcd extends SimpleBulletApplication implements ActionListener{
 
     }
 
-    @Override
-    public void simpleUpdate(float tpf) {
-        //TODO: add update code
+    private PhysicsSpace getPhysicsSpace(){
+        return bulletAppState.getPhysicsSpace();
     }
 
     @Override
-    public void simplePhysicsUpdate(float tpf) {
+    public void simpleUpdate(float tpf) {
         //TODO: add update code
     }
 

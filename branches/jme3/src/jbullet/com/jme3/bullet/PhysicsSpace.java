@@ -131,11 +131,20 @@ public class PhysicsSpace {
     private float accuracy = 1f / 60f;
 
     /**
-     * Get the current PhysicsSpace <b>running on this thread</b>
+     * Get the current PhysicsSpace <b>running on this thread</b><br/>
+     * For parallel physics, this can also be called from the OpenGL thread to receive the PhysicsSpace
      * @return the PhysicsSpace running on this thread
      */
     public static PhysicsSpace getPhysicsSpace() {
         return physicsSpaceTL.get();
+    }
+
+    /**
+     * Used internally
+     * @param space
+     */
+    public static void setLocalThreadPhysicsSpace(PhysicsSpace space){
+        physicsSpaceTL.set(space);
     }
 
     public PhysicsSpace() {

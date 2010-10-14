@@ -128,6 +128,9 @@ public class BulletAppState implements AppState, PhysicsTickListener {
         if (!initialized) {
             startPhysics();
         }
+        if (threadingType == ThreadingType.PARALLEL) {
+            PhysicsSpace.setLocalThreadPhysicsSpace(pSpace);
+        }
     }
 
     public void stateDetached(AppStateManager stateManager) {

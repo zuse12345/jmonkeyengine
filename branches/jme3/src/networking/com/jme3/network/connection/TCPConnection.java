@@ -34,9 +34,11 @@ package com.jme3.network.connection;
 
 import com.jme3.network.message.Message;
 import com.jme3.network.serializing.Serializer;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectableChannel;
@@ -226,41 +228,64 @@ public class TCPConnection extends Connection {
     }
 
     protected void send(SocketChannel channel, Object object) throws IOException {
-        synchronized (writeLock) {
-            tempWriteBuffer.clear();
-            tempWriteBuffer.position(4);
-            Serializer.writeClassAndObject(tempWriteBuffer, object);
-            tempWriteBuffer.flip();
+        try {
+            synchronized (writeLock) {
+                tempWriteBuffer.clear();
+                tempWriteBuffer.position(4);
+                Serializer.writeClassAndObject(tempWriteBuffer, object);
+                tempWriteBuffer.flip();
 
-            int dataLength = tempWriteBuffer.limit() - 4;
-            tempWriteBuffer.position(0);
-            tempWriteBuffer.putInt(dataLength);
-            tempWriteBuffer.position(0);
+                int dataLength = tempWriteBuffer.limit() - 4;
+                tempWriteBuffer.position(0);
+                tempWriteBuffer.putInt(dataLength);
+                tempWriteBuffer.position(0);
 
-            if (writeBuffer.position() > 0) {
-                writeBuffer.put(tempWriteBuffer);
-            } else {
-                int writeLength = 0;
-                while (tempWriteBuffer.hasRemaining()) {
-                    int wrote = channel.write(tempWriteBuffer);
-                    writeLength += wrote;
-                    if (wrote == 0) {
-                        break;
-                    }
-                }
-
-                log.log(Level.FINE, "[{1}][TCP] Wrote {0} bytes.", new Object[]{writeLength, label});
-
-                if (writeBuffer.hasRemaining()) {
+                if (writeBuffer.position() > 0) {
                     writeBuffer.put(tempWriteBuffer);
                 } else {
-                    if (object instanceof Message) {
-                        this.fireMessageSent((Message)object);
-                    } else {
-                        this.fireObjectSent(object);
+                    int writeLength = 0;
+                    while (tempWriteBuffer.hasRemaining()) {
+                        int wrote = channel.write(tempWriteBuffer);
+                        writeLength += wrote;
+                        if (wrote == 0) {
+                            break;
+                        }
+                    }
+
+                    log.log(Level.FINE, "[{1}][TCP] Wrote {0} bytes.", new Object[]{writeLength, label});
+
+                    try
+                    {
+                        if (writeBuffer.hasRemaining()) {
+                            writeBuffer.put(tempWriteBuffer);
+                            channel.keyFor(selector).interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                        } else {
+                            if (object instanceof Message) {
+                                this.fireMessageSent((Message)object);
+                            } else {
+                                this.fireObjectSent(object);
+                            }
+                        }
+                    } catch (BufferOverflowException boe) {
+                        log.log(Level.WARNING, "[{0}][TCP] Buffer overflow occured while queuing data to be sent later. " +
+                                "Cleared the buffer, so some data may be lost. Please note that this exception occurs rarely, " +
+                                "so if this is shown often, please check your message sizes or contact the developer.", label);
+                        writeBuffer.clear();
                     }
                 }
             }
+        } catch (IOException ioe) {
+            // We're doing some additional handling here, since a client could be reset.
+            SelectionKey key = socketChannel.keyFor(selector);
+            if (key != null) {
+                Client cl = (Client)key.attachment();
+                if (cl != null) {
+                    addToDisconnectionQueue(cl);
+                }
+                log.log(Level.WARNING, "[{0}][TCP] Disconnected {1} because an error occured: {2}.", new Object[]{label, cl, ioe.getMessage()});
+                return;
+            }
+            throw ioe;
         }
     }
 

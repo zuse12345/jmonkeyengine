@@ -117,11 +117,14 @@ public class PhysicsVehicleNode extends PhysicsNode {
         rBody.setActivationState(CollisionObject.DISABLE_DEACTIVATION);
     }
 
-    private void createVehicleConstraint() {
+    private void createVehicleConstraint(PhysicsSpace space) {
         if (tuning == null) {
             tuning = new VehicleTuning();
         }
-        rayCaster = new DefaultVehicleRaycaster(PhysicsSpace.getPhysicsSpace().getDynamicsWorld());
+        if(space==null){
+            throw new IllegalStateException("Error getting PhysicsSpace for vehicle! Please make sure you create the vehicle on the physics thread!");
+        }
+        rayCaster = new DefaultVehicleRaycaster(space.getDynamicsWorld());
         vehicle = new RaycastVehicle(tuning, rBody, rayCaster);
         vehicle.setCoordinateSystem(0, 1, 2);
         if (wheels != null) {
@@ -131,6 +134,10 @@ public class PhysicsVehicleNode extends PhysicsNode {
                 wheel.applyInfo();
             }
         }
+    }
+
+    private void createVehicleConstraint() {
+        createVehicleConstraint(PhysicsSpace.getPhysicsSpace());
     }
 
     /**

@@ -29,7 +29,6 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package jme3test.bullet;
 
 import com.jme3.app.BulletAppState;
@@ -64,12 +63,10 @@ public class TestBrickWall extends SimpleApplication {
     static float bLength = 0.48f;
     static float bWidth = 0.24f;
     static float bHeight = 0.12f;
-    
     Material mat;
     Material mat2;
     Material mat3;
     BasicShadowRenderer bsr;
-
     private static final Sphere bullet;
     private static final Box brick;
     private static final SphereCollisionShape bulletCollisionShape;
@@ -77,12 +74,11 @@ public class TestBrickWall extends SimpleApplication {
     static {
         bullet = new Sphere(32, 32, 0.4f, true, false);
         bullet.setTextureMode(TextureMode.Projected);
-        bulletCollisionShape=new SphereCollisionShape(0.4f);
+        bulletCollisionShape = new SphereCollisionShape(0.4f);
 
         brick = new Box(Vector3f.ZERO, bLength, bHeight, bWidth);
         brick.scaleTextureCoordinates(new Vector2f(1f, .5f));
     }
-
     private BulletAppState bulletAppState;
 
     public static void main(String args[]) {
@@ -93,6 +89,7 @@ public class TestBrickWall extends SimpleApplication {
     @Override
     public void simpleInitApp() {
         bulletAppState = new BulletAppState();
+        bulletAppState.setThreadingType(BulletAppState.ThreadingType.PARALLEL);
         stateManager.attach(bulletAppState);
         initMaterial();
         initWall();
@@ -108,14 +105,11 @@ public class TestBrickWall extends SimpleApplication {
         bsr = new BasicShadowRenderer(assetManager, 256);
         bsr.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
         viewPort.addProcessor(bsr);
-        //System.out.print(this.getPhysicsSpace().getAccuracy());
-        this.getPhysicsSpace().setAccuracy(0.005f);
     }
 
-    private PhysicsSpace getPhysicsSpace(){
+    private PhysicsSpace getPhysicsSpace() {
         return bulletAppState.getPhysicsSpace();
     }
-
     private ActionListener actionListener = new ActionListener() {
 
         public void onAction(String name, boolean keyPressed, float tpf) {
@@ -181,19 +175,18 @@ public class TestBrickWall extends SimpleApplication {
     }
 
     public void addBrick(Vector3f ori) {
-        
+
         Geometry reBoxg = new Geometry("brick", brick);
         reBoxg.setMaterial(mat);
         PhysicsNode brickNode = new PhysicsNode(reBoxg, new BoxCollisionShape(new Vector3f(bLength, bHeight, bWidth)), 1.5f);
         brickNode.setLocalTranslation(ori);
         brickNode.setShadowMode(ShadowMode.CastAndReceive);
-        // brickNode.setFriction(1f);
+        brickNode.setFriction(0.6f);
         this.rootNode.attachChild(brickNode);
         this.getPhysicsSpace().add(brickNode);
     }
 
     protected void initCrossHairs() {
-//        guiNode.detachAllChildren();
         guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
         BitmapText ch = new BitmapText(guiFont, false);
         ch.setSize(guiFont.getCharSet().getRenderedSize() * 2);

@@ -135,6 +135,7 @@ public class TestWalkingChar extends SimpleApplication implements ActionListener
     @Override
     public void simpleInitApp() {
         bulletAppState = new BulletAppState();
+        bulletAppState.setThreadingType(BulletAppState.ThreadingType.PARALLEL);
         stateManager.attach(bulletAppState);
         setupKeys();
         prepareBullet();

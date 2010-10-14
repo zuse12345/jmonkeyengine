@@ -132,8 +132,7 @@ public class PhysicsSpace {
 
     /**
      * Get the current PhysicsSpace <b>running on this thread</b>
-     * or creates a new PhysicsSpace
-     * @return the exising or created PhysicsSpace
+     * @return the PhysicsSpace running on this thread
      */
     public static PhysicsSpace getPhysicsSpace() {
         return physicsSpaceTL.get();

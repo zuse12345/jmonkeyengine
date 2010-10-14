@@ -34,11 +34,15 @@ public class BulletAppState implements AppState, PhysicsTickListener {
     protected BroadphaseType broadphaseType = BroadphaseType.DBVT;
     protected Vector3f worldMin = new Vector3f(-10000f, -10000f, -10000f);
     protected Vector3f worldMax = new Vector3f(10000f, 10000f, 10000f);
-    protected float speed;
+    private float speed = 1;
     protected float tpf;
     protected Future physicsFuture;
 
     public BulletAppState() {
+    }
+
+    public BulletAppState(Vector3f worldMin, Vector3f worldMax) {
+        this(worldMin, worldMax, BroadphaseType.DBVT);
     }
 
     public BulletAppState(Vector3f worldMin, Vector3f worldMax, BroadphaseType broadphaseType) {
@@ -75,7 +79,7 @@ public class BulletAppState implements AppState, PhysicsTickListener {
     private Callable<Boolean> parallelPhysicsUpdate = new Callable<Boolean>() {
 
         public Boolean call() throws Exception {
-            pSpace.update(tpf * speed);
+            pSpace.update(tpf * getSpeed());
             return true;
         }
     };
@@ -83,7 +87,7 @@ public class BulletAppState implements AppState, PhysicsTickListener {
     private Callable<Boolean> detachedPhysicsUpdate = new Callable<Boolean>() {
 
         public Boolean call() throws Exception {
-            pSpace.update(getPhysicsSpace().getAccuracy() * speed);
+            pSpace.update(getPhysicsSpace().getAccuracy() * getSpeed());
             long update = System.currentTimeMillis() - detachedPhysicsLastUpdate;
             detachedPhysicsLastUpdate = System.currentTimeMillis();
             executor.schedule(detachedPhysicsUpdate, Math.round(getPhysicsSpace().getAccuracy() * 1000000.0f) - (update * 1000), TimeUnit.MICROSECONDS);
@@ -104,8 +108,8 @@ public class BulletAppState implements AppState, PhysicsTickListener {
             executor.submit(detachedPhysicsUpdate);
         } else {
             pSpace = new PhysicsSpace(worldMin, worldMax, broadphaseType);
-            pSpace.addTickListener(this);
         }
+        pSpace.addTickListener(this);
         initialized = true;
     }
 
@@ -147,7 +151,7 @@ public class BulletAppState implements AppState, PhysicsTickListener {
         if (threadingType == ThreadingType.PARALLEL) {
             physicsFuture = executor.submit(parallelPhysicsUpdate);
         } else if (threadingType == ThreadingType.SEQUENTIAL) {
-            pSpace.update(tpf);
+            pSpace.update(tpf * speed);
         } else {
         }
     }
@@ -157,6 +161,7 @@ public class BulletAppState implements AppState, PhysicsTickListener {
             executor.shutdown();
             executor = null;
         }
+        pSpace.removeTickListener(this);
         pSpace.destroy();
     }
 
@@ -184,6 +189,14 @@ public class BulletAppState implements AppState, PhysicsTickListener {
 
     public void setWorldMax(Vector3f worldMax) {
         this.worldMax = worldMax;
+    }
+
+    public float getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
     }
 
     public void physicsTick(PhysicsSpace space, float f) {

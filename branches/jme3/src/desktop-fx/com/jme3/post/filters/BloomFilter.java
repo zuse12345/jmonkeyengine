@@ -33,6 +33,7 @@ package com.jme3.post.filters;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
 import com.jme3.post.Filter;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
@@ -45,13 +46,20 @@ import java.util.ArrayList;
  */
 public class BloomFilter extends Filter {
 
+    public static final int GLOW_MODE_ONLY_EXTRACTED_LIGHTS=0;
+    public static final int GLOW_MODE_ONLY_GLOW_OBJECTS=1;
+    public static final int GLOW_MODE_BOTH=2;
+
+    private int glowMode=GLOW_MODE_ONLY_EXTRACTED_LIGHTS;
+
     //Bloom parameters
     private float blurScale = 1.5f;
     private float exposurePower = 5.0f;
     private float exposureCutOff = 0.0f;
     private float bloomIntensity = 2.0f;
+ 
 
-    
+    private Pass preGlowPass;
     private Pass extractPass;
     private Pass horizontalBlur = new Pass();
     private Pass verticalalBlur = new Pass();
@@ -60,6 +68,7 @@ public class BloomFilter extends Filter {
     private Material hBlurMat;
     private int screenWidth;
     private int screenHeight;
+    private ColorRGBA backupColor;
 
     public BloomFilter(int width, int height) {
         super("Bloom");
@@ -67,20 +76,37 @@ public class BloomFilter extends Filter {
         screenHeight = height;
     }
 
+    public BloomFilter(int width, int height, int glowMode) {
+        this(width, height);
+        this.glowMode=glowMode;
+
+    }
+
     @Override
     public void initMaterial(AssetManager manager) {
+         if(glowMode!=GLOW_MODE_ONLY_EXTRACTED_LIGHTS){
+            preGlowPass=new Pass();
+            preGlowPass.init(screenWidth, screenHeight, Format.RGBA8, Format.Depth);
+        }
 
         postRenderPasses = new ArrayList<Pass>();
         //configuring extractPass
         extractMat = new Material(manager, "Common/MatDefs/Post/BloomExtract.j3md");
         extractPass = new Pass() {
 
+            @Override
             public boolean requiresSceneAsTexture() {
                 return true;
             }
+
+            @Override
             public void beforeRender() {
                 extractMat.setFloat("m_ExposurePow", exposurePower);
                 extractMat.setFloat("m_ExposureCutoff", exposureCutOff);
+                if(glowMode!=GLOW_MODE_ONLY_EXTRACTED_LIGHTS){
+                    extractMat.setTexture("m_GlowMap", preGlowPass.getRenderedTexture());
+                }
+                extractMat.setBoolean("m_Extract", glowMode!=GLOW_MODE_ONLY_GLOW_OBJECTS);
             }
         };
         
@@ -91,6 +117,7 @@ public class BloomFilter extends Filter {
         hBlurMat = new Material(manager, "Common/MatDefs/Blur/HGaussianBlur.j3md");
         horizontalBlur = new Pass() {
 
+            @Override
             public void beforeRender() {
                 hBlurMat.setTexture("m_Texture", extractPass.getRenderedTexture());
                 hBlurMat.setFloat("m_Size", screenWidth);
@@ -104,6 +131,7 @@ public class BloomFilter extends Filter {
         vBlurMat = new Material(manager, "Common/MatDefs/Blur/VGaussianBlur.j3md");
         verticalalBlur = new Pass() {
 
+            @Override
             public void beforeRender() {
                 vBlurMat.setTexture("m_Texture", horizontalBlur.getRenderedTexture());
                 vBlurMat.setFloat("m_Size", screenHeight);
@@ -130,6 +158,24 @@ public class BloomFilter extends Filter {
 
     @Override
     public void preRender(RenderManager renderManager, ViewPort viewPort) {
+         if(glowMode!=GLOW_MODE_ONLY_EXTRACTED_LIGHTS){
+            backupColor=viewPort.getBackgroundColor();
+            viewPort.setBackgroundColor(ColorRGBA.Black);
+            renderManager.getRenderer().setFrameBuffer(preGlowPass.getRenderFrameBuffer());
+            renderManager.getRenderer().clearBuffers(true, true, true);
+            renderManager.setForcedTechnique("Glow");
+            try{
+                renderManager.renderViewPortQueues(viewPort, false);
+            }
+            catch(IllegalArgumentException iae){
+                System.err.println("You need to add the Glow technique to your custom material");
+                iae.printStackTrace();
+            }
+            viewPort.setBackgroundColor(backupColor);
+            renderManager.setForcedTechnique(null);
+            renderManager.getRenderer().setFrameBuffer(viewPort.getOutputFrameBuffer());
+         
+        }
     }
 
     public float getBloomIntensity() {

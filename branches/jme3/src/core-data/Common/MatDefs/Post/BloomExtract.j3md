@@ -2,8 +2,10 @@ MaterialDef Bloom {
 
     MaterialParameters {
         Texture2D m_Texture
-        Float m_ExposurePow;
-        Float m_ExposureCutoff;
+        Float m_ExposurePow
+        Float m_ExposureCutoff
+        Boolean m_Extract
+        Texture2D m_GlowMap
     }
 
     Technique {
@@ -12,6 +14,11 @@ MaterialDef Bloom {
 
         WorldParameters {
             WorldViewProjectionMatrix
+        }
+
+        Defines {
+            HAS_GLOWMAP : m_GlowMap
+            DO_EXTRACT : m_Extract
         }
     }
 

@@ -34,6 +34,7 @@ package com.jme3.renderer;
 
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
+import com.jme3.material.Technique;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Matrix4f;
 import com.jme3.math.Quaternion;
@@ -80,6 +81,7 @@ public class RenderManager {
     private ArrayList<ViewPort> postViewPorts = new ArrayList<ViewPort>();
     private Camera prevCam = null;
     private Material forcedMaterial = null;
+    private String forcedTechnique = null;
     private RenderState forcedRenderState = null;
     private final boolean shader;
 
@@ -94,6 +96,8 @@ public class RenderManager {
                      camLeft = new Vector3f(),
                      camDir = new Vector3f(),
                      camLoc = new Vector3f();
+    //temp technique
+    private String tmpTech;
 
     /**
      * Create a high-level rendering interface over the
@@ -358,7 +362,21 @@ public class RenderManager {
             setWorldMatrix(g.getWorldMatrix());
         }
 
-        if (forcedMaterial != null){
+        //if forcedTechnique we try to force it for render,
+        //if it does not exists in the mat def, we check for forcedMaterial and render the geom if not null
+        //else the geom is not rendered
+        if(forcedTechnique!=null){
+             if(g.getMaterial().getMaterialDef().getTechniqueDef(forcedTechnique)!=null){
+                tmpTech=g.getMaterial().getActiveTechnique()!=null?g.getMaterial().getActiveTechnique().getDef().getName():"Default";
+                g.getMaterial().selectTechnique(forcedTechnique);
+                // use geometry's material
+                g.getMaterial().render(g, this);
+                g.getMaterial().selectTechnique(tmpTech);
+             }else if (forcedMaterial != null){
+                 // use forced material
+                 forcedMaterial.render(g, this);
+             }
+        }else if (forcedMaterial != null){
             // use forced material
             forcedMaterial.render(g, this);
         }else{
@@ -367,11 +385,10 @@ public class RenderManager {
                 // use geometry's material
                 g.getMaterial().render(g, this);
                 g.getMaterial().setAdditionalState(null);
-            }else{
+            }else{               
                 // use geometry's material
                 g.getMaterial().render(g, this);
             }
-            
         }
     }
 
@@ -674,6 +691,14 @@ public class RenderManager {
      //Remy - 09/14/2010 - added a setter for the timer in order to correctly populate g_Time and g_Tpf in the shaders
     public void setTimer(Timer timer) {
         this.timer = timer;
+    }
+
+    public String getForcedTechnique() {
+        return forcedTechnique;
+    }
+
+    public void setForcedTechnique(String forcedTechnique) {
+        this.forcedTechnique = forcedTechnique;
     }
 
      

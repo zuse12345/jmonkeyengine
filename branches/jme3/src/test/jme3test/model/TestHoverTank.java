@@ -38,9 +38,12 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
+import com.jme3.post.FilterPostProcessor;
+import com.jme3.post.filters.BloomFilter;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.control.LodControl;
+import jme3test.post.BloomUI;
 
 /**
  *
@@ -65,6 +68,7 @@ public class TestHoverTank extends SimpleApplication{
         
 
         Geometry tankGeom = (Geometry) tank.getChild(0);
+    //    tankGeom.getMaterial().selectTechnique("Glow");
         LodControl control = new LodControl(tankGeom);
         tankGeom.addControl(control);
         rootNode.attachChild(tank);
@@ -94,6 +98,14 @@ public class TestHoverTank extends SimpleApplication{
         rootNode.addLight(dl);
         rootNode.addLight(dl2);
         rootNode.attachChild(tank);
+
+        FilterPostProcessor fpp=new FilterPostProcessor(assetManager);
+        BloomFilter bf=new BloomFilter(viewPort.getCamera().getWidth(), viewPort.getCamera().getHeight(), BloomFilter.GLOW_MODE_ONLY_GLOW_OBJECTS);
+        bf.setBloomIntensity(2.0f);
+        bf.setExposurePower(1.3f);
+        fpp.addFilter(bf);
+        BloomUI bui=new BloomUI(inputManager, bf);
+        viewPort.addProcessor(fpp);
     }
 
 }

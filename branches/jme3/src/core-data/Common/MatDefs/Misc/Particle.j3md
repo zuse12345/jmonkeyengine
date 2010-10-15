@@ -4,6 +4,11 @@ MaterialDef Point Sprite {
         Texture2D m_Texture
         Float m_Quadratic
         Boolean m_PointSprite
+
+        // Texture of the glowing parts of the material
+        Texture2D m_GlowMap
+        // The glow color of the object
+        Color m_GlowColor
     }
 
     Technique {
@@ -38,4 +43,20 @@ MaterialDef Point Sprite {
         }
     }
 
+   Technique Glow {
+
+        LightMode SinglePass
+
+        VertexShader GLSL100:   Common/MatDefs/Misc/SimpleTextured.vert
+        FragmentShader GLSL100: Common/MatDefs/Light/Glow.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+        }
+
+        Defines {
+            HAS_GLOWMAP : m_GlowMap
+            HAS_GLOWCOLOR : m_GlowColor
+        }
+    }
 }

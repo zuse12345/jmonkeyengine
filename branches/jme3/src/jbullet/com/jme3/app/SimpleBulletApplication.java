@@ -50,6 +50,7 @@ public abstract class SimpleBulletApplication extends SimpleApplication implemen
         bulletAppState.startPhysics();
         super.initialize();
         stateManager.attach(bulletAppState);
+        getPhysicsSpace().addTickListener(this);
     }
 
     public void simplePhysicsUpdate(float tpf){

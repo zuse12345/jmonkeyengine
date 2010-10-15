@@ -262,21 +262,22 @@ public abstract class Connection implements Runnable {
 
         // Find the correct client.
 
-        for (Client localClient : connections) {
-            if (localClient.getTCPConnection() == client.getTCPConnection()) {
-                client = localClient;
+        Client localClient = null;
+        for (Client locClient : connections) {
+            if (locClient.getTCPConnection() == client.getTCPConnection()) {
+                localClient = locClient;
                 break;
             }
         }
 
-        SocketChannel chan = client.getSocketChannel();
+        SocketChannel chan = localClient.getSocketChannel();
         if (chan != null) {
             SelectionKey key = chan.keyFor(selector);
             if (key != null) key.cancel();
             chan.close();
         }
         
-        connections.remove(client);
+        connections.remove(localClient);
         fireClientDisconnected(client);
     }
 

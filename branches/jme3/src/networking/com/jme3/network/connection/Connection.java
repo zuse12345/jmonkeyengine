@@ -367,6 +367,8 @@ public abstract class Connection implements Runnable {
             listener.objectReceived(data);
         }
 
+        if (data == null) return;
+
         List<MessageListener> list = individualMessageListeners.get(data.getClass());
         if (list == null) return;
 

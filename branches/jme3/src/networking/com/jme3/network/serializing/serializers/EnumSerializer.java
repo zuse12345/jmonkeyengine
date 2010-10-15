@@ -43,11 +43,22 @@ import java.nio.ByteBuffer;
  */
 public class EnumSerializer extends Serializer {
     public <T> T readObject(ByteBuffer data, Class<T> c) throws IOException {
-        T[] enumConstants = c.getEnumConstants();
-        return enumConstants[data.getInt()];
+        try {
+            int ordinal = data.getInt();
+
+            if (ordinal == -1) return null;
+            T[] enumConstants = c.getEnumConstants();
+            return enumConstants[ordinal];
+        } catch (IndexOutOfBoundsException ex) {
+            return null;
+        }
     }
 
     public void writeObject(ByteBuffer buffer, Object object) throws IOException {
-        buffer.putInt(((Enum)object).ordinal());
+        if (object == null) {
+            buffer.putInt(-1);
+        } else {
+            buffer.putInt(((Enum)object).ordinal());
+        }
     }
 }

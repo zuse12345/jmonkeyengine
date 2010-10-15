@@ -348,6 +348,22 @@ public class Server extends ServiceManager implements MessageListener {
     }
 
     /**
+     * Start this server with given sleep time. Higher sleep times may affect the system's response time
+     *  negatively, whereas lower values may increase CPU load. Use only when you're certain.
+     *
+     * @param sleep The sleep time.
+     * @throws IOException When an error occurs.
+     */
+    public void start(int sleep) throws IOException {
+        if (!isBound) {
+            tcp.bind(lastTCPAddress);
+            udp.bind(lastUDPAddress);
+        }
+        new Thread(thread = new ConnectionRunnable(tcp, udp, sleep)).start();
+        log.log(Level.INFO, "[{0}][???] Started server.", label);
+    }
+
+    /**
      * Stop this server. Note that it kicks all clients so that they can
      *  gracefully quit.
      *

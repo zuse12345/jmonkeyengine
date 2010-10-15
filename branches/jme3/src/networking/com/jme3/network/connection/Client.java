@@ -445,6 +445,16 @@ public class Client extends ServiceManager implements MessageListener, Connectio
     {
         new Thread(thread = new ConnectionRunnable(tcp, udp)).start();
     }
+
+    /**
+     * Start this client with given sleep time. Higher sleep times may affect the system's response time
+     *  negatively, whereas lower values may increase CPU load. Use only when you're certain.
+     *
+     * @param sleep The sleep time.
+     */
+    public void start(int sleep) {
+        new Thread(thread = new ConnectionRunnable(tcp, udp, sleep)).start();
+    }
     
     public int getClientID() {
         return clientID;

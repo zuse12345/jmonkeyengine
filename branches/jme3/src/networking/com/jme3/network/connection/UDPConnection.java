@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
@@ -163,6 +164,7 @@ public class UDPConnection extends Connection {
                 log.log(Level.FINE, "[{0}][UDP] Wrote {1} bytes to {2}.", new Object[]{label, bytes, dest});
                 writeBuffer.clear();
             }
+        } catch (ClosedChannelException e) {
         } catch (IOException e) {
             e.printStackTrace();
         }

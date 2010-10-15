@@ -206,12 +206,12 @@ public class BulletAppState implements AppState, PhysicsTickListener {
     }
 
     public enum ThreadingType {
-        /* Default mode; user update, physics update and rendering happen sequentially (single threaded) */
+        /** Default mode; user update, physics update and rendering happen sequentially (single threaded) */
 
         SEQUENTIAL,
-        /* Parallel threaded mode; only physics update and rendering are executed in parallel, update order is kept.*/
+        /** Parallel threaded mode; only physics update and rendering are executed in parallel, update order is kept.*/
         PARALLEL,
-        /* Detached threaded mode; physics executes independently on other thread, only location and rotation is transferred thread safe,
+        /** Detached threaded mode; physics executes independently on other thread, only location and rotation is transferred thread safe,
         <b>all</b> other physics operations including adding and removing of objects to the physics space
         have to be done from the physics thread. (Creation of objects is safe on any thread except for vehicle)*/
         DETACHED

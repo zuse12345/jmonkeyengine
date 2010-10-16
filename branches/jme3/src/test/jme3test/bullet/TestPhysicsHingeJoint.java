@@ -55,20 +55,20 @@ public class TestPhysicsHingeJoint extends SimpleApplication implements AnalogLi
     }
 
     private void setupKeys() {
-        inputManager.addMapping("Lefts", new KeyTrigger(KeyInput.KEY_H));
-        inputManager.addMapping("Lefts", new KeyTrigger(KeyInput.KEY_K));
-        inputManager.addMapping("Lefts", new KeyTrigger(KeyInput.KEY_SPACE));
-        inputManager.addListener(this, "Lefts", "Rights", "Space");
+        inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_H));
+        inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_K));
+        inputManager.addMapping("Swing", new KeyTrigger(KeyInput.KEY_SPACE));
+        inputManager.addListener(this, "Left", "Right", "Swing");
     }
 
     public void onAnalog(String binding, float value, float tpf) {
-        if(binding.equals("Lefts")){
+        if(binding.equals("Left")){
             joint.enableMotor(true, 1, .1f);
         }
-        else if(binding.equals("Rights")){
+        else if(binding.equals("Right")){
             joint.enableMotor(true, -1, .1f);
         }
-        else if(binding.equals("Space")){
+        else if(binding.equals("Swing")){
             joint.enableMotor(false, 0, 0);
         }
     }

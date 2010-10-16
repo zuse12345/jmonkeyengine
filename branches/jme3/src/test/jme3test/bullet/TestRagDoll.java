@@ -11,6 +11,8 @@ import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.joints.PhysicsConeJoint;
 import com.jme3.bullet.joints.PhysicsJoint;
 import com.jme3.bullet.nodes.PhysicsNode;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 
@@ -18,10 +20,12 @@ import com.jme3.scene.Node;
  *
  * @author normenhansen
  */
-public class TestRagDoll extends SimpleApplication {
+public class TestRagDoll extends SimpleApplication implements ActionListener {
 
+    private BulletAppState bulletAppState = new BulletAppState();
     private Node ragDoll = new Node();
-    BulletAppState bulletAppState = new BulletAppState();
+    private PhysicsNode shoulders;
+    private Vector3f upforce = new Vector3f(0, 200, 0);
 
     public static void main(String[] args) {
         TestRagDoll app = new TestRagDoll();
@@ -32,13 +36,23 @@ public class TestRagDoll extends SimpleApplication {
     public void simpleInitApp() {
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);
-
+        inputManager.addMapping("MouseButtonLeft", new MouseButtonTrigger(0));
+        inputManager.addListener(this, "MouseButtonLeft");
         setupFloor();
         createRagDoll();
     }
 
+    private void setupFloor() {
+        PhysicsNode node = new PhysicsNode(new BoxCollisionShape(new Vector3f(100, 1, 100)), 0);
+        node.setName("floor");
+        node.setLocalTranslation(new Vector3f(0f, -6, 0f));
+        node.attachDebugShape(assetManager);
+        rootNode.attachChild(node);
+        bulletAppState.getPhysicsSpace().add(node);
+    }
+
     private void createRagDoll() {
-        PhysicsNode shoulders = createLimb(0.2f, 1f, new Vector3f(0, 1.5f, 0), true);
+        shoulders = createLimb(0.2f, 1f, new Vector3f(0, 1.5f, 0), true);
         PhysicsNode uArmL = createLimb(0.2f, 0.5f, new Vector3f(-0.75f, 0.8f, 0), false);
         PhysicsNode uArmR = createLimb(0.2f, 0.5f, new Vector3f(0.75f, 0.8f, 0), false);
         PhysicsNode lArmL = createLimb(0.2f, 0.5f, new Vector3f(-0.75f, -0.2f, 0), false);
@@ -53,7 +67,7 @@ public class TestRagDoll extends SimpleApplication {
         join(body, shoulders, new Vector3f(0f, 1.4f, 0));
         join(body, hips, new Vector3f(0f, -0.5f, 0));
 
-        join(uArmL, shoulders , new Vector3f(-0.75f, 1.4f, 0));
+        join(uArmL, shoulders, new Vector3f(-0.75f, 1.4f, 0));
         join(uArmR, shoulders, new Vector3f(0.75f, 1.4f, 0));
         join(uArmL, lArmL, new Vector3f(-0.75f, .4f, 0));
         join(uArmR, lArmR, new Vector3f(0.75f, .4f, 0));
@@ -78,19 +92,10 @@ public class TestRagDoll extends SimpleApplication {
         bulletAppState.getPhysicsSpace().addAll(ragDoll);
     }
 
-    private void setupFloor() {
-        PhysicsNode node = new PhysicsNode(new BoxCollisionShape(new Vector3f(100, 1, 100)), 0);
-        node.setName("floor");
-        node.setLocalTranslation(new Vector3f(0f, -6, 0f));
-        node.attachDebugShape(assetManager);
-        rootNode.attachChild(node);
-        bulletAppState.getPhysicsSpace().add(node);
-    }
-
     private PhysicsNode createLimb(float width, float height, Vector3f location, boolean rotate) {
-        int axis=1;
-        if(rotate){
-            axis=0;
+        int axis = 1;
+        if (rotate) {
+            axis = 0;
         }
         CapsuleCollisionShape shape = new CapsuleCollisionShape(width, height, axis);
         PhysicsNode node = new PhysicsNode(shape);
@@ -105,5 +110,15 @@ public class TestRagDoll extends SimpleApplication {
         PhysicsConeJoint joint = new PhysicsConeJoint(A, B, pivotA, pivotB);
         joint.setLimit(1f, 1f, 0);
         return joint;
+    }
+
+    public void onAction(String string, boolean bln, float tpf) {
+        if ("MouseButtonLeft".equals(string)) {
+            if (bln) {
+                shoulders.applyContinuousForce(true, upforce);
+            } else {
+                shoulders.applyContinuousForce(false, upforce);
+            }
+        }
     }
 }

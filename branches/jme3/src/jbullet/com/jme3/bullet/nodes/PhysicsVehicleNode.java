@@ -515,6 +515,10 @@ public class PhysicsVehicleNode extends PhysicsNode {
             dirGeom.setLocalTranslation(location);
             axleGeom.setLocalTranslation(location.add(direction));
             wheelGeom.setLocalTranslation(location.add(direction));
+            locGeom.setMaterial(debugMaterialGreen);
+            dirGeom.setMaterial(debugMaterialGreen);
+            axleGeom.setMaterial(debugMaterialGreen);
+            wheelGeom.setMaterial(debugMaterialGreen);
             node.attachChild(locGeom);
             node.attachChild(dirGeom);
             node.attachChild(axleGeom);

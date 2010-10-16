@@ -57,7 +57,10 @@ import java.util.logging.Logger;
 public abstract class PhysicsCollisionObject extends Node {
 
     protected Spatial debugShape;
-    protected Material debugMaterial;
+    protected Material debugMaterialBlue;
+    protected Material debugMaterialRed;
+    protected Material debugMaterialGreen;
+    protected Material debugMaterialYellow;
     protected CollisionShape collisionShape;
     public static final int COLLISION_GROUP_NONE = 0x00000000;
     public static final int COLLISION_GROUP_01 = 0x00000001;
@@ -201,27 +204,53 @@ public abstract class PhysicsCollisionObject extends Node {
     }
 
     /**
-     * Attaches a visual debug shape of the current collision shape to this physics object
+     * Attaches a visual debug shape of the current collision shape to this physics object<br/>
+     * <b>Does not work with detached physics, please switch to PARALLEL or SEQUENTIAL for debugging</b>
      * @param manager AssetManager to load the default wireframe material for the debug shape
      */
     public void attachDebugShape(AssetManager manager) {
-        Material mat = new Material(manager, "Common/MatDefs/Misc/WireColor.j3md");
-        mat.setColor("m_Color", ColorRGBA.Blue);
-        attachDebugShape(mat);
+        debugMaterialBlue = new Material(manager, "Common/MatDefs/Misc/WireColor.j3md");
+        debugMaterialBlue.setColor("m_Color", ColorRGBA.Blue);
+        debugMaterialGreen = new Material(manager, "Common/MatDefs/Misc/WireColor.j3md");
+        debugMaterialGreen.setColor("m_Color", ColorRGBA.Green);
+        debugMaterialRed = new Material(manager, "Common/MatDefs/Misc/WireColor.j3md");
+        debugMaterialRed.setColor("m_Color", ColorRGBA.Red);
+        debugMaterialYellow = new Material(manager, "Common/MatDefs/Misc/WireColor.j3md");
+        debugMaterialYellow.setColor("m_Color", ColorRGBA.Yellow);
+        attachDebugShape();
     }
 
+    @Deprecated
+    public void attachDebugShape(Material material) {
+        debugMaterialBlue = material;
+        debugMaterialGreen = material;
+        debugMaterialRed = material;
+        debugMaterialYellow = material;
+        attachDebugShape();
+    }
     /**
      * Attaches a visual debug shape of the current collision shape to this physics object<br/>
      * <b>Does not work with detached physics, please switch to PARALLEL or SEQUENTIAL for debugging</b>
      * @param material Material to use for the debug shape
      */
-    public Spatial attachDebugShape(Material material) {
-        debugMaterial = material;
+    private void attachDebugShape() {
         if (debugShape != null) {
             detachDebugShape();
         }
-
         Spatial spatial = getDebugShape();
+        this.attachChild(spatial);
+        this.debugShape = spatial;
+    }
+
+    protected void updateDebugShape() {
+        if (debugShape != null) {
+            detachDebugShape();
+            attachDebugShape();
+        }
+    }
+
+    protected Spatial getDebugShape() {
+        Spatial spatial=CollisionShapeFactory.getDebugShape(collisionShape);
         if (spatial == null) {
             return null;
         }
@@ -230,28 +259,14 @@ public abstract class PhysicsCollisionObject extends Node {
             for (Iterator<Spatial> it1 = children.iterator(); it1.hasNext();) {
                 Spatial spatial1 = it1.next();
                 Geometry geom = ((Geometry) spatial1);
-                geom.setMaterial(material);
+                geom.setMaterial(debugMaterialBlue);
             }
         } else {
             Geometry geom = ((Geometry) spatial);
-            geom.setMaterial(material);
+            geom.setMaterial(debugMaterialBlue);
 
         }
-        this.attachChild(spatial);
-        this.debugShape = spatial;
         return spatial;
-    }
-
-    protected void updateDebugShape() {
-        if (debugShape != null) {
-            detachDebugShape();
-            attachDebugShape(debugMaterial);
-        }
-
-    }
-
-    protected Spatial getDebugShape() {
-        return CollisionShapeFactory.getDebugShape(collisionShape);
     }
 
     /**

@@ -753,7 +753,9 @@ public class PhysicsNode extends PhysicsCollisionObject {
                 pivot=physicsJoint.getPivotB();
             }
             Arrow arrow=new Arrow(pivot);
-            node.attachChild(new Geometry("DebugBone",arrow));
+            Geometry geom=new Geometry("DebugBone",arrow);
+            geom.setMaterial(debugMaterialGreen);
+            node.attachChild(geom);
         }
         return node;
     }

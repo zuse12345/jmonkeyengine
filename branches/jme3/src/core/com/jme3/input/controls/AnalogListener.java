@@ -39,6 +39,5 @@ package com.jme3.input.controls;
  * @author Kirill Vainer
  */
 public interface AnalogListener extends InputListener {
-
-    public void onAnalog(String name, float value, float tpf);
+    public void onAnalog(String name, float isPressed, float tpf);
 }

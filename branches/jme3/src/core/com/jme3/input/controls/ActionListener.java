@@ -45,5 +45,5 @@ package com.jme3.input.controls;
  * @author Kirill Vainer
  */
 public interface ActionListener extends InputListener {
-    public void onAction(String name, boolean value, float tpf);
+    public void onAction(String name, boolean isPressed, float tpf);
 }

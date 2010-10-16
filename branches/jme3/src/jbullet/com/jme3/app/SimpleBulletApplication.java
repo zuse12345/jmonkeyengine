@@ -31,6 +31,7 @@
  */
 package com.jme3.app;
 
+import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.PhysicsTickListener;
 

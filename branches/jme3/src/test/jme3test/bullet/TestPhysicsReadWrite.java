@@ -33,7 +33,7 @@
 package jme3test.bullet;
 
 
-import com.jme3.app.BulletAppState;
+import com.jme3.bullet.BulletAppState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.PhysicsSpace;
 

@@ -188,6 +188,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
             detachDebugShape();
         }
         this.attachChild(wheel);
+        updateDebugShape();
         return wheel;
     }
 
@@ -198,6 +199,7 @@ public class PhysicsVehicleNode extends PhysicsNode {
     public void removeWheel(int wheel){
         wheels.remove(wheel);
         rebuildRigidBody();
+        updateDebugShape();
     }
 
     /**

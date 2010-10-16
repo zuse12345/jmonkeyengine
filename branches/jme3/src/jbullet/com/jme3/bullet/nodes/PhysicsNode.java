@@ -49,9 +49,12 @@ import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
 import com.jme3.math.Matrix3f;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
+import com.jme3.scene.debug.Arrow;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -183,8 +186,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
             updateWorldTransforms();
             motionState.setWorldTransform(getWorldTranslation(), getWorldRotation());
             refreshFlags &= ~RF_PHYSICS;
-        }
-        else if((refreshFlags & RF_PHYSICS) != 0) {
+        } else if ((refreshFlags & RF_PHYSICS) != 0) {
             motionState.setWorldTransform(getWorldTranslation(), getWorldRotation());
             refreshFlags &= ~RF_PHYSICS;
         } else if (motionState.applyTransform(this)) {
@@ -698,6 +700,7 @@ public class PhysicsNode extends PhysicsCollisionObject {
         if (!joints.contains(joint)) {
             joints.add(joint);
         }
+        updateDebugShape();
     }
 
     /**
@@ -728,6 +731,31 @@ public class PhysicsNode extends PhysicsCollisionObject {
      */
     public void destroy() {
         rBody.destroy();
+    }
+
+    @Override
+    protected Spatial getDebugShape() {
+        //add joints
+        Spatial shape = super.getDebugShape();
+        Node node = null;
+        if (shape instanceof Node) {
+            node = (Node) shape;
+        } else {
+            node = new Node("DebugShapeNode");
+            node.attachChild(shape);
+        }
+        for (Iterator<PhysicsJoint> it = joints.iterator(); it.hasNext();) {
+            PhysicsJoint physicsJoint = it.next();
+            Vector3f pivot=null;
+            if(physicsJoint.getNodeA()==this){
+                pivot=physicsJoint.getPivotA();
+            }else{
+                pivot=physicsJoint.getPivotB();
+            }
+            Arrow arrow=new Arrow(pivot);
+            node.attachChild(new Geometry("DebugBone",arrow));
+        }
+        return node;
     }
 
     @Override

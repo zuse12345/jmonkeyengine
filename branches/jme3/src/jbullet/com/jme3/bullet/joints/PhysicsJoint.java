@@ -97,6 +97,22 @@ public abstract class PhysicsJoint implements Savable {
         this.collisionBetweenLinkedBodys = collisionBetweenLinkedBodys;
     }
 
+    public PhysicsNode getNodeA() {
+        return nodeA;
+    }
+
+    public PhysicsNode getNodeB() {
+        return nodeB;
+    }
+
+    public Vector3f getPivotA() {
+        return pivotA;
+    }
+
+    public Vector3f getPivotB() {
+        return pivotB;
+    }
+
     /**
      * destroys this joint and removes it from its connected PhysicsNodes joint lists
      */
@@ -121,11 +137,4 @@ public abstract class PhysicsJoint implements Savable {
         this.pivotB = (Vector3f) capsule.readSavable("pivotB", new Vector3f());
     }
 
-    public PhysicsNode getNodeA() {
-        return nodeA;
-    }
-
-    public PhysicsNode getNodeB() {
-        return nodeB;
-    }
 }

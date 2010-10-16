@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 public abstract class PhysicsCollisionObject extends Node {
 
     protected Spatial debugShape;
+    protected Material debugMaterial;
     protected CollisionShape collisionShape;
     public static final int COLLISION_GROUP_NONE = 0x00000000;
     public static final int COLLISION_GROUP_01 = 0x00000001;
@@ -95,9 +96,7 @@ public abstract class PhysicsCollisionObject extends Node {
      */
     public void setCollisionShape(CollisionShape collisionShape) {
         this.collisionShape = collisionShape;
-        if (debugShape != null) {
-            detachDebugShape();
-        }
+        updateDebugShape();
     }
 
     /**
@@ -212,10 +211,12 @@ public abstract class PhysicsCollisionObject extends Node {
     }
 
     /**
-     * Attaches a visual debug shape of the current collision shape to this physics object
+     * Attaches a visual debug shape of the current collision shape to this physics object<br/>
+     * <b>Does not work with detached physics, please switch to PARALLEL or SEQUENTIAL for debugging</b>
      * @param material Material to use for the debug shape
      */
     public Spatial attachDebugShape(Material material) {
+        debugMaterial = material;
         if (debugShape != null) {
             detachDebugShape();
         }
@@ -241,7 +242,15 @@ public abstract class PhysicsCollisionObject extends Node {
         return spatial;
     }
 
-    protected Spatial getDebugShape(){
+    protected void updateDebugShape() {
+        if (debugShape != null) {
+            detachDebugShape();
+            attachDebugShape(debugMaterial);
+        }
+
+    }
+
+    protected Spatial getDebugShape() {
         return CollisionShapeFactory.getDebugShape(collisionShape);
     }
 
@@ -249,8 +258,9 @@ public abstract class PhysicsCollisionObject extends Node {
      * Detaches the debug shape
      */
     public void detachDebugShape() {
-		if (debugShape != null)
-			this.detachChild(debugShape);
+        if (debugShape != null) {
+            this.detachChild(debugShape);
+        }
         debugShape = null;
     }
 

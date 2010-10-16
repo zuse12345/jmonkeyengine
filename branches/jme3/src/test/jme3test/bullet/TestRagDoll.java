@@ -37,8 +37,8 @@ public class TestRagDoll extends SimpleApplication implements ActionListener {
     public void simpleInitApp() {
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);
-        inputManager.addMapping("MouseButtonLeft", new MouseButtonTrigger(0));
-        inputManager.addListener(this, "MouseButtonLeft");
+        inputManager.addMapping("Pull ragdoll up", new MouseButtonTrigger(0));
+        inputManager.addListener(this, "Pull ragdoll up");
         setupFloor();
         createRagDoll();
     }
@@ -53,18 +53,18 @@ public class TestRagDoll extends SimpleApplication implements ActionListener {
     }
 
     private void createRagDoll() {
-        shoulders = createLimb(0.2f, 1f, new Vector3f(0, 1.5f, 0), true);
-        PhysicsNode uArmL = createLimb(0.2f, 0.5f, new Vector3f(-0.75f, 0.8f, 0), false);
-        PhysicsNode uArmR = createLimb(0.2f, 0.5f, new Vector3f(0.75f, 0.8f, 0), false);
-        PhysicsNode lArmL = createLimb(0.2f, 0.5f, new Vector3f(-0.75f, -0.2f, 0), false);
-        PhysicsNode lArmR = createLimb(0.2f, 0.5f, new Vector3f(0.75f, -0.2f, 0), false);
-        PhysicsNode body = createLimb(0.2f, 1f, new Vector3f(0, 0.5f, 0), false);
-        PhysicsNode hips = createLimb(0.2f, 0.5f, new Vector3f(0, -0.5f, 0), true);
-        PhysicsNode uLegL = createLimb(0.2f, 0.5f, new Vector3f(-0.25f, -1.2f, 0), false);
-        PhysicsNode uLegR = createLimb(0.2f, 0.5f, new Vector3f(0.25f, -1.2f, 0), false);
-        PhysicsNode lLegL = createLimb(0.2f, 0.5f, new Vector3f(-0.25f, -2.2f, 0), false);
-        PhysicsNode lLegR = createLimb(0.2f, 0.5f, new Vector3f(0.25f, -2.2f, 0), false);
-
+                    shoulders = createLimb(0.2f, 1.0f, new Vector3f( 0.00f, 1.5f, 0), true);
+        PhysicsNode uArmL     = createLimb(0.2f, 0.5f, new Vector3f(-0.75f, 0.8f, 0), false);
+        PhysicsNode uArmR     = createLimb(0.2f, 0.5f, new Vector3f( 0.75f, 0.8f, 0), false);
+        PhysicsNode lArmL     = createLimb(0.2f, 0.5f, new Vector3f(-0.75f,-0.2f, 0), false);
+        PhysicsNode lArmR     = createLimb(0.2f, 0.5f, new Vector3f( 0.75f,-0.2f, 0), false);
+        PhysicsNode body      = createLimb(0.2f, 1.0f, new Vector3f( 0.00f, 0.5f, 0), false);
+        PhysicsNode hips      = createLimb(0.2f, 0.5f, new Vector3f( 0.00f,-0.5f, 0), true);
+        PhysicsNode uLegL     = createLimb(0.2f, 0.5f, new Vector3f(-0.25f,-1.2f, 0), false);
+        PhysicsNode uLegR     = createLimb(0.2f, 0.5f, new Vector3f( 0.25f,-1.2f, 0), false);
+        PhysicsNode lLegL     = createLimb(0.2f, 0.5f, new Vector3f(-0.25f,-2.2f, 0), false);
+        PhysicsNode lLegR     = createLimb(0.2f, 0.5f, new Vector3f( 0.25f,-2.2f, 0), false);
+        
         join(body, shoulders, new Vector3f(0f, 1.4f, 0));
         join(body, hips, new Vector3f(0f, -0.5f, 0));
 
@@ -89,15 +89,13 @@ public class TestRagDoll extends SimpleApplication implements ActionListener {
         ragDoll.attachChild(uLegR);
         ragDoll.attachChild(lLegL);
         ragDoll.attachChild(lLegR);
+        
         rootNode.attachChild(ragDoll);
         bulletAppState.getPhysicsSpace().addAll(ragDoll);
     }
 
     private PhysicsNode createLimb(float width, float height, Vector3f location, boolean rotate) {
-        int axis = PhysicsSpace.AXIS_Y;
-        if (rotate) {
-            axis = PhysicsSpace.AXIS_X;
-        }
+        int axis = rotate ? PhysicsSpace.AXIS_X : PhysicsSpace.AXIS_Y;
         CapsuleCollisionShape shape = new CapsuleCollisionShape(width, height, axis);
         PhysicsNode node = new PhysicsNode(shape);
         node.attachDebugShape(assetManager);
@@ -105,9 +103,9 @@ public class TestRagDoll extends SimpleApplication implements ActionListener {
         return node;
     }
 
-    private PhysicsJoint join(PhysicsNode A, PhysicsNode B, Vector3f connectonPoint) {
-        Vector3f pivotA = A.worldToLocal(connectonPoint, new Vector3f());
-        Vector3f pivotB = B.worldToLocal(connectonPoint, new Vector3f());
+    private PhysicsJoint join(PhysicsNode A, PhysicsNode B, Vector3f connectionPoint) {
+        Vector3f pivotA = A.worldToLocal(connectionPoint, new Vector3f());
+        Vector3f pivotB = B.worldToLocal(connectionPoint, new Vector3f());
         PhysicsConeJoint joint = new PhysicsConeJoint(A, B, pivotA, pivotB);
         joint.setLimit(1f, 1f, 0);
         return joint;

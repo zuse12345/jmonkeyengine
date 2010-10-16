@@ -6,6 +6,7 @@ package jme3test.bullet;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
+import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.joints.PhysicsConeJoint;
@@ -93,9 +94,9 @@ public class TestRagDoll extends SimpleApplication implements ActionListener {
     }
 
     private PhysicsNode createLimb(float width, float height, Vector3f location, boolean rotate) {
-        int axis = 1;
+        int axis = PhysicsSpace.AXIS_Y;
         if (rotate) {
-            axis = 0;
+            axis = PhysicsSpace.AXIS_X;
         }
         CapsuleCollisionShape shape = new CapsuleCollisionShape(width, height, axis);
         PhysicsNode node = new PhysicsNode(shape);

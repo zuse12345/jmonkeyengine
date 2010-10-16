@@ -220,7 +220,6 @@ public abstract class PhysicsCollisionObject extends Node {
         attachDebugShape();
     }
 
-    @Deprecated
     public void attachDebugShape(Material material) {
         debugMaterialBlue = material;
         debugMaterialGreen = material;
@@ -233,7 +232,7 @@ public abstract class PhysicsCollisionObject extends Node {
      * <b>Does not work with detached physics, please switch to PARALLEL or SEQUENTIAL for debugging</b>
      * @param material Material to use for the debug shape
      */
-    private void attachDebugShape() {
+    protected void attachDebugShape() {
         if (debugShape != null) {
             detachDebugShape();
         }

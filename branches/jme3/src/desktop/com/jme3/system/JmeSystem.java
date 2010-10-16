@@ -129,9 +129,10 @@ public class JmeSystem {
         if (SwingUtilities.isEventDispatchThread())
             throw new IllegalStateException("Cannot run from EDT");
 
-        final URL iconUrl = JmeSystem.class.getResource("/com/jme3/app/Monkey.png");
+        
         final AppSettings settings = new AppSettings(false);
         settings.copyFrom(sourceSettings);
+        final URL iconUrl = JmeSystem.class.getResource(sourceSettings.getSettingsDialogImage());
 
         final AtomicBoolean done = new AtomicBoolean();
         final AtomicInteger result = new AtomicInteger();

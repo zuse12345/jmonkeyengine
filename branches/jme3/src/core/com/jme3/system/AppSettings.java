@@ -51,6 +51,8 @@ public class AppSettings extends HashMap<String, Object> {
     public static final String LWJGL_OPENAL  = "LWJGL",
                                JOAL          = "JOAL";
 
+    private String settingsDialogImage="/com/jme3/app/Monkey.png";
+
     static {
         defaults.put("Width", 640);
         defaults.put("Height", 480);
@@ -64,8 +66,7 @@ public class AppSettings extends HashMap<String, Object> {
         defaults.put("Renderer", LWJGL_OPENGL2);
         defaults.put("AudioRenderer", LWJGL_OPENAL);
         defaults.put("DisableJoysticks", true);
-        defaults.put("UseInput", true);
-
+        defaults.put("UseInput", true);        
         defaults.put("VSync", false);
         defaults.put("FrameRate", -1);
 
@@ -276,4 +277,13 @@ public class AppSettings extends HashMap<String, Object> {
     public String getAudioRenderer() {
         return getString("AudioRenderer");
     }
+
+    public void setSettingsDialogImage(String path){
+       settingsDialogImage=path;
+    }
+
+    public String getSettingsDialogImage() {
+        return settingsDialogImage;
+    }
+    
 }

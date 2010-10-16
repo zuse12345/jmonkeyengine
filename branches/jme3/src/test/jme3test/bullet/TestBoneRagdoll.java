@@ -56,12 +56,12 @@ import com.jme3.texture.Texture;
  * PHYSICS RAGDOLLS ARE NOT WORKING PROPERLY YET!
  * @author normenhansen
  */
-public class TestPhysicsRagdoll  extends SimpleApplication {
+public class TestBoneRagdoll  extends SimpleApplication {
 
     private BulletAppState bulletAppState;
 
     public static void main(String[] args){
-        TestPhysicsRagdoll app = new TestPhysicsRagdoll();
+        TestBoneRagdoll app = new TestBoneRagdoll();
         app.start();
     }
 

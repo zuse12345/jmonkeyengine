@@ -32,8 +32,9 @@
 
 package jme3test.helloworld;
 
-import com.jme3.app.SimpleBulletApplication;
+import com.jme3.app.SimpleApplication;
 import com.jme3.asset.plugins.ZipLocator;
+import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
 import com.jme3.bullet.nodes.PhysicsCharacterNode;
@@ -53,11 +54,11 @@ import com.jme3.scene.Spatial;
  * This version uses Physics and a custom Action Listener.
  * @author normen, with edits by Zathras
  */
-public class HelloCollision
-  extends SimpleBulletApplication
+public class HelloCollision extends SimpleApplication
   implements ActionListener {
 
   private Spatial sceneModel;
+  private BulletAppState bulletAppState;
   private PhysicsNode landscape;
   private PhysicsCharacterNode player;
   private Vector3f walkDirection = new Vector3f();
@@ -68,7 +69,11 @@ public class HelloCollision
     app.start();
   }
 
-  public void simpleInitApp() {    
+  public void simpleInitApp() {
+    /** Set up Physics */
+    bulletAppState = new BulletAppState();
+    stateManager.attach(bulletAppState);
+
     // We re-use the flyby camera for rotation, while positioning is handled by physics
     viewPort.setBackgroundColor(new ColorRGBA(0.7f,0.8f,1f,1f));
     flyCam.setMoveSpeed(100);
@@ -87,9 +92,10 @@ public class HelloCollision
 
     // We set up collision detection for the scene by creating a
     // compound collision shape and a physics node.
-    CompoundCollisionShape sceneShape = CollisionShapeFactory.createMeshCompoundShape((Node) sceneModel);
+    CompoundCollisionShape sceneShape =
+      CollisionShapeFactory.createMeshCompoundShape((Node) sceneModel);
     landscape = new PhysicsNode(sceneModel, sceneShape, 0);
-
+    
     // We set up collision detection for the player by creating
     // a capsule collision shape and a physics character node.
     // The physics character node offers extra settings for
@@ -105,8 +111,8 @@ public class HelloCollision
     // to make them appear in the game world.
     rootNode.attachChild(landscape);
     rootNode.attachChild(player);
-    getPhysicsSpace().add(landscape);
-    getPhysicsSpace().add(player);
+    bulletAppState.getPhysicsSpace().add(landscape);
+    bulletAppState.getPhysicsSpace().add(player);
   }
 
   /** We over-write some navigational key mappings here, so we can

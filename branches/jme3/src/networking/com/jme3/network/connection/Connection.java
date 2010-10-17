@@ -264,7 +264,7 @@ public abstract class Connection implements Runnable {
 
         Client localClient = null;
         for (Client locClient : connections) {
-            if (locClient.getTCPConnection() == client.getTCPConnection()) {
+            if (locClient.getPlayerID() == client.getPlayerID()) {
                 localClient = locClient;
                 break;
             }

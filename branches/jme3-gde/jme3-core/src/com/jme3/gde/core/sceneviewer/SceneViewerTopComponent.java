@@ -31,12 +31,8 @@
  */
 package com.jme3.gde.core.sceneviewer;
 
-import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
-import com.jme3.gde.core.scene.SceneListener;
-import com.jme3.gde.core.scene.SceneRequest;
 import com.jme3.system.JmeCanvasContext;
-import com.jme3.system.SystemListener;
 import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -55,7 +51,7 @@ import org.openide.util.lookup.InstanceContent;
  */
 @ConvertAsProperties(dtd = "-//com.jme3.gde.core.sceneviewer//SceneViewer//EN",
 autostore = false)
-public final class SceneViewerTopComponent extends TopComponent implements SystemListener, SceneListener {
+public final class SceneViewerTopComponent extends TopComponent{
 
     private static SceneViewerTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -77,7 +73,6 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
 //        associateLookup(lookup);
         putClientProperty(TopComponent.PROP_CLOSING_DISABLED, Boolean.TRUE);
         app = SceneApplication.getApplication();
-        app.addSceneListener(this);
     }
 
     /** This method is called from within the constructor to
@@ -257,53 +252,5 @@ public final class SceneViewerTopComponent extends TopComponent implements Syste
     @Override
     protected String preferredID() {
         return PREFERRED_ID;
-    }
-
-    /*
-     * SystemListener
-     */
-    public void initialize() {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void reshape(int i, int i1) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void update() {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void requestClose(boolean bln) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void gainFocus() {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void loseFocus() {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void handleError(String string, Throwable thrwbl) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void destroy() {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void sceneRequested(SceneRequest request) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public boolean sceneClose(SceneRequest request) {
-        return true;
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void previewRequested(PreviewRequest request) {
-//        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

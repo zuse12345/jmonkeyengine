@@ -22,8 +22,8 @@ public class OgreXMLConvertOptions {
     private String lodStrategy = "Distance";
     private boolean generateTangents = true;
     private boolean generateEdgeLists = false;
-
-    private boolean generate=false;
+    private boolean generate = false;
+    private boolean binaryFile = false;
 
     public OgreXMLConvertOptions() {
     }
@@ -46,12 +46,19 @@ public class OgreXMLConvertOptions {
         this.sourceFile = sourceFile;
     }
 
-    public String getBinaryFileName(){
-        FileObject fobj=FileUtil.toFileObject(new File(sourceFile));
-        return fobj.getParent().getPath()+File.separator+fobj.getName();
+    public String getBinaryFileName() {
+        if (binaryFile) {
+            return sourceFile;
+        } else {
+            FileObject fobj = FileUtil.toFileObject(new File(sourceFile));
+            return fobj.getParent().getPath() + File.separator + fobj.getName();
+        }
     }
 
     public String getDestFile() {
+        if(binaryFile){
+            return sourceFile+".xml";
+        }
         return destFile;
     }
 
@@ -119,5 +126,13 @@ public class OgreXMLConvertOptions {
      */
     public void setGenerate(boolean generate) {
         this.generate = generate;
+    }
+
+    public boolean isBinaryFile() {
+        return binaryFile;
+    }
+
+    public void setBinaryFile(boolean binaryFile) {
+        this.binaryFile = binaryFile;
     }
 }

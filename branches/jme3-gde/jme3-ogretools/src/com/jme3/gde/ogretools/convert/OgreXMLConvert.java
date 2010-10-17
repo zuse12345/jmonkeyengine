@@ -34,32 +34,33 @@ public class OgreXMLConvert {
         if (!checkTools()) {
             return false;
         }
-        handle.progress("Optimizing Mesh / Creating LOD meshes", 1);
-        //convert to binary + modify
         String[] cmdOptions = getCommandString(options);
         Process proc = null;
-        try {
-            proc = Runtime.getRuntime().exec(cmdOptions);
-            OutputReader outReader = new OutputReader(proc.getInputStream());
-            outReader.setProgress(handle);
-            OutputReader errReader = new OutputReader(proc.getErrorStream());
-            errReader.setProgress(handle);
-            outReader.start();
-            errReader.start();
+        if (!options.isBinaryFile()) {
+            handle.progress("Optimizing Mesh / Creating LOD meshes", 1);
+            //convert to binary + modify
             try {
-                proc.waitFor();
-            } catch (InterruptedException ex) {
+                proc = Runtime.getRuntime().exec(cmdOptions);
+                OutputReader outReader = new OutputReader(proc.getInputStream());
+                outReader.setProgress(handle);
+                OutputReader errReader = new OutputReader(proc.getErrorStream());
+                errReader.setProgress(handle);
+                outReader.start();
+                errReader.start();
+                try {
+                    proc.waitFor();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                if (proc.exitValue() != 0) {
+                    return false;
+                }
+            } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
-            }
-            if (proc.exitValue() != 0) {
+                cleanUp(options);
                 return false;
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            cleanUp(options);
-            return false;
         }
-
         handle.progress("Converting Binary Mesh", 2);
         //convert back to xml
         cmdOptions = getBackCommandString(options);
@@ -89,9 +90,11 @@ public class OgreXMLConvert {
     }
 
     private void cleanUp(OgreXMLConvertOptions options) {
-        File file = new File(options.getBinaryFileName());
-        if (file.exists()) {
-            file.delete();
+        if (!options.isBinaryFile()) {
+            File file = new File(options.getBinaryFileName());
+            if (file.exists()) {
+                file.delete();
+            }
         }
     }
 

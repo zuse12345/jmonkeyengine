@@ -112,7 +112,7 @@ public class TestRagDoll extends SimpleApplication implements ActionListener {
     }
 
     public void onAction(String string, boolean bln, float tpf) {
-        if ("MouseButtonLeft".equals(string)) {
+        if ("Pull ragdoll up".equals(string)) {
             if (bln) {
                 shoulders.applyContinuousForce(true, upforce);
             } else {

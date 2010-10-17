@@ -98,7 +98,9 @@ public class PssmShadowRenderer implements SceneProcessor {
         dispPic = new Picture[nbSplits];
         lightViewProjectionsMatrices = new Matrix4f[nbSplits];
         splits = new float[nbSplits + 1];
-//        dummyTex= new Texture2D(size, size, Format.RGB8);
+
+        //DO NOT COMMENT THIS (it prevent the OSX incomplete read buffer crash)
+        dummyTex= new Texture2D(size, size, Format.RGB8);
 
         preshadowMat = new Material(manager, "Common/MatDefs/Shadow/PreShadow.j3md");
         postshadowMat = new Material(manager, "Common/MatDefs/Shadow/PostShadowPSSM.j3md");
@@ -110,7 +112,9 @@ public class PssmShadowRenderer implements SceneProcessor {
             shadowMaps[i] = new Texture2D(size, size, Format.Depth16);
 
             shadowFB[i].setDepthTexture(shadowMaps[i]);
-//            shadowFB[i].setColorTexture(dummyTex);
+
+            //DO NOT COMMENT THIS (it prevent the OSX incomplete read buffer crash)
+            shadowFB[i].setColorTexture(dummyTex);
 
             postshadowMat.setTexture("m_ShadowMap" + i, shadowMaps[i]);
             

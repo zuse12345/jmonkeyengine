@@ -139,6 +139,7 @@ public class BulletAppState implements AppState, PhysicsTickListener {
 
     public void update(float tpf) {
         this.tpf = tpf;
+        //TODO: move to postRender()
         if (physicsFuture != null) {
             try {
                 physicsFuture.get();

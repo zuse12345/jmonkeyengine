@@ -270,6 +270,8 @@ public abstract class Connection implements Runnable {
             }
         }
 
+        if (localClient == null) localClient = client;
+
         SocketChannel chan = localClient.getSocketChannel();
         if (chan != null) {
             SelectionKey key = chan.keyFor(selector);

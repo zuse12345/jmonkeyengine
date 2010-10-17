@@ -557,12 +557,15 @@ public class Server extends ServiceManager implements MessageListener {
         // Right now, this is definitely a DisconnectMessage.
         DisconnectMessage dcMessage = (DisconnectMessage)message;
         Client client = dcMessage.getClient();
-        log.log(Level.INFO, "[{0}][???] Client {1} disconnected ({2}: {3}).", new Object[]{
-                label,
-                client,
-                dcMessage.getType(),
-                (dcMessage.getReason() != null) ? dcMessage.getReason() : "No description"
-        });
+
+        if (clientManager.isClientConnected(client)) {
+            log.log(Level.INFO, "[{0}][???] Client {1} disconnected ({2}: {3}).", new Object[]{
+                    label,
+                    client,
+                    dcMessage.getType(),
+                    (dcMessage.getReason() != null) ? dcMessage.getReason() : "No description"
+            });
+        }
         dcMessage.getConnection().addToDisconnectionQueue(client);
     }
 

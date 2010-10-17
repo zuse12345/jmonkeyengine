@@ -73,6 +73,10 @@ public class ClientManager extends MessageAdapter implements ConnectionListener 
         return null;
     }
 
+    public boolean isClientConnected(Client client) {
+        return clients.contains(client);
+    }
+
 
     @Override
     public void messageReceived(Message message) {

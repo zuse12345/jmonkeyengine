@@ -84,6 +84,8 @@ public interface AppState {
      */
     public void render(RenderManager rm);
 
+    public void postRender();
+
     /**
      * Cleanup the game state. 
      */

@@ -152,6 +152,23 @@ public class AppStateManager {
     }
 
     /**
+     * Calls render for all attached states, do not call directly.
+     * @param rm The RenderManager
+     */
+    public void postRender(){
+        synchronized (states){
+            int num = states.size();
+            for (int i = 0; i < num; i++){
+                AppState state = states.get(i);
+                if (!state.isInitialized())
+                    state.initialize(this, app);
+
+                state.postRender();
+            }
+        }
+    }
+
+    /**
      * Calls cleanup on attached states, do not call directly.
      */
     public void cleanup(){

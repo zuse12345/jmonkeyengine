@@ -139,7 +139,18 @@ public class BulletAppState implements AppState, PhysicsTickListener {
 
     public void update(float tpf) {
         this.tpf = tpf;
-        //TODO: move to postRender()
+    }
+
+    public void render(RenderManager rm) {
+        if (threadingType == ThreadingType.PARALLEL) {
+            physicsFuture = executor.submit(parallelPhysicsUpdate);
+        } else if (threadingType == ThreadingType.SEQUENTIAL) {
+            pSpace.update(tpf * speed);
+        } else {
+        }
+    }
+
+    public void postRender() {
         if (physicsFuture != null) {
             try {
                 physicsFuture.get();
@@ -149,15 +160,6 @@ public class BulletAppState implements AppState, PhysicsTickListener {
             } catch (ExecutionException ex) {
                 Logger.getLogger(BulletAppState.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
-    }
-
-    public void render(RenderManager rm) {
-        if (threadingType == ThreadingType.PARALLEL) {
-            physicsFuture = executor.submit(parallelPhysicsUpdate);
-        } else if (threadingType == ThreadingType.SEQUENTIAL) {
-            pSpace.update(tpf * speed);
-        } else {
         }
     }
 

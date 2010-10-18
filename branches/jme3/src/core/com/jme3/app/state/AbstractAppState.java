@@ -64,6 +64,10 @@ public class AbstractAppState implements AppState {
     public void render(RenderManager rm) {
     }
 
+    public void postRender(){
+        
+    }
+
     public void cleanup() {
         initialized = false;
     }

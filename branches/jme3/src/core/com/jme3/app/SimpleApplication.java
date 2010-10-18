@@ -216,6 +216,7 @@ public abstract class SimpleApplication extends Application {
         stateManager.render(renderManager);
         renderManager.render(tpf);
         simpleRender(renderManager);
+        stateManager.postRender();
     }
 
     public abstract void simpleInitApp();

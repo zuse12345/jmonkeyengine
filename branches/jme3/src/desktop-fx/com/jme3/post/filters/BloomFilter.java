@@ -46,11 +46,18 @@ import java.util.ArrayList;
  */
 public class BloomFilter extends Filter {
 
+    public static final int GLOW_SCENE=0;
+    public static final int GLOW_OBJECTS=1;
+    public static final int GLOW_BOTH=2;
+
+    /**@deprecated use GLOW_SCENE instead*/
     public static final int GLOW_MODE_ONLY_EXTRACTED_LIGHTS=0;
+    /**@deprecated use GLOW_OBJECTS instead*/
     public static final int GLOW_MODE_ONLY_GLOW_OBJECTS=1;
+    /**@deprecated use GLOW_BOTH instead*/
     public static final int GLOW_MODE_BOTH=2;
 
-    private int glowMode=GLOW_MODE_ONLY_EXTRACTED_LIGHTS;
+    private int glowMode=GLOW_SCENE;
 
     //Bloom parameters
     private float blurScale = 1.5f;
@@ -103,7 +110,7 @@ public class BloomFilter extends Filter {
             public void beforeRender() {
                 extractMat.setFloat("m_ExposurePow", exposurePower);
                 extractMat.setFloat("m_ExposureCutoff", exposureCutOff);
-                if(glowMode!=GLOW_MODE_ONLY_EXTRACTED_LIGHTS){
+                if(glowMode!=GLOW_SCENE){
                     extractMat.setTexture("m_GlowMap", preGlowPass.getRenderedTexture());
                 }
                 extractMat.setBoolean("m_Extract", glowMode!=GLOW_MODE_ONLY_GLOW_OBJECTS);
@@ -158,19 +165,13 @@ public class BloomFilter extends Filter {
 
     @Override
     public void preRender(RenderManager renderManager, ViewPort viewPort) {
-         if(glowMode!=GLOW_MODE_ONLY_EXTRACTED_LIGHTS){
+         if(glowMode!=GLOW_SCENE){
             backupColor=viewPort.getBackgroundColor();
             viewPort.setBackgroundColor(ColorRGBA.Black);
             renderManager.getRenderer().setFrameBuffer(preGlowPass.getRenderFrameBuffer());
             renderManager.getRenderer().clearBuffers(true, true, true);
             renderManager.setForcedTechnique("Glow");
-            try{
-                renderManager.renderViewPortQueues(viewPort, false);
-            }
-            catch(IllegalArgumentException iae){
-                System.err.println("You need to add the Glow technique to your custom material");
-                iae.printStackTrace();
-            }
+            renderManager.renderViewPortQueues(viewPort, false);
             viewPort.setBackgroundColor(backupColor);
             renderManager.setForcedTechnique(null);
             renderManager.getRenderer().setFrameBuffer(viewPort.getOutputFrameBuffer());

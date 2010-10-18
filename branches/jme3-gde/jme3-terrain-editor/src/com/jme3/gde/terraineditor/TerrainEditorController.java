@@ -6,6 +6,7 @@
 package com.jme3.gde.terraineditor;
 
 import com.jme3.gde.core.sceneexplorer.nodes.JmeSpatial;
+import com.jme3.scene.Node;
 import org.openide.loaders.DataObject;
 
 /**
@@ -18,9 +19,12 @@ public class TerrainEditorController {
 
     private JmeSpatial selectedSpat;
 
+    private Node rootNode;
+
     public TerrainEditorController(JmeSpatial jmeRootNode, DataObject currentFileObject) {
         this.jmeRootNode = jmeRootNode;
         this.currentFileObject = currentFileObject;
+        rootNode=jmeRootNode.getLookup().lookup(Node.class);
     }
 
     public void cleanup(){

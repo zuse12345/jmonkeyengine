@@ -33,13 +33,10 @@ package com.jme3.gde.core.sceneexplorer.nodes.properties;
 
 import com.jme3.effect.EmitterShape;
 import com.jme3.gde.core.scene.SceneApplication;
-import com.jme3.gde.core.sceneexplorer.nodes.JmeSpatial;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -54,13 +51,13 @@ import org.openide.util.Exceptions;
  */
 public class SceneExplorerProperty<T> extends PropertySupport.Reflection<T> {
 
-    private LinkedList<PropertyChangeListener> listeners = new LinkedList<PropertyChangeListener>();
+    private LinkedList<ScenePropertyChangeListener> listeners = new LinkedList<ScenePropertyChangeListener>();
 
     public SceneExplorerProperty(T instance, Class valueType, String getter, String setter) throws NoSuchMethodException {
         this(instance, valueType, getter, setter, null);
     }
 
-    public SceneExplorerProperty(T instance, Class valueType, String getter, String setter, PropertyChangeListener listener) throws NoSuchMethodException {
+    public SceneExplorerProperty(T instance, Class valueType, String getter, String setter, ScenePropertyChangeListener listener) throws NoSuchMethodException {
         super(instance, valueType, getter, setter);
         addPropertyChangeListener(listener);
         if (valueType == Vector3f.class) {
@@ -137,20 +134,19 @@ public class SceneExplorerProperty<T> extends PropertySupport.Reflection<T> {
         }
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addPropertyChangeListener(ScenePropertyChangeListener listener) {
         listeners.add(listener);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
+    public void removePropertyChangeListener(ScenePropertyChangeListener listener) {
         listeners.remove(listener);
     }
 
     private void notifyListeners(Object before, Object after) {
-        for (Iterator<PropertyChangeListener> it = listeners.iterator(); it.hasNext();) {
-            PropertyChangeListener propertyChangeListener = it.next();
+        for (Iterator<ScenePropertyChangeListener> it = listeners.iterator(); it.hasNext();) {
+            ScenePropertyChangeListener propertyChangeListener = it.next();
             //TODO: check what the "programmatic name" is supposed to be here.. for now its Vector3f
-            propertyChangeListener.propertyChange(new PropertyChangeEvent(this, getName(), before, after));
+            propertyChangeListener.propertyChange(getName(), before, after);
         }
     }
-
 }

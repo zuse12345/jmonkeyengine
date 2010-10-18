@@ -32,8 +32,7 @@
 package com.jme3.gde.core.sceneexplorer.nodes;
 
 import com.jme3.gde.core.sceneexplorer.nodes.properties.SceneExplorerProperty;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import com.jme3.gde.core.sceneexplorer.nodes.properties.ScenePropertyChangeListener;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -46,7 +45,7 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author normenhansen
  */
-public abstract class AbstractSceneExplorerNode extends AbstractNode implements SceneExplorerNode, PropertyChangeListener {
+public abstract class AbstractSceneExplorerNode extends AbstractNode implements SceneExplorerNode, ScenePropertyChangeListener{
 
     protected Children jmeChildren;
     protected final InstanceContent lookupContents;
@@ -77,7 +76,6 @@ public abstract class AbstractSceneExplorerNode extends AbstractNode implements 
         return this;
     }
 
-    @Deprecated
     protected void fireSave(boolean modified) {
         if(jmeChildren instanceof SceneExplorerChildren){
             DataObject dobj = ((SceneExplorerChildren)jmeChildren).getDataObject();
@@ -129,12 +127,9 @@ public abstract class AbstractSceneExplorerNode extends AbstractNode implements 
         return prop;
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        System.out.println(evt.getPropertyName());
-        if ((evt.getOldValue() == null && evt.getNewValue() != null) || (evt.getOldValue() != null && !evt.getOldValue().equals(evt.getNewValue()))) {
-            fireSave(true);
-        }
-        firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+    public void propertyChange(String name, Object before, Object after) {
+        fireSave(true);
+        firePropertyChange(name, before, after);
     }
 
     public Class getExplorerNodeClass() {

@@ -48,6 +48,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
@@ -137,7 +139,7 @@ public class JmeSpatial extends AbstractSceneExplorerNode {
     public void setName(final String s) {
         super.setName(s);
         try {
-            fireSave(true);
+//            fireSave(true);
             SceneApplication.getApplication().enqueue(new Callable<Void>() {
 
                 public Void call() throws Exception {

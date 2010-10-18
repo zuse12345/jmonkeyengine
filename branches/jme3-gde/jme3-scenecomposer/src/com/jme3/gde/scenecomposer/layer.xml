@@ -20,7 +20,7 @@
                 <attr name="injectable" stringvalue="com.jme3.gde.scenecomposer.AddSceneComposer"/>
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
                 <attr name="noIconInMenu" boolvalue="false"/>
-                <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
+                <attr name="selectionType" stringvalue="ANY"/>
                 <attr name="type" stringvalue="com.jme3.gde.core.assets.SpatialAssetDataObject"/>
             </file>
             <file name="com-jme3-gde-scenecomposer-LinkSceneComposer.instance">
@@ -30,7 +30,7 @@
                 <attr name="injectable" stringvalue="com.jme3.gde.scenecomposer.LinkSceneComposer"/>
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
                 <attr name="noIconInMenu" boolvalue="false"/>
-                <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
+                <attr name="selectionType" stringvalue="ANY"/>
                 <attr name="type" stringvalue="com.jme3.gde.core.assets.SpatialAssetDataObject"/>
             </file>
         </folder>

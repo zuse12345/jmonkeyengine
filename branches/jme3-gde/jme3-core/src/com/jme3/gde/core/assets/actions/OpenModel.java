@@ -66,30 +66,36 @@ public final class OpenModel implements ActionListener {
             public void run() {
                 ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Opening Model");
                 progressHandle.start();
-                ((DesktopAssetManager)manager.getManager()).clearCache();
+                try {
+                    ((DesktopAssetManager) manager.getManager()).clearCache();
 
-                final Spatial asset = (Spatial) context.loadAsset();
+                    final Spatial asset = (Spatial) context.loadAsset();
 
-                if (asset != null) {
-                    Node node = null;
-                    if (asset instanceof Node) {
-                        node = (Node) asset;
+                    if (asset != null) {
+                        Node node = null;
+                        if (asset instanceof Node) {
+                            node = (Node) asset;
+                        } else {
+                            node = new Node("RootNode");
+                            node.attachChild(asset);
+                        }
+                        JmeNode jmeNode = NodeUtility.createNode(node);
+                        SceneApplication app = SceneApplication.getApplication();
+                        SceneRequest request = new SceneRequest(app, jmeNode, manager);
+                        request.setWindowTitle("SceneViewer - View Model");
+                        app.requestScene(request);
                     } else {
-                        node = new Node("RootNode");
+                        Confirmation msg = new NotifyDescriptor.Confirmation(
+                                "Error opening " + context.getPrimaryFile().getNameExt(),
+                                NotifyDescriptor.OK_CANCEL_OPTION,
+                                NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(msg);
                     }
-                    JmeNode jmeNode = NodeUtility.createNode(node);
-                    SceneApplication app = SceneApplication.getApplication();
-                    SceneRequest request = new SceneRequest(app, jmeNode, manager);
-                    request.setWindowTitle("SceneViewer - View Model");
-                    app.requestScene(request);
-                } else {
-                    Confirmation msg = new NotifyDescriptor.Confirmation(
-                            "Error opening " + context.getPrimaryFile().getNameExt(),
-                            NotifyDescriptor.OK_CANCEL_OPTION,
-                            NotifyDescriptor.ERROR_MESSAGE);
-                    DialogDisplayer.getDefault().notify(msg);
+                }catch(Exception e){
+                    e.printStackTrace();
+                }finally {
+                    progressHandle.finish();
                 }
-                progressHandle.finish();
             }
         };
         new Thread(call).start();

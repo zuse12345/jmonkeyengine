@@ -84,7 +84,7 @@ public class TestPssmShadow extends SimpleApplication {
         teapot.setShadowMode(ShadowMode.CastAndReceive);
         rootNode.attachChild(teapot);
 
-         for (int i = 0; i < 30; i++) {
+         for (int i = 0; i < 3; i++) {
             Spatial t=teapot.clone();
             rootNode.attachChild(t);
             teapot.setLocalTranslation((float)Math.random()*3,(float)Math.random()*3,(i+2));
@@ -95,7 +95,7 @@ public class TestPssmShadow extends SimpleApplication {
         soil.setShadowMode(ShadowMode.CastAndReceive);
         rootNode.attachChild(soil);
 
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 3; i++) {
             Spatial t=teapot.clone();
             t.setLocalScale(10.0f);
             rootNode.attachChild(t);
@@ -103,7 +103,7 @@ public class TestPssmShadow extends SimpleApplication {
         }
 
 
-        pssmRenderer = new PssmShadowRenderer(assetManager, 512,3);
+        pssmRenderer = new PssmShadowRenderer(assetManager, 1024,4,PssmShadowRenderer.EDGE_FILTERING_PCF);
         pssmRenderer.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
         viewPort.addProcessor(pssmRenderer);
     }

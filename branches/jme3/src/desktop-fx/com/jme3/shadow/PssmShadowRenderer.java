@@ -42,6 +42,7 @@ import com.jme3.renderer.queue.GeometryList;
 import com.jme3.asset.AssetManager;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Matrix4f;
+import com.jme3.math.Vector2f;
 import com.jme3.post.SceneProcessor;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
@@ -58,6 +59,21 @@ public class PssmShadowRenderer implements SceneProcessor {
 
     public static final String EDGE_FILTERING_PCF = "EDGE_FILTERING_PCF";
     public static final String EDGE_FILTERING_DITHER = "EDGE_FILTERING_DITHER";
+
+    public enum FILTERING{
+      PCF4X4,
+      PCF8X8,
+      PCF10X10,
+      PCF16X16,
+      PCF20X20
+    }
+//    public static final String PCF_ = "m_Pcf4";
+//    public static final String PCF_8X8 = "m_Pcf8";
+//    public static final String PCF_10X10 = "m_Pcf10";
+//    public static final String PCF_16X16 = "m_Pcf16";
+//    public static final String PCF_20X20 = "m_Pcf20";
+
+
     private int nbSplits = 3;
     private float lambda = 0.65f;
     private float shadowIntensity = 0.7f;
@@ -78,7 +94,11 @@ public class PssmShadowRenderer implements SceneProcessor {
     private Vector3f direction = new Vector3f();
     private AssetManager assetManager;
     private boolean debug = false;
-    private float textureSize;
+    private boolean cropShadows=false;
+    private FILTERING pcfFilter=FILTERING.PCF4X4;
+    private int edgesThickness=10;
+
+//    private float textureSize;
 
     /**
      * Create a PSSM Shadow Renderer
@@ -91,7 +111,7 @@ public class PssmShadowRenderer implements SceneProcessor {
         assetManager = manager;
         nbSplits= Math.max(Math.min(nbSplits, 8), 1);
         this.nbSplits = nbSplits;
-        textureSize=size;
+ //       textureSize=size;
 
         shadowFB = new FrameBuffer[nbSplits];
         shadowMaps = new Texture2D[nbSplits];
@@ -124,7 +144,9 @@ public class PssmShadowRenderer implements SceneProcessor {
             dispPic[i].setTexture(manager, shadowMaps[i], false);
         }
         
-        
+        postshadowMat.setBoolean(pcfFilter.toString(),true);
+        postshadowMat.setBoolean("m_PcfEdg"+edgesThickness,true);
+        postshadowMat.setFloat("m_ShadowIntensity", shadowIntensity);
 
 
         shadowCam = new Camera(size, size);
@@ -177,7 +199,7 @@ public class PssmShadowRenderer implements SceneProcessor {
                 frustumMdl.getMaterial().setColor("m_Color", ColorRGBA.White);
                 break;
         }
-
+        
         return frustumMdl;
     }
 
@@ -205,42 +227,46 @@ public class PssmShadowRenderer implements SceneProcessor {
         noOccluders = occluders.size() == 0;
         if (noOccluders) {
             return;
-        }
+        }        
 
         GeometryList receivers = rq.getShadowQueueContent(ShadowMode.Receive);
         Camera viewCam = viewPort.getCamera();
 
         float zFar = zFarOverride;
         if (zFar == 0) {
-            zFar = PssmShadowUtil.computeZFar(occluders, receivers, viewCam);
+            zFar=viewCam.getFrustumFar();
+          // zFar = PssmShadowUtil.computeZFar(occluders, receivers, viewCam);
         }
         //  System.out.println("Zfar : "+zFar);
         ShadowUtil.updateFrustumPoints(viewCam, viewCam.getFrustumNear(), zFar, 1.0f, points);
 
-        Vector3f frustaCenter = new Vector3f();
-        for (Vector3f point : points) {
-            frustaCenter.addLocal(point);
-        }
-        frustaCenter.multLocal(1f / 8f);
+//        Vector3f frustaCenter = new Vector3f();
+//        for (Vector3f point : points) {
+//            frustaCenter.addLocal(point);
+//        }
+//        frustaCenter.multLocal(1f / 8f);
 
-        shadowCam.setDirection(direction);
-        shadowCam.update();
-        shadowCam.setLocation(frustaCenter);
+        //shadowCam.setDirection(direction);
+        shadowCam.getRotation().lookAt(direction, shadowCam.getUp());
         shadowCam.update();
         shadowCam.updateViewProjection();
 
         PssmShadowUtil.updateFrustumSplits(splits, viewCam.getFrustumNear(), zFar, lambda);
 
         Renderer r = renderManager.getRenderer();
+        renderManager.setForcedMaterial(preshadowMat);
 
         for (int i = 0; i < nbSplits; i++) {
             // update frustum points based on current camera and split
             ShadowUtil.updateFrustumPoints(viewCam, splits[i], splits[i + 1], 1.0f, points);
 
-            //Updating shadow cam with curent slip frustra
-//           System.out.println("split "+i);
-            ShadowUtil.updateShadowCamera(occluders, receivers, shadowCam, points);
-
+            //Updating shadow cam with curent split frustra
+            if(cropShadows){
+                ShadowUtil.updateShadowCamera(occluders, receivers, shadowCam, points);
+            }else{
+                ShadowUtil.updateShadowCamera(shadowCam, points);  
+            }
+            
             //displaying the current splitted frustrum and the associated croped light frustrums in wireframe.
             //only for debuging purpose
             if (debug) {
@@ -258,9 +284,8 @@ public class PssmShadowRenderer implements SceneProcessor {
 
             //saving light view projection matrix for this split
             lightViewProjectionsMatrices[i] = shadowCam.getViewProjectionMatrix().clone();
-
             renderManager.setCamera(shadowCam, false);
-            renderManager.setForcedMaterial(preshadowMat);
+
             r.setFrameBuffer(shadowFB[i]);
             r.clearBuffers(false, true, false);
 
@@ -308,21 +333,9 @@ public class PssmShadowRenderer implements SceneProcessor {
 
             for (int i = 0; i < nbSplits; i++) {
                 postshadowMat.setMatrix4("m_LightViewProjectionMatrix" + i, lightViewProjectionsMatrices[i]);
-                //postshadowMat.setTexture("m_ShadowMap" + i, shadowMaps[i]);
-            }
-            for (int i = 0; i < nbSplits; i++) {
-
                 postshadowMat.setFloat("m_Splits"+i, splits[i+1]);
             }
-            
-          //  postshadowMat.setInt("m_NbSplits", nbSplits);
-         //   postshadowMat.setFloat("m_TexSize", textureSize);
-            postshadowMat.setFloat("m_ShadowIntensity", shadowIntensity);
-
-
             renderManager.setForcedMaterial(postshadowMat);
-
-
             viewPort.getQueue().renderShadowQueue(ShadowMode.Receive, renderManager, cam, true);
             renderManager.setForcedMaterial(null);
             renderManager.setCamera(cam, false);
@@ -365,7 +378,7 @@ public class PssmShadowRenderer implements SceneProcessor {
      * default value is dynamicaly computed to the shadow casters/receivers union bound zFar, capped to view frustum far value.
      * @param zFar the zFar values that override the computed one
      */
-    public void setShadowZextend(float zFar) {
+    public void setShadowZExtend(float zFar) {
         this.zFarOverride = zFar;
     }
 
@@ -382,6 +395,36 @@ public class PssmShadowRenderer implements SceneProcessor {
      */
     public void setShadowIntensity(float shadowIntensity) {
         this.shadowIntensity = shadowIntensity;
+        postshadowMat.setFloat("m_ShadowIntensity", shadowIntensity);
+    }
+
+    public boolean isCropShadows() {
+        return cropShadows;
+    }
+
+    public void setCropShadows(boolean cropShadows) {
+        this.cropShadows = cropShadows;
+    }
+
+
+    public int getEdgesThickness() {
+        return edgesThickness;
+    }
+
+    public void setEdgesThickness(int edgesThickness) {
+        postshadowMat.setBoolean("m_PcfEdg"+this.edgesThickness,false);
+        this.edgesThickness = Math.max(1, Math.min(edgesThickness,10));
+        postshadowMat.setBoolean("m_PcfEdg"+ this.edgesThickness,true);
+    }
+
+    public FILTERING getPcfFilter() {
+        return pcfFilter;
+    }
+
+    public void setPcfFilter(FILTERING pcfFilter) {
+        postshadowMat.setBoolean(this.pcfFilter.toString(),false);
+        this.pcfFilter = pcfFilter;
+        postshadowMat.setBoolean(pcfFilter.toString(),true);
     }
 
 

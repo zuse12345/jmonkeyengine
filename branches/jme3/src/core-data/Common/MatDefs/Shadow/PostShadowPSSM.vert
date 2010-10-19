@@ -1,5 +1,3 @@
-#version 120
-
 uniform mat4 m_LightViewProjectionMatrix0;
 uniform mat4 m_LightViewProjectionMatrix1;
 uniform mat4 m_LightViewProjectionMatrix2;
@@ -38,6 +36,7 @@ void main(){
     shadowPosition=gl_Position.z;
     // get the vertex in world space
     vec4 worldPos = g_WorldMatrix * vec4(inPosition, 1.0);
+
 
     // populate the light view matrices array and convert vertex to light viewProj space
     projCoord0 = biasMat * m_LightViewProjectionMatrix0 * worldPos;

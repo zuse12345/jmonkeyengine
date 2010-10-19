@@ -1,4 +1,4 @@
-#version 120
+
 #ifdef NO_SHADOW2DPROJ
 #define SHADOWMAP sampler2D
 #define SHADOWTEX texture2D
@@ -15,7 +15,53 @@
 #define GETSHADOW Shadow_DoPCF_2x2
 #endif
 
+#ifdef PCF_4
+#define KERNEL 4.0
+#endif
+#ifdef PCF_8
+#define KERNEL 8.0
+#endif
+#ifdef PCF_10
+#define KERNEL 10.0
+#endif
+#ifdef PCF_16
+#define KERNEL 16.0
+#endif
+#ifdef PCF_20
+#define KERNEL 20.0
+#endif
 
+#ifdef STEP_1
+#define STEP 0.1
+#endif
+#ifdef STEP_2
+#define STEP 0.2
+#endif
+#ifdef STEP_3
+#define STEP 0.3
+#endif
+#ifdef STEP_4
+#define STEP 0.4
+#endif
+#ifdef STEP_5
+#define STEP 0.5
+#endif
+#ifdef STEP_6
+#define STEP 0.6
+#endif
+#ifdef STEP_7
+#define STEP 0.7
+#endif
+#ifdef STEP_8
+#define STEP 0.8
+#endif
+#ifdef STEP_9
+#define STEP 0.9
+#endif
+#ifdef STEP_10
+#define STEP 1.0
+#endif
+          
 uniform SHADOWMAP m_ShadowMap0;
 uniform SHADOWMAP m_ShadowMap1;
 uniform SHADOWMAP m_ShadowMap2;
@@ -35,6 +81,7 @@ uniform float m_Splits5;
 uniform float m_Splits6;
 uniform float m_Splits7;
 uniform float m_ShadowIntensity;
+
 
 varying vec4 projCoord0;
 varying vec4 projCoord1;
@@ -81,13 +128,29 @@ float Shadow_DoPCF_2x2(in SHADOWMAP tex, in vec4 projCoord){
 
     float shadow = 0.0;
     float x,y;
-    for (y = -1.5 ; y <=1.5 ; y+=1.0)
-            for (x = -1.5 ; x <=1.5 ; x+=1.0)
+    for (y = -3.5 ; y <=3.5 ; y+=1.0)
+            for (x = -3.5 ; x <=3.5 ; x+=1.0)
                     shadow += clamp(Shadow_DoShadowCompareOffset(tex,projCoord,vec2(x,y)) +
                                     Shadow_BorderCheck(projCoord.xy),
                                     0.0, 1.0);
 
-    shadow /= 16.0 ;
+    shadow /= 64.0 ;
+    return shadow;
+}
+
+float Shadow_DoPCF(in SHADOWMAP tex, in vec4 projCoord, in float kernel, in float bstep){
+
+    float shadow = 0.0;
+    float bound=kernel*0.5-0.5;
+    bound*=bstep;
+    float x,y;
+    for (y = -bound ; y <=bound ; y+=bstep)
+            for (x = -bound ; x <=bound ; x+=bstep)
+                    shadow += clamp(Shadow_DoShadowCompareOffset(tex,projCoord,vec2(x,y)) +
+                                    Shadow_BorderCheck(projCoord.xy),
+                                    0.0, 1.0);
+
+    shadow =shadow/(kernel*kernel) ;
     return shadow;
 }
 
@@ -96,12 +159,12 @@ float getShadow(in SHADOWMAP tex, in vec4 pProjCoord){
     vec4 coord = pProjCoord;
     coord.xyz /= coord.w;
 
-    return GETSHADOW(tex, coord);// GETSHADOW
+    return Shadow_DoPCF(tex, coord,KERNEL,STEP);// GETSHADOW
 }
 
 void main() {
  
-    float shad=1.0;
+    float shad=1.0;    
 
     // find the appropriate depth map to look up in
     // based on the depth of this fragment

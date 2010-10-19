@@ -33,6 +33,9 @@
 package jme3test.light;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.input.KeyInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
@@ -51,6 +54,7 @@ public class TestPssmShadow extends SimpleApplication {
     Spatial teapot;
     Geometry frustumMdl;
     WireFrustum frustum;
+    boolean renderShadows=true;
 
     private PssmShadowRenderer pssmRenderer;
     private Vector3f[] points;
@@ -72,11 +76,12 @@ public class TestPssmShadow extends SimpleApplication {
         cam.setRotation(new Quaternion(0.14896771f, 0.22304894f, -0.034511957f, 0.96273917f));
         //cam.setFrustumFar(1000);
 
-        Material mat = assetManager.loadMaterial("Common/Materials/WhiteColor.j3m");
+        Material mat = assetManager.loadMaterial("Common/Materials/RedColor.j3m");
         Material matSoil = new Material(assetManager,"Common/MatDefs/Misc/SolidColor.j3md");
-        matSoil.setColor("m_Color", ColorRGBA.LightGray);
+        matSoil.setColor("m_Color", ColorRGBA.Cyan);
 
        
+        //teapot = new Geometry("cube", new Box(1.0f, 1.0f, 1.0f));
         teapot = assetManager.loadModel("Models/Teapot/Teapot.obj");
         teapot.setLocalTranslation(0,0,10);
         
@@ -84,7 +89,7 @@ public class TestPssmShadow extends SimpleApplication {
         teapot.setShadowMode(ShadowMode.CastAndReceive);
         rootNode.attachChild(teapot);
 
-         for (int i = 0; i < 3; i++) {
+         for (int i = 0; i < 30; i++) {
             Spatial t=teapot.clone();
             rootNode.attachChild(t);
             teapot.setLocalTranslation((float)Math.random()*3,(float)Math.random()*3,(i+2));
@@ -95,7 +100,7 @@ public class TestPssmShadow extends SimpleApplication {
         soil.setShadowMode(ShadowMode.CastAndReceive);
         rootNode.attachChild(soil);
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 30; i++) {
             Spatial t=teapot.clone();
             t.setLocalScale(10.0f);
             rootNode.attachChild(t);
@@ -105,12 +110,57 @@ public class TestPssmShadow extends SimpleApplication {
 
         pssmRenderer = new PssmShadowRenderer(assetManager, 1024,4,PssmShadowRenderer.EDGE_FILTERING_PCF);
         pssmRenderer.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
+        pssmRenderer.setLambda(0.3f);
+        pssmRenderer.setShadowIntensity(0.6f);
+      // pssmRenderer.setCropShadows(true);
+        pssmRenderer.setPcfFilter(PssmShadowRenderer.FILTERING.PCF16X16);
+        pssmRenderer.setEdgesThickness(5);
         viewPort.addProcessor(pssmRenderer);
+        initInputs();
     }
 
-    @Override
-    public void simpleUpdate(float tpf){
-     
+      private void initInputs() {
+        inputManager.addMapping("toggle", new KeyTrigger(KeyInput.KEY_SPACE));
+        inputManager.addMapping("ShadowUp", new KeyTrigger(KeyInput.KEY_T));
+        inputManager.addMapping("ShadowDown", new KeyTrigger(KeyInput.KEY_G));
+        inputManager.addMapping("ThicknessUp", new KeyTrigger(KeyInput.KEY_Y));
+        inputManager.addMapping("ThicknessDown", new KeyTrigger(KeyInput.KEY_H));
+
+        ActionListener acl = new ActionListener() {
+
+            public void onAction(String name, boolean keyPressed, float tpf) {
+                if (name.equals("toggle") && keyPressed) {
+                    if(renderShadows){
+                        renderShadows=false;
+                        viewPort.removeProcessor(pssmRenderer);
+                    }else{
+                        renderShadows=true;
+                        viewPort.addProcessor(pssmRenderer);
+                    }
+                }
+
+                if (name.equals("ShadowUp") && keyPressed) {
+                   pssmRenderer.setShadowIntensity(pssmRenderer.getShadowIntensity()+0.1f);
+                  System.out.println("Shadow intensity : "+pssmRenderer.getShadowIntensity());
+                }
+                if (name.equals("ShadowDown") && keyPressed) {
+                   pssmRenderer.setShadowIntensity(pssmRenderer.getShadowIntensity()-0.1f);
+                  System.out.println("Shadow intensity : "+pssmRenderer.getShadowIntensity());
+                }
+                if (name.equals("ThicknessUp") && keyPressed) {
+                   pssmRenderer.setEdgesThickness(pssmRenderer.getEdgesThickness()+1);
+                  System.out.println("Shadow thickness : "+pssmRenderer.getEdgesThickness());
+                }
+                if (name.equals("ThicknessDown") && keyPressed) {
+                   pssmRenderer.setEdgesThickness(pssmRenderer.getEdgesThickness()-1);
+                  System.out.println("Shadow thickness : "+pssmRenderer.getEdgesThickness());
+                }
+            }
+        };
+
+        inputManager.addListener(acl, "toggle", "ShadowUp","ShadowDown","ThicknessUp","ThicknessDown");
+
     }
+
 
 }

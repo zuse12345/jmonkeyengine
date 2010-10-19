@@ -7,9 +7,7 @@ package com.jme3.bullet;
 import com.jme3.app.Application;
 import com.jme3.app.state.AppState;
 import com.jme3.app.state.AppStateManager;
-import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.PhysicsSpace.BroadphaseType;
-import com.jme3.bullet.PhysicsTickListener;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import java.util.concurrent.Callable;
@@ -21,7 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * <code>BulletAppState</code> allows using bullet physics in an Application.
  * @author normenhansen
  */
 public class BulletAppState implements AppState, PhysicsTickListener {
@@ -100,6 +98,10 @@ public class BulletAppState implements AppState, PhysicsTickListener {
         return pSpace;
     }
 
+    /**
+     * The physics system is started automatically on attaching, if you want to start it
+     * before for some reason, you can use this method.
+     */
     public void startPhysics() {
         //start physics thread(pool)
         if (threadingType == ThreadingType.PARALLEL) {
@@ -180,20 +182,30 @@ public class BulletAppState implements AppState, PhysicsTickListener {
     }
 
     /**
+     * Use before attaching state
      * @param threadingType the threadingType to set
      */
     public void setThreadingType(ThreadingType threadingType) {
         this.threadingType = threadingType;
     }
 
+    /**
+     * Use before attaching state
+     */
     public void setBroadphaseType(BroadphaseType broadphaseType) {
         this.broadphaseType = broadphaseType;
     }
 
+    /**
+     * Use before attaching state
+     */
     public void setWorldMin(Vector3f worldMin) {
         this.worldMin = worldMin;
     }
 
+    /**
+     * Use before attaching state
+     */
     public void setWorldMax(Vector3f worldMax) {
         this.worldMax = worldMax;
     }
@@ -210,14 +222,22 @@ public class BulletAppState implements AppState, PhysicsTickListener {
     }
 
     public enum ThreadingType {
-        /** Default mode; user update, physics update and rendering happen sequentially (single threaded) */
 
+        /**
+         * Default mode; user update, physics update and rendering happen sequentially (single threaded)
+         */
         SEQUENTIAL,
-        /** Parallel threaded mode; only physics update and rendering are executed in parallel, update order is kept.*/
+        /**
+         * Parallel threaded mode; physics update and rendering are executed in parallel, update order is kept.<br/>
+         * Multiple BulletAppStates will execute in parallel in this mode.
+         */
         PARALLEL,
-        /** Detached threaded mode; physics executes independently on other thread, only location and rotation is transferred thread safe,
-        <b>all</b> other physics operations including adding and removing of objects to the physics space
-        have to be done from the physics thread. (Creation of objects is safe on any thread except for vehicle)*/
+        /**
+         * Detached threaded mode; each physics space executes independently on another thread,
+         * only location and rotation is transferred thread safe,
+         * <b>all</b> other physics operations including adding and removing of objects to the physics space
+         * have to be done from the physics thread. (Creation of objects is safe on any thread except for vehicle)
+         */
         DETACHED
     }
 }

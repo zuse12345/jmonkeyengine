@@ -109,6 +109,7 @@ public class TestWalkingChar extends SimpleApplication implements ActionListener
     AnimChannel animationChannel;
     AnimChannel shootingChannel;
     AnimControl animationControl;
+    float airTime = 0;
     //camera
     boolean left = false, right = false, up = false, down = false;
     ChaseCamera chaseCam;
@@ -149,7 +150,7 @@ public class TestWalkingChar extends SimpleApplication implements ActionListener
         setupAnimationController();
     }
 
-    private PhysicsSpace getPhysicsSpace(){
+    private PhysicsSpace getPhysicsSpace() {
         return bulletAppState.getPhysicsSpace();
     }
 
@@ -333,7 +334,7 @@ public class TestWalkingChar extends SimpleApplication implements ActionListener
         rootNode.updateLogicalState(tpf);
         rootNode.updateGeometricState();
         Vector3f camDir = cam.getDirection().clone().multLocal(0.2f);
-        Vector3f camLeft = cam.getLeft().clone().multLocal(0.1f);
+        Vector3f camLeft = cam.getLeft().clone().multLocal(0.2f);
         camDir.y = 0;
         camLeft.y = 0;
         walkDirection.set(0, 0, 0);
@@ -350,16 +351,23 @@ public class TestWalkingChar extends SimpleApplication implements ActionListener
         if (down) {
             walkDirection.addLocal(camDir.negate());
         }
+        if (!character.onGround()) {
+            airTime = airTime + tpf;
+        } else {
+            airTime = 0;
+        }
         if (walkDirection.length() == 0) {
             if (!"stand".equals(animationChannel.getAnimationName())) {
                 animationChannel.setAnim("stand", 1f);
             }
         } else {
             modelRotation.lookAt(walkDirection, Vector3f.UNIT_Y);
-            if (!character.onGround() && !"stand".equals(animationChannel.getAnimationName())) {
-                animationChannel.setAnim("stand");
+            if (airTime > .3f) {
+                if (!"stand".equals(animationChannel.getAnimationName())) {
+                    animationChannel.setAnim("stand");
+                }
             }
-            if (character.onGround() && !"Walk".equals(animationChannel.getAnimationName())) {
+            else if(!"Walk".equals(animationChannel.getAnimationName())) {
                 animationChannel.setAnim("Walk", 0.7f);
             }
         }

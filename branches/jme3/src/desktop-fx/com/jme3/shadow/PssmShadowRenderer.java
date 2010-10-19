@@ -94,14 +94,14 @@ public class PssmShadowRenderer implements SceneProcessor {
     private Vector3f direction = new Vector3f();
     private AssetManager assetManager;
     private boolean debug = false;
-    private boolean cropShadows=false;
+    private boolean cropShadows=true;
     private FILTERING pcfFilter=FILTERING.PCF4X4;
     private int edgesThickness=10;
 
 //    private float textureSize;
 
     /**
-     * Create a PSSM Shadow Renderer
+     * Create a PSSM Shadow Renderer 
      * More info on the technique at http://http.developer.nvidia.com/GPUGems3/gpugems3_ch10.html
      * @param manager the application asset manager
      * @param size the size of the rendered shadowmaps (512,1024,2048, etc...)

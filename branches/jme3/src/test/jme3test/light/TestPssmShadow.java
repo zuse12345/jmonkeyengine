@@ -112,7 +112,7 @@ public class TestPssmShadow extends SimpleApplication {
         pssmRenderer.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
         pssmRenderer.setLambda(0.3f);
         pssmRenderer.setShadowIntensity(0.6f);
-      // pssmRenderer.setCropShadows(true);
+        pssmRenderer.setCropShadows(false);
         pssmRenderer.setPcfFilter(PssmShadowRenderer.FILTERING.PCF16X16);
         pssmRenderer.setEdgesThickness(5);
         viewPort.addProcessor(pssmRenderer);

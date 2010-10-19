@@ -170,13 +170,6 @@ public class DesktopAssetManager implements AssetManager {
     }
 
     public AssetInfo locateAsset(AssetKey<?> key){
-        AssetLoader loader = handler.aquireLoader(key);
-        if (loader == null){
-            logger.log(Level.WARNING,"No loader registered for type {0}.",
-                                        key.getExtension());
-            return null;
-        }
-
         if (handler.getLocatorCount() == 0){
             logger.warning("There are no locators currently"+
                            " registered. Use AssetManager."+
@@ -190,8 +183,6 @@ public class DesktopAssetManager implements AssetManager {
             logger.log(Level.WARNING, "Cannot locate resource: {0}", key);
         }
 
-        // object o is the asset
-        // create an instance for user
         return info;
     }
 

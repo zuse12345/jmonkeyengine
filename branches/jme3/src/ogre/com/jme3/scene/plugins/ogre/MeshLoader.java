@@ -45,7 +45,6 @@ import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
 import com.jme3.scene.VertexBuffer;
 import com.jme3.scene.VertexBuffer.Format;
@@ -54,7 +53,6 @@ import com.jme3.scene.VertexBuffer.Usage;
 import com.jme3.util.BufferUtils;
 import com.jme3.util.IntMap;
 import com.jme3.util.IntMap.Entry;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.Buffer;
@@ -120,6 +118,25 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
         geoms.clear();
         usesSharedGeom.clear();
         lodLevels.clear();
+
+        sb = null;
+        ib = null;
+        fb = null;
+        vb = null;
+        mesh = null;
+        geom = null;
+        sharedgeom = null;
+        sharedmesh = null;
+
+        geomIdx = 0;
+        texCoordIdx = 0;
+        nodeIdx = 0;
+        ignoreUntilEnd = null;
+
+        animData = null;
+
+        indicesData = null;
+        weightsFloatData = null;
     }
 
     @Override

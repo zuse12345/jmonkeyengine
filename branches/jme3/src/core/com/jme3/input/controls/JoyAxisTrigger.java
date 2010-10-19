@@ -43,13 +43,14 @@ public class JoyAxisTrigger implements Trigger {
         this.negative = negative;
     }
 
-    public static int joyAxisHash(int joyAxis, boolean negative){
-        return (negative ? 1280 : 1024) | (joyAxis & 0xff);
+    public static int joyAxisHash(int joyId, int joyAxis, boolean negative){
+        assert joyAxis >= 0 && joyAxis <= 255;
+        return (2048 * joyId) | (negative ? 1280 : 1024) | (joyAxis & 0xff);
     }
 
     @Override
     public int hashCode(){
-        return joyAxisHash(axisId, negative);
+        return joyAxisHash(joyId, axisId, negative);
     }
 
     public int getAxisId() {

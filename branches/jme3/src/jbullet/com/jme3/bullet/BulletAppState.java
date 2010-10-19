@@ -34,6 +34,7 @@ public class BulletAppState implements AppState, PhysicsTickListener {
     protected Vector3f worldMin = new Vector3f(-10000f, -10000f, -10000f);
     protected Vector3f worldMax = new Vector3f(10000f, 10000f, 10000f);
     private float speed = 1;
+    protected boolean active = true;
     protected float tpf;
     protected Future physicsFuture;
 
@@ -127,6 +128,14 @@ public class BulletAppState implements AppState, PhysicsTickListener {
         return initialized;
     }
 
+    public void setActive(boolean active){
+        this.active = active;
+    }
+
+    public boolean isActive(){
+        return active;
+    }
+
     public void stateAttached(AppStateManager stateManager) {
         if (!initialized) {
             startPhysics();
@@ -147,7 +156,7 @@ public class BulletAppState implements AppState, PhysicsTickListener {
         if (threadingType == ThreadingType.PARALLEL) {
             physicsFuture = executor.submit(parallelPhysicsUpdate);
         } else if (threadingType == ThreadingType.SEQUENTIAL) {
-            pSpace.update(tpf * speed);
+            pSpace.update( active ? tpf * speed : 0 );
         } else {
         }
     }

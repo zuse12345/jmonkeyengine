@@ -38,11 +38,13 @@ import com.jme3.collision.CollisionResults;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Ray;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.debug.Arrow;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 
@@ -95,6 +97,11 @@ public class TestMousePick extends SimpleApplication {
         if (results.size() > 0) {
             CollisionResult closest = results.getClosestCollision();
             mark.setLocalTranslation(closest.getContactPoint());
+
+            Quaternion q = new Quaternion();
+            q.lookAt(closest.getContactNormal(), Vector3f.UNIT_Y);
+            mark.setLocalRotation(q);
+
             rootNode.attachChild(mark);
         } else {
             rootNode.detachChild(mark);
@@ -123,8 +130,12 @@ public class TestMousePick extends SimpleApplication {
 
     /** A red ball that marks the last spot that was "hit" by the "shot". */
     protected void initMark() {
-        Sphere sphere = new Sphere(30, 30, 0.2f);
-        mark = new Geometry("BOOM!", sphere);
+        Arrow arrow = new Arrow(Vector3f.UNIT_Z.mult(2f));
+        arrow.setLineWidth(3);
+
+        //Sphere sphere = new Sphere(30, 30, 0.2f);
+        mark = new Geometry("BOOM!", arrow);
+        //mark = new Geometry("BOOM!", sphere);
         Material mark_mat = new Material(assetManager, "Common/MatDefs/Misc/SolidColor.j3md");
         mark_mat.setColor("m_Color", ColorRGBA.Red);
         mark.setMaterial(mark_mat);

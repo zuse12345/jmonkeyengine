@@ -60,6 +60,7 @@ public class MouseButtonTrigger implements Trigger {
     }
 
     public static int mouseButtonHash(int mouseButton){
+        assert mouseButton >= 0 && mouseButton <= 255;
         return 256 | (mouseButton & 0xff);
     }
 

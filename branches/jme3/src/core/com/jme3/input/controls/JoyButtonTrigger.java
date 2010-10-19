@@ -41,13 +41,14 @@ public class JoyButtonTrigger implements Trigger {
         this.buttonId = axisId;
     }
 
-    public static final int joyButtonHash(int joyButton){
-        return 1536 | (joyButton & 0xff);
+    public static int joyButtonHash(int joyId, int joyButton){
+        assert joyButton >= 0 && joyButton <= 255;
+        return (2048 * joyId) | 1536 | (joyButton & 0xff);
     }
 
     @Override
     public int hashCode(){
-        return joyButtonHash(buttonId);
+        return joyButtonHash(joyId, buttonId);
     }
 
     public int getAxisId() {

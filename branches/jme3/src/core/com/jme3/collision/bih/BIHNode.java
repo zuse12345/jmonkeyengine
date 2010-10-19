@@ -396,7 +396,6 @@ public final class BIHNode implements Savable {
 
                 float t = r.intersects(v1,v2,v3);
                 if (!Float.isInfinite(t)){
-
                     if (worldMatrix != null) {
                         worldMatrix.mult(v1, v1);
                         worldMatrix.mult(v2, v2);
@@ -404,13 +403,15 @@ public final class BIHNode implements Savable {
                         float t_world = new Ray(o,d).intersects(v1,v2,v3);
                         t = t_world;
                     }
-                    
+
+                    Vector3f contactNormal = Triangle.computeTriangleNormal(v1, v2, v3, null);
                     Vector3f contactPoint = new Vector3f(d)
                                                 .multLocal(t)
                                                 .addLocal(o);
                     float worldSpaceDist  = o.distance(contactPoint);
 
                     CollisionResult cr = new CollisionResult(contactPoint, worldSpaceDist);
+                    cr.setContactNormal(contactNormal);
                     cr.setTriangleIndex(tree.getTriangleIndex(i));
                     results.addCollision(cr);
                     cols ++;

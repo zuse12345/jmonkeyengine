@@ -43,6 +43,7 @@ import com.jme3.renderer.RenderManager;
 public class AbstractAppState implements AppState {
 
     private boolean initialized = false;
+    private boolean active = true;
 
     public void initialize(AppStateManager stateManager, Application app) {
         initialized = true;
@@ -50,6 +51,14 @@ public class AbstractAppState implements AppState {
 
     public boolean isInitialized() {
         return initialized;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public boolean isActive() {
+        return active;
     }
 
     public void stateAttached(AppStateManager stateManager) {

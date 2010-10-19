@@ -57,6 +57,22 @@ public interface AppState {
     public boolean isInitialized();
 
     /**
+     * Activate or deactivate the functionality of the <code>AppState</code>.
+     * The effect of this call depends on implementation. An 
+     * <code>AppState</code> starts as being active by default.
+     * 
+     * @param active activate the AppState or not.
+     */
+    public void setActive(boolean active);
+
+    /**
+     * @return True if the <code>AppState</code> is active, false otherwise.
+     * 
+     * @see AppState#setActive(boolean)
+     */
+    public boolean isActive();
+
+    /**
      * Called when the state was attached.
      *
      * @param stateManager State manager to which the state was attached to.
@@ -84,6 +100,9 @@ public interface AppState {
      */
     public void render(RenderManager rm);
 
+    /**
+     * Called after all rendering commands are flushed.
+     */
     public void postRender();
 
     /**

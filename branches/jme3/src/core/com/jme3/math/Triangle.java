@@ -246,6 +246,16 @@ public class Triangle extends AbstractTriangle implements Savable {
         this.index = index;
     }
 
+    public static Vector3f computeTriangleNormal(Vector3f v1, Vector3f v2, Vector3f v3, Vector3f store){
+        if (store == null)
+            store = new Vector3f(v2);
+        else
+            store.set(v2);
+
+        store.subtractLocal(v1).crossLocal(v3.x-v1.x, v3.y-v1.y, v3.z-v1.z);
+        return store.normalizeLocal();
+    }
+
     public void write(JmeExporter e) throws IOException {
         e.getCapsule(this).write(pointa, "pointa", Vector3f.ZERO);
         e.getCapsule(this).write(pointb, "pointb", Vector3f.ZERO);

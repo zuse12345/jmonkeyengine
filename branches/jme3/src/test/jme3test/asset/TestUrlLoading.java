@@ -60,9 +60,9 @@ public class TestUrlLoading extends SimpleApplication {
 
         Geometry quad = new Geometry("Textured Quad", quadMesh);
 
-        assetManager.registerLocator("http://www.jmonkeyengine.com/images/",
+        assetManager.registerLocator("http://www.jmonkeyengine.com/wp-content/uploads/2010/09/",
                                 UrlLocator.class.getName());
-        TextureKey key = new TextureKey("jmeheader.png", false);
+        TextureKey key = new TextureKey("planet-2.jpg", false);
         key.setGenerateMips(true);
         Texture tex = assetManager.loadTexture(key);
 

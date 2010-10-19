@@ -143,7 +143,7 @@ public class InputManager implements RawInputListener {
         }
     }
 
-    private final float computeAnalogValue(long timeDelta){
+    private float computeAnalogValue(long timeDelta){
         if (safeMode || frameDelta == 0)
             return 1f;
         else
@@ -243,12 +243,13 @@ public class InputManager implements RawInputListener {
             rawListeners.get(i).onJoyAxisEvent(evt);
         }
 
+        int joyId   = evt.getJoyIndex();
         int axis    = evt.getAxisIndex();
         float value = evt.getValue();
         if (value < 0){
-            invokeAnalogsAndActions(JoyAxisTrigger.joyAxisHash(axis, true), -value);
+            invokeAnalogsAndActions(JoyAxisTrigger.joyAxisHash(joyId, axis, true), -value);
         }else{
-            invokeAnalogsAndActions(JoyAxisTrigger.joyAxisHash(axis, false), value);
+            invokeAnalogsAndActions(JoyAxisTrigger.joyAxisHash(joyId, axis, false), value);
         }
     }
 
@@ -260,7 +261,7 @@ public class InputManager implements RawInputListener {
             rawListeners.get(i).onJoyButtonEvent(evt);
         }
 
-        int hash = JoyButtonTrigger.joyButtonHash(evt.getButtonIndex());
+        int hash = JoyButtonTrigger.joyButtonHash(evt.getJoyIndex(), evt.getButtonIndex());
         invokeActions(hash, evt.isPressed());
         invokeTimedActions(hash, evt.getTime(), evt.isPressed());
     }
@@ -358,7 +359,7 @@ public class InputManager implements RawInputListener {
                 names.add(mapping);
                 mapping.triggers.add(hash);
             }else{
-                logger.log(Level.WARNING, "Attempted to add mapping '" + mappingName + "' twice to trigger.");
+                logger.log(Level.WARNING, "Attempted to add mapping '{0}' twice to trigger.", mappingName);
             }
         }
     }

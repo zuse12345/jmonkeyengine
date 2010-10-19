@@ -54,6 +54,7 @@ public class KeyTrigger implements Trigger {
     }
 
     public static int keyHash(int keyCode){
+        assert keyCode >= 0 && keyCode <= 255;
         return keyCode & 0xff;
     }
 

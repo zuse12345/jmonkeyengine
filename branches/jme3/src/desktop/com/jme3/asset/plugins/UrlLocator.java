@@ -33,6 +33,7 @@
 package com.jme3.asset.plugins;
 
 import com.jme3.asset.*;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -54,20 +55,16 @@ public class UrlLocator implements AssetLocator {
 
     private static class UrlAssetInfo extends AssetInfo {
 
-        private URLConnection conn;
+        private InputStream in;
 
-        public UrlAssetInfo(AssetManager manager, AssetKey key, URLConnection conn){
+        public UrlAssetInfo(AssetManager manager, AssetKey key, InputStream in){
             super(manager, key);
-            this.conn = conn;
+            this.in = in;
         }
 
         @Override
         public InputStream openStream() {
-            try{
-                return conn.getInputStream();
-            }catch (IOException ex){
-                return null; // failure..
-            }
+            return in;
         }
     }
 
@@ -86,7 +83,17 @@ public class UrlLocator implements AssetLocator {
             URL url = new URL(root, name);
             URLConnection conn = url.openConnection();
             conn.setUseCaches(false);
-            return new UrlAssetInfo(manager, key, conn);
+            conn.setDoOutput(false);
+            InputStream in;
+            try {
+                in = conn.getInputStream();
+                if (in == null)
+                    return null;
+            } catch (FileNotFoundException ex){
+                return null;
+            }
+            
+            return new UrlAssetInfo(manager, key, in);
         }catch (IOException ex){
             logger.log(Level.WARNING, "Error while locating " + name, ex);
             return null;

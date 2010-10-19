@@ -32,16 +32,22 @@
 
 package com.jme3.terrain.geomipmap;
 
+import com.jme3.bounding.BoundingVolume;
+import com.jme3.collision.Collidable;
+import com.jme3.collision.CollisionResult;
+import com.jme3.collision.CollisionResults;
+import com.jme3.collision.SweepSphere;
+import com.jme3.collision.UnsupportedCollisionException;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
-import com.jme3.material.Material;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.HashMap;
 
 import com.jme3.math.FastMath;
+import com.jme3.math.Ray;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
@@ -465,6 +471,42 @@ public class TerrainPatch extends Geometry {
     }
 
     @Override
+    public int collideWith(Collidable other, CollisionResults results) throws UnsupportedCollisionException {
+        if (refreshFlags != 0)
+            throw new IllegalStateException("Scene graph must be updated" +
+                                            " before checking collision");
+
+        if (getWorldBound().collideWith(other, new CollisionResults()) == 0)
+            return 0;
+        
+        if (other instanceof SweepSphere)
+             return collideWithSweepSphere((SweepSphere)other, results);
+        else if(other instanceof Ray)
+            return collideWithRay((Ray)other, results);
+        else if (other instanceof BoundingVolume)
+            return collideWithBoundingVolume((BoundingVolume)other, results);
+        else {
+            throw new UnsupportedCollisionException();
+        }
+        
+    }
+
+    private int collideWithSweepSphere(SweepSphere sweepSphere, CollisionResults results) {
+        return 0; //TODO
+    }
+
+    private int collideWithRay(Ray ray, CollisionResults results) {
+        Vector3f xyz = getWorldBound().getCenter();
+        results.addCollision(new CollisionResult(xyz, ray.distanceSquared(getWorldTranslation())));
+        System.out.println(xyz);
+        return 1; //TODO
+    }
+
+    private int collideWithBoundingVolume(BoundingVolume boundingVolume, CollisionResults results) {
+        return 0; //TODO
+    }
+
+    @Override
     public void write(JmeExporter ex) throws IOException {
 
         // we don't want to save the mesh. We just save the heightmap and rebuild it on load
@@ -503,4 +545,7 @@ public class TerrainPatch extends Geometry {
         Mesh m = geomap.createMesh(stepScale, Vector2f.UNIT_XY, offset, offsetAmount, totalSize, false);
         setMesh(m);
     }
+
+
+
 }

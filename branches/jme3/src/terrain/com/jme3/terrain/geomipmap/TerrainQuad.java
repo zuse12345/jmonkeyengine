@@ -40,18 +40,26 @@ import java.util.concurrent.ThreadFactory;
 
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bounding.BoundingVolume;
+import com.jme3.collision.Collidable;
+import com.jme3.collision.CollisionResults;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
 import com.jme3.math.FastMath;
+import com.jme3.math.Ray;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.debug.WireBox;
 import com.jme3.terrain.Terrain;
 import com.jme3.terrain.geomipmap.lodcalc.LodCalculatorFactory;
 import com.jme3.terrain.geomipmap.lodcalc.LodDistanceCalculatorFactory;
+import com.jme3.terrain.geomipmap.picking.BresenhamTerrainPicker;
+import com.jme3.terrain.geomipmap.picking.TerrainPickData;
+import com.jme3.terrain.geomipmap.picking.TerrainPicker;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -81,13 +89,20 @@ public class TerrainQuad extends Node implements Terrain {
 	
 	protected LodCalculatorFactory lodCalculatorFactory;
 
+    /* This heightmap is stored in the root quad only and is used for fast collision,
+     * so we don't have to build up the heightmap array from all of the children
+     */
 	protected float[] heightMap;
+
+
 	protected List<Vector3f> lastCameraLocations; // used for LOD calc
 	private boolean lodCalcRunning = false;
 	private boolean usingLOD = true;
 	private int maxLod = -1;
 	private HashMap<String,UpdatedTerrainPatch> updatedPatches;
 	private Object updatePatchesLock = new Object();
+
+    private TerrainPicker picker;
 
 	
 	private ExecutorService executor = Executors.newSingleThreadExecutor(new ThreadFactory() {
@@ -200,25 +215,36 @@ public class TerrainQuad extends Node implements Terrain {
 		lodCalcRunning = running;
 	}
 
-        private List<Vector3f> cloneVectorList(List<Vector3f> locations) {
-                List<Vector3f> cloned = new ArrayList<Vector3f>();
-                for(Vector3f l : locations)
-                    cloned.add(l.clone());
-                return cloned;
-        }
+    private List<Vector3f> cloneVectorList(List<Vector3f> locations) {
+            List<Vector3f> cloned = new ArrayList<Vector3f>();
+            for(Vector3f l : locations)
+                cloned.add(l.clone());
+            return cloned;
+    }
 
-        private boolean lastCameraLocationsTheSame(List<Vector3f> locations) {
-                boolean theSame = true;
-                for (Vector3f l : locations) {
-                    for (Vector3f v : lastCameraLocations) {
-                        if (!v.equals(l) ) {
-                            theSame = false;
-                            return false;
-                        }
+    private boolean lastCameraLocationsTheSame(List<Vector3f> locations) {
+            boolean theSame = true;
+            for (Vector3f l : locations) {
+                for (Vector3f v : lastCameraLocations) {
+                    if (!v.equals(l) ) {
+                        theSame = false;
+                        return false;
                     }
                 }
-                return theSame;
-        }
+            }
+            return theSame;
+    }
+
+    private int collideWithRay(Ray ray, CollisionResults results) {
+        if (picker == null)
+            picker = new BresenhamTerrainPicker(this);
+
+        Vector3f intersection = picker.getTerrainIntersection(ray, results);
+        if (intersection != null)
+            return 1;
+        else
+            return 0;
+    }
 	
 	/**
 	 * Calculates the LOD of all child terrain patches.
@@ -661,7 +687,7 @@ public class TerrainQuad extends Node implements Terrain {
 		patch4.setLodCalculator(lodCalculatorFactory.createCalculator(patch4));
 	}
 	
-	public static final float[] createHeightSubBlock(float[] heightMap, int x,
+	public float[] createHeightSubBlock(float[] heightMap, int x,
 			int y, int side) {
 		float[] rVal = new float[side * side];
 		int bsize = (int) FastMath.sqrt(heightMap.length);
@@ -675,8 +701,43 @@ public class TerrainQuad extends Node implements Terrain {
 		}
 		return rVal;
 	}
-	
+
+    /**
+     * A handy method that will attach all bounding boxes of this terrain
+     * to the node you supply.
+     * Useful to visualize the bounding boxes when debugging.
+     * 
+     * @param parent that will get the bounding box shapes of the terrain attached to
+     */
+    public void attachBoundChildren(Node parent) {
+        for (int i = 0; i < this.getQuantity(); i++) {
+			if (this.getChild(i) instanceof TerrainQuad) {
+				((TerrainQuad) getChild(i)).attachBoundChildren(parent);
+			} else if (this.getChild(i) instanceof TerrainPatch) {
+				BoundingVolume bv = getChild(i).getWorldBound();
+                if (bv instanceof BoundingBox) {
+                    attachBoundingBox((BoundingBox)bv, parent);
+                }
+			}
+		}
+        BoundingVolume bv = getWorldBound();
+        if (bv instanceof BoundingBox) {
+            attachBoundingBox((BoundingBox)bv, parent);
+        }
+    }
+
+    /**
+     * used by attachBoundChildren()
+     */
+    private void attachBoundingBox(BoundingBox bb, Node parent) {
+        WireBox wb = new WireBox(bb.getXExtent(), bb.getYExtent(), bb.getZExtent());
+        Geometry g = new Geometry();
+        g.setMesh(wb);
+        g.setLocalTranslation(bb.getCenter());
+        parent.attachChild(g);
+    }
 	 
+/*    @Override
 	public void setModelBound(BoundingVolume v) {
 		for (int i = 0; i < this.getQuantity(); i++) {
 			if (this.getChild(i) instanceof TerrainQuad) {
@@ -688,16 +749,17 @@ public class TerrainQuad extends Node implements Terrain {
 		}
 	}
 	 
+    @Override
 	public void updateModelBound() {
 		for (int i = 0; i < this.getQuantity(); i++) {
 			if (this.getChild(i) instanceof TerrainQuad) {
 				((TerrainQuad) getChild(i)).updateModelBound();
 			} else if (this.getChild(i) instanceof TerrainPatch) {
 				((TerrainPatch) getChild(i)).updateModelBound();
-
 			}
 		}
 	}
+ */
 	
 	public float getHeight(float x, float z) {
 		// determine which quadrant this is in.
@@ -1000,7 +1062,53 @@ public class TerrainQuad extends Node implements Terrain {
 		}
 		*/
 	}
+
+    @Override
+    public int collideWith(Collidable other, CollisionResults results){
+        int total = 0;
+
+        if (other instanceof Ray)
+            return collideWithRay((Ray)other, results);
+
+        // if it didn't collide with this bbox, return
+        if (other.collideWith(this.getWorldBound(), results) == 0)
+            return total;
+
+        for (Spatial child : children){
+            total += child.collideWith(other, results);
+        }
+        return total;
+    }
 	
+    /**
+     * Gather the terrain patches that intersect the given ray (toTest).
+     * This only tests the bounding boxes
+     * @param toTest
+     * @param results
+     */
+    public void findPick(Ray toTest, List<TerrainPickData> results) {
+        
+        if (getWorldBound() != null) {
+            if (getWorldBound().intersects(toTest)) {
+                // further checking needed.
+                for (int i = 0; i < getQuantity(); i++) {
+                    if (children.get(i) instanceof TerrainPatch) {
+                        TerrainPatch tp = (TerrainPatch) children.get(i);
+                        if (tp.getWorldBound().intersects(toTest)) {
+                            CollisionResults cr = new CollisionResults();
+                            toTest.collideWith(tp.getWorldBound(), cr);
+                            cr.getClosestCollision().getDistance();
+                            results.add(new TerrainPickData(tp, cr.getClosestCollision()));
+                        }
+                    }
+                    else
+                        ((TerrainQuad) children.get(i)).findPick(toTest, results);
+                }
+            }
+        }
+    }
+
+
 	/**
 	 * Retrieve all Terrain Patches from all children and store them
 	 * in the 'holder' list

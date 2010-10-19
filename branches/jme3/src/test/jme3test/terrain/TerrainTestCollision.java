@@ -41,21 +41,28 @@ import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.nodes.PhysicsCharacterNode;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.nodes.PhysicsVehicleNode;
+import com.jme3.collision.CollisionResult;
+import com.jme3.collision.CollisionResults;
 import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
+import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.PointLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
+import com.jme3.math.Ray;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Cylinder;
+import com.jme3.scene.shape.Sphere;
 import com.jme3.terrain.geomipmap.TerrainLodControl;
 import com.jme3.terrain.heightmap.AbstractHeightMap;
 import com.jme3.terrain.heightmap.ImageBasedHeightMap;
@@ -70,6 +77,7 @@ import java.util.List;
  * Creates a terrain object and a collision node to go with it. Then
  * drops several balls from the sky that collide with the terrain
  * and roll around.
+ * Left click to place a sphere on the ground where the crosshairs intersect the terrain.
  *
  * @author Brent Owens
  */
@@ -83,6 +91,7 @@ public class TerrainTestCollision extends SimpleBulletApplication {
     protected BitmapText hintText;
     PointLight pl;
     Geometry lightMdl;
+    Geometry collisionMarker;
 
     PhysicsVehicleNode vehicle;
     final float accelerationForce = 1000.0f;
@@ -91,16 +100,19 @@ public class TerrainTestCollision extends SimpleBulletApplication {
     float accelerationValue = 0;
     Vector3f jumpForce = new Vector3f(0, 3000, 0);
 
+
     public static void main(String[] args) {
         TerrainTestCollision app = new TerrainTestCollision();
         app.start();
     }
+
 
     @Override
     public void initialize() {
         super.initialize();
         createVehicle();
         loadHintText();
+        initCrossHairs();
     }
 
     @Override
@@ -163,10 +175,11 @@ public class TerrainTestCollision extends SimpleBulletApplication {
         TerrainLodControl control = new TerrainLodControl(terrain, cameras);
         terrain.addControl(control);
         terrain.setMaterial(matRock);
+        terrain.setLocalScale(new Vector3f(2, 2, 2));
         terrain.setModelBound(new BoundingBox());
         terrain.updateModelBound();
-        terrain.setLocalScale(new Vector3f(2, 2, 2));
         rootNode.attachChild(terrain);
+        
 
         /**
          * Now we use the TerrainPhysicsShapeFactory to generate a heightfield
@@ -216,6 +229,17 @@ public class TerrainTestCollision extends SimpleBulletApplication {
         guiNode.attachChild(hintText);
     }
 
+    protected void initCrossHairs() {
+        //guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
+        BitmapText ch = new BitmapText(guiFont, false);
+        ch.setSize(guiFont.getCharSet().getRenderedSize() * 2);
+        ch.setText("+"); // crosshairs
+        ch.setLocalTranslation( // center
+                settings.getWidth() / 2 - guiFont.getCharSet().getRenderedSize() / 3 * 2,
+                settings.getHeight() / 2 + ch.getLineHeight() / 2, 0);
+        guiNode.attachChild(ch);
+    }
+
     private void setupKeys() {
         flyCam.setMoveSpeed(50);
         inputManager.addMapping("wireframe", new KeyTrigger(KeyInput.KEY_T));
@@ -232,6 +256,8 @@ public class TerrainTestCollision extends SimpleBulletApplication {
         inputManager.addListener(actionListener, "Downs");
         inputManager.addListener(actionListener, "Space");
         inputManager.addListener(actionListener, "Reset");
+        inputManager.addMapping("shoot", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addListener(actionListener, "shoot");
     }
 
     private void createVehicle() {
@@ -307,55 +333,87 @@ public class TerrainTestCollision extends SimpleBulletApplication {
         getPhysicsSpace().add(vehicle);
     }
 
+    @Override
     public void update() {
         super.update();
         hintText.setText("vehicle location: " + vehicle.getLocalTranslation());
     }
+
+    private void createCollisionMarker() {
+        Sphere s = new Sphere(6, 6, 1);
+        collisionMarker = new Geometry("collisionMarker");
+        collisionMarker.setMesh(s);
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/SolidColor.j3md");
+        mat.setColor("m_Color", ColorRGBA.Orange);
+        collisionMarker.setMaterial(mat);
+        rootNode.attachChild(collisionMarker);
+    }
+    
     private ActionListener actionListener = new ActionListener() {
 
-        public void onAction(String binding, boolean value, float tpf) {
-            if (binding.equals("wireframe") && !value) {
+        public void onAction(String binding, boolean keyPressed, float tpf) {
+            if (binding.equals("wireframe") && !keyPressed) {
                 wireframe = !wireframe;
                 if (!wireframe) {
                     terrain.setMaterial(matWire);
                 } else {
                     terrain.setMaterial(matRock);
                 }
-
             }
+
+            if (binding.equals("shoot") && !keyPressed) {
+
+                Vector3f origin = cam.getWorldCoordinates(new Vector2f(settings.getWidth() / 2, settings.getHeight() / 2), 0.0f );
+                Vector3f direction = cam.getWorldCoordinates(new Vector2f(settings.getWidth() / 2, settings.getHeight() / 2), 0.3f );
+                direction.subtractLocal(origin).normalizeLocal();
+                
+                
+                Ray ray = new Ray(origin, direction);
+                CollisionResults results = new CollisionResults();
+                int numCollisions = terrain.collideWith(ray, results);
+                if (numCollisions >0) {
+                    CollisionResult hit = results.getClosestCollision();
+                    if (collisionMarker == null) {
+                        createCollisionMarker();
+                    }
+                    System.out.println("collide "+hit.getContactPoint());
+                    collisionMarker.setLocalTranslation(hit.getContactPoint());
+                }
+            }
+
             if (binding.equals("Lefts")) {
-                if (value) {
+                if (keyPressed) {
                     steeringValue += .5f;
                 } else {
                     steeringValue += -.5f;
                 }
                 vehicle.steer(steeringValue);
             } else if (binding.equals("Rights")) {
-                if (value) {
+                if (keyPressed) {
                     steeringValue += -.5f;
                 } else {
                     steeringValue += .5f;
                 }
                 vehicle.steer(steeringValue);
             } else if (binding.equals("Ups")) {
-                if (value) {
+                if (keyPressed) {
                     accelerationValue += accelerationForce;
                 } else {
                     accelerationValue -= accelerationForce;
                 }
                 vehicle.accelerate(accelerationValue);
             } else if (binding.equals("Downs")) {
-                if (value) {
+                if (keyPressed) {
                     vehicle.brake(brakeForce);
                 } else {
                     vehicle.brake(0f);
                 }
             } else if (binding.equals("Space")) {
-                if (value) {
+                if (keyPressed) {
                     vehicle.applyImpulse(jumpForce, Vector3f.ZERO);
                 }
             } else if (binding.equals("Reset")) {
-                if (value) {
+                if (keyPressed) {
                     System.out.println("Reset");
                     vehicle.setLocalTranslation(-140,7,-23);
                     vehicle.setLocalRotation(new Quaternion());
@@ -366,5 +424,6 @@ public class TerrainTestCollision extends SimpleBulletApplication {
                 }
             }
         }
+
     };
 }

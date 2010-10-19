@@ -523,7 +523,7 @@ public final class Ray implements Savable, Cloneable, Collidable {
         try {
             Ray r = (Ray) super.clone();
             r.direction = direction.clone();
-            r.origin = direction.clone();
+            r.origin = origin.clone();
             return r;
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();

@@ -89,14 +89,7 @@ public class CollisionShapeFactory {
         return shape;
     }
 
-    /**
-     * Creates a Compound Shape with
-     * @param rootNode
-     * @param shape
-     * @param meshAccurate true for Mesh-accurate collision shapes meant for immovable "world objects"
-     * @return
-     */
-    public static CompoundCollisionShape createCompoundShape(
+    private static CompoundCollisionShape createCompoundShape(
             Node rootNode, CompoundCollisionShape shape, boolean meshAccurate) {
         if (rootNode.getParent() != null) {
             throw new IllegalStateException("Spatial should not be attached to parent while creating compound collision shape!");
@@ -114,6 +107,12 @@ public class CollisionShapeFactory {
         return createCompoundShape(rootNode, new CompoundCollisionShape(), true);
     }
 
+    /**
+     * This type of collision shape creates a CompoundShape made out of boxes that
+     * are based on the bounds of the Geometries  in the tree.
+     * @param rootNode
+     * @return
+     */
     public static CompoundCollisionShape createBoxCompoundShape(Node rootNode) {
         return createCompoundShape(rootNode, new CompoundCollisionShape(), false);
     }

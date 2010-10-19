@@ -289,7 +289,7 @@ public class JmeSpatial extends AbstractSceneExplorerNode {
 
 //        set.put(makeProperty(obj, Transform.class,"getWorldTransform","world transform"));
         set.put(makeProperty(obj, Vector3f.class, "getWorldTranslation", "World Translation"));
-        set.put(makeProperty(obj, Quaternion.class, "getWorldRotation", "World Totation"));
+        set.put(makeProperty(obj, Quaternion.class, "getWorldRotation", "World Rotation"));
         set.put(makeProperty(obj, Vector3f.class, "getWorldScale", "World Scale"));
 
         set.put(makeProperty(obj, Vector3f.class, "getLocalTranslation", "setLocalTranslation", "Local Translation"));

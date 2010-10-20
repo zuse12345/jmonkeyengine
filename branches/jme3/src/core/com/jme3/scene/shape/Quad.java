@@ -63,7 +63,6 @@ public class Quad extends Mesh {
     }
 
     public void updateGeometry(float width, float height){
-        setMode(Mode.Lines);
         updateGeometry(width, height, false);
     }
 

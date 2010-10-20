@@ -1215,7 +1215,7 @@ public final class Matrix4f implements Savable, Cloneable {
         float fB5 = m22*m33 - m23*m32;
         float fDet = fA0*fB5-fA1*fB4+fA2*fB3+fA3*fB2-fA4*fB1+fA5*fB0;
 
-        if ( FastMath.abs(fDet) <= FastMath.FLT_EPSILON )
+        if ( FastMath.abs(fDet) <= 0f )
             throw new ArithmeticException("This matrix cannot be inverted");
 
         store.m00 = + m11*fB5 - m12*fB4 + m13*fB3;

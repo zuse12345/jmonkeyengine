@@ -32,7 +32,6 @@
 
 package com.jme3.system.jogl;
 
-import com.jme3.system.AppSettings;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -45,46 +44,54 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.media.opengl.GLAutoDrawable;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+
+import com.jme3.system.AppSettings;
 
 public class JoglDisplay extends JoglAbstractDisplay {
 
     private static final Logger logger = Logger.getLogger(JoglDisplay.class.getName());
 
     protected AtomicBoolean windowCloseRequest = new AtomicBoolean(false);
+
     protected AtomicBoolean needClose = new AtomicBoolean(false);
+
     protected AtomicBoolean needRestart = new AtomicBoolean(false);
+
     protected boolean wasInited = false;
+
     protected Frame frame;
 
     public Type getType() {
         return Type.Display;
     }
 
-    protected DisplayMode getFullscreenDisplayMode(DisplayMode[] modes, int width, int height, int bpp, int freq){
-        for (DisplayMode mode : modes){
+    protected DisplayMode getFullscreenDisplayMode(DisplayMode[] modes, int width, int height,
+            int bpp, int freq) {
+        for (DisplayMode mode : modes) {
             if (mode.getWidth() == width
-             && mode.getHeight() == height
-             && (mode.getBitDepth() == DisplayMode.BIT_DEPTH_MULTI 
-                || mode.getBitDepth() == bpp
-                || (mode.getBitDepth() == 32 && bpp==24))
-             && mode.getRefreshRate() == freq){
+                    && mode.getHeight() == height
+                    && (mode.getBitDepth() == DisplayMode.BIT_DEPTH_MULTI
+                            || mode.getBitDepth() == bpp || (mode.getBitDepth() == 32 && bpp == 24))
+                    && mode.getRefreshRate() == freq) {
                 return mode;
             }
         }
         return null;
     }
 
-    protected void createGLFrame(){
+    protected void createGLFrame() {
         Container contentPane;
-        if (useAwt){
+        if (useAwt) {
             frame = new Frame(settings.getTitle());
             contentPane = frame;
-        }else{
+        }
+        else {
             frame = new JFrame(settings.getTitle());
-            contentPane = ((JFrame)frame).getContentPane();
+            contentPane = ((JFrame) frame).getContentPane();
         }
 
         contentPane.setLayout(new BorderLayout());
@@ -96,17 +103,18 @@ public class JoglDisplay extends JoglAbstractDisplay {
 
         // only add canvas after frame is visible
         contentPane.add(canvas, BorderLayout.CENTER);
-        //frame.pack();
-//        frame.setSize(contentPane.getPreferredSize());
-        frame.setSize(settings.getWidth(),settings.getHeight());
+        // frame.pack();
+        // frame.setSize(contentPane.getPreferredSize());
+        contentPane.setSize(settings.getWidth(), settings.getHeight());
+        frame.setSize(settings.getWidth(), settings.getHeight());
 
-        if (device.getFullScreenWindow() == null){
+        if (device.getFullScreenWindow() == null) {
             // now that canvas is attached,
             // determine optimal size to contain it
-           
+
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
             frame.setLocation((screenSize.width - frame.getWidth()) / 2,
-                              (screenSize.height - frame.getHeight()) / 2);
+                    (screenSize.height - frame.getHeight()) / 2);
         }
 
         frame.addWindowListener(new WindowAdapter() {
@@ -114,6 +122,7 @@ public class JoglDisplay extends JoglAbstractDisplay {
             public void windowClosing(WindowEvent evt) {
                 windowCloseRequest.set(true);
             }
+
             @Override
             public void windowActivated(WindowEvent evt) {
                 active.set(true);
@@ -126,66 +135,71 @@ public class JoglDisplay extends JoglAbstractDisplay {
         });
     }
 
-    protected void applySettings(AppSettings settings){
+    protected void applySettings(AppSettings settings) {
         DisplayMode displayMode;
-        if (settings.getWidth() <= 0 || settings.getHeight() <= 0){
+        if (settings.getWidth() <= 0 || settings.getHeight() <= 0) {
             displayMode = device.getDisplayMode();
             settings.setResolution(displayMode.getWidth(), displayMode.getHeight());
-        }else if (settings.isFullscreen()){
-            displayMode = getFullscreenDisplayMode(device.getDisplayModes(),
-                                                   settings.getWidth(), settings.getHeight(),
-                                                   settings.getBitsPerPixel(), settings.getFrequency());
-            if (displayMode == null)
-                throw new RuntimeException("Unable to find fullscreen display mode matching settings");
-        }else{
-            displayMode = new DisplayMode(settings.getWidth(), settings.getHeight(), DisplayMode.BIT_DEPTH_MULTI, DisplayMode.REFRESH_RATE_UNKNOWN);
+        }
+        else if (settings.isFullscreen()) {
+            displayMode = getFullscreenDisplayMode(device.getDisplayModes(), settings.getWidth(),
+                    settings.getHeight(), settings.getBitsPerPixel(), settings.getFrequency());
+            if (displayMode == null) {
+                throw new RuntimeException(
+                        "Unable to find fullscreen display mode matching settings");
+            }
+        }
+        else {
+            displayMode = new DisplayMode(settings.getWidth(), settings.getHeight(),
+                    DisplayMode.BIT_DEPTH_MULTI, DisplayMode.REFRESH_RATE_UNKNOWN);
         }
 
         // FIXME: seems to return false even though
         // it is supported..
-//        if (!device.isDisplayChangeSupported()){
-//            // must use current device mode if display mode change not supported
-//            displayMode = device.getDisplayMode();
-//            settings.setResolution(displayMode.getWidth(), displayMode.getHeight());
-//        }
+        // if (!device.isDisplayChangeSupported()){
+        // // must use current device mode if display mode change not supported
+        // displayMode = device.getDisplayMode();
+        // settings.setResolution(displayMode.getWidth(), displayMode.getHeight());
+        // }
 
         frameRate = settings.getFrameRate();
-        logger.log(Level.INFO, "Selected display mode: {0}x{1}x{2} @{3}",
-                new Object[]{displayMode.getWidth(),
-                             displayMode.getHeight(),
-                             displayMode.getBitDepth(),
-                             displayMode.getRefreshRate()});
-        
+        logger.log(Level.INFO, "Selected display mode: {0}x{1}x{2} @{3}", new Object[] {
+                displayMode.getWidth(), displayMode.getHeight(), displayMode.getBitDepth(),
+                displayMode.getRefreshRate() });
+
         canvas.setSize(displayMode.getWidth(), displayMode.getHeight());
 
         DisplayMode prevDisplayMode = device.getDisplayMode();
 
-        if (settings.isFullscreen() && device.isFullScreenSupported()){
+        if (settings.isFullscreen() && device.isFullScreenSupported()) {
             frame.setUndecorated(true);
 
-            try{
+            try {
                 device.setFullScreenWindow(frame);
-                if (!prevDisplayMode.equals(displayMode)
-                  && device.isDisplayChangeSupported()){
+                if (!prevDisplayMode.equals(displayMode) && device.isDisplayChangeSupported()) {
                     device.setDisplayMode(displayMode);
                 }
-            } catch (Throwable t){
+            }
+            catch (Throwable t) {
                 logger.log(Level.SEVERE, "Failed to enter fullscreen mode", t);
                 device.setFullScreenWindow(null);
             }
-        }else{
-            if (!device.isFullScreenSupported()){
-                logger.warning("Fullscreen not supported.");
-            }else{
-                frame.setUndecorated(false);
-                device.setFullScreenWindow(null);
-            }
-
-            frame.setVisible(true);
         }
+        else {
+            if (!device.isFullScreenSupported()) {
+                logger.warning("Fullscreen not supported.");
+            }
+            else {
+                frame.setUndecorated(false);
+                if (device.getFullScreenWindow() != null || device.getFullScreenWindow() != frame) {
+                    device.setFullScreenWindow(null);
+                }
+            }
+        }
+        frame.setVisible(true);
     }
 
-    private void initInEDT(){
+    private void initInEDT() {
         initGLCanvas();
 
         createGLFrame();
@@ -193,9 +207,9 @@ public class JoglDisplay extends JoglAbstractDisplay {
         startGLCanvas();
     }
 
-    public void init(GLAutoDrawable drawable){
+    public void init(GLAutoDrawable drawable) {
         // prevent initializing twice on restart
-        if (!wasInited){
+        if (!wasInited) {
             canvas.requestFocus();
 
             super.internalCreate();
@@ -208,48 +222,53 @@ public class JoglDisplay extends JoglAbstractDisplay {
         }
     }
 
-    public void create(boolean waitFor){
+    public void create(boolean waitFor) {
         try {
-            if (waitFor){
-                try{
+            if (waitFor) {
+                try {
                     SwingUtilities.invokeAndWait(new Runnable() {
                         public void run() {
                             initInEDT();
                         }
                     });
-                } catch (InterruptedException ex) {
+                }
+                catch (InterruptedException ex) {
                     listener.handleError("Interrupted", ex);
                 }
-            }else{
+            }
+            else {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         initInEDT();
                     }
                 });
             }
-        } catch (InvocationTargetException ex) {
+        }
+        catch (InvocationTargetException ex) {
             throw new AssertionError(); // can never happen
         }
     }
 
-    public void destroy(boolean waitFor){
+    public void destroy(boolean waitFor) {
         needClose.set(true);
-        if (waitFor){
+        if (waitFor) {
             waitFor(false);
         }
     }
 
     public void restart() {
-        if (created.get()){
+        if (created.get()) {
             needRestart.set(true);
-        }else{
+        }
+        else {
             throw new IllegalStateException("Display not started yet. Cannot restart");
         }
     }
 
-    public void setTitle(String title){
-        if (frame != null)
+    public void setTitle(String title) {
+        if (frame != null) {
             frame.setTitle(title);
+        }
     }
 
     /**
@@ -268,14 +287,14 @@ public class JoglDisplay extends JoglAbstractDisplay {
             return;
         }
 
-        if (windowCloseRequest.get()){
+        if (windowCloseRequest.get()) {
             listener.requestClose(false);
             windowCloseRequest.set(false);
         }
 
-        if (needRestart.getAndSet(false)){
+        if (needRestart.getAndSet(false)) {
             // for restarting contexts
-            if (frame.isVisible()){
+            if (frame.isVisible()) {
                 animator.stop();
                 frame.dispose();
                 createGLFrame();
@@ -283,19 +302,20 @@ public class JoglDisplay extends JoglAbstractDisplay {
             }
         }
 
-//        boolean flush = autoFlush.get();
-//        if (animator.isAnimating() != flush){
-//            if (flush)
-//                animator.stop();
-//            else
-//                animator.start();
-//        }
+        // boolean flush = autoFlush.get();
+        // if (animator.isAnimating() != flush){
+        // if (flush)
+        // animator.stop();
+        // else
+        // animator.start();
+        // }
 
-        if (wasActive != active.get()){
-            if (!wasActive){
+        if (wasActive != active.get()) {
+            if (!wasActive) {
                 listener.gainFocus();
                 wasActive = true;
-            }else{
+            }
+            else {
                 listener.loseFocus();
                 wasActive = false;
             }

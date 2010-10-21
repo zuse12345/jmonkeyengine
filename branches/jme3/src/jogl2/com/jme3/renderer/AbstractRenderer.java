@@ -8,6 +8,7 @@ import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.jme3.glhelper.Helper;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.Matrix4f;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Mesh.Mode;
@@ -137,6 +138,10 @@ public abstract class AbstractRenderer implements Renderer {
     public void cleanup() {
         objManager.deleteAllObjects(this);
         statistics.clearMemory();
+    }
+    
+    public void setBackgroundColor(ColorRGBA color) {
+    	helper.setBackgroundColor(color);
     }
 
     public void resetGLObjects() {
@@ -331,6 +336,17 @@ public abstract class AbstractRenderer implements Renderer {
 
     protected abstract void bindElementArrayBuffer(int buffer);
 
+    protected int convertMagFilter(Texture.MagFilter filter) {
+        switch (filter) {
+            case Bilinear:
+                return Helper.Filter.LINEAR.getGLConstant();
+            case Nearest:
+                return Helper.Filter.NEAREST.getGLConstant();
+            default:
+                throw new UnsupportedOperationException("Unknown mag filter: " + filter);
+        }
+    }
+    
     public void drawTriangleListVBO(VertexBuffer indexBuf, Mesh mesh, int count) {
         if (indexBuf.getBufferType() != VertexBuffer.Type.Index) {
             throw new IllegalArgumentException("Only index buffers are allowed as triangle lists.");
@@ -429,7 +445,9 @@ public abstract class AbstractRenderer implements Renderer {
         }
     }
 
-    protected abstract int getUniformLocation(Shader shader);
+    protected int getUniformLocation(Shader shader) {
+        return helper.getUniformLocation(shader, stringBuf.toString(),nameBuf);
+    }
 
     protected void updateUniformLocation(Shader shader, Uniform uniform) {
         if (glslVer != -1) {
@@ -563,8 +581,8 @@ public abstract class AbstractRenderer implements Renderer {
                 dstW = dst.getWidth();
                 dstH = dst.getHeight();
             }
-            blitFramebuffer(0, 0, srcW, srcH, 0, 0, dstW, dstH, Helper.Bit.COLOR_BUFFER.getGLConstant()
-                    | Helper.Bit.DEPTH_BUFFER.getGLConstant(), Helper.Filter.NEAREST.getGLConstant());
+            blitFramebuffer(0, 0, srcW, srcH, 0, 0, dstW, dstH, Helper.BufferBit.COLOR_BUFFER.getGLConstant()
+                    | Helper.BufferBit.DEPTH_BUFFER.getGLConstant(), Helper.Filter.NEAREST.getGLConstant());
 
             bindFramebuffer(prevFBO);
             try {
@@ -722,5 +740,9 @@ public abstract class AbstractRenderer implements Renderer {
         vpY = y;
         vpW = width;
         vpH = height;
+    }
+    
+    public void setDepthRange(float start, float end) {
+    	helper.setDepthRange(start, end);
     }
 }

@@ -1,8 +1,14 @@
 package com.jme3.glhelper;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
+import com.jme3.math.ColorRGBA;
+import com.jme3.shader.Shader;
+
 public interface Helper {
+	
+	//TODO: add Array, Format, TargetBuffer, TextureType, ShaderType, ShadeModel, BlendMode, CullFace, FillMode, DepthFunc, AlphaFunc
 	
 	public enum MatrixMode{
 			
@@ -19,12 +25,12 @@ public interface Helper {
 		}
 	};
 	
-	public enum Bit{
-		COLOR_BUFFER(16384),DEPTH_BUFFER(256);
+	public enum BufferBit{
+		COLOR_BUFFER(16384),DEPTH_BUFFER(256),STENCIL_BUFFER(1024),ACCUM_BUFFER(512);
 		
 		private final int glConstant;
 		
-		private Bit(int glConstant){
+		private BufferBit(int glConstant){
 			this.glConstant = glConstant;
 		}
 		
@@ -34,7 +40,7 @@ public interface Helper {
 	}
 	
 	public enum Filter{
-		NEAREST(9728);
+		NEAREST(9728),LINEAR(9729);
 		
         private final int glConstant;
 		
@@ -58,4 +64,14 @@ public interface Helper {
 	public void setViewPort(int x, int y, int width, int height);
 	
 	public int getTexture0();
+	
+	public void setBackgroundColor(ColorRGBA color);
+	
+	public void clear(BufferBit bufferBit);
+	
+	public void setDepthRange(float start, float end);
+	
+	public void setScissor(int x, int y, int width, int height);
+	
+	public int getUniformLocation(Shader shader,String name,ByteBuffer nameBuffer);
 }

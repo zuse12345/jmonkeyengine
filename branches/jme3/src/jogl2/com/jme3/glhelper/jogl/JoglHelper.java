@@ -1,11 +1,14 @@
 package com.jme3.glhelper.jogl;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLContext;
 
 import com.jme3.glhelper.Helper;
+import com.jme3.math.ColorRGBA;
+import com.jme3.shader.Shader;
 
 public class JoglHelper implements Helper {
 	
@@ -42,5 +45,30 @@ public class JoglHelper implements Helper {
 	@Override
 	public int getTexture0(){
 		return GL.GL_TEXTURE0;
+	}
+	
+	@Override
+	public void setBackgroundColor(ColorRGBA color){
+		GLContext.getCurrentGL().glClearColor(color.r, color.g, color.b, color.a);
+	}
+	
+	@Override
+	public void clear(BufferBit bufferBit){
+		GLContext.getCurrentGL().glClear(bufferBit.getGLConstant());
+	}
+	
+	@Override
+	public void setDepthRange(float start, float end) {
+        GLContext.getCurrentGL().glDepthRange(start, end);
+    }
+	
+	@Override
+	public void setScissor(int x, int y, int width, int height){
+		GLContext.getCurrentGL().glScissor(x, y, width, height);
+	}
+	
+	@Override
+	public int getUniformLocation(Shader shader,String name,ByteBuffer nameBuffer){
+		return GLContext.getCurrentGL().getGL2ES2().glGetUniformLocation(shader.getId(),name);
 	}
 }

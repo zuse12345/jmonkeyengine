@@ -45,6 +45,8 @@ import javax.media.opengl.GL2GL3;
 import javax.media.opengl.GLContext;
 import javax.media.opengl.fixedfunc.GLLightingFunc;
 import javax.media.opengl.fixedfunc.GLPointerFunc;
+
+import com.jme3.glhelper.Helper;
 import com.jme3.glhelper.jogl.JoglHelper;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.Light;
@@ -307,24 +309,20 @@ public class JoglRenderer extends AbstractRenderer {
                 && gl.isFunctionAvailable("glRenderbufferStorageMultisample");
     }
 
-    public void setBackgroundColor(ColorRGBA color) {
-        GLContext.getCurrentGL().glClearColor(color.r, color.g, color.b, color.a);
-    }
-
     public void clearBuffers(boolean color, boolean depth, boolean stencil) {
-        GL gl = GLContext.getCurrentGL();
         int bits = 0;
         if (color) {
-            bits = GL.GL_COLOR_BUFFER_BIT;
+            bits = Helper.BufferBit.COLOR_BUFFER.getGLConstant();
         }
         if (depth) {
-            bits |= GL.GL_DEPTH_BUFFER_BIT;
+            bits |= Helper.BufferBit.DEPTH_BUFFER.getGLConstant();
         }
         if (stencil) {
-            bits |= GL.GL_STENCIL_BUFFER_BIT;
+            bits |= Helper.BufferBit.STENCIL_BUFFER.getGLConstant();
         }
         if (bits != 0) {
-            gl.glClear(bits);
+        	//TODO: use helper.clear(BufferBit bufferBit)
+        	GLContext.getCurrentGL().glClear(bits);
         }
     }
 
@@ -466,22 +464,12 @@ public class JoglRenderer extends AbstractRenderer {
         }
     }
 
-    public void setDepthRange(float start, float end) {
-        GLContext.getCurrentGL().glDepthRange(start, end);
-    }
-
     public void setClipRect(int x, int y, int width, int height) {
         if (!context.clipRectEnabled) {
             enable(GL.GL_SCISSOR_TEST);
             context.clipRectEnabled = true;
         }
-        GLContext.getCurrentGL().glScissor(x, y, width, height);
-    }
-
-    @Override
-    protected int getUniformLocation(Shader shader) {
-        return GLContext.getCurrentGL().getGL2()
-                .glGetUniformLocation(shader.getId(), stringBuf.toString());
+        helper.setScissor(x, y, width, height);
     }
 
     @Override
@@ -1171,17 +1159,6 @@ public class JoglRenderer extends AbstractRenderer {
         }
     }
 
-    private int convertMagFilter(Texture.MagFilter filter) {
-        switch (filter) {
-            case Bilinear:
-                return GL.GL_LINEAR;
-            case Nearest:
-                return GL.GL_NEAREST;
-            default:
-                throw new UnsupportedOperationException("Unknown mag filter: " + filter);
-        }
-    }
-
     private int convertMinFilter(Texture.MinFilter filter) {
         switch (filter) {
             case Trilinear:
@@ -1715,8 +1692,7 @@ public class JoglRenderer extends AbstractRenderer {
         if (mesh.getId() == -1) {
             updateDisplayList(mesh);
         }
-        GL gl = GLContext.getCurrentGL();
-        gl.getGL2().glCallList(mesh.getId());
+        GLContext.getCurrentGL().getGL2().glCallList(mesh.getId());
     }
 
     public void renderMesh(Mesh mesh, int lod, int count) {

@@ -1262,7 +1262,7 @@ public final class Matrix4f implements Savable, Cloneable {
         float fB5 = m22*m33 - m23*m32;
         float fDet = fA0*fB5-fA1*fB4+fA2*fB3+fA3*fB2-fA4*fB1+fA5*fB0;
 
-        if ( FastMath.abs(fDet) <= FastMath.FLT_EPSILON )
+        if ( FastMath.abs(fDet) <= 0f )
             return zero();
 
         float f00 = + m11*fB5 - m12*fB4 + m13*fB3;
@@ -1739,8 +1739,9 @@ public final class Matrix4f implements Savable, Cloneable {
      * 
      * @return the string representation of this object.
      */
+    @Override
     public String toString() {
-        StringBuffer result = new StringBuffer("Matrix4f\n[\n");
+        StringBuilder result = new StringBuilder("Matrix4f\n[\n");
         result.append(" ");
         result.append(m00);
         result.append("  ");
@@ -1789,6 +1790,7 @@ public final class Matrix4f implements Savable, Cloneable {
      * @return the hashcode for this instance of Matrix4f.
      * @see java.lang.Object#hashCode()
      */
+    @Override
     public int hashCode() {
         int hash = 37;
         hash = 37 * hash + Float.floatToIntBits(m00);
@@ -1821,6 +1823,7 @@ public final class Matrix4f implements Savable, Cloneable {
      *            the object to compare for equality
      * @return true if they are equal
      */
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof Matrix4f) || o == null) {
             return false;
@@ -1930,7 +1933,7 @@ public final class Matrix4f implements Savable, Cloneable {
         m32 *= scale.getZ();
     }
 
-    static final boolean equalIdentity(Matrix4f mat) {
+    static boolean equalIdentity(Matrix4f mat) {
 		if (Math.abs(mat.m00 - 1) > 1e-4) return false;
 		if (Math.abs(mat.m11 - 1) > 1e-4) return false;
 		if (Math.abs(mat.m22 - 1) > 1e-4) return false;

@@ -58,11 +58,15 @@ import com.jme3.light.PointLight;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Matrix4f;
+import com.jme3.math.Quaternion;
+import com.jme3.math.Vector2f;
+import com.jme3.math.Vector3f;
 import com.jme3.renderer.Caps;
 import com.jme3.renderer.GLObjectManager;
 import com.jme3.renderer.IDList;
 import com.jme3.renderer.RenderContext;
 import com.jme3.renderer.Renderer;
+import com.jme3.renderer.RendererException;
 import com.jme3.renderer.Statistics;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Mesh.Mode;
@@ -71,6 +75,8 @@ import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.scene.VertexBuffer.Usage;
 import com.jme3.shader.Shader;
 import com.jme3.shader.Shader.ShaderSource;
+import com.jme3.shader.Shader.ShaderType;
+import com.jme3.shader.Uniform;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.FrameBuffer.RenderBuffer;
 import com.jme3.texture.Image;
@@ -79,10 +85,17 @@ import com.jme3.texture.Texture.WrapAxis;
 import com.jme3.util.BufferUtils;
 import com.jme3.util.IntMap;
 import com.jme3.util.IntMap.Entry;
+import com.jme3.util.ListMap;
 
 public class JoglRenderer implements Renderer {
 
     private static final Logger logger = Logger.getLogger(JoglRenderer.class.getName());
+
+    private static final boolean VALIDATE_SHADER = false;
+
+    private final ByteBuffer nameBuf = BufferUtils.createByteBuffer(250);
+
+    private final StringBuilder stringBuf = new StringBuilder(250);
 
     protected Statistics statistics = new Statistics();
 
@@ -149,6 +162,18 @@ public class JoglRenderer implements Renderer {
     private FrameBuffer lastFb = null;
 
     public JoglRenderer() {
+    }
+
+    protected void updateNameBuffer() {
+        int len = stringBuf.length();
+
+        nameBuf.position(0);
+        nameBuf.limit(len);
+        for (int i = 0; i < len; i++) {
+            nameBuf.put((byte) stringBuf.charAt(i));
+        }
+
+        nameBuf.rewind();
     }
 
     public Statistics getStatistics() {
@@ -615,6 +640,151 @@ public class JoglRenderer implements Renderer {
         gl.getGL2().glMultMatrixf(storeMatrix(worldMatrix, fb16));
     }
 
+    protected void updateUniformLocation(Shader shader, Uniform uniform) {
+        stringBuf.setLength(0);
+        stringBuf.append(uniform.getName()).append('\0');
+        updateNameBuffer();
+        GL gl = GLContext.getCurrentGL();
+        int loc = gl.getGL2()
+                .glGetUniformLocation(shader.getId(), /*nameBuf*/stringBuf.toString());
+        if (loc < 0) {
+            uniform.setLocation(-1);
+            // uniform is not declared in shader
+            logger.log(Level.WARNING, "Uniform {0} is not declared in shader.", uniform.getName());
+        }
+        else {
+            uniform.setLocation(loc);
+        }
+    }
+
+    protected void updateUniform(Shader shader, Uniform uniform) {
+        int shaderId = shader.getId();
+
+        assert uniform.getName() != null;
+        assert shader.getId() > 0;
+        GL gl = GLContext.getCurrentGL();
+        if (context.boundShaderProgram != shaderId) {
+            gl.getGL2().glUseProgram(shaderId);
+            statistics.onShaderUse(shader, true);
+            boundShader = shader;
+            context.boundShaderProgram = shaderId;
+        }
+        else {
+            statistics.onShaderUse(shader, false);
+        }
+
+        int loc = uniform.getLocation();
+        if (loc == -1) {
+            return;
+        }
+
+        if (loc == -2) {
+            // get uniform location
+            updateUniformLocation(shader, uniform);
+            if (uniform.getLocation() == -1) {
+                // not declared, ignore
+                uniform.clearUpdateNeeded();
+                return;
+            }
+            loc = uniform.getLocation();
+        }
+
+        if (uniform.getVarType() == null) {
+            return; // value not set yet..
+        }
+
+        statistics.onUniformSet();
+
+        uniform.clearUpdateNeeded();
+        FloatBuffer fb;
+        switch (uniform.getVarType()) {
+            case Float:
+                Float f = (Float) uniform.getValue();
+                gl.getGL2().glUniform1f(loc, f.floatValue());
+                break;
+            case Vector2:
+                Vector2f v2 = (Vector2f) uniform.getValue();
+                gl.getGL2().glUniform2f(loc, v2.getX(), v2.getY());
+                break;
+            case Vector3:
+                Vector3f v3 = (Vector3f) uniform.getValue();
+                gl.getGL2().glUniform3f(loc, v3.getX(), v3.getY(), v3.getZ());
+                break;
+            case Vector4:
+                Object val = uniform.getValue();
+                if (val instanceof ColorRGBA) {
+                    ColorRGBA c = (ColorRGBA) val;
+                    gl.getGL2().glUniform4f(loc, c.r, c.g, c.b, c.a);
+                }
+                else {
+                    Quaternion c = (Quaternion) uniform.getValue();
+                    gl.getGL2().glUniform4f(loc, c.getX(), c.getY(), c.getZ(), c.getW());
+                }
+                break;
+            case Boolean:
+                Boolean b = (Boolean) uniform.getValue();
+                gl.getGL2().glUniform1i(loc, b.booleanValue() ? GL.GL_TRUE : GL.GL_FALSE);
+                break;
+            case Matrix3:
+                fb = (FloatBuffer) uniform.getValue();
+                assert fb.remaining() == 9;
+                gl.getGL2().glUniformMatrix3fv(loc, 1, false, fb);
+                break;
+            case Matrix4:
+                fb = (FloatBuffer) uniform.getValue();
+                assert fb.remaining() == 16;
+                gl.getGL2().glUniformMatrix4fv(loc, 1, false, fb);
+                break;
+            case FloatArray:
+                fb = (FloatBuffer) uniform.getValue();
+                gl.getGL2().glUniform1fv(loc, 1, fb);
+                break;
+            case Vector2Array:
+                fb = (FloatBuffer) uniform.getValue();
+                gl.getGL2().glUniform2fv(loc, 1, fb);
+                break;
+            case Vector3Array:
+                fb = (FloatBuffer) uniform.getValue();
+                gl.getGL2().glUniform3fv(loc, 1, fb);
+                break;
+            case Vector4Array:
+                fb = (FloatBuffer) uniform.getValue();
+                gl.getGL2().glUniform4fv(loc, 1, fb);
+                break;
+            case Matrix4Array:
+                fb = (FloatBuffer) uniform.getValue();
+                gl.getGL2().glUniformMatrix4fv(loc, 1, false, fb);
+                break;
+            case Int:
+                Integer i = (Integer) uniform.getValue();
+                gl.getGL2().glUniform1i(loc, i.intValue());
+                break;
+            default:
+                throw new UnsupportedOperationException("Unsupported uniform type: "
+                        + uniform.getVarType());
+        }
+    }
+
+    protected void updateShaderUniforms(Shader shader) {
+        ListMap<String, Uniform> uniforms = shader.getUniformMap();
+        // for (Uniform uniform : shader.getUniforms()){
+        for (int i = 0; i < uniforms.size(); i++) {
+            Uniform uniform = uniforms.getValue(i);
+            if (uniform.isUpdateNeeded()) {
+                updateUniform(shader, uniform);
+            }
+        }
+    }
+
+    protected void resetUniformLocations(Shader shader) {
+        ListMap<String, Uniform> uniforms = shader.getUniformMap();
+        // for (Uniform uniform : shader.getUniforms()){
+        for (int i = 0; i < uniforms.size(); i++) {
+            Uniform uniform = uniforms.getValue(i);
+            uniform.reset(); // e.g check location again
+        }
+    }
+
     public void setLighting(LightList list) {
         GL gl = GLContext.getCurrentGL();
         if (list == null || list.size() == 0) {
@@ -683,10 +853,257 @@ public class JoglRenderer implements Renderer {
         // gl.glPopMatrix();
     }
 
+    public int convertShaderType(ShaderType type) {
+        switch (type) {
+            case Fragment:
+                return GL2ES2.GL_FRAGMENT_SHADER;
+            case Vertex:
+                return GL2ES2.GL_VERTEX_SHADER;
+                // case Geometry:
+                // return ARBGeometryShader4.GL_GEOMETRY_SHADER_ARB;
+            default:
+                throw new RuntimeException("Unrecognized shader type.");
+        }
+    }
+
     public void deleteShaderSource(ShaderSource source) {
+        if (source.getId() < 0) {
+            logger.warning("Shader source is not uploaded to GPU, cannot delete.");
+            return;
+        }
+        source.setUsable(false);
+        source.clearUpdateNeeded();
+        GL gl = GLContext.getCurrentGL();
+        gl.getGL2().glDeleteShader(source.getId());
+        source.resetObject();
+    }
+
+    public void updateShaderData(Shader shader) {
+        GL gl = GLContext.getCurrentGL();
+        int id = shader.getId();
+        boolean needRegister = false;
+        if (id == -1) {
+            // create program
+            id = gl.getGL2().glCreateProgram();
+            if (id <= 0) {
+                throw new RendererException(
+                        "Invalid ID received when trying to create shader program.");
+            }
+
+            shader.setId(id);
+            needRegister = true;
+        }
+
+        for (ShaderSource source : shader.getSources()) {
+            if (source.isUpdateNeeded()) {
+                updateShaderSourceData(source, shader.getLanguage());
+                // shader has been compiled here
+            }
+
+            if (!source.isUsable()) {
+                // it's useless.. just forget about everything..
+                shader.setUsable(false);
+                shader.clearUpdateNeeded();
+                return;
+            }
+            gl.getGL2().glAttachShader(id, source.getId());
+        }
+        // link shaders to program
+        gl.getGL2().glLinkProgram(id);
+
+        gl.getGL2().glGetProgramiv(id, GL2ES2.GL_LINK_STATUS, intBuf1);
+        boolean linkOK = intBuf1.get(0) == GL.GL_TRUE;
+        String infoLog = null;
+
+        if (VALIDATE_SHADER || !linkOK) {
+            gl.getGL2().glGetProgramiv(id, GL2ES2.GL_INFO_LOG_LENGTH, intBuf1);
+            int length = intBuf1.get(0);
+            if (length > 3) {
+                // get infos
+                ByteBuffer logBuf = BufferUtils.createByteBuffer(length);
+                gl.getGL2().glGetProgramInfoLog(id, logBuf.limit(), intBuf1, logBuf);
+
+                // convert to string, etc
+                byte[] logBytes = new byte[length];
+                logBuf.get(logBytes, 0, length);
+                infoLog = new String(logBytes);
+            }
+        }
+
+        if (linkOK) {
+            if (infoLog != null) {
+                logger.log(Level.INFO, "shader link success. \n{0}", infoLog);
+            }
+            else {
+                logger.fine("shader link success");
+            }
+        }
+        else {
+            if (infoLog != null) {
+                logger.log(Level.WARNING, "shader link failure. \n{0}", infoLog);
+            }
+            else {
+                logger.warning("shader link failure");
+            }
+        }
+
+        shader.clearUpdateNeeded();
+        if (!linkOK) {
+            // failure.. forget about everything
+            shader.resetSources();
+            shader.setUsable(false);
+            deleteShader(shader);
+        }
+        else {
+            shader.setUsable(true);
+            if (needRegister) {
+                objManager.registerForCleanup(shader);
+                statistics.onNewShader();
+            }
+            else {
+                // OpenGL spec: uniform locations may change after re-link
+                resetUniformLocations(shader);
+            }
+        }
+    }
+
+    public void updateShaderSourceData(ShaderSource source, String language) {
+        GL gl = GLContext.getCurrentGL();
+        int id = source.getId();
+        if (id == -1) {
+            // create id
+            id = gl.getGL2().glCreateShader(convertShaderType(source.getType()));
+            if (id <= 0) {
+                throw new RendererException("Invalid ID received when trying to create shader.");
+            }
+
+            source.setId(id);
+        }
+
+        // upload shader source
+        // merge the defines and source code
+        byte[] versionData = new byte[] {};// "#version 140\n".getBytes();
+        // versionData = "#define INSTANCING 1\n".getBytes();
+        byte[] definesCodeData = source.getDefines().getBytes();
+        byte[] sourceCodeData = source.getSource().getBytes();
+        ByteBuffer codeBuf = BufferUtils.createByteBuffer(versionData.length
+                + definesCodeData.length + sourceCodeData.length);
+        codeBuf.put(versionData);
+        codeBuf.put(definesCodeData);
+        codeBuf.put(sourceCodeData);
+        codeBuf.flip();
+
+        final byte[] array = new byte[codeBuf.limit()];
+        codeBuf.get(array);
+        gl.getGL2().glShaderSourceARB(id, 1, new String[] { new String(array) },
+                new int[] { array.length }, 0);
+        gl.getGL2().glCompileShader(id);
+
+        gl.getGL2().glGetShaderiv(id, GL2ES2.GL_COMPILE_STATUS, intBuf1);
+
+        boolean compiledOK = intBuf1.get(0) == GL.GL_TRUE;
+        String infoLog = null;
+
+        if (VALIDATE_SHADER || !compiledOK) {
+            // even if compile succeeded, check
+            // log for warnings
+            gl.getGL2().glGetShaderiv(id, GL2ES2.GL_INFO_LOG_LENGTH, intBuf1);
+            int length = intBuf1.get(0);
+            if (length > 3) {
+                // get infos
+                ByteBuffer logBuf = BufferUtils.createByteBuffer(length);
+                gl.getGL2().glGetShaderInfoLog(id, logBuf.limit(), intBuf1, logBuf);
+                byte[] logBytes = new byte[length];
+                logBuf.get(logBytes, 0, length);
+                // convert to string, etc
+                infoLog = new String(logBytes);
+            }
+        }
+
+        if (compiledOK) {
+            if (infoLog != null) {
+                logger.log(Level.INFO, "{0} compile success\n{1}", new Object[] { source.getName(),
+                        infoLog });
+            }
+            else {
+                logger.log(Level.FINE, "{0} compile success", source.getName());
+            }
+        }
+        else {
+            if (infoLog != null) {
+                logger.log(Level.WARNING, "{0} compile error: {1}", new Object[] {
+                        source.getName(), infoLog });
+            }
+            else {
+                logger.log(Level.WARNING, "{0} compile error: ?", source.getName());
+            }
+            logger.log(Level.WARNING, "{0}{1}",
+                    new Object[] { source.getDefines(), source.getSource() });
+        }
+
+        source.clearUpdateNeeded();
+        // only usable if compiled
+        source.setUsable(compiledOK);
+        if (!compiledOK) {
+            // make sure to dispose id cause all program's
+            // shaders will be cleared later.
+            gl.getGL2().glDeleteShader(id);
+        }
+        else {
+            // register for cleanup since the ID is usable
+            objManager.registerForCleanup(source);
+        }
     }
 
     public void setShader(Shader shader) {
+        GL gl = GLContext.getCurrentGL();
+        if (shader == null) {
+            if (context.boundShaderProgram > 0) {
+                gl.getGL2().glUseProgram(0);
+                statistics.onShaderUse(null, true);
+                context.boundShaderProgram = 0;
+                boundShader = null;
+            }
+        }
+        else {
+            if (shader.isUpdateNeeded()) {
+                updateShaderData(shader);
+            }
+
+            // NOTE: might want to check if any of the
+            // sources need an update?
+
+            if (!shader.isUsable()) {
+                return;
+            }
+
+            assert shader.getId() > 0;
+
+            updateShaderUniforms(shader);
+            if (context.boundShaderProgram != shader.getId()) {
+                if (VALIDATE_SHADER) {
+                    // check if shader can be used
+                    // with current state
+                    gl.getGL2().glValidateProgram(shader.getId());
+                    gl.getGL2().glGetProgramiv(shader.getId(), GL2ES2.GL_VALIDATE_STATUS, intBuf1);
+                    boolean validateOK = intBuf1.get(0) == GL.GL_TRUE;
+                    if (validateOK) {
+                        logger.fine("shader validate success");
+                    }
+                    else {
+                        logger.warning("shader validate failure");
+                    }
+                }
+
+                gl.getGL2().glUseProgram(shader.getId());
+                statistics.onShaderUse(shader, true);
+                context.boundShaderProgram = shader.getId();
+                boundShader = shader;
+            }
+            else {
+                statistics.onShaderUse(shader, false);
+            }
+        }
     }
 
     public void deleteShader(Shader shader) {

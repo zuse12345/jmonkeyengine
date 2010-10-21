@@ -7,9 +7,7 @@ import java.nio.IntBuffer;
 import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.media.opengl.GL;
-
+import com.jme3.glhelper.Helper;
 import com.jme3.math.Matrix4f;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Mesh.Mode;
@@ -21,6 +19,7 @@ import com.jme3.shader.Shader;
 import com.jme3.shader.Shader.ShaderSource;
 import com.jme3.shader.Uniform;
 import com.jme3.texture.FrameBuffer;
+import com.jme3.texture.Texture;
 import com.jme3.texture.FrameBuffer.RenderBuffer;
 import com.jme3.util.BufferUtils;
 import com.jme3.util.IntMap;
@@ -105,6 +104,8 @@ public abstract class AbstractRenderer implements Renderer {
     protected boolean framebufferBlit = false;
 
     protected boolean renderbufferStorageMultisample = false;
+    
+    protected Helper helper;
 
     protected FloatBuffer storeMatrix(Matrix4f matrix, FloatBuffer store) {
         store.rewind();
@@ -169,7 +170,7 @@ public abstract class AbstractRenderer implements Renderer {
             assert uniform.getName() != null;
             assert shader.getId() > 0;
             if (context.boundShaderProgram != shaderId) {
-                useProgram(shaderId);
+                helper.useProgram(shaderId);
                 statistics.onShaderUse(shader, true);
                 boundShader = shader;
                 context.boundShaderProgram = shaderId;
@@ -283,10 +284,6 @@ public abstract class AbstractRenderer implements Renderer {
     protected abstract void setVertexAttribVBO(VertexBuffer vb, VertexBuffer idb);
 
     public abstract void setVertexAttrib(VertexBuffer vb, VertexBuffer idb);
-
-    public abstract void clearVertexAttribs();
-
-    public abstract void clearTextureUnits();
 
     public void setVertexAttrib(VertexBuffer vb) {
         setVertexAttrib(vb, null);
@@ -452,8 +449,6 @@ public abstract class AbstractRenderer implements Renderer {
         }
     }
 
-    protected abstract void useProgram(int program);
-
     protected abstract void updateUniformVar(Shader shader, Uniform uniform);
 
     protected abstract void deleteShader(ShaderSource source);
@@ -477,7 +472,7 @@ public abstract class AbstractRenderer implements Renderer {
         if (glslVer != -1) {
             if (shader == null) {
                 if (context.boundShaderProgram > 0) {
-                    useProgram(0);
+                    helper.useProgram(0);
                     statistics.onShaderUse(null, true);
                     context.boundShaderProgram = 0;
                     boundShader = null;
@@ -511,7 +506,7 @@ public abstract class AbstractRenderer implements Renderer {
                         }
                     }
 
-                    useProgram(shader.getId());
+                    helper.useProgram(shader.getId());
                     statistics.onShaderUse(shader, true);
                     context.boundShaderProgram = shader.getId();
                     boundShader = shader;
@@ -568,8 +563,8 @@ public abstract class AbstractRenderer implements Renderer {
                 dstW = dst.getWidth();
                 dstH = dst.getHeight();
             }
-            blitFramebuffer(0, 0, srcW, srcH, 0, 0, dstW, dstH, GL.GL_COLOR_BUFFER_BIT
-                    | GL.GL_DEPTH_BUFFER_BIT, GL.GL_NEAREST);
+            blitFramebuffer(0, 0, srcW, srcH, 0, 0, dstW, dstH, Helper.Bit.COLOR_BUFFER.getGLConstant()
+                    | Helper.Bit.DEPTH_BUFFER.getGLConstant(), Helper.Filter.NEAREST.getGLConstant());
 
             bindFramebuffer(prevFBO);
             try {
@@ -623,4 +618,109 @@ public abstract class AbstractRenderer implements Renderer {
     }
 
     public abstract void updateFrameBufferAttachment(FrameBuffer fb, RenderBuffer rb);
+    
+    protected abstract void deleteTexture();
+    
+    public void deleteTexture(Texture tex) {      
+        int texId = tex.getId();
+        if (texId != -1) {
+            intBuf1.put(0, texId);
+            intBuf1.position(0).limit(1);
+            deleteTexture();
+            tex.resetObject();
+        }
+    }
+    
+    protected abstract int convertTextureType(Texture.Type type);
+    
+    public void clearTextureUnits() {
+        IDList textureList = context.textureIndexList;
+        Texture[] textures = context.boundTextures;
+        for (int i = 0; i < textureList.oldLen; i++) {
+            int idx = textureList.oldList[i];
+
+            if (context.boundTextureUnit != idx) {
+                setActiveTexture(helper.getTexture0() + idx);
+                context.boundTextureUnit = idx;
+            }
+            disable(convertTextureType(textures[idx].getType()));
+            textures[idx] = null;
+        }
+        context.textureIndexList.copyNewToOld();
+    }
+    
+    protected abstract void enable(int cap);
+    
+    protected abstract void disable(int cap);
+    
+    protected abstract void setActiveTexture(int unit);
+    
+    protected abstract void bindTexture(int type,int id);
+    
+    public void clearClipRect() {
+        if (context.clipRectEnabled) {
+            disable(helper.getTexture0());
+            context.clipRectEnabled = false;
+        }
+    }
+    
+    protected abstract void disableClientState(int cap);
+    
+    public void clearVertexAttribs() {
+        for (int i = 0; i < 16; i++) {
+            VertexBuffer vb = context.boundAttribs[i];
+            if (vb != null) {
+                int arrayType = convertArrayType(vb.getBufferType());               
+                disableClientState(arrayType);
+                context.boundAttribs[vb.getBufferType().ordinal()] = null;
+            }
+        }
+    }
+    
+    protected abstract int convertArrayType(VertexBuffer.Type type);
+    
+    protected abstract void deleteBuffer();
+    
+    public void deleteBuffer(VertexBuffer vb) {
+        int bufId = vb.getId();
+        if (bufId != -1) {
+            // delete buffer
+            intBuf1.put(0, bufId);
+            intBuf1.position(0).limit(1);
+            deleteBuffer();
+            vb.resetObject();
+        }
+    }
+    
+    public void setViewProjectionMatrices(Matrix4f viewMatrix, Matrix4f projMatrix) {
+        if (glslVer == -1) {
+            this.viewMatrix.set(viewMatrix);
+            this.projMatrix.set(projMatrix);
+            if (context.matrixMode != Helper.MatrixMode.PROJECTION.getGLConstant()) {
+                helper.setMatrixMode(Helper.MatrixMode.PROJECTION);
+                context.matrixMode = Helper.MatrixMode.PROJECTION.getGLConstant();
+            }
+            helper.loadMatrixf(storeMatrix(projMatrix, fb16));
+        }
+    }
+    
+    public void setWorldMatrix(Matrix4f worldMatrix) {
+        if (glslVer == -1) {
+            this.worldMatrix.set(worldMatrix);
+            if (context.matrixMode != Helper.MatrixMode.MODELVIEW.getGLConstant()) {
+                helper.setMatrixMode(Helper.MatrixMode.MODELVIEW);
+                context.matrixMode = Helper.MatrixMode.MODELVIEW.getGLConstant();
+            }
+            helper.loadMatrixf(storeMatrix(viewMatrix, fb16));
+            helper.multMatrixf(storeMatrix(worldMatrix, fb16));
+        }
+    }
+    
+    public void setViewPort(int x, int y, int width, int height) {
+        helper.setViewPort(x, y, width, height);
+        vpX = x;
+        vpY = y;
+        vpW = width;
+        vpH = height;
+    }
 }

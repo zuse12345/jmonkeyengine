@@ -100,7 +100,7 @@ public class TestHoverTank extends SimpleApplication{
         rootNode.attachChild(tank);
 
         FilterPostProcessor fpp=new FilterPostProcessor(assetManager);
-        BloomFilter bf=new BloomFilter(viewPort.getCamera().getWidth(), viewPort.getCamera().getHeight(), BloomFilter.GLOW_OBJECTS);
+        BloomFilter bf=new BloomFilter(viewPort.getCamera().getWidth(), viewPort.getCamera().getHeight(), BloomFilter.GlowMode.Objects);
         bf.setBloomIntensity(2.0f);
         bf.setExposurePower(1.3f);
         fpp.addFilter(bf);

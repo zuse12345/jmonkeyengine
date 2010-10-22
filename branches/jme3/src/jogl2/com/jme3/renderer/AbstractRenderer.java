@@ -27,6 +27,14 @@ import com.jme3.util.IntMap;
 import com.jme3.util.IntMap.Entry;
 import com.jme3.util.ListMap;
 
+/**
+ * OpenGL renderer that does not rely on a specific binding, that uses low-level OpenGL operations to 
+ * perform higher-level tasks except those that requires the use of binding-specific features and that 
+ * handles binding-agnostic OpenGL operations that cannot be easily made type-safe (enable, disable, ...)
+ * 
+ * @author Julien Gouesse
+ *
+ */
 public abstract class AbstractRenderer implements Renderer {
 
     protected static final Logger logger = Logger.getLogger(AbstractRenderer.class.getName());
@@ -658,7 +666,7 @@ public abstract class AbstractRenderer implements Renderer {
             int idx = textureList.oldList[i];
 
             if (context.boundTextureUnit != idx) {
-                setActiveTexture(helper.getTexture0() + idx);
+                setActiveTexture(Helper.TEXTURE0 + idx);
                 context.boundTextureUnit = idx;
             }
             disable(convertTextureType(textures[idx].getType()));
@@ -677,7 +685,7 @@ public abstract class AbstractRenderer implements Renderer {
     
     public void clearClipRect() {
         if (context.clipRectEnabled) {
-            disable(helper.getTexture0());
+            disable(Helper.TEXTURE0);
             context.clipRectEnabled = false;
         }
     }

@@ -81,6 +81,12 @@ import com.jme3.util.BufferUtils;
 import com.jme3.util.IntMap;
 import com.jme3.util.IntMap.Entry;
 
+/**
+ * OpenGL renderer that relies on a specific OpenGL binding. It handles operations that can hardly be 
+ * done in a binding-agnostic way (detection of available extensions, capabilities, manipulation of 
+ * shader sources, ...) 
+ *
+ */
 public class JoglRenderer extends AbstractRenderer {
 
     public JoglRenderer() {  	
@@ -95,9 +101,9 @@ public class JoglRenderer extends AbstractRenderer {
 
         applyRenderState(RenderState.DEFAULT);
 
-        powerOf2 = true/*gl.isExtensionAvailable("GL_ARB_texture_non_power_of_two")*/;
-        hardwareMips = true/*gl.isExtensionAvailable("GL_SGIS_generate_mipmap")*/;
-        vbo = true/*gl.isExtensionAvailable("GL_ARB_vertex_buffer_object")*/;
+        powerOf2 = gl.isExtensionAvailable("GL_ARB_texture_non_power_of_two");
+        hardwareMips = gl.isExtensionAvailable("GL_SGIS_generate_mipmap");
+        vbo = gl.isExtensionAvailable("GL_ARB_vertex_buffer_object");
 
         // TODO: use gl.glGetString(GL.GL_VERSION)
         /*if (ctxCaps.OpenGL20) {
@@ -119,9 +125,7 @@ public class JoglRenderer extends AbstractRenderer {
             // no, I need the support of low end graphics cards too
         }
         else {
-            // TODO remove
-            glslVer = -1;
-            /*int spaceIdx = versionStr.indexOf(" ");
+            int spaceIdx = versionStr.indexOf(" ");
             if (spaceIdx >= 1) {
                 versionStr = versionStr.substring(0, spaceIdx);
             }
@@ -151,7 +155,7 @@ public class JoglRenderer extends AbstractRenderer {
                 case 100:
                     caps.add(Caps.GLSL100);
                     break;
-            }*/
+            }
             // N.B: do NOT force GLSL100 support
         }
 
@@ -207,38 +211,38 @@ public class JoglRenderer extends AbstractRenderer {
         maxCubeTexSize = intBuf16.get(0);
         logger.log(Level.FINER, "Maximum CubeMap Resolution: {0}", maxCubeTexSize);
 
-        // if (gl.isExtensionAvailable("GL_ARB_color_buffer_float")) {
-        // XXX: Require both 16 and 32 bit float support for FloatColorBuffer.
-        // if (gl.isExtensionAvailable("GL_ARB_half_float_pixel")) {
-        caps.add(Caps.FloatColorBuffer);
-        // }
-        // }
+        if (gl.isExtensionAvailable("GL_ARB_color_buffer_float")) {
+            // XXX: Require both 16 and 32 bit float support for FloatColorBuffer.
+            if (gl.isExtensionAvailable("GL_ARB_half_float_pixel")) {
+                caps.add(Caps.FloatColorBuffer);
+            }
+        }
 
-        // if (gl.isExtensionAvailable("GL_ARB_depth_buffer_float")) {
+        if (gl.isExtensionAvailable("GL_ARB_depth_buffer_float")) {
         caps.add(Caps.FloatDepthBuffer);
-        // }
+        }
 
-        // if (gl.isExtensionAvailable("GL_ARB_draw_instanced")) {
-        // caps.add(Caps.MeshInstancing);
-        // }
+        if (gl.isExtensionAvailable("GL_ARB_draw_instanced")) {
+            caps.add(Caps.MeshInstancing);
+        }
 
-        // if (gl.isExtensionAvailable("GL_ARB_fragment_program")) {
-        caps.add(Caps.ARBprogram);
-        // }
+        if (gl.isExtensionAvailable("GL_ARB_fragment_program")) {
+            caps.add(Caps.ARBprogram);
+        }
 
-        // if (gl.isExtensionAvailable("GL_ARB_texture_buffer_object")) {
-        caps.add(Caps.TextureBuffer);
-        // }
+        if (gl.isExtensionAvailable("GL_ARB_texture_buffer_object")) {
+            caps.add(Caps.TextureBuffer);
+        }
 
-        // if (gl.isExtensionAvailable("GL_ARB_texture_float")) {
-        // if (gl.isExtensionAvailable("GL_ARB_half_float_pixel")) {
-        caps.add(Caps.FloatTexture);
-        // }
-        // }
+        if (gl.isExtensionAvailable("GL_ARB_texture_float")) {
+            if (gl.isExtensionAvailable("GL_ARB_half_float_pixel")) {
+                caps.add(Caps.FloatTexture);
+            }
+        }
 
-        // if (gl.isExtensionAvailable("GL_ARB_vertex_array_object")) {
-        caps.add(Caps.VertexBufferArray);
-        // }
+        if (gl.isExtensionAvailable("GL_ARB_vertex_array_object")) {
+            caps.add(Caps.VertexBufferArray);
+        }
 
         boolean latc = gl.isExtensionAvailable("GL_EXT_texture_compression_latc");
         boolean atdc = gl.isExtensionAvailable("GL_ATI_texture_compression_3dc");
@@ -249,24 +253,24 @@ public class JoglRenderer extends AbstractRenderer {
             }
         }
 
-        // if (gl.isExtensionAvailable("GL_EXT_packed_float")) {
-        caps.add(Caps.PackedFloatColorBuffer);
-        // if (gl.isExtensionAvailable("GL_ARB_half_float_pixel")) {
-        // because textures are usually uploaded as RGB16F
-        // need half-float pixel
-        caps.add(Caps.PackedFloatTexture);
-        // }
-        // }
+        if (gl.isExtensionAvailable("GL_EXT_packed_float")) {
+            caps.add(Caps.PackedFloatColorBuffer);
+            if (gl.isExtensionAvailable("GL_ARB_half_float_pixel")) {
+                // because textures are usually uploaded as RGB16F
+                // need half-float pixel
+                caps.add(Caps.PackedFloatTexture);
+            }
+        }
 
-        // if (gl.isExtensionAvailable("GL_EXT_texture_array")) {
-        caps.add(Caps.TextureArray);
-        // }
+        if (gl.isExtensionAvailable("GL_EXT_texture_array")) {
+            caps.add(Caps.TextureArray);
+        }
 
-        // if (gl.isExtensionAvailable("GL_EXT_texture_shared_exponent")) {
-        caps.add(Caps.SharedExponentTexture);
-        // }
+        if (gl.isExtensionAvailable("GL_EXT_texture_shared_exponent")) {
+            caps.add(Caps.SharedExponentTexture);
+        }
 
-        // if (gl.isExtensionAvailable("GL_EXT_framebuffer_object")) {
+        if (gl.isExtensionAvailable("GL_EXT_framebuffer_object")) {
         caps.add(Caps.FrameBuffer);
 
         gl.glGetIntegerv(GL.GL_MAX_RENDERBUFFER_SIZE, intBuf16);
@@ -291,9 +295,9 @@ public class JoglRenderer extends AbstractRenderer {
             maxMRTFBOAttachs = intBuf16.get(0);
             logger.log(Level.FINER, "FBO Max MRT renderbuffers: {0}", maxMRTFBOAttachs);
         }
-        // }
+        }
 
-        // if (gl.isExtensionAvailable("GL_ARB_multisample")) {
+        if (gl.isExtensionAvailable("GL_ARB_multisample")) {
         gl.glGetIntegerv(GL.GL_SAMPLE_BUFFERS, intBuf16);
         boolean available = intBuf16.get(0) != 0;
         gl.glGetIntegerv(GL.GL_SAMPLES, intBuf16);
@@ -303,8 +307,8 @@ public class JoglRenderer extends AbstractRenderer {
         if (samples > 0 && available && !enabled) {
             gl.glEnable(GL.GL_MULTISAMPLE);
         }
-        // }
-        framebufferBlit = true /*gl.isExtensionAvailable("GL_EXT_framebuffer_blit")*/;
+        }
+        framebufferBlit = gl.isExtensionAvailable("GL_EXT_framebuffer_blit");
         renderbufferStorageMultisample = gl.isExtensionAvailable("GL_EXT_framebuffer_multisample")
                 && gl.isFunctionAvailable("glRenderbufferStorageMultisample");
     }

@@ -6,7 +6,17 @@ import java.nio.FloatBuffer;
 import com.jme3.math.ColorRGBA;
 import com.jme3.shader.Shader;
 
+/**
+ * OpenGL helper that does not rely on a specific binding. Its main purpose is to allow 
+ * to move the binding-agnostic OpenGL logic from the source code of the both renderers 
+ * to a single abstract renderer in order to ease the maintenance
+ * 
+ * @author Julien Gouesse
+ *
+ */
 public interface Helper {
+	
+	public static final int TEXTURE0 = 33984;
 	
 	//TODO: add Array, Format, TargetBuffer, TextureType, ShaderType, ShadeModel, BlendMode, CullFace, FillMode, DepthFunc, AlphaFunc
 	
@@ -62,8 +72,6 @@ public interface Helper {
 	public void multMatrixf(FloatBuffer m);
 	
 	public void setViewPort(int x, int y, int width, int height);
-	
-	public int getTexture0();
 	
 	public void setBackgroundColor(ColorRGBA color);
 	

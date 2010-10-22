@@ -30,47 +30,28 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jme3test.effect;
+package jme3test.scene;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.effect.EmitterBoxShape;
-import com.jme3.effect.ParticleEmitter;
-import com.jme3.effect.ParticleMesh.Type;
-import com.jme3.material.Material;
-import com.jme3.math.ColorRGBA;
-import com.jme3.math.Vector3f;
+import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 
-public class TestPointSprite extends SimpleApplication {
+public class TestUserData extends SimpleApplication {
 
-    public static void main(String[] args){
-        TestPointSprite app = new TestPointSprite();
+    public static void main(String[] args) {
+        TestUserData app = new TestUserData();
         app.start();
     }
 
-    @Override
     public void simpleInitApp() {
-        ParticleEmitter emit = new ParticleEmitter("Emitter", Type.Point, 10000);
-        emit.setShape(new EmitterBoxShape(new Vector3f(-1.8f, -1.8f, -1.8f),
-                                          new Vector3f(1.8f, 1.8f, 1.8f)));
-        emit.setGravity(0);
-        emit.setLowLife(60);
-        emit.setHighLife(60);
-        emit.setStartVel(new Vector3f(0, 0, 0));
-        emit.setImagesX(15);
-        emit.setStartSize(0.05f);
-        emit.setEndSize(0.05f);
-        emit.setStartColor(ColorRGBA.White);
-        emit.setEndColor(ColorRGBA.White);
-        emit.setSelectRandomImage(true);
-        emit.emitAllParticles();
-        
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
-        mat.setBoolean("m_PointSprite", true);
-        mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Smoke/Smoke.png"));
-        emit.setMaterial(mat);
+        Node scene = (Node) assetManager.loadModel("Scenes/DotScene/DotScene.scene");
+        System.out.println("Scene: " + scene);
 
-        rootNode.attachChild(emit);
-        
+        Spatial testNode = scene.getChild("TestNode");
+        System.out.println("TestNode: "+ testNode);
+
+        for (String key : testNode.getUserDataKeys()){
+            System.out.println("Property " + key + " = " + testNode.getUserData(key));
+        }
     }
-
 }

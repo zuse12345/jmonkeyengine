@@ -215,14 +215,27 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             String name = attribs.getValue("name");
             if (name == null)
                 name = "OgreNode-" + (++nodeIdx);
-            else
-                name += "-node";
 
             Node newNode = new Node(name);
             if (node != null){
                 node.attachChild(newNode);
             }
             node = newNode;
+        }else if (qName.equals("property")){
+            if (node != null){
+                String type = attribs.getValue("type");
+                String name = attribs.getValue("name");
+                String data = attribs.getValue("data");
+                if (type.equals("BOOL")){
+                    node.setUserData(name, Boolean.parseBoolean(data)||data.equals("1"));
+                }else if (type.equals("FLOAT")){
+                    node.setUserData(name, Float.parseFloat(data));
+                }else if (type.equals("STRING")){
+                    node.setUserData(name, data);
+                }else if (type.equals("INT")){
+                    node.setUserData(name, Integer.parseInt(data));
+                }
+            }
         }else if (qName.equals("entity")){
             assert elementStack.peek().equals("node");
             String name = attribs.getValue("name");
@@ -234,6 +247,8 @@ public class SceneLoader extends DefaultHandler implements AssetLoader {
             String meshFile = attribs.getValue("meshFile");
             if (meshFile == null)
                 throw new SAXException("Required attribute 'meshFile' missing for 'entity' node");
+
+            String materialName = attribs.getValue("materialName");
 
             // NOTE: append "xml" since its assumed mesh filse are binary in dotScene
             if (folderName != null)

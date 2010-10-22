@@ -52,13 +52,11 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Quad;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
+import com.jme3.util.SkyFactory;
 import com.jme3.water.SimpleWaterProcessor;
 import java.io.File;
 
 public class TestSceneWater extends SimpleApplication {
-
-    private Sphere sphereMesh = new Sphere(10, 10, 100, false, true);
-    private Geometry sphere = new Geometry("Sky", sphereMesh);
 
     // set default for applets
     private static boolean useHttp = true;
@@ -72,11 +70,6 @@ public class TestSceneWater extends SimpleApplication {
         app.start();
     }
 
-    @Override
-    public void simpleUpdate(float tpf){
-        sphere.setLocalTranslation(cam.getLocation());
-    }
-
     public void simpleInitApp() {
         this.flyCam.setMoveSpeed(10);
         Node mainScene=new Node();
@@ -84,17 +77,7 @@ public class TestSceneWater extends SimpleApplication {
         cam.setRotation(new Quaternion(0.03f, 0.9f, 0f, 0.4f));
 
         // load sky
-        sphere.updateModelBound();
-        sphere.setQueueBucket(Bucket.Sky);
-        Material sky = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
-        TextureKey key = new TextureKey("Textures/Sky/Bright/BrightSky.dds", true);
-        key.setGenerateMips(true);
-        key.setAsCube(true);
-        Texture tex = assetManager.loadTexture(key);
-        sky.setTexture("m_Texture", tex);
-        sky.setVector3("m_NormalScale", Vector3f.UNIT_XYZ);
-        sphere.setMaterial(sky);
-        mainScene.attachChild(sphere);
+        mainScene.attachChild(SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false));
 
         // create the geometry and attach it
         // load the level from zip or http zip

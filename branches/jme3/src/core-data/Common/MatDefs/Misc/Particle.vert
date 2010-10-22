@@ -15,7 +15,7 @@ uniform mat4 g_WorldViewMatrix;
 uniform mat4 g_WorldMatrix;
 uniform vec3 g_CameraPosition;
 uniform float m_Quadratic;
-const float SIZE_MULTIPLIER = 2.0/65536.0;
+const float SIZE_MULTIPLIER = 4.0;
 attribute float inSize;
 #endif
 
@@ -37,6 +37,6 @@ void main(){
         //vec4 worldViewPos = g_WorldViewMatrix * pos;
         //gl_PointSize = (inSize * SIZE_MULTIPLIER * m_Quadratic)*100.0 / worldViewPos.z;
 
-        color.a = min(1.0, gl_PointSize);
+        color.a *= min(1.0, gl_PointSize);
     #endif
 }

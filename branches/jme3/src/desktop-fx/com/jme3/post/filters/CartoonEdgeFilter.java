@@ -41,6 +41,11 @@ import com.jme3.renderer.Renderer;
 import com.jme3.renderer.ViewPort;
 import com.jme3.texture.Image.Format;
 
+/**
+ * Applies a cartoon-style edge detection filter to all objects in the scene.
+ *
+ * @author Kirill Vainer
+ */
 public class CartoonEdgeFilter extends Filter {
 
     private Pass normalPass;

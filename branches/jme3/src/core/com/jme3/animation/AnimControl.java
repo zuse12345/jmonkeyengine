@@ -134,10 +134,20 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
         try {
             Node clonedNode = (Node) spatial;
             AnimControl clone = (AnimControl) super.clone();
+            clone.spatial  = spatial;
             clone.skeleton = new Skeleton(skeleton);
             Mesh[] meshes = new Mesh[targets.length];
             for (int i = 0; i < meshes.length; i++) {
                 meshes[i] = ((Geometry) clonedNode.getChild(i)).getMesh();
+            }
+            for (int i = meshes.length; i < clonedNode.getQuantity(); i++){
+                // go through attachment nodes, apply them to correct bone
+                Node clonedAttachNode = (Node) clonedNode.getChild(i);
+                Bone originalBone     = (Bone) clonedAttachNode.getUserData("AttachedBone");
+                Bone clonedBone       = clone.skeleton.getBone(originalBone.getName());
+                
+                clonedAttachNode.setUserData("AttachedBone", clonedBone);
+                clonedBone.setAttachmentsNode(clonedAttachNode);
             }
             clone.targets = meshes;
             clone.channels = new ArrayList<AnimChannel>();
@@ -185,6 +195,18 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
                                                "in this AnimControl");
 
         animationMap.remove(anim.getName());
+    }
+
+    public Node getAttachmentsNode(String boneName) {
+        Bone b = skeleton.getBone(boneName);
+        if (b == null)
+            throw new IllegalArgumentException("Given bone name does not exist " +
+                                               "in the skeleton.");
+
+        Node n = b.getAttachmentsNode();
+        Node model = (Node) spatial;
+        model.attachChild(n);
+        return n;
     }
 
     /**

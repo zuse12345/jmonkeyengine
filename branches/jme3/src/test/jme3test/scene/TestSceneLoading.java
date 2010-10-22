@@ -45,6 +45,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
+import com.jme3.util.SkyFactory;
 import java.io.File;
 
 public class TestSceneLoading extends SimpleApplication {
@@ -71,16 +72,7 @@ public class TestSceneLoading extends SimpleApplication {
         this.flyCam.setMoveSpeed(10);
 
         // load sky
-        sphere.setQueueBucket(Bucket.Sky);
-        Material sky = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
-        TextureKey key = new TextureKey("Textures/Sky/Bright/BrightSky.dds", true);
-        key.setGenerateMips(true);
-        key.setAsCube(true);
-        Texture tex = assetManager.loadTexture(key);
-        sky.setTexture("m_Texture", tex);
-        sky.setVector3("m_NormalScale", Vector3f.UNIT_XYZ);
-        sphere.setMaterial(sky);
-        rootNode.attachChild(sphere);
+        rootNode.attachChild(SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false));
 
         // create the geometry and attach it
         // load the level from zip or http zip

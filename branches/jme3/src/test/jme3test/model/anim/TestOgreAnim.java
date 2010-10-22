@@ -44,7 +44,10 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Box;
 
 public class TestOgreAnim extends SimpleApplication 
         implements AnimEventListener, ActionListener {
@@ -80,6 +83,13 @@ public class TestOgreAnim extends SimpleApplication
             System.out.println(anim);
 
         channel.setAnim("stand");
+
+        Box b = new Box(.25f,3f,.25f);
+        Geometry item = new Geometry("Item", b);
+        item.move(0, 1.5f, 0);
+        item.setMaterial(assetManager.loadMaterial("Common/Materials/RedColor.j3m"));
+        Node n = control.getAttachmentsNode("hand.right");
+        n.attachChild(item);
 
         rootNode.attachChild(model);
 

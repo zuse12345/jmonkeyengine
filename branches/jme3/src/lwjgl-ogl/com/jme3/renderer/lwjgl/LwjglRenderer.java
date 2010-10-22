@@ -367,7 +367,7 @@ public class LwjglRenderer implements Renderer {
             }
         }
 
-        logger.log(Level.INFO, "Caps: " + caps);
+        logger.log(Level.INFO, "Caps: {0}", caps);
     }
 
     public void resetGLObjects(){
@@ -444,6 +444,14 @@ public class LwjglRenderer implements Renderer {
         }else if (!state.isColorWrite() && context.colorWriteEnabled){
             glColorMask(false,false,false,false);
             context.colorWriteEnabled = false;
+        }
+        if (state.isPointSprite() && !context.pointSprite){
+            glEnable(GL_POINT_SPRITE);
+            glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
+            glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+            glPointParameterf(GL_POINT_SIZE_MIN, 1.0f);
+        }else if (!state.isPointSprite() && context.pointSprite){
+            glDisable(GL_POINT_SPRITE);
         }
         if (state.isPolyOffset()){
             if (!context.polyOffsetEnabled){
@@ -1167,6 +1175,20 @@ public class LwjglRenderer implements Renderer {
         if (lastFb == fb)
             return;
 
+        // generate mipmaps for last FB if needed
+        if (lastFb != null){
+           for (int i = 0; i < lastFb.getNumColorBuffers(); i++){
+               RenderBuffer rb = lastFb.getColorBuffer(i);
+               Texture tex = rb.getTexture();
+               if (tex != null
+                && tex.getMinFilter().usesMipMapLevels()){
+                   setTexture(0, rb.getTexture());
+                   glGenerateMipmapEXT(convertTextureType(tex.getType()));
+               }
+           }
+        }
+
+        
         if (fb == null){
             // unbind any fbos
             if (context.boundFBO != 0){
@@ -1258,21 +1280,11 @@ public class LwjglRenderer implements Renderer {
                 throw new IllegalArgumentException("Specified framebuffer" +
                                                    " does not have a colorbuffer");
 
-//            Texture tex = rb.getTexture();
-//            if (tex != null){
-//                // read directly from texture
-//                setTexture(0, tex);
-//                int type = convertTextureType(tex.getType());
-//                glGetTexImage(type, 0, GL_BGRA, GL_UNSIGNED_BYTE, byteBuf);
-//
-//                return;
-//            }else{
-                setFrameBuffer(fb);
-                if (context.boundReadBuf != rb.getSlot()){
-                    glReadBuffer(GL_COLOR_ATTACHMENT0_EXT + rb.getSlot());
-                    context.boundReadBuf = rb.getSlot();
-                }
-//            }
+            setFrameBuffer(fb);
+            if (context.boundReadBuf != rb.getSlot()){
+                glReadBuffer(GL_COLOR_ATTACHMENT0_EXT + rb.getSlot());
+                context.boundReadBuf = rb.getSlot();
+            }
         }else{
             setFrameBuffer(null);
         }

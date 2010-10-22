@@ -39,18 +39,13 @@ import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
 import com.jme3.post.HDRRenderer;
 import com.jme3.renderer.Caps;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Spatial.CullHint;
-import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
+import com.jme3.util.SkyFactory;
 
 public class TestCubeMap extends SimpleApplication {
 
-    private Sphere sky = new Sphere(32, 32, 10f);
-    private Geometry skyGeom = new Geometry("Sky", sky);
     private Texture envMap;
-
     private HDRRenderer hdrRender;
 
     public static void main(String[] args){
@@ -113,17 +108,7 @@ public class TestCubeMap extends SimpleApplication {
     }
 
     public void setupSkyBox(){
-        skyGeom.setQueueBucket(Bucket.Sky);
-        skyGeom.setCullHint(CullHint.Never);
-
-        Material skyMat = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
-        skyMat.setBoolean("m_SphereMap", true);
-        skyMat.setTexture("m_Texture", envMap);
-        skyMat.setVector3("m_NormalScale", new Vector3f(1, 1, 1));
-        skyGeom.setMaterial(skyMat);
-
-        rootNode.setCullHint(CullHint.Never);
-        rootNode.attachChild(skyGeom);
+        rootNode.attachChild(SkyFactory.createSky(assetManager, envMap, new Vector3f(-1,-1,-1), true));
     }
 
     @Override

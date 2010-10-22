@@ -323,6 +323,8 @@ public class J3MLoader implements AssetLoader {
             renderState.setPolyOffset(factor, units);
         }else if (word.equals("ColorWrite")){
             renderState.setColorWrite(parseBoolean(scan.next()));
+        }else if (word.equals("PointSprite")){
+            renderState.setPointSprite(parseBoolean(scan.next()));
         }else{
             throwIfNequal(null, word);
         }

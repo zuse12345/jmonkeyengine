@@ -334,8 +334,17 @@ public final class Bone implements Savable {
     public Node getAttachmentsNode(){
         if (attachNode == null){
             attachNode = new Node(name+"_attachnode");
+            attachNode.setUserData("AttachedBone", this);
         }
         return attachNode;
+    }
+
+    /**
+     * Used internally after model cloning.
+     * @param attachNode
+     */
+    void setAttachmentsNode(Node attachNode){
+        this.attachNode = attachNode;
     }
 
     /**

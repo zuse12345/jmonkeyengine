@@ -79,6 +79,11 @@ public class RenderContext {
     public boolean wireframe = false;
 
     /**
+     * Point sprite mode
+     */
+    public boolean pointSprite = false;
+
+    /**
      * The currently bound shader program.
      */
     public int boundShaderProgram;

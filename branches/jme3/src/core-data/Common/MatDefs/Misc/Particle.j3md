@@ -26,6 +26,7 @@ MaterialDef Point Sprite {
         RenderState {
             Blend AlphaAdditive
             DepthWrite Off
+            PointSprite On
             // AlphaTestFalloff 0.01
         }
 
@@ -45,8 +46,6 @@ MaterialDef Point Sprite {
 
    Technique Glow {
 
-        LightMode SinglePass
-
         VertexShader GLSL100:   Common/MatDefs/Misc/SimpleTextured.vert
         FragmentShader GLSL100: Common/MatDefs/Light/Glow.frag
 
@@ -57,6 +56,10 @@ MaterialDef Point Sprite {
         Defines {
             HAS_GLOWMAP : m_GlowMap
             HAS_GLOWCOLOR : m_GlowColor
+        }
+
+        RenderState {
+            PointSprite On
         }
     }
 }

@@ -46,6 +46,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
+import com.jme3.util.SkyFactory;
 import com.jme3.water.SimpleWaterProcessor;
 
 /**
@@ -83,7 +84,7 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
 
         //create water quad
         //waterPlane = waterProcessor.createWaterGeometry(100, 100);
-        waterPlane=(Spatial)  assetManager.loadAsset("Models/Plane.mesh.xml");
+        waterPlane=(Spatial)  assetManager.loadAsset("Models/WaterTest/WaterTest.mesh.xml");
         waterPlane.setMaterial(waterProcessor.getMaterial());
         waterPlane.setLocalScale(40);
         waterPlane.setLocalTranslation(-5, 0, 5);
@@ -99,24 +100,13 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
         sceneNode = new Node("Scene");
         mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         mat.setTexture("m_ColorMap", assetManager.loadTexture("Interface/Logo/Monkey.jpg"));
-        Box b = new Box(Vector3f.ZERO, 1, 1, 1);
+        Box b = new Box(1, 1, 1);
         Geometry geom = new Geometry("Box", b);
         geom.setMaterial(mat);
         sceneNode.attachChild(geom);
+
         // load sky
-        Sphere sphereMesh = new Sphere(32, 32, 10, false, true);
-        Geometry sphere = new Geometry("Sky", sphereMesh);
-        sphere.updateModelBound();
-        sphere.setQueueBucket(Bucket.Sky);
-        Material sky = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
-        TextureKey key = new TextureKey("Textures/Sky/Bright/BrightSky.dds", true);
-        key.setGenerateMips(true);
-        key.setAsCube(true);
-        Texture tex = assetManager.loadTexture(key);
-        sky.setTexture("m_Texture", tex);
-        sky.setVector3("m_NormalScale", Vector3f.UNIT_XYZ);
-        sphere.setMaterial(sky);
-        sceneNode.attachChild(sphere);
+        sceneNode.attachChild(SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false));
         rootNode.attachChild(sceneNode);
 
         //add lightPos Geometry
@@ -152,8 +142,6 @@ public class TestSimpleWater extends SimpleApplication implements ActionListener
         lightSphere.setLocalTranslation(lightPos);
         waterProcessor.setLightPosition(lightPos);
     }
-
-
 
     public void onAction(String name, boolean value, float tpf) {
         if (name.equals("use_water") && value) {

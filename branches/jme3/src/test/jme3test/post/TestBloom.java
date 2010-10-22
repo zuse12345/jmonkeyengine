@@ -40,15 +40,14 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.BloomFilter;
-import com.jme3.post.filters.LightScatteringFilter;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.debug.WireFrustum;
 import com.jme3.scene.shape.Box;
-import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
+import com.jme3.util.SkyFactory;
 
 public class TestBloom extends SimpleApplication {
 
@@ -57,12 +56,6 @@ public class TestBloom extends SimpleApplication {
     Spatial teapot;
     Geometry frustumMdl;
     WireFrustum frustum;
-
-    
-    private Sphere sphereMesh = new Sphere(10, 10, 100, false, true);
-    private Geometry sphere = new Geometry("Sky", sphereMesh);
-
-  
 
     public static void main(String[] args){
         TestBloom app = new TestBloom();
@@ -95,8 +88,6 @@ public class TestBloom extends SimpleApplication {
 
         }
 
-
-
         Geometry soil=new Geometry("soil", new Box(new Vector3f(0, -13, 550), 800, 10, 700));
         soil.setMaterial(matSoil);
         soil.setShadowMode(ShadowMode.CastAndReceive);
@@ -109,21 +100,9 @@ public class TestBloom extends SimpleApplication {
             teapot.setLocalTranslation((float)Math.random()*300,(float)Math.random()*30,30*(i+2));
         }
 
-
         // load sky
-        sphere.updateModelBound();
-        sphere.setQueueBucket(Bucket.Sky);
-        Material sky = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
-        TextureKey key = new TextureKey("Textures/Sky/Bright/FullskiesBlueClear03.dds", true);
-        key.setGenerateMips(true);
-        key.setAsCube(true);
-        Texture tex = assetManager.loadTexture(key);
-        sky.setTexture("m_Texture", tex);
-        sky.setVector3("m_NormalScale", Vector3f.UNIT_XYZ);
-        sphere.setMaterial(sky);
-        sphere.setCullHint(Spatial.CullHint.Never);
-
-        rootNode.attachChild(sphere);
+        Spatial sky = SkyFactory.createSky(assetManager, "Textures/Sky/Bright/FullskiesBlueClear03.dds", false);
+        rootNode.attachChild(sky);
 
         FilterPostProcessor fpp=new FilterPostProcessor(assetManager);
         BloomFilter bloom=new BloomFilter(cam.getWidth(),cam.getHeight());

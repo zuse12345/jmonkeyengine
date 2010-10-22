@@ -41,31 +41,55 @@ import com.jme3.texture.Image.Format;
 import java.util.ArrayList;
 
 /**
+ * <code>BloomFilter</code> is used to make objects in the scene have a 
+ * "soap opera" glow effect.
  *
  * @author Nehon
  */
 public class BloomFilter extends Filter {
 
-    public static final int GLOW_SCENE=0;
-    public static final int GLOW_OBJECTS=1;
-    public static final int GLOW_BOTH=2;
+    /**
+     * <code>GlowMode</code> specifies if bright objects or objects
+     * with glow map will be bloomed.
+     */
+    public enum GlowMode {
 
+        /**
+         * Apply bloom filter to bright objects in the scene.
+         */
+        Scene,
+
+        /**
+         * Apply bloom only to objects that have a glow map.
+         */
+        Objects,
+
+        /**
+         * Apply bloom to both bright objects and objects with glow map.
+         */
+        SceneAndObjects;
+    }
+    
+    /**@deprecated use {@link GlowMode} enum */
+    public static final int GLOW_SCENE = 0;
+    /**@deprecated use {@link GlowMode} enum */
+    public static final int GLOW_OBJECTS = 1;
+    /**@deprecated use {@link GlowMode} enum */
+    public static final int GLOW_BOTH = 2;
     /**@deprecated use GLOW_SCENE instead*/
-    public static final int GLOW_MODE_ONLY_EXTRACTED_LIGHTS=0;
+    public static final int GLOW_MODE_ONLY_EXTRACTED_LIGHTS = 0;
     /**@deprecated use GLOW_OBJECTS instead*/
-    public static final int GLOW_MODE_ONLY_GLOW_OBJECTS=1;
+    public static final int GLOW_MODE_ONLY_GLOW_OBJECTS = 1;
     /**@deprecated use GLOW_BOTH instead*/
-    public static final int GLOW_MODE_BOTH=2;
-
-    private int glowMode=GLOW_SCENE;
-
+    public static final int GLOW_MODE_BOTH = 2;
+    
+    //private int glowMode=GLOW_SCENE;
+    private GlowMode glowMode = GlowMode.Scene;
     //Bloom parameters
     private float blurScale = 1.5f;
     private float exposurePower = 5.0f;
     private float exposureCutOff = 0.0f;
     private float bloomIntensity = 2.0f;
- 
-
     private Pass preGlowPass;
     private Pass extractPass;
     private Pass horizontalBlur = new Pass();
@@ -83,16 +107,16 @@ public class BloomFilter extends Filter {
         screenHeight = height;
     }
 
-    public BloomFilter(int width, int height, int glowMode) {
+    public BloomFilter(int width, int height, GlowMode glowMode) {
         this(width, height);
-        this.glowMode=glowMode;
+        this.glowMode = glowMode;
 
     }
 
     @Override
     public void initMaterial(AssetManager manager) {
-         if(glowMode!=GLOW_MODE_ONLY_EXTRACTED_LIGHTS){
-            preGlowPass=new Pass();
+        if (glowMode != GlowMode.Scene) {
+            preGlowPass = new Pass();
             preGlowPass.init(screenWidth, screenHeight, Format.RGBA8, Format.Depth);
         }
 
@@ -110,20 +134,19 @@ public class BloomFilter extends Filter {
             public void beforeRender() {
                 extractMat.setFloat("m_ExposurePow", exposurePower);
                 extractMat.setFloat("m_ExposureCutoff", exposureCutOff);
-                if(glowMode!=GLOW_SCENE){
+                if (glowMode != GlowMode.Scene) {
                     extractMat.setTexture("m_GlowMap", preGlowPass.getRenderedTexture());
                 }
-                extractMat.setBoolean("m_Extract", glowMode!=GLOW_MODE_ONLY_GLOW_OBJECTS);
+                extractMat.setBoolean("m_Extract", glowMode != GlowMode.Objects);
             }
         };
-        
+
         extractPass.init(screenWidth, screenHeight, Format.RGBA8, Format.Depth, extractMat);
         postRenderPasses.add(extractPass);
 
         //configuring horizontal blur pass
         hBlurMat = new Material(manager, "Common/MatDefs/Blur/HGaussianBlur.j3md");
         horizontalBlur = new Pass() {
-
             @Override
             public void beforeRender() {
                 hBlurMat.setTexture("m_Texture", extractPass.getRenderedTexture());
@@ -131,13 +154,13 @@ public class BloomFilter extends Filter {
                 hBlurMat.setFloat("m_Scale", blurScale);
             }
         };
+        
         horizontalBlur.init(screenWidth, screenHeight, Format.RGBA8, Format.Depth, hBlurMat);
         postRenderPasses.add(horizontalBlur);
 
         //configuring vertical blur pass
         vBlurMat = new Material(manager, "Common/MatDefs/Blur/VGaussianBlur.j3md");
         verticalalBlur = new Pass() {
-
             @Override
             public void beforeRender() {
                 vBlurMat.setTexture("m_Texture", horizontalBlur.getRenderedTexture());
@@ -145,6 +168,7 @@ public class BloomFilter extends Filter {
                 vBlurMat.setFloat("m_Scale", blurScale);
             }
         };
+        
         verticalalBlur.init(screenWidth, screenHeight, Format.RGBA8, Format.Depth, vBlurMat);
         postRenderPasses.add(verticalalBlur);
 
@@ -152,21 +176,18 @@ public class BloomFilter extends Filter {
         //final material
         material = new Material(manager, "Common/MatDefs/Post/BloomFinal.j3md");
         material.setTexture("m_BloomTex", verticalalBlur.getRenderedTexture());
-
     }
 
     @Override
     public Material getMaterial() {
-    
         material.setFloat("m_BloomIntensity", bloomIntensity);
-        
         return material;
     }
 
     @Override
     public void preRender(RenderManager renderManager, ViewPort viewPort) {
-         if(glowMode!=GLOW_SCENE){
-            backupColor=viewPort.getBackgroundColor();
+        if (glowMode != GlowMode.Scene) {
+            backupColor = viewPort.getBackgroundColor();
             viewPort.setBackgroundColor(ColorRGBA.Black);
             renderManager.getRenderer().setFrameBuffer(preGlowPass.getRenderFrameBuffer());
             renderManager.getRenderer().clearBuffers(true, true, true);
@@ -175,7 +196,6 @@ public class BloomFilter extends Filter {
             viewPort.setBackgroundColor(backupColor);
             renderManager.setForcedTechnique(null);
             renderManager.getRenderer().setFrameBuffer(viewPort.getOutputFrameBuffer());
-         
         }
     }
 
@@ -184,7 +204,6 @@ public class BloomFilter extends Filter {
     }
 
     /**
-     *
      * intensity of the bloom effect
      * @param bloomIntensity
      */
@@ -227,6 +246,4 @@ public class BloomFilter extends Filter {
     public void setExposurePower(float exposurePower) {
         this.exposurePower = exposurePower;
     }
-
-
 }

@@ -56,7 +56,9 @@ import com.jme3.scene.control.Control;
 import com.jme3.util.TempVars;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 
@@ -138,6 +140,8 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
     protected Transform worldTransform;
 
     protected ArrayList<Control> controls = new ArrayList<Control>(1);
+
+    protected HashMap<String, Savable> userData = null;
 
     /** 
      * Spatial's parent, or null if it has none.
@@ -1091,6 +1095,11 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
             for (int i = 0; i < controls.size(); i++){
                 clone.controls.add( controls.get(i).cloneForSpatial(clone) );
             }
+
+            if (userData != null){
+                clone.userData = (HashMap<String, Savable>) userData.clone();
+            }
+
             return clone;
         }catch (CloneNotSupportedException ex){
             throw new AssertionError();
@@ -1106,6 +1115,36 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      */
     public abstract Spatial deepClone();
 
+    public void setUserData(String key, Object data){
+        if (userData == null)
+            userData = new HashMap<String, Savable>();
+
+        if (data instanceof Savable){
+            userData.put(key, (Savable) data);
+        }else{
+            userData.put(key, new UserData(UserData.getObjectType(data), data));
+        }
+    }
+
+    public Object getUserData(String key){
+        if (userData == null)
+            return null;
+
+        Savable s = userData.get(key);
+        if (s instanceof UserData){
+            return ((UserData)s).getValue();
+        }else{
+            return s;
+        }
+    }
+
+    public Collection<String> getUserDataKeys(){
+        if (userData != null)
+            return userData.keySet();
+        
+        return Collections.EMPTY_SET;
+    }
+
     public void write(JmeExporter ex) throws IOException {
         OutputCapsule capsule = ex.getCapsule(this);
         capsule.write(name, "name", null);
@@ -1116,6 +1155,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         capsule.write(localTransform, "transform", Transform.Identity);
         capsule.write(localLights, "lights", null);
         capsule.writeSavableArrayList(controls, "controlsList", null);
+        capsule.writeStringSavableMap(userData, "user_data", null);
     }
 
     public void read(JmeImporter im) throws IOException {
@@ -1135,10 +1175,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         localLights.setOwner(this);
 
         controls = ic.readSavableArrayList("controlsList", null);
-
-        if (ic.readIntSavableMap("controls", null) != null){
-            logger.log(Level.WARNING, "You're attempting to read an outdated file");
-        }
+        userData = (HashMap<String, Savable>) ic.readStringSavableMap("user_data", null);
     }
 
     /**

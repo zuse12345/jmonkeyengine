@@ -23,8 +23,6 @@ MaterialDef Solid Color {
 
    Technique Glow {
 
-        LightMode SinglePass
-
         VertexShader GLSL100:   Common/MatDefs/Misc/SimpleTextured.vert
         FragmentShader GLSL100: Common/MatDefs/Light/Glow.frag
 

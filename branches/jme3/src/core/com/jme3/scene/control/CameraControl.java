@@ -49,6 +49,7 @@ import java.io.IOException;
  * @author tim
  */
 public class CameraControl extends AbstractControl {
+    
     public static enum ControlDirection {
         /**
          * Means, that the Camera's transform is "copied"

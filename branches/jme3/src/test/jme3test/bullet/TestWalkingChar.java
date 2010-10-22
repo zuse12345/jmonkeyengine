@@ -77,6 +77,7 @@ import com.jme3.terrain.heightmap.ImageBasedHeightMap;
 import com.jme3.terrain.jbullet.TerrainPhysicsShapeFactory;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture.WrapMode;
+import com.jme3.util.SkyFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -242,19 +243,7 @@ public class TestWalkingChar extends SimpleApplication implements ActionListener
     }
 
     private void createSky() {
-        Sphere sphereMesh = new Sphere(32, 32, 10, false, true);
-        Geometry sphere = new Geometry("Sky", sphereMesh);
-        sphere.setQueueBucket(Bucket.Sky);
-        Material sky = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
-        TextureKey key = new TextureKey("Textures/Sky/Bright/BrightSky.dds", true);
-        key.setGenerateMips(true);
-        key.setAsCube(true);
-        Texture tex = assetManager.loadTexture(key);
-        sky.setTexture("m_Texture", tex);
-        sky.setVector3("m_NormalScale", Vector3f.UNIT_XYZ);
-        sphere.setMaterial(sky);
-        sphere.setCullHint(CullHint.Never);
-        rootNode.attachChild(sphere);
+        rootNode.attachChild(SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false));
     }
 
     private void createTerrain() {

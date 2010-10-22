@@ -57,6 +57,7 @@ import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture.WrapMode;
+import com.jme3.util.SkyFactory;
 
 public class TestPostFilters extends SimpleApplication implements ActionListener{
 
@@ -84,26 +85,13 @@ public class TestPostFilters extends SimpleApplication implements ActionListener
 
 
     public void setupSkyBox(){
-        Sphere sky = new Sphere(32, 32, 10f);
-        Geometry skyGeom = new Geometry("Sky", sky);
-        skyGeom.setQueueBucket(Bucket.Sky);
-        skyGeom.setShadowMode(ShadowMode.Off);
-        skyGeom.setCullHint(CullHint.Never);
-
         Texture envMap;
         if (renderer.getCaps().contains(Caps.FloatTexture)){
             envMap = assetManager.loadTexture("Textures/Sky/St Peters/StPeters.hdr");
         }else{
             envMap = assetManager.loadTexture("Textures/Sky/St Peters/StPeters.jpg");
         }
-
-        Material skyMat = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
-        skyMat.setBoolean("m_SphereMap", true);
-        skyMat.setTexture("m_Texture", envMap);
-        skyMat.setVector3("m_NormalScale", new Vector3f(-1, 1, -1));
-        skyGeom.setMaterial(skyMat);
-
-        rootNode.attachChild(skyGeom);
+        rootNode.attachChild(SkyFactory.createSky(assetManager, envMap, new Vector3f(-1,-1,-1), true));
     }
 
     public void setupLighting(){

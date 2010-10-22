@@ -178,6 +178,13 @@ public class JoglRenderer implements Renderer {
             gl.glColorMask(false,false,false,false);
             context.colorWriteEnabled = false;
         }
+        if (state.isPointSprite() && !context.pointSprite){
+            gl.glEnable(GL.GL_POINT_SPRITE);
+            gl.glTexEnvi(GL.GL_POINT_SPRITE, GL.GL_COORD_REPLACE, GL.GL_TRUE);
+            gl.glPointParameterf(GL.GL_POINT_SIZE_MIN, 1.0f);
+        }else if (!state.isPointSprite() && context.pointSprite){
+            gl.glDisable(GL.GL_POINT_SPRITE);
+        }
         if (state.isPolyOffset()){
             if (!context.polyOffsetEnabled){
                 gl.glEnable(gl.GL_POLYGON_OFFSET_FILL);

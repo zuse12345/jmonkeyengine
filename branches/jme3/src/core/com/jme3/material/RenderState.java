@@ -144,6 +144,7 @@ public class RenderState implements Cloneable, Savable {
         NULL.depthTest = false;
     }
 
+    boolean pointSprite = false;
     boolean wireframe = false;
     FaceCullMode cullMode = FaceCullMode.Back;
 
@@ -162,6 +163,7 @@ public class RenderState implements Cloneable, Savable {
 
     public void write(JmeExporter ex) throws IOException{
         OutputCapsule oc = ex.getCapsule(this);
+        oc.write(pointSprite, "pointSprite", false);
         oc.write(wireframe, "wireframe", false);
         oc.write(cullMode, "cullMode", FaceCullMode.Back);
         oc.write(depthWrite, "depthWrite", true);
@@ -177,6 +179,7 @@ public class RenderState implements Cloneable, Savable {
 
     public void read(JmeImporter im) throws IOException{
         InputCapsule ic = im.getCapsule(this);
+        pointSprite = ic.readBoolean("pointSprite", false);
         wireframe  = ic.readBoolean("wireframe", false);
         cullMode  = ic.readEnum("cullMode", FaceCullMode.class, FaceCullMode.Back);
         depthWrite  = ic.readBoolean("depthWrite", true);
@@ -197,6 +200,14 @@ public class RenderState implements Cloneable, Savable {
         }catch (CloneNotSupportedException ex){
             throw new AssertionError();
         }
+    }
+
+    public boolean isPointSprite() {
+        return pointSprite;
+    }
+
+    public void setPointSprite(boolean pointSprite) {
+        this.pointSprite = pointSprite;
     }
 
     public boolean isColorWrite() {

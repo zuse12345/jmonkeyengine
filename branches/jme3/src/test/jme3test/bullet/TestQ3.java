@@ -49,18 +49,14 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.material.MaterialList;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.plugins.ogre.OgreMeshKey;
-import com.jme3.scene.shape.Sphere;
 import java.io.File;
 
 public class TestQ3 extends SimpleApplication implements ActionListener {
 
     private BulletAppState bulletAppState;
-    private Sphere sphereMesh = new Sphere(32, 32, 10f, false, true);
-    private Geometry sphere = new Geometry("Sky", sphereMesh);
     private Spatial gameLevel;
     private PhysicsCharacterNode player;
     private Vector3f walkDirection = new Vector3f();

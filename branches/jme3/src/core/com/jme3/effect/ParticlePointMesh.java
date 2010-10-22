@@ -37,11 +37,8 @@ import com.jme3.scene.VertexBuffer;
 import com.jme3.scene.VertexBuffer.Format;
 import com.jme3.scene.VertexBuffer.Usage;
 import com.jme3.util.BufferUtils;
-import com.jme3.util.SortUtil;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
-import java.util.Arrays;
 
 public class ParticlePointMesh extends ParticleMesh {
 
@@ -49,9 +46,6 @@ public class ParticlePointMesh extends ParticleMesh {
 
     private int imagesX;
     private int imagesY;
-
-    private ParticleComparator comparator = new ParticleComparator();
-    private Particle[] particlesCopy;
 
     @Override
     public void initParticleData(ParticleEmitter emitter, int numParticles, int imagesX, int imagesY) {
@@ -62,8 +56,6 @@ public class ParticlePointMesh extends ParticleMesh {
         this.imagesX = imagesX;
         this.imagesY = imagesY;
         this.emitter = emitter;
-
-//        particlesCopy = new Particle[numParticles];
 
         // set positions
         FloatBuffer pb = BufferUtils.createVector3Buffer(numParticles);
@@ -79,9 +71,9 @@ public class ParticlePointMesh extends ParticleMesh {
         setBuffer(cvb);
 
         // set sizes
-        ShortBuffer sb = BufferUtils.createShortBuffer(numParticles);
+        FloatBuffer sb = BufferUtils.createFloatBuffer(numParticles);
         VertexBuffer svb = new VertexBuffer(VertexBuffer.Type.Size);
-        svb.setupData(Usage.Stream, 1, Format.UnsignedShort, sb);
+        svb.setupData(Usage.Stream, 1, Format.Float, sb);
         setBuffer(svb);
 
         // set UV-scale
@@ -93,13 +85,6 @@ public class ParticlePointMesh extends ParticleMesh {
 
     @Override
     public void updateParticleData(Particle[] particles, Camera cam) {
-//        System.arraycopy(particles, 0, particlesCopy, 0, particlesCopy.length);
-//        comparator.setCamera(cam);
-//        SortUtil.msort(particles, particlesCopy, comparator);
-//        Arrays.sort(particles, comparator);
-//        SortUtil.qsort(particles, comparator);
-//        particles = particlesCopy;
-
         VertexBuffer pvb = getBuffer(VertexBuffer.Type.Position);
         FloatBuffer positions = (FloatBuffer) pvb.getData();
 
@@ -107,10 +92,12 @@ public class ParticlePointMesh extends ParticleMesh {
         ByteBuffer colors = (ByteBuffer) cvb.getData();
 
         VertexBuffer svb = getBuffer(VertexBuffer.Type.Size);
-        ShortBuffer sizes = (ShortBuffer) svb.getData();
+        FloatBuffer sizes = (FloatBuffer) svb.getData();
 
         VertexBuffer tvb = getBuffer(VertexBuffer.Type.TexCoord);
         FloatBuffer texcoords = (FloatBuffer) tvb.getData();
+
+        float sizeScale = emitter.getWorldScale().x;
 
         // update data in vertex buffers
         positions.rewind();
@@ -123,8 +110,8 @@ public class ParticlePointMesh extends ParticleMesh {
             positions.put(p.position.x)
                      .put(p.position.y)
                      .put(p.position.z);
-            
-            sizes.put((short) (p.size * 65536f));
+
+            sizes.put(p.size * sizeScale);
             colors.putInt(p.color.asIntABGR());
 
             int imgX = p.imageIndex % imagesX;

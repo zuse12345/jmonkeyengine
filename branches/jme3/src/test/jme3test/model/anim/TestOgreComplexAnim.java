@@ -34,7 +34,6 @@ package jme3test.model.anim;
 
 import com.jme3.animation.AnimChannel;
 import com.jme3.animation.AnimControl;
-import com.jme3.animation.AnimEventListener;
 import com.jme3.animation.Bone;
 import com.jme3.animation.LoopMode;
 import com.jme3.app.SimpleApplication;
@@ -44,8 +43,10 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.debug.SkeletonDebugger;
+import com.jme3.scene.shape.Box;
 
 public class TestOgreComplexAnim extends SimpleApplication {
 

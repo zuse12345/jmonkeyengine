@@ -51,12 +51,10 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.shadow.PssmShadowRenderer;
 import com.jme3.texture.Texture;
+import com.jme3.util.SkyFactory;
 import com.jme3.util.TangentBinormalGenerator;
 
 public class TestLightScattering extends SimpleApplication {
-
-    private Sphere sphereMesh = new Sphere(10, 10, 100, false, true);
-    private Geometry sphere = new Geometry("Sky", sphereMesh);
 
     public static void main(String[] args) {
         TestLightScattering app = new TestLightScattering();
@@ -100,19 +98,7 @@ public class TestLightScattering extends SimpleApplication {
         rootNode.attachChild(scene);
 
         // load sky
-        sphere.updateModelBound();
-        sphere.setQueueBucket(Bucket.Sky);
-        Material sky = new Material(assetManager, "Common/MatDefs/Misc/Sky.j3md");
-        TextureKey key = new TextureKey("Textures/Sky/Bright/FullskiesBlueClear03.dds", true);
-        key.setGenerateMips(true);
-        key.setAsCube(true);
-        Texture tex = assetManager.loadTexture(key);
-        sky.setTexture("m_Texture", tex);
-        sky.setVector3("m_NormalScale", Vector3f.UNIT_XYZ);
-        sphere.setMaterial(sky);
-        sphere.setCullHint(Spatial.CullHint.Never);
-
-        rootNode.attachChild(sphere);
+        rootNode.attachChild(SkyFactory.createSky(assetManager, "Textures/Sky/Bright/FullskiesBlueClear03.dds", false));
 
         DirectionalLight sun = new DirectionalLight();
         Vector3f lightDir = new Vector3f(-0.12f, -0.3729129f, 0.74847335f);

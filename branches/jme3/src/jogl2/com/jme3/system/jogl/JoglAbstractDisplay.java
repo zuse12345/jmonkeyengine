@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCapabilities;
+import javax.media.opengl.GLContext;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLProfile;
 import javax.media.opengl.awt.GLCanvas;
@@ -106,9 +107,11 @@ public abstract class JoglAbstractDisplay extends JoglContext implements GLEvent
                 super.removeNotify();
             }
         };
+        // TODO: add a check on the settings
+        // set the size of the canvas as early as possible to avoid further useless reshape attempts
+        canvas.setSize(settings.getWidth(), settings.getHeight());
         if (settings.isVSync()) {
-            // FIXME: it is too early to get the GL instance from the canvas
-            canvas.getGL().setSwapInterval(1);
+            GLContext.getCurrentGL().setSwapInterval(1);
         }
         canvas.setFocusable(true);
         canvas.setIgnoreRepaint(true);

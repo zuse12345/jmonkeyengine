@@ -69,14 +69,148 @@ public class JoglDisplay extends JoglAbstractDisplay {
         return Type.Display;
     }
 
-    protected DisplayMode getFullscreenDisplayMode(DisplayMode[] modes, int width, int height,
-            int bpp, int freq) {
+    private int getClosestValidBitDepth(DisplayMode[] modes, final int bpp) {
+        final int validBitsPerPixels;
+        // check the bit depth (bits per pixel)
+        boolean isBitDepthValid = false;
         for (DisplayMode mode : modes) {
-            if (mode.getWidth() == width
-                    && mode.getHeight() == height
-                    && (mode.getBitDepth() == DisplayMode.BIT_DEPTH_MULTI
-                            || mode.getBitDepth() == bpp || (mode.getBitDepth() == 32 && bpp == 24))
-                    && mode.getRefreshRate() == freq) {
+            if (mode != null && mode.getBitDepth() == bpp) {
+                isBitDepthValid = true;
+                break;
+            }
+        }
+        if (!isBitDepthValid) {
+            // use the closest valid bit depth
+            int bestSupportedBitDepth = Integer.MAX_VALUE;
+            int biggestBitDepth = -Integer.MIN_VALUE;
+            for (DisplayMode mode : modes) {
+                if (mode != null) {
+                    if (Math.abs(mode.getBitDepth() - bpp) < Math.abs(bestSupportedBitDepth - bpp)) {
+                        bestSupportedBitDepth = mode.getBitDepth();
+                    }
+                    if (mode.getBitDepth() > biggestBitDepth) {
+                        biggestBitDepth = mode.getBitDepth();
+                    }
+                }
+
+            }
+            if (bestSupportedBitDepth == Integer.MAX_VALUE) {
+                validBitsPerPixels = biggestBitDepth;
+            }
+            else {
+                validBitsPerPixels = bestSupportedBitDepth;
+            }
+        }
+        else {
+            validBitsPerPixels = bpp;
+        }
+        return validBitsPerPixels;
+    }
+
+    private Dimension getClosestValidDisplaySize(DisplayMode[] modes, final int width,
+            final int height) {
+        Dimension validDisplaySize = new Dimension(width, height);
+        if (width <= 0 || height <= 0) {
+            // leave the size unchanged
+            validDisplaySize.width = device.getDisplayMode().getWidth();
+            validDisplaySize.height = device.getDisplayMode().getHeight();
+        }
+        else {
+            boolean isDimensionValid = false;
+            for (DisplayMode mode : modes) {
+                if (mode.getWidth() == width && mode.getHeight() == height) {
+                    isDimensionValid = true;
+                    break;
+                }
+            }
+            if (!isDimensionValid) {
+                int bestSupportedWidth = Integer.MAX_VALUE;
+                int bestSupportedHeight = Integer.MAX_VALUE;
+                int biggestSupportedWidth = Integer.MIN_VALUE;
+                int biggestSupportedHeight = Integer.MIN_VALUE;
+                // use the closest supported width
+                for (DisplayMode mode : modes) {
+                    if (Math.abs(mode.getWidth() - width) < Math.abs(bestSupportedWidth - width)) {
+                        bestSupportedWidth = mode.getWidth();
+                        bestSupportedHeight = mode.getHeight();
+                    }
+                    if (mode.getWidth() > biggestSupportedWidth) {
+                        biggestSupportedWidth = mode.getWidth();
+                        biggestSupportedHeight = mode.getHeight();
+                    }
+                }
+                // if the width was really too big, use the screen width
+                if (bestSupportedWidth == Integer.MAX_VALUE) {
+                    validDisplaySize.width = biggestSupportedWidth;
+                    validDisplaySize.height = biggestSupportedHeight;
+                }
+                else {
+                    validDisplaySize.width = bestSupportedWidth;
+                    validDisplaySize.height = bestSupportedHeight;
+                }
+            }
+        }
+        // keep only valid modes
+        for (int modeIndex = 0; modeIndex < modes.length; modeIndex++) {
+            if (modes[modeIndex] != null && modes[modeIndex].getWidth() != validDisplaySize.width
+                    && modes[modeIndex].getHeight() != validDisplaySize.height) {
+                modes[modeIndex] = null;
+            }
+        }
+        return validDisplaySize;
+    }
+
+    private int getClosestValidRefreshRate(DisplayMode[] modes, final int freq) {
+        final int validRefreshRate;
+        boolean isRefreshRateValid = false;
+        for (DisplayMode mode : modes) {
+            if (mode != null && mode.getRefreshRate() == freq) {
+                isRefreshRateValid = true;
+                break;
+            }
+        }
+        if (!isRefreshRateValid) {
+            int bestSupportedRefreshRate = Integer.MAX_VALUE;
+            int biggestRefreshRate = -Integer.MIN_VALUE;
+            for (DisplayMode mode : modes) {
+                if (mode != null) {
+                    if (Math.abs(mode.getRefreshRate() - freq) < Math.abs(bestSupportedRefreshRate
+                            - freq)) {
+                        bestSupportedRefreshRate = mode.getRefreshRate();
+                    }
+                    if (mode.getRefreshRate() > biggestRefreshRate) {
+                        biggestRefreshRate = mode.getRefreshRate();
+                    }
+                }
+            }
+            if (bestSupportedRefreshRate == Integer.MAX_VALUE) {
+                validRefreshRate = biggestRefreshRate;
+            }
+            else {
+                validRefreshRate = bestSupportedRefreshRate;
+            }
+        }
+        else {
+            validRefreshRate = freq;
+        }
+        return validRefreshRate;
+    }
+
+    protected DisplayMode getFullscreenDisplayMode(final DisplayMode[] modes, int width,
+            int height, int bpp, int freq) {
+        DisplayMode[] validModes = new DisplayMode[modes.length];
+        System.arraycopy(modes, 0, validModes, 0, modes.length);
+        Dimension validDisplaySize = getClosestValidDisplaySize(validModes, width, height);
+        bpp = getClosestValidBitDepth(validModes, bpp);
+        width = validDisplaySize.width;
+        height = validDisplaySize.height;
+        freq = getClosestValidRefreshRate(validModes, freq);
+        // Now, the bit depth, the refresh rate, the width and the height are valid
+        for (DisplayMode mode : validModes) {
+            if (mode != null
+                    && (mode.getWidth() == width && mode.getHeight() == height
+                            && mode.getBitDepth() == bpp || (mode.getBitDepth() == 32 && bpp == 24)
+                            && mode.getRefreshRate() == freq)) {
                 return mode;
             }
         }
@@ -101,12 +235,15 @@ public class JoglDisplay extends JoglAbstractDisplay {
         frame.setResizable(false);
         frame.setFocusable(true);
 
+        canvas.setSize(settings.getWidth(), settings.getHeight());
         // only add canvas after frame is visible
         contentPane.add(canvas, BorderLayout.CENTER);
-        // frame.pack();
-        // frame.setSize(contentPane.getPreferredSize());
-        contentPane.setSize(settings.getWidth(), settings.getHeight());
+        if (!useAwt) {
+            contentPane.setSize(settings.getWidth(), settings.getHeight());
+        }
         frame.setSize(settings.getWidth(), settings.getHeight());
+        frame.setPreferredSize(new Dimension(settings.getWidth(), settings.getHeight()));
+        // N.B: do not use pack()
 
         if (device.getFullScreenWindow() == null) {
             // now that canvas is attached,
@@ -150,9 +287,13 @@ public class JoglDisplay extends JoglAbstractDisplay {
             }
         }
         else {
-            displayMode = new DisplayMode(settings.getWidth(), settings.getHeight(),
-                    DisplayMode.BIT_DEPTH_MULTI, DisplayMode.REFRESH_RATE_UNKNOWN);
+            displayMode = getFullscreenDisplayMode(device.getDisplayModes(), settings.getWidth(),
+                    settings.getHeight(), settings.getBitsPerPixel(), settings.getFrequency());
         }
+        settings.setWidth(displayMode.getWidth());
+        settings.setHeight(displayMode.getHeight());
+        settings.setBitsPerPixel(displayMode.getBitDepth());
+        settings.setFrequency(displayMode.getRefreshRate());
 
         // FIXME: seems to return false even though
         // it is supported..
@@ -163,37 +304,37 @@ public class JoglDisplay extends JoglAbstractDisplay {
         // }
 
         frameRate = settings.getFrameRate();
-        logger.log(Level.INFO, "Selected display mode: {0}x{1}x{2} @{3}", new Object[] {
-                displayMode.getWidth(), displayMode.getHeight(), displayMode.getBitDepth(),
-                displayMode.getRefreshRate() });
+        logger.log(
+                Level.INFO,
+                "Selected display mode: {0}x{1}x{2} @{3}",
+                new Object[] { settings.getWidth(), settings.getHeight(),
+                        settings.getBitsPerPixel(), settings.getFrequency() });
 
-        canvas.setSize(displayMode.getWidth(), displayMode.getHeight());
+        canvas.setSize(settings.getWidth(), settings.getHeight());
 
         DisplayMode prevDisplayMode = device.getDisplayMode();
 
-        if (settings.isFullscreen() && device.isFullScreenSupported()) {
-            frame.setUndecorated(true);
-
-            try {
-                device.setFullScreenWindow(frame);
-                if (!prevDisplayMode.equals(displayMode) && device.isDisplayChangeSupported()) {
-                    device.setDisplayMode(displayMode);
+        frame.setUndecorated(settings.isFullscreen());
+        if (settings.isFullscreen()) {
+            if (device.isFullScreenSupported()) {
+                try {
+                    device.setFullScreenWindow(frame);
+                    if (!prevDisplayMode.equals(displayMode) && device.isDisplayChangeSupported()) {
+                        device.setDisplayMode(displayMode);
+                    }
+                }
+                catch (Throwable t) {
+                    logger.log(Level.SEVERE, "Failed to enter fullscreen mode", t);
+                    device.setFullScreenWindow(null);
                 }
             }
-            catch (Throwable t) {
-                logger.log(Level.SEVERE, "Failed to enter fullscreen mode", t);
-                device.setFullScreenWindow(null);
+            else {
+                logger.warning("Fullscreen not supported.");
             }
         }
         else {
-            if (!device.isFullScreenSupported()) {
-                logger.warning("Fullscreen not supported.");
-            }
-            else {
-                frame.setUndecorated(false);
-                if (device.getFullScreenWindow() != null || device.getFullScreenWindow() != frame) {
-                    device.setFullScreenWindow(null);
-                }
+            if (device.getFullScreenWindow() == frame) {
+                device.setFullScreenWindow(null);
             }
         }
         frame.setVisible(true);

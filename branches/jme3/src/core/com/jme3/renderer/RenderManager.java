@@ -415,8 +415,9 @@ public class RenderManager {
         }else if (s instanceof Geometry){
             Geometry gm = (Geometry) s;
             RenderQueue.ShadowMode shadowMode = s.getShadowMode();
-            if (shadowMode != RenderQueue.ShadowMode.Off){
-                rq.addToShadowQueue(gm, shadowMode);
+            if (shadowMode != RenderQueue.ShadowMode.Off && shadowMode != RenderQueue.ShadowMode.Receive){
+                //forcing adding to shadow cast mode, culled objects doesn't have to be in the receiver queue
+                rq.addToShadowQueue(gm, RenderQueue.ShadowMode.Cast);
             }
         }
     }

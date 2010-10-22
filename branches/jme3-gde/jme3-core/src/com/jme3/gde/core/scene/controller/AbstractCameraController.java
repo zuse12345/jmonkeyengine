@@ -32,7 +32,7 @@
 package com.jme3.gde.core.scene.controller;
 
 import com.jme3.app.Application;
-import com.jme3.app.state.AppState;
+import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.input.InputManager;
@@ -55,7 +55,7 @@ import java.util.concurrent.Callable;
  *
  * @author normenhansen
  */
-public abstract class AbstractCameraController implements ActionListener, AnalogListener, RawInputListener, AppState {
+public abstract class AbstractCameraController extends AbstractAppState implements ActionListener, AnalogListener, RawInputListener{
 
     protected boolean leftMouse, rightMouse, middleMouse;
     protected float deltaX, deltaY, deltaZ, deltaWheel;
@@ -274,6 +274,9 @@ public abstract class AbstractCameraController implements ActionListener, Analog
     protected abstract void checkClick(int button);
 
     public void render(RenderManager rm) {
+    }
+
+    public void postRender() {
     }
 
     public void cleanup() {

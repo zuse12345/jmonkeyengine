@@ -39,6 +39,7 @@ import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
+import com.jme3.scene.VertexBuffer;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.util.BufferUtils;
 
@@ -57,7 +58,7 @@ public class TestCustomMesh extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-
+      
         Mesh m = new Mesh();
 
         // Vertex positions in space
@@ -125,6 +126,16 @@ public class TestCustomMesh extends SimpleApplication {
         // move mesh a bit so that it doesn't intersect with the first one
         coloredMesh.setLocalTranslation(4, 0, 0);
         rootNode.attachChild(coloredMesh);
+
+//        /** Alternatively, you can show the mesh vertixes as points
+//          * instead of coloring the faces. */
+//        cMesh.setMode(Mesh.Mode.Points);
+//        cMesh.setPointSize(10f);
+//        cMesh.updateBound();
+//        cMesh.setStatic();
+//        Geometry points = new Geometry("Points", m);
+//        points.setMaterial(mat);
+//        rootNode.attachChild(points);
 
         // *************************************************************************
         // Third mesh will use a wireframe shader to show wireframe

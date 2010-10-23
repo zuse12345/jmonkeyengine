@@ -33,20 +33,21 @@
 package jme3test.post;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.asset.TextureKey;
+import com.jme3.input.KeyInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
+import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.BloomFilter;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.debug.WireFrustum;
 import com.jme3.scene.shape.Box;
-import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
 
 public class TestBloom extends SimpleApplication {
@@ -56,7 +57,9 @@ public class TestBloom extends SimpleApplication {
     Spatial teapot;
     Geometry frustumMdl;
     WireFrustum frustum;
-
+    boolean active=true;
+    FilterPostProcessor fpp;
+    
     public static void main(String[] args){
         TestBloom app = new TestBloom();
         app.start();
@@ -69,9 +72,22 @@ public class TestBloom extends SimpleApplication {
         cam.setRotation(new Quaternion(0.23602544f, 0.11321983f, -0.027698677f, 0.96473104f));
         //cam.setFrustumFar(1000);
 
-        Material mat = assetManager.loadMaterial("Common/Materials/RedColor.j3m");
-        Material matSoil = new Material(assetManager,"Common/MatDefs/Misc/SolidColor.j3md");
-        matSoil.setColor("m_Color", ColorRGBA.White);
+
+        Material mat = new Material(assetManager,"Common/MatDefs/Light/Lighting.j3md");
+      mat.setFloat("m_Shininess", 0.3f);
+        mat.setBoolean("m_UseMaterialColors", true);
+        mat.setColor("m_Ambient", ColorRGBA.Black);
+        mat.setColor("m_Diffuse", ColorRGBA.Black);
+        mat.setColor("m_Specular", ColorRGBA.White.mult(0.6f));
+
+
+        Material matSoil = new Material(assetManager,"Common/MatDefs/Light/Lighting.j3md");
+        matSoil.setFloat("m_Shininess", 15f);
+        matSoil.setBoolean("m_UseMaterialColors", true);
+        matSoil.setColor("m_Ambient", ColorRGBA.Gray);
+        matSoil.setColor("m_Diffuse", ColorRGBA.Black);
+        matSoil.setColor("m_Specular", ColorRGBA.Gray);
+       
 
 
         teapot = assetManager.loadModel("Models/Teapot/Teapot.obj");
@@ -79,43 +95,63 @@ public class TestBloom extends SimpleApplication {
 
         teapot.setMaterial(mat);
         teapot.setShadowMode(ShadowMode.CastAndReceive);
+        teapot.setLocalScale(10.0f);
         rootNode.attachChild(teapot);
 
-         for (int i = 0; i < 30; i++) {
-            Spatial t=teapot.deepClone();
-            rootNode.attachChild(t);
-            teapot.setLocalTranslation((float)Math.random()*3,(float)Math.random()*3,(i+2));
-
-        }
+  
 
         Geometry soil=new Geometry("soil", new Box(new Vector3f(0, -13, 550), 800, 10, 700));
         soil.setMaterial(matSoil);
         soil.setShadowMode(ShadowMode.CastAndReceive);
         rootNode.attachChild(soil);
 
-        for (int i = 0; i < 30; i++) {
-            Spatial t=teapot.deepClone();
-            t.setLocalScale(10.0f);
-            rootNode.attachChild(t);
-            teapot.setLocalTranslation((float)Math.random()*300,(float)Math.random()*30,30*(i+2));
-        }
+        DirectionalLight light=new DirectionalLight();
+        light.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
+        light.setColor(ColorRGBA.White.mult(1.5f));
+        rootNode.addLight(light);
 
         // load sky
         Spatial sky = SkyFactory.createSky(assetManager, "Textures/Sky/Bright/FullskiesBlueClear03.dds", false);
+        sky.setCullHint(Spatial.CullHint.Never);
         rootNode.attachChild(sky);
 
-        FilterPostProcessor fpp=new FilterPostProcessor(assetManager);
-        BloomFilter bloom=new BloomFilter(cam.getWidth(),cam.getHeight());
+         fpp=new FilterPostProcessor(assetManager);
+        BloomFilter bloom=new BloomFilter(cam.getWidth()/2,cam.getHeight()/2);
+        bloom.setBlurScale(2.77f);
+        bloom.setExposurePower(4.42f);
+        bloom.setExposureCutOff(0.79f);
+        bloom.setBloomIntensity(0.73f);
         BloomUI ui=new BloomUI(inputManager, bloom);
         fpp.addFilter(bloom);
 
         viewPort.addProcessor(fpp);
+        
+        initInputs();
+
+    }
+    
+         private void initInputs() {
+        inputManager.addMapping("toggle", new KeyTrigger(KeyInput.KEY_SPACE));
+     
+        ActionListener acl = new ActionListener() {
+
+            public void onAction(String name, boolean keyPressed, float tpf) {
+                if (name.equals("toggle") && keyPressed) {
+                    if(active){
+                        active=false;
+                        viewPort.removeProcessor(fpp);
+                    }else{
+                        active=true;
+                        viewPort.addProcessor(fpp);
+                    }
+                }
+            }
+        };
+             
+        inputManager.addListener(acl, "toggle");
 
     }
 
-    @Override
-    public void simpleUpdate(float tpf){
-
-    }
+ 
 
 }

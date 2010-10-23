@@ -125,6 +125,31 @@ final public class FastMath {
         return ((1f - scale) * startValue) + (scale * endValue);
     }
 
+    /**Interpolate a spline between at least 4 control points following the Catmull-Rom equation.
+     * here is the interpolation matrix
+     * m = [ 0.0  1.0  0.0  0.0 ]
+     *     [-0.5  0.0  0.5  0.0 ]
+     *     [ 1.0 -2.5  2.0 -0.5 ]
+     *     [-0.5  1.5 -1.5  0.5 ]
+     * the result is a value between p1 and p2, t=0 for p1, t=1 for p2
+     * @param t value from 0 to 1
+     * @param p0 control point 0
+     * @param p1 control point 1
+     * @param p2 control point 2
+     * @param p3 control point 3
+     * @return catmull-Rom interpolation
+     */
+    public static float interpolateCatmullRom(float t, float p0,float p1,float p2,float p3){
+        double c1,c2,c3,c4;
+
+	c1 = p1;
+	c2 = -0.5f*p0+ 0.5f*p2;
+	c3 = p0 - 2.5f*p1 + 2.0*p2 - 0.5f*p3;
+	c4 = -0.5f*p0 + 1.5f*p1 - 1.5f*p2 + 0.5f*p3;
+
+        return(float)(((c4*t + c3)*t +c2)*t + c1);
+    }
+
 
      /**
      * Returns the arc cosine of an angle given in radians.<br>

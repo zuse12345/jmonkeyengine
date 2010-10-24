@@ -366,7 +366,7 @@ public class AssetPackProject implements Project {
         @Override
         public Icon getIcon() {
             return new ImageIcon(ImageUtilities.loadImage(
-                    "com/jme3/gde/core/sceneviewer/jme-logo.png"));
+                    "com/jme3/gde/assetpack/icons/assetpack.png"));
         }
 
         @Override

@@ -67,7 +67,7 @@ class AssetPackProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Image getIcon(int type) {
-            return ImageUtilities.loadImage("com/jme3/gde/core/sceneviewer/jme-logo.png");
+            return ImageUtilities.loadImage("com/jme3/gde/assetpack/icons/assetpack.png");
         }
 
         @Override

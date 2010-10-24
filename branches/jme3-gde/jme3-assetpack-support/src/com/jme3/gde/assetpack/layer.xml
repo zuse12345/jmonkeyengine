@@ -14,7 +14,7 @@
         <folder name="Project">
             <folder name="Asset Pack">
                 <file name="AssetPackProject.zip" url="AssetPackProject.zip">
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/com/jme3/gde/assetpack/icons/assets.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/com/jme3/gde/assetpack/icons/assetpack.png"/>
                     <attr name="displayName" bundlevalue="com.jme3.gde.assetpack.Bundle#Templates/Project/AssetPack/AssetPackProject.zip"/>
                     <attr name="instantiatingIterator" methodvalue="com.jme3.gde.assetpack.project.wizards.CreateProjectWizardIterator.createIterator"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/com/jme3/gde/assetpack/project/AssetPackProjectDescription.html"/>

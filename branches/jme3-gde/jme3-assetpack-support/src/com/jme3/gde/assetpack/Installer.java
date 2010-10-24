@@ -23,9 +23,11 @@ public class Installer extends ModuleInstall {
             if (Utilities.isMac()) {
                 String jmpDir = System.getProperty("user.home") + "/Library/Application Support/jmonkeyplatform/assetpacks/";
                 NbPreferences.forModule(Installer.class).put("assetpack_path", jmpDir);
+                new File(jmpDir).mkdirs();
             } else {
                 String jmpDir = System.getProperty("user.home") + File.separator + ".jmonkeyplatform" + File.separator + "assetpacks" + File.separator;
                 NbPreferences.forModule(Installer.class).put("assetpack_path", jmpDir);
+                new File(jmpDir).mkdirs();
             }
         }
     }

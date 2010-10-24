@@ -84,7 +84,7 @@ public class ComboMoveExecution {
                 debugString += Arrays.toString(currentState.getPressedMappings()).replace(", ", "+");
             }
 
-            if (state == moveDef.getNumStates() - 1){
+            if (moveDef.useFinalState() && state == moveDef.getNumStates() - 1){
                 finalState = true;
             }
         }

@@ -145,7 +145,6 @@ public abstract class SimpleApplication extends Application {
     public void loadFPSText(){
         guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
         fpsText = new BitmapText(guiFont, false);
-        fpsText.setSize(guiFont.getCharSet().getRenderedSize());
         fpsText.setLocalTranslation(0, fpsText.getLineHeight(), 0);
         fpsText.setText("Frames per second");
         guiNode.attachChild(fpsText);

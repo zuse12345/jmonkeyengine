@@ -37,25 +37,19 @@ public final class AddAssetAction implements Action {
             return;
         }
         Element assetElement = context.getLookup().lookup(Element.class);
-        Element fileElement = XmlHelper.findChildElementWithAttribute(assetElement, "file", "main", "true");
-        if (fileElement == null) {
-            fileElement = XmlHelper.findChildElement(assetElement, "file");
+        String type = assetElement.getAttribute("type");
+        if ("model".equals(type)) {
+            if (addModelToScene(assetElement, pm)) {
+                return;
+            }
+        } else {
+            if (addFiles(assetElement, pm)) {
+                return;
+            }
         }
-        if (fileElement == null) {
-            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Could not find main file in asset description!");
-            return;
-        }
-        String name = fileElement.getAttribute("path");
-        if (name == null) {
-            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Could not find path for file!");
-            return;
-        }
-        Spatial model = pm.getManager().loadModel(name);
-        if (model == null) {
-            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Could not load model {0}!", name);
-            return;
-        }
+    }
 
+    private boolean addFiles(Element assetElement, ProjectAssetManager pm) {
         NodeList list = assetElement.getElementsByTagName("file");
         //TODO: not good :/
         ProjectAssetManager proman = null;
@@ -63,11 +57,64 @@ public final class AddAssetAction implements Action {
             proman = SceneApplication.getApplication().getCurrentSceneRequest().getManager();
             if (proman == null) {
                 Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Could not get project asset manager!");
-                return;
+                return true;
             }
         } catch (Exception e) {
             Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Could not get project asset manager!");
-            return;
+            return true;
+        }
+        for (int i = 0; i < list.getLength(); i++) {
+            Element fileElem = (Element) list.item(i);
+            try {
+                String src = pm.getAbsoluteAssetPath(fileElem.getAttribute("path"));
+                if (src == null) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Could not find texture with manager!");
+                    return true;
+                }
+                FileObject srcFile = FileUtil.toFileObject(new File(src));
+                String destName = proman.getAssetFolderName() + "/" + fileElem.getAttribute("path");
+                String destFolder = destName.replace("\\", "/");
+                destFolder = destFolder.substring(0, destFolder.lastIndexOf("/"));
+                FileObject folder = FileUtil.createFolder(new File(destFolder));
+                srcFile.copy(folder, srcFile.getName(), srcFile.getExt());
+            } catch (IOException ex) {
+                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Could not copy texture: {0}", ex.getMessage());
+            }
+        }
+        return false;
+    }
+
+    private boolean addModelToScene(Element assetElement, ProjectAssetManager pm) {
+        Element fileElement = XmlHelper.findChildElementWithAttribute(assetElement, "file", "main", "true");
+        if (fileElement == null) {
+            fileElement = XmlHelper.findChildElement(assetElement, "file");
+        }
+        if (fileElement == null) {
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Could not find main file in asset description!");
+            return true;
+        }
+        String name = fileElement.getAttribute("path");
+        if (name == null) {
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Could not find path for file!");
+            return true;
+        }
+        Spatial model = pm.getManager().loadModel(name);
+        if (model == null) {
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Could not load model {0}!", name);
+            return true;
+        }
+        NodeList list = assetElement.getElementsByTagName("file");
+        //TODO: not good :/
+        ProjectAssetManager proman = null;
+        try {
+            proman = SceneApplication.getApplication().getCurrentSceneRequest().getManager();
+            if (proman == null) {
+                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Could not get project asset manager!");
+                return true;
+            }
+        } catch (Exception e) {
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Could not get project asset manager!");
+            return true;
         }
         for (int i = 0; i < list.getLength(); i++) {
             Element fileElem = (Element) list.item(i);
@@ -76,10 +123,10 @@ public final class AddAssetAction implements Action {
                     String src = pm.getAbsoluteAssetPath(fileElem.getAttribute("path"));
                     if (src == null) {
                         Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Could not find texture with manager!");
-                        return;
+                        return true;
                     }
                     FileObject srcFile = FileUtil.toFileObject(new File(src));
-                    String destName = proman.getAssetFolderName() + name;
+                    String destName = proman.getAssetFolderName() + "/" + fileElem.getAttribute("path");
                     String destFolder = destName.replace("\\", "/");
                     destFolder = destFolder.substring(0, destFolder.lastIndexOf("/"));
                     FileObject folder = FileUtil.createFolder(new File(destFolder));
@@ -89,9 +136,8 @@ public final class AddAssetAction implements Action {
                 }
             }
         }
-
         SceneComposerTopComponent.findInstance().addModel(model);
-
+        return false;
     }
 
     public Object getValue(String key) {

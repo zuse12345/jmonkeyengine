@@ -36,7 +36,7 @@ public final class ImportVisualPanel2 extends JPanel {
 
     public void loadSettings(WizardDescriptor wiz) {
         this.wiz = wiz;
-//        updateList();
+        updateList();
     }
 
     public void updateList() {
@@ -77,6 +77,9 @@ public final class ImportVisualPanel2 extends JPanel {
             description.setType("scene");
             description.setMainFile(true);
         } else if ("obj".equals(fileObject.getExt())) {
+            description.setType("mesh");
+            description.setMainFile(true);
+        } else if ("j3o".equals(fileObject.getExt())) {
             description.setType("mesh");
             description.setMainFile(true);
         } else if ("xml".equals(fileObject.getExt())) {

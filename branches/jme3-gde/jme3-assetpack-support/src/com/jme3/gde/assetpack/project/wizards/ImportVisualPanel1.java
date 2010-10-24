@@ -76,7 +76,7 @@ public final class ImportVisualPanel1 extends JPanel {
 
         jTextField3.setText(org.openide.util.NbBundle.getMessage(ImportVisualPanel1.class, "ImportVisualPanel1.jTextField3.text")); // NOI18N
 
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "ogrexml", "wavefront", "image", "sound", "other" }));
+        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "ogrexml", "wavefront", "j3o", "image", "sound", "other" }));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

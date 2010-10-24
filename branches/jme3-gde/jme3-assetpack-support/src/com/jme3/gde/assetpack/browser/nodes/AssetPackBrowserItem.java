@@ -36,6 +36,7 @@ public class AssetPackBrowserItem extends AbstractNode {
     public static final String[] ASSET_FORMATS = new String[]{
         "ogrexml",
         "wavefront",
+        "j3o",
         "image",
         "sound",
         "other"};

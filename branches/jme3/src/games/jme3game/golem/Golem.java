@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) 2009-2010 jMonkeyEngine
  * All rights reserved.
  *
@@ -88,25 +88,33 @@ import jme3tools.converters.ImageToAwt;
  *
  * @author normenhansen
  */
-public class Golem extends SimpleApplication implements ActionListener, PhysicsCollisionListener, AnimEventListener {
+public class Golem extends SimpleApplication
+                   implements ActionListener, PhysicsCollisionListener, AnimEventListener {
 
-    private BulletAppState bulletAppState;
+    // constants
     static final Quaternion ROTATE_LEFT = new Quaternion();
+    static {
+        ROTATE_LEFT.fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_Y);
+    }
+    //
+    float myTimer;
+    private BulletAppState bulletAppState;
     //character
-      PhysicsCharacterNode character;
-    Node model;
+    PhysicsCharacterNode characterNode;
+    Node character;
     //temp vectors
-    Vector3f walkDirection = new Vector3f();
+    Vector3f   walkDirection = new Vector3f();
     Quaternion modelRotation = new Quaternion();
-    Vector3f modelDirection = new Vector3f();
-    Vector3f modelRight = new Vector3f();
+    Vector3f  modelDirection = new Vector3f();
+    Vector3f      modelRight = new Vector3f();
     //terrain
     TerrainQuad terrain;
-    Node terrainPhysicsNode;
+    Node terrainNode;
     //Materials
     Material matRock;
     Material matWire;
     Material matBullet;
+    Material matBomb;
     //animation
     AnimChannel animationChannel;
     AnimChannel shootingChannel;
@@ -115,20 +123,24 @@ public class Golem extends SimpleApplication implements ActionListener, PhysicsC
     //camera
     boolean left = false, right = false, up = false, down = false;
     ChaseCamera chaseCam;
-    //bullet
+    //player's bullet
     Sphere bullet;
     SphereCollisionShape bulletCollisionShape;
+    //enemy's bomb
+    Sphere bomb;
+    SphereCollisionShape bombCollisionShape;
+    float xOff = 10;
+    float yOff = 2f;
+    float zOff = 120;
+    Vector3f trajectory = new Vector3f(0,2,1);
+    Vector3f enemyLoc = new Vector3f(0,yOff+4,0);
     //explosion
     ParticleEmitter effect;
     //brick wall
     Box brick;
-    float bLength = 0.8f;
-    float bWidth = 0.4f;
-    float bHeight = 0.4f;
-
-    static {
-        ROTATE_LEFT.fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_Y);
-    }
+    float bLength = 2.5f;
+    float bWidth  = 1.5f;
+    float bHeight = 1.5f;
 
     public static void main(String[] args) {
         Golem app = new Golem();
@@ -142,6 +154,7 @@ public class Golem extends SimpleApplication implements ActionListener, PhysicsC
         stateManager.attach(bulletAppState);
         setupKeys();
         prepareBullet();
+        prepareBomb();
         prepareEffect();
         createLight();
         createSky();
@@ -150,39 +163,41 @@ public class Golem extends SimpleApplication implements ActionListener, PhysicsC
         createCharacter();
         setupChaseCamera();
         setupAnimationController();
+        AxisRods();
+        cam.lookAt(enemyLoc, Vector3f.UNIT_Y);
     }
 
     private PhysicsSpace getPhysicsSpace() {
         return bulletAppState.getPhysicsSpace();
     }
 
+    /** Mapping WASD keys for walking, return for jumping, space for shooting */
     private void setupKeys() {
         inputManager.addMapping("wireframe", new KeyTrigger(KeyInput.KEY_T));
-        inputManager.addListener(this, "wireframe");
-        inputManager.addMapping("CharLeft", new KeyTrigger(KeyInput.KEY_A));
+        inputManager.addMapping("CharLeft",  new KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping("CharRight", new KeyTrigger(KeyInput.KEY_D));
-        inputManager.addMapping("CharUp", new KeyTrigger(KeyInput.KEY_W));
-        inputManager.addMapping("CharDown", new KeyTrigger(KeyInput.KEY_S));
-        inputManager.addMapping("CharSpace", new KeyTrigger(KeyInput.KEY_RETURN));
+        inputManager.addMapping("CharForw",  new KeyTrigger(KeyInput.KEY_W));
+        inputManager.addMapping("CharBack",  new KeyTrigger(KeyInput.KEY_S));
+        inputManager.addMapping("CharJump",  new KeyTrigger(KeyInput.KEY_RETURN));
         inputManager.addMapping("CharShoot", new KeyTrigger(KeyInput.KEY_SPACE));
+        inputManager.addListener(this, "wireframe");
         inputManager.addListener(this, "CharLeft");
         inputManager.addListener(this, "CharRight");
-        inputManager.addListener(this, "CharUp");
-        inputManager.addListener(this, "CharDown");
-        inputManager.addListener(this, "CharSpace");
+        inputManager.addListener(this, "CharForw");
+        inputManager.addListener(this, "CharBack");
+        inputManager.addListener(this, "CharJump");
         inputManager.addListener(this, "CharShoot");
     }
 
     private void createWall() {
-        float xOff = -144;
-        float zOff = -40;
         float startpt = bLength / 4 - xOff;
         float height = 6.1f;
         brick = new Box(Vector3f.ZERO, bLength, bHeight, bWidth);
         brick.scaleTextureCoordinates(new Vector2f(1f, .5f));
-        for (int j = 0; j < 15; j++) {
+        for (int j = 0; j < 10; j++) {
             for (int i = 0; i < 4; i++) {
-                Vector3f vt = new Vector3f(i * bLength * 2 + startpt, bHeight + height, zOff);
+                Vector3f vt = new Vector3f(i * bLength * 2 + startpt, yOff + bHeight + height, zOff);
+                //if(j%2==0) vt.z+=bLength/2;
                 addBrick(vt);
             }
             startpt = -startpt;
@@ -193,7 +208,9 @@ public class Golem extends SimpleApplication implements ActionListener, PhysicsC
     private void addBrick(Vector3f ori) {
         Geometry reBoxg = new Geometry("brick", brick);
         reBoxg.setMaterial(matRock);
-        PhysicsNode brickNode = new PhysicsNode(reBoxg, new BoxCollisionShape(new Vector3f(bLength, bHeight, bWidth)), 1.5f);
+        PhysicsNode brickNode = new PhysicsNode(
+                reBoxg,
+                new BoxCollisionShape(new Vector3f(bLength, bHeight, bWidth)), 1.5f);
         brickNode.setLocalTranslation(ori);
         brickNode.setShadowMode(ShadowMode.CastAndReceive);
         this.rootNode.attachChild(brickNode);
@@ -206,6 +223,15 @@ public class Golem extends SimpleApplication implements ActionListener, PhysicsC
         bulletCollisionShape = new SphereCollisionShape(0.4f);
         matBullet = new Material(getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
         matBullet.setColor("m_Color", ColorRGBA.Green);
+        getPhysicsSpace().addCollisionListener(this);
+    }
+    
+    private void prepareBomb() {
+        bomb = new Sphere(32, 32, 1f, true, false);
+        bomb.setTextureMode(TextureMode.Projected);
+        bombCollisionShape = new SphereCollisionShape(1);
+        matBomb = new Material(getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
+        matBomb.setColor("m_Color", ColorRGBA.Red);
         getPhysicsSpace().addCollisionListener(this);
     }
 
@@ -227,8 +253,10 @@ public class Golem extends SimpleApplication implements ActionListener, PhysicsC
         effect.setVariation(1f);
         effect.setImagesX(2);
         effect.setImagesY(2);
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
-        mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/flame.png"));
+        Material mat = new Material(
+                assetManager, "Common/MatDefs/Misc/Particle.j3md");
+        mat.setTexture("m_Texture",
+                assetManager.loadTexture("Effects/Explosion/flame.png"));
         effect.setMaterial(mat);
         effect.setLocalScale(100);
         effect.setCullHint(CullHint.Never);
@@ -244,7 +272,8 @@ public class Golem extends SimpleApplication implements ActionListener, PhysicsC
     }
 
     private void createSky() {
-        rootNode.attachChild(SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false));
+        rootNode.attachChild(
+         SkyFactory.createSky( assetManager, "Textures/Sky/Bright/BrightSky.dds", false));
     }
 
     private void createTerrain() {
@@ -268,7 +297,8 @@ public class Golem extends SimpleApplication implements ActionListener, PhysicsC
 
         AbstractHeightMap heightmap = null;
         try {
-            heightmap = new ImageBasedHeightMap(ImageToAwt.convert(heightMapImage.getImage(), false, true, 0), 0.25f);
+            heightmap = new ImageBasedHeightMap(
+                    ImageToAwt.convert(heightMapImage.getImage(), false, true, 0), 0.25f);
             heightmap.load();
 
         } catch (Exception e) {
@@ -286,30 +316,30 @@ public class Golem extends SimpleApplication implements ActionListener, PhysicsC
         terrain.setLocalScale(new Vector3f(2, 2, 2));
 
         TerrainPhysicsShapeFactory factory = new TerrainPhysicsShapeFactory();
-        terrainPhysicsNode = factory.createPhysicsMesh(terrain);
-        terrainPhysicsNode.attachChild(terrain);
-        rootNode.attachChild(terrainPhysicsNode);
-        getPhysicsSpace().add(terrainPhysicsNode);
+        terrainNode = factory.createPhysicsMesh(terrain);
+        terrainNode.attachChild(terrain);
+        rootNode.attachChild(terrainNode);
+        getPhysicsSpace().add(terrainNode);
     }
 
     private void createCharacter() {
         CapsuleCollisionShape capsule = new CapsuleCollisionShape(1.5f, 2f);
-        character = new PhysicsCharacterNode(capsule, 0.01f);
-        model = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
-        model.setLocalScale(0.5f);
-        character.attachChild(model);
-        character.setLocalTranslation(new Vector3f(-140, 10, -10));
-        rootNode.attachChild(character);
-        getPhysicsSpace().add(character);
+        characterNode = new PhysicsCharacterNode(capsule, 0.01f);
+        character = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
+        character.setLocalScale(0.5f);
+        characterNode.attachChild(character);
+        characterNode.setLocalTranslation(new Vector3f(0, 15, 150));
+        rootNode.attachChild(characterNode);
+        getPhysicsSpace().add(characterNode);
     }
 
     private void setupChaseCamera() {
         flyCam.setEnabled(false);
-        chaseCam = new ChaseCamera(cam, character, inputManager);
+        chaseCam = new ChaseCamera(cam, characterNode, inputManager);
     }
 
     private void setupAnimationController() {
-        animationControl = model.getControl(AnimControl.class);
+        animationControl = character.getControl(AnimControl.class);
         animationControl.addListener(this);
         animationChannel = animationControl.createChannel();
         shootingChannel = animationControl.createChannel();
@@ -341,7 +371,7 @@ public class Golem extends SimpleApplication implements ActionListener, PhysicsC
         if (down) {
             walkDirection.addLocal(camDir.negate());
         }
-        if (!character.onGround()) {
+        if (!characterNode.onGround()) {
             airTime = airTime + tpf;
         } else {
             airTime = 0;
@@ -361,11 +391,17 @@ public class Golem extends SimpleApplication implements ActionListener, PhysicsC
                 animationChannel.setAnim("Walk", 0.7f);
             }
         }
-        model.setLocalRotation(modelRotation);
+        character.setLocalRotation(modelRotation);
         modelRotation.multLocal(modelDirection);
         modelRight.set(modelDirection);
         ROTATE_LEFT.multLocal(modelRight);
-        character.setWalkDirection(walkDirection);
+        characterNode.setWalkDirection(walkDirection);
+
+        // attack
+        myTimer+=tpf; 
+        if(myTimer>10) { shootBomb(); myTimer=0; }
+
+
     }
 
     public void onAction(String binding, boolean value, float tpf) {
@@ -381,20 +417,20 @@ public class Golem extends SimpleApplication implements ActionListener, PhysicsC
             } else {
                 right = false;
             }
-        } else if (binding.equals("CharUp")) {
+        } else if (binding.equals("CharForw")) {
             if (value) {
                 up = true;
             } else {
                 up = false;
             }
-        } else if (binding.equals("CharDown")) {
+        } else if (binding.equals("CharBack")) {
             if (value) {
                 down = true;
             } else {
                 down = false;
             }
-        } else if (binding.equals("CharSpace")) {
-            character.jump();
+        } else if (binding.equals("CharJump")) {
+            characterNode.jump();
         } else if (binding.equals("CharShoot") && !value) {
             shootBullet();
         }
@@ -403,16 +439,29 @@ public class Golem extends SimpleApplication implements ActionListener, PhysicsC
     private void shootBullet() {
         shootingChannel.setAnim("Dodge", 0.1f);
         shootingChannel.setLoopMode(LoopMode.DontLoop);
-        Geometry bulletg = new Geometry("bullet", bullet);
-        bulletg.setMaterial(matBullet);
-        PhysicsNode bulletNode = new PhysicsNode(bulletg, bulletCollisionShape, 1);
+        Geometry bulletGeo = new Geometry("bullet", bullet);
+        bulletGeo.setMaterial(matBullet);
+        PhysicsNode bulletNode = new PhysicsNode(bulletGeo, bulletCollisionShape, 1);
         bulletNode.setCcdMotionThreshold(0.1f);
         bulletNode.setName("bullet");
-        bulletNode.setLocalTranslation(character.getLocalTranslation().add(modelDirection.mult(1.8f).addLocal(modelRight.mult(0.9f))));
+        bulletNode.setLocalTranslation(characterNode.getLocalTranslation().add(modelDirection.mult(1.8f).addLocal(modelRight.mult(0.9f))));
         bulletNode.setShadowMode(ShadowMode.CastAndReceive);
         bulletNode.setLinearVelocity(modelDirection.mult(40));
         rootNode.attachChild(bulletNode);
         getPhysicsSpace().add(bulletNode);
+    }
+
+    private void shootBomb() {
+        Geometry bombGeo = new Geometry("bomb", bomb);
+        bombGeo.setMaterial(matBomb);
+        PhysicsNode bombNode = new PhysicsNode(bombGeo, bombCollisionShape, 1);
+        bombNode.setCcdMotionThreshold(0.1f);
+        bombNode.setName("bomb");
+        bombNode.setLocalTranslation(enemyLoc);
+        bombNode.setShadowMode(ShadowMode.Cast);
+        bombNode.setLinearVelocity(trajectory);
+        rootNode.attachChild(bombNode);
+        getPhysicsSpace().add(bombNode);
     }
 
     public void collision(PhysicsCollisionEvent event) {
@@ -452,5 +501,23 @@ public class Golem extends SimpleApplication implements ActionListener, PhysicsC
     }
 
     public void onAnimChange(AnimControl control, AnimChannel channel, String animName) {
+    }
+
+    private void AxisRods(){
+        Material mat = new Material(assetManager,
+         "Common/MatDefs/Misc/SolidColor.j3md"); 
+        mat.setColor("m_Color", ColorRGBA.White);
+        Box x = new Box(Vector3f.ZERO, 100f, 0.5f, 0.5f);
+        Geometry gx = new Geometry("Box", x);  
+        gx.setMaterial(mat);                   
+        rootNode.attachChild(gx);              
+        Box y = new Box(Vector3f.ZERO, 0.5f, 100f, 0.5f);
+        Geometry gy = new Geometry("Box", y);
+        gy.setMaterial(mat);                 
+        rootNode.attachChild(gy);            
+        Box z = new Box(Vector3f.ZERO, 0.1f, 0.1f, 100f); 
+        Geometry gz = new Geometry("Box", z);  
+        gz.setMaterial(mat);                   
+        rootNode.attachChild(gz);              
     }
 }

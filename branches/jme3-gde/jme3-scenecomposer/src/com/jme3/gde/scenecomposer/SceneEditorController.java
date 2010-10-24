@@ -426,6 +426,51 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
 
     }
 
+    public void addModel(final Spatial file) {
+        addModel(file, null);
+    }
+
+    public void addModel(final Spatial file, final Vector3f location) {
+        if (selectedSpat == null) {
+            return;
+        }
+        final Node selected = selectedSpat.getLookup().lookup(Node.class);
+        if (selected != null) {
+            setNeedsSave(true);
+            SceneApplication.getApplication().enqueue(new Callable<Object>() {
+
+                public Object call() throws Exception {
+                    doAddModel(file, selected, location);
+                    return null;
+                }
+            });
+        }
+    }
+
+    public void doAddModel(Spatial file, Node selected, Vector3f location) {
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Adding Model..");
+        progressHandle.start();
+        try {
+            if (file != null) {
+                selected.attachChild(file);
+                if (location != null) {
+                    Vector3f localVec = new Vector3f();
+                    selected.worldToLocal(location, localVec);
+                    file.setLocalTranslation(localVec);
+                }
+            }
+            refreshSelected();
+        } catch (Exception ex) {
+            Confirmation msg = new NotifyDescriptor.Confirmation(
+                    "Error importing " + file.getName() + "\n" + ex.toString(),
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(msg);
+        }
+        progressHandle.finish();
+
+    }
+
     public void setNeedsSave(boolean state) {
         currentFileObject.setModified(state);
     }

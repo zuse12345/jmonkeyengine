@@ -33,7 +33,6 @@ package com.jme3.gde.core.sceneexplorer.nodes;
 
 import com.jme3.bounding.BoundingVolume;
 import com.jme3.export.binary.BinaryExporter;
-import com.jme3.gde.core.assets.nodes.AssetChildren;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.light.LightList;
 import com.jme3.math.Quaternion;
@@ -49,8 +48,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;

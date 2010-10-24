@@ -655,13 +655,19 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         SceneApplication.getApplication().requestScene(request);
     }
 
-    void addModel(SpatialAssetDataObject model) {
+    public void addModel(Spatial model) {
         if (editorController != null) {
             editorController.addModel(model, toolController.getCursorLocation());
         }
     }
 
-    void linkModel(AssetManager manager, String assetName) {
+    public void addModel(SpatialAssetDataObject model) {
+        if (editorController != null) {
+            editorController.addModel(model, toolController.getCursorLocation());
+        }
+    }
+
+    public void linkModel(AssetManager manager, String assetName) {
         if (editorController != null) {
             editorController.linkModel(manager, assetName, toolController.getCursorLocation());
         }

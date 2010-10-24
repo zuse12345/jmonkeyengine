@@ -33,11 +33,16 @@ package com.jme3.gde.core.assets;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.DesktopAssetManager;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -48,22 +53,27 @@ public class ProjectAssetManager {
 
     private Project project;
     private AssetManager manager;
-    private String folderName;
+    private List<String> folderName = new LinkedList<String>();
 
     public ProjectAssetManager(Project prj, String folderName) {
-        this.project = prj;
-        this.folderName = folderName;
-        AssetManager manager = getManager();
+        this(prj);
+        addFileLocator(folderName);
+    }
 
+    public ProjectAssetManager(Project prj) {
+        this.project = prj;
+        AssetManager manager = getManager();
         for (AssetManagerConfigurator di : Lookup.getDefault().lookupAll(AssetManagerConfigurator.class)) {
             di.prepareManager(manager);
         }
+    }
 
-        manager.registerLoader("com.jme3.export.binary.BinaryImporter", "j3s");
-
-        manager.registerLocator(prj.getProjectDirectory().getPath() + "/" + folderName + "/",
+    public void addFileLocator(String relativePath) {
+        String string = project.getProjectDirectory().getPath() + File.separator + relativePath + File.separator;
+        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Add locator:{0}", string);
+        manager.registerLocator(string,
                 "com.jme3.asset.plugins.FileLocator");
-
+        folderName.add(relativePath);
     }
 
     public Project getProject() {
@@ -71,10 +81,10 @@ public class ProjectAssetManager {
     }
 
     public String getRelativeAssetPath(String absolutePath) {
-        String prefix = project.getProjectDirectory().getFileObject(folderName + "/").getPath();
+        String prefix = project.getProjectDirectory().getFileObject(getFolderName() + "/").getPath();
         int idx = absolutePath.indexOf(prefix);
         if (idx == 0) {
-            return absolutePath.substring(prefix.length()+1);
+            return absolutePath.substring(prefix.length() + 1);
         }
         return absolutePath;
     }
@@ -87,7 +97,7 @@ public class ProjectAssetManager {
     }
 
     public String[] getMaterials() {
-        FileObject assetsFolder = project.getProjectDirectory().getFileObject(folderName + "/");
+        FileObject assetsFolder = project.getProjectDirectory().getFileObject(getFolderName() + "/");
         Enumeration<FileObject> assets = (Enumeration<FileObject>) assetsFolder.getChildren(true);
         ArrayList<String> list = new ArrayList<String>();
         while (assets.hasMoreElements()) {
@@ -100,12 +110,12 @@ public class ProjectAssetManager {
     }
 
     public String[] getSounds() {
-        FileObject assetsFolder = project.getProjectDirectory().getFileObject(folderName + "/");
+        FileObject assetsFolder = project.getProjectDirectory().getFileObject(getFolderName() + "/");
         Enumeration<FileObject> assets = (Enumeration<FileObject>) assetsFolder.getChildren(true);
         ArrayList<String> list = new ArrayList<String>();
         while (assets.hasMoreElements()) {
             FileObject asset = assets.nextElement();
-            if (asset.hasExt("wav")||asset.hasExt("ogg")) {
+            if (asset.hasExt("wav") || asset.hasExt("ogg")) {
                 list.add(getRelativeAssetPath(asset.getPath()));
             }
         }
@@ -113,12 +123,12 @@ public class ProjectAssetManager {
     }
 
     public String[] getTextures() {
-        FileObject assetsFolder = project.getProjectDirectory().getFileObject(folderName + "/");
+        FileObject assetsFolder = project.getProjectDirectory().getFileObject(getFolderName() + "/");
         Enumeration<FileObject> assets = (Enumeration<FileObject>) assetsFolder.getChildren(true);
         ArrayList<String> list = new ArrayList<String>();
         while (assets.hasMoreElements()) {
             FileObject asset = assets.nextElement();
-            if (asset.hasExt("jpg")||asset.hasExt("jpeg")||asset.hasExt("gif")||asset.hasExt("png")||asset.hasExt("dds")||asset.hasExt("pfm")||asset.hasExt("hdr")||asset.hasExt("tga")) {
+            if (asset.hasExt("jpg") || asset.hasExt("jpeg") || asset.hasExt("gif") || asset.hasExt("png") || asset.hasExt("dds") || asset.hasExt("pfm") || asset.hasExt("hdr") || asset.hasExt("tga")) {
                 list.add(getRelativeAssetPath(asset.getPath()));
             }
         }
@@ -126,7 +136,7 @@ public class ProjectAssetManager {
     }
 
     public String[] getMatDefs() {
-        FileObject assetsFolder = project.getProjectDirectory().getFileObject(folderName + "/");
+        FileObject assetsFolder = project.getProjectDirectory().getFileObject(getFolderName() + "/");
         Enumeration<FileObject> assets = (Enumeration<FileObject>) assetsFolder.getChildren(true);
         ArrayList<String> list = new ArrayList<String>();
         while (assets.hasMoreElements()) {
@@ -142,13 +152,35 @@ public class ProjectAssetManager {
      * @return the folderName
      */
     public String getFolderName() {
-        return folderName;
+        return folderName.get(0);
+    }
+
+    /**
+     * @return the folderName
+     */
+    public String getAssetFolderName() {
+        return project.getProjectDirectory().getPath() + File.separator + getFolderName();
+    }
+
+    public String getAbsoluteAssetPath(String path) {
+        for (Iterator<String> it = folderName.iterator(); it.hasNext();) {
+            String string = project.getProjectDirectory().getPath() + File.separator + it.next() + File.separator + path;
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Check {0}", string);
+            File file = new File(string);
+            if (file.exists()) {
+                return file.getAbsolutePath();
+            }
+        }
+        return null;
     }
 
     /**
      * @param folderName the folderName to set
      */
     public void setFolderName(String folderName) {
-        this.folderName = folderName;
+        if (folderName.length() > 0) {
+            this.folderName.remove(0);
+        }
+        this.folderName.add(0, folderName);
     }
 }

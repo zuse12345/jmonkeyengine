@@ -53,6 +53,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -131,7 +133,7 @@ public class SceneExplorerChildren extends Children.Keys<Object> {
     protected Node[] createNodes(Object key) {
         for (SceneExplorerNode di : Lookup.getDefault().lookupAll(SceneExplorerNode.class)) {
             if (di.getExplorerObjectClass().getName().equals(key.getClass().getName())) {
-                System.out.println("Found " + di.getExplorerNodeClass());
+                Logger.getLogger(this.getClass().getName()).log(Level.FINE, "Found {0}", di.getExplorerNodeClass());
                 Node[] ret = di.createNodes(key, dataObject, readOnly);
                 if (ret != null) {
                     return ret;

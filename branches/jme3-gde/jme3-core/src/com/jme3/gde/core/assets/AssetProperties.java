@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 import org.openide.filesystems.FileAlreadyLockedException;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -82,13 +83,24 @@ public class AssetProperties extends Properties {
     }
 
     public void saveProperties() throws FileAlreadyLockedException, IOException {
-        FileObject pFile = file.getPrimaryFile();
-        FileObject myFile = FileUtil.findBrother(pFile, extension);
-        if (myFile == null) {
-            myFile = FileUtil.createData(pFile.getParent(), pFile.getName() + "." + extension);
+        OutputStream out = null;
+        FileLock lock = null;
+        try {
+            FileObject pFile = file.getPrimaryFile();
+            FileObject myFile = FileUtil.findBrother(pFile, extension);
+            if (myFile == null) {
+                myFile = FileUtil.createData(pFile.getParent(), pFile.getName() + "." + extension);
+            }
+            lock = myFile.lock();
+            out = myFile.getOutputStream(lock);
+            store(out, "");
+        } finally {
+            if (out != null) {
+                out.close();
+            }
+            if (lock != null) {
+                lock.releaseLock();
+            }
         }
-        OutputStream out = myFile.getOutputStream();
-        store(out, "");
-        out.close();
     }
 }

@@ -39,26 +39,29 @@ public final class OpenSceneComposer implements ActionListener {
             public void run() {
                 ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Opening in SceneComposer");
                 progressHandle.start();
+                try {
 
-                final Spatial asset = context.loadAsset();
+                    final Spatial asset = context.loadAsset();
 
-                if(asset!=null){
-                    java.awt.EventQueue.invokeLater(new Runnable() {
+                    if (asset != null) {
+                        java.awt.EventQueue.invokeLater(new Runnable() {
 
-                        public void run() {
-                            ((DesktopAssetManager)manager.getManager()).clearCache();
-                            SceneComposerTopComponent composer = SceneComposerTopComponent.findInstance();
-                            composer.openScene(asset, context, manager);
-                        }
-                    });
-                }else {
-                    Confirmation msg = new NotifyDescriptor.Confirmation(
-                            "Error opening " + context.getPrimaryFile().getNameExt(),
-                            NotifyDescriptor.OK_CANCEL_OPTION,
-                            NotifyDescriptor.ERROR_MESSAGE);
-                    DialogDisplayer.getDefault().notify(msg);
+                            public void run() {
+                                ((DesktopAssetManager) manager.getManager()).clearCache();
+                                SceneComposerTopComponent composer = SceneComposerTopComponent.findInstance();
+                                composer.openScene(asset, context, manager);
+                            }
+                        });
+                    } else {
+                        Confirmation msg = new NotifyDescriptor.Confirmation(
+                                "Error opening " + context.getPrimaryFile().getNameExt(),
+                                NotifyDescriptor.OK_CANCEL_OPTION,
+                                NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(msg);
+                    }
+                } finally {
+                    progressHandle.finish();
                 }
-                progressHandle.finish();
             }
         };
         new Thread(call).start();

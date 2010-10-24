@@ -48,11 +48,11 @@ public final class OgreBinaryConvert implements ActionListener {
                     FileObject file = context.getPrimaryFile();
                     FileLock lock = null;
                     try {
-                        String materialPath = file.getPath().replaceAll(".mesh", ".material").replaceAll(".MESH", ".material");
+                        String materialPath = file.getPath().replaceAll("\\.mesh", ".material").replaceAll("\\.MESH", ".material");
                         if(!new File(materialPath).exists()){
                             Confirmation msg = new NotifyDescriptor.Confirmation(
                                     "No material file found for " + file.getNameExt() + "\n"
-                                    + "A file named "+file.getNameExt().replaceAll(".mesh", ".material").replaceAll(".MESH", ".material")
+                                    + "A file named "+file.getNameExt().replaceAll("\\.mesh", ".material").replaceAll("\\.MESH", ".material")
                                     +" should be in the same folder.\n"
                                     + "Press OK to import mesh only.",
                                     NotifyDescriptor.OK_CANCEL_OPTION,

@@ -35,7 +35,7 @@ package com.jme3.gde.core.assets;
 import com.jme3.asset.AssetManager;
 
 /**
- *
+ * This class can be used by plugins to configure the AssetManager used for projects
  * @author normenhansen
  */
 public interface AssetManagerConfigurator {

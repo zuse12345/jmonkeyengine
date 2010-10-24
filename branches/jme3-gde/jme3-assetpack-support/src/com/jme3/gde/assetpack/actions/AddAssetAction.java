@@ -58,8 +58,15 @@ public final class AddAssetAction implements Action {
 
         NodeList list = assetElement.getElementsByTagName("file");
         //TODO: not good :/
-        ProjectAssetManager proman = SceneApplication.getApplication().getCurrentSceneRequest().getManager();
-        if (proman == null) {
+        ProjectAssetManager proman = null;
+        try {
+            proman = SceneApplication.getApplication().getCurrentSceneRequest().getManager();
+            if (proman == null) {
+                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Could not get project asset manager!");
+                return;
+            }
+        } catch (Exception e) {
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Could not get project asset manager!");
             return;
         }
         for (int i = 0; i < list.getLength(); i++) {

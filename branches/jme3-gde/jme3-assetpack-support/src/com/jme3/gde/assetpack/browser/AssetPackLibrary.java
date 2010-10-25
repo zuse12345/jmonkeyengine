@@ -12,6 +12,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -61,23 +63,28 @@ public class AssetPackLibrary implements Project {
             FileObject fileObject = object[i];
             if (fileObject.isFolder()) {
                 FileObject config = fileObject.getFileObject("assetpack.xml");
-                InputStream in;
-                try {
-                    in = config.getInputStream();
-                    Document doc = XMLUtil.parse(new InputSource(in), false, false, null, null);
-                    in.close();
-                    Element assets = XmlHelper.findChildElement(doc.getDocumentElement(), "assets");
-                    if (assets != null) {
-                        assetElements.add(assets);
+                if (config != null) {
+
+                    InputStream in;
+                    try {
+                        in = config.getInputStream();
+                        Document doc = XMLUtil.parse(new InputSource(in), false, false, null, null);
+                        in.close();
+                        Element assets = XmlHelper.findChildElement(doc.getDocumentElement(), "assets");
+                        if (assets != null) {
+                            assetElements.add(assets);
+                        }
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
                     }
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                if (projectAssetManager == null) {
-                    projectAssetManager = new ProjectAssetManager(this, fileObject.getNameExt()+"/assets/");
-                    content.add(projectAssetManager);
+                    if (projectAssetManager == null) {
+                        projectAssetManager = new ProjectAssetManager(this, fileObject.getNameExt() + "/assets/");
+                        content.add(projectAssetManager);
+                    } else {
+                        projectAssetManager.addFileLocator(fileObject.getNameExt() + "/assets/");
+                    }
                 } else {
-                    projectAssetManager.addFileLocator(fileObject.getNameExt() + "/assets/");
+                    Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Error in assetpack, could not load assetpack.xml!");
                 }
             }
         }

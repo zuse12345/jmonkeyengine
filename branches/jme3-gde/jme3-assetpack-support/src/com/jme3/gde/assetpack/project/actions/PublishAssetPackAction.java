@@ -98,7 +98,7 @@ public final class PublishAssetPackAction implements Action {
                 }
                 FileInputStream fis = new FileInputStream(f);
                 if (!f.getName().equals(fileName)) {
-                    String filePathName = f.getPath().replaceAll(((AssetPackProject) context).getProjectDirectory().getPath(), "");
+                    String filePathName = f.getPath().replaceAll(context.getProjectDirectory().getPath(), "");
                     ZipEntry anEntry = new ZipEntry(filePathName);
                     zos.putNextEntry(anEntry);
                     while ((bytesIn = fis.read(readBuffer)) != -1) {

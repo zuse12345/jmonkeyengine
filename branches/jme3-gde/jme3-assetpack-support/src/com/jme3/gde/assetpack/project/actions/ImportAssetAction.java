@@ -2,9 +2,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.jme3.gde.assetpack.project.wizards;
+package com.jme3.gde.assetpack.project.actions;
 
 import com.jme3.gde.assetpack.project.AssetPackProject;
+import com.jme3.gde.assetpack.project.wizards.FileDescription;
+import com.jme3.gde.assetpack.project.wizards.ImportWizardPanel1;
+import com.jme3.gde.assetpack.project.wizards.ImportWizardPanel2;
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import java.awt.Component;
 import java.awt.Dialog;
@@ -49,7 +52,7 @@ public final class ImportAssetAction implements Action {
         Element asset = context.getConfiguration().createElement("asset");
         asset.setAttribute("name", (String) desc.getProperty("name"));
         asset.setAttribute("type", (String) desc.getProperty("type"));
-        asset.setAttribute("format", (String) desc.getProperty("format"));
+//        asset.setAttribute("format", (String) desc.getProperty("format"));
         asset.setAttribute("tags", (String) desc.getProperty("tags"));
         asset.setAttribute("categories", (String) desc.getProperty("categories"));
         Element license = context.getConfiguration().createElement("license");

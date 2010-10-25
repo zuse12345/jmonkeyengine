@@ -12,10 +12,10 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.TopLevelRegistration(categoryName = "#OptionsCategory_Name_AssetPacks",
-iconBase = "/com/jme3/gde/assetpack/icons/assetpack.png",
+iconBase = "/com/jme3/gde/assetpack/icons/assetpack_24.png",
 keywords = "#OptionsCategory_Keywords_AssetPacks",
 keywordsCategory = "AssetPacks",
-position = 120)
+position = 610)
 public final class AssetPacksOptionsPanelController extends OptionsPanelController {
 
     private AssetPacksPanel panel;

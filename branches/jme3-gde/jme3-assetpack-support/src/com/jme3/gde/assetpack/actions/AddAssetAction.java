@@ -38,7 +38,7 @@ public final class AddAssetAction implements Action {
         }
         Element assetElement = context.getLookup().lookup(Element.class);
         String type = assetElement.getAttribute("type");
-        if ("model".equals(type)) {
+        if ("model".equals(type)||"scene".equals(type)) {
             if (addModelToScene(assetElement, pm)) {
                 return;
             }
@@ -118,7 +118,8 @@ public final class AddAssetAction implements Action {
         }
         for (int i = 0; i < list.getLength(); i++) {
             Element fileElem = (Element) list.item(i);
-            if ("texture".equals(fileElem.getAttribute("type"))) {
+            String type=fileElem.getAttribute("type");
+            if ("texture".equals(type)||"sound".equals(type)||"materialdef".equals(type)||"shader".equals(type)||"other".equals(type)) {
                 try {
                     String src = pm.getAbsoluteAssetPath(fileElem.getAttribute("path"));
                     if (src == null) {

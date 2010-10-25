@@ -72,7 +72,7 @@ public class SingleAssetFilePanel extends javax.swing.JPanel {
         jTextField2.setText(org.openide.util.NbBundle.getMessage(SingleAssetFilePanel.class, "SingleAssetFilePanel.jTextField2.text")); // NOI18N
         jToolBar1.add(jTextField2);
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "scene", "mesh", "texture", "material" }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "scene", "mesh", "texture", "material", "materialdef", "shader", "other" }));
         jComboBox1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveInfo2(evt);
@@ -95,7 +95,7 @@ public class SingleAssetFilePanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jToolBar1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jToolBar1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

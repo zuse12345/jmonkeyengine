@@ -1,5 +1,6 @@
 package com.jme3.gde.assetpack.project;
 
+import com.jme3.gde.assetpack.project.actions.PublishAssetPackAction;
 import com.jme3.gde.assetpack.browser.nodes.AssetPackBrowserFolder;
 import java.awt.Image;
 import java.util.LinkedList;
@@ -56,7 +57,7 @@ class AssetPackProjectLogicalView implements LogicalViewProvider {
         @Override
         public Action[] getActions(boolean arg0) {
             Action[] nodeActions = new Action[8];
-//            nodeActions[0] = new ImportAssetAction(project);
+            nodeActions[0] = new PublishAssetPackAction(project);
             nodeActions[1] = CommonProjectActions.copyProjectAction();
             nodeActions[2] = CommonProjectActions.deleteProjectAction();
             nodeActions[5] = CommonProjectActions.setAsMainProjectAction();

@@ -188,7 +188,7 @@ public final class CreateProjectWizardIterator implements WizardDescriptor.Insta
             doc.getDocumentElement().setAttribute("name", (String) wiz.getProperty("name"));
             doc.getDocumentElement().setAttribute("version", (String) wiz.getProperty("version"));
             doc.getDocumentElement().setAttribute("distributor", (String) wiz.getProperty("distributor"));
-            doc.getDocumentElement().setAttribute("filename", (String) wiz.getProperty("filename"));
+//            doc.getDocumentElement().setAttribute("filename", (String) wiz.getProperty("filename"));
             doc.getDocumentElement().setAttribute("name", (String) wiz.getProperty("name"));
             XMLUtil.findElement(doc.getDocumentElement(), "description", null).setTextContent((String) wiz.getProperty("description"));
             XMLUtil.findElement(doc.getDocumentElement(), "license", null).setTextContent((String) wiz.getProperty("license"));

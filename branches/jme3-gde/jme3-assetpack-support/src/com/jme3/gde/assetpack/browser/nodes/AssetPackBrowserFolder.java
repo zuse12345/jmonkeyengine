@@ -5,7 +5,7 @@
 package com.jme3.gde.assetpack.browser.nodes;
 
 import com.jme3.gde.assetpack.project.AssetPackProject;
-import com.jme3.gde.assetpack.project.wizards.ImportAssetAction;
+import com.jme3.gde.assetpack.project.actions.ImportAssetAction;
 import java.awt.Image;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;

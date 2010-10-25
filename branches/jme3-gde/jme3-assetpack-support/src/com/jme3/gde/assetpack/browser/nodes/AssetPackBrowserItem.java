@@ -33,13 +33,13 @@ public class AssetPackBrowserItem extends AbstractNode {
         "sound",
         "material",
         "other"};
-    public static final String[] ASSET_FORMATS = new String[]{
-        "ogrexml",
-        "wavefront",
-        "j3o",
-        "image",
-        "sound",
-        "other"};
+//    public static final String[] ASSET_FORMATS = new String[]{
+//        "ogrexml",
+//        "wavefront",
+//        "j3o",
+//        "image",
+//        "sound",
+//        "other"};
     private Element item;
     private Image icon;
     private Project project;
@@ -102,7 +102,7 @@ public class AssetPackBrowserItem extends AbstractNode {
         set.put(new ElementAttributeProperty(project, item, "tags"));
         set.put(new ElementNodeTextProperty(project, item, "license"));
         set.put(new ElementAttributeProperty(project, item, "type", ASSET_TYPES));
-        set.put(new ElementAttributeProperty(project, item, "format", ASSET_FORMATS));
+//        set.put(new ElementAttributeProperty(project, item, "format", ASSET_FORMATS));
         sheet.put(set);
         return sheet;
     }

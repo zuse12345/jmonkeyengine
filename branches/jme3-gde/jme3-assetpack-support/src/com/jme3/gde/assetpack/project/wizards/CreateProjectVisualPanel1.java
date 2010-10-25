@@ -157,7 +157,7 @@ public final class CreateProjectVisualPanel1 extends JPanel {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void updateProjectFolder(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_updateProjectFolder
-        jTextField1.setText(projectPath + File.separator + jTextField2.getText());
+        jTextField1.setText(projectPath + jTextField2.getText());
     }//GEN-LAST:event_updateProjectFolder
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

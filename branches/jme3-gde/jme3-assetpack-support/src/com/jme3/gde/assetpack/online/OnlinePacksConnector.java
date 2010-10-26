@@ -26,8 +26,8 @@ public class OnlinePacksConnector {
     public static void upload(String urlString, String exsistingFileName, String user, String pass) {
         try {
             File file = new File(exsistingFileName);
-            int size=(int)FileUtil.toFileObject(file).getSize();
-            Logger.getLogger(OnlinePacksConnector.class.getName()).log(Level.FINE, "Upload file size: {0}",size);
+            int size = (int) FileUtil.toFileObject(file).getSize();
+            Logger.getLogger(OnlinePacksConnector.class.getName()).log(Level.FINE, "Upload file size: {0}", size);
 
             URL url = new URL(urlString);
             String boundary = MultiPartFormOutputStream.createBoundary();
@@ -50,9 +50,10 @@ public class OnlinePacksConnector {
             BufferedReader in = new BufferedReader(new InputStreamReader(urlConn.getInputStream()));
             String line = "";
             while ((line = in.readLine()) != null) {
-                if(line.startsWith("Error:")){
+                if (line.startsWith("Error:")) {
+                    line = line.substring(6, line.length()).trim();
                     Confirmation msg = new NotifyDescriptor.Confirmation(
-                            "Error uploading to jmonkeyengine.org!\n"+line,
+                            "Error uploading to jmonkeyengine.org!\n" + line,
                             NotifyDescriptor.OK_CANCEL_OPTION,
                             NotifyDescriptor.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notifyLater(msg);

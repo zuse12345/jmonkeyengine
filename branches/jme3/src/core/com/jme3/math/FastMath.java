@@ -125,6 +125,26 @@ final public class FastMath {
         return ((1f - scale) * startValue) + (scale * endValue);
     }
 
+        /**
+     * Linear interpolation from startValue to endValue by the given percent.
+     * Basically: ((1 - percent) * startValue) + (percent * endValue)
+     *
+     * @param scale
+     *            scale value to use. if 1, use endValue, if 0, use startValue.
+     * @param startValue
+     *            Begining value. 0% of f
+     * @param endValue
+     *            ending value. 100% of f
+     * @return The interpolated value between startValue and endValue.
+     */
+    public static Vector3f interpolateLinear(float scale, Vector3f startValue, Vector3f endValue) {
+        Vector3f res=new Vector3f();
+        res.x=interpolateLinear(scale,startValue.x,endValue.x);
+        res.y=interpolateLinear(scale,startValue.y,endValue.y);
+        res.z=interpolateLinear(scale,startValue.z,endValue.z);
+        return res;
+    }
+
     /**Interpolate a spline between at least 4 control points following the Catmull-Rom equation.
      * here is the interpolation matrix
      * m = [ 0.0  1.0  0.0  0.0 ]
@@ -150,6 +170,28 @@ final public class FastMath {
         return(float)(((c4*t + c3)*t +c2)*t + c1);
     }
 
+
+     /**Interpolate a spline between at least 4 control points following the Catmull-Rom equation.
+     * here is the interpolation matrix
+     * m = [ 0.0  1.0  0.0  0.0 ]
+     *     [-0.5  0.0  0.5  0.0 ]
+     *     [ 1.0 -2.5  2.0 -0.5 ]
+     *     [-0.5  1.5 -1.5  0.5 ]
+     * the result is a value between p1 and p2, t=0 for p1, t=1 for p2
+     * @param t value from 0 to 1
+     * @param p0 control point 0
+     * @param p1 control point 1
+     * @param p2 control point 2
+     * @param p3 control point 3
+     * @return catmull-Rom interpolation
+     */
+    public static Vector3f interpolateCatmullRom(float t, Vector3f p0,Vector3f p1,Vector3f p2,Vector3f p3){
+        Vector3f res=new Vector3f();
+        res.x=interpolateCatmullRom(t, p0.x, p1.x, p2.x, p3.x);
+        res.y=interpolateCatmullRom(t, p0.y, p1.y, p2.y, p3.y);
+        res.z=interpolateCatmullRom(t, p0.z, p1.z, p2.z, p3.z);
+        return res;
+    }
 
      /**
      * Returns the arc cosine of an angle given in radians.<br>

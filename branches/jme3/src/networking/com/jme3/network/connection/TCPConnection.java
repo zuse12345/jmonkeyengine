@@ -276,13 +276,16 @@ public class TCPConnection extends Connection {
             }
         } catch (IOException ioe) {
             // We're doing some additional handling here, since a client could be reset.
-            SelectionKey key = socketChannel.keyFor(selector);
-            if (key != null) {
-                Client cl = (Client)key.attachment();
-                if (cl != null) {
-                    addToDisconnectionQueue(cl);
-                }
-                log.log(Level.WARNING, "[{0}][TCP] Disconnected {1} because an error occured: {2}.", new Object[]{label, cl, ioe.getMessage()});
+            Client client = null;
+            if (socketChannel == null) {
+                client = ((Message)object).getClient();
+            } else {
+                client = (Client)socketChannel.keyFor(selector).attachment();
+            }
+            if (client != null) {
+                addToDisconnectionQueue(client);
+
+                log.log(Level.WARNING, "[{0}][TCP] Disconnected {1} because an error occured: {2}.", new Object[]{label, client, ioe.getMessage()});
                 return;
             }
             throw ioe;

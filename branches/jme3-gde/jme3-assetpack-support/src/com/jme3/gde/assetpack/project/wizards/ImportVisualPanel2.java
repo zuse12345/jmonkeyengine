@@ -4,20 +4,22 @@
  */
 package com.jme3.gde.assetpack.project.wizards;
 
+import com.jme3.gde.assetpack.AssetPackLoader;
+import com.jme3.gde.assetpack.project.AssetPackProject;
 import java.io.File;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 public final class ImportVisualPanel2 extends JPanel {
 
     List<FileDescription> list = new LinkedList<FileDescription>();
     WizardDescriptor wiz;
+    SelectExistingAsset existingSelector;
 
     /** Creates new form ImportVisualPanel2 */
     public ImportVisualPanel2() {
@@ -30,13 +32,13 @@ public final class ImportVisualPanel2 extends JPanel {
     }
 
     public void applySettings(WizardDescriptor wiz) {
-//        list.add(new FileDescription());
         wiz.putProperty("filelist", list);
     }
 
     public void loadSettings(WizardDescriptor wiz) {
         this.wiz = wiz;
         updateList();
+        existingSelector = new SelectExistingAsset(new JFrame(), true, ((AssetPackProject) wiz.getProperty("project")).getAssetsFolder(), ((AssetPackProject) wiz.getProperty("project")), list);
     }
 
     public void updateList() {
@@ -58,55 +60,12 @@ public final class ImportVisualPanel2 extends JPanel {
         if (file != null) {
             for (int i = 0; i < file.length; i++) {
                 File file1 = file[i];
-                list.add(getFileDescription(file1));
+                FileDescription description = AssetPackLoader.getFileDescription(file1);
+                description.setPath(pathString());
+                list.add(description);
             }
             updateList();
         }
-    }
-
-    private FileDescription getFileDescription(File file) {
-        FileObject fileObject = FileUtil.toFileObject(file);
-        FileDescription description = new FileDescription();
-        description.setFile(fileObject);
-        description.setPath(pathString());
-        if ("material".equals(fileObject.getExt())) {
-            description.setType("material");
-        } else if ("j3m".equals(fileObject.getExt())) {
-            description.setType("material");
-        } else if ("mat".equals(fileObject.getExt())) {
-            description.setType("material");
-        } else if ("scene".equals(fileObject.getExt())) {
-            description.setType("scene");
-            description.setMainFile(true);
-        } else if ("obj".equals(fileObject.getExt())) {
-            description.setType("mesh");
-            description.setMainFile(true);
-        } else if ("j3o".equals(fileObject.getExt())) {
-            description.setType("scene");
-            description.setMainFile(true);
-        } else if ("xml".equals(fileObject.getExt())) {
-            if (fileObject.getName().endsWith(".mesh")) {
-                description.setType("mesh");
-            }
-            if (fileObject.getName().endsWith(".skeleton")) {
-                description.setType("skeleton");
-            }
-        } else if ("png".equals(fileObject.getExt())) {
-            description.setType("texture");
-        } else if ("jpg".equals(fileObject.getExt())) {
-            description.setType("texture");
-        } else if ("jpeg".equals(fileObject.getExt())) {
-            description.setType("texture");
-        } else if ("gif".equals(fileObject.getExt())) {
-            description.setType("texture");
-        } else if ("dds".equals(fileObject.getExt())) {
-            description.setType("texture");
-        } else if (fileObject.getName().endsWith(".mesh")) {
-            description.setType("mesh");
-        } else if (fileObject.getName().endsWith(".skeleton")) {
-            description.setType("skeleton");
-        }
-        return description;
     }
 
     private String pathString() {
@@ -114,12 +73,14 @@ public final class ImportVisualPanel2 extends JPanel {
         String type = (String) wiz.getProperty("type");
         if (type.equals("model")) {
             string += "/Models/";
+        } else if (type.equals("scene")) {
+            string += "/Scenes/";
         } else if (type.equals("texture")) {
             string += "/Textures/";
         } else if (type.equals("sound")) {
             string += "/Sounds/";
-        } else if (type.equals("material")) {
-            string += "/Materials/";
+        } else if (type.equals("shader")) {
+            string += "/Shaders/";
         } else if (type.equals("other")) {
             string += "/Misc/";
         }
@@ -169,6 +130,11 @@ public final class ImportVisualPanel2 extends JPanel {
         jButton2.setFocusable(false);
         jButton2.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jButton2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
         jToolBar1.add(jButton2);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -178,11 +144,9 @@ public final class ImportVisualPanel2 extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jToolBar1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                    .addComponent(jLabel1))
                 .addContainerGap())
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 420, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -198,6 +162,11 @@ public final class ImportVisualPanel2 extends JPanel {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         selectFile();
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        existingSelector.setVisible(true);
+        updateList();
+    }//GEN-LAST:event_jButton2ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;

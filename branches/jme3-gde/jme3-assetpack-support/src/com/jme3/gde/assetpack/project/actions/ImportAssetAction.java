@@ -38,6 +38,7 @@ public final class ImportAssetAction implements Action {
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
         wizardDescriptor.setTitle("Import Asset to AssetPack..");
+        wizardDescriptor.putProperty("project", context);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.setVisible(true);
         dialog.toFront();
@@ -69,18 +70,21 @@ public final class ImportAssetAction implements Action {
             asset.appendChild(file);
             file.setAttribute("path", fileObject.getPath() + fileObject.getFile().getNameExt());
             file.setAttribute("type", fileObject.getType());
-            if(fileObject.isMainFile())
+            if (fileObject.isMainFile()) {
                 file.setAttribute("main", "true");
+            }
             String[] extraProps = fileObject.getExtraPropsNames();
             String[] extraValues = fileObject.getExtraPropsValues();
             for (int i = 0; i < extraProps.length; i++) {
                 file.setAttribute(extraProps[i], extraValues[i]);
             }
-            File ffile = new File(context.getAssetsFolder().getPath() + File.separator + fileObject.getPath());
-            try {
-                ffile.mkdirs();
-                fileObject.getFile().copy(FileUtil.toFileObject(ffile), fileObject.getFile().getName(), fileObject.getFile().getExt());
-            } catch (Exception e) {
+            if (!fileObject.isExisting()) {
+                File ffile = new File(context.getAssetsFolder().getPath() + File.separator + fileObject.getPath());
+                try {
+                    ffile.mkdirs();
+                    fileObject.getFile().copy(FileUtil.toFileObject(ffile), fileObject.getFile().getName(), fileObject.getFile().getExt());
+                } catch (Exception e) {
+                }
             }
         }
         context.getProjectAssets().appendChild(asset);

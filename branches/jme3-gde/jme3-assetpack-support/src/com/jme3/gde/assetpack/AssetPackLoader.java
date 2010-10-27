@@ -6,13 +6,17 @@ package com.jme3.gde.assetpack;
 
 import com.jme3.asset.AssetKey;
 import com.jme3.gde.assetpack.actions.AddAssetAction;
+import com.jme3.gde.assetpack.project.wizards.FileDescription;
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.material.Material;
 import com.jme3.material.MaterialList;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.plugins.ogre.OgreMeshKey;
+import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -95,5 +99,53 @@ public class AssetPackLoader {
             return true;
         }
         return false;
+    }
+
+    public static FileDescription getFileDescription(File file) {
+        FileObject fileObject = FileUtil.toFileObject(file);
+        return getFileDescription(fileObject);
+    }
+
+    public static FileDescription getFileDescription(FileObject fileObject) {
+        FileDescription description = new FileDescription();
+        description.setFile(fileObject);
+        if ("material".equals(fileObject.getExt())) {
+            description.setType("material");
+        } else if ("j3m".equals(fileObject.getExt())) {
+            description.setType("material");
+        } else if ("mat".equals(fileObject.getExt())) {
+            description.setType("material");
+        } else if ("scene".equals(fileObject.getExt())) {
+            description.setType("scene");
+            description.setMainFile(true);
+        } else if ("obj".equals(fileObject.getExt())) {
+            description.setType("mesh");
+            description.setMainFile(true);
+        } else if ("j3o".equals(fileObject.getExt())) {
+            description.setType("scene");
+            description.setMainFile(true);
+        } else if ("xml".equals(fileObject.getExt())) {
+            if (fileObject.getName().endsWith(".mesh")) {
+                description.setType("mesh");
+            }
+            if (fileObject.getName().endsWith(".skeleton")) {
+                description.setType("skeleton");
+            }
+        } else if ("png".equals(fileObject.getExt())) {
+            description.setType("texture");
+        } else if ("jpg".equals(fileObject.getExt())) {
+            description.setType("texture");
+        } else if ("jpeg".equals(fileObject.getExt())) {
+            description.setType("texture");
+        } else if ("gif".equals(fileObject.getExt())) {
+            description.setType("texture");
+        } else if ("dds".equals(fileObject.getExt())) {
+            description.setType("texture");
+        } else if (fileObject.getName().endsWith(".mesh")) {
+            description.setType("mesh");
+        } else if (fileObject.getName().endsWith(".skeleton")) {
+            description.setType("skeleton");
+        }
+        return description;
     }
 }

@@ -30,6 +30,11 @@ public class SingleAssetFilePanel extends javax.swing.JPanel {
         jTextField2.setText(desc.getName());
         jComboBox1.setSelectedItem(desc.getType());
         jCheckBox1.setSelected(desc.isMainFile());
+        if (desc.isExisting()) {
+            jTextField1.setEditable(false);
+        } else {
+            jTextField1.setEditable(true);
+        }
     }
 
     public void saveInfo() {

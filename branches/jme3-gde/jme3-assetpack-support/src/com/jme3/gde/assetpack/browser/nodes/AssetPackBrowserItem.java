@@ -85,11 +85,11 @@ public class AssetPackBrowserItem extends AbstractNode {
 
     @Override
     public Action getPreferredAction() {
-        if (project.getLookup().lookup(AssetPackLibrary.class) != null) {
-            return addAction;
-        } else {
+//        if (project.getLookup().lookup(AssetPackLibrary.class) != null) {
+//            return addAction;
+//        } else {
             return previewAction;
-        }
+//        }
     }
 
     @Override

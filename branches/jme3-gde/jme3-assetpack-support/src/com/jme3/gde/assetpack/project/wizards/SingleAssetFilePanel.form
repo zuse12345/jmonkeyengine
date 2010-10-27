@@ -63,14 +63,15 @@
         <Component class="javax.swing.JComboBox" name="jComboBox1">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="7">
+              <StringArray count="8">
                 <StringItem index="0" value="scene"/>
                 <StringItem index="1" value="mesh"/>
                 <StringItem index="2" value="texture"/>
                 <StringItem index="3" value="material"/>
                 <StringItem index="4" value="materialdef"/>
                 <StringItem index="5" value="shader"/>
-                <StringItem index="6" value="other"/>
+                <StringItem index="6" value="skeleton"/>
+                <StringItem index="7" value="other"/>
               </StringArray>
             </Property>
           </Properties>

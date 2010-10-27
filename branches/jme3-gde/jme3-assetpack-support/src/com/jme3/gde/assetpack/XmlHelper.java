@@ -6,6 +6,7 @@
 package com.jme3.gde.assetpack;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  *
@@ -31,11 +32,25 @@ public class XmlHelper {
         return (Element) ret;
     }
 
+    public static Element findNextElement(Node ret, String name) {
+        while (ret != null && (!(ret instanceof Element) || !ret.getNodeName().equals(name))) {
+            ret = ret.getNextSibling();
+        }
+        return (Element) ret;
+    }
+
     public static Element findChildElementWithAttribute(Element parent, String name, String attribute, String value) {
         if (parent == null) {
             return null;
         }
         org.w3c.dom.Node ret = parent.getFirstChild();
+        while (ret != null && (!(ret instanceof Element) || !ret.getNodeName().equals(name) || ((Element)ret).getAttribute(attribute)==null || !((Element)ret).getAttribute(attribute).equals(value))) {
+            ret = ret.getNextSibling();
+        }
+        return (Element) ret;
+    }
+
+    public static Element findNextElementWithAttribute(Node ret, String name, String attribute, String value) {
         while (ret != null && (!(ret instanceof Element) || !ret.getNodeName().equals(name) || ((Element)ret).getAttribute(attribute)==null || !((Element)ret).getAttribute(attribute).equals(value))) {
             ret = ret.getNextSibling();
         }

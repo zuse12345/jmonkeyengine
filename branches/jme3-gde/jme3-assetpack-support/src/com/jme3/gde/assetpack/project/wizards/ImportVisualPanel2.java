@@ -71,6 +71,8 @@ public final class ImportVisualPanel2 extends JPanel {
         description.setPath(pathString());
         if ("material".equals(fileObject.getExt())) {
             description.setType("material");
+        } else if ("j3m".equals(fileObject.getExt())) {
+            description.setType("material");
         } else if ("mat".equals(fileObject.getExt())) {
             description.setType("material");
         } else if ("scene".equals(fileObject.getExt())) {
@@ -80,7 +82,7 @@ public final class ImportVisualPanel2 extends JPanel {
             description.setType("mesh");
             description.setMainFile(true);
         } else if ("j3o".equals(fileObject.getExt())) {
-            description.setType("mesh");
+            description.setType("scene");
             description.setMainFile(true);
         } else if ("xml".equals(fileObject.getExt())) {
             if (fileObject.getName().endsWith(".mesh")) {

@@ -4,6 +4,7 @@
  */
 package com.jme3.gde.assetpack.actions;
 
+import com.jme3.gde.assetpack.AssetPackLoader;
 import com.jme3.gde.assetpack.XmlHelper;
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.scene.SceneApplication;
@@ -18,6 +19,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import org.openide.nodes.Node;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 public final class PreviewAssetAction implements Action {
 
@@ -33,24 +35,23 @@ public final class PreviewAssetAction implements Action {
             Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "AssetManager not found!");
             return;
         }
-        Element elem = context.getLookup().lookup(Element.class);
-        Element assetElem= XmlHelper.findChildElementWithAttribute(elem,"file","main","true");
-        if(assetElem==null){
-            assetElem=XmlHelper.findChildElement(elem, "file");
+        Element assetElement = context.getLookup().lookup(Element.class);
+        NodeList fileNodeList = assetElement.getElementsByTagName("file");
+        Element fileElement = XmlHelper.findChildElementWithAttribute(assetElement, "file", "main", "true");
+        if (fileElement == null) {
+            fileElement = XmlHelper.findChildElement(assetElement, "file");
         }
-        String name = assetElem.getAttribute("path");
 
-        Spatial model = pm.getManager().loadModel(name);
-        if (model == null) {
-            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Could not load model {0}! Element {1}.", new String[]{name, elem.getTagName()});
-            return;
-        }
-        com.jme3.scene.Node node = null;
-        if (model instanceof com.jme3.scene.Node) {
-            node = (com.jme3.scene.Node) model;
-        } else {
-            node = new com.jme3.scene.Node("RootNode");
-            node.attachChild(model);
+        com.jme3.scene.Node node = new com.jme3.scene.Node("PreviewRootNode");
+        while (fileElement != null) {
+            String name = fileElement.getAttribute("path");
+
+            Spatial model = null;
+            model = AssetPackLoader.loadAssetPackModel(name, fileNodeList, pm);
+            if (model != null) {
+                node.attachChild(model);
+            }
+            fileElement = XmlHelper.findNextElementWithAttribute(fileElement, "file", "main", "true");
         }
 
         JmeNode jmeNode = NodeUtility.createNode(node);

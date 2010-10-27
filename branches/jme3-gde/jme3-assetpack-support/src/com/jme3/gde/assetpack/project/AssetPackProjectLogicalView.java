@@ -2,6 +2,7 @@ package com.jme3.gde.assetpack.project;
 
 import com.jme3.gde.assetpack.project.actions.PublishAssetPackAction;
 import com.jme3.gde.assetpack.browser.nodes.AssetPackBrowserFolder;
+import com.jme3.gde.assetpack.project.actions.ConvertOgreBinaryMeshesAction;
 import java.awt.Image;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,8 +59,9 @@ class AssetPackProjectLogicalView implements LogicalViewProvider {
         public Action[] getActions(boolean arg0) {
             Action[] nodeActions = new Action[8];
             nodeActions[0] = new PublishAssetPackAction(project);
-            nodeActions[1] = CommonProjectActions.copyProjectAction();
-            nodeActions[2] = CommonProjectActions.deleteProjectAction();
+            nodeActions[1] = new ConvertOgreBinaryMeshesAction(project);
+            nodeActions[2] = CommonProjectActions.copyProjectAction();
+            nodeActions[3] = CommonProjectActions.deleteProjectAction();
             nodeActions[5] = CommonProjectActions.setAsMainProjectAction();
             nodeActions[6] = CommonProjectActions.closeProjectAction();
             nodeActions[7] = CommonProjectActions.customizeProjectAction();

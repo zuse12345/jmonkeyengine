@@ -30,8 +30,9 @@ public class AssetPackLoader {
         AssetKey<Spatial> key = null;
         Material mat = null;
         Spatial model;
+        MaterialList matList = null;
         //TODO: mesh.xml!!
-        if (hasExtension(name, "xml")) {
+        if (hasExtension(name, "xml") || hasExtension(name, "scene")) {
             for (int i = 0; i < fileNodeList.getLength(); i++) {
                 Element fileElem = (Element) fileNodeList.item(i);
                 String type = fileElem.getAttribute("type");
@@ -40,20 +41,15 @@ public class AssetPackLoader {
                     if (hasExtension(path, "j3m")) {
                         mat = pm.getManager().loadMaterial(path);
                     } else if (hasExtension(path, "material")) {
-                        key = new OgreMeshKey(name, (MaterialList) pm.getManager().loadAsset(path));
-                    }
-                }
-            }
-        } else if (hasExtension(name, "scene")) {
-            for (int i = 0; i < fileNodeList.getLength(); i++) {
-                Element fileElem = (Element) fileNodeList.item(i);
-                String type = fileElem.getAttribute("type");
-                String path = fileElem.getAttribute("path");
-                if ("material".equals(type)) {
-                    if (hasExtension(path, "j3m")) {
-                        mat = pm.getManager().loadMaterial(path);
-                    } else if (hasExtension(path, "material")) {
-                        key = new OgreMeshKey(name, (MaterialList) pm.getManager().loadAsset(path));
+                        if (matList == null) {
+                            Logger.getLogger(AssetPackLoader.class.getName()).log(Level.INFO, "Load Ogre Material");
+                            matList = (MaterialList) pm.getManager().loadAsset(path);
+                            key = new OgreMeshKey(name, matList);
+                        }else{
+                            Logger.getLogger(AssetPackLoader.class.getName()).log(Level.INFO, "Add Ogre Material");
+                            MaterialList newMatList = (MaterialList) pm.getManager().loadAsset(path);
+                            matList.putAll(newMatList);
+                        }
                     }
                 }
             }

@@ -52,7 +52,7 @@ public final class PreviewAssetAction implements Action {
                 node.attachChild(model);
             }
             //TODO:doesnt work?
-            fileElement = null;//XmlHelper.findNextElementWithAttribute(fileElement, "file", "main", "true");
+            fileElement = XmlHelper.findNextElementWithAttribute(fileElement, "file", "main", "true");
         }
 
         JmeNode jmeNode = NodeUtility.createNode(node);

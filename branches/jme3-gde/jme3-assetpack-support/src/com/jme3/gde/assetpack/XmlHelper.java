@@ -33,6 +33,7 @@ public class XmlHelper {
     }
 
     public static Element findNextElement(Node ret, String name) {
+        ret = ret.getNextSibling();
         while (ret != null && (!(ret instanceof Element) || !ret.getNodeName().equals(name))) {
             ret = ret.getNextSibling();
         }
@@ -51,6 +52,7 @@ public class XmlHelper {
     }
 
     public static Element findNextElementWithAttribute(Node ret, String name, String attribute, String value) {
+        ret = ret.getNextSibling();
         while (ret != null && (!(ret instanceof Element) || !ret.getNodeName().equals(name) || ((Element)ret).getAttribute(attribute)==null || !((Element)ret).getAttribute(attribute).equals(value))) {
             ret = ret.getNextSibling();
         }

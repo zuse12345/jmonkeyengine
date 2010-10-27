@@ -98,7 +98,7 @@ public final class AddAssetAction implements Action {
                 return;
             }
             //TODO:doesnt work?
-            fileElement = null;//XmlHelper.findNextElementWithAttribute(fileElement, "file", "main", "true");
+            fileElement = XmlHelper.findNextElementWithAttribute(fileElement, "file", "main", "true");
         }
         copyModelData(fileNodeList, pm);
     }

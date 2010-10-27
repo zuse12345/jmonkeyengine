@@ -4,24 +4,18 @@
  */
 package com.jme3.gde.assetpack.project.actions;
 
-import com.jme3.gde.assetpack.Installer;
-import com.jme3.gde.assetpack.online.OnlinePacksConnector;
 import com.jme3.gde.assetpack.project.AssetPackProject;
-import com.jme3.gde.assetpack.project.wizards.PublishAssetPackWizardPanel1;
-import com.jme3.gde.assetpack.project.wizards.PublishAssetPackWizardPanel2;
+import com.jme3.gde.assetpack.project.wizards.ConvertOgreBinaryWizardPanel1;
+import com.jme3.gde.ogretools.convert.OgreXMLConvert;
+import com.jme3.gde.ogretools.convert.OgreXMLConvertOptions;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import org.netbeans.api.progress.ProgressHandle;
@@ -31,14 +25,13 @@ import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbPreferences;
 
-public final class PublishAssetPackAction implements Action {
+public final class ConvertOgreBinaryMeshesAction implements Action {
 
     private final Project context;
     private WizardDescriptor.Panel[] panels;
 
-    public PublishAssetPackAction(Project context) {
+    public ConvertOgreBinaryMeshesAction(Project context) {
         this.context = context;
     }
 
@@ -46,100 +39,52 @@ public final class PublishAssetPackAction implements Action {
         final WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-        wizardDescriptor.setTitle("Publish AssetPack");
+        wizardDescriptor.setTitle("Convert Ogre Binary Meshes");
         wizardDescriptor.putProperty("project", context);
-        String projectName = ((AssetPackProject) context).getProjectName().replaceAll(" ", "_") + ".zip";
-        wizardDescriptor.putProperty("filename", projectName);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
+        final boolean deleteFiles = (Boolean) wizardDescriptor.getProperty("deleteoriginal");
         if (!cancelled) {
             new Thread(new Runnable() {
 
                 public void run() {
-                    ProgressHandle handle = ProgressHandleFactory.createHandle("Publishing AssetPack..");
-                    handle.start();
-                    packZip(wizardDescriptor);
-                    copyData(wizardDescriptor);
-                    handle.progress("Uploading AssetPack..");
-                    uploadData(wizardDescriptor);
-                    cleanup(wizardDescriptor);
-                    handle.finish();
+                    scanDir(((AssetPackProject) context).getAssetsFolder().getPath(), deleteFiles);
                 }
             }).start();
         }
     }
 
-    private void packZip(WizardDescriptor wiz) {
+    public void scanDir(String dir2scan, boolean delete) {
+        ProgressHandle handle = ProgressHandleFactory.createHandle("Convert Ogre Binary Files");
+        handle.start();
         try {
-            String outFilename = context.getProjectDirectory().getPath() + File.separator + wiz.getProperty("filename");
-            ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
-            zipDir(((AssetPackProject) context).getProjectDirectory().getPath(), out, (String) wiz.getProperty("filename"));
-            out.close();
-        } catch (IOException e) {
-            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Error creating ZIP file!");
-        }
-    }
-
-    public void zipDir(String dir2zip, ZipOutputStream zos, String fileName) {
-        try {
-            File zipDir = new File(dir2zip);
+            File zipDir = new File(dir2scan);
             String[] dirList = zipDir.list();
-            byte[] readBuffer = new byte[2156];
-            int bytesIn = 0;
             for (int i = 0; i < dirList.length; i++) {
                 File f = new File(zipDir, dirList[i]);
                 if (f.isDirectory()) {
                     String filePath = f.getPath();
-                    zipDir(filePath, zos, fileName);
-                    //loop again
+                    scanDir(filePath, delete);
                     continue;
                 }
-                FileInputStream fis = new FileInputStream(f);
-                if (!f.getName().equals(fileName) && !f.getName().startsWith(".")) {
-                    String filePathName = f.getPath().replaceAll(context.getProjectDirectory().getPath(), "");
-                    ZipEntry anEntry = new ZipEntry(filePathName);
-                    zos.putNextEntry(anEntry);
-                    while ((bytesIn = fis.read(readBuffer)) != -1) {
-                        zos.write(readBuffer, 0, bytesIn);
+                FileObject fobj = FileUtil.toFileObject(f);
+                if (fobj.getExt().equalsIgnoreCase("mesh")) {
+                    OgreXMLConvertOptions options = new OgreXMLConvertOptions(fobj.getPath());
+                    options.setBinaryFile(true);
+                    OgreXMLConvert conv = new OgreXMLConvert();
+                    conv.doConvert(options, handle);
+                    if (delete) {
+                        fobj.delete();
                     }
-                    fis.close();
                 }
             }
         } catch (Exception e) {
-            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Error creating ZIP file!");
+            Logger.getLogger(ConvertOgreBinaryMeshesAction.class.getName()).log(Level.SEVERE, "Error scanning directory", e);
+        } finally {
+            handle.finish();
         }
-    }
-
-    private void copyData(WizardDescriptor wiz) {
-        String folder = (String) wiz.getProperty("publish_folder");
-        if (folder == null) {
-            return;
-        }
-        String zipFilename = context.getProjectDirectory().getPath() + File.separator + wiz.getProperty("filename");
-        try {
-            FileObject source = FileUtil.toFileObject(new File(zipFilename));
-            FileObject destination = FileUtil.toFileObject(new File(folder));
-            source.copy(destination, source.getName(), source.getExt());
-        } catch (Exception ex) {
-            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Error copying ZIP file!");
-        }
-    }
-
-    private void uploadData(WizardDescriptor wiz) {
-        if (wiz.getProperty("publish_jmeorg") == null) {
-            return;
-        }
-        String file = context.getProjectDirectory().getPath() + File.separator + wiz.getProperty("filename");
-        String user = NbPreferences.forModule(Installer.class).get("assetpack_user", null);
-        String pass = NbPreferences.forModule(Installer.class).get("assetpack_pass", null);
-        OnlinePacksConnector.upload(file, user, pass);
-    }
-
-    private void cleanup(WizardDescriptor wiz) {
-        String file = context.getProjectDirectory().getPath() + File.separator + wiz.getProperty("filename");
-        new File(file).delete();
     }
 
     /**
@@ -149,8 +94,7 @@ public final class PublishAssetPackAction implements Action {
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
             panels = new WizardDescriptor.Panel[]{
-                        new PublishAssetPackWizardPanel1(),
-                        new PublishAssetPackWizardPanel2()
+                        new ConvertOgreBinaryWizardPanel1()
                     };
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
@@ -180,7 +124,7 @@ public final class PublishAssetPackAction implements Action {
 
     public Object getValue(String key) {
         if (key.equals(NAME)) {
-            return "Publish AssetPack..";
+            return "Convert Binary Ogre Meshes..";
         }
         return null;
     }

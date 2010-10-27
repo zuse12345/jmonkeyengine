@@ -113,7 +113,7 @@ public final class SettingsDialog extends JDialog {
 
     private JComboBox displayFreqCombo = null;
 
-    private JComboBox rendererCombo = null;
+//    private JComboBox rendererCombo = null;
 
     private JComboBox antialiasCombo = null;
 
@@ -287,8 +287,8 @@ public final class SettingsDialog extends JDialog {
         });
         vsyncBox = new JCheckBox("VSync?");
         vsyncBox.setSelected(source.isVSync());
-        rendererCombo = setUpRendererChooser();
-        rendererCombo.addKeyListener(aListener);
+//        rendererCombo = setUpRendererChooser();
+//        rendererCombo.addKeyListener(aListener);
 
         updateResolutionChoices();
         updateAntialiasChoices();
@@ -300,7 +300,7 @@ public final class SettingsDialog extends JDialog {
         optionsPanel.add(antialiasCombo);
         optionsPanel.add(fullscreenBox);
         optionsPanel.add(vsyncBox);
-        optionsPanel.add(rendererCombo);
+//        optionsPanel.add(rendererCombo);
 
         // Set the button action listeners. Cancel disposes without saving, OK
         // saves.
@@ -390,7 +390,7 @@ public final class SettingsDialog extends JDialog {
          * false; } }
          */
 
-        String renderer = (String) rendererCombo.getSelectedItem();
+        String renderer = "LWJGL-OpenGL2";//(String) rendererCombo.getSelectedItem();
 
         boolean valid = false;
 

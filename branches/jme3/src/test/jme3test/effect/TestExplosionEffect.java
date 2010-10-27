@@ -228,11 +228,11 @@ public class TestExplosionEffect extends SimpleApplication {
     public void simpleInitApp() {
         createFlame();
         createFlash();
-//        createSpark();
+        createSpark();
         createRoundSpark();
-//        createSmokeTrail();
-//        createDebris();
-//        createShockwave();
+        createSmokeTrail();
+        createDebris();
+        createShockwave();
         rootNode.setLocalScale(0.5f);
 
         cam.setLocation(new Vector3f(0, 3.5135868f, 10));
@@ -242,13 +242,13 @@ public class TestExplosionEffect extends SimpleApplication {
     @Override
     public void simpleUpdate(float tpf){
         time += tpf / speed;
-        speed = 0.02f;
+//        speed = 0.02f;
         if (time > 1f && state == 0){
             flash.emitAllParticles();
-//            spark.emitAllParticles();
-//            smoketrail.emitAllParticles();
-//            debris.emitAllParticles();
-//            shockwave.emitAllParticles();
+            spark.emitAllParticles();
+            smoketrail.emitAllParticles();
+            debris.emitAllParticles();
+            shockwave.emitAllParticles();
             state++;
         }
         if (time > 1f + .05f / speed && state == 1){
@@ -263,12 +263,12 @@ public class TestExplosionEffect extends SimpleApplication {
             time = 0;
 
             flash.killAllParticles();
-//            spark.killAllParticles();
-//            smoketrail.killAllParticles();
-//            debris.killAllParticles();
+            spark.killAllParticles();
+            smoketrail.killAllParticles();
+            debris.killAllParticles();
             flame.killAllParticles();
             roundspark.killAllParticles();
-//            shockwave.killAllParticles();
+            shockwave.killAllParticles();
         }
     }
 

@@ -112,6 +112,25 @@ public class ParticleEmitter extends Geometry implements Control {
         super();
     }
 
+    private void initParticleMesh(){
+        if (particleMesh == null){
+            switch (meshType){
+                case Point:
+                    particleMesh = new ParticlePointMesh();
+                    setMesh(particleMesh);
+                    break;
+                case Triangle:
+                    particleMesh = new ParticleTriMesh();
+                    setMesh(particleMesh);
+                    break;
+                default:
+                    throw new IllegalStateException("Unrecognized particle type: "+meshType);
+            }
+            // create it
+            particleMesh.initParticleData(this, particles.length, imagesX, imagesY);
+        }
+    }
+
     public Control cloneForSpatial(Spatial spatial){
         return (Control) spatial;
     }
@@ -474,23 +493,7 @@ public class ParticleEmitter extends Geometry implements Control {
         if (!enabled)
             return;
 
-        if (particleMesh == null){
-            switch (meshType){
-                case Point:
-                    particleMesh = new ParticlePointMesh();
-                    setMesh(particleMesh);
-                    break;
-                case Triangle:
-                    particleMesh = new ParticleTriMesh();
-                    setMesh(particleMesh);
-                    break;
-                default:
-                    throw new IllegalStateException("Unrecognized particle type: "+meshType);
-            }
-            // create it
-            particleMesh.initParticleData(this, particles.length, imagesX, imagesY);
-        }
-
+        initParticleMesh();
         updateParticleState(tpf);
     }
 
@@ -506,6 +509,13 @@ public class ParticleEmitter extends Geometry implements Control {
         }
 
         particleMesh.updateParticleData(particles, cam);
+        updateModelBound();
+    }
+
+    public void preload(RenderManager rm, ViewPort vp){
+        initParticleMesh();
+        updateParticleState(0);
+        particleMesh.updateParticleData(particles, vp.getCamera());
         updateModelBound();
     }
 

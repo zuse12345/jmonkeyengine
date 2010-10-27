@@ -111,8 +111,6 @@ public final class AdvOgreXMLConvertAction implements ActionListener {
             }
         };
 
-        if (options.isGenerate()) {
-            new Thread(run).start();
-        }
+        new Thread(run).start();
     }
 }

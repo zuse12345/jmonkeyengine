@@ -22,7 +22,6 @@ public class OgreXMLConvertOptions {
     private String lodStrategy = "Distance";
     private boolean generateTangents = true;
     private boolean generateEdgeLists = false;
-    private boolean generate = false;
     private boolean binaryFile = false;
 
     public OgreXMLConvertOptions() {
@@ -112,20 +111,6 @@ public class OgreXMLConvertOptions {
 
     public void setGenerateEdgeLists(boolean generateEdgeLists) {
         this.generateEdgeLists = generateEdgeLists;
-    }
-
-    /**
-     * @return the generate
-     */
-    public boolean isGenerate() {
-        return generate;
-    }
-
-    /**
-     * @param generate the generate to set
-     */
-    public void setGenerate(boolean generate) {
-        this.generate = generate;
     }
 
     public boolean isBinaryFile() {

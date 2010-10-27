@@ -38,7 +38,6 @@ public class AdvOgreXMLConvertDialog extends javax.swing.JDialog {
         options.setLodPercent(jSlider1.getValue());
         options.setGenerateTangents(jCheckBox1.isSelected());
         options.setGenerateEdgeLists(jCheckBox2.isSelected());
-        options.setGenerate(true);
     }
 
     /** This method is called from within the constructor to

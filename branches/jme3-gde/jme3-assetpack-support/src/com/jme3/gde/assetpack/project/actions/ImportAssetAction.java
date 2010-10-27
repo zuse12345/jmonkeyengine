@@ -55,10 +55,11 @@ public final class ImportAssetAction implements Action {
 //        asset.setAttribute("format", (String) desc.getProperty("format"));
         asset.setAttribute("tags", (String) desc.getProperty("tags"));
         asset.setAttribute("categories", (String) desc.getProperty("categories"));
-        Element license = context.getConfiguration().createElement("license");
         Element description = context.getConfiguration().createElement("description");
-        license.setTextContent((String) desc.getProperty("description"));
+        description.setTextContent((String) desc.getProperty("description"));
         asset.appendChild(description);
+        Element license = context.getConfiguration().createElement("license");
+        license.setTextContent((String) desc.getProperty("license"));
         asset.appendChild(license);
 
         List<FileDescription> files = (List<FileDescription>) desc.getProperty("filelist");

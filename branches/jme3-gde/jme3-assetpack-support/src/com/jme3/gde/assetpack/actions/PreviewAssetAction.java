@@ -51,7 +51,8 @@ public final class PreviewAssetAction implements Action {
             if (model != null) {
                 node.attachChild(model);
             }
-            fileElement = XmlHelper.findNextElementWithAttribute(fileElement, "file", "main", "true");
+            //TODO:doesnt work?
+            fileElement = null;//XmlHelper.findNextElementWithAttribute(fileElement, "file", "main", "true");
         }
 
         JmeNode jmeNode = NodeUtility.createNode(node);

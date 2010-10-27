@@ -90,23 +90,15 @@ public final class AddAssetAction implements Action {
         while (fileElement != null) {
             String name = fileElement.getAttribute("path");
             Spatial model;
-            if (name == null) {
-                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Could not find path for file!");
-                return;
-            }
             model = AssetPackLoader.loadAssetPackModel(name, fileNodeList, pm);
-
-            if (fileElement == null) {
-                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Could not find main file in asset description!");
-                return;
-            }
             if (model != null) {
                 SceneComposerTopComponent.findInstance().addModel(model);
             } else {
                 Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Error loading model");
                 return;
             }
-            fileElement = XmlHelper.findNextElementWithAttribute(fileElement, "file", "main", "true");
+            //TODO:doesnt work?
+            fileElement = null;//XmlHelper.findNextElementWithAttribute(fileElement, "file", "main", "true");
         }
         copyModelData(fileNodeList, pm);
     }

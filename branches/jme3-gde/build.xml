@@ -43,10 +43,6 @@
         </copy>
     </target>
 
-    <!--creates linux/win and osx zip distributions of jMonkeyPlatform-->
-    <target name="dist-gde" depends="suite.clean, -create-netbeans-config, zip-templates, set-impl-version, jmp-release-zip, jmp-release-mac, unset-impl-version">
-    </target>
-
     <!--creates update center version via hudson build server-->
     <target name="dist-gde-hudson" depends="suite.clean, -revert-svn-changes, zip-templates, -set-impl-version-hudson, suite.nbms, -unset-impl-version-hudson">
     </target>

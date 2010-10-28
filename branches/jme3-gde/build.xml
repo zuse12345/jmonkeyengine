@@ -5,12 +5,13 @@
 <project name="jme-gde" basedir=".">
     <description>Builds the module suite jme-gde.</description>
     <import file="nbproject/build-impl.xml"/>
-    <!--TODO: using the evil for loop from ant-contrib for loops and if, change that..-->
-    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
-        <classpath>
-            <pathelement location="ant-lib/ant-contrib.jar"/>
-        </classpath>
-    </taskdef>
+    <!--Load ant extensions-->
+    <path id="ant-import.classpath">
+        <fileset dir="ant-lib/" includes="*.jar"/>
+    </path>
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpathref="ant-import.classpath"/>
+    <taskdef name="deb" classname="com.googlecode.ant_deb_task.Deb" classpathref="ant-import.classpath"/>
+    <taskdef name="desktopentry" classname="com.googlecode.ant_deb_task.DesktopEntry" classpathref="ant-import.classpath"/>
 
     <!--zips up the templates and adds them to the template project-->
     <target name="zip-templates" description="Updates the template zip files">
@@ -48,36 +49,6 @@
 
     <!--creates update center version via hudson build server-->
     <target name="dist-gde-hudson" depends="suite.clean, -revert-svn-changes, zip-templates, -set-impl-version-hudson, suite.nbms, -unset-impl-version-hudson">
-    </target>
-
-    <target name="jmp-release-zip" depends="build,build-launchers" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
-        <mkdir dir="${dist.dir}"/>
-        <!-- pathfileset does not support 'prefix' and 'filemode' parameters,
-             we have to copy them to temp location -->
-        <tempfile property="temp.dir.nbexec" destdir="${basedir}/build" deleteonexit="true" prefix="nbexec"/>
-        <tempfile property="temp.dir.rest" destdir="${basedir}/build" deleteonexit="delete" prefix="rest"/>
-        <subant genericantfile="${harness.dir}/suite.xml" target="copy-cluster" inheritrefs="true">
-            <property name="dest.dir" value="${temp.dir.rest}"/>
-            <property name="nbexec.dir" value="${temp.dir.nbexec}"/>
-            <property name="build.dir" value="${basedir}/build"/>
-            <resources refid="zip.platform.clusters"/>
-        </subant>
-        <zip destfile="${dist.dir}/${app.release.name}.zip">
-            <zipfileset dir="${build.launcher.dir}/bin/" filemode="755" prefix="${app.name}/bin"/>
-            <zipfileset dir="${build.launcher.dir}/etc/" prefix="${app.name}/etc"/>
-            <zipfileset dir="${temp.dir.nbexec}" filemode="755" prefix="${app.name}"/>
-            <zipfileset dir="${temp.dir.rest}" prefix="${app.name}"/>
-
-            <!-- Yes, the doubled app.name is a bit ugly, but better than the alternative; cf. #66441: -->
-            <zipfileset dir="${cluster}" prefix="${app.name}/${app.name}">
-                <exclude name="config/Modules/*.xml_hidden"/>
-            </zipfileset>
-
-            <!--add README.TXT-->
-            <zipfileset dir="${basedir}" prefix="${app.name}">
-                <include name="README.TXT"/>
-            </zipfileset>
-        </zip>
     </target>
 
     <!--zip up mac version using command line tool-->
@@ -251,4 +222,43 @@
         </exec>
     </target>
     
+    <!--creates a debian package from the installer-->
+    <target name="create-deb-package" depends="suite.build-zip">
+        <unzip src="${dist.dir}/${app.name}.zip" dest="${dist.dir}/${app.name}">
+            <globmapper from="${app.name}/*" to="*"/>
+        </unzip>
+        <desktopentry
+            toFile="build/jmonkeyplatform.desktop"
+            name="jMonkeyPlatform"
+            comment="jMonkeyEngine3 Game SDK."
+            exec="/usr/local/jmonkeyplatform/bin/jmonkeyplatform"
+            icon="/usr/local/jmonkeyplatform/jmonkeyplatform.png"
+            categories="Development;Java"
+        />
+        <deb toDir="dist"
+            package="jme3-sdk"
+            version="0.6.1"
+            section="devel"
+            depends="sun-java6-jdk"
+            maintainer="jMonkeyEngine"
+            homepage="http://www.jmonkeyengine.com"
+            postrm="debscripts/postrm"
+            >
+            <tarfileset dir="dist/jmonkeyplatform/" prefix="usr/local/jmonkeyplatform">
+                <exclude name="bin/**"/>
+            </tarfileset>
+            <tarfileset dir="dist/jmonkeyplatform/bin" prefix="usr/local/jmonkeyplatform/bin" filemode="755">
+                <exclude name="*.exe"/>
+            </tarfileset>
+            <tarfileset file="build/jmonkeyplatform.desktop" prefix="usr/share/applications"/>
+            <tarfileset file="jmonkeyplatform.png" prefix="usr/local/jmonkeyplatform"/>
+            <description synopsis="jMonkeyEngine3 SDK is a complete solution for Java OpenGL game development.">
+jMonkeyEngine 3 was rebuilt from the ground up to be a modern 3D game engine,
+compatible with OpenGL 2.0 and above.
+Its architecture is shader-based, making it fully capable of current and
+next generation graphics standards. The jMonkeyPlatform gives you a complete IDE
+for coding and for managing and creating game assets.</description>
+        </deb>
+    </target>
+
 </project>

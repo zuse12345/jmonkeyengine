@@ -32,7 +32,9 @@
 package jme3test.animation;
 
 import com.jme3.animation.AnimationPath;
+import com.jme3.animation.AnimationPathListener;
 import com.jme3.app.SimpleApplication;
+import com.jme3.font.BitmapText;
 import com.jme3.input.ChaseCamera;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
@@ -64,25 +66,7 @@ public class TestAnimationPath extends SimpleApplication {
         createScene();
         cam.setLocation(new Vector3f(8.4399185f, 11.189463f, 14.267577f));
         path = new AnimationPath(teapot);
-
-//        ArrayList<Vector3f> test=new ArrayList<Vector3f>();
-//
-//        test.add(new Vector3f(10, 3, 0));
-//        test.add(new Vector3f(10, 3, 10));
-//        test.add(new Vector3f(-10, 3, 10));
-//        test.add(new Vector3f(-10, 3, 0));
-//
-//
-//        path.addControlPoint(test.get(0).subtract(test.get(1).subtract(test.get(0))));
-//         path.addControlPoint(test.get(0));
-//         path.addControlPoint(test.get(1));
-//         path.addControlPoint(test.get(2));
-//         path.addControlPoint(test.get(3));
-//         path.addControlPoint(test.get(3).add(test.get(3).subtract(test.get(2))));
-//
-//        path.enableDebugShape(assetManager, rootNode);
-        path = new AnimationPath(teapot);
-        //path.setPathInterpolation(AnimationPath.PathInterpolation.Linear);
+   
         path.addWayPoint(new Vector3f(10, 3, 0));
         path.addWayPoint(new Vector3f(10, 3, 10));
         path.addWayPoint(new Vector3f(-10, 3, 10));
@@ -91,6 +75,26 @@ public class TestAnimationPath extends SimpleApplication {
         path.addWayPoint(new Vector3f(10, 8, 0));
         path.addWayPoint(new Vector3f(10, 8, 10));
         path.enableDebugShape(assetManager, rootNode);
+
+        guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
+        
+        final BitmapText wayPointsText = new BitmapText(guiFont, false);
+        wayPointsText.setSize(guiFont.getCharSet().getRenderedSize());
+      
+        guiNode.attachChild(wayPointsText);
+
+        path.addListener(new AnimationPathListener() {
+
+            public void onWayPointReach(AnimationPath path, int wayPointIndex) {
+
+                    if(path.getNbWayPoints()==wayPointIndex+1){
+                        wayPointsText.setText("Finish!!! ");
+                    }else{
+                        wayPointsText.setText("Reached way point "+wayPointIndex);
+                    }
+                    wayPointsText.setLocalTranslation((cam.getWidth()-wayPointsText.getLineWidth())/2, cam.getHeight(), 0);
+            }
+        });
 
         flyCam.setEnabled(false);
         ChaseCamera chaser=new ChaseCamera(cam, teapot);
@@ -128,12 +132,13 @@ public class TestAnimationPath extends SimpleApplication {
     }
 
     private void initInputs() {
-        inputManager.addMapping("toggle", new KeyTrigger(KeyInput.KEY_P));
+        inputManager.addMapping("display_hidePath", new KeyTrigger(KeyInput.KEY_P));
+        inputManager.addMapping("SwitchPathInterpolation", new KeyTrigger(KeyInput.KEY_I));
         inputManager.addMapping("play_stop", new KeyTrigger(KeyInput.KEY_SPACE));
         ActionListener acl = new ActionListener() {
 
             public void onAction(String name, boolean keyPressed, float tpf) {
-                if (name.equals("toggle") && keyPressed) {
+                if (name.equals("display_hidePath") && keyPressed) {
                     if (active) {
                         active = false;
                         path.disableDebugShape();
@@ -151,10 +156,19 @@ public class TestAnimationPath extends SimpleApplication {
                         path.play();
                     }                    
                 }
+
+                if (name.equals("SwitchPathInterpolation") && keyPressed) {
+                    if(path.getPathInterpolation()==AnimationPath.PathInterpolation.CatmullRom){
+                        path.setPathInterpolation(AnimationPath.PathInterpolation.Linear);
+                    }else{
+                        path.setPathInterpolation(AnimationPath.PathInterpolation.CatmullRom);
+                    }
+                    
+                }
             }
         };
 
-        inputManager.addListener(acl, "toggle","play_stop");
+        inputManager.addListener(acl, "display_hidePath","play_stop","SwitchPathInterpolation");
 
     }
 }

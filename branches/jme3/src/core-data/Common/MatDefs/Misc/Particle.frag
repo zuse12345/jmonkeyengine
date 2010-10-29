@@ -1,6 +1,6 @@
 // TODO: Fix this so normal particles don't need it.
 // Only needed for certain GPUs.
-#version 120
+//#version 120
 
 #ifdef USE_TEXTURE
 uniform sampler2D m_Texture;

@@ -67,7 +67,7 @@ public class LightScatteringUI {
         inputManager.addMapping("blurWidthDown", new KeyTrigger(KeyInput.KEY_K));
         inputManager.addMapping("lightDensityUp", new KeyTrigger(KeyInput.KEY_O));
         inputManager.addMapping("lightDensityDown", new KeyTrigger(KeyInput.KEY_L));
-//        inputManager.addMapping("outputConfig", new KeyTrigger(KeyInput.KEY_P));
+        inputManager.addMapping("outputConfig", new KeyTrigger(KeyInput.KEY_P));
 //        inputManager.addMapping("toggleUseAO", new KeyTrigger(KeyInput.KEY_SPACE));
 //        inputManager.addMapping("toggleUseOnlyAo", new KeyTrigger(KeyInput.KEY_NUMPAD0));
         
@@ -82,6 +82,12 @@ public class LightScatteringUI {
                 if (name.equals("sampleDown")) {
                    filter.setNbSamples(filter.getNbSamples()-1);
                    System.out.println("Nb Samples : "+filter.getNbSamples());
+                }
+                if (name.equals("outputConfig") && keyPressed) {
+                   System.out.println("lightScatteringFilter.setNbSamples("+filter.getNbSamples()+");");
+                   System.out.println("lightScatteringFilter.setBlurStart("+filter.getBlurStart()+"f);");
+                   System.out.println("lightScatteringFilter.setBlurWidth("+filter.getBlurWidth()+"f);");
+                   System.out.println("lightScatteringFilter.setLightDensity("+filter.getLightDensity()+"f);");
                 }
                
 
@@ -119,7 +125,7 @@ public class LightScatteringUI {
 
             }
         };
-        inputManager.addListener(acl,"sampleUp","sampleDown");
+        inputManager.addListener(acl,"sampleUp","sampleDown","outputConfig");
 
         inputManager.addListener(anl, "blurStartUp","blurStartDown","blurWidthUp", "blurWidthDown","lightDensityUp", "lightDensityDown");
      

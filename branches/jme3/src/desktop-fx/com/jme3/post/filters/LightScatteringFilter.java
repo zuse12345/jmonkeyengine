@@ -51,10 +51,11 @@ public class LightScatteringFilter extends Filter {
     private int nbSamples = 50;
     private float blurStart = 0.02f;
     private float blurWidth = 0.9f;
-    private float lightDensity = 0.55f;
+    private float lightDensity = 1.4f;
     private boolean adaptative=true;
     Vector3f viewLightPos=new Vector3f();
-    private boolean display;    
+    private boolean display;
+    private float innerLightDensity;
 
     public LightScatteringFilter(Vector3f lightPosition) {
         super("Light Scattering");
@@ -73,7 +74,7 @@ public class LightScatteringFilter extends Filter {
         material.setInt("m_NbSamples", nbSamples);
         material.setFloat("m_BlurStart", blurStart);
         material.setFloat("m_BlurWidth", blurWidth);
-        material.setFloat("m_LightDensity", lightDensity);
+        material.setFloat("m_LightDensity", innerLightDensity);
         material.setBoolean("m_Display", display);
         return material;
     }
@@ -91,7 +92,7 @@ public class LightScatteringFilter extends Filter {
 //System.err.println("lightPos "+lightPosition);
 //System.err.println("screenLightPos "+screenLightPos);
         if(adaptative){
-            lightDensity=1.4f-Math.max(screenLightPos.x, screenLightPos.y);
+            innerLightDensity=Math.max(lightDensity-Math.max(screenLightPos.x, screenLightPos.y),0.0f);
         }
     }
 

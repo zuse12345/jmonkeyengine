@@ -62,6 +62,7 @@ public class J3MLoader implements AssetLoader {
 
     private AssetManager owner;
     private Scanner scan;
+    private String fileName;
 
     private MaterialDef materialDef;
     private Material material;
@@ -500,22 +501,7 @@ public class J3MLoader implements AssetLoader {
         shaderLang = null;
     }
 
-    public Object load(AssetInfo info) throws IOException {
-        this.owner = info.getManager();
-        load(info.openStream(), info.getKey().getName());
-        if (material != null){
-            // material implementation
-            return material;
-        }else{
-            // material definition
-            return materialDef;
-        }
-    }
-
-    public void load(InputStream in, String fileName) throws IOException{
-        scan = new Scanner(in);
-        scan.useLocale(Locale.US);
-
+    private void loadFromScanner() throws IOException{
         nextStatement();
 
         boolean extending = false;
@@ -591,8 +577,29 @@ public class J3MLoader implements AssetLoader {
                 }
             }
         }
+    }
 
-        in.close();
+    public Object load(AssetInfo info) throws IOException {
+        this.owner = info.getManager();
+
+        InputStream in = info.openStream();
+        try {
+            scan = new Scanner(in);
+            scan.useLocale(Locale.US);
+            this.fileName = info.getKey().getName();
+            loadFromScanner();
+        } finally {
+            if (in != null)
+                in.close();
+        }
+        
+        if (material != null){
+            // material implementation
+            return material;
+        }else{
+            // material definition
+            return materialDef;
+        }
     }
 
 }

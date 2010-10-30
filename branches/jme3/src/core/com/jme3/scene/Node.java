@@ -500,6 +500,70 @@ public class Node extends Spatial implements Savable {
         return total;
     }
 
+
+     /**
+     * Returns flat list of Spatials implementing the specified class AND
+     * with name matching the specified pattern.
+     * </P> <P>
+     * Note that we are <i>matching</i> the pattern, therefore the pattern
+     * must match the entire pattern (i.e. it behaves as if it is sandwiched
+     * between "^" and "$").
+     * You can set regex modes, like case insensitivity, by using the (?X)
+     * or (?X:Y) constructs.
+     * </P> <P>
+     * By design, it is always safe to code loops like:<CODE><PRE>
+     *     for (Spatial spatial : node.descendantMatches(AClass.class, "regex"))
+     * </PRE></CODE>
+     * </P> <P>
+     * "Descendants" does not include self, per the definition of the word.
+     * To test for descendants AND self, you must do a
+     * <code>node.matches(aClass, aRegex)</code> +
+     * <code>node.descendantMatches(aClass, aRegex)</code>.
+     * <P>
+     *
+     * @param spatialSubclass Subclass which matching Spatials must implement.
+     *                        Null causes all Spatials to qualify.
+     * @param nameRegex  Regular expression to match Spatial name against.
+     *                        Null causes all Names to qualify.
+     * @return Non-null, but possibly 0-element, list of matching Spatials (also Instances extending Spatials).
+     *
+     * @see java.util.regex.Pattern
+     * @see Spatial#matches(Class<? extends Spatial>, String)
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends Spatial>List<T> descendantMatches(
+            Class<T> spatialSubclass, String nameRegex) {
+        List<T> newList = new ArrayList<T>();
+        if (getQuantity() < 1) return newList;
+        for (Spatial child : getChildren()) {
+            if (child.matches(spatialSubclass, nameRegex))
+                newList.add((T)child);
+            if (child instanceof Node)
+                newList.addAll(((Node) child).descendantMatches(
+                        spatialSubclass, nameRegex));
+        }
+        return newList;
+    }
+
+    /**
+     * Convenience wrapper.
+     *
+     * @see #descendantMatches(Class<? extends Spatial>, String)
+     */
+    public <T extends Spatial>List<T> descendantMatches(
+            Class<T> spatialSubclass) {
+        return descendantMatches(spatialSubclass, null);
+    }
+
+    /**
+     * Convenience wrapper.
+     *
+     * @see #descendantMatches(Class<? extends Spatial>, String)
+     */
+    public <T extends Spatial>List<T> descendantMatches(String nameRegex) {
+        return descendantMatches(null, nameRegex);
+    }
+
     @Override
     public Node clone(){
         Node nodeClone = (Node) super.clone();

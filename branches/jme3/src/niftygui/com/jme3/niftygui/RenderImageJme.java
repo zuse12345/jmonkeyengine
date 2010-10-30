@@ -41,13 +41,10 @@ import de.lessvoid.nifty.spi.render.RenderImage;
 
 public class RenderImageJme implements RenderImage {
 
-    private NiftyJmeDisplay display;
     private Texture2D texture;
     private Image image;
 
     public RenderImageJme(String filename, boolean linear, NiftyJmeDisplay display){
-        this.display = display;
-
         TextureKey key = new TextureKey(filename, true);
 
         key.setAnisotropy(0);
@@ -55,16 +52,9 @@ public class RenderImageJme implements RenderImage {
         key.setGenerateMips(false);
         
         texture = (Texture2D) display.getAssetManager().loadTexture(key);
-        
-//        if (linear){
-            texture.setMagFilter(MagFilter.Bilinear);
-            texture.setMinFilter(MinFilter.BilinearNoMipMaps);
-//        }else{
-//            texture.setMagFilter(MagFilter.Nearest);
-//            texture.setMinFilter(MinFilter.NearestNoMipMaps);
-//        }
-
-        this.image = texture.getImage();
+        texture.setMagFilter(MagFilter.Bilinear);
+        texture.setMinFilter(MinFilter.BilinearNoMipMaps);
+        image = texture.getImage();
     }
 
     public Texture2D getTexture(){

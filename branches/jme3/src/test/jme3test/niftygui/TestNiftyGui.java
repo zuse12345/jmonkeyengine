@@ -46,6 +46,7 @@ public class TestNiftyGui extends SimpleApplication {
 
     public static void main(String[] args){
         TestNiftyGui app = new TestNiftyGui();
+        app.setPauseOnLostFocus(false);
         app.start();
     }
 
@@ -63,14 +64,14 @@ public class TestNiftyGui extends SimpleApplication {
                                                           guiViewPort);
         nifty = niftyDisplay.getNifty();
 
-        nifty.fromXml("tutorial/tutorial.xml", "start");
+        nifty.fromXml(/*"tutorial/tutorial.xml"*/ "all/intro.xml", "start");
 
         // attach the nifty display to the gui view port as a processor
         guiViewPort.addProcessor(niftyDisplay);
 
         // disable the fly cam
-//        flyCam.setEnabled(false);
-        flyCam.setDragToRotate(true);
+        flyCam.setEnabled(false);
+//        flyCam.setDragToRotate(true);
     }
 
 }

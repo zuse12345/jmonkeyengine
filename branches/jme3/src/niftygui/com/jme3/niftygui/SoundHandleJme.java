@@ -32,24 +32,49 @@
 
 package com.jme3.niftygui;
 
+import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioNode;
 import com.jme3.audio.AudioNode.Status;
 import com.jme3.audio.AudioRenderer;
-import com.jme3.audio.AudioStream;
 import de.lessvoid.nifty.spi.sound.SoundHandle;
 
 public class SoundHandleJme implements SoundHandle {
 
     private AudioNode node;
     private AudioRenderer ar;
+    private AssetManager am;
+    private String fileName;
+    private float volume = 1;
 
     public SoundHandleJme(AudioRenderer ar, AudioNode node){
         this.ar = ar;
         this.node = node;
     }
 
+    /**
+     * For streaming music only. (May need to loop..)
+     * @param ar
+     * @param am
+     * @param fileName
+     */
+    public SoundHandleJme(AudioRenderer ar, AssetManager am, String fileName){
+        this.ar = ar;
+        this.am = am;
+        if (fileName == null)
+            throw new NullPointerException();
+        
+        this.fileName = fileName;
+    }
+
     public void play() {
-        if (node.getAudioData() instanceof AudioStream){
+        if (fileName != null){
+            if (node != null){
+                ar.stopSource(node);
+            }
+
+            node = new AudioNode(am, fileName, true);
+            node.setPositional(false);
+            node.setVolume(volume);
             ar.playSource(node);
         }else{
             ar.playSourceInstance(node);
@@ -57,19 +82,25 @@ public class SoundHandleJme implements SoundHandle {
     }
 
     public void stop() {
-        ar.stopSource(node);
+        if (fileName != null){
+            ar.stopSource(node);
+            node = null;
+        }
     }
 
     public void setVolume(float f) {
-        node.setVolume(f);
+        if (node != null) {
+            node.setVolume(f);
+        }
+        volume = f;
     }
 
     public float getVolume() {
-        return node.getVolume();
+        return volume;
     }
 
     public boolean isPlaying() {
-        return node.getStatus() == Status.Playing;
+        return node != null && node.getStatus() == Status.Playing;
     }
 
     public void dispose() {

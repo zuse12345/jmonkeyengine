@@ -56,9 +56,7 @@ public class SoundDeviceJme implements SoundDevice {
     }
 
     public SoundHandle loadMusic(SoundSystem soundSystem, String filename) {
-        AudioNode an = new AudioNode(assetManager, filename, true);
-        an.setPositional(false);
-        return new SoundHandleJme(ar, an);
+        return new SoundHandleJme(ar, assetManager, filename);
     }
 
     public void update(int delta) {

@@ -45,7 +45,6 @@ import com.jme3.scene.VertexBuffer.Format;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.scene.VertexBuffer.Usage;
 import com.jme3.scene.shape.Quad;
-import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 import com.jme3.util.BufferUtils;
 import de.lessvoid.nifty.elements.render.TextRenderer.RenderFontNull;
@@ -240,7 +239,7 @@ public class RenderDeviceJme implements RenderDevice {
         niftyMat.setTexture("m_Texture", jmeImage.getTexture());
         niftyMat.setInt("m_Mode", 3);
         niftyMat.setColor("m_Color", convertColor(color));
-          
+
         quad.clearBuffer(Type.TexCoord);
         quad.setBuffer(quadDefaultTC);
 
@@ -274,10 +273,15 @@ public class RenderDeviceJme implements RenderDevice {
         VertexBuffer colors = quad.getBuffer(Type.Color);
         ByteBuffer buf = (ByteBuffer) colors.getData();
         buf.rewind();
-        buf.putInt(convertColor(bottomRight).asIntABGR());
-        buf.putInt(convertColor(bottomLeft).asIntABGR());
-        buf.putInt(convertColor(topLeft).asIntABGR());
+        
+        
+
         buf.putInt(convertColor(topRight).asIntABGR());
+        buf.putInt(convertColor(topLeft).asIntABGR());
+
+        buf.putInt(convertColor(bottomLeft).asIntABGR());
+        buf.putInt(convertColor(bottomRight).asIntABGR());
+        
         buf.flip();
         colors.updateData(buf);
 

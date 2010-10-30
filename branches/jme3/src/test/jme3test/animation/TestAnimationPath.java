@@ -111,11 +111,10 @@ public class TestAnimationPath extends SimpleApplication {
         mat.setColor("m_Diffuse", ColorRGBA.Black);
         mat.setColor("m_Specular", ColorRGBA.White.mult(0.6f));
         Material matSoil = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        matSoil.setFloat("m_Shininess", 15f);
         matSoil.setBoolean("m_UseMaterialColors", true);
         matSoil.setColor("m_Ambient", ColorRGBA.Gray);
-        matSoil.setColor("m_Diffuse", ColorRGBA.Black);
-        matSoil.setColor("m_Specular", ColorRGBA.White);
+        matSoil.setColor("m_Diffuse", ColorRGBA.White);
+        matSoil.setColor("m_Specular", ColorRGBA.Black);
         teapot = assetManager.loadModel("Models/Teapot/Teapot.obj");
         teapot.setLocalScale(3);
         teapot.setMaterial(mat);

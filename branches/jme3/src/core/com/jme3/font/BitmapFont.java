@@ -123,6 +123,15 @@ public class BitmapFont implements Savable {
             char theChar = text.charAt(i);
             BitmapCharacter c = charSet.getCharacter((int) theChar);
             if (c != null){
+                if (theChar == '\\' && i<text.length()-1 && text.charAt(i+1)=='#'){
+                    if (i+5<text.length() && text.charAt(i+5)=='#'){
+                        i+=5;
+                        continue;
+                    }else if (i+8<text.length() && text.charAt(i+8)=='#'){
+                        i+=8;
+                        continue;
+                    }
+                }
                 if (!firstCharOfLine){
                     int amount = findKerningAmount(lastChar, theChar);
                     if (amount != -1){
@@ -158,6 +167,36 @@ public class BitmapFont implements Savable {
         for (int i = 0; i < text.length(); i++){
             char theChar = text.charAt(i);
             BitmapCharacter c = charSet.getCharacter((int) theChar);
+
+            if (theChar == '\\' && i<text.length()-1 && text.charAt(i+1)=='#'){
+                // NOTE: Here we accept in-text commands.
+                if (i+5<text.length() && text.charAt(i+5)=='#'){
+                    // parse shortened color
+                    // convert from hex to int from 0 to 15, then multiply by 16
+                    try {
+                        float r = Integer.parseInt(Character.toString(text.charAt(i+2)), 16) / 15f;
+                        float g = Integer.parseInt(Character.toString(text.charAt(i+3)), 16) / 15f;
+                        float b = Integer.parseInt(Character.toString(text.charAt(i+4)), 16) / 15f;
+                        textColor.set(r, g, b, 1f);
+                        i += 5;
+                        continue;
+                    } catch (NumberFormatException ex){
+                        // if an issue happens, ignore this color directive.
+                    }
+                }else if (i+8<text.length() && text.charAt(i+8)=='#'){
+                    try {
+                        float r = Integer.parseInt(text.subSequence(i+2,i+4).toString(), 16) / 255f;
+                        float g = Integer.parseInt(text.subSequence(i+4,i+6).toString(), 16) / 255f;
+                        float b = Integer.parseInt(text.subSequence(i+6,i+8).toString(), 16) / 255f;
+                        textColor.set(r, g, b, 1f);
+                        i += 8;
+                        continue;
+                    } catch (NumberFormatException ex){
+                        // if an issue happens, ignore this color directive.
+                    }
+                }
+            }
+
             if (theChar == '\n'){
                 x = 0;
                 y -= charSet.getLineHeight() * sizeScale;
@@ -194,17 +233,6 @@ public class BitmapFont implements Savable {
 
                 wordNumber = 1;
                 lineNumber++;
-            }else if (c == null){
-                // NOTE: Here we accept in-text commands..
-                // make sure we have at least 3 more chars in input
-                if ( theChar == '\1' && text.length() - i - 1 >= 3 ){
-                    // change text color for following chars
-                    float r = ((int) text.charAt(++i)) / 255f;
-                    float g = ((int) text.charAt(++i)) / 255f;
-                    float b = ((int) text.charAt(++i)) / 255f;
-                    textColor.set(r, g, b, 1f);
-                    continue;
-                }
             }else if (theChar == '\r' || theChar == '\t'){
                 // dont print these characters
                 continue;

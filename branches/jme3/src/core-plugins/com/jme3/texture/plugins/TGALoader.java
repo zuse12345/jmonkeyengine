@@ -78,6 +78,9 @@ public final class TGALoader implements AssetLoader {
     public static final int TYPE_BLACKANDWHITE_RLE = 11;
 
     public Object load(AssetInfo info) throws IOException{
+        if (!(info.getKey() instanceof TextureKey))
+            throw new IllegalArgumentException("Texture assets must be loaded using a TextureKey");
+
         boolean flip = ((TextureKey)info.getKey()).isFlipY();
         InputStream in = info.openStream();
         Image img = load(in, flip);

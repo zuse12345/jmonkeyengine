@@ -85,6 +85,10 @@ public class AssetKey<T> implements Savable {
         return name;
     }
 
+    /**
+     * @return The extension of the <code>AssetKey</code>'s name. For example,
+     * the name "Interface/Logo/Monkey.png" has an extension of "png".
+     */
     public String getExtension() {
         return extension;
     }
@@ -105,8 +109,12 @@ public class AssetKey<T> implements Savable {
     }
 
     /**
-     * Create an instance of the asset. Usually it's a special type of cloning.
-     * @param asset
+     * Create a new instance of the asset, based on a prototype that is stored
+     * in the cache. Implementations are allowed to return the given parameter
+     * as-is if it is considered that cloning is not necessary for that particular
+     * asset type.
+     * 
+     * @param asset The asset to be cloned.
      * @return The asset, possibly cloned.
      */
     public Object createClonedInstance(Object asset){

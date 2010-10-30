@@ -171,6 +171,17 @@ public class ParticleEmitter extends Geometry implements Control {
         lastUsed = -1;
     }
 
+    /**
+     * @return A list of all particles (shouldn't be used in most cases).
+     * This includes both existing and non-existing particles.
+     * The size of the array is set to the <code>numParticles</code> value
+     * specified in the constructor or {@link ParticleEmitter#setNumParticles(int) }
+     * method. 
+     */
+    public Particle[] getParticles(){
+        return particles;
+    }
+
     public Vector3f getFaceNormal() {
         if (Vector3f.isValidVector(faceNormal))
             return faceNormal;
@@ -178,6 +189,16 @@ public class ParticleEmitter extends Geometry implements Control {
             return null;
     }
 
+    /**
+     * Sets the normal which particles are facing. By default, particles
+     * will face the camera, but for some effects (e.g shockwave) it may
+     * be necessary to face a specific direction instead. To restore
+     * normal functionality, provide <code>null</code> as the argument for
+     * <code>faceNormal</code>.
+     *
+     * @param faceNormal The normals particles should face, or <code>null</code>
+     * if particles should face the camera.
+     */
     public void setFaceNormal(Vector3f faceNormal) {
         if (faceNormal == null || !Vector3f.isValidVector(faceNormal))
             faceNormal.set(Vector3f.NAN);
@@ -189,6 +210,10 @@ public class ParticleEmitter extends Geometry implements Control {
         return rotateSpeed;
     }
 
+    /**
+     * @param rotateSpeed Set the rotation speed in radians/sec for particles
+     * spawned after the invocation of this method.
+     */
     public void setRotateSpeed(float rotateSpeed) {
         this.rotateSpeed = rotateSpeed;
     }
@@ -197,6 +222,10 @@ public class ParticleEmitter extends Geometry implements Control {
         return randomAngle;
     }
 
+    /**
+     * @param randomAngle Set to <code>true</code> if every particle spawned
+     * should have a random facing angle. 
+     */
     public void setRandomAngle(boolean randomAngle) {
         this.randomAngle = randomAngle;
     }
@@ -205,6 +234,17 @@ public class ParticleEmitter extends Geometry implements Control {
         return selectRandomImage;
     }
 
+    /**
+     * @param selectRandomImage Set to true if every particle spawned
+     * should get a random image from a pool of images constructed from
+     * the texture, with X by Y possible images. By default, X and Y are equal
+     * to 1, thus allowing only 1 possible image to be selected, but if the
+     * particle is configured with multiple images by using {@link ParticleEmitter#setImagesX(int) }
+     * and {#link ParticleEmitter#setImagesY(int) } methods, then multiple images
+     * can be selected. Setting to false will cause each particle to have an animation
+     * of images displayed, starting at image 1, and going until image X*Y when
+     * the particle reaches its end of life.
+     */
     public void setSelectRandomImage(boolean selectRandomImage) {
         this.selectRandomImage = selectRandomImage;
     }
@@ -213,6 +253,11 @@ public class ParticleEmitter extends Geometry implements Control {
         return facingVelocity;
     }
 
+    /**
+     * @param followVelocity Set to true if particles spawned should face
+     * their velocity (or direction to which they are moving towards).
+     * This is typically used for e.g spark effects.
+     */
     public void setFacingVelocity(boolean followVelocity) {
         this.facingVelocity = followVelocity;
     }
@@ -221,6 +266,12 @@ public class ParticleEmitter extends Geometry implements Control {
         return endColor;
     }
 
+    /**
+     * @param endColor Set the end color of the particles spawned. The
+     * particle color at any time is determined by blending the start color
+     * and end color based on the particle's current time of life relative
+     * to its end of life.
+     */
     public void setEndColor(ColorRGBA endColor) {
         this.endColor.set(endColor);
     }
@@ -229,6 +280,12 @@ public class ParticleEmitter extends Geometry implements Control {
         return endSize;
     }
 
+    /**
+     * @param endSize Set the end size of the particles spawned.The
+     * particle size at any time is determined by blending the start size
+     * and end size based on the particle's current time of life relative
+     * to its end of life.
+     */
     public void setEndSize(float endSize) {
         this.endSize = endSize;
     }
@@ -237,6 +294,10 @@ public class ParticleEmitter extends Geometry implements Control {
         return gravity;
     }
 
+    /**
+     * @param gravity Set the gravity, in units/sec/sec, of particles
+     * spawned.
+     */
     public void setGravity(float gravity) {
         this.gravity = gravity;
     }
@@ -245,6 +306,10 @@ public class ParticleEmitter extends Geometry implements Control {
         return highLife;
     }
 
+    /**
+     * @param highLife Set the high value of life. The particle's lifetime/expiration
+     * is determined by randomly selecting a time between low life and high life.
+     */
     public void setHighLife(float highLife) {
         this.highLife = highLife;
     }
@@ -253,6 +318,11 @@ public class ParticleEmitter extends Geometry implements Control {
         return imagesX;
     }
 
+    /**
+     * @param imagesX Set the number of images along the X axis (width). To determine
+     * how multiple particle images are selected and used, see the
+     * {@link ParticleEmitter#setSelectRandomImage(boolean) } method.
+     */
     public void setImagesX(int imagesX) {
         this.imagesX = imagesX;
     }
@@ -261,6 +331,11 @@ public class ParticleEmitter extends Geometry implements Control {
         return imagesY;
     }
 
+    /**
+     * @param imagesY Set the number of images along the Y axis (height). To determine
+     * how multiple particle images are selected and used, see the
+     * {@link ParticleEmitter#setSelectRandomImage(boolean) } method.
+     */
     public void setImagesY(int imagesY) {
         this.imagesY = imagesY;
     }
@@ -269,6 +344,10 @@ public class ParticleEmitter extends Geometry implements Control {
         return lowLife;
     }
 
+    /**
+     * @param lowLife Set the low value of life. The particle's lifetime/expiration
+     * is determined by randomly selecting a time between low life and high life.
+     */
     public void setLowLife(float lowLife) {
         this.lowLife = lowLife;
     }
@@ -277,6 +356,10 @@ public class ParticleEmitter extends Geometry implements Control {
         return particlesPerSec;
     }
 
+    /**
+     * @param particlesPerSec Set the number of particles to spawn per
+     * second.
+     */
     public void setParticlesPerSec(float particlesPerSec) {
         this.particlesPerSec = particlesPerSec;
     }
@@ -285,6 +368,12 @@ public class ParticleEmitter extends Geometry implements Control {
         return startColor;
     }
 
+    /**
+     * @param startColor Set the start color of the particles spawned. The
+     * particle color at any time is determined by blending the start color
+     * and end color based on the particle's current time of life relative
+     * to its end of life.
+     */
     public void setStartColor(ColorRGBA startColor) {
         this.startColor.set(startColor);
     }
@@ -293,23 +382,78 @@ public class ParticleEmitter extends Geometry implements Control {
         return startSize;
     }
 
+    /**
+     * @param startSize Set the start size of the particles spawned.The
+     * particle size at any time is determined by blending the start size
+     * and end size based on the particle's current time of life relative
+     * to its end of life.
+     */
     public void setStartSize(float startSize) {
         this.startSize = startSize;
     }
 
+    /**
+     * @deprecated Use {@link ParticleEmitter#getInitialVelocity() }
+     */
+    @Deprecated
     public Vector3f getStartVel() {
         return startVel;
     }
 
+    /**
+     * @deprecated Use {@link ParticleEmitter#setInitialVelocity(com.jme3.math.Vector3f) }
+     */
+    @Deprecated
     public void setStartVel(Vector3f startVel) {
         this.startVel.set(startVel);
     }
 
+    public Vector3f getInitialVelocity(){
+        return startVel;
+    }
+
+    /**
+     * @param initialVelocity Set the initial velocity a particle is spawned with,
+     * the initial velocity given in the parameter will be varied according
+     * to the velocity variation set in {@link ParticleEmitter#setVelocityVariation(float) }.
+     * A particle will move toward its velocity unless it is effected by the
+     * gravity.
+     *
+     * @see ParticleEmitter#setVelocityVariation(float) 
+     * @see ParticleEmitter#setGravity(float)
+     */
+    public void setInitialVelocity(Vector3f initialVelocity){
+        this.startVel.set(initialVelocity);
+    }
+
+    /**
+     * @deprecated Use {@link ParticleEmitter#getVelocityVariation() }
+     */
+    @Deprecated
     public float getVariation() {
         return variation;
     }
 
+    /**
+     * @deprecated Use {@link ParticleEmitter#setVelocityVariation() }
+     */
+    @Deprecated
     public void setVariation(float variation) {
+        this.variation = variation;
+    }
+
+    public float getVelocityVariation() {
+        return variation;
+    }
+
+    /**
+     * @param variation Set the variation by which the initial velocity
+     * of the particle is determined. <code>variation</code> should be a value
+     * from 0 to 1, where 0 means particles are to spawn with exactly
+     * the velocity given in {@link ParticleEmitter#setStartVel(com.jme3.math.Vector3f) },
+     * and 1 means particles are to spawn with a completely random velocity.
+     */
+    public void setVelocityVariation(float variation) {
         this.variation = variation;
     }
 
@@ -378,11 +522,19 @@ public class ParticleEmitter extends Geometry implements Control {
         return true;
     }
 
+    /**
+     * Instantly emits all the particles possible to be emitted. Any particles
+     * which are currently inactive will be spawned immediately.
+     */
     @SuppressWarnings("empty-statement")
     public void emitAllParticles(){
         while (emitParticle());
     }
 
+    /**
+     * Instantly kills all active particles, after this method is called, all
+     * particles will be dead and no longer visible.
+     */
     public void killAllParticles(){
         for (int i = 0; i < particles.length; i++){
             if (particles[i].life > 0)
@@ -478,9 +630,16 @@ public class ParticleEmitter extends Geometry implements Control {
         }
     }
 
+    /**
+     * Do not use.
+     */
     public void setSpatial(Spatial spatial) {
     }
 
+    /**
+     * @param enabled Set to enable or disable a particle. When a particle is
+     * disabled, it will be "frozen in time" and not update.
+     */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }

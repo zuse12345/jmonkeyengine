@@ -36,6 +36,16 @@ import com.jme3.app.Application;
 import com.jme3.renderer.RenderManager;
 import java.util.ArrayList;
 
+/**
+ * The <code>AppStateManager</code> holds a list of {@link AppState}s which
+ * it will update and render.<br/>
+ * When an {@link AppState} is attached or detached, the
+ * {@link AppState#stateAttached(com.jme3.app.state.AppStateManager) } and
+ * {@link AppState#stateDetached(com.jme3.app.state.AppStateManager) } methods
+ * will be called respectively. 
+ *
+ * @author Kirill Vainer
+ */
 public class AppStateManager {
 
     private final ArrayList<AppState> states = new ArrayList<AppState>();

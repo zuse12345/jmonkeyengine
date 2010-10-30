@@ -76,15 +76,25 @@ public interface AssetManager {
     public void registerLocator(String rootPath, Class<? extends AssetLocator> locatorClass);
 
     /**
-     *
+     * Set an {@link AssetEventListener} to receive events from this
+     * <code>AssetManager</code>. There can only be one {@link  AssetEventListener}
+     * associated with an <code>AssetManager</code>
+     * 
      * @param listener
      */
     public void setAssetEventListener(AssetEventListener listener);
 
     /**
-     * 
-     * @param key
-     * @return
+     * Manually locates an asset with the given {@link AssetKey}. This method
+     * should be used for debugging or internal uses. <br/>
+     * The call will attempt to locate the asset by invoking the
+     * {@link AssetLocator} that are registered with this <code>AssetManager</code>,
+     * in the same way that the {@link AssetManager#loadAsset(com.jme3.asset.AssetKey) }
+     * method locates assets.
+     *
+     * @param key The {@link AssetKey} to locate.
+     * @return The {@link AssetInfo} object returned from the {@link AssetLocator}
+     * that located the asset, or null if the asset cannot be located.
      */
     public AssetInfo locateAsset(AssetKey<?> key);
 
@@ -105,9 +115,16 @@ public interface AssetManager {
     public <T> T loadAsset(AssetKey<T> key);
 
     /**
-     * Load a named asset by name.
-     * @param name
-     * @return
+     * Load a named asset by name, calling this method
+     * is the same as calling
+     * <code>
+     * loadAsset(new AssetKey(name)).
+     * </code>
+     *
+     * @param name The name of the asset to load.
+     * @return The loaded asset, or null if failed to be loaded.
+     *
+     * @see AssetManager#loadAsset(com.jme3.asset.AssetKey)
      */
     public Object loadAsset(String name);
 
@@ -115,8 +132,10 @@ public interface AssetManager {
      * Loads texture file, supported types are BMP, JPG, PNG, GIF,
      * TGA and DDS.
      *
-     * @param key
-     * @return
+     * @param key The {@link TextureKey} to use for loading.
+     * @return The loaded texture, or null if failed to be loaded.
+     *
+     * @see AssetManager#loadAsset(com.jme3.asset.AssetKey)
      */
     public Texture loadTexture(TextureKey key);
 
@@ -124,8 +143,10 @@ public interface AssetManager {
      * Loads texture file, supported types are BMP, JPG, PNG, GIF,
      * TGA and DDS.
      *
-     * @param name
+     * @param name The name of the texture to load.
      * @return
+     *
+     * @see AssetManager#loadAsset(com.jme3.asset.AssetKey)
      */
     public Texture loadTexture(String name);
 
@@ -133,6 +154,8 @@ public interface AssetManager {
      * Load audio file, supported types are WAV or OGG.
      * @param key
      * @return
+     *
+     * @see AssetManager#loadAsset(com.jme3.asset.AssetKey)
      */
     public AudioData loadAudio(AudioKey key);
 
@@ -141,6 +164,8 @@ public interface AssetManager {
      * The file is loaded without stream-mode.
      * @param name
      * @return
+     *
+     * @see AssetManager#loadAsset(com.jme3.asset.AssetKey)
      */
     public AudioData loadAudio(String name);
 
@@ -149,6 +174,8 @@ public interface AssetManager {
      * OgreXML/OBJ files.
      * @param key
      * @return
+     *
+     * @see AssetManager#loadAsset(com.jme3.asset.AssetKey)
      */
     public Spatial loadModel(ModelKey key);
 
@@ -157,6 +184,8 @@ public interface AssetManager {
      * OgreXML/OBJ files.
      * @param name
      * @return
+     *
+     * @see AssetManager#loadAsset(com.jme3.asset.AssetKey)
      */
     public Spatial loadModel(String name);
 
@@ -164,11 +193,15 @@ public interface AssetManager {
      * Load a material (J3M) file.
      * @param name
      * @return
+     *
+     * @see AssetManager#loadAsset(com.jme3.asset.AssetKey)
      */
     public Material loadMaterial(String name);
 
     /**
      * Loads shader file(s), shouldn't be used by end-user in most cases.
+     *
+     * @see AssetManager#loadAsset(com.jme3.asset.AssetKey)
      */
     public Shader loadShader(ShaderKey key);
 
@@ -178,6 +211,8 @@ public interface AssetManager {
      *
      * @param name
      * @return
+     *
+     * @see AssetManager#loadAsset(com.jme3.asset.AssetKey) 
      */
     public BitmapFont loadFont(String name);
 }

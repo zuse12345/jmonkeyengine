@@ -40,8 +40,6 @@ import com.jme3.texture.Image.Format;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Scanner;
 import java.util.logging.Logger;
 
 public class HDRLoader implements AssetLoader {
@@ -312,6 +310,9 @@ public class HDRLoader implements AssetLoader {
     }
 
     public Object load(AssetInfo info) throws IOException {
+        if (!(info.getKey() instanceof TextureKey))
+            throw new IllegalArgumentException("Texture assets must be loaded using a TextureKey");
+
         boolean flip = ((TextureKey) info.getKey()).isFlipY();
         InputStream in = info.openStream();
         Image img = load(in, flip);

@@ -124,6 +124,9 @@ public class DDSLoader implements AssetLoader {
     }
 
     public Object load(AssetInfo info) throws IOException{
+        if (!(info.getKey() instanceof TextureKey))
+            throw new IllegalArgumentException("Texture assets must be loaded using a TextureKey");
+
         InputStream stream = info.openStream();
         in = new LittleEndien(stream);
         loadHeader();

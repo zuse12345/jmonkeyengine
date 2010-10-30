@@ -42,7 +42,13 @@ import com.jme3.renderer.RenderManager;
  */
 public class AbstractAppState implements AppState {
 
-    private boolean initialized = false;
+    /**
+     * <code>initialized</code> is set to true when the method
+     * {@link AbstractAppState#initialize(com.jme3.app.state.AppStateManager, com.jme3.app.Application) }
+     * is called. When {@link AbstractAppState#cleanup() } is called, <code>initialized</code>
+     * is set back to false.
+     */
+    protected boolean initialized = false;
     private boolean active = true;
 
     public void initialize(AppStateManager stateManager, Application app) {

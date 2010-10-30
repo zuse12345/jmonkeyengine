@@ -51,6 +51,7 @@ import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image.Format;
 import com.jme3.texture.Texture2D;
 import com.jme3.util.BufferUtils;
+import com.jme3.util.Screenshots;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -161,36 +162,12 @@ public class TestRenderToMemory extends SimpleApplication implements SceneProces
         cpuBuf.clear();
         renderer.readFrameBuffer(offBuffer, cpuBuf);
 
-        // copy native memory to java memory
-        cpuBuf.clear();
-        cpuBuf.get(cpuArray);
-        cpuBuf.clear();
-
-        // flip the components the way AWT likes them
-        for (int i = 0; i < width * height * 4; i+=4){
-            byte b = cpuArray[i+0];
-            byte g = cpuArray[i+1];
-            byte r = cpuArray[i+2];
-            byte a = cpuArray[i+3];
-
-            cpuArray[i+0] = a;
-            cpuArray[i+1] = b;
-            cpuArray[i+2] = g;
-            cpuArray[i+3] = r;
-        }
-
         synchronized (image) {
-            WritableRaster wr = image.getRaster();
-            DataBufferByte db = (DataBufferByte) wr.getDataBuffer();
-            System.arraycopy(cpuArray, 0, db.getData(), 0, cpuArray.length);
+            Screenshots.convertScreenShot(cpuBuf, image);    
         }
 
-//        SwingUtilities.invokeLater(new Runnable() {
-//            public void run() {
-                if (display != null)
-                    display.repaint();
-//            }
-//        });
+        if (display != null)
+            display.repaint();
     }
 
     public void setupOffscreenView(){

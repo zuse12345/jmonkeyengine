@@ -34,6 +34,7 @@ package com.jme3.export.binary;
 
 import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetManager;
+import com.jme3.asset.ModelKey;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.ReadListener;
 import com.jme3.export.Savable;
@@ -101,6 +102,9 @@ public final class BinaryImporter implements JmeImporter {
     }
 
     public Object load(AssetInfo info){
+        if (!(info.getKey() instanceof ModelKey))
+            throw new IllegalArgumentException("Model assets must be loaded using a ModelKey");
+
         assetManager = info.getManager();
 
         try{

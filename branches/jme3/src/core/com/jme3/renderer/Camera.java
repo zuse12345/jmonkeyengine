@@ -644,8 +644,7 @@ public class Camera implements Savable, Cloneable {
                                        float far ) {
         if (Float.isNaN(aspect) || Float.isInfinite(aspect)) {
             // ignore.
-            logger.warning("Invalid aspect given to setFrustumPerspective: "
-                    + aspect);
+            logger.log(Level.WARNING, "Invalid aspect given to setFrustumPerspective: {0}", aspect);
             return;
         }
 
@@ -668,8 +667,8 @@ public class Camera implements Savable, Cloneable {
      * @param left      the left axis of the camera.
      * @param up        the up axis of the camera.
      * @param direction the facing of the camera.
-     * @see Camera#setFrame(com.jme.math.Vector3f,
-     *      com.jme.math.Vector3f, com.jme.math.Vector3f, com.jme.math.Vector3f)
+     * @see Camera#setFrame(com.jme3.math.Vector3f,
+     *      com.jme3.math.Vector3f, com.jme3.math.Vector3f, com.jme3.math.Vector3f)
      */
     public void setFrame( Vector3f location, Vector3f left, Vector3f up,
                           Vector3f direction ) {

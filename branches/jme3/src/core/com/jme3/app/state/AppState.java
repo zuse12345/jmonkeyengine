@@ -37,6 +37,13 @@ import com.jme3.renderer.RenderManager;
 
 /**
  * AppState represents a continously executing code inside the main loop.
+ * An <code>AppState</code> can track when it is attached to the 
+ * {@link AppStateManager} or when it is detached. <br/><code>AppState</code>s
+ * are initialized in the render thread, upon a call to {@link AppState#initialize(com.jme3.app.state.AppStateManager, com.jme3.app.Application) }
+ * and are de-initialized upon a call to {@link AppState#cleanup()}. 
+ * Implementations should return the correct value with a call to 
+ * {@link AppState#isInitialized() } as specified above.<br/>
+ * 
  *
  * @author Kirill Vainer
  */

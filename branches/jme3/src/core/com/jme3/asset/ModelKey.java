@@ -34,6 +34,10 @@ package com.jme3.asset;
 
 import com.jme3.scene.Spatial;
 
+/**
+ * 
+ * @author Kirill Vainer
+ */
 public class ModelKey extends AssetKey<Spatial> {
 
     public ModelKey(String name){

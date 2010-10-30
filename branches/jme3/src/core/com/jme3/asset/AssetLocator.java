@@ -49,6 +49,8 @@ public interface AssetLocator {
      * Request to locate an asset. The asset key
      * contains a name identifying the asset.
      * If an asset was not found, null should be returned.
+     * The {@link AssetInfo} implementation provided should have a proper
+     * return value for its {@link AssetInfo#openStream() } method.
      * 
      * @param manager
      * @param key

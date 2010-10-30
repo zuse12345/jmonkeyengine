@@ -63,6 +63,11 @@ public abstract class AssetInfo {
         return getClass().getName() + "[" + "key=" + key + "]";
     }
 
+    /**
+     * Implementations of this method should return an {@link InputStream}
+     * allowing access to the data represented by the {@link AssetKey}.
+     * @return The asset data.
+     */
     public abstract InputStream openStream();
 
 }

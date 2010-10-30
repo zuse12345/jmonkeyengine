@@ -1454,9 +1454,9 @@ public class LwjglRenderer implements Renderer {
             if (!img.hasMipmaps() && tex.getMinFilter().usesMipMapLevels()){
                 // No pregenerated mips available,
                 // generate from base level if required
-                if (!GLContext.getCapabilities().GL_EXT_framebuffer_multisample){
+//                if (!GLContext.getCapabilities().GL_EXT_framebuffer_multisample){
                     glTexParameteri(target, GL_GENERATE_MIPMAP, GL_TRUE);
-                }
+//                }
             }else{
                 glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0 );
                 if (img.getMipMapSizes() != null){
@@ -1487,9 +1487,9 @@ public class LwjglRenderer implements Renderer {
                 TextureUtil.uploadTexture(img, target, tex.getImageDataIndex(), 0, tdc);
             }
             
-            if (GLContext.getCapabilities().GL_EXT_framebuffer_multisample){
-                glGenerateMipmapEXT(target);
-            }
+//            if (GLContext.getCapabilities().GL_EXT_framebuffer_multisample){
+//                glGenerateMipmapEXT(target);
+//            }
         }
 
         tex.clearUpdateNeeded();

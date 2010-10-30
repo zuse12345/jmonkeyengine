@@ -75,6 +75,9 @@ public class PFMLoader implements AssetLoader {
     }
 
     public Object load(AssetInfo info) throws IOException {
+        if (!(info.getKey() instanceof TextureKey))
+            throw new IllegalArgumentException("Texture assets must be loaded using a TextureKey");
+
         InputStream in = info.openStream();
         Format format = null;
 

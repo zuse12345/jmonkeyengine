@@ -38,11 +38,13 @@ import java.io.InputStream;
 import java.util.Scanner;
 
 /**
- * Loads a config file to configure the asset manager.
- *
- *
+ * <code>AssetConfig</code> loads a config file to configure the asset manager.
+ * <br/><br/>
+ * The config file is specified with the following format:
+ * <code>
  * "LOADER" <class> : (<extension> ",")* <extension>
  * "LOCATOR" <path> <class> : (<extension> ",")* <extension>
+ * </code>
  *
  * @author Kirill Vainer
  */
@@ -80,7 +82,7 @@ public class AssetConfig {
         }
     }
 
-    private static final String readString(DataInput dataIn) throws IOException{
+    private static String readString(DataInput dataIn) throws IOException{
         int length = dataIn.readUnsignedShort();
         char[] chrs = new char[length];
         for (int i = 0; i < length; i++){
@@ -89,6 +91,7 @@ public class AssetConfig {
         return String.valueOf(chrs);
     }
 
+    /*
     public void loadBinary(DataInput dataIn) throws IOException{
         // read signature and version
 
@@ -112,5 +115,5 @@ public class AssetConfig {
             manager.registerLoader(loaderClazz, extensions);
         }
     }
-
+    */
 }

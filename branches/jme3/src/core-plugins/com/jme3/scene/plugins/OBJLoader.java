@@ -496,6 +496,9 @@ public final class OBJLoader implements AssetLoader {
         key = (ModelKey) info.getKey();
         assetManager = info.getManager();
 
+        if (!(info.getKey() instanceof ModelKey))
+            throw new IllegalArgumentException("Model assets must be loaded using a ModelKey");
+
         InputStream in = info.openStream();
         scan = new Scanner(in);
         scan.useLocale(Locale.US);

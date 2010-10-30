@@ -33,7 +33,11 @@
 package com.jme3.asset;
 
 /**
- * Interface for listening to various events happening inside AssetManager.
+ * <code>AssetEventListener</code> is an interface for listening to various
+ * events happening inside {@link AssetManager}. For now, it is possible
+ * to receive an event when an asset has been requested
+ * (one of the AssetManager.load***() methods were called), or when
+ * an asset has been loaded.
  * 
  * @author Kirill Vainer
  */

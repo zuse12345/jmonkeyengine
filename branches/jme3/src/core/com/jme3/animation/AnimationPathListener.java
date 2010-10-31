@@ -33,11 +33,16 @@
 package com.jme3.animation;
 
 /**
- *
+ * Trigger the events appening on an animation path
  * @author Nehon
  */
 public interface AnimationPathListener {
 
+    /**
+     * Triggers every time the target reach a waypoint on the path
+     * @param path the animation path on wich the even has been triggered
+     * @param wayPointIndex the index of the way point reached
+     */
     public void onWayPointReach(AnimationPath path,int wayPointIndex);
 
 }

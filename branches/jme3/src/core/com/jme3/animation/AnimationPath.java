@@ -37,6 +37,7 @@ import com.jme3.export.JmeImporter;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
@@ -53,7 +54,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- *
+ * Animation path is used to create a path between way points.
  * @author Nehon
  */
 public class AnimationPath implements Control {
@@ -65,24 +66,75 @@ public class AnimationPath implements Control {
     private float currentValue;
     private List<Vector3f> wayPoints = new ArrayList<Vector3f>();
     private Node debugNode;
-    AssetManager assetManager;
-    List<AnimationPathListener> listeners;
+    private AssetManager assetManager;
+    private List<AnimationPathListener> listeners;
+    private Vector3f curveDirection;
+    private Vector3f lookAt;
+    private Vector3f upVector;
+    private Quaternion rotation;
+    private float speed = 1.0f;
+
+    /**
+     * Enum for the different type of target direction behavior
+     */
+    public enum Direction {
+
+        /**
+         * the target stay in the starting direction
+         */
+        None,
+        /**
+         * The target rotates with the direction of the path
+         */
+        Path,
+        /**
+         * The target rotates with the direction of the path but with the additon of a rtotation
+         * you need to use the setRotation mathod when using this Direction
+         */
+        PathAndRotation,
+        /**
+         * The target rotates with the given rotation
+         */
+        Rotation,
+        /**
+         * The target looks at a point
+         * You need to use the setLookAt method when using this direction
+         */
+        LookAt
+    }
+    private Direction directionType = Direction.None;
 
     public enum PathInterpolation {
 
+        /**
+         * Compute a linear path between the waypoints
+         */
         Linear,
+        /**
+         * Compute a Catmull-Rom spline path between the waypoints
+         * see http://www.mvps.org/directx/articles/catmull/
+         */
         CatmullRom
     }
     private PathInterpolation pathInterpolation = PathInterpolation.CatmullRom;
 
     public AnimationPath(Spatial target) {
         super();
-        this.target=target;
+        this.target = target;
         target.addControl(this);
     }
 
     public Control cloneForSpatial(Spatial spatial) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        AnimationPath path = new AnimationPath(spatial);
+        for (Iterator<Vector3f> it = wayPoints.iterator(); it.hasNext();) {
+            Vector3f vector3f = it.next();
+            path.addWayPoint(vector3f);
+        }
+        for (Iterator<AnimationPathListener> it = listeners.iterator(); it.hasNext();) {
+            AnimationPathListener animationPathListener = it.next();
+            path.addListener(animationPathListener);
+        }
+        return path;
     }
 
     public void setSpatial(Spatial spatial) {
@@ -97,32 +149,78 @@ public class AnimationPath implements Control {
         return enabled;
     }
 
-    public void update(float tpf) {       
-        if(playing){
-            Vector3f temp=new Vector3f();
-            switch (pathInterpolation) {
-                case CatmullRom:           
-                      List<Vector3f> CRcontrolPoints = getCatmullRomWayPoints(wayPoints);
-                      temp = FastMath.interpolateCatmullRom(currentValue, CRcontrolPoints.get(currentWayPoint),
-                            CRcontrolPoints.get(currentWayPoint + 1), CRcontrolPoints.get(currentWayPoint + 2), CRcontrolPoints.get(currentWayPoint + 3));
-                    break;
-                case Linear:
-                      temp = FastMath.interpolateLinear(currentValue,wayPoints.get(currentWayPoint),wayPoints.get(currentWayPoint+1));
-                    break;
-                default:
+    /**
+     * Cal each update, don't call this method, it's for internal use only
+     * @param tpf
+     */
+    public void update(float tpf) {
+        if (enabled) {
+            if (playing) {
+                target.setLocalTranslation(interpolatePath());
+                computeTargetDirection();
+                currentValue = Math.min(currentValue + tpf * speed, 1.0f);
+                if (currentValue == 1.0f) {
+                    currentValue = 0;
+                    currentWayPoint++;
+                    triggerWayPointReach(currentWayPoint);
+                }
+                if (currentWayPoint == wayPoints.size() - 1) {
+                    stop();
+                }
+            }
+        }
+    }
 
-                    break;
-            }
-            target.setLocalTranslation(temp);
-            currentValue=Math.min(currentValue+tpf, 1.0f);
-            if(currentValue==1.0f){
-                currentValue=0;
-                currentWayPoint++;
-                triggerWayPointReach(currentWayPoint);
-            }
-            if(currentWayPoint==wayPoints.size()-1){
-                stop();
-            }
+    private Vector3f interpolatePath() {
+        Vector3f temp = null;
+
+        switch (pathInterpolation) {
+            case CatmullRom:
+                List<Vector3f> CRcontrolPoints = getCatmullRomWayPoints(wayPoints);
+                temp = FastMath.interpolateCatmullRom(currentValue, CRcontrolPoints.get(currentWayPoint), CRcontrolPoints.get(currentWayPoint + 1), CRcontrolPoints.get(currentWayPoint + 2), CRcontrolPoints.get(currentWayPoint + 3));
+                if (directionType == Direction.Path || directionType == Direction.PathAndRotation) {
+                    curveDirection = temp.subtract(target.getLocalTranslation()).normalizeLocal();
+                }
+                break;
+            case Linear:
+                temp = FastMath.interpolateLinear(currentValue, wayPoints.get(currentWayPoint), wayPoints.get(currentWayPoint + 1));
+                curveDirection = wayPoints.get(currentWayPoint + 1).subtract(wayPoints.get(currentWayPoint)).normalizeLocal();
+                break;
+            default:
+                break;
+        }
+        return temp;
+    }
+
+    private void computeTargetDirection() {
+        switch (directionType) {
+            case Path:
+                Quaternion q = new Quaternion();
+                q.lookAt(curveDirection, Vector3f.UNIT_Y);
+                target.setLocalRotation(q);
+                break;
+            case LookAt:
+                if (lookAt != null) {
+                    target.lookAt(lookAt, upVector);
+                }
+                break;
+            case PathAndRotation:
+                if (rotation != null) {
+                    Quaternion q2 = new Quaternion();
+                    q2.lookAt(curveDirection, Vector3f.UNIT_Y);
+                    q2.multLocal(rotation);
+                    target.setLocalRotation(q2);
+                }
+                break;
+            case Rotation:
+                if (rotation != null) {
+                    target.setLocalRotation(rotation);
+                }
+                break;
+            case None:
+                break;
+            default:
+                break;
         }
     }
 
@@ -137,7 +235,6 @@ public class AnimationPath implements Control {
                 debugNode.attachChild(geo);
 
             }
-
             switch (pathInterpolation) {
                 case CatmullRom:
                     debugNode.attachChild(CreateCatmullRomPath());
@@ -247,7 +344,7 @@ public class AnimationPath implements Control {
         Mesh lineMesh = new Mesh();
         lineMesh.setMode(Mesh.Mode.Lines);
         lineMesh.setBuffer(VertexBuffer.Type.Position, 3, array);
-        lineMesh.setBuffer(VertexBuffer.Type.Index,((wayPoints.size() - 1) * nbSubSegments) * 2, indices);
+        lineMesh.setBuffer(VertexBuffer.Type.Index, ((wayPoints.size() - 1) * nbSubSegments) * 2, indices);
         lineMesh.updateBound();
         lineMesh.updateCounts();
 
@@ -269,6 +366,7 @@ public class AnimationPath implements Control {
     }
 
     public void render(RenderManager rm, ViewPort vp) {
+        //nothing to render
     }
 
     public void write(JmeExporter ex) throws IOException {
@@ -277,79 +375,209 @@ public class AnimationPath implements Control {
     public void read(JmeImporter im) throws IOException {
     }
 
+    /**
+     * plays the animation
+     */
     public void play() {
         playing = true;
-        currentWayPoint=0;
     }
 
-    public void stop() {
+    /**
+     * pauses the animation
+     */
+    public void pause() {
         playing = false;
     }
 
+    /**
+     * stops the animation, next time play() is called the animation will start from the begining.
+     */
+    public void stop() {
+        playing = false;
+        currentWayPoint = 0;
+    }
+
+    /**
+     * Addsa waypoint to the path
+     * @param wayPoint a position in world space
+     */
     public void addWayPoint(Vector3f wayPoint) {
         wayPoints.add(wayPoint);
     }
 
+    /**
+     * returns the waypoint at the given index
+     * @param i the index
+     * @return returns the waypoint position
+     */
     public Vector3f getWayPoint(int i) {
         return wayPoints.get(i);
     }
 
+    /**
+     * remove the waypoint from the path
+     * @param wayPoint the waypoint to remove
+     */
     public void removeWayPoint(Vector3f wayPoint) {
         wayPoints.remove(wayPoint);
     }
 
+    /**
+     * remove the waypoint at the given index from the path
+     * @param i the index of the waypoint to remove
+     */
+    public void removeWayPoint(int i) {
+        wayPoints.remove(wayPoints.get(i));
+    }
+
+    /**
+     * returns an iterator on the waypoints collection
+     * @return
+     */
     public Iterator<Vector3f> iterator() {
         return wayPoints.iterator();
     }
 
+    /**
+     * return the type of path interpolation for this path
+     * @return the path interpolation
+     */
     public PathInterpolation getPathInterpolation() {
         return pathInterpolation;
     }
 
+    /**
+     * sets the path interpolation for this path
+     * @param pathInterpolation
+     */
     public void setPathInterpolation(PathInterpolation pathInterpolation) {
         this.pathInterpolation = pathInterpolation;
-        if(debugNode!=null){
-           Node parent=debugNode.getParent();
-           debugNode.removeFromParent();
-           debugNode.detachAllChildren();
-           debugNode=null;
-           attachDebugNode(parent);
+        if (debugNode != null) {
+            Node parent = debugNode.getParent();
+            debugNode.removeFromParent();
+            debugNode.detachAllChildren();
+            debugNode = null;
+            attachDebugNode(parent);
         }
     }
 
+    /**
+     * disable the display of the path and the waypoints
+     */
     public void disableDebugShape() {
-        
+
         debugNode.detachAllChildren();
         debugNode = null;
         assetManager = null;
     }
 
+    /**
+     * enable the display of the path and the waypoints
+     * @param manager the assetManager
+     * @param rootNode the node where the debug shapes must be attached
+     */
     public void enableDebugShape(AssetManager manager, Node rootNode) {
         assetManager = manager;
         attachDebugNode(rootNode);
     }
 
-    public void addListener(AnimationPathListener listener){
-        if(listeners==null){
-            listeners=new ArrayList<AnimationPathListener>();
+    /**
+     * Adds an animation pathListener to the path
+     * @param listener the AnimationPathListener to attach
+     */
+    public void addListener(AnimationPathListener listener) {
+        if (listeners == null) {
+            listeners = new ArrayList<AnimationPathListener>();
         }
         listeners.add(listener);
     }
 
-    public void removeListener(AnimationPathListener listener){
-        if(listeners!=null){
+    /**
+     * remove the given listener
+     * @param listener the listener to remove
+     */
+    public void removeListener(AnimationPathListener listener) {
+        if (listeners != null) {
             listeners.remove(listener);
         }
     }
-    
-    public int getNbWayPoints(){
+
+    /**
+     * return the number of waypoints of this path
+     * @return
+     */
+    public int getNbWayPoints() {
         return wayPoints.size();
     }
 
-    private void triggerWayPointReach(int wayPointIndex){
+    private void triggerWayPointReach(int wayPointIndex) {
         for (Iterator<AnimationPathListener> it = listeners.iterator(); it.hasNext();) {
             AnimationPathListener listener = it.next();
             listener.onWayPointReach(this, wayPointIndex);
         }
+    }
+
+    /**
+     * returns the direction type of the target
+     * @return the direction type
+     */
+    public Direction getDirectionType() {
+        return directionType;
+    }
+
+    /**
+     * Sets the direction type of the target
+     * On each update the direction given to the target can have different behavior
+     * See the Direction Enum for explanations
+     * @param directionType the direction type
+     */
+    public void setDirectionType(Direction directionType) {
+        this.directionType = directionType;
+    }
+
+    /**
+     * Set the lookAt for the target
+     * This can be used only if direction Type is Direction.LookAt
+     * @param lookAt the position to look at
+     * @param upVector the up vector
+     */
+    public void setLookAt(Vector3f lookAt, Vector3f upVector) {
+        this.lookAt = lookAt;
+        this.upVector = upVector;
+    }
+
+    /**
+     * returns the rotation of the target
+     * @return the rotation quaternion
+     */
+    public Quaternion getRotation() {
+        return rotation;
+    }
+
+    /**
+     * sets the rotation of the target
+     * This can be used only if direction Type is Direction.PathAndRotation or Direction.Rotation
+     * With PathAndRotation the target will face the direction of the path multiplied by the given Quaternion.
+     * With Rotation the rotation of the target will be set with the given Quaternion.
+     * @param rotation the rotation quaternion
+     */
+    public void setRotation(Quaternion rotation) {
+        this.rotation = rotation;
+    }
+
+    /**
+     * get the speed of the target on the path
+     * @return
+     */
+    public float getTargetSpeed() {
+        return speed;
+    }
+
+    /**
+     * sets the speed of the target on the path
+     * @param speed
+     */
+    public void setTargetSpeed(float speed) {
+        this.speed = speed;
     }
 }

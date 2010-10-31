@@ -42,18 +42,19 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
-import java.util.ArrayList;
 
 public class TestAnimationPath extends SimpleApplication {
 
     private Spatial teapot;
     private boolean active = true;
-    private boolean playing=false;
+    private boolean playing = false;
     private AnimationPath path;
 
     public static void main(String[] args) {
@@ -66,7 +67,8 @@ public class TestAnimationPath extends SimpleApplication {
         createScene();
         cam.setLocation(new Vector3f(8.4399185f, 11.189463f, 14.267577f));
         path = new AnimationPath(teapot);
-   
+        path.setDirectionType(AnimationPath.Direction.PathAndRotation);
+        path.setRotation(new Quaternion().fromAngleNormalAxis(-FastMath.HALF_PI, Vector3f.UNIT_Y));      
         path.addWayPoint(new Vector3f(10, 3, 0));
         path.addWayPoint(new Vector3f(10, 3, 10));
         path.addWayPoint(new Vector3f(-10, 3, 10));
@@ -75,29 +77,29 @@ public class TestAnimationPath extends SimpleApplication {
         path.addWayPoint(new Vector3f(10, 8, 0));
         path.addWayPoint(new Vector3f(10, 8, 10));
         path.enableDebugShape(assetManager, rootNode);
+        path.setTargetSpeed(0.8f);
 
         guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
-        
         final BitmapText wayPointsText = new BitmapText(guiFont, false);
         wayPointsText.setSize(guiFont.getCharSet().getRenderedSize());
-      
+
         guiNode.attachChild(wayPointsText);
 
         path.addListener(new AnimationPathListener() {
 
             public void onWayPointReach(AnimationPath path, int wayPointIndex) {
-
-                    if(path.getNbWayPoints()==wayPointIndex+1){
-                        wayPointsText.setText("Finish!!! ");
-                    }else{
-                        wayPointsText.setText("Reached way point "+wayPointIndex);
-                    }
-                    wayPointsText.setLocalTranslation((cam.getWidth()-wayPointsText.getLineWidth())/2, cam.getHeight(), 0);
+                if (path.getNbWayPoints() == wayPointIndex + 1) {
+                    wayPointsText.setText("Finish!!! ");
+                } else {
+                    wayPointsText.setText("Reached way point " + wayPointIndex);
+                }
+                wayPointsText.setLocalTranslation((cam.getWidth() - wayPointsText.getLineWidth()) / 2, cam.getHeight(), 0);
             }
         });
 
         flyCam.setEnabled(false);
-        ChaseCamera chaser=new ChaseCamera(cam, teapot);
+        ChaseCamera chaser = new ChaseCamera(cam, teapot);
+        // chaser.setEnabled(false);
         chaser.registerWithInput(inputManager);
         initInputs();
 
@@ -118,7 +120,10 @@ public class TestAnimationPath extends SimpleApplication {
         teapot = assetManager.loadModel("Models/Teapot/Teapot.obj");
         teapot.setLocalScale(3);
         teapot.setMaterial(mat);
+
+
         teapot.setShadowMode(ShadowMode.CastAndReceive);
+        //teapot.setLocalRotation(new Quaternion().fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_Y));
         rootNode.attachChild(teapot);
         Geometry soil = new Geometry("soil", new Box(new Vector3f(0, -1.0f, 0), 50, 1, 50));
         soil.setMaterial(matSoil);
@@ -153,21 +158,21 @@ public class TestAnimationPath extends SimpleApplication {
                     } else {
                         playing = true;
                         path.play();
-                    }                    
+                    }
                 }
 
                 if (name.equals("SwitchPathInterpolation") && keyPressed) {
-                    if(path.getPathInterpolation()==AnimationPath.PathInterpolation.CatmullRom){
+                    if (path.getPathInterpolation() == AnimationPath.PathInterpolation.CatmullRom) {
                         path.setPathInterpolation(AnimationPath.PathInterpolation.Linear);
-                    }else{
+                    } else {
                         path.setPathInterpolation(AnimationPath.PathInterpolation.CatmullRom);
                     }
-                    
+
                 }
             }
         };
 
-        inputManager.addListener(acl, "display_hidePath","play_stop","SwitchPathInterpolation");
+        inputManager.addListener(acl, "display_hidePath", "play_stop", "SwitchPathInterpolation");
 
     }
 }

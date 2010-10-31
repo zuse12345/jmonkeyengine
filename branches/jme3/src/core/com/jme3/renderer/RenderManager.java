@@ -455,14 +455,7 @@ public class RenderManager {
       * @param cam
       */
     public void renderScene(Spatial scene, ViewPort vp) {
-        // check culling first.
-        if (!scene.checkCulling(vp.getCamera())){
-            // move on to shadow-only render
-            if (scene.getShadowMode() != RenderQueue.ShadowMode.Off)
-                renderShadow(scene, vp.getQueue());
-
-            return;
-        }
+      
 
         scene.runControlRender(this, vp);
         if (scene instanceof Node){
@@ -473,6 +466,14 @@ public class RenderManager {
                 renderScene(children.get(i), vp);
             }
         }else if (scene instanceof Geometry){
+            // check culling first.
+            if (!scene.checkCulling(vp.getCamera())){
+                // move on to shadow-only render
+                if (scene.getShadowMode() != RenderQueue.ShadowMode.Off)
+                    renderShadow(scene, vp.getQueue());
+
+                return;
+            }
             // add to the render queue
             Geometry gm = (Geometry) scene;
             if (gm.getMaterial() == null)

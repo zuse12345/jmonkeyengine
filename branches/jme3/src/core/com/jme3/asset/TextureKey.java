@@ -65,7 +65,7 @@ public class TextureKey extends AssetKey<Texture> {
 
     @Override
     public String toString(){
-        return name + (flipY ? "/F" : "") + (asCube ? "/C" : "") + (generateMips ? "/MIP" : "");
+        return name + (flipY ? " (Flipped)" : "") + (asCube ? " (Cube)" : "") + (generateMips ? " (Mipmaped)" : "");
     }
 
     public Object createClonedInstance(Object asset){

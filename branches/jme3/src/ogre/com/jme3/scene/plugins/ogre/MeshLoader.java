@@ -63,6 +63,7 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -196,7 +197,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
                 mat = materialList.get(matName);
             }
             if (mat == null){
-                logger.warning("Material "+matName+" not found. Applying default material");
+                logger.log(Level.WARNING, "Material {0} not found. Applying default material", matName);
                 mat = (Material) assetManager.loadAsset(new AssetKey("Common/Materials/RedColor.j3m"));
             }
         }
@@ -580,7 +581,7 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
         }else if (qName.equals("mesh")){
             // ok
         }else{
-            logger.warning("Unknown tag: "+qName+". Ignoring.");
+            logger.log(Level.WARNING, "Unknown tag: {0}. Ignoring.", qName);
             ignoreUntilEnd = qName;
         }
     }

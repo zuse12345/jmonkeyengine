@@ -284,7 +284,9 @@ public abstract class BoundingVolume implements Savable, Cloneable, Collidable {
     @Override
     public BoundingVolume clone() {
         try{
-            return (BoundingVolume) super.clone();
+            BoundingVolume clone = (BoundingVolume) super.clone();
+            clone.center = center.clone();
+            return clone;
         }catch (CloneNotSupportedException ex){
             throw new AssertionError();
         }

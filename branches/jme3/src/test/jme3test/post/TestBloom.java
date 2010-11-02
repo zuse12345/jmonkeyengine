@@ -74,7 +74,7 @@ public class TestBloom extends SimpleApplication {
 
 
         Material mat = new Material(assetManager,"Common/MatDefs/Light/Lighting.j3md");
-      mat.setFloat("m_Shininess", 0.3f);
+      mat.setFloat("m_Shininess", 16f);
         mat.setBoolean("m_UseMaterialColors", true);
         mat.setColor("m_Ambient", ColorRGBA.Black);
         mat.setColor("m_Diffuse", ColorRGBA.Black);

@@ -38,7 +38,6 @@ import com.jme3.system.AppSettings;
 import com.jme3.texture.Image;
 import com.jme3.ui.Picture;
 import com.jme3.video.plugins.jheora.AVThread;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;

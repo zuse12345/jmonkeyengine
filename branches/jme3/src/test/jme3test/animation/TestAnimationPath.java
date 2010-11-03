@@ -71,13 +71,14 @@ public class TestAnimationPath extends SimpleApplication {
         path.setRotation(new Quaternion().fromAngleNormalAxis(-FastMath.HALF_PI, Vector3f.UNIT_Y));      
         path.addWayPoint(new Vector3f(10, 3, 0));
         path.addWayPoint(new Vector3f(10, 3, 10));
-        path.addWayPoint(new Vector3f(-10, 3, 10));
-        path.addWayPoint(new Vector3f(-10, 3, 0));
-        path.addWayPoint(new Vector3f(-10, 8, 0));
+        path.addWayPoint(new Vector3f(-40, 3, 10));
+        path.addWayPoint(new Vector3f(-40, 3, 0));
+        path.addWayPoint(new Vector3f(-40, 8, 0));
         path.addWayPoint(new Vector3f(10, 8, 0));
         path.addWayPoint(new Vector3f(10, 8, 10));
+        path.addWayPoint(new Vector3f(15, 8, 10));
         path.enableDebugShape(assetManager, rootNode);
-        path.setTargetSpeed(0.8f);
+        path.setDuration(7f);
 
         guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
         final BitmapText wayPointsText = new BitmapText(guiFont, false);
@@ -99,6 +100,7 @@ public class TestAnimationPath extends SimpleApplication {
 
         flyCam.setEnabled(false);
         ChaseCamera chaser = new ChaseCamera(cam, teapot);
+        
         // chaser.setEnabled(false);
         chaser.registerWithInput(inputManager);
         initInputs();
@@ -115,7 +117,7 @@ public class TestAnimationPath extends SimpleApplication {
         Material matSoil = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
         matSoil.setBoolean("m_UseMaterialColors", true);
         matSoil.setColor("m_Ambient", ColorRGBA.Gray);
-        matSoil.setColor("m_Diffuse", ColorRGBA.White);
+        matSoil.setColor("m_Diffuse", ColorRGBA.Gray);
         matSoil.setColor("m_Specular", ColorRGBA.Black);
         teapot = assetManager.loadModel("Models/Teapot/Teapot.obj");
         teapot.setLocalScale(3);

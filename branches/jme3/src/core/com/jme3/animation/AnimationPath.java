@@ -72,7 +72,11 @@ public class AnimationPath implements Control {
     private Vector3f lookAt;
     private Vector3f upVector;
     private Quaternion rotation;
-    private float speed = 1.0f;
+    private float duration = 5f;
+    private List<Float> segmentsLength;
+    private float totalLength;
+    private List<Vector3f> CRcontrolPoints;
+    private float speed;
 
     /**
      * Enum for the different type of target direction behavior
@@ -148,18 +152,20 @@ public class AnimationPath implements Control {
     public boolean isEnabled() {
         return enabled;
     }
+    float eps = 0.0001f;
 
     /**
      * Cal each update, don't call this method, it's for internal use only
      * @param tpf
      */
     public void update(float tpf) {
+
         if (enabled) {
             if (playing) {
-                target.setLocalTranslation(interpolatePath());
+                target.setLocalTranslation(interpolatePath(tpf));
                 computeTargetDirection();
-                currentValue = Math.min(currentValue + tpf * speed, 1.0f);
-                if (currentValue == 1.0f) {
+
+                if (currentValue >= 1.0f) {
                     currentValue = 0;
                     currentWayPoint++;
                     triggerWayPointReach(currentWayPoint);
@@ -171,18 +177,29 @@ public class AnimationPath implements Control {
         }
     }
 
-    private Vector3f interpolatePath() {
+    private Vector3f interpolatePath(float tpf) {
         Vector3f temp = null;
-
+        float val;
         switch (pathInterpolation) {
             case CatmullRom:
-                List<Vector3f> CRcontrolPoints = getCatmullRomWayPoints(wayPoints);
+
+                val = tpf * speed;
+                currentValue += eps;
                 temp = FastMath.interpolateCatmullRom(currentValue, CRcontrolPoints.get(currentWayPoint), CRcontrolPoints.get(currentWayPoint + 1), CRcontrolPoints.get(currentWayPoint + 2), CRcontrolPoints.get(currentWayPoint + 3));
+                float dist = temp.subtract(target.getLocalTranslation()).length();
+
+                while (dist < val) {
+                    currentValue += eps;
+                    temp = FastMath.interpolateCatmullRom(currentValue, CRcontrolPoints.get(currentWayPoint), CRcontrolPoints.get(currentWayPoint + 1), CRcontrolPoints.get(currentWayPoint + 2), CRcontrolPoints.get(currentWayPoint + 3));
+                    dist = temp.subtract(target.getLocalTranslation()).length();
+                }
                 if (directionType == Direction.Path || directionType == Direction.PathAndRotation) {
                     curveDirection = temp.subtract(target.getLocalTranslation()).normalizeLocal();
                 }
                 break;
             case Linear:
+                val = duration * segmentsLength.get(currentWayPoint) / totalLength;
+                currentValue = Math.min(currentValue + tpf / val, 1.0f);
                 temp = FastMath.interpolateLinear(currentValue, wayPoints.get(currentWayPoint), wayPoints.get(currentWayPoint + 1));
                 curveDirection = wayPoints.get(currentWayPoint + 1).subtract(wayPoints.get(currentWayPoint)).normalizeLocal();
                 break;
@@ -299,8 +316,6 @@ public class AnimationPath implements Control {
         mat.setColor("m_Color", ColorRGBA.Blue);
         int nbSubSegments = 10;
 
-        List<Vector3f> CRcontrolPoints = getCatmullRomWayPoints(wayPoints);
-
         float[] array = new float[(((wayPoints.size() - 1) * nbSubSegments) + 1) * 3];
         short[] indices = new short[((wayPoints.size() - 1) * nbSubSegments) * 2];
         int i = 0;
@@ -353,16 +368,20 @@ public class AnimationPath implements Control {
         return lineGeometry;
     }
 
-    private List<Vector3f> getCatmullRomWayPoints(List<Vector3f> list) {
-        List<Vector3f> cr = new ArrayList<Vector3f>();
+    private void initCatmullRomWayPoints(List<Vector3f> list) {
+        if (CRcontrolPoints == null) {
+            CRcontrolPoints = new ArrayList<Vector3f>();
+        } else {
+            CRcontrolPoints.clear();
+        }
         int nb = list.size() - 1;
-        cr.add(list.get(0).subtract(list.get(1).subtract(list.get(0))));
+        CRcontrolPoints.add(list.get(0).subtract(list.get(1).subtract(list.get(0))));
         for (Iterator<Vector3f> it = list.iterator(); it.hasNext();) {
             Vector3f vector3f = it.next();
-            cr.add(vector3f);
+            CRcontrolPoints.add(vector3f);
         }
-        cr.add(list.get(nb).add(list.get(nb).subtract(list.get(nb - 1))));
-        return cr;
+        CRcontrolPoints.add(list.get(nb).add(list.get(nb).subtract(list.get(nb - 1))));
+
     }
 
     public void render(RenderManager rm, ViewPort vp) {
@@ -403,6 +422,79 @@ public class AnimationPath implements Control {
      */
     public void addWayPoint(Vector3f wayPoint) {
         wayPoints.add(wayPoint);
+        if (wayPoints.size() > 1) {
+            computeTotalLentgh();
+        }
+    }
+
+    private void computeTotalLentgh() {
+        totalLength = 0;
+        float l = 0;
+        if (segmentsLength == null) {
+            segmentsLength = new ArrayList<Float>();
+        } else {
+            segmentsLength.clear();
+        }
+        if (pathInterpolation == PathInterpolation.Linear) {
+            if (wayPoints.size() > 1) {
+                for (int i = 0; i < wayPoints.size() - 1; i++) {
+                    l = wayPoints.get(i + 1).subtract(wayPoints.get(i)).length();
+                    segmentsLength.add(l);
+                    totalLength += l;
+                }
+            }
+        } else {
+            initCatmullRomWayPoints(wayPoints);
+            computeCatmulLength();
+        }
+    }
+
+    private void computeCatmulLength() {
+        float l = 0;
+        if (wayPoints.size() > 1) {
+            for (int i = 0; i < wayPoints.size() - 1; i++) {
+                l = getCatmullRomP1toP2Length(CRcontrolPoints.get(i),
+                        CRcontrolPoints.get(i + 1), CRcontrolPoints.get(i + 2), CRcontrolPoints.get(i + 3), 0, 1);
+                segmentsLength.add(l);
+                totalLength += l;
+            }
+        }
+        speed = totalLength / duration;
+    }
+
+    /**
+     * retruns the length of the path in world units
+     * @return the length
+     */
+    public float getLength() {
+        return totalLength;
+    }
+    //Compute lenght of p1 to p2 arc segment
+    //TODO extract to FastMath class
+
+    private float getCatmullRomP1toP2Length(Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, float startRange, float endRange) {
+
+        float epsilon = 0.001f;
+        float middleValue = (startRange + endRange) * 0.5f;
+        Vector3f start = p1;
+        if (startRange != 0) {
+            start = FastMath.interpolateCatmullRom(startRange, p0, p1, p2, p3);
+        }
+        Vector3f end = p2;
+        if (endRange != 1) {
+            end = FastMath.interpolateCatmullRom(endRange, p0, p1, p2, p3);
+        }
+        Vector3f middle = FastMath.interpolateCatmullRom(middleValue, p0, p1, p2, p3);
+        float l = end.subtract(start).length();
+        float l1 = middle.subtract(start).length();
+        float l2 = end.subtract(middle).length();
+        float len = l1 + l2;
+        if (l + epsilon < len) {
+            l1 = getCatmullRomP1toP2Length(p0, p1, p2, p3, startRange, middleValue);
+            l2 = getCatmullRomP1toP2Length(p0, p1, p2, p3, middleValue, endRange);
+        }
+        l = l1 + l2;
+        return l;
     }
 
     /**
@@ -420,6 +512,9 @@ public class AnimationPath implements Control {
      */
     public void removeWayPoint(Vector3f wayPoint) {
         wayPoints.remove(wayPoint);
+        if (wayPoints.size() > 1) {
+            computeTotalLentgh();
+        }
     }
 
     /**
@@ -427,7 +522,7 @@ public class AnimationPath implements Control {
      * @param i the index of the waypoint to remove
      */
     public void removeWayPoint(int i) {
-        wayPoints.remove(wayPoints.get(i));
+        removeWayPoint(wayPoints.get(i));
     }
 
     /**
@@ -452,6 +547,7 @@ public class AnimationPath implements Control {
      */
     public void setPathInterpolation(PathInterpolation pathInterpolation) {
         this.pathInterpolation = pathInterpolation;
+        computeTotalLentgh();
         if (debugNode != null) {
             Node parent = debugNode.getParent();
             debugNode.removeFromParent();
@@ -478,6 +574,7 @@ public class AnimationPath implements Control {
      */
     public void enableDebugShape(AssetManager manager, Node rootNode) {
         assetManager = manager;
+        computeTotalLentgh();
         attachDebugNode(rootNode);
     }
 
@@ -565,19 +662,12 @@ public class AnimationPath implements Control {
         this.rotation = rotation;
     }
 
-    /**
-     * get the speed of the target on the path
-     * @return
-     */
-    public float getTargetSpeed() {
-        return speed;
+    public float getDuration() {
+        return duration;
     }
 
-    /**
-     * sets the speed of the target on the path
-     * @param speed
-     */
-    public void setTargetSpeed(float speed) {
-        this.speed = speed;
+    public void setDuration(float duration) {
+        this.duration = duration;
+        speed = totalLength / duration;
     }
 }

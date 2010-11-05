@@ -98,7 +98,7 @@ public class RemoteObject implements InvocationHandler {
      * Generates mappings from the given interface into the remote RMI
      * interface's implementation.
      *
-     * @param interfaceClass
+     * @param interfaceClass The interface class to use.
      */
     public void loadMethods(Class<?> interfaceClass){
         HashMap<String, ArrayList<Method>> nameToMethods

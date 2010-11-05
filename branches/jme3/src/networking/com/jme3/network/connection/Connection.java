@@ -178,7 +178,7 @@ public abstract class Connection implements Runnable {
      * Accept an incoming connection.
      *
      * @param channel The channel.
-     * @throws IOException
+     * @throws IOException When a problem occurs.
      */
     public abstract void accept(SelectableChannel channel) throws IOException;
 
@@ -186,7 +186,7 @@ public abstract class Connection implements Runnable {
      * Finish the connection.
      *
      * @param channel The channel.
-     * @throws IOException
+     * @throws IOException When a problem occurs.
      */
     public abstract void connect(SelectableChannel channel) throws IOException;
 
@@ -194,15 +194,15 @@ public abstract class Connection implements Runnable {
      * Read from the channel.
      *
      * @param channel The channel.
-     * @throws IOException
+     * @throws IOException When a problem occurs.
      */
     public abstract void read(SelectableChannel channel) throws IOException;
 
     /**
      * Write to a channel.
      *
-     * @param channel
-     * @throws IOException
+     * @param channel The channel to write to.
+     * @throws IOException When a problem occurs.
      */
     public abstract void write(SelectableChannel channel) throws IOException;
 
@@ -210,7 +210,7 @@ public abstract class Connection implements Runnable {
      * Connect to a server using this overload.
      *
      * @param address The address to connect to.
-     * @throws IOException
+     * @throws IOException When a problem occurs.
      */
     public abstract void connect(SocketAddress address) throws IOException;
 
@@ -218,7 +218,7 @@ public abstract class Connection implements Runnable {
      * Bind to an address.
      *
      * @param address The address to bind to.
-     * @throws IOException
+     * @throws IOException When a problem occurs.
      */
     public abstract void bind(SocketAddress address) throws IOException;
 
@@ -242,6 +242,8 @@ public abstract class Connection implements Runnable {
 
     /**
      * Called when the connection implementation should clean up.
+     *
+     * @throws IOException When a problem occurs.
      */
     public abstract void cleanup() throws IOException;
 

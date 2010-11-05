@@ -68,12 +68,9 @@ public class ServiceManager {
             for (Class interf : cls.getInterfaces()) {
                 if (!interf.getSimpleName().equals("Service")) fail = true;
             }
-
             if (fail) return null;
 
-
-            Constructor ctor = null;
-
+            Constructor ctor;
             if (client) {
                 try {
                     ctor = cls.getConstructor(new Class[]{Client.class});
@@ -90,7 +87,7 @@ public class ServiceManager {
                 }
             }
 
-            T inst = (T)ctor.newInstance(new Object[]{this});
+            T inst = (T)ctor.newInstance(this);
 
             services.add((Service)inst);
             return inst;

@@ -62,7 +62,7 @@ public class GZIPSerializer extends Serializer {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
 
             byte[] tmp = new byte[9012];
-            int read = 0;
+            int read;
 
             while (in.available() > 0 && ((read = in.read(tmp)) > 0)) {
                 out.write(tmp, 0, read);

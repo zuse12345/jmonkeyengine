@@ -50,7 +50,7 @@ import java.util.logging.Logger;
  * The class where your SpiderMonkey adventures start. The server class
  *  manages the TCP and UDP servers.
  *
- * Using the constructers where you either provide ports or the instances,
+ * Using the constructors where you either provide ports or the instances,
  *  they will bind automatically. If you do not want this to happen, use the
  *  no arg constructor, and then call bind later on.
  *
@@ -92,7 +92,7 @@ public class Server extends ServiceManager implements MessageListener {
      * @param udp The UDPConnection instance to manage.
      * @param tcpAddress The TCP address to bind to.
      * @param udpAddress The UDP address to bind to.
-     * @throws IOException When a bind error has occured.
+     * @throws IOException When a bind error has occurred.
      */
     public Server(TCPConnection tcp, UDPConnection udp, SocketAddress tcpAddress, SocketAddress udpAddress) throws IOException {
         this();
@@ -287,7 +287,8 @@ public class Server extends ServiceManager implements MessageListener {
      * Broadcast a UDP message.
      *
      * @param object The message to broadcast.
-     * @throws IOException
+     * @throws IOException When there's no UDP server initialized, when the server was not bound to a port yet or when a
+     * write error occurs.
      * @deprecated Use broadcast() instead.
      */
     @Deprecated

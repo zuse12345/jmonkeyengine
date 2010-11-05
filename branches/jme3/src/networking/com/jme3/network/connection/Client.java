@@ -108,7 +108,7 @@ public class Client extends ServiceManager implements MessageListener, Connectio
      * @param udp The UDPConnection instance to manage.
      * @param tcpAddress The TCP address to connect to.
      * @param udpAddress The UDP address to connect to.
-     * @throws java.io.IOException When a connect error has occured.
+     * @throws java.io.IOException When a connect error has occurred.
      */
     public Client(TCPConnection tcp, UDPConnection udp, SocketAddress tcpAddress, SocketAddress udpAddress) throws IOException {
         this();
@@ -348,9 +348,7 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         ArrayList<InetAddress> addresses = new ArrayList<InetAddress>();
 
         DatagramSocket socket = new DatagramSocket();
-
         ByteBuffer buffer = ByteBuffer.allocate(4);
-        DiscoverHostMessage host = new DiscoverHostMessage();
 
         Serializer.writeClass(buffer, DiscoverHostMessage.class);
 
@@ -381,7 +379,7 @@ public class Client extends ServiceManager implements MessageListener, Connectio
                 addresses.add(packet.getAddress());
                 log.log(Level.FINE, "[{0}][UDP] Discovered server on {1}.", new Object[]{label, packet.getAddress()});
             } catch (SocketTimeoutException ste) {
-                
+                // Nothing to be done here.
             }
         }
 

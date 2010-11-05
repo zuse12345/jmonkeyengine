@@ -44,7 +44,7 @@ public interface ConnectorFilter {
 
     /**
      * Filter a connection based on <code>InetAddress</code>. This is called
-     *  everytime a client, or <code>Client</code>, connects to the server.
+     *  every time a client, or <code>Client</code>, connects to the server.
      *
      * @param address The address.
      * @return A null string if the connection should be accepted without problems.

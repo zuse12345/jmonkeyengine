@@ -134,8 +134,23 @@ public class TCPConnection extends Connection {
             return;
         }
 
+        int read = -1;
         readBuffer.compact();
-        int read = socketChannel.read(readBuffer);
+        try {
+            read = socketChannel.read(readBuffer);
+        } catch (IOException ioe) {
+            // Probably a 'remote host closed connection'.
+            socketChannel.keyFor(selector).cancel();
+
+            if (serverSocketChannel != null) {
+                log.log(Level.WARNING, "[{0}][TCP] Connection was forcibly closed before we could read. Disconnected client.", label);
+			    addToDisconnectionQueue((Client)socketChannel.keyFor(selector).attachment());
+            } else {
+                log.log(Level.WARNING, "[{0}][TCP] Server forcibly closed connection. Disconnected.", label);
+                fireClientDisconnected(null);
+            }
+        }
+
         readBuffer.flip();
         if (read == -1) {
 			socketChannel.keyFor(selector).cancel();
@@ -267,7 +282,7 @@ public class TCPConnection extends Connection {
                             }
                         }
                     } catch (BufferOverflowException boe) {
-                        log.log(Level.WARNING, "[{0}][TCP] Buffer overflow occured while queuing data to be sent later. " +
+                        log.log(Level.WARNING, "[{0}][TCP] Buffer overflow occurred while queuing data to be sent later. " +
                                 "Cleared the buffer, so some data may be lost. Please note that this exception occurs rarely, " +
                                 "so if this is shown often, please check your message sizes or contact the developer.", label);
                         writeBuffer.clear();
@@ -276,7 +291,7 @@ public class TCPConnection extends Connection {
             }
         } catch (IOException ioe) {
             // We're doing some additional handling here, since a client could be reset.
-            Client client = null;
+            Client client;
             if (socketChannel == null) {
                 client = ((Message)object).getClient();
             } else {
@@ -285,7 +300,7 @@ public class TCPConnection extends Connection {
             if (client != null) {
                 addToDisconnectionQueue(client);
 
-                log.log(Level.WARNING, "[{0}][TCP] Disconnected {1} because an error occured: {2}.", new Object[]{label, client, ioe.getMessage()});
+                log.log(Level.WARNING, "[{0}][TCP] Disconnected {1} because an error occurred: {2}.", new Object[]{label, client, ioe.getMessage()});
                 return;
             }
             throw ioe;

@@ -74,7 +74,7 @@ public class MapSerializer extends Serializer {
     public <T> T readObject(ByteBuffer data, Class<T> c) throws IOException {
         int length = data.getInt();
 
-        Map map = null;
+        Map map;
         try {
             map = (Map)c.newInstance();
         } catch (Exception e) {

@@ -51,7 +51,7 @@ public class CollectionSerializer extends Serializer {
     public <T> T readObject(ByteBuffer data, Class<T> c) throws IOException {
         int length = data.getInt();
 
-        Collection collection = null;
+        Collection collection;
         try {
             collection = (Collection)c.newInstance();
         } catch (Exception e) {

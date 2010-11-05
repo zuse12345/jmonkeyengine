@@ -82,7 +82,7 @@ public class ServerStreamingService extends MessageAdapter {
             InputStream data = stream.getData();
 
             byte[] buffer = new byte[1024];
-            int length = 0;
+            int length;
 
             StreamDataMessage msg = new StreamDataMessage(stream.getMessage().getStreamID());
             msg.setReliable(true);

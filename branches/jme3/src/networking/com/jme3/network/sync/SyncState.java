@@ -49,15 +49,15 @@ public interface SyncState <T extends SyncState> {
      * <code>amount</code> scale (from 0.0 to 1.0), and store the result
      * in store.
      *
-     * @param end
-     * @param amount
-     * @param store
+     * @param end End state.
+     * @param amount Scale.
+     * @param store In which object to store the result.
      */
     public void interpolate(T end, float amount, T store);
 
     /**
      * Update the state based on the currently known information.
-     * @param tpf
+     * @param tpf Time per frame.
      */
     public void update(float tpf);
 

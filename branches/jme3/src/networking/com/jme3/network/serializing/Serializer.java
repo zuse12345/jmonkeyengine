@@ -145,6 +145,7 @@ public abstract class Serializer {
                 Class clz = classes.get(i);
                 registeredClasses[i] = registerClass(clz);
             }
+            return registeredClasses;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -219,7 +220,7 @@ public abstract class Serializer {
      * Read the class from given buffer and return its SerializerRegistration.
      *
      * @param buffer The buffer to read from.
-     * @return The SerializerRegistration, or null if non-existant.
+     * @return The SerializerRegistration, or null if non-existent.
      */
     public static SerializerRegistration readClass(ByteBuffer buffer) {
         short classID = buffer.getShort();
@@ -299,5 +300,5 @@ public abstract class Serializer {
      *
      * @param clazz The class that has been registered to the serializer.
      */
-    public void initialize(Class clazz) { };
+    public void initialize(Class clazz) { }
 }

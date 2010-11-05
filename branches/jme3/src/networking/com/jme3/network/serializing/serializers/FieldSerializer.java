@@ -88,7 +88,7 @@ public class FieldSerializer extends Serializer {
     public <T> T readObject(ByteBuffer data, Class<T> c) throws IOException {
         SavedField[] fields = savedFields.get(c);
 
-        T object = null;
+        T object;
         try {
             object = c.newInstance();
         } catch (Exception e) {
@@ -98,7 +98,7 @@ public class FieldSerializer extends Serializer {
         for (SavedField savedField : fields) {
             Field field = savedField.field;
             Serializer serializer = savedField.serializer;
-            Object value = null;
+            Object value;
 
             if (serializer != null) {
                 value = serializer.readObject(data, field.getType());
@@ -136,7 +136,7 @@ public class FieldSerializer extends Serializer {
                     Serializer.writeClassAndObject(buffer, val);
                 }
             } catch (Exception e) {
-                log.log(Level.WARNING, "[FieldSerializer][???] Exception occured on writing. Maybe you've forgotten to register a class, or maybe a class member does not have a serializer.");
+                log.log(Level.WARNING, "[FieldSerializer][???] Exception occurred on writing. Maybe you've forgotten to register a class, or maybe a class member does not have a serializer.");
                 throw new IOException(e.toString());
             }
         }

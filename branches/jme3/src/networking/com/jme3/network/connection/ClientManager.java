@@ -115,7 +115,7 @@ public class ClientManager extends MessageAdapter implements ConnectionListener 
 
         client.setPlayerID(regMessage.getId());
 
-        // Set other clients to this playerID aswell.
+        // Set other clients to this playerID as well.
         regMessage.getClient().setPlayerID(regMessage.getId());
         existingMessage.getClient().setPlayerID(regMessage.getId());
 

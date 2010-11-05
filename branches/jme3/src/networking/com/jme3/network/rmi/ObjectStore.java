@@ -72,7 +72,7 @@ public class ObjectStore implements MessageListener, ConnectionListener {
     private HashMap<String, RemoteObject> remoteObjects = new HashMap<String, RemoteObject>();
     private IntMap<RemoteObject> remoteObjectsById = new IntMap<RemoteObject>();
 
-    private final Object recieveObjectLock = new Object();
+    private final Object receiveObjectLock = new Object();
 
     static {
         Serializer s = new RmiSerializer();
@@ -116,7 +116,7 @@ public class ObjectStore implements MessageListener, ConnectionListener {
         // Put it in the store
         localObjects.put(localObj.objectId, localObj);
 
-        // Inform the others of its existance
+        // Inform the others of its existence
         RemoteObjectDefMessage defMsg = new RemoteObjectDefMessage();
         defMsg.objects = new ObjectDef[]{ makeObjectDef(localObj) };
 
@@ -133,8 +133,8 @@ public class ObjectStore implements MessageListener, ConnectionListener {
                 throw new RuntimeException("Cannot find remote object named: " + name);
             else{
                 do {
-                    synchronized (recieveObjectLock){
-                        recieveObjectLock.wait();
+                    synchronized (receiveObjectLock){
+                        receiveObjectLock.wait();
                     }
                 } while ( (ro = remoteObjects.get(name)) == null );
             }
@@ -206,8 +206,8 @@ public class ObjectStore implements MessageListener, ConnectionListener {
                 remoteObjectsById.put(def.objectId, remoteObject);
             }
             
-            synchronized (recieveObjectLock){
-                recieveObjectLock.notifyAll();
+            synchronized (receiveObjectLock){
+                receiveObjectLock.notifyAll();
             }
         }else if (message instanceof RemoteMethodCallMessage){
             RemoteMethodCallMessage call = (RemoteMethodCallMessage) message;
@@ -216,7 +216,7 @@ public class ObjectStore implements MessageListener, ConnectionListener {
             Object obj = localObj.theObject;
             Method method = localObj.methods[call.methodId];
             Object[] args = call.args;
-            Object ret = null;
+            Object ret;
             try {
                 ret = method.invoke(obj, args);
             } catch (Exception ex){

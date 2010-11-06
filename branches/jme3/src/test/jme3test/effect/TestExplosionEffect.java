@@ -41,11 +41,13 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Node;
 
 public class TestExplosionEffect extends SimpleApplication {
 
     private float time = 0;
     private int state = 0;
+    private Node explosionEffect = new Node("explosionFX");
     private ParticleEmitter flame, flash, spark, roundspark, smoketrail, debris,
                             shockwave;
 
@@ -73,15 +75,15 @@ public class TestExplosionEffect extends SimpleApplication {
         flame.setGravity(-5f);
         flame.setLowLife(.4f);
         flame.setHighLife(.5f);
-        flame.setStartVel(new Vector3f(0, 7, 0));
-        flame.setVariation(1f);
+        flame.setInitialVelocity(new Vector3f(0, 7, 0));
+        flame.setVelocityVariation(1f);
         flame.setImagesX(2);
         flame.setImagesY(2);
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
         mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/flame.png"));
         mat.setBoolean("m_PointSprite", POINT_SPRITE);
         flame.setMaterial(mat);
-        rootNode.attachChild(flame);
+        explosionEffect.attachChild(flame);
     }
 
     private void createFlash(){
@@ -96,15 +98,15 @@ public class TestExplosionEffect extends SimpleApplication {
         flash.setGravity(0);
         flash.setLowLife(.2f);
         flash.setHighLife(.2f);
-        flash.setStartVel(new Vector3f(0, 5f, 0));
-        flash.setVariation(1);
+        flash.setInitialVelocity(new Vector3f(0, 5f, 0));
+        flash.setVelocityVariation(1);
         flash.setImagesX(2);
         flash.setImagesY(2);
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
         mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/flash.png"));
         mat.setBoolean("m_PointSprite", POINT_SPRITE);
         flash.setMaterial(mat);
-        rootNode.attachChild(flash);
+        explosionEffect.attachChild(flash);
     }
 
     private void createRoundSpark(){
@@ -118,15 +120,15 @@ public class TestExplosionEffect extends SimpleApplication {
         roundspark.setGravity(-.5f);
         roundspark.setLowLife(1.8f);
         roundspark.setHighLife(2f);
-        roundspark.setStartVel(new Vector3f(0, 3, 0));
-        roundspark.setVariation(.5f);
+        roundspark.setInitialVelocity(new Vector3f(0, 3, 0));
+        roundspark.setVelocityVariation(.5f);
         roundspark.setImagesX(1);
         roundspark.setImagesY(1);
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
         mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/roundspark.png"));
         mat.setBoolean("m_PointSprite", POINT_SPRITE);
         roundspark.setMaterial(mat);
-        rootNode.attachChild(roundspark);
+        explosionEffect.attachChild(roundspark);
     }
 
     private void createSpark(){
@@ -142,14 +144,14 @@ public class TestExplosionEffect extends SimpleApplication {
         spark.setGravity(5);
         spark.setLowLife(1.1f);
         spark.setHighLife(1.5f);
-        spark.setStartVel(new Vector3f(0, 20, 0));
-        spark.setVariation(1);
+        spark.setInitialVelocity(new Vector3f(0, 20, 0));
+        spark.setVelocityVariation(1);
         spark.setImagesX(1);
         spark.setImagesY(1);
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
         mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/spark.png"));
         spark.setMaterial(mat);
-        rootNode.attachChild(spark);
+        explosionEffect.attachChild(spark);
     }
 
     private void createSmokeTrail(){
@@ -165,14 +167,14 @@ public class TestExplosionEffect extends SimpleApplication {
         smoketrail.setGravity(1);
         smoketrail.setLowLife(.4f);
         smoketrail.setHighLife(.5f);
-        smoketrail.setStartVel(new Vector3f(0, 12, 0));
-        smoketrail.setVariation(1);
+        smoketrail.setInitialVelocity(new Vector3f(0, 12, 0));
+        smoketrail.setVelocityVariation(1);
         smoketrail.setImagesX(1);
         smoketrail.setImagesY(3);
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
         mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/smoketrail.png"));
         smoketrail.setMaterial(mat);
-        rootNode.attachChild(smoketrail);
+        explosionEffect.attachChild(smoketrail);
     }
 
     private void createDebris(){
@@ -190,14 +192,14 @@ public class TestExplosionEffect extends SimpleApplication {
         debris.setGravity(12f);
         debris.setLowLife(1.4f);
         debris.setHighLife(1.5f);
-        debris.setStartVel(new Vector3f(0, 15, 0));
-        debris.setVariation(.60f);
+        debris.setInitialVelocity(new Vector3f(0, 15, 0));
+        debris.setVelocityVariation(.60f);
         debris.setImagesX(3);
         debris.setImagesY(3);
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
         mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/Debris.png"));
         debris.setMaterial(mat);
-        rootNode.attachChild(debris);
+        explosionEffect.attachChild(debris);
     }
 
     private void createShockwave(){
@@ -214,14 +216,14 @@ public class TestExplosionEffect extends SimpleApplication {
         shockwave.setGravity(0);
         shockwave.setLowLife(0.5f);
         shockwave.setHighLife(0.5f);
-        shockwave.setStartVel(new Vector3f(0, 0, 0));
-        shockwave.setVariation(0f);
+        shockwave.setInitialVelocity(new Vector3f(0, 0, 0));
+        shockwave.setVelocityVariation(0f);
         shockwave.setImagesX(1);
         shockwave.setImagesY(1);
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
         mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Explosion/shockwave.png"));
         shockwave.setMaterial(mat);
-        rootNode.attachChild(shockwave);
+        explosionEffect.attachChild(shockwave);
     }
 
     @Override
@@ -233,10 +235,12 @@ public class TestExplosionEffect extends SimpleApplication {
         createSmokeTrail();
         createDebris();
         createShockwave();
-        rootNode.setLocalScale(0.5f);
+        explosionEffect.setLocalScale(0.5f);
 
         cam.setLocation(new Vector3f(0, 3.5135868f, 10));
         cam.setRotation(new Quaternion(1.5714673E-4f, 0.98696727f, -0.16091813f, 9.6381607E-4f));
+
+        rootNode.attachChild(explosionEffect);
     }
 
     @Override

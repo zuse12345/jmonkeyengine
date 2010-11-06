@@ -53,7 +53,7 @@ public class TestParticleEmitter extends SimpleApplication {
         emit.setGravity(0);
         emit.setLowLife(5);
         emit.setHighLife(10);
-        emit.setStartVel(new Vector3f(0, 0, 0));
+        emit.setInitialVelocity(new Vector3f(0, 0, 0));
         emit.setImagesX(15);
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
         mat.setTexture("m_Texture", assetManager.loadTexture("Effects/Smoke/Smoke.png"));

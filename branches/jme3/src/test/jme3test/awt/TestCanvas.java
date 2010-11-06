@@ -99,6 +99,15 @@ public class TestCanvas {
             }
         });
 
+        JMenuItem itemKillCanvas = new JMenuItem("Kill Canvas");
+        menuFile.add(itemKillCanvas);
+        itemKillCanvas.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                //frame.getContentPane().remove(canvas);
+                app.stop();
+            }
+        });
+
         JMenuItem itemExit = new JMenuItem("Exit");
         menuFile.add(itemExit);
         itemExit.addActionListener(new ActionListener() {

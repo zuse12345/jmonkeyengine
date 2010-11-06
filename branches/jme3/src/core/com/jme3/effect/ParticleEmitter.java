@@ -649,10 +649,10 @@ public class ParticleEmitter extends Geometry implements Control {
     }
 
     public void update(float tpf) {
+        initParticleMesh();
         if (!enabled)
             return;
 
-        initParticleMesh();
         updateParticleState(tpf);
     }
 
@@ -669,6 +669,7 @@ public class ParticleEmitter extends Geometry implements Control {
 
         particleMesh.updateParticleData(particles, cam);
         updateModelBound();
+        updateWorldBound();
     }
 
     public void preload(RenderManager rm, ViewPort vp){

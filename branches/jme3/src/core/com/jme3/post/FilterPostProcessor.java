@@ -29,7 +29,6 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.post;
 
 import com.jme3.renderer.Renderer;
@@ -54,22 +53,22 @@ public class FilterPostProcessor implements SceneProcessor {
     private ViewPort viewPort;
     private FrameBuffer renderFrameBuffer;
     private Texture2D filterTexture;
-    private Texture2D depthTexture; 
+    private Texture2D depthTexture;
     private List<Filter> filters = new ArrayList<Filter>();
     private AssetManager assetManager;
     private Camera filterCam = new Camera(1, 1);
     private Picture fsQuad;
-    private boolean computeDepth=false;
+    private boolean computeDepth = false;
     private FrameBuffer outputBuffer;
 
     public FilterPostProcessor(AssetManager assetManager) {
         this.assetManager = assetManager;
     }
-
+    
     public void addFilter(Filter filter) {
         filters.add(filter);
         if (isInitialized()) {
-            filter.init(assetManager,viewPort.getCamera().getWidth(), viewPort.getCamera().getHeight());
+            filter.init(assetManager, viewPort.getCamera().getWidth(), viewPort.getCamera().getHeight());
         }
     }
 
@@ -128,22 +127,22 @@ public class FilterPostProcessor implements SceneProcessor {
         for (Iterator<Filter> it = filters.iterator(); it.hasNext();) {
             Filter filter = it.next();
 
-            if(filter.getPostRenderPasses()!=null){
+            if (filter.getPostRenderPasses() != null) {
                 for (Iterator<Filter.Pass> it1 = filter.getPostRenderPasses().iterator(); it1.hasNext();) {
                     Filter.Pass pass = it1.next();
                     pass.beforeRender();
-                    if(pass.requiresSceneAsTexture()){
-                         pass.getPassMaterial().setTexture("m_Texture", tex);
+                    if (pass.requiresSceneAsTexture()) {
+                        pass.getPassMaterial().setTexture("m_Texture", tex);
                     }
                     renderProcessing(r, pass.getRenderFrameBuffer(), pass.getPassMaterial());
                 }
             }
-            
+
             Material mat = filter.getMaterial();
-            if(computeDepth && filter.isRequiresDepthTexture()){
+            if (computeDepth && filter.isRequiresDepthTexture()) {
                 mat.setTexture("m_DepthTexture", depthTexture);
             }
-            
+
             mat.setTexture("m_Texture", tex);
             FrameBuffer buff = outputBuffer;
             if (it.hasNext()) {
@@ -167,11 +166,9 @@ public class FilterPostProcessor implements SceneProcessor {
             Filter filter = it.next();
             filter.preFrame(tpf);
         }
-
     }
 
     public void cleanup() {
-
         if (viewPort != null) {
             viewPort.setOutputFrameBuffer(outputBuffer);
             viewPort = null;
@@ -184,34 +181,25 @@ public class FilterPostProcessor implements SceneProcessor {
     }
 
     public void reshape(ViewPort vp, int w, int h) {
-
         for (Iterator<Filter> it = filters.iterator(); it.hasNext();) {
             Filter filter = it.next();
-            filter.init(assetManager,w, h);
-            computeDepth=filter.isRequiresDepthTexture();
-            
+            filter.init(assetManager, w, h);
+            computeDepth = filter.isRequiresDepthTexture();
+
         }
-     
 
         if (renderFrameBuffer == null) {
-
             renderFrameBuffer = new FrameBuffer(w, h, 0);
             renderFrameBuffer.setDepthBuffer(Format.Depth);
-            filterTexture = new Texture2D(w, h, Format.RGB32F);
+            filterTexture = new Texture2D(w, h, Format.RGB8);
             renderFrameBuffer.setColorTexture(filterTexture);
 
-            if(computeDepth){
-                 depthTexture = new Texture2D(w, h, Format.Depth);
+            if (computeDepth) {
+                depthTexture = new Texture2D(w, h, Format.Depth);
                 renderFrameBuffer.setDepthTexture(depthTexture);
-               
             }
-           
-
         }
-        outputBuffer=viewPort.getOutputFrameBuffer();     
+        outputBuffer = viewPort.getOutputFrameBuffer();
         viewPort.setOutputFrameBuffer(renderFrameBuffer);
     }
 }
-
-
-

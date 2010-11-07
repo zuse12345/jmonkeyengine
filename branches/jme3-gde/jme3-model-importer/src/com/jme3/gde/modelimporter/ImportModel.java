@@ -56,6 +56,7 @@ public final class ImportModel implements ActionListener {
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wiz.getValue() != WizardDescriptor.FINISH_OPTION;
+        ((ModelImporterWizardPanel1)panels[0]).cleanup();
         if (!cancelled) {
             copyModel(wiz);
         }
@@ -109,8 +110,6 @@ public final class ImportModel implements ActionListener {
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
-        FileObject dest = FileUtil.toFileObject(new File((manager.getAssetFolderName() + File.separator + importPath).replaceAll("/", File.separator)).getParentFile());
-        dest.refresh();
         if(!keepFiles){
             for (Iterator<FileObject> it = deleteList.iterator(); it.hasNext();) {
                 FileObject fileObject = it.next();
@@ -121,6 +120,8 @@ public final class ImportModel implements ActionListener {
                 }
             }
         }
+        FileObject dest = FileUtil.toFileObject(new File((manager.getAssetFolderName() + File.separator + importPath).replaceAll("/", File.separator)).getParentFile());
+        dest.refresh();
     }
 
     /**

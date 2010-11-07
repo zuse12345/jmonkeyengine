@@ -87,4 +87,7 @@ public class ModelImporterWizardPanel1 implements WizardDescriptor.Panel {
     public void storeSettings(Object settings) {
         component.applySettings((WizardDescriptor)settings);
     }
+    public void cleanup(){
+        component.cleanup();
+    }
 }

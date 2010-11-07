@@ -87,6 +87,10 @@ public final class ModelImporterVisualPanel1 extends JPanel implements AssetEven
     public void assetLoaded(AssetKey ak) {
     }
 
+    public void cleanup(){
+        offPanel.removePreView();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

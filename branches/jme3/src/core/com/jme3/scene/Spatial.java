@@ -470,6 +470,26 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
         }
     }
 
+    void checkDoBoundUpdate(){
+        if ( (refreshFlags & RF_BOUND) == 0 )
+            return;
+
+        checkDoTransformUpdate();
+
+        // Go to children recursively and update their bound
+        if (this instanceof Node){
+            Node node = (Node) this;
+            int len = node.getQuantity();
+            for (int i = 0; i < len; i++){
+                Spatial child = node.getChild(i);
+                child.checkDoBoundUpdate();
+            }
+        }
+
+        // All children's bounds have been updated. Update my own now.
+        updateWorldBound();
+    }
+
     private void runControlUpdate(float tpf){
         if (controls.size() == 0)
             return;
@@ -1212,6 +1232,7 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      * @return the world bound at this level.
      */
     public BoundingVolume getWorldBound() {
+        checkDoBoundUpdate();
         return worldBound;
     }
 

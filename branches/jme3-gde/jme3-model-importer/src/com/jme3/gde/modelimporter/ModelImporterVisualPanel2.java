@@ -49,8 +49,11 @@ public final class ModelImporterVisualPanel2 extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(ModelImporterVisualPanel2.class, "ModelImporterVisualPanel2.jCheckBox1.text")); // NOI18N
 
         jTextArea1.setColumns(20);
+        jTextArea1.setEditable(false);
+        jTextArea1.setLineWrap(true);
         jTextArea1.setRows(5);
         jTextArea1.setText(org.openide.util.NbBundle.getMessage(ModelImporterVisualPanel2.class, "ModelImporterVisualPanel2.jTextArea1.text")); // NOI18N
+        jTextArea1.setWrapStyleWord(true);
         jScrollPane1.setViewportView(jTextArea1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

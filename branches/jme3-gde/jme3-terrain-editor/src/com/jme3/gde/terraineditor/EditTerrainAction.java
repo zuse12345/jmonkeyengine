@@ -35,6 +35,7 @@ public final class EditTerrainAction implements ActionListener {
                 ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Opening in Terrain Editor");
                 progressHandle.start();
 
+                
                 final Spatial asset = context.loadAsset();
 
                 if(asset!=null){

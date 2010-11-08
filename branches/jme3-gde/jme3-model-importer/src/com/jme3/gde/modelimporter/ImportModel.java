@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JComponent;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -42,7 +44,7 @@ public final class ImportModel implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent ev) {
-        WizardDescriptor wiz = new WizardDescriptor(getPanels());
+        final WizardDescriptor wiz = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wiz.setTitleFormat(new MessageFormat("{0}"));
         wiz.setTitle("Import Model to Project");
@@ -58,7 +60,15 @@ public final class ImportModel implements ActionListener {
         boolean cancelled = wiz.getValue() != WizardDescriptor.FINISH_OPTION;
         ((ModelImporterWizardPanel1)panels[0]).cleanup();
         if (!cancelled) {
-            copyModel(wiz);
+            new Thread(new Runnable() {
+
+                public void run() {
+                    ProgressHandle handle=ProgressHandleFactory.createHandle("Importing Model..");
+                    handle.start();
+                    copyModel(wiz);
+                    handle.finish();
+                }
+            }).start();
         }
     }
 

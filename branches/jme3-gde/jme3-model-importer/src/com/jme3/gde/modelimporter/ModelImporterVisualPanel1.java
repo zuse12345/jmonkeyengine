@@ -16,6 +16,8 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JPanel;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
@@ -53,34 +55,50 @@ public final class ModelImporterVisualPanel1 extends JPanel implements AssetEven
         wiz.putProperty("path", currentPath);
         wiz.putProperty("assetlist", requestedAssets);
         wiz.putProperty("mainkey", mainKey);
-        wiz.putProperty("destpath", "Models/" + mainKey.getName().replaceAll(mainKey.getExtension(),"").replaceAll("\\.","")+"/");
+        wiz.putProperty("destpath", "Models/" + mainKey.getName().replaceAll(mainKey.getExtension(), "").replaceAll("\\.", "") + "/");
     }
 
-    public void loadModel(File path) {
-        if (currentPath != null) {
-            manager.unregisterLocator(currentPath, FileLocator.class);
-            manager.clearCache();
-            requestedAssets.clear();
-            mainKey = null;
+    public synchronized void loadModel(File path) {
+        try {
+            if (currentPath != null) {
+                manager.unregisterLocator(currentPath, FileLocator.class);
+                manager.clearCache();
+                requestedAssets.clear();
+                mainKey = null;
+            }
+            if (currentModel != null) {
+                offPanel.detach(currentModel);
+            }
+            currentPath = path.getParent();
+            manager.registerLocator(currentPath, FileLocator.class);
+            mainKey = new ModelKey(path.getName());
+            currentModel = (Spatial) manager.loadAsset(mainKey);
+            if (currentModel != null) {
+                offPanel.attach(currentModel);
+            }
+        } catch (Exception e) {
+            Message msg = new NotifyDescriptor.Message(
+                    "Error importing model!\n"
+                    + "(" + e + ")",
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(msg);
         }
-        if (currentModel != null) {
-            offPanel.detach(currentModel);
-        }
-        currentPath = path.getParent();
-        manager.registerLocator(currentPath, FileLocator.class);
-        mainKey = new ModelKey(path.getName());
-        currentModel = (Spatial) manager.loadAsset(mainKey);
-        if (currentModel != null) {
-            offPanel.attach(currentModel);
-        }
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                updateList();
+            }
+        });
     }
 
-    private void updateList() {
+    private synchronized void updateList() {
         jList1.setListData(requestedAssets.toArray());
     }
 
     public void assetRequested(AssetKey ak) {
-        if (!"j3md".equalsIgnoreCase(ak.getExtension())) {
+        if (!"j3md".equalsIgnoreCase(ak.getExtension())
+                && !"frag".equalsIgnoreCase(ak.getExtension())
+                && !"vert".equalsIgnoreCase(ak.getExtension())) {
             requestedAssets.add(ak);
         }
     }
@@ -88,7 +106,7 @@ public final class ModelImporterVisualPanel1 extends JPanel implements AssetEven
     public void assetLoaded(AssetKey ak) {
     }
 
-    public void cleanup(){
+    public void cleanup() {
         offPanel.stopPreview();
     }
 
@@ -252,19 +270,18 @@ public final class ModelImporterVisualPanel1 extends JPanel implements AssetEven
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
         FileChooserBuilder builder = new FileChooserBuilder(this.getClass());
         builder.setTitle("Select Model File");
-        File file = builder.showOpenDialog();
+        final File file = builder.showOpenDialog();
         if (file != null) {
-            try {
-                jTextField1.setText(file.getAbsolutePath());
-                loadModel(file);
-            } catch (Exception e) {
-                Message msg = new NotifyDescriptor.Message(
-                        "Error importing model!\n"
-                        + "(" + e + ")",
-                        NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notifyLater(msg);
-            }
-            updateList();
+            jTextField1.setText(file.getAbsolutePath());
+            new Thread(new Runnable() {
+
+                public void run() {
+                    ProgressHandle handle = ProgressHandleFactory.createHandle("Opening Model..");
+                    handle.start();
+                    loadModel(file);
+                    handle.finish();
+                }
+            }).start();
         }
     }//GEN-LAST:event_jButton5ActionPerformed
 

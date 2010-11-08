@@ -16,7 +16,6 @@ public class ModelImporterWizardPanel2 implements WizardDescriptor.Panel {
      * component from this class, just use getComponent().
      */
     private ModelImporterVisualPanel2 component;
-    private WizardDescriptor wiz;
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -80,7 +79,6 @@ public class ModelImporterWizardPanel2 implements WizardDescriptor.Panel {
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     public void readSettings(Object settings) {
-        wiz=(WizardDescriptor)settings;
         component.loadSettings((WizardDescriptor)settings);
     }
 

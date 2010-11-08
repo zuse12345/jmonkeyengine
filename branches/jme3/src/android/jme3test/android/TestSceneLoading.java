@@ -22,13 +22,16 @@ public class TestSceneLoading extends SimpleApplication {
     }
 
     public void simpleInitApp() {
-        Spatial scene = manager.loadModel("FINAL_LEVEL2.j3o");
+	/* XXX: does not compile */
+
+/*        Spatial scene = inputManager.loadModel("FINAL_LEVEL2.j3o");
 //        setState(scene);
         rootNode.attachChild(scene);
 
         cam.setLocation(new Vector3f(-18.059685f, 34.64228f, 4.5048084f));
         cam.setRotation(new Quaternion(0.22396432f, 0.5235024f, -0.1448922f, 0.8091919f));
         cam.update();
+*/
     }
 
 }

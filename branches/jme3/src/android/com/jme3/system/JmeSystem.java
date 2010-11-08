@@ -4,14 +4,20 @@ import android.content.res.Resources;
 import com.jme3.util.AndroidLogHandler;
 import com.jme3.asset.AndroidAssetManager;
 import com.jme3.asset.AssetManager;
+import com.jme3.audio.AudioNode;
+import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioRenderer;
-import com.jme3.audio.DummyAudioRenderer;
+import com.jme3.audio.Environment;
+import com.jme3.audio.Listener;
+//import com.jme3.audio.DummyAudioRenderer;
 import com.jme3.system.JmeContext.Type;
 import com.jme3.system.android.OGLESContext;
 import com.jme3.util.JmeFormatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import java.net.URL;
 
 
 
@@ -52,7 +58,18 @@ public class JmeSystem {
     }
 
     public static AudioRenderer newAudioRenderer(AppSettings settings) {
-        return new DummyAudioRenderer();
+		return new AudioRenderer() {
+			public void setListener(Listener listener) {}
+			public void setEnvironment(Environment env) {}
+			public void playSourceInstance(AudioNode src) {}
+			public void playSource(AudioNode src) {}
+			public void pauseSource(AudioNode src) {}
+			public void stopSource(AudioNode src) {}
+			public void deleteAudioData(AudioData ad) {}
+			public void initialize() {}
+			public void update(float tpf) {}
+			public void cleanup() {}
+		};
     }
 
     public static void setResources(Resources res){
@@ -64,6 +81,12 @@ public class JmeSystem {
     }
 
     public static AssetManager newAssetManager(){
+	logger.info("newAssetManager()");
+        return new AndroidAssetManager(true);
+    }
+
+    public static AssetManager newAssetManager(URL url){
+	logger.info("newAssetManager(" + url + ")");
         return new AndroidAssetManager(true);
     }
 

@@ -1,5 +1,8 @@
 package com.jme3.input.android;
 
+import java.util.List;
+import java.util.ArrayList;
+
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
@@ -320,14 +323,16 @@ public class AndroidInput extends GLSurfaceView implements KeyInput, MouseInput 
             case MotionEvent.ACTION_DOWN:
                 MouseButtonEvent btn = new MouseButtonEvent(0, true);
                 btn.setTime(motionEvent.getEventTime());
-                listener.onMouseButtonEvent(btn);
+		processEvent(btn);
+               // listener.onMouseButtonEvent(btn);
                 lastX = -1;
                 lastY = -1;
                 return true;
             case MotionEvent.ACTION_UP:
                 MouseButtonEvent btn2 = new MouseButtonEvent(0, false);
                 btn2.setTime(motionEvent.getEventTime());
-                listener.onMouseButtonEvent(btn2);
+		processEvent(btn2);
+               // listener.onMouseButtonEvent(btn2);
                 lastX = -1;
                 lastY = -1;
                 return true;
@@ -347,7 +352,8 @@ public class AndroidInput extends GLSurfaceView implements KeyInput, MouseInput 
                 lastY = newY;
                 MouseMotionEvent mot = new MouseMotionEvent(newX, newY, dx, dy, 0, 0);
                 mot.setTime(motionEvent.getEventTime());
-                listener.onMouseMotionEvent(mot);
+		processEvent(mot);
+                //listener.onMouseMotionEvent(mot);
                 try{
                     Thread.sleep(15);
                 } catch (InterruptedException ex) {
@@ -363,7 +369,8 @@ public class AndroidInput extends GLSurfaceView implements KeyInput, MouseInput 
         String str =  event.getCharacters();
         char c = str != null && str.length() > 0 ? str.charAt(0) : 0x0;
         KeyInputEvent evt = new KeyInputEvent(jmeCode, c, true, false);
-        listener.onKeyEvent(evt);
+	processEvent(evt);
+	//     listener.onKeyEvent(evt);
         return false;
     }
 
@@ -373,7 +380,8 @@ public class AndroidInput extends GLSurfaceView implements KeyInput, MouseInput 
         String str =  event.getCharacters();
         char c = str != null && str.length() > 0 ? str.charAt(0) : 0x0;
         KeyInputEvent evt = new KeyInputEvent(jmeCode, c, false, false);
-        listener.onKeyEvent(evt);
+	processEvent(evt);
+        //listener.onKeyEvent(evt);
         return false;
     }
 
@@ -388,6 +396,7 @@ public class AndroidInput extends GLSurfaceView implements KeyInput, MouseInput 
     }
 
     public void update() {
+		generateEvents();
     }
 
     public void destroy() {
@@ -397,8 +406,39 @@ public class AndroidInput extends GLSurfaceView implements KeyInput, MouseInput 
         return true;
     }
 
+	// XXX: android does not have an Event interface?
+	private List<Object> currentEvents = new ArrayList<Object>();
+
+	private final static int MAX_EVENTS = 1024;
+
+	private void processEvent(Object event) {
+		synchronized (currentEvents) {
+			if (currentEvents.size() < MAX_EVENTS)
+				currentEvents.add(event);
+		}
+	}
+
+	private void generateEvents() {
+		synchronized (currentEvents) {
+			for (Object event: currentEvents) {
+				if (event instanceof MouseButtonEvent) {
+              				listener.onMouseButtonEvent((MouseButtonEvent) event);
+				} else if (event instanceof MouseMotionEvent) {
+					listener.onMouseMotionEvent((MouseMotionEvent) event);
+				} else if (event instanceof KeyInputEvent) {
+					listener.onKeyEvent((KeyInputEvent) event);
+				}
+			}
+			currentEvents.clear();
+		}
+	}
+
     public void setInputListener(RawInputListener listener) {
         this.listener = listener;
+    }
+
+    public long getInputTimeNanos() {
+        return System.nanoTime();
     }
 
 }

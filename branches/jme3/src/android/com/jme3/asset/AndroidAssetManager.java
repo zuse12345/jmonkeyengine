@@ -12,6 +12,7 @@ import com.jme3.material.plugins.J3MLoader;
 import com.jme3.scene.Spatial;
 import com.jme3.shader.Shader;
 import com.jme3.shader.ShaderKey;
+import com.jme3.shader.plugins.GLSLLoader;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 import com.jme3.texture.plugins.AndroidImageLoader;
@@ -32,7 +33,7 @@ import java.util.logging.Logger;
  */
 public final class AndroidAssetManager implements AssetManager {
 
-    private static final Logger logger = Logger.getLogger(AssetManager.class.getName());
+    private static final Logger logger = Logger.getLogger(AndroidAssetManager.class.getName());
 
     private final AndroidLocator locator = new AndroidLocator();
     private final AndroidImageLoader imageLoader = new AndroidImageLoader();
@@ -40,6 +41,7 @@ public final class AndroidAssetManager implements AssetManager {
     private final BitmapFontLoader fontLoader = new BitmapFontLoader();
     private final J3MLoader j3mLoader = new J3MLoader();
     private final J3MLoader j3mdLoader = new J3MLoader();
+    private final GLSLLoader glslLoader = new GLSLLoader();
 
     private final BinaryExporter exporter = new BinaryExporter();
     private final HashMap<AssetKey, Object> cache = new HashMap<AssetKey, Object>();
@@ -108,6 +110,7 @@ public final class AndroidAssetManager implements AssetManager {
     }
 
     public Object loadAsset(AssetKey key){
+	logger.info("loadAsset(" + key + ")");
         Object asset;
 //        Object asset = tryLoadFromHD(key);
 //        if (asset != null)
@@ -156,8 +159,10 @@ public final class AndroidAssetManager implements AssetManager {
             }else if (ex.equals("j3m")){
                 asset = j3mLoader.load(info);
             }else{
-                logger.log(Level.WARNING, "No loader registered for type: "+ex);
-                return null;
+		logger.info("loading asset as glsl shader ...");
+		asset = glslLoader.load(info);
+               // logger.log(Level.WARNING, "No loader registered for type: "+ex);
+               // return null;
             }
 
             if (key.shouldCache())
@@ -171,6 +176,18 @@ public final class AndroidAssetManager implements AssetManager {
         }
         return null;
     }
+
+    public AssetInfo locateAsset(AssetKey<?> key){
+        AssetInfo info = locator.locate(this, key);
+        if (info == null){
+            logger.log(Level.WARNING, "Cannot locate resource: "+key.getName());
+            return null;
+        }
+	return info;
+    }
+
+
+
 
     public Object loadAsset(String name) {
         return loadAsset(new AssetKey(name));
@@ -196,9 +213,23 @@ public final class AndroidAssetManager implements AssetManager {
         return loadTexture(new TextureKey(name, false));
     }
 
-    public Shader loadShader(ShaderKey key){
-        return null;
-    }
+	public Shader loadShader(ShaderKey key){
+		logger.info("loadShader(" + key + ")");
+
+		String vertName = key.getVertName();
+		String fragName = key.getFragName();
+
+		String vertSource = (String) loadAsset(new AssetKey(vertName));
+		String fragSource = (String) loadAsset(new AssetKey(fragName));
+
+		Shader s = new Shader(key.getLanguage());
+		s.addSource(Shader.ShaderType.Vertex,   vertName, vertSource, key.getDefines().getCompiled());
+		s.addSource(Shader.ShaderType.Fragment, fragName, fragSource, key.getDefines().getCompiled());
+
+		logger.info("returing shader: [" + s + "]");
+		return s;
+	}
+
 
     public void registerLocator(String rootPath, String locatorClassName) {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -215,5 +246,24 @@ public final class AndroidAssetManager implements AssetManager {
     public Spatial loadModel(ModelKey key) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+	/* new */
+
+    private AssetEventListener eventListener = null;
+
+    public void setAssetEventListener(AssetEventListener listener){
+        eventListener = listener;
+    }
+
+    public void registerLocator(String rootPath, Class<? extends AssetLocator> locatorClass){
+	logger.warning("not implemented.");
+    }
+
+    public void registerLoader(Class<? extends AssetLoader> loader, String ... extensions){
+	logger.warning("not implemented.");
+    }
+
+  
+
 
 }

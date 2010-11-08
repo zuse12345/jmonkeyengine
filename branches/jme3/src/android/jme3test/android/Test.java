@@ -15,7 +15,7 @@ public class Test extends SimpleApplication {
     public void simpleInitApp() {
         Sphere s = new Sphere(8, 8, .5f);
         Geometry geom = new Geometry("sphere", s);
-        ModelConverter.optimize(geom);
+  //      ModelConverter.optimize(geom);
 
         Material mat = new Material(assetManager, "plain_texture.j3md");
         Texture tex = assetManager.loadTexture(new TextureKey("monkey.j3i"));

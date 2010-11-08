@@ -79,7 +79,7 @@ public class OffScenePanel extends javax.swing.JPanel implements SceneProcessor 
     private Camera cam;
     private RenderManager rm;
     //AWT image
-    private final Object imageLock=new Object();
+    private final Object imageLock = new Object();
     private BufferedImage image;
     private AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
     private AffineTransformOp op;
@@ -99,10 +99,9 @@ public class OffScenePanel extends javax.swing.JPanel implements SceneProcessor 
         this.height = height;
         initComponents();
         setupImage();
-        setupPreviewView();
     }
 
-    private void setupPreviewView() {
+    public void startPreview() {
         SceneApplication.getApplication().enqueue(new Callable<Object>() {
 
             public Object call() throws Exception {
@@ -112,6 +111,18 @@ public class OffScenePanel extends javax.swing.JPanel implements SceneProcessor 
                 return null;
             }
         });
+    }
+
+    public void stopPreview() {
+        // TODO add your handling code here:
+        SceneApplication.getApplication().enqueue(new Callable<Object>() {
+
+            public Object call() throws Exception {
+                SceneApplication.getApplication().getRenderManager().removePreView(offView);
+                return null;
+            }
+        });
+        Logger.getLogger(OffScenePanel.class.getName()).log(Level.INFO, "Component hidden");
     }
 
     private void setupImage() {
@@ -213,24 +224,14 @@ public class OffScenePanel extends javax.swing.JPanel implements SceneProcessor 
     public void cleanup() {
     }
 
-    public void removePreView() {
-        // TODO add your handling code here:
-        SceneApplication.getApplication().enqueue(new Callable<Object>() {
-
-            public Object call() throws Exception {
-                SceneApplication.getApplication().getRenderManager().removePreView(offView);
-                return null;
-            }
-        });
-        Logger.getLogger(OffScenePanel.class.getName()).log(Level.INFO, "Component hidden");
-    }
-
     @Override
     public void paintComponent(Graphics gfx) {
         super.paintComponent(gfx);
         Graphics2D g2d = (Graphics2D) gfx;
         synchronized (imageLock) {
-            g2d.drawImage(image, null, 0, 0);
+            if (image != null) {
+                g2d.drawImage(image, null, 0, 0);
+            }
         }
     }
 

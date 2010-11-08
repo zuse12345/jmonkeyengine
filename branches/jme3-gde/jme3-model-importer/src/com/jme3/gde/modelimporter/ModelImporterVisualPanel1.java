@@ -35,6 +35,7 @@ public final class ModelImporterVisualPanel1 extends JPanel implements AssetEven
     public ModelImporterVisualPanel1() {
         initComponents();
         offPanel = new OffScenePanel(320, 320);
+        offPanel.startPreview();
         jPanel1.add(offPanel);
     }
 
@@ -88,7 +89,7 @@ public final class ModelImporterVisualPanel1 extends JPanel implements AssetEven
     }
 
     public void cleanup(){
-        offPanel.removePreView();
+        offPanel.stopPreview();
     }
 
     /** This method is called from within the constructor to

@@ -1,0 +1,53 @@
+package com.jme3.input;
+
+import com.jme3.input.controls.JoyAxisTrigger;
+import com.jme3.input.controls.JoyButtonTrigger;
+
+public final class Joystick {
+
+    private InputManager inputManager;
+    private int joyId;
+    private int buttonCount;
+    private int axisCount;
+    private String name;
+
+    public Joystick(InputManager inputManager, int joyId,
+                    String name, int buttonCount, int axisCount){
+        this.inputManager = inputManager;
+        this.joyId = joyId;
+        this.name = name;
+        this.buttonCount = buttonCount;
+        this.axisCount = axisCount;
+    }
+
+    public void assignButton(String mappingName, int buttonId){
+        if (buttonId < 0 || buttonId >= buttonCount)
+            throw new IllegalArgumentException();
+
+        inputManager.addMapping(mappingName, new JoyButtonTrigger(joyId, buttonId));
+    }
+
+    public void assignAxis(String positiveMapping, String negativeMapping, int axisId){
+        inputManager.addMapping(positiveMapping, new JoyAxisTrigger(joyId, axisId, false));
+        inputManager.addMapping(negativeMapping, new JoyAxisTrigger(joyId, axisId, true));
+    }
+
+    public int getAxisCount() {
+        return axisCount;
+    }
+
+    public int getButtonCount() {
+        return buttonCount;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString(){
+        return "Joystick[name=" + name + ", id=" + joyId + ", buttons=" + buttonCount
+                                + ", axes=" + axisCount + "]";
+    }
+
+}

@@ -83,10 +83,12 @@ public class InputManager implements RawInputListener {
 
     private float axisDeadZone = 0.05f;
     private Vector2f cursorPos = new Vector2f();
+    private Joystick[] joysticks;
 
     private final IntMap<ArrayList<Mapping>> bindings = new IntMap<ArrayList<Mapping>>();
     private final HashMap<String, Mapping> mappings = new HashMap<String, Mapping>();
     private final IntMap<Long> pressedButtons = new IntMap<Long>();
+    private final IntMap<Float> axisValues = new IntMap<Float>();
 
     private ArrayList<RawInputListener> rawListeners = new ArrayList<RawInputListener>();
 
@@ -119,7 +121,10 @@ public class InputManager implements RawInputListener {
 
         keys.setInputListener(this);
         mouse.setInputListener(this);
-        if (joystick != null) joystick.setInputListener(this);
+        if (joystick != null){
+            joystick.setInputListener(this);
+            joysticks = joystick.loadJoysticks(this);
+        }
 
         firstTime = keys.getInputTimeNanos();
     }
@@ -182,6 +187,12 @@ public class InputManager implements RawInputListener {
             if (timeDelta > 0)
                 invokeAnalogs(hash, computeAnalogValue(timeDelta), false );
         }
+        
+        for (Entry<Float> axisValue : axisValues){
+            int hash = axisValue.getKey();
+            float value = axisValue.getValue();
+            invokeAnalogs(hash, value, true);
+        }
     }
 
     private void invokeAnalogs(int hash, float value, boolean isAxis){
@@ -217,6 +228,8 @@ public class InputManager implements RawInputListener {
         if (maps == null)
             return;
 
+        boolean valueChanged = !axisValues.containsKey(hash);
+
         int size = maps.size();
         for (int i = size - 1; i >= 0; i--){
             Mapping mapping = maps.get(i);
@@ -225,7 +238,7 @@ public class InputManager implements RawInputListener {
             for (int j = listenerSize - 1; j >= 0; j--){
                 InputListener listener = listeners.get(j);
 
-                if (listener instanceof ActionListener)
+                if (listener instanceof ActionListener && valueChanged)
                     ((ActionListener)listener).onAction(mapping.name, true, frameTPF);
 
                 if (listener instanceof AnalogListener)
@@ -246,10 +259,31 @@ public class InputManager implements RawInputListener {
         int joyId   = evt.getJoyIndex();
         int axis    = evt.getAxisIndex();
         float value = evt.getValue();
-        if (value < 0){
-            invokeAnalogsAndActions(JoyAxisTrigger.joyAxisHash(joyId, axis, true), -value);
+        if (value < axisDeadZone && value > -axisDeadZone){
+            int hash1 = JoyAxisTrigger.joyAxisHash(joyId, axis, true);
+            int hash2 = JoyAxisTrigger.joyAxisHash(joyId, axis, false);
+
+            Float val1 = axisValues.get(hash1);
+            Float val2 = axisValues.get(hash2);
+
+            if (val1 != null && val1.floatValue() > axisDeadZone){
+                invokeActions(hash1, false);
+            }
+            if (val2 != null && val2.floatValue() > axisDeadZone){
+                invokeActions(hash2, false);
+            }
+
+            axisValues.remove(hash1);
+            axisValues.remove(hash2);
+
+        }else if (value < 0){
+            int hash = JoyAxisTrigger.joyAxisHash(joyId, axis, true);
+            invokeAnalogsAndActions(hash, -value);
+            axisValues.put(hash, -value);
         }else{
-            invokeAnalogsAndActions(JoyAxisTrigger.joyAxisHash(joyId, axis, false), value);
+            int hash = JoyAxisTrigger.joyAxisHash(joyId, axis, false);
+            invokeAnalogsAndActions(hash, value);
+            axisValues.put(hash, value);
         }
     }
 
@@ -382,6 +416,7 @@ public class InputManager implements RawInputListener {
      */
     public void reset(){
         pressedButtons.clear();
+        axisValues.clear();
     }
 
     /**
@@ -396,6 +431,10 @@ public class InputManager implements RawInputListener {
 
     public Vector2f getCursorPosition(){
         return cursorPos;
+    }
+
+    public Joystick[] getJoysticks(){
+        return joysticks;
     }
 
     public void addRawInputListener(RawInputListener listener){

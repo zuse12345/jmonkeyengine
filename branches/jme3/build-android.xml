@@ -7,17 +7,13 @@
   - author: Anton Yudin
   - created: Sun Nov  7 22:38:27 EST 2010
   -
-  - notes:
-  -	needs android.jar file from Android SDK
-  -	tested with platforms/android-8/android.jar
-  -
 -->
 
 <project name="jMonkeyEngine Android Renderer" default="dist" basedir=".">
 
 
 	<path id="classpath">
-		<pathelement path="lib/android.jar"/>
+		<pathelement path="lib/android/android.jar"/>
 		<pathelement path="dist/jMonkeyEngine3.jar"/>
 	</path>
 

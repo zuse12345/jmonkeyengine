@@ -255,8 +255,25 @@ public class TCPConnection extends Connection {
                 tempWriteBuffer.putInt(dataLength);
                 tempWriteBuffer.position(0);
 
+                if (dataLength > writeBuffer.capacity()) {
+                    log.log(Level.WARNING, "[{0}][TCP] Message too big for buffer. Discarded.", label);
+                    return;
+                }
+
                 if (writeBuffer.position() > 0) {
-                    writeBuffer.put(tempWriteBuffer);
+                    try {
+                        writeBuffer.put(tempWriteBuffer);
+                    } catch (BufferOverflowException boe) {
+                        log.log(Level.WARNING, "[{0}][TCP] Buffer overflow occurred while appending data to be sent later. " +
+                                "Cleared the buffer, so some data may be lost.", label);
+
+                        // TODO The fix here is all wrong.
+                        writeBuffer.clear();
+                        while (tempWriteBuffer.hasRemaining()) {
+                            if (channel.write(tempWriteBuffer) == 0) break;
+
+                        }
+                    }
                 } else {
                     int writeLength = 0;
                     while (tempWriteBuffer.hasRemaining()) {

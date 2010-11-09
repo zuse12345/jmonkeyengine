@@ -140,6 +140,8 @@ public class TestAnimationPath extends SimpleApplication {
     private void initInputs() {
         inputManager.addMapping("display_hidePath", new KeyTrigger(KeyInput.KEY_P));
         inputManager.addMapping("SwitchPathInterpolation", new KeyTrigger(KeyInput.KEY_I));
+        inputManager.addMapping("tensionUp", new KeyTrigger(KeyInput.KEY_U));
+        inputManager.addMapping("tensionDown", new KeyTrigger(KeyInput.KEY_J));
         inputManager.addMapping("play_stop", new KeyTrigger(KeyInput.KEY_SPACE));
         ActionListener acl = new ActionListener() {
 
@@ -169,12 +171,22 @@ public class TestAnimationPath extends SimpleApplication {
                     } else {
                         path.setPathInterpolation(AnimationPath.PathInterpolation.CatmullRom);
                     }
-
                 }
+                
+                if (name.equals("tensionUp") && keyPressed) {
+                    path.setCurveTension(path.getCurveTension()+0.1f);
+                   System.err.println("Tension : "+path.getCurveTension());
+                }
+                if (name.equals("tensionDown") && keyPressed) {
+                    path.setCurveTension(path.getCurveTension()-0.1f);
+                   System.err.println("Tension : "+path.getCurveTension());
+                }
+
+
             }
         };
 
-        inputManager.addListener(acl, "display_hidePath", "play_stop", "SwitchPathInterpolation");
+        inputManager.addListener(acl, "display_hidePath", "play_stop", "SwitchPathInterpolation","tensionUp","tensionDown");
 
     }
 }

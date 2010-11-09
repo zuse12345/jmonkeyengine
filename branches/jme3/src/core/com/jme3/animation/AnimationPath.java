@@ -77,6 +77,7 @@ public class AnimationPath implements Control {
     private float totalLength;
     private List<Vector3f> CRcontrolPoints;
     private float speed;
+    private float curveTension = 0.5f;
 
     /**
      * Enum for the different type of target direction behavior
@@ -185,12 +186,12 @@ public class AnimationPath implements Control {
 
                 val = tpf * speed;
                 currentValue += eps;
-                temp = FastMath.interpolateCatmullRom(currentValue, CRcontrolPoints.get(currentWayPoint), CRcontrolPoints.get(currentWayPoint + 1), CRcontrolPoints.get(currentWayPoint + 2), CRcontrolPoints.get(currentWayPoint + 3));
+                temp = FastMath.interpolateCatmullRom(currentValue, curveTension, CRcontrolPoints.get(currentWayPoint), CRcontrolPoints.get(currentWayPoint + 1), CRcontrolPoints.get(currentWayPoint + 2), CRcontrolPoints.get(currentWayPoint + 3));
                 float dist = temp.subtract(target.getLocalTranslation()).length();
 
                 while (dist < val) {
                     currentValue += eps;
-                    temp = FastMath.interpolateCatmullRom(currentValue, CRcontrolPoints.get(currentWayPoint), CRcontrolPoints.get(currentWayPoint + 1), CRcontrolPoints.get(currentWayPoint + 2), CRcontrolPoints.get(currentWayPoint + 3));
+                    temp = FastMath.interpolateCatmullRom(currentValue, curveTension, CRcontrolPoints.get(currentWayPoint), CRcontrolPoints.get(currentWayPoint + 1), CRcontrolPoints.get(currentWayPoint + 2), CRcontrolPoints.get(currentWayPoint + 3));
                     dist = temp.subtract(target.getLocalTranslation()).length();
                 }
                 if (directionType == Direction.Path || directionType == Direction.PathAndRotation) {
@@ -330,7 +331,7 @@ public class AnimationPath implements Control {
             i++;
             if (it.hasNext()) {
                 for (int j = 1; j < nbSubSegments; j++) {
-                    Vector3f temp = FastMath.interpolateCatmullRom((float) j / nbSubSegments, CRcontrolPoints.get(cptCP),
+                    Vector3f temp = FastMath.interpolateCatmullRom((float) j / nbSubSegments, curveTension, CRcontrolPoints.get(cptCP),
                             CRcontrolPoints.get(cptCP + 1), CRcontrolPoints.get(cptCP + 2), CRcontrolPoints.get(cptCP + 3));
                     array[i] = temp.x;
                     i++;
@@ -478,13 +479,13 @@ public class AnimationPath implements Control {
         float middleValue = (startRange + endRange) * 0.5f;
         Vector3f start = p1;
         if (startRange != 0) {
-            start = FastMath.interpolateCatmullRom(startRange, p0, p1, p2, p3);
+            start = FastMath.interpolateCatmullRom(startRange, curveTension, p0, p1, p2, p3);
         }
         Vector3f end = p2;
         if (endRange != 1) {
-            end = FastMath.interpolateCatmullRom(endRange, p0, p1, p2, p3);
+            end = FastMath.interpolateCatmullRom(endRange, curveTension, p0, p1, p2, p3);
         }
-        Vector3f middle = FastMath.interpolateCatmullRom(middleValue, p0, p1, p2, p3);
+        Vector3f middle = FastMath.interpolateCatmullRom(middleValue, curveTension, p0, p1, p2, p3);
         float l = end.subtract(start).length();
         float l1 = middle.subtract(start).length();
         float l2 = end.subtract(middle).length();
@@ -666,8 +667,35 @@ public class AnimationPath implements Control {
         return duration;
     }
 
+    /**
+     * Sets the duration of the animation
+     * @param duration
+     */
     public void setDuration(float duration) {
         this.duration = duration;
         speed = totalLength / duration;
     }
+
+    public float getCurveTension() {
+        return curveTension;
+    }
+
+    /**
+     * sets the tension of the curve (only for catmull rom) 0.0 will give a linear curve, 1.0 a round curve
+     * @param curveTension
+     */
+    public void setCurveTension(float curveTension) {
+        this.curveTension = curveTension;
+        computeTotalLentgh();
+        if (debugNode != null) {
+            Node parent = debugNode.getParent();
+            debugNode.removeFromParent();
+            debugNode.detachAllChildren();
+            debugNode = null;
+            attachDebugNode(parent);
+        }
+    }
+
+
+
 }

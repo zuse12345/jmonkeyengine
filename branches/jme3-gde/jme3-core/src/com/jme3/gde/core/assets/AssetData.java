@@ -41,7 +41,6 @@ import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -59,7 +58,7 @@ public class AssetData extends Properties {
     }
 
     public AssetKey<?> getAssetKey(){
-        return null;
+        return file.getAssetKey();
     }
 
     public Object loadAsset(){

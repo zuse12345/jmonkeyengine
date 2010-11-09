@@ -55,6 +55,15 @@
                 </file>
             </folder>
         </folder>
+        <folder name="Help">
+            <file name="jmewiki.url" url="jmewiki.url">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="com.jme3.gde.core.Bundle"/>
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="netbeans-kb.url_hidden"/>
+            <file name="org-netbeans-modules-bugzilla-ReportNBIssueAction.shadow_hidden"/>
+            <file name="shortcuts.xml_hidden"/>
+        </folder>
     </folder>
     <!--TODO: Lookup for SceneViewer-->
 <!-- <folder name="Services">

@@ -43,7 +43,7 @@ public class BinaryModelDataObject extends SpatialAssetDataObject {
 
     public BinaryModelDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        getLookupContents().add(new AssetProperties(this,"j3odata"));
+        getLookupContents().add(new AssetData(this,"j3odata"));
     }
 
     @Override

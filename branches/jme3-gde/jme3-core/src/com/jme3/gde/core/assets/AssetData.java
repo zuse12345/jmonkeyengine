@@ -31,6 +31,7 @@
  */
 package com.jme3.gde.core.assets;
 
+import com.jme3.asset.AssetKey;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,14 +48,22 @@ import org.openide.util.Exceptions;
  *
  * @author normenhansen
  */
-public class AssetProperties extends Properties {
+public class AssetData extends Properties {
 
-    private DataObject file;
+    private AssetDataObject file;
     private final String extension;
 
-    public AssetProperties(DataObject file, String extension) {
+    public AssetData(AssetDataObject file, String extension) {
         this.file = file;
         this.extension = extension;
+    }
+
+    public AssetKey<?> getAssetKey(){
+        return null;
+    }
+
+    public Object loadAsset(){
+        return file.loadAsset();
     }
 
     public void loadProperties() {

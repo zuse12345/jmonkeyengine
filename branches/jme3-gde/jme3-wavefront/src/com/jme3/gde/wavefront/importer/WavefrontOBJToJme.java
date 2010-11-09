@@ -5,7 +5,7 @@
 package com.jme3.gde.wavefront.importer;
 
 import com.jme3.export.binary.BinaryExporter;
-import com.jme3.gde.core.assets.AssetProperties;
+import com.jme3.gde.core.assets.AssetData;
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.assets.SpatialAssetDataObject;
 import com.jme3.scene.Spatial;
@@ -72,7 +72,7 @@ public final class WavefrontOBJToJme implements ActionListener {
 
                         //store original asset path interface properties
                         DataObject targetModel=DataObject.find(FileUtil.toFileObject(outFile));
-                        AssetProperties properties=targetModel.getLookup().lookup(AssetProperties.class);
+                        AssetData properties=targetModel.getLookup().lookup(AssetData.class);
                         properties.loadProperties();
                         properties.setProperty("ORIGINAL_PATH", manager.getRelativeAssetPath(file.getPath()));
                         properties.saveProperties();

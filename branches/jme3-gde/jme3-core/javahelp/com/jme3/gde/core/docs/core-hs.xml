@@ -44,12 +44,6 @@
         <type>javax.help.TOCView</type>
         <data>core-toc.xml</data>
     </view>
-    <view mergetype="javax.help.AppendMerge">
-        <name>Index</name>
-        <label>Index</label>
-        <type>javax.help.IndexView</type>
-        <data>core-idx.xml</data>
-    </view>
     <view>
         <name>Search</name>
         <label>Search</label>

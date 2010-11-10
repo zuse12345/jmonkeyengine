@@ -33,34 +33,39 @@
 <!DOCTYPE index PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Index Version 2.0//EN" "http://java.sun.com/products/javahelp/index_2_0.dtd">
 <index version="2.0">
     <indexitem text="About jMonkeyPlatform" target="com.jme3.gde.core.about"/>
-    <indexitem text="Creating a Project (online)" target="com.jme3.gde.core.projectcreation"/>
+    <indexitem text="Creating a Project" target="jme3.jmonkeyplatform.project_creation"/>
     <indexitem text="The SceneViewer" target="com.jme3.gde.core.sceneviewer"/>
-    <indexitem text="The SceneExplorer (online)" target="com.jme3.gde.core.sceneexplorer"/>
-    <indexitem text="Importing Models (online)" target="com.jme3.gde.core.importing"/>
-    <indexitem text="Code Editor (online)" target="com.jme3.gde.core.codeeditor"/>
-    <indexitem text="Version Control (online)" target="com.jme3.gde.core.versioncontrol"/>
-    <indexitem text="Debugging, Testing (online)" target="com.jme3.gde.core.debugging"/>
-    <indexitem text="Deployment (online)" target="com.jme3.gde.core.deployment"/>
+    <indexitem text="The SceneExplorer" target="jme3.jmonkeyplatform.scene_explorer"/>
+    <indexitem text="Importing Models" target="jme3.jmonkeyplatform.model_loader_and_viewer"/>
+    <indexitem text="Code Editor" target="jme3.jmonkeyplatform.code_editor"/>
+    <indexitem text="Using the Material Editor" target="jme3.jmonkeyplatform.material_editing"/>
+    <indexitem text="Materials Overview" target="jme3.advanced.material_overview"/>
+    <indexitem text="Shaders and Materials in jME3" target="jme3.advanced.jme3_shaders"/>
+    <indexitem text="Code Editor" target="jme3.jmonkeyplatform.code_editor"/>
+    <indexitem text="Version Control" target="jme3.jmonkeyplatform.version_control"/>
+    <indexitem text="Debugging, Testing" target="jme3.jmonkeyplatform.debugging_profiling_testing"/>
+    <indexitem text="Deployment" target="jme3.jmonkeyplatform.application_deployment"/>
     <indexitem text="Updating jMP" target="com.jme3.gde.core.updating"/>
 
-    <indexitem text="Hello SimpleApplication" target="com.jme3.tutorials.helloapplication"/>
-    <indexitem text="Hello Node" target="com.jme3.tutorials.hellonode"/>
-    <indexitem text="Hello Assets" target="com.jme3.tutorials.helloassets"/>
-    <indexitem text="Hello Event Loop" target="com.jme3.tutorials.helloloop"/>
-    <indexitem text="Hello Input System" target="com.jme3.tutorials.helloinput"/>
-    <indexitem text="Hello Material" target="com.jme3.tutorials.hellomaterial"/>
-    <indexitem text="Hello Animation" target="com.jme3.tutorials.helloanimation"/>
-    <indexitem text="Hello Picking" target="com.jme3.tutorials.hellopicking"/>
-    <indexitem text="Hello Collision" target="com.jme3.tutorials.hellocollision"/>
-    <indexitem text="Hello Audio" target="com.jme3.tutorials.helloaudio"/>
-    <indexitem text="Hello Effects" target="com.jme3.tutorials.helloeffects"/>
-    <indexitem text="Hello Physics" target="com.jme3.tutorials.hellophysics"/>
+    <indexitem text="Hello SimpleApplication" target="jme3.beginner.hello_simpleapplication"/>
+    <indexitem text="Hello Node" target="jme3.beginner.hello_node"/>
+    <indexitem text="Hello Assets" target="jme3.beginner.hello_asset"/>
+    <indexitem text="Hello Event Loop" target="jme3.beginner.hello_main_event_loop"/>
+    <indexitem text="Hello Input System" target="jme3.beginner.hello_input_system"/>
+    <indexitem text="Hello Material" target="jme3.beginner.hello_material"/>
+    <indexitem text="Hello Animation" target="jme3.beginner.hello_animation"/>
+    <indexitem text="Hello Picking" target="jme3.beginner.hello_picking"/>
+    <indexitem text="Hello Collision" target="jme3.beginner.hello_collision"/>
+    <indexitem text="Hello Terrain" target="jme3.beginner.hello_terrain"/>
+    <indexitem text="Hello Audio" target="jme3.beginner.hello_audio"/>
+    <indexitem text="Hello Effects" target="jme3.beginner.hello_effects"/>
+    <indexitem text="Hello Physics" target="jme3.beginner.hello_physics"/>
 
     <indexitem text="About jMP Plugin Development" target="com.jme3.gde.development"/>
-    <indexitem text="Creating a plugin (online)" target="com.jme3.gde.development.setup"/>
-    <indexitem text="Creating components (online)" target="com.jme3.gde.development.general"/>
-    <indexitem text="Accessing the Scene (online)" target="com.jme3.gde.development.scene"/>
-    <indexitem text="Extending the SceneExplorer (online)" target="com.jme3.gde.development.explorer"/>
-    <indexitem text="Creating a library plugin from a jar file" target="com.jme3.gde.development.extensionlibrary"/>
-    <indexitem text="Integrate a new model filetype and loader" target="com.jme3.gde.development.modelloader"/>
+    <indexitem text="Creating a plugin" target="jme3.jmonkeyplatform.development.setup"/>
+    <indexitem text="Creating components" target="jme3.jmonkeyplatform.development.general"/>
+    <indexitem text="Accessing the Scene" target="jme3.jmonkeyplatform.development.scene"/>
+    <indexitem text="Extending the SceneExplorer" target="jme3.jmonkeyplatform.development.sceneexplorer"/>
+    <indexitem text="Creating a library plugin from a jar file" target="jme3.jmonkeyplatform.development.extension_library"/>
+    <indexitem text="Integrate a new model filetype and loader" target="jme3.jmonkeyplatform.development.model_loader"/>
 </index>

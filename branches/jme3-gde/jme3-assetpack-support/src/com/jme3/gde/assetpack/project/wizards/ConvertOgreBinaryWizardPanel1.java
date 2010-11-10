@@ -30,7 +30,7 @@ public class ConvertOgreBinaryWizardPanel1 implements WizardDescriptor.Panel {
 
     public HelpCtx getHelp() {
         // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx("jme3.jmonkeyplatform.asset_packs");
         // If you have context help:
         // return new HelpCtx(SampleWizardPanel1.class);
     }

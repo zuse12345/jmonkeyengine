@@ -45,7 +45,7 @@ public final class AssetPacksOptionsPanelController extends OptionsPanelControll
     }
 
     public HelpCtx getHelpCtx() {
-        return null; // new HelpCtx("...ID") if you have a help set
+        return new HelpCtx("jme3.jmonkeyplatform.asset_packs");
     }
 
     public JComponent getComponent(Lookup masterLookup) {

@@ -267,7 +267,7 @@ public final class MaterialEditorTopComponent extends CloneableTopComponent impl
 
     @Override
     public HelpCtx getHelpCtx() {
-        HelpCtx ctx=new HelpCtx("com.jme3.gde.materials.usage");
+        HelpCtx ctx=new HelpCtx("jme3.jmonkeyplatform.material_editing");
         //this call is for single components:
         //HelpCtx.setHelpIDString(this, "com.jme3.gde.core.sceneviewer");
         return ctx;

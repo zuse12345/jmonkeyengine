@@ -188,7 +188,7 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
 
     @Override
     public HelpCtx getHelpCtx() {
-        HelpCtx ctx=new HelpCtx("com.jme3.gde.core.sceneexplorer");
+        HelpCtx ctx=new HelpCtx("jme3.jmonkeyplatform.scene_explorer");
         //this call is for single components:
         //HelpCtx.setHelpIDString(this, "com.jme3.gde.core.sceneviewer");
         return ctx;

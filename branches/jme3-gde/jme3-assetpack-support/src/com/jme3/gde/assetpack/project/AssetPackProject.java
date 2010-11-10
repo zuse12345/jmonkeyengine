@@ -335,7 +335,7 @@ public class AssetPackProject implements Project {
         }
 
         public void showCustomizer() {
-            ProjectCustomizer.createCustomizerDialog(propertyCategories, this, "General", this, HelpCtx.DEFAULT_HELP).setVisible(true);
+            ProjectCustomizer.createCustomizerDialog(propertyCategories, this, "General", this, new HelpCtx("jme3.jmonkeyplatform.asset_packs")).setVisible(true);
         }
 
         public JComponent create(Category category) {

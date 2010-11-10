@@ -5,6 +5,7 @@
 package com.jme3.gde.assetpack.browser;
 
 import java.util.logging.Logger;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -243,6 +244,11 @@ public final class AssetPackBrowserTopComponent extends TopComponent implements 
                 "There seem to be multiple components with the '" + PREFERRED_ID
                 + "' ID. That is a potential source of errors and unexpected behavior.");
         return getDefault();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("jme3.jmonkeyplatform.asset_packs");
     }
 
     @Override

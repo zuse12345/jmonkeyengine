@@ -162,13 +162,6 @@
             </file>
         </folder>
     </folder>
-    <folder name="Services">
-        <folder name="JavaHelp">
-            <file name="scenecomposer-helpset.xml" url="scenecomposer-helpset.xml">
-                <attr name="position" intvalue="3760"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Windows2">
         <folder name="Components">
             <file name="SceneComposerTopComponent.settings" url="SceneComposerTopComponentSettings.xml"/>

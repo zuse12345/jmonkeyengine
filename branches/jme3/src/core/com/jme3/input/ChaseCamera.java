@@ -66,7 +66,7 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
     private float distanceLerpFactor=0;
     private boolean zooming=false;
     private float zoomSpeed = 2f;
-    private float zoomSensitivity = zoomSpeed*0.001f;
+    private float zoomSensitivity = 5f;
    
     private float rotationSpeed = 1.0f;
 
@@ -82,7 +82,7 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
     private float vRotation = FastMath.PI / 6;
     private float targetVRotation = vRotation;
     private float vRotationLerpFactor=0;
-    private float rotationSensitivity = rotationSpeed*0.002f;
+    private float rotationSensitivity = 5f;
 
     private boolean canRotate;
 
@@ -115,7 +115,6 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
     public ChaseCamera(Camera cam, final Spatial target, InputManager inputManager) {
         this(cam, target);
         registerWithInput(inputManager);
-
     }
 
     public void onAction(String name, boolean keyPressed, float tpf) {
@@ -206,6 +205,7 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
         }
       
         zooming=true;
+
         targetDistance += value * zoomSpeed;
         if (targetDistance > maxDistance) {
             targetDistance = maxDistance;
@@ -243,7 +243,9 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
         if (enabled) {
             if (smoothMotion) {
                 if(zooming){
-                    distanceLerpFactor=Math.min(distanceLerpFactor+tpf*zoomSensitivity,1);
+
+                    distanceLerpFactor=Math.min(distanceLerpFactor+(tpf*tpf*zoomSensitivity),1);
+                    float prev=distance;
                     distance=FastMath.interpolateLinear(distanceLerpFactor, distance, targetDistance);
                     if(targetDistance+0.1f>=distance && targetDistance-0.1f<=distance){
                         zooming=false;
@@ -252,7 +254,7 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
                 }
 
                 if(rotating){
-                    rotationLerpFactor=Math.min(rotationLerpFactor+tpf*rotationSensitivity,1);
+                    rotationLerpFactor=Math.min(rotationLerpFactor+tpf*tpf*rotationSensitivity,1);
                     rotation=FastMath.interpolateLinear(rotationLerpFactor, rotation, targetRotation);
                     if(targetRotation+0.01f>=rotation && targetRotation-0.01f<=rotation){
                         rotating=false;
@@ -260,7 +262,7 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
                     }
                 }
                 if(vRotating){
-                    vRotationLerpFactor=Math.min(vRotationLerpFactor+tpf*rotationSensitivity,1);
+                    vRotationLerpFactor=Math.min(vRotationLerpFactor+tpf*tpf*rotationSensitivity,1);
                     vRotation=FastMath.interpolateLinear(vRotationLerpFactor, vRotation, targetVRotation);
                     if(targetVRotation+0.01f>=vRotation && targetVRotation-0.01f<=vRotation){
                         vRotating=false;

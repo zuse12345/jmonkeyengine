@@ -35,7 +35,7 @@ public class JmeTestsWizardPanel implements WizardDescriptor.Panel,
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(JmeTestsWizardPanel.class);
+        return new HelpCtx("jme3.jmonkeyplatform.project_creation");
     }
 
     public boolean isValid() {

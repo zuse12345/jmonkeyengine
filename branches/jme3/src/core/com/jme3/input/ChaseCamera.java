@@ -29,7 +29,6 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.input;
 
 import com.jme3.export.InputCapsule;
@@ -56,23 +55,41 @@ import java.io.IOException;
 public class ChaseCamera implements ActionListener, AnalogListener, Control {
 
     private Spatial target = null;
-    private float distance = 20;
+
     private float minHeight = 0.00f;
     private float maxHeight = FastMath.PI / 2;
     private float minDistance = 1.0f;
     private float maxDistance = 40.0f;
-    private float zoomSpeed = 2.0f;
+
+    private float distance = 20;
+    private float targetDistance = distance;
+    private float distanceLerpFactor=0;
+    private boolean zooming=false;
+    private float zoomSpeed = 2f;
+    private float zoomSensitivity = zoomSpeed*0.001f;
+   
     private float rotationSpeed = 1.0f;
-    /**
-     * the camera.
-     */
-    private Camera cam = null;
+
     private InputManager inputManager;
     private Vector3f initialUpVec;
+    private float rotation = FastMath.HALF_PI;
+    private float targetRotation = rotation;
+    private float rotationLerpFactor=0;
+
+
+    private boolean rotating=false;
+    private boolean vRotating=false;
+    private float vRotation = FastMath.PI / 6;
+    private float targetVRotation = vRotation;
+    private float vRotationLerpFactor=0;
+    private float rotationSensitivity = rotationSpeed*0.002f;
+
     private boolean canRotate;
-    private float rotation = FastMath.PI / 2;
-    private float vRotation = 0;
+
     private boolean enabled = true;
+    private Camera cam = null;
+    private Vector3f pos;
+    private boolean smoothMotion = false;
 
     /**
      * Constructs the chase camera
@@ -81,9 +98,12 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
      */
     public ChaseCamera(Camera cam, final Spatial target) {
         this.target = target;
-        target.addControl(this);
+
         this.cam = cam;
         initialUpVec = cam.getUp().clone();
+        computePosition();
+        target.addControl(this);
+        cam.setLocation(pos);
     }
 
     /**
@@ -93,11 +113,9 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
      * @param inputManager the inputManager of the application to register inputs
      */
     public ChaseCamera(Camera cam, final Spatial target, InputManager inputManager) {
-        this.target = target;
-        target.addControl(this);
-        this.cam = cam;
-        initialUpVec = cam.getUp().clone();
+        this(cam, target);
         registerWithInput(inputManager);
+
     }
 
     public void onAction(String name, boolean keyPressed, float tpf) {
@@ -111,8 +129,10 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
             }
         }
 
+
     }
 
+    boolean zoomin;
     public void onAnalog(String name, float value, float tpf) {
         if (name.equals("mouseLeft")) {
             rotateCamera(-value);
@@ -124,8 +144,16 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
             vRotateCamera(-value);
         } else if (name.equals("ZoomIn")) {
             zoomCamera(value);
+            if(zoomin==false){
+                 distanceLerpFactor=0;
+            }
+            zoomin=true;
         } else if (name.equals("ZoomOut")) {
             zoomCamera(-value);
+            if(zoomin==true){
+                 distanceLerpFactor=0;
+            }
+            zoomin=false;
         }
 
     }
@@ -150,7 +178,14 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
 
         inputManager.addListener(this, inputs);
 
-        updateCamera();
+
+    }
+
+    private void computePosition() {
+
+        float hDistance = (distance) * FastMath.sin((FastMath.PI / 2) - vRotation);
+        pos = new Vector3f(hDistance * FastMath.cos(rotation), (distance) * FastMath.sin(vRotation), hDistance * FastMath.sin(rotation));
+        pos = pos.add(target.getWorldTranslation());
     }
 
     //rotate the camera around the target on the horizontal plane
@@ -158,8 +193,10 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
         if (!canRotate || !enabled) {
             return;
         }
-        rotation += value * rotationSpeed;
-        updateCamera();
+        rotating=true;
+        targetRotation += value * rotationSpeed;
+
+
     }
 
     //move the camera toward or away the target
@@ -167,19 +204,21 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
         if (!enabled) {
             return;
         }
+      
+        zooming=true;
+        targetDistance += value * zoomSpeed;
+        if (targetDistance > maxDistance) {
+            targetDistance = maxDistance;
+        }
+        if (targetDistance < minDistance) {
+            targetDistance = minDistance;
+        }
+        if ((targetVRotation < minHeight) && (targetDistance > (minDistance + 1.0f))) {
 
-        distance += value * zoomSpeed;
-        if (distance > maxDistance) {
-            distance = maxDistance;
-        }
-        if (distance < minDistance) {
-            distance = minDistance;
-        }
-        if ((vRotation < minHeight) && (distance > (minDistance + 1.0f))) {
-            vRotation = minHeight;
+
+            targetVRotation = minHeight;
         }
 
-        updateCamera();
     }
 
     //rotate the camera around the target on the vertical plane
@@ -187,25 +226,59 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
         if (!canRotate || !enabled) {
             return;
         }
-        vRotation += value * rotationSpeed;
-        if (vRotation > maxHeight) {
-            vRotation = maxHeight;
+        vRotating=true;
+        targetVRotation += value * rotationSpeed;
+        if (targetVRotation > maxHeight) {
+            targetVRotation = maxHeight;
         }
-        if ((vRotation < minHeight) && (distance > (minDistance + 1.0f))) {
-            vRotation = minHeight;
+        if ((targetVRotation < minHeight) && (targetDistance > (minDistance + 1.0f))) {
+            targetVRotation = minHeight;
         }
-        updateCamera();
     }
 
     /**
      * Update the camera, should only be called internally
      */
-    protected void updateCamera() {
-        float hDistance = distance * FastMath.sin((FastMath.PI / 2) - vRotation);
-        Vector3f pos = new Vector3f(hDistance * FastMath.cos(rotation), distance * FastMath.sin(vRotation), hDistance * FastMath.sin(rotation));
-        pos = pos.add(target.getWorldTranslation());
-        cam.setLocation(pos);
-        cam.lookAt(target.getWorldTranslation(), initialUpVec);
+    protected void updateCamera(float tpf) {
+        if (enabled) {
+            if (smoothMotion) {
+                if(zooming){
+                    distanceLerpFactor=Math.min(distanceLerpFactor+tpf*zoomSensitivity,1);
+                    distance=FastMath.interpolateLinear(distanceLerpFactor, distance, targetDistance);
+                    if(targetDistance+0.1f>=distance && targetDistance-0.1f<=distance){
+                        zooming=false;
+                        distanceLerpFactor=0;
+                    }
+                }
+
+                if(rotating){
+                    rotationLerpFactor=Math.min(rotationLerpFactor+tpf*rotationSensitivity,1);
+                    rotation=FastMath.interpolateLinear(rotationLerpFactor, rotation, targetRotation);
+                    if(targetRotation+0.01f>=rotation && targetRotation-0.01f<=rotation){
+                        rotating=false;
+                        rotationLerpFactor=0;
+                    }
+                }
+                if(vRotating){
+                    vRotationLerpFactor=Math.min(vRotationLerpFactor+tpf*rotationSensitivity,1);
+                    vRotation=FastMath.interpolateLinear(vRotationLerpFactor, vRotation, targetVRotation);
+                    if(targetVRotation+0.01f>=vRotation && targetVRotation-0.01f<=vRotation){
+                        vRotating=false;
+                        vRotationLerpFactor=0;
+                    }
+                }
+
+                computePosition();
+                cam.setLocation(pos);
+            } else {
+                vRotation=targetVRotation;
+                rotation=targetRotation;
+                distance=targetDistance;
+                computePosition();
+                cam.setLocation(pos);
+            }
+            cam.lookAt(target.getWorldTranslation(), initialUpVec);
+        }
     }
 
     /**
@@ -284,7 +357,7 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
      * @param tpf
      */
     public void update(float tpf) {
-        updateCamera();
+        updateCamera(tpf);
     }
 
     /**
@@ -334,5 +407,11 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
         this.minHeight = minHeight;
     }
 
+    public boolean isSmoothMotion() {
+        return smoothMotion;
+    }
 
+    public void setSmoothMotion(boolean smoothMotion) {
+        this.smoothMotion = smoothMotion;
+    }
 }

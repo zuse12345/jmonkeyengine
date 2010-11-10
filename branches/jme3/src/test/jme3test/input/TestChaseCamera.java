@@ -74,8 +74,10 @@ public class TestChaseCamera extends SimpleApplication implements AnalogListener
 
         // Enable a chase cam
         chaseCam = new ChaseCamera(cam, teaGeom, inputManager);
+        chaseCam.setSmoothMotion(true);
         regsiterInput();
         rootNode.attachChild(pivot);
+        
     }
 
     public void regsiterInput() {
@@ -107,9 +109,7 @@ public class TestChaseCamera extends SimpleApplication implements AnalogListener
 
     public void onAction(String name, boolean keyPressed, float tpf) {
         if(name.equals("displayPosition") && keyPressed){
-            System.err.println("world pos : "+teaGeom.getWorldTranslation());
-            System.err.println("local pos : "+teaGeom.getLocalTranslation());
-            System.err.println("cam location : "+cam.getLocation());
+            teaGeom.move(10, 10, 10);
 
         }
     }
@@ -119,7 +119,7 @@ public class TestChaseCamera extends SimpleApplication implements AnalogListener
         super.simpleUpdate(tpf);
         
       //  teaGeom.move(new Vector3f(0.001f, 0, 0));
-        pivot.rotate(0, 0.00001f, 0);
+       // pivot.rotate(0, 0.00001f, 0);
      //   rootNode.updateGeometricState();
     }
 

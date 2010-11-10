@@ -36,50 +36,13 @@
         <touch file="javahelp/${javahelp_path}${page_path}.html" mkdirs="true"/>
         <get src="${wiki_url}${page_name}?do=export_xhtmlbody"
              dest="javahelp/${javahelp_path}${page_path}.html"/>
-        <!-- download images from page -->
+        <!-- download images from page (custom task) -->
         <loadwikiimages file="javahelp/${javahelp_path}${page_path}.html"
              target="javahelp/${javahelp_path}"
              host="http://jmonkeyengine.org"/>
-
-        <!-- make internal wiki links work -->
-        <replaceregexp file="javahelp/${javahelp_path}${page_path}.html" flags="g"
-             match='wiki/doku\.php/([^>]*):([^>]*):([^>]*):([^>]*)\?do=export_xhtmlbody'
-             replace='${javahelp_path}\1/\2/\3/\4.html'/>
-        <replaceregexp file="javahelp/${javahelp_path}${page_path}.html" flags="g"
-             match='wiki/doku\.php/([^>]*):([^>]*):([^>]*)\?do=export_xhtmlbody'
-             replace='${javahelp_path}\1/\2/\3.html'/>
-        <replaceregexp file="javahelp/${javahelp_path}${page_path}.html" flags="g"
-             match='wiki/doku\.php/([^>]*):([^>]*)\?do=export_xhtmlbody'
-             replace='${javahelp_path}\1/\2.html'/>
-        <replaceregexp file="javahelp/${javahelp_path}${page_path}.html" flags="g"
-             match='wiki/doku\.php/([^>]*)\?do=export_xhtmlbody'
-             replace='${javahelp_path}\1.html'/>
-        <!-- make image links work -->
-        <replaceregexp file="javahelp/${javahelp_path}${page_path}.html" flags="g"
-             match='/wiki/lib/exe/fetch\.php/([^>]*):([^>]*):([^>]*):([^>]*)"'
-             replace='nbdocs:/${javahelp_path}\1/\2/\3/\4"'/>
-        <replaceregexp file="javahelp/${javahelp_path}${page_path}.html" flags="g"
-             match='/wiki/lib/exe/fetch\.php/([^>]*):([^>]*):([^>]*)"'
-             replace='nbdocs:/${javahelp_path}\1/\2/\3"'/>
-        <replaceregexp file="javahelp/${javahelp_path}${page_path}.html" flags="g"
-             match='/wiki/lib/exe/fetch\.php/([^>]*):([^>]*)"'
-             replace='nbdocs:/${javahelp_path}\1/\2"'/>
-        <replaceregexp file="javahelp/${javahelp_path}${page_path}.html" flags="g"
-             match='/wiki/lib/exe/fetch\.php/([^>]*)"'
-             replace='nbdocs:/${javahelp_path}\1"'/>
-        <!-- remove links from images -->
-        <replaceregexp file="javahelp/${javahelp_path}${page_path}.html" flags="g"
-             match='&lt;a href=(.*)>&lt;img src="(.*)"(.*)>&lt;/a>'
-             replace='&lt;img src="\2">'/>
-        <!-- remove options from images -->
-        <replaceregexp file="javahelp/${javahelp_path}${page_path}.html" flags="g"
-             match='&lt;img src="(.*)\?(.*)">'
-             replace='&lt;img src="\1"'/>
-        <!-- make external http links open in browser -->
-        <replaceregexp file="javahelp/${javahelp_path}${page_path}.html" flags="g"
-             match='&lt;a href="http://([^"]*)"(.*)>(.*)&lt;/a>'
-             replace='&lt;object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">&lt;param name="content" value="http://\1">&lt;param name="text" value="&lt;html>&lt;u>\3&lt;/u>&lt;/html>">&lt;param name="textColor" value="blue">&lt;/object>'/>
-
+        <!-- fix links in wiki (custom task) -->
+        <fixwikilinks file="javahelp/${javahelp_path}${page_path}.html"
+             helppath="${javahelp_path}"/>
         <!-- append link to online wiki page -->
         <echo file="javahelp/${javahelp_path}${page_path}.html" append="true"
              message='&lt;p>&lt;em>&lt;a href="${wiki_url}${page_name}?do=export_xhtmlbody">view online version&lt;/a>&lt;/em>&lt;/p>'/>

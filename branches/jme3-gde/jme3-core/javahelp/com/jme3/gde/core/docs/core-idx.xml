@@ -39,7 +39,7 @@
     <indexitem text="Importing Models" target="jme3.jmonkeyplatform.model_loader_and_viewer"/>
     <indexitem text="Code Editor" target="jme3.jmonkeyplatform.code_editor"/>
     <indexitem text="Using the Material Editor" target="jme3.jmonkeyplatform.material_editing"/>
-    <indexitem text="Materials Overview" target="jme3.advanced.material_overview"/>
+    <indexitem text="Materials Overview" target="jme3.advanced.materials_overview"/>
     <indexitem text="Shaders and Materials in jME3" target="jme3.advanced.jme3_shaders"/>
     <indexitem text="Code Editor" target="jme3.jmonkeyplatform.code_editor"/>
     <indexitem text="Version Control" target="jme3.jmonkeyplatform.version_control"/>

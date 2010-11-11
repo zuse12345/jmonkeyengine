@@ -31,19 +31,15 @@
  */
 package com.jme3.gde.core.assets;
 
+import com.jme3.gde.core.j2seproject.ProjectExtensionManager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
-import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -70,6 +66,22 @@ public class AssetsLookupProvider implements LookupProvider {
         "assets.excludes",
         "assets.compress"
     };
+    private String extensionName = "assets";
+    private String extensionVersion = "v1.0";
+    private String extensionTargets =
+            "    <target name=\"-init-assets\">\n"
+            + "        <jar jarfile=\"${build.dir}/${assets.jar.name}\" excludes=\"${assets.excludes}\" basedir=\"${assets.folder.name}\" compress=\"${assets.compress}\"/>\n"
+            + "        <property location=\"${assets.folder.name}\" name=\"assets.dir.resolved\"/>\n"
+            + "        <property location=\"${build.dir}/${assets.jar.name}\" name=\"assets.jar.resolved\"/>\n"
+            + "        <property location=\"${build.classes.dir}\" name=\"build.classes.dir.resolved\"/>\n"
+            + "        <pathconvert property=\"run.classpath.without.build.classes.dir\">\n"
+            + "        <path path=\"${run.classpath}\"/>\n"
+            + "        <map from=\"${build.classes.dir.resolved}\" to=\"\"/>\n"
+            + "        <map from=\"${assets.dir.resolved}\" to=\"${assets.jar.resolved}\"/>\n"
+            + "        </pathconvert>\n"
+            + "    </target>\n";
+    private String[] extensionDependencies = new String[]{"-do-init", "-init-assets"};
+    private ProjectExtensionManager manager = new ProjectExtensionManager(extensionName, extensionVersion, extensionTargets, extensionDependencies);
 
     public Lookup createAdditionalLookup(Lookup lookup) {
         Project prj = lookup.lookup(Project.class);
@@ -97,99 +109,10 @@ public class AssetsLookupProvider implements LookupProvider {
                     lock.releaseLock();
                 }
             }
-        }/* else if (prj.getProjectDirectory().getFileObject("assets") != null) {
-        Logger.getLogger(AssetsLookupProvider.class.getName()).log(Level.WARNING, "Using fallback for project recognition");
-        return Lookups.fixed(new ProjectAssetManager(prj, "assets"), openedHook);
-        }*/
+        }
 
         return Lookups.fixed();
     }
-
-    private void checkAssetsExtension(Project proj) {
-        if (!(proj instanceof J2SEProject)) {
-            Logger.getLogger(AssetsLookupProvider.class.getName()).log(Level.WARNING, "Trying to load Assets Properties from non-asset project");
-            return;
-        }
-        EditableProperties props = getProperties(project);
-
-        FileObject projDir = proj.getProjectDirectory();
-        final FileObject buildXmlFO = J2SEProjectUtil.getBuildXml((J2SEProject) proj);
-        if (buildXmlFO == null) {
-            Logger.getLogger(AssetsLookupProvider.class.getName()).log(Level.WARNING, "The project build script does not exist, the project cannot be extended by jMP.");
-            return;
-        }
-        FileObject assetsBuildFile = getAssetsImpl(projDir);
-        AntBuildExtender extender = proj.getLookup().lookup(AntBuildExtender.class);
-        if (extender != null) {
-            assert assetsBuildFile != null;
-//            for (Iterator<String> it = extender.getExtensibleTargets().iterator(); it.hasNext();) {
-//                Logger.getLogger(AssetsLookupProvider.class.getName()).log(Level.WARNING, "Extensible target: {0}", it.next());
-//            }
-            if (extender.getExtension("assets") == null) { // NOI18N
-                AntBuildExtender.Extension ext = extender.addExtension("assets", assetsBuildFile); // NOI18N
-                ext.addDependency("-do-init", "-init-assets"); // NOI18N
-                try {
-                    ProjectManager.getDefault().saveProject(proj);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        } else {
-            Logger.getLogger(AssetsLookupProvider.class.getName()).log(Level.WARNING, "Trying to include assets build snippet in project type that doesn't support AntBuildExtender API contract.");
-        }
-
-    }
-
-    private FileObject getAssetsImpl(FileObject projDir) {
-        FileObject assetsImpl = projDir.getFileObject("nbproject/assets-impl.xml");
-        if (assetsImpl == null) {
-            assetsImpl = createAssetsImpl(projDir);
-        } else {
-            try {
-                if (!assetsImpl.asLines().get(1).startsWith("<!--assets-impl.xml v1.0-->")) {
-                    assetsImpl.delete();
-                    assetsImpl = createAssetsImpl(projDir);
-                }
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return assetsImpl;
-    }
-
-    private FileObject createAssetsImpl(FileObject projDir) {
-        FileLock lock = null;
-        FileObject file = null;
-        try {
-            file = projDir.getFileObject("nbproject").createData("assets-impl.xml");
-            lock = file.lock();
-            OutputStreamWriter out = new OutputStreamWriter(file.getOutputStream(lock));
-            out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-            out.write("<!--assets-impl.xml v1.0-->\n");
-            out.write("<project name=\"assets-impl\" basedir=\"..\">\n");
-            out.write("    <target name=\"-init-assets\">\n");
-            out.write("        <jar jarfile=\"${build.dir}/${assets.jar.name}\" excludes=\"${assets.excludes}\" basedir=\"${assets.folder.name}\" compress=\"${assets.compress}\"/>\n");
-            out.write("        <property location=\"${assets.folder.name}\" name=\"assets.dir.resolved\"/>\n");
-            out.write("        <property location=\"${build.dir}/${assets.jar.name}\" name=\"assets.jar.resolved\"/>\n");
-            out.write("        <property location=\"${build.classes.dir}\" name=\"build.classes.dir.resolved\"/>\n");
-            out.write("        <pathconvert property=\"run.classpath.without.build.classes.dir\">\n");
-            out.write("        <path path=\"${run.classpath}\"/>\n");
-            out.write("        <map from=\"${build.classes.dir.resolved}\" to=\"\"/>\n");
-            out.write("        <map from=\"${assets.dir.resolved}\" to=\"${assets.jar.resolved}\"/>\n");
-            out.write("        </pathconvert>\n");
-            out.write("    </target>\n");
-            out.write("</project>\n");
-            out.close();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } finally {
-            if (lock != null) {
-                lock.releaseLock();
-            }
-        }
-        return file;
-    }
-    
     private ProjectOpenedHook openedHook = new ProjectOpenedHook() {
 
         @Override
@@ -199,7 +122,7 @@ public class AssetsLookupProvider implements LookupProvider {
         @Override
         protected void projectOpened() {
             if (project instanceof J2SEProject) {
-                checkAssetsExtension(project);
+                manager.checkExtension(project);
             }
         }
     };

@@ -37,14 +37,14 @@
  */
 package com.jme3.gde.core.properties;
 
+import com.jme3.gde.core.assets.AssetsLookupProvider;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Properties;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.util.Exceptions;
 
 /**
@@ -53,13 +53,12 @@ import org.openide.util.Exceptions;
  */
 public class AssetsPropertiesPanel extends javax.swing.JPanel implements ActionListener {
 
-    private FileObject propertiesFile;
-    private Properties properties;
+    private Project project;
 
     /** Creates new form ProjectAssetsPropertiesPanel */
-    public AssetsPropertiesPanel(FileObject propertiesFile) {
+    public AssetsPropertiesPanel(Project propertiesFile) {
         initComponents();
-        this.propertiesFile = propertiesFile;
+        this.project = propertiesFile;
         loadSettings();
     }
 
@@ -148,59 +147,43 @@ public class AssetsPropertiesPanel extends javax.swing.JPanel implements ActionL
         e.getActionCommand();
         saveSettings();
     }
-    private FileLock lock;
 
     private void loadSettings() {
-        if (propertiesFile == null) {
-            jTextField1.setText("");
-            jTextField2.setText("");
-            jTextField3.setText("");
+        EditableProperties properties = AssetsLookupProvider.getProperties(project);
+        if (properties == null) {
+            Logger.getLogger(AssetsPropertiesPanel.class.getName()).log(Level.WARNING, "Could not obtain properties!");
             return;
         }
-        properties = new Properties();
-        try {
-            lock = propertiesFile.lock();
-            InputStream stream = propertiesFile.getInputStream();
-            properties.load(stream);
-            stream.close();
-            jTextField1.setText(properties.getProperty("assets.jar.name"));
-            jTextField2.setText(properties.getProperty("assets.excludes"));
-            jTextField3.setText(properties.getProperty("assets.folder.name"));
-            if ("true".equals(properties.getProperty("assets.compress"))) {
-                jCheckBox1.setSelected(true);
-            } else {
-                jCheckBox1.setSelected(false);
-            }
-            lock.releaseLock();
-        } catch (IOException ex) {
-            jTextField1.setText("");
-            jTextField2.setText("");
-            jTextField3.setText("");
-            Exceptions.printStackTrace(ex);
+        jTextField1.setText(properties.getProperty("assets.jar.name"));
+        jTextField2.setText(properties.getProperty("assets.excludes"));
+        jTextField3.setText(properties.getProperty("assets.folder.name"));
+        if ("true".equals(properties.getProperty("assets.compress"))) {
+            jCheckBox1.setSelected(true);
+        } else {
+            jCheckBox1.setSelected(false);
         }
     }
 
     private void saveSettings() {
-        if (propertiesFile == null) {
+        EditableProperties properties = AssetsLookupProvider.getProperties(project);
+        if (properties == null) {
+            Logger.getLogger(AssetsPropertiesPanel.class.getName()).log(Level.WARNING, "Could not obtain properties!");
             return;
         }
-        try {
-            //TODO: lock problems? properties that are loaded are not set -> assets.folder.name
+        //TODO: lock problems? properties that are loaded are not set -> assets.folder.name
 
-            properties.setProperty("assets.jar.name", jTextField1.getText());
-            properties.setProperty("assets.excludes", jTextField2.getText());
-            properties.setProperty("assets.folder.name", jTextField3.getText());
-            if (jCheckBox1.isSelected()) {
-                properties.setProperty("assets.compress", "true");
-            } else {
-                properties.setProperty("assets.compress", "false");
-            }
-            lock = propertiesFile.lock();
-            OutputStream stream = propertiesFile.getOutputStream(lock);
-            properties.store(stream, "This file contains properties for building the assets jar file");
-            stream.close();
-            lock.releaseLock();
+        properties.setProperty("assets.jar.name", jTextField1.getText());
+        properties.setProperty("assets.excludes", jTextField2.getText());
+        properties.setProperty("assets.folder.name", jTextField3.getText());
+        if (jCheckBox1.isSelected()) {
+            properties.setProperty("assets.compress", "true");
+        } else {
+            properties.setProperty("assets.compress", "false");
+        }
+        try {
+            AssetsLookupProvider.store(properties, project);
         } catch (IOException ex) {
+            Logger.getLogger(AssetsPropertiesPanel.class.getName()).log(Level.WARNING, "Could not store properties!");
             Exceptions.printStackTrace(ex);
         }
 

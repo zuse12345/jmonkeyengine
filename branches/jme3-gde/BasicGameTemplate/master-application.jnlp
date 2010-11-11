@@ -13,7 +13,7 @@
 <!--${JNLP.RESOURCES.RUNTIME}-->
 <!--${JNLP.RESOURCES.MAIN.JAR}-->
 <!--${JNLP.RESOURCES.JARS}-->
-<jar href='lib/${assets.jar.name}'/>
+<jar href='lib/assets.jar'/>
 <!--${JNLP.RESOURCES.EXTENSIONS}-->
     </resources>
     <application-desc main-class="${jnlp.main.class}">

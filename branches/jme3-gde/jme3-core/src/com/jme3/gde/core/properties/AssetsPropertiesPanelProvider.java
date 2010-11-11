@@ -37,7 +37,6 @@ package com.jme3.gde.core.properties;
  */
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -46,11 +45,10 @@ import org.openide.util.NbBundle;
 
 public class AssetsPropertiesPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-java-j2seproject", position = 100)
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-java-j2seproject", category="BuildCategory", position = 110)
     public static AssetsPropertiesPanelProvider createAssetsPanel() {
         return new AssetsPropertiesPanelProvider();
     }
-
     private Project project;
 
     private AssetsPropertiesPanelProvider() {
@@ -74,9 +72,8 @@ public class AssetsPropertiesPanelProvider implements ProjectCustomizer.Composit
     @Override
     public JComponent createComponent(Category category, Lookup lkp) {
         String nm = category.getName();
-        AssetsPropertiesPanel panel=new AssetsPropertiesPanel(project.getProjectDirectory().getFileObject("nbproject/assets.properties"));
+        AssetsPropertiesPanel panel = new AssetsPropertiesPanel(project);
         category.setStoreListener(panel);
         return panel;
     }
 }
-

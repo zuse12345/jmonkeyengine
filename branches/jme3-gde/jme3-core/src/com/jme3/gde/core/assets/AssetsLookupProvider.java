@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -245,7 +244,10 @@ public class AssetsLookupProvider implements LookupProvider {
         }
         for (int i = 0; i < keyList.length; i++) {
             String string = keyList[i];
-            ep.setProperty(string, eval.evaluator().getProperty(string));
+            String value = eval.evaluator().getProperty(string);
+            if (value != null) {
+                ep.setProperty(string, value);
+            }
             //TODO: create defaults!
         }
     }
@@ -316,7 +318,10 @@ public class AssetsLookupProvider implements LookupProvider {
     public static void putProperties(EditableProperties from, EditableProperties to) {
         for (int i = 0; i < keyList.length; i++) {
             String string = keyList[i];
-            to.put(string, from.getProperty(string));
+            String value = from.getProperty(string);
+            if (value != null) {
+                to.put(string, value);
+            }
         }
     }
 }

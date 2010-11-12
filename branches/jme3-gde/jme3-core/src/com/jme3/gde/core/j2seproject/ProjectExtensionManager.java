@@ -55,6 +55,13 @@ public class ProjectExtensionManager {
     private String extensionTargets;
     private String[] extensionDependencies;
 
+    /**
+     * Allows extending ant based projects
+     * @param extensionName Name of the extension
+     * @param extensionVersion Version of the extension (impl file is recreated when this changes)
+     * @param extensionTargets String that contains the whole target part of the xxx-impl.xml
+     * @param extensionDependencies String array with targets and dependencies, has to be multiple of two. First item target, second item dependency third target etc.
+     */
     public ProjectExtensionManager(String extensionName, String extensionVersion, String extensionTargets, String[] extensionDependencies) {
         this.extensionName = extensionName;
         this.extensionVersion = extensionVersion;
@@ -74,16 +81,16 @@ public class ProjectExtensionManager {
             Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.WARNING, "The project build script does not exist, the project cannot be extended by jMP.");
             return;
         }
-        FileObject assetsBuildFile = getImpl(projDir);
+        FileObject assetsBuildFile = getImplFile(projDir);
         AntBuildExtender extender = proj.getLookup().lookup(AntBuildExtender.class);
         if (extender != null) {
             assert assetsBuildFile != null;
-            if (extender.getExtension(extensionName) == null) { // NOI18N
-                AntBuildExtender.Extension ext = extender.addExtension(extensionName, assetsBuildFile); // NOI18N
+            if (extender.getExtension(extensionName) == null) {
+                AntBuildExtender.Extension ext = extender.addExtension(extensionName, assetsBuildFile);
                 for (int i = 0; i < extensionDependencies.length; i += 2) {
                     String target = extensionDependencies[i];
                     String extension = extensionDependencies[i + 1];
-                    ext.addDependency(target, extension); // NOI18N
+                    ext.addDependency(target, extension);
                 }
                 try {
                     ProjectManager.getDefault().saveProject(proj);
@@ -97,16 +104,16 @@ public class ProjectExtensionManager {
 
     }
 
-    private FileObject getImpl(FileObject projDir) {
+    private FileObject getImplFile(FileObject projDir) {
         FileObject assetsImpl = projDir.getFileObject("nbproject/" + extensionName + "-impl.xml");
         if (assetsImpl == null) {
             Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.INFO, "Creating {0}-impl.xml", extensionName);
-            assetsImpl = createImpl(projDir);
+            assetsImpl = createImplFile(projDir);
         } else {
             try {
                 if (!assetsImpl.asLines().get(1).startsWith("<!--" + extensionName + "-impl.xml v1.0-->")) {
                     assetsImpl.delete();
-                    assetsImpl = createImpl(projDir);
+                    assetsImpl = createImplFile(projDir);
                 }
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
@@ -115,7 +122,7 @@ public class ProjectExtensionManager {
         return assetsImpl;
     }
 
-    private FileObject createImpl(FileObject projDir) {
+    private FileObject createImplFile(FileObject projDir) {
         FileLock lock = null;
         FileObject file = null;
         try {
@@ -150,12 +157,12 @@ public class ProjectExtensionManager {
             Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.WARNING, "The project build script does not exist, the project cannot be extended by jMP.");
             return;
         }
-        FileObject assetsBuildFile = getImpl(projDir);
+        FileObject assetsBuildFile = getImplFile(projDir);
         AntBuildExtender extender = proj.getLookup().lookup(AntBuildExtender.class);
         if (extender != null) {
             assert assetsBuildFile != null;
-            if (extender.getExtension(extensionName) != null) { // NOI18N
-                extender.removeExtension(extensionName); // NOI18N
+            if (extender.getExtension(extensionName) != null) {
+                extender.removeExtension(extensionName);
                 try {
                     assetsBuildFile.delete();
                     ProjectManager.getDefault().saveProject(proj);

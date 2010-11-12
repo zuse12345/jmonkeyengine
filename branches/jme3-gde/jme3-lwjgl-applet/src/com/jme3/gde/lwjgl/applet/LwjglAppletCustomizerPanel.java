@@ -10,23 +10,25 @@
  */
 package com.jme3.gde.lwjgl.applet;
 
+import com.jme3.gde.core.j2seproject.ProjectExtensionProperties;
+
 /**
  *
  * @author normenhansen
  */
 public class LwjglAppletCustomizerPanel extends javax.swing.JPanel {
 
-    private LwjglAppletProperties properties;
+    private ProjectExtensionProperties properties;
 
     /** Creates new form LwjglAppletCustomizerPanel */
-    public LwjglAppletCustomizerPanel(LwjglAppletProperties properties) {
+    public LwjglAppletCustomizerPanel(ProjectExtensionProperties properties) {
         this.properties = properties;
         initComponents();
         loadProperties();
     }
 
     private void loadProperties(){
-        String str = properties.getProperties().getProperty("lwjgl.applet.enabled");
+        String str = properties.getProperty("lwjgl.applet.enabled");
         if ("true".equals(str)) {
             jCheckBox1.setSelected(true);
         } else {
@@ -36,9 +38,9 @@ public class LwjglAppletCustomizerPanel extends javax.swing.JPanel {
 
     public void saveProperties(){
         if(jCheckBox1.isSelected()){
-            properties.getProperties().setProperty("lwjgl.applet.enabled", "true");
+            properties.setProperty("lwjgl.applet.enabled", "true");
         }else{
-            properties.getProperties().setProperty("lwjgl.applet.enabled", "");
+            properties.setProperty("lwjgl.applet.enabled", "");
         }
     }
 

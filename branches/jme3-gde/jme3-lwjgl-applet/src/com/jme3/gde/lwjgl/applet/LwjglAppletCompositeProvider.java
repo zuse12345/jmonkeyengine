@@ -5,6 +5,7 @@
 package com.jme3.gde.lwjgl.applet;
 
 import com.jme3.gde.core.j2seproject.ProjectExtensionManager;
+import com.jme3.gde.core.j2seproject.ProjectExtensionProperties;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -26,7 +27,11 @@ import org.openide.util.NbBundle;
 public class LwjglAppletCompositeProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
     private static final String CAT_LWJGL_APPLET = "LwjglApplet"; // NOI18N
-    private static LwjglAppletProperties jwsProps = null;
+    private static ProjectExtensionProperties jwsProps = null;
+    private String[] keyList = new String[]{
+        "lwjgl.applet.enabled",
+        "lwjgl.applet.mainclass"
+    };
 
     public LwjglAppletCompositeProvider() {
     }
@@ -39,9 +44,9 @@ public class LwjglAppletCompositeProvider implements ProjectCustomizer.Composite
 
     @Override
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        // use OkListener to create new configuration first
-        jwsProps = new LwjglAppletProperties(context.lookup(Project.class));
+        jwsProps = new ProjectExtensionProperties(context.lookup(Project.class), keyList);
         category.setStoreListener(new SavePropsListener(jwsProps, context.lookup(Project.class)));
+        // use OkListener to create new configuration first
 //        category.setOkButtonListener(new OKPropsListener(jwsProps, context.lookup(Project.class)));
         return new LwjglAppletCustomizerPanel(jwsProps);
     }
@@ -76,16 +81,16 @@ public class LwjglAppletCompositeProvider implements ProjectCustomizer.Composite
                 + "    </target>\n";
         private String[] extensionDependencies = new String[]{"jar", "-lwjgl-applet"};
         private ProjectExtensionManager manager = new ProjectExtensionManager(extensionName, extensionVersion, extensionTargets, extensionDependencies);
-        private LwjglAppletProperties properties;
+        private ProjectExtensionProperties properties;
         private Project project;
 
-        public SavePropsListener(LwjglAppletProperties props, Project project) {
+        public SavePropsListener(ProjectExtensionProperties props, Project project) {
             this.properties = props;
             this.project = project;
         }
 
         public void actionPerformed(ActionEvent e) {
-            if ("true".equals(properties.getProperties().getProperty("lwjgl.applet.enabled"))) {
+            if ("true".equals(properties.getProperty("lwjgl.applet.enabled"))) {
                 manager.checkExtension(project);
             } else {
                 manager.removeExtension(project);

@@ -81,7 +81,7 @@ public class ProjectExtensionManager {
             Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.WARNING, "The project build script does not exist, the project cannot be extended by jMP.");
             return;
         }
-        FileObject assetsBuildFile = getImplFile(projDir);
+        FileObject assetsBuildFile = getImplFile(projDir, true);
         AntBuildExtender extender = proj.getLookup().lookup(AntBuildExtender.class);
         if (extender != null) {
             assert assetsBuildFile != null;
@@ -104,11 +104,13 @@ public class ProjectExtensionManager {
 
     }
 
-    private FileObject getImplFile(FileObject projDir) {
+    private FileObject getImplFile(FileObject projDir, boolean create) {
         FileObject assetsImpl = projDir.getFileObject("nbproject/" + extensionName + "-impl.xml");
         if (assetsImpl == null) {
-            Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.INFO, "Creating {0}-impl.xml", extensionName);
-            assetsImpl = createImplFile(projDir);
+            if (create) {
+                Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.INFO, "Creating {0}-impl.xml", extensionName);
+                assetsImpl = createImplFile(projDir);
+            }
         } else {
             try {
                 if (!assetsImpl.asLines().get(1).startsWith("<!--" + extensionName + "-impl.xml v1.0-->")) {
@@ -157,14 +159,15 @@ public class ProjectExtensionManager {
             Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.WARNING, "The project build script does not exist, the project cannot be extended by jMP.");
             return;
         }
-        FileObject assetsBuildFile = getImplFile(projDir);
+        FileObject assetsBuildFile = getImplFile(projDir, false);
         AntBuildExtender extender = proj.getLookup().lookup(AntBuildExtender.class);
         if (extender != null) {
-            assert assetsBuildFile != null;
             if (extender.getExtension(extensionName) != null) {
                 extender.removeExtension(extensionName);
                 try {
-                    assetsBuildFile.delete();
+                    if (assetsBuildFile != null) {
+                        assetsBuildFile.delete();
+                    }
                     ProjectManager.getDefault().saveProject(proj);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);

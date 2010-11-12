@@ -50,19 +50,52 @@ import org.openide.util.Exceptions;
 public class AssetData extends Properties {
 
     private AssetDataObject file;
-    private final String extension;
+    private String extension = "jmpdata";
+
+    public AssetData(AssetDataObject file) {
+        this.file = file;
+    }
 
     public AssetData(AssetDataObject file, String extension) {
         this.file = file;
         this.extension = extension;
     }
 
-    public AssetKey<?> getAssetKey(){
+    public AssetKey<?> getAssetKey() {
         return file.getAssetKey();
     }
 
-    public Object loadAsset(){
+    public Object loadAsset() {
         return file.loadAsset();
+    }
+
+    public void saveAsset() {
+        file.saveAsset();
+    }
+
+    @Override
+    public synchronized String getProperty(String key) {
+//        loadProperties();
+        return super.getProperty(key);
+    }
+
+    @Override
+    public synchronized String getProperty(String key, String defaultValue) {
+//        loadProperties();
+        return super.getProperty(key, defaultValue);
+    }
+
+    @Override
+    public synchronized Object setProperty(String key, String value) {
+        Object obj= super.setProperty(key, value);
+//        try {
+//            saveProperties();
+//        } catch (FileAlreadyLockedException ex) {
+//            Exceptions.printStackTrace(ex);
+//        } catch (IOException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+        return obj;
     }
 
     public void loadProperties() {
@@ -110,5 +143,9 @@ public class AssetData extends Properties {
                 lock.releaseLock();
             }
         }
+    }
+
+    public void setExtension(String extension) {
+        this.extension = extension;
     }
 }

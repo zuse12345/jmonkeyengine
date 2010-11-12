@@ -15,8 +15,6 @@ import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.effect.EmitterSphereShape;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
-import com.jme3.export.binary.BinaryExporter;
-import com.jme3.gde.core.assets.AssetDataObject;
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.assets.SpatialAssetDataObject;
 import com.jme3.gde.core.scene.SceneApplication;
@@ -36,6 +34,7 @@ import com.jme3.ui.Picture;
 import com.jme3.util.TangentBinormalGenerator;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.api.progress.ProgressHandle;
@@ -43,10 +42,8 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Confirmation;
-import org.openide.awt.StatusDisplayer;
-import org.openide.filesystems.FileLock;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
@@ -139,7 +136,7 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
                 emit.setGravity(0);
                 emit.setLowLife(5);
                 emit.setHighLife(10);
-                emit.setStartVel(new Vector3f(0, 0, 0));
+                emit.setInitialVelocity(new Vector3f(0, 0, 0));
                 emit.setImagesX(15);
                 Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
                 //                    mat.setTexture("m_Texture", SceneApplication.getApplication().getAssetManager().loadTexture("Effects/Smoke/Smoke.png"));
@@ -502,40 +499,44 @@ public class SceneEditorController implements PropertyChangeListener, NodeListen
     }
 
     public void saveScene() {
-        final Node node = jmeRootNode.getLookup().lookup(Node.class);
-        final FileObject file = currentFileObject.getPrimaryFile();
-        if (node != null && file != null) {
-            setNeedsSave(false);
-            SceneApplication.getApplication().enqueue(new Callable() {
-
-                public Object call() throws Exception {
-                    doSaveScene(node, file);
-                    return null;
-                }
-            });
-        }
-    }
-
-    public void doSaveScene(Node node, FileObject currentFileObject) {
-        ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Saving File..");
-        progressHandle.start();
-        BinaryExporter exp = BinaryExporter.getInstance();
-        FileLock lock = null;
+//        final Node node = jmeRootNode.getLookup().lookup(Node.class);
+//        if (node != null && file != null) {
+//            setNeedsSave(false);
+//            SceneApplication.getApplication().enqueue(new Callable() {
+//
+//                public Object call() throws Exception {
+//                    doSaveScene(node, file);
+//                    return null;
+//                }
+//        }
+//        }
         try {
-            lock = currentFileObject.lock();
-            exp.save(node, FileUtil.toFile(currentFileObject));
-        } catch (Exception ex) {
+            currentFileObject.getLookup().lookup(SaveCookie.class).save();
+        } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-        } finally {
-            if (lock != null) {
-                lock.releaseLock();
-            }
         }
-        progressHandle.finish();
-        StatusDisplayer.getDefault().setStatusText(currentFileObject.getNameExt() + " saved.");
-        //try make NetBeans update the tree.. :/
-
     }
+//
+//    public void doSaveScene(Node node, FileObject currentFileObject) {
+//        ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Saving File..");
+//        progressHandle.start();
+//        BinaryExporter exp = BinaryExporter.getInstance();
+//        FileLock lock = null;
+//        try {
+//            lock = currentFileObject.lock();
+//            exp.save(node, FileUtil.toFile(currentFileObject));
+//        } catch (Exception ex) {
+//            Exceptions.printStackTrace(ex);
+//        } finally {
+//            if (lock != null) {
+//                lock.releaseLock();
+//            }
+//        }
+//        progressHandle.finish();
+//        StatusDisplayer.getDefault().setStatusText(currentFileObject.getNameExt() + " saved.");
+//        //try make NetBeans update the tree.. :/
+//
+//    }
 
     private void refreshSelected(final JmeSpatial spat) {
         java.awt.EventQueue.invokeLater(new Runnable() {

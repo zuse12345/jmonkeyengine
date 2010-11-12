@@ -32,11 +32,22 @@
 package com.jme3.gde.core.assets;
 
 import com.jme3.asset.AssetKey;
+import com.jme3.export.Savable;
+import com.jme3.export.binary.BinaryExporter;
+import com.jme3.gde.core.scene.SceneApplication;
 import java.io.IOException;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -47,6 +58,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
@@ -57,16 +69,30 @@ public class AssetDataObject extends MultiDataObject {
 
     protected final Lookup lookup;
     protected final InstanceContent lookupContents = new InstanceContent();
-    protected SaveCookie saveCookie;
+    protected SaveCookie saveCookie = new SaveCookie() {
+
+        public void save() throws IOException {
+            //TODO: On OpenGL thread? -- safest way.. with get()?
+            SceneApplication.getApplication().enqueue(new Callable() {
+
+                public Object call() throws Exception {
+                    saveAsset();
+                    return null;
+                }
+            });
+        }
+    };
     protected DataNode dataNode;
+    protected Savable savable;
 
     public AssetDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        lookup = new ProxyLookup(getCookieSet().getLookup(), new AbstractLookup(getLookupContents()));
+        lookup = new ProxyLookup(getCookieSet().getLookup(), new AbstractLookup(getLookupContents()), Lookups.fixed(new AssetData(this)));
+        setSaveCookie(saveCookie);
         findAssetManager();
     }
 
-    protected void findAssetManager(){
+    protected void findAssetManager() {
         FileObject file = getPrimaryFile();
         ProjectManager pm = ProjectManager.getDefault();
         while (file != null) {
@@ -90,7 +116,7 @@ public class AssetDataObject extends MultiDataObject {
 
     @Override
     protected Node createNodeDelegate() {
-        DataNode node=new DataNode(this, Children.LEAF, getLookup());
+        DataNode node = new DataNode(this, Children.LEAF, getLookup());
         node.setIconBaseWithExtension("com/jme3/gde/core/assets/jme-logo.png");
         return node;
     }
@@ -120,8 +146,50 @@ public class AssetDataObject extends MultiDataObject {
         setModified(false);
     }
 
-    public Object loadAsset() {
-        return null;
+    //TODO: make save as j3o
+    public Savable loadAsset() {
+        ProjectAssetManager mgr = getLookup().lookup(ProjectAssetManager.class);
+        if (mgr == null) {
+            return null;
+        }
+        String assetKey = mgr.getRelativeAssetPath(getPrimaryFile().getPath());
+        FileLock lock = null;
+        try {
+            lock = getPrimaryFile().lock();
+            Savable spatial = (Savable) mgr.getManager().loadAsset(new AssetKey(assetKey));
+            lock.releaseLock();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            if (lock != null) {
+                lock.releaseLock();
+            }
+        }
+        return savable;
+    }
+
+    public void saveAsset() {
+        if (savable == null) {
+            Logger.getLogger(AssetDataObject.class.getName()).log(Level.WARNING, "Trying to save asset that has not been loaded before or does not support saving!");
+            return;
+        }
+        final Savable savable = this.savable;
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Saving File..");
+        progressHandle.start();
+        BinaryExporter exp = BinaryExporter.getInstance();
+        FileLock lock = null;
+        try {
+            lock = takePrimaryFileLock();
+            exp.save(savable, FileUtil.toFile(getPrimaryFile()));
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            if (lock != null) {
+                lock.releaseLock();
+            }
+        }
+        progressHandle.finish();
+        StatusDisplayer.getDefault().setStatusText(getPrimaryFile().getNameExt() + " saved.");
+        setModified(false);
     }
 
     public AssetKey<?> getAssetKey() {

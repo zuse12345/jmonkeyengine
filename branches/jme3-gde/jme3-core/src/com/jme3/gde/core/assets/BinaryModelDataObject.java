@@ -43,7 +43,7 @@ public class BinaryModelDataObject extends SpatialAssetDataObject {
 
     public BinaryModelDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        getLookupContents().add(new AssetData(this,"j3odata"));
+        getLookup().lookup(AssetData.class).setExtension("j3odata");
     }
 
     @Override
@@ -57,6 +57,7 @@ public class BinaryModelDataObject extends SpatialAssetDataObject {
         try {
             lock = getPrimaryFile().lock();
             Spatial spatial = mgr.getManager().loadModel(assetKey);
+            savable = spatial;
             lock.releaseLock();
             return spatial;
         } catch (IOException ex) {

@@ -45,7 +45,7 @@ import org.openide.util.NbBundle;
 
 public class AssetsPropertiesPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-java-j2seproject", category="BuildCategory", position = 110)
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-java-j2seproject", category="BuildCategory", position = 90)
     public static AssetsPropertiesPanelProvider createAssetsPanel() {
         return new AssetsPropertiesPanelProvider();
     }

@@ -31,7 +31,7 @@
  */
 package com.jme3.gde.core.assets;
 
-import com.jme3.asset.AssetKey;
+import com.jme3.asset.ModelKey;
 import com.jme3.scene.Spatial;
 import java.io.IOException;
 import org.openide.filesystems.FileLock;
@@ -51,13 +51,13 @@ public class SpatialAssetDataObject extends AssetDataObject {
     }
 
     @Override
-    public AssetKey<Spatial> getAssetKey() {
+    public ModelKey getAssetKey() {
         ProjectAssetManager mgr = getLookup().lookup(ProjectAssetManager.class);
         if (mgr == null) {
             return null;
         }
         String assetKey = mgr.getRelativeAssetPath(getPrimaryFile().getPath());
-        return new AssetKey<Spatial>(assetKey);
+        return new ModelKey(assetKey);
     }
 
     @Override

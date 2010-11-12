@@ -56,7 +56,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
     ComposerCameraController camController;
     SceneToolController toolController;
     SceneEditorController editorController;
-    private SaveCookie saveCookie = new SaveCookieImpl();
+//    private SaveCookie saveCookie = new SaveCookieImpl();
     private SceneRequest currentRequest;
     private HelpCtx ctx = new HelpCtx("jme3.jmonkeyplatform.scene_composer");
 
@@ -644,7 +644,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         SceneRequest request = new SceneRequest(this, jmeNode, manager);
         request.setDataObject(file);
         request.setHelpCtx(ctx);
-        file.setSaveCookie(saveCookie);
+//        file.setSaveCookie(saveCookie);
         if (editorController != null) {
             editorController.cleanup();
         }
@@ -744,16 +744,16 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
         return true;
     }
 
-    public class SaveCookieImpl implements SaveCookie {
-
-        public void save() throws IOException {
-            editorController.saveScene();
-            //TODO: update infos.. runs on callable..
-//            if (currentRequest != null) {
-//                setSceneInfo(currentRequest.getRootNode(), editorController.getCurrentFileObject(), true);
-//            }
-        }
-    }
+//    public class SaveCookieImpl implements SaveCookie {
+//
+//        public void save() throws IOException {
+//            editorController.saveScene();
+//            //TODO: update infos.. runs on callable..
+////            if (currentRequest != null) {
+////                setSceneInfo(currentRequest.getRootNode(), editorController.getCurrentFileObject(), true);
+////            }
+//        }
+//    }
 
     private void cleanupControllers() {
         if (camController != null) {

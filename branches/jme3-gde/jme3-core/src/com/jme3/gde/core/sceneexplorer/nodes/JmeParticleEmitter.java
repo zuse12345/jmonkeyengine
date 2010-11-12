@@ -94,9 +94,9 @@ public class JmeParticleEmitter extends JmeGeometry{
         set.put(makeProperty(obj, float.class, "getHighLife", "setHighLife", "High Life"));
         set.put(makeProperty(obj, float.class, "getLowLife", "setLowLife", "Low Life"));
         set.put(makeProperty(obj, float.class, "getGravity", "setGravity", "Gravity"));
-        set.put(makeProperty(obj, Vector3f.class, "getStartVel", "setStartVel", "Start Velocity"));
+        set.put(makeProperty(obj, Vector3f.class, "getInitialVelocity", "setInitialVelocity", "Initial Velocity"));
         set.put(makeProperty(obj, Vector3f.class, "getFaceNormal", "setFaceNormal", "Face Normal"));
-        set.put(makeProperty(obj, float.class, "getVariation", "setVariation", "Variation"));
+        set.put(makeProperty(obj, float.class, "getVelocityVariation", "setVariation", "Velocity Variation"));
         set.put(makeProperty(obj, boolean.class, "isFacingVelocity", "setFacingVelocity", "Facing Velocity"));
         set.put(makeProperty(obj, boolean.class, "isRandomAngle", "setRandomAngle", "Random Angle"));
         set.put(makeProperty(obj, float.class, "getRotateSpeed", "setRotateSpeed", "Rotate Speed"));

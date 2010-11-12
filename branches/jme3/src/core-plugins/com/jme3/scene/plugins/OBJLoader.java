@@ -334,7 +334,7 @@ public final class OBJLoader implements AssetLoader {
             currentMatName = scan.next();
         }else if (cmd.equals("mtllib")){
             // specify MTL lib to use for this OBJ file
-            String mtllib = scan.next();
+            String mtllib = scan.nextLine().trim();
             loadMtlLib(mtllib);
         }else if (cmd.equals("s") || cmd.equals("g")){
             nextStatement();

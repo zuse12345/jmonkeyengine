@@ -1,3 +1,34 @@
+/*
+ * Copyright (c) 2009-2010 jMonkeyEngine
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * * Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ *
+ * * Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the distribution.
+ *
+ * * Neither the name of 'jMonkeyEngine' nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
+ *   without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 /*
  * OpenGL ES 2 Android Renderer
@@ -120,7 +151,7 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 
 
 	public void clearBuffers(boolean color, boolean depth, boolean stencil) {
-		logger.fine("clearBuffers(color=" + color + ", depth=" + depth + ", stencil=" + stencil + ")");
+		logger.info("clearBuffers(color=" + color + ", depth=" + depth + ", stencil=" + stencil + ")");
 
 		int bits = 0;
 
@@ -138,7 +169,7 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 	}
 
 	public void setBackgroundColor(ColorRGBA color) {
-		logger.fine("GLES20.glClearColor(" + color + ")");
+		logger.info("GLES20.glClearColor(" + color + ")");
 		GLES20.glClearColor(color.r, color.g, color.b, color.a);
 	}
 
@@ -165,7 +196,7 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 		}
 	*/
 
-		logger.fine("applyRenderState(" + state + ")");
+		logger.info("applyRenderState(" + state + ")");
 
 		if (state.isDepthTest() && !context.depthTestEnabled) {
 			GLES20.glEnable(GLES20.GL_DEPTH_TEST);
@@ -332,7 +363,7 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 	private int vpX, vpY, vpW, vpH;
 
 	public void setViewPort(int x, int y, int width, int height) {
-		logger.fine("setViewPort(" + x + ", " + y + ", " + width + ", " + height + ")");
+		logger.info("setViewPort(" + x + ", " + y + ", " + width + ", " + height + ")");
 		GLES20.glViewport(x, y, width, height);
 		vpX = x;
 		vpY = y;
@@ -373,13 +404,13 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 	*/
 	public void setShader(Shader shader) {
 
-		logger.fine("setShader(" + shader + ")");
+		logger.info("setShader(" + shader + ")");
 
 		if (shader == null) {
 			if (context.boundShaderProgram > 0) {
-				logger.fine("GLES20.glUseProgram(0) ...");
+				logger.info("GLES20.glUseProgram(0) ...");
 				GLES20.glUseProgram(0);
-				logger.fine("GLES20.glUseProgram(0) done.");
+				logger.info("GLES20.glUseProgram(0) done.");
 				statistics.onShaderUse(null, true);
 				context.boundShaderProgram = 0;
 				boundShader = null;
@@ -403,25 +434,25 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 					// check if shader can be used
 					// with current state
 
-					logger.fine("GLES20.glValidateProgram(" + shader.getId() + ") ...");
+					logger.info("GLES20.glValidateProgram(" + shader.getId() + ") ...");
 					GLES20.glValidateProgram(shader.getId());
-					logger.fine("GLES20.glValidateProgram(" + shader.getId() + ") ... done");
-					logger.fine("GLES20.glGetProgramiv() ...");
+					logger.info("GLES20.glValidateProgram(" + shader.getId() + ") ... done");
+					logger.info("GLES20.glGetProgramiv() ...");
 					GLES20.glGetProgramiv(shader.getId(), GLES20.GL_VALIDATE_STATUS, intBuf1);
-					logger.fine("GLES20.glGetProgramiv() ... done.");
+					logger.info("GLES20.glGetProgramiv() ... done.");
 
 					boolean validateOK = intBuf1.get(0) == GLES20.GL_TRUE;
 
 					if (validateOK) {
-						logger.fine("shader validate success");
+						logger.info("shader validate success");
 					} else {
 						logger.warning("shader validate failure");
 					}
 				}
 
-				logger.fine("GLES20.glUseProgram(0) ...");
+				logger.info("GLES20.glUseProgram(0) ...");
 				GLES20.glUseProgram(shader.getId());
-				logger.fine("GLES20.glUseProgram(0) ... done.");
+				logger.info("GLES20.glUseProgram(0) ... done.");
 				statistics.onShaderUse(shader, true);
 				context.boundShaderProgram = shader.getId();
 				boundShader = shader;
@@ -440,9 +471,9 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 		if (id == -1) {
 			// create program
 
-			logger.fine("GLES20.glCreateProgram() ...");
+			logger.info("GLES20.glCreateProgram() ...");
 			id = GLES20.glCreateProgram();
-			logger.fine("GLES20.glCreateProgram() ... done.");
+			logger.info("GLES20.glCreateProgram() ... done.");
 
 			if (id <= 0)
 				throw new RendererException("Invalid ID received when trying to create shader program.");
@@ -465,26 +496,26 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 				return;
 			}
 
-			logger.fine("GLES20.glAttachShader(" + id + ", " + source.getId() + ") ...");
+			logger.info("GLES20.glAttachShader(" + id + ", " + source.getId() + ") ...");
 			GLES20.glAttachShader(id, source.getId());
-			logger.fine("GLES20.glAttachShader(" + id + ", " + source.getId() + ") ... done");
+			logger.info("GLES20.glAttachShader(" + id + ", " + source.getId() + ") ... done");
 		}
 
 		// link shaders to program
-		logger.fine("GLES20.glLinkProgram(" + id + ") ...");
+		logger.info("GLES20.glLinkProgram(" + id + ") ...");
 		GLES20.glLinkProgram(id);
-		logger.fine("GLES20.glLinkProgram(" + id + ") ... done.");
+		logger.info("GLES20.glLinkProgram(" + id + ") ... done.");
 
-		logger.fine("GLES20.glGetProgramiv(" + id + ") ...");
+		logger.info("GLES20.glGetProgramiv(" + id + ") ...");
 		GLES20.glGetProgramiv(id, GLES20.GL_LINK_STATUS, intBuf1);
-		logger.fine("GLES20.glGetProgramiv(" + id + ") ... done.");
+		logger.info("GLES20.glGetProgramiv(" + id + ") ... done.");
 		boolean linkOK = intBuf1.get(0) == GLES20.GL_TRUE;
 		String infoLog = null;
         
 		if (VALIDATE_SHADER || !linkOK) {
-			logger.fine("GLES20.glGetProgramiv(" + id + ") ...");
+			logger.info("GLES20.glGetProgramiv(" + id + ") ...");
 			GLES20.glGetProgramiv(id, GLES20.GL_INFO_LOG_LENGTH, intBuf1);
-			logger.fine("GLES20.glGetProgramiv(" + id + ") ... done.");
+			logger.info("GLES20.glGetProgramiv(" + id + ") ... done.");
 			int length = intBuf1.get(0);
 			if (length > 3) {
 				// get infos
@@ -499,9 +530,9 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 				logBuf.get(logBytes, 0, length);
 				infoLog = new String(logBytes);
 */
-				logger.fine("GLES20.glGetProgramInfoLog(" + id + ") ...");
+				logger.info("GLES20.glGetProgramInfoLog(" + id + ") ...");
 				infoLog = GLES20.glGetProgramInfoLog(id);
-				logger.fine("GLES20.glGetProgramInfoLog(" + id + ") ... done.");
+				logger.info("GLES20.glGetProgramInfoLog(" + id + ") ... done.");
 			}
 		}
 
@@ -509,7 +540,7 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 			if (infoLog != null) {
 				logger.log(Level.INFO, "shader link success. \n{0}", infoLog);
 			} else {
-				logger.fine("shader link success");
+				logger.info("shader link success");
 			}
 		} else {
 			if (infoLog != null) {
@@ -553,9 +584,9 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 
 		if (id == -1) {
 			// create id
-			logger.fine("GLES20.glCreateShader() ...");
+			logger.info("GLES20.glCreateShader() ...");
 			id = GLES20.glCreateShader(convertShaderType(source.getType()));
-			logger.fine("GLES20.glCreateShader() ... done.");
+			logger.info("GLES20.glCreateShader() ... done.");
 
 			if (id <= 0)
 				throw new RendererException("Invalid ID received when trying to create shader.");
@@ -564,45 +595,45 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 		}
 
 		// upload shader source
-		// merge the defines and source code
+		// merge the deinfos and source code
 
 
 		byte[] precisionDeclaration = "precision mediump float;\n".getBytes();
 
 		byte[] versionData = new byte[]{};//"#version 140\n".getBytes();
-		//        versionData = "#define INSTANCING 1\n".getBytes();
-		byte[] definesCodeData = source.getDefines().getBytes();
+		//        versionData = "#deinfo INSTANCING 1\n".getBytes();
+		byte[] deinfosCodeData = source.getDefines().getBytes();
 		byte[] sourceCodeData = source.getSource().getBytes();
 
 		ByteBuffer codeBuf = BufferUtils.createByteBuffer(
 			precisionDeclaration.length +
 			versionData.length +
-			definesCodeData.length +
+			deinfosCodeData.length +
 			sourceCodeData.length
 		);
 
 		codeBuf.put(precisionDeclaration);
 		codeBuf.put(versionData);
-		codeBuf.put(definesCodeData);
+		codeBuf.put(deinfosCodeData);
 		codeBuf.put(sourceCodeData);
 		codeBuf.flip();
 
-		logger.fine("shader code buffer length: [" + codeBuf.limit() + "]");
+		logger.info("shader code buffer length: [" + codeBuf.limit() + "]");
 
 		byte[] codeBufBytes = new byte[codeBuf.limit()];
 		codeBuf.get(codeBufBytes, 0, codeBuf.limit());
 		String codeString = new String(codeBufBytes);
  
-		logger.fine("GLES20.glShaderSource() ...");
+		logger.info("GLES20.glShaderSource() ...");
 		GLES20.glShaderSource(id, codeString);
-		logger.fine("GLES20.glShaderSource() ... done.");
-		logger.fine("GLES20.glCompileShader(" + id + ") ...");
+		logger.info("GLES20.glShaderSource() ... done.");
+		logger.info("GLES20.glCompileShader(" + id + ") ...");
 		GLES20.glCompileShader(id);
-		logger.fine("GLES20.glCompileShader(" + id + ") ... done.");
+		logger.info("GLES20.glCompileShader(" + id + ") ... done.");
 
-		logger.fine("GLES20.glShaderiv() ...");
+		logger.info("GLES20.glShaderiv() ...");
 		GLES20.glGetShaderiv(id, GLES20.GL_COMPILE_STATUS, intBuf1);
-		logger.fine("GLES20.glShaderiv() ... done.");
+		logger.info("GLES20.glShaderiv() ... done.");
 
 		boolean compiledOK = intBuf1.get(0) == GLES20.GL_TRUE;
 
@@ -611,9 +642,9 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 		if (VALIDATE_SHADER || !compiledOK) {
 			// even if compile succeeded, check
 			// log for warnings
-			logger.fine("GLES20.glShaderiv() ...");
+			logger.info("GLES20.glShaderiv() ...");
 			GLES20.glGetShaderiv(id, GLES20.GL_INFO_LOG_LENGTH, intBuf1);
-			logger.fine("GLES20.glShaderiv() ... done.");
+			logger.info("GLES20.glShaderiv() ... done.");
 
 			int length = intBuf1.get(0);
 
@@ -641,7 +672,7 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 			}
 
 			logger.warning(
-				"defines: [" + source.getDefines() + "]\nsource: [" + source.getSource() + "]"
+				"deinfos: [" + source.getDefines() + "]\nsource: [" + source.getSource() + "]"
 			);
 		}
 
@@ -652,9 +683,9 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 		if (!compiledOK){
 			// make sure to dispose id cause all program's
 			// shaders will be cleared later.
-			logger.fine("GLES20.glDeleteShader() ...");
+			logger.info("GLES20.glDeleteShader() ...");
 			GLES20.glDeleteShader(id);
-			logger.fine("GLES20.glDeleteShader() ... done.");
+			logger.info("GLES20.glDeleteShader() ... done.");
 		} else {
 			// register for cleanup since the ID is usable
 			objManager.registerForCleanup(source);
@@ -671,7 +702,7 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 	}
 
 	protected void updateUniform(Shader shader, Uniform uniform) {
-		logger.fine("updateUniform(" + shader + ", " + uniform.getName() + ")");
+		logger.info("updateUniform(" + shader + ", " + uniform.getName() + ")");
 
 		int shaderId = shader.getId();
 
@@ -679,9 +710,9 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 		assert shader.getId() > 0;
 
 		if (context.boundShaderProgram != shaderId) {
-			logger.fine("GLES20.glUseProgram(" + shaderId + ") ...");
+			logger.info("GLES20.glUseProgram(" + shaderId + ") ...");
 			GLES20.glUseProgram(shaderId);
-			logger.fine("GLES20.glUseProgram(" + shaderId + ") ... done.");
+			logger.info("GLES20.glUseProgram(" + shaderId + ") ... done.");
 			statistics.onShaderUse(shader, true);
 			boundShader = shader;
 			context.boundShaderProgram = shaderId;
@@ -741,14 +772,14 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 
 				if (val instanceof ColorRGBA){
 					ColorRGBA c = (ColorRGBA) val;
-					logger.fine("glUniform4f ...");
+					logger.info("glUniform4f ...");
 					GLES20.glUniform4f(loc, c.r, c.g, c.b, c.a);
-					logger.fine("glUniform4f ... done.");
+					logger.info("glUniform4f ... done.");
 				} else {
 					Quaternion c = (Quaternion) uniform.getValue();
-					logger.fine("glUniform4f ...");
+					logger.info("glUniform4f ...");
 					GLES20.glUniform4f(loc, c.getX(), c.getY(), c.getZ(), c.getW());
-					logger.fine("glUniform4f ... done.");
+					logger.info("glUniform4f ... done.");
 				}
 				break;
 			case Boolean:
@@ -820,13 +851,13 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 	private ByteBuffer nameBuf = BufferUtils.createByteBuffer(250);
 
 	protected void updateUniformLocation(Shader shader, Uniform uniform) {
-		logger.fine("updateUniformLocation(" + shader + ", " + uniform + ":" + uniform.getName() + ")");
+		logger.info("updateUniformLocation(" + shader + ", " + uniform + ":" + uniform.getName() + ")");
 
 		// XXX: \0 character ?
 
-		logger.fine("glGetUniformLocation(" + shader.getId() + ", " + uniform.getName() + ") ...");
+		logger.info("glGetUniformLocation(" + shader.getId() + ", " + uniform.getName() + ") ...");
 		int loc = GLES20.glGetUniformLocation(shader.getId(), uniform.getName());
-		logger.fine("glGetUniformLocation(" + shader.getId() + ", " + uniform.getName() + ") ... done [" + loc + "]");
+		logger.info("glGetUniformLocation(" + shader.getId() + ", " + uniform.getName() + ") ... done [" + loc + "]");
 
 		if (loc < 0) {
 			uniform.setLocation(-1);
@@ -1329,7 +1360,7 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 			indices = buffers.get(Type.Index.ordinal());
 		}
 
-		logger.fine("buffers.size: [" + buffers.size() + "]");
+		logger.info("buffers.size: [" + buffers.size() + "]");
 
 		for (Entry<VertexBuffer> entry : buffers) {
 			VertexBuffer vb = entry.getValue();
@@ -1350,15 +1381,15 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 			}
 		}
 
-		logger.fine("indeces " + (indices == null? "==": "!=") + " null.");
+		logger.info("indeces " + (indices == null? "==": "!=") + " null.");
 		if (indices != null) {
 			drawTriangleList(indices, mesh, count);
 		} else {
 
 		//            throw new UnsupportedOperationException("Cannot render without index buffer");
-			logger.fine("GLES20.glDrawArrays() ...");
+			logger.info("GLES20.glDrawArrays() ...");
 			GLES20.glDrawArrays(convertElementMode(mesh.getMode()), 0, mesh.getVertexCount());
-			logger.fine("GLES20.glDrawArrays() ... done.");
+			logger.info("GLES20.glDrawArrays() ... done.");
 		}
 
 		clearVertexAttribs();
@@ -1400,7 +1431,7 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
     }
 
     protected void setVertexAttrib(VertexBuffer vb, VertexBuffer idb){
-		logger.fine("setVertexAttribute()");
+		logger.info("setVertexAttribute()");
 
         if (vb.getBufferType() == VertexBuffer.Type.Index)
             throw new IllegalArgumentException("Index buffers not allowed to be set to vertex attrib");
@@ -1413,17 +1444,17 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
             Attribute attrib = boundShader.getAttribute(vb.getBufferType().name());
             int loc = attrib.getLocation();
 		if (loc == -1) {
-			logger.warning("attrib.getLocation is -1");
-			return; // not defined
+			logger.warning("attrib.getLocation is -1: [" + vb.getBufferType().name() + "]");
+			return; // not deinfod
 		}
 
             if (loc == -2){
 
 		String attributeName = "in" + vb.getBufferType().name();
 
-		logger.fine("GLES20.glGetAttribLocation(" + programId + ", " + attributeName + ") ...");
+		logger.info("GLES20.glGetAttribLocation(" + programId + ", " + attributeName + ") ...");
                 loc = GLES20.glGetAttribLocation(programId, attributeName);
-		logger.fine("GLES20.glGetAttribLocation(" + programId + ", " + attributeName + ") ... done [" + loc + "].");
+		logger.info("GLES20.glGetAttribLocation(" + programId + ", " + attributeName + ") ... done [" + loc + "].");
 
                 // not really the name of it in the shader (inPosition\0) but
                 // the internal name of the enum (Position).
@@ -1438,9 +1469,9 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 
             VertexBuffer[] attribs = context.boundAttribs;
             if (!context.attribIndexList.moveToNew(loc)){
-		logger.fine("GLES20.glEnableVertexAttribArray(" + loc + ") ...");
+		logger.info("GLES20.glEnableVertexAttribArray(" + loc + ") ...");
                 GLES20.glEnableVertexAttribArray(loc);
-		logger.fine("GLES20.glEnableVertexAttribArray(" + loc + ") ... done.");
+		logger.info("GLES20.glEnableVertexAttribArray(" + loc + ") ... done.");
                 //System.out.println("Enabled ATTRIB IDX: "+loc);
             }
             if (attribs[loc] != vb){
@@ -1448,9 +1479,9 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
                 int bufId = idb != null ? idb.getId() : vb.getId();
                 assert bufId != -1;
                 if (context.boundArrayVBO != bufId){
-			logger.fine("GLES20.glBindBuffer() ...");
+			logger.info("GLES20.glBindBuffer() ...");
                     GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, bufId);
-			logger.fine("GLES20.glBindBuffer() ... done.");
+			logger.info("GLES20.glBindBuffer() ... done.");
                     context.boundArrayVBO = bufId;
                 }
 
@@ -1503,21 +1534,21 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
                 }
                 int elementLength = elementLengths[i];
                 indexData.position(curOffset);
-		logger.fine("GLES20.glDrawElements() 0 ...");
+		logger.info("GLES20.glDrawElements() 0 ...");
                 GLES20.glDrawElements(elMode,
                                   elementLength,
                                   fmt,
                                   indexData);
                 curOffset += elementLength;
-		logger.fine("GLES20.glDrawElements() 0 ... done.");
+		logger.info("GLES20.glDrawElements() 0 ... done.");
             }
         }else{
-		logger.fine("GLES20.glDrawElements() 1...");
+		logger.info("GLES20.glDrawElements() 1...");
 		GLES20.glDrawElements(convertElementMode(mode),
                               indexData.capacity(),
                               convertVertexFormat(indexBuf.getFormat()),
                               indexData);
-		logger.fine("GLES20.glDrawElements() 1 ... done.");
+		logger.info("GLES20.glDrawElements() 1 ... done.");
         }
     }
 

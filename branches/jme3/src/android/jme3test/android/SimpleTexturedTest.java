@@ -22,6 +22,14 @@ public class SimpleTexturedTest extends SimpleApplication {
 
 	@Override
 	public void simpleInitApp() {
+
+		/*
+		 * GUI rendering is broken on Android right now and prevents the main view from rendering.
+		 * Detaching all children lets the main view to be rendered.
+		 */
+
+		guiNode.detachAllChildren();
+
 		Sphere s = new Sphere(8, 8, .5f);
 		Geometry geom = new Geometry("sphere", s);
 	//	ModelConverter.optimize(geom);

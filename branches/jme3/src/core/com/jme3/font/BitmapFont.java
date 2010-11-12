@@ -236,7 +236,7 @@ public class BitmapFont implements Savable {
             }else if (theChar == '\r' || theChar == '\t'){
                 // dont print these characters
                 continue;
-            }else{
+            }else if (c != null){
                 float xOffset = c.getXOffset() * sizeScale;
                 float yOffset = c.getYOffset() * sizeScale;
                 float xAdvance = c.getXAdvance() * sizeScale;

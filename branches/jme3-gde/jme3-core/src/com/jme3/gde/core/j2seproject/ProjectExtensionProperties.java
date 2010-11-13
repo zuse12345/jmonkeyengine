@@ -46,7 +46,7 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
 /**
- *
+ * Allows accessing a defined set of properties of a jMonkeyPlatform project
  * @author normenhansen
  */
 public class ProjectExtensionProperties {
@@ -56,7 +56,7 @@ public class ProjectExtensionProperties {
     private EditableProperties properties;
 
     /**
-     * Allows accessing a defined set of properties in a j2se project
+     * Allows accessing a defined set of properties of a jMonkeyPlatform project
      * @param project The project to which the properties are stored
      * @param keyList A list of all property keys this list should use
      */

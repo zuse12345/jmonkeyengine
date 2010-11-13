@@ -339,8 +339,7 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
                 //linear interpolation of the rotation while rotating horizontally
                 if (rotating) {
                     rotationLerpFactor = Math.min(rotationLerpFactor + tpf * tpf * rotationSensitivity, 1);
-                    rotation = FastMath.interpolateLinear(rotationLerpFactor, rotation, targetRotation);
-                    System.out.println(targetRotation);
+                    rotation = FastMath.interpolateLinear(rotationLerpFactor, rotation, targetRotation);                    
                     if (targetRotation + 0.01f >= rotation && targetRotation - 0.01f <= rotation) {
                         rotating = false;
                         rotationLerpFactor = 0;

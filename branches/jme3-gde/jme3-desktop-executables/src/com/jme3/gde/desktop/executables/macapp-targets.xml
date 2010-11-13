@@ -1,0 +1,17 @@
+    <target name="-mac-app">
+        <echo>MacOSX Application Creation</echo>
+        <copy file="Info.plist" tofile="_Info.plist">
+            <filterchain>
+                <replacestring from="$${main.class}" to="${main.class}"/>
+                <replacestring from="$${application.title}" to="${application.title}"/>
+            </filterchain>
+        </copy>
+        <zip destfile="${dist.dir}/${application.title}-MacOSX.zip">
+            <zipfileset file="osx-stub" filemode="755" fullpath="${application.title}.app/Contents/MacOS/JavaApplicationStub"/>
+            <zipfileset file="_Info.plist" fullpath="${application.title}.app/Contents/Info.plist"/>
+            <zipfileset file="osx-icon.icns" fullpath="${application.title}.app/Contents/Resources/GenericApp.icns"/>
+            <zipfileset file="${dist.jar}" prefix="${application.title}.app/Contents/Resources/Java"/>
+            <zipfileset dir="${dist.dir}/lib" prefix="${application.title}.app/Contents/Resources/Java/lib"/>
+        </zip>
+        <delete file="_Info.plist"/>
+    </target>

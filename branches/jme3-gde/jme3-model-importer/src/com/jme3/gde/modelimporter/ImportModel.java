@@ -105,8 +105,8 @@ public final class ImportModel implements ActionListener {
                 }
             }
         }
-        File file = new File((manager.getAssetFolderName() + File.separator + importPath + File.separator + key.getName()).replaceAll("/", File.separator));
-        File outFile = new File((manager.getAssetFolderName() + File.separator + importPath + File.separator + key.getName().replaceAll(key.getExtension(), "j3o")).replaceAll("/", File.separator));
+        File file = new File(manager.getAssetFolderName() + "/" + importPath + "/" + key.getName());
+        File outFile = new File(manager.getAssetFolderName() + "/" + importPath + "/" + key.getName().replaceAll(key.getExtension(), "j3o"));
         DataObject targetModel;
         try {
             targetModel = DataObject.find(FileUtil.toFileObject(file));
@@ -134,7 +134,7 @@ public final class ImportModel implements ActionListener {
                 }
             }
         }
-        FileObject dest = FileUtil.toFileObject(new File((manager.getAssetFolderName() + File.separator + importPath).replaceAll("/", File.separator)).getParentFile());
+        FileObject dest = FileUtil.toFileObject(new File(manager.getAssetFolderName() + "/" + importPath).getParentFile());
         dest.refresh();
     }
 

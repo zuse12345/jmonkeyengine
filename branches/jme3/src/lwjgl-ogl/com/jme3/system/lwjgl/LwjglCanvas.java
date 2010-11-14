@@ -247,7 +247,6 @@ public class LwjglCanvas extends LwjglAbstractDisplay implements JmeCanvasContex
         }
 
         logger.log(Level.INFO, "OGL: Destroying display (temporarily)");
-
         Display.destroy();
     }
 

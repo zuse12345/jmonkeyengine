@@ -191,7 +191,7 @@ public class InputManager implements RawInputListener {
         for (Entry<Float> axisValue : axisValues){
             int hash = axisValue.getKey();
             float value = axisValue.getValue();
-            invokeAnalogs(hash, value, true);
+            invokeAnalogs(hash, value * frameTPF, true);
         }
     }
 
@@ -218,9 +218,9 @@ public class InputManager implements RawInputListener {
         }
     }
 
-    private void invokeAnalogsAndActions(int hash, float value){
+    private void invokeAnalogsAndActions(int hash, float value, boolean applyTpf){
         if (value < axisDeadZone){
-            invokeAnalogs(hash, value, true);
+            invokeAnalogs(hash, value, !applyTpf);
             return;
         }
 
@@ -229,6 +229,8 @@ public class InputManager implements RawInputListener {
             return;
 
         boolean valueChanged = !axisValues.containsKey(hash);
+        if (applyTpf)
+            value *= frameTPF;
 
         int size = maps.size();
         for (int i = size - 1; i >= 0; i--){
@@ -278,11 +280,11 @@ public class InputManager implements RawInputListener {
 
         }else if (value < 0){
             int hash = JoyAxisTrigger.joyAxisHash(joyId, axis, true);
-            invokeAnalogsAndActions(hash, -value);
+            invokeAnalogsAndActions(hash, -value, true);
             axisValues.put(hash, -value);
         }else{
             int hash = JoyAxisTrigger.joyAxisHash(joyId, axis, false);
-            invokeAnalogsAndActions(hash, value);
+            invokeAnalogsAndActions(hash, value, true);
             axisValues.put(hash, value);
         }
     }
@@ -311,15 +313,15 @@ public class InputManager implements RawInputListener {
 
         if (evt.getDX() != 0){
             float val = Math.abs(evt.getDX()) / 1024f;
-            invokeAnalogsAndActions(MouseAxisTrigger.mouseAxisHash(MouseInput.AXIS_X, evt.getDX() < 0), val);
+            invokeAnalogsAndActions(MouseAxisTrigger.mouseAxisHash(MouseInput.AXIS_X, evt.getDX() < 0), val, false);
         }
         if (evt.getDY() != 0){
             float val = Math.abs(evt.getDY()) / 1024f;
-            invokeAnalogsAndActions(MouseAxisTrigger.mouseAxisHash(MouseInput.AXIS_Y, evt.getDY() < 0), val);
+            invokeAnalogsAndActions(MouseAxisTrigger.mouseAxisHash(MouseInput.AXIS_Y, evt.getDY() < 0), val, false);
         }
         if (evt.getDeltaWheel() != 0){
             float val = Math.abs(evt.getDeltaWheel()) / 100f;
-            invokeAnalogsAndActions(MouseAxisTrigger.mouseAxisHash(MouseInput.AXIS_WHEEL, evt.getDeltaWheel() < 0), val);
+            invokeAnalogsAndActions(MouseAxisTrigger.mouseAxisHash(MouseInput.AXIS_WHEEL, evt.getDeltaWheel() < 0), val, false);
         }
     }
 

@@ -35,6 +35,7 @@ package com.jme3.input;
 import com.jme3.collision.MotionAllowedListener;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
+import com.jme3.input.controls.JoyAxisTrigger;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
@@ -192,6 +193,15 @@ public class FlyByCamera implements AnalogListener, ActionListener {
 
         inputManager.addListener(this, mappings);
         inputManager.setCursorVisible(dragToRotate);
+
+        Joystick[] joysticks = inputManager.getJoysticks();
+        if (joysticks != null && joysticks.length > 0){
+            Joystick joystick = joysticks[0];
+            joystick.assignAxis("FLYCAM_StrafeRight", "FLYCAM_StrafeLeft", JoyInput.AXIS_POV_X);
+            joystick.assignAxis("FLYCAM_Forward", "FLYCAM_Backward", JoyInput.AXIS_POV_Y);
+            joystick.assignAxis("FLYCAM_Right", "FLYCAM_Left", joystick.getXAxisIndex());
+            joystick.assignAxis("FLYCAM_Down", "FLYCAM_Up", joystick.getYAxisIndex());
+        }
     }
 
     protected void rotateCamera(float value, Vector3f axis){

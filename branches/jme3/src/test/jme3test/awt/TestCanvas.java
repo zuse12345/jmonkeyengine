@@ -99,12 +99,18 @@ public class TestCanvas {
             }
         });
 
-        JMenuItem itemKillCanvas = new JMenuItem("Kill Canvas");
+        JMenuItem itemKillCanvas = new JMenuItem("Stop/Start Canvas");
         menuFile.add(itemKillCanvas);
         itemKillCanvas.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                //frame.getContentPane().remove(canvas);
-                app.stop();
+                frame.getContentPane().remove(canvas);
+                app.stop(true);
+
+                String appClass = "jme3test.model.shape.TestBox";
+                createCanvas(appClass);
+                frame.getContentPane().add(canvas);
+                frame.pack();
+                startApp();
             }
         });
 
@@ -168,8 +174,7 @@ public class TestCanvas {
                 return null;
             }
         });
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        
     }
 
     public static void main(String[] args){
@@ -183,6 +188,8 @@ public class TestCanvas {
                 frame.getContentPane().add(canvas);
                 frame.pack();
                 startApp();
+                frame.setLocationRelativeTo(null);
+                frame.setVisible(true);
             }
         });
     }

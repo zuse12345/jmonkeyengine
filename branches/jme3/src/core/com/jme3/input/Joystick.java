@@ -9,15 +9,20 @@ public final class Joystick {
     private int joyId;
     private int buttonCount;
     private int axisCount;
+    private int axisXIndex, axisYIndex;
     private String name;
 
     public Joystick(InputManager inputManager, int joyId,
-                    String name, int buttonCount, int axisCount){
+                    String name, int buttonCount, int axisCount,
+                    int xAxis, int yAxis){
         this.inputManager = inputManager;
         this.joyId = joyId;
         this.name = name;
         this.buttonCount = buttonCount;
         this.axisCount = axisCount;
+
+        this.axisXIndex = xAxis;
+        this.axisYIndex = yAxis;
     }
 
     public void assignButton(String mappingName, int buttonId){
@@ -30,6 +35,14 @@ public final class Joystick {
     public void assignAxis(String positiveMapping, String negativeMapping, int axisId){
         inputManager.addMapping(positiveMapping, new JoyAxisTrigger(joyId, axisId, false));
         inputManager.addMapping(negativeMapping, new JoyAxisTrigger(joyId, axisId, true));
+    }
+
+    public int getXAxisIndex(){
+        return axisXIndex;
+    }
+
+    public int getYAxisIndex(){
+        return axisYIndex;
     }
 
     public int getAxisCount() {

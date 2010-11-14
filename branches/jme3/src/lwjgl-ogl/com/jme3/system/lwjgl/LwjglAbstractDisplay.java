@@ -36,7 +36,6 @@ import com.jme3.input.JoyInput;
 import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
 import com.jme3.input.lwjgl.JInputJoyInput;
-import com.jme3.input.lwjgl.LwjglJoyInput;
 import com.jme3.input.lwjgl.LwjglKeyInput;
 import com.jme3.input.lwjgl.LwjglMouseInput;
 import com.jme3.system.AppSettings;
@@ -88,12 +87,6 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
      */
     protected void initInThread(){
         try{
-            createContext(settings);
-//            String rendererStr = settings.getString("Renderer");
-
-            logger.info("Display created.");
-            logger.log(Level.FINE, "Running on thread: {0}", Thread.currentThread().getName());
-
             if (!JmeSystem.isLowPermissions()){
                 Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                     public void uncaughtException(Thread thread, Throwable thrown) {
@@ -101,6 +94,12 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
                     }
                 });
             }
+
+            createContext(settings);
+//            String rendererStr = settings.getString("Renderer");
+
+            logger.info("Display created.");
+            logger.log(Level.FINE, "Running on thread: {0}", Thread.currentThread().getName());
 
             logger.log(Level.INFO, "Adapter: {0}", Display.getAdapter());
             logger.log(Level.INFO, "Driver Version: {0}", Display.getVersion());
@@ -120,7 +119,7 @@ public abstract class LwjglAbstractDisplay extends LwjglContext implements Runna
             }
             
             created.set(true);
-        } catch (LWJGLException ex){
+        } catch (Exception ex){
             listener.handleError("Failed to create display", ex);
         } finally {
             // TODO: It is possible to avoid "Failed to find pixel format"

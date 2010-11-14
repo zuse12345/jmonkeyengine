@@ -28,16 +28,27 @@ public class JInputJoyInput implements JoyInput {
     private HashMap<Axis, Integer>[] axisIdsToIndices;
     private HashMap<Controller, Integer> controllerToIndices;
 
+    private int xAxis, yAxis;
+
     private void loadIdentifiers(int controllerIdx, Controller c){
         Component[] ces = c.getComponents();
         int numButtons = 0;
         int numAxes = 0;
+        xAxis = -1;
+        yAxis = -1;
         for (Component comp : ces){
             Identifier id = comp.getIdentifier();
             if (id instanceof Button){
                 buttonIdsToIndices[controllerIdx].put((Button)id, numButtons);
                 numButtons ++;
             }else if (id instanceof Axis){
+                Axis axis = (Axis) id;
+                if (axis == Axis.X){
+                    xAxis = numAxes;
+                }else if (axis == Axis.Y){
+                    yAxis = numAxes;
+                }
+
                 axisIdsToIndices[controllerIdx].put((Axis)id, numAxes);
                 numAxes ++;
             }
@@ -81,7 +92,8 @@ public class JInputJoyInput implements JoyInput {
             Joystick joy = new Joystick(inputManager,
                                         joyIndex, c.getName(),
                                         buttonIdsToIndices[joyIndex].size(),
-                                        axisIdsToIndices[joyIndex].size());
+                                        axisIdsToIndices[joyIndex].size(),
+                                        xAxis, yAxis);
             joysticks[joyIndex] = joy;
             joyIndex++;
         }

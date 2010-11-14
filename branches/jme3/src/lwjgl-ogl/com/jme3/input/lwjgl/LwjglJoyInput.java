@@ -46,7 +46,8 @@ import org.lwjgl.Sys;
 import org.lwjgl.input.Controller;
 import org.lwjgl.input.Controllers;
 
-public class LwjglJoyInput implements JoyInput {
+@Deprecated
+class LwjglJoyInput implements JoyInput {
 
     private static final Logger logger = Logger.getLogger(LwjglKeyInput.class.getName());
 
@@ -165,7 +166,8 @@ public class LwjglJoyInput implements JoyInput {
             Joystick j = new Joystick(inputManager, i,
                                         c.getName(),
                                         c.getButtonCount(),
-                                        c.getAxisCount());
+                                        c.getAxisCount(),
+                                        -1,-1);
             joysticks[i] = j;
         }
         return joysticks;

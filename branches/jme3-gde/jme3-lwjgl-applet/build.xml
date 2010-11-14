@@ -5,4 +5,9 @@
 <project name="com.jme3.gde.lwjgl.applet" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project com.jme3.gde.lwjgl.applet.</description>
     <import file="nbproject/build-impl.xml"/>
+    <target name="zip-appletdata" description="Zips applet data (icon)">
+        <zip destfile="src/com/jme3/gde/lwjgl/applet/applet-data.zip">
+            <zipfileset dir="applet-data" prefix=""/>
+        </zip>
+    </target>
 </project>

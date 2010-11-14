@@ -108,6 +108,7 @@ public class ProjectExtensionManager {
      * @param proj
      */
     public void checkExtension(Project proj) {
+        Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.INFO, "Checking extension..");
         if (!(proj instanceof J2SEProject)) {
             Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.WARNING, "Trying to load Assets Properties from non-asset project");
             return;

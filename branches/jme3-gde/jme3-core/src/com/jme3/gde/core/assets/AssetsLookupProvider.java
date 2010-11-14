@@ -37,6 +37,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
@@ -89,6 +91,8 @@ public class AssetsLookupProvider implements LookupProvider {
         FileObject assetsProperties = prj.getProjectDirectory().getFileObject("nbproject" + File.separator + "assets.properties");
         if (assetsProperties == null) {
             assetsProperties = prj.getProjectDirectory().getFileObject("nbproject" + File.separator + "project.properties");
+        }else{
+            Logger.getLogger(AssetsLookupProvider.class.getName()).log(Level.WARNING, "Project is using old assets.properties file");
         }
         if (assetsProperties != null && assetsProperties.isValid()) {
             FileLock lock = null;
@@ -100,6 +104,7 @@ public class AssetsLookupProvider implements LookupProvider {
                 in.close();
                 String assetsFolderName = properties.getProperty("assets.folder.name", "assets");
                 if (prj.getProjectDirectory().getFileObject(assetsFolderName) != null) {
+                    Logger.getLogger(AssetsLookupProvider.class.getName()).log(Level.INFO, "Valid jMP project, extending with ProjectAssetManager");
                     return Lookups.fixed(new ProjectAssetManager(prj, assetsFolderName), openedHook);
                 }
             } catch (Exception ex) {
@@ -110,7 +115,7 @@ public class AssetsLookupProvider implements LookupProvider {
                 }
             }
         }
-
+        
         return Lookups.fixed();
     }
     private ProjectOpenedHook openedHook = new ProjectOpenedHook() {
@@ -136,6 +141,7 @@ public class AssetsLookupProvider implements LookupProvider {
         //old properties files
         FileObject oldProperties = projDir.getFileObject("nbproject/assets.properties");
         if (oldProperties != null) {
+            Logger.getLogger(AssetsLookupProvider.class.getName()).log(Level.INFO, "Deleting old project assets.properties");
             try {
                 props.load(oldProperties.getInputStream());
                 store(props, project);

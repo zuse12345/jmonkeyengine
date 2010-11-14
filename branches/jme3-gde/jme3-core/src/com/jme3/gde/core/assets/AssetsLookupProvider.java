@@ -88,9 +88,9 @@ public class AssetsLookupProvider implements LookupProvider {
     public Lookup createAdditionalLookup(Lookup lookup) {
         Project prj = lookup.lookup(Project.class);
         project = prj;
-        FileObject assetsProperties = prj.getProjectDirectory().getFileObject("nbproject" + File.separator + "assets.properties");
+        FileObject assetsProperties = prj.getProjectDirectory().getFileObject("nbproject/assets.properties");
         if (assetsProperties == null) {
-            assetsProperties = prj.getProjectDirectory().getFileObject("nbproject" + File.separator + "project.properties");
+            assetsProperties = prj.getProjectDirectory().getFileObject("nbproject/project.properties");
         }else{
             Logger.getLogger(AssetsLookupProvider.class.getName()).log(Level.WARNING, "Project is using old assets.properties file");
         }

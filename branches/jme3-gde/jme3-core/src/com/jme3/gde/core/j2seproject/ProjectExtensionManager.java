@@ -123,7 +123,6 @@ public class ProjectExtensionManager {
         FileObject assetsBuildFile = getImplFile(projDir, true);
         AntBuildExtender extender = proj.getLookup().lookup(AntBuildExtender.class);
         if (extender != null) {
-            Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.INFO, "Extending project {0}", proj.getProjectDirectory().getName());
             assert assetsBuildFile != null;
             if (extender.getExtension(extensionName) == null) {
                 Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.INFO, "Creating extension {0}", extensionName);

@@ -36,7 +36,8 @@ public class LwjglAppletCompositeProvider implements ProjectCustomizer.Composite
     private static ProjectExtensionProperties jwsProps = null;
     private String[] keyList = new String[]{
         "lwjgl.applet.enabled",
-        "lwjgl.applet.mainclass"
+        "lwjgl.applet.width",
+        "lwjgl.applet.height"
     };
 
     public LwjglAppletCompositeProvider() {
@@ -60,7 +61,7 @@ public class LwjglAppletCompositeProvider implements ProjectCustomizer.Composite
     private class SavePropsListener implements ActionListener {
 
         private String extensionName = "lwjglapplet";
-        private String extensionVersion = "v0.8";
+        private String extensionVersion = "v0.9";
         private String[] extensionDependencies = new String[]{"jar", "-lwjgl-applet"};
         private ProjectExtensionManager manager = new ProjectExtensionManager(extensionName, extensionVersion, extensionDependencies);
         private ProjectExtensionProperties properties;

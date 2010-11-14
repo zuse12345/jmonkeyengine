@@ -29,23 +29,27 @@ public class LwjglAppletCustomizerPanel extends javax.swing.JPanel implements Ac
         loadProperties();
     }
 
-    private void loadProperties(){
+    private void loadProperties() {
         String str = properties.getProperty("lwjgl.applet.enabled");
         if ("true".equals(str)) {
             jCheckBox1.setSelected(true);
         } else {
             jCheckBox1.setSelected(false);
         }
-        jTextField1.setText(properties.getProperty("lwjgl.applet.mainclass"));
+        if (properties.getProperty("lwjgl.applet.width") != null) {
+            jTextField1.setText(properties.getProperty("lwjgl.applet.width"));
+            jTextField2.setText(properties.getProperty("lwjgl.applet.height"));
+        }
     }
 
-    private void saveProperties(){
-        if(jCheckBox1.isSelected()){
+    private void saveProperties() {
+        if (jCheckBox1.isSelected()) {
             properties.setProperty("lwjgl.applet.enabled", "true");
-        }else{
+        } else {
             properties.setProperty("lwjgl.applet.enabled", "");
         }
-        properties.setProperty("lwjgl.applet.mainclass", jTextField1.getText());
+        properties.setProperty("lwjgl.applet.width", jTextField1.getText());
+        properties.setProperty("lwjgl.applet.height", jTextField2.getText());
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -111,7 +115,6 @@ public class LwjglAppletCustomizerPanel extends javax.swing.JPanel implements Ac
                 .addContainerGap(212, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;

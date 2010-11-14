@@ -5,8 +5,8 @@
 
         <property name="applet.version" value="1.0"/>
         <property name="applet.logo" value="appletlogo.png"/>
-        <property name="applet.width" value="640"/>
-        <property name="applet.height" value="480"/>
+<!--        <property name="applet.width" value="640"/>
+        <property name="applet.height" value="480"/>-->
 
         <delete dir="${applet.dir}"/>
         <unzip src="${libs.appletloader}" dest="${applet.dir}"/>
@@ -68,12 +68,12 @@
 
             <replacefilter>
                 <replacetoken>${applet.width}</replacetoken>
-                <replacevalue expandProperties="true">${applet.width}</replacevalue>
+                <replacevalue expandProperties="true">${lwjgl.applet.width}</replacevalue>
             </replacefilter>
 
             <replacefilter>
                 <replacetoken>${applet.height}</replacetoken>
-                <replacevalue expandProperties="true">${applet.height}</replacevalue>
+                <replacevalue expandProperties="true">${lwjgl.applet.height}</replacevalue>
             </replacefilter>
             <!--
             <replacefilter>

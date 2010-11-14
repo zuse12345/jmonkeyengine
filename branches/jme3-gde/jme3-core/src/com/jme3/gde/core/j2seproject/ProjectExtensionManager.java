@@ -122,8 +122,10 @@ public class ProjectExtensionManager {
         FileObject assetsBuildFile = getImplFile(projDir, true);
         AntBuildExtender extender = proj.getLookup().lookup(AntBuildExtender.class);
         if (extender != null) {
+            Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.INFO, "Extending project {0}", proj.getProjectDirectory().getName());
             assert assetsBuildFile != null;
             if (extender.getExtension(extensionName) == null) {
+                Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.INFO, "Creating extension {0}", extensionName);
                 AntBuildExtender.Extension ext = extender.addExtension(extensionName, assetsBuildFile);
                 if (extensionDependencies != null) {
                     for (int i = 0; i < extensionDependencies.length; i += 2) {
@@ -147,15 +149,20 @@ public class ProjectExtensionManager {
     private FileObject getImplFile(FileObject projDir, boolean create) {
         FileObject assetsImpl = projDir.getFileObject("nbproject/" + extensionName + "-impl.xml");
         if (assetsImpl == null) {
+            Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.INFO, "No {0}-impl.xml found", extensionName);
             if (create) {
                 Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.INFO, "Creating {0}-impl.xml", extensionName);
                 assetsImpl = createImplFile(projDir);
             }
         } else {
+            Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.INFO, "Found {0}-impl.xml", extensionName);
             try {
-                if (!assetsImpl.asLines().get(1).startsWith("<!--" + extensionName + "-impl.xml v1.0-->")) {
+                if (create && !assetsImpl.asLines().get(1).startsWith("<!--" + extensionName + "-impl.xml " + extensionVersion + "-->")) {
+                    Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.INFO, "Updating {0}-impl.xml", extensionName);
                     assetsImpl.delete();
+                    Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.INFO, "Deleted {0}-impl.xml", extensionName);
                     assetsImpl = createImplFile(projDir);
+                    Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.INFO, "Recreated {0}-impl.xml", extensionName);
                 }
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
@@ -205,15 +212,18 @@ public class ProjectExtensionManager {
             Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.WARNING, "The project build script does not exist, the project cannot be extended by jMP.");
             return;
         }
-        FileObject assetsBuildFile = getImplFile(projDir, false);
         AntBuildExtender extender = proj.getLookup().lookup(AntBuildExtender.class);
         if (extender != null) {
             if (extender.getExtension(extensionName) != null) {
+                Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.INFO, "Removing extension {0}", extensionName);
                 extender.removeExtension(extensionName);
                 try {
+                    FileObject assetsBuildFile = getImplFile(projDir, false);
                     if (assetsBuildFile != null) {
+                        Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.INFO, "Deleting {0}", assetsBuildFile.getNameExt());
                         assetsBuildFile.delete();
                     }
+                    Logger.getLogger(ProjectExtensionManager.class.getName()).log(Level.INFO, "Saving project {0}", proj.getProjectDirectory().getName());
                     ProjectManager.getDefault().saveProject(proj);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);

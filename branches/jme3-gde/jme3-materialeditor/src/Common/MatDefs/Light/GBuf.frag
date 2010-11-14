@@ -24,7 +24,14 @@ varying vec3 vNormal;
 
 #ifdef NORMALMAP
   uniform sampler2D m_NormalMap;
+  varying mat3 tbnMat;
 #endif
+
+vec2 encodeNormal(in vec3 n){
+    vec2 enc = normalize(n.xy) * (sqrt(-n.z*0.5+0.5));
+    enc = enc*vec2(0.5)+vec2(0.5);
+    return enc;
+}
 
 void main(){
     vec2 newTexCoord = texCoord;
@@ -49,7 +56,7 @@ void main(){
       vec3 normal = (normalHeight.xyz * vec3(2.0) - vec3(1.0));
       normal.y = -normal.y;
 
-      // TODO: Convert normal from tangent-space to view-space
+      normal = tbnMat * normal;
     #elif !defined(VERTEX_LIGHTING)
       vec3 normal = vNormal;
       #if !defined(LOW_QUALITY) && !defined(V_TANGENT)
@@ -72,8 +79,8 @@ void main(){
     diffuseColor.rgb  *= DiffuseSum.rgb;
     specularColor.rgb *= SpecularSum.rgb;
 
-    gl_FragData[1] = vec4(diffuseColor.rgb, height);
-    gl_FragData[2] = vec4(Optics_SphereCoord(vNormal),
-                          Optics_SphereCoord(normal));
-    gl_FragData[0] = vec4(specularColor.rgb, m_Shininess / 128.0);
+    gl_FragData[0] = vec4(diffuseColor.rgb, 1.0);
+    gl_FragData[1] = vec4(encodeNormal(normal), 0.0, 0.0);
+                          /*encodeNormal(vNormal));*/
+    gl_FragData[2] = vec4(specularColor.rgb, m_Shininess / 128.0);
 }

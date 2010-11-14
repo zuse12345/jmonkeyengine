@@ -5,6 +5,7 @@ MaterialDef Radial Blur {
         Color m_Color
         Float m_SampleDist
         Float m_SampleStrength
+        FloatArray m_Samples
     }
 
     Technique {

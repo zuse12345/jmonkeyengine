@@ -2,6 +2,13 @@ MaterialDef Point Sprite {
 
     MaterialParameters {
         Texture2D m_Texture
+        Float m_Quadratic
+        Boolean m_PointSprite
+
+        // Texture of the glowing parts of the material
+        Texture2D m_GlowMap
+        // The glow color of the object
+        Color m_GlowColor
     }
 
     Technique {
@@ -11,25 +18,48 @@ MaterialDef Point Sprite {
 
         WorldParameters {
             WorldViewProjectionMatrix
+            WorldViewMatrix
+            WorldMatrix
+            CameraPosition
         }
 
         RenderState {
             Blend AlphaAdditive
             DepthWrite Off
-            AlphaTestFalloff 0.01
+            PointSprite On
+            // AlphaTestFalloff 0.01
         }
 
         Defines {
             USE_TEXTURE : m_Texture
+            POINT_SPRITE : m_PointSprite
         }
     }
 
     Technique FixedFunc {
         RenderState {
             Blend AlphaAdditive
-            DepthWrite Off
-            AlphaTestFalloff 0.01
+            // DepthWrite Off
+            // AlphaTestFalloff 0.01
         }
     }
 
+   Technique Glow {
+
+        VertexShader GLSL100:   Common/MatDefs/Misc/SimpleTextured.vert
+        FragmentShader GLSL100: Common/MatDefs/Light/Glow.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+        }
+
+        Defines {
+            HAS_GLOWMAP : m_GlowMap
+            HAS_GLOWCOLOR : m_GlowColor
+        }
+
+        RenderState {
+            PointSprite On
+        }
+    }
 }

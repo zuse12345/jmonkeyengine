@@ -11,6 +11,7 @@ uniform float m_Scale;
 uniform float m_Bias;
 uniform bool m_UseOnlyAo;
 uniform bool m_UseAo;
+uniform vec2[4] m_Samples;
 
 varying vec2 texCoord;
 
@@ -20,7 +21,7 @@ vec3 getPosition(in vec2 uv){
   //Reconstruction from depth
   depthv =texture2D(m_DepthTexture,uv).r;
   float depth= (2.0 * m_FrustumNearFar.x) / (m_FrustumNearFar.y + m_FrustumNearFar.x - depthv* (m_FrustumNearFar.y-m_FrustumNearFar.x));
-  
+
   //one frustum corner method
   float x = mix(-frustumCorner.x, frustumCorner.x, uv.x);
   float y = mix(-frustumCorner.y, frustumCorner.y, uv.y);
@@ -55,15 +56,22 @@ vec4 getColor(in float result){
   }else{
       return texture2D(m_Texture,texCoord);
   }
- 
+
 }
 
+vec2 reflection(in vec2 v1,in vec2 v2){
+    vec2 result= 2.0 * dot(v2, v1) * v2;
+    result=v1-result;
+    return result;
+}
+
+
+//const vec2 vec[4] = vec2[4](vec2(1.0,0.0), vec2(-1.0,0.0), vec2(0.0,1.0), vec2(0.0,-1.0));
 void main(){
 
    float result;
-      
-   vec2 vec[4] = vec2[4](vec2(1,0), vec2(-1,0), vec2(0,1), vec2(0,-1));
 
+   //vec2 vec[4] = { vec2(1.0, 0.0), vec2(-1.0, 0.0), vec2(0.0, 1.0), vec2(0.0, -1.0) };
    vec3 position = getPosition(texCoord);
     //optimization, do not calculate AO if depth is 1
    if(depthv==1.0){
@@ -75,16 +83,16 @@ void main(){
 
    float ao = 0.0;
    float rad =m_SampleRadius / position.z;
-   
+
 
    int iterations = 4;
    for (int j = 0; j < iterations; ++j){
-      vec2 coord1 = reflect(vec[j], rand) * rad;
+      vec2 coord1 = reflection(vec2(m_Samples[j]), vec2(rand)) * vec2(rad,rad);
       vec2 coord2 = vec2(coord1.x* 0.707 - coord1.y* 0.707, coord1.x* 0.707 + coord1.y* 0.707) ;
 
-      ao += doAmbientOcclusion(texCoord + coord1 * 0.25, position, normal);
+      ao += doAmbientOcclusion(texCoord + coord1.xy * 0.25, position, normal);
       ao += doAmbientOcclusion(texCoord + coord2 * 0.50, position, normal);
-      ao += doAmbientOcclusion(texCoord + coord1 * 0.75, position, normal);
+      ao += doAmbientOcclusion(texCoord + coord1.xy * 0.75, position, normal);
       ao += doAmbientOcclusion(texCoord + coord2 * 1.00, position, normal);
 
    }

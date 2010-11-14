@@ -69,7 +69,7 @@ public class ProjectAssetManager {
     }
 
     public void addFileLocator(String relativePath) {
-        String string = project.getProjectDirectory().getPath() + File.separator + relativePath + File.separator;
+        String string = project.getProjectDirectory().getPath() + "/" + relativePath + "/";
         Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Add locator:{0}", string);
         manager.registerLocator(string,
                 "com.jme3.asset.plugins.FileLocator");
@@ -159,12 +159,12 @@ public class ProjectAssetManager {
      * @return the folderName
      */
     public String getAssetFolderName() {
-        return project.getProjectDirectory().getPath() + File.separator + getFolderName();
+        return project.getProjectDirectory().getPath() + "/" + getFolderName();
     }
 
     public String getAbsoluteAssetPath(String path) {
         for (Iterator<String> it = folderName.iterator(); it.hasNext();) {
-            String string = project.getProjectDirectory().getPath() + File.separator + it.next() + File.separator + path;
+            String string = project.getProjectDirectory().getPath() + "/" + it.next() + "/" + path;
             Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Check {0}", string);
             File file = new File(string);
             if (file.exists()) {

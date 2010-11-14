@@ -126,7 +126,7 @@ public class MaterialProperties {
             String[] lines = line.split(":");
             setName(lines[0].trim());
             setMatDefName(lines[1].trim());
-            matDef = FileUtil.toFileObject(new File(manager.getFolderName() + File.separator + getMatDefName()).getAbsoluteFile());
+            matDef = FileUtil.toFileObject(new File(manager.getFolderName() + "/" + getMatDefName()).getAbsoluteFile());
             //try to read from classpath if not in assets folder
             if (matDef == null || !matDef.isValid()) {
                 try {

@@ -73,8 +73,8 @@ public final class PublishAssetPackAction implements Action {
 
     private void packZip(WizardDescriptor wiz) {
         try {
-            String outFilename = context.getProjectDirectory().getPath() + File.separator + wiz.getProperty("filename");
-            ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
+            String outFilename = context.getProjectDirectory().getPath() + "/" + wiz.getProperty("filename");
+            ZipOutputStream out = new ZipOutputStream(new FileOutputStream(new File(outFilename)));
             zipDir(((AssetPackProject) context).getProjectDirectory().getPath(), out, (String) wiz.getProperty("filename"));
             out.close();
         } catch (IOException e) {
@@ -117,7 +117,7 @@ public final class PublishAssetPackAction implements Action {
         if (folder == null) {
             return;
         }
-        String zipFilename = context.getProjectDirectory().getPath() + File.separator + wiz.getProperty("filename");
+        String zipFilename = context.getProjectDirectory().getPath() + "/" + wiz.getProperty("filename");
         try {
             FileObject source = FileUtil.toFileObject(new File(zipFilename));
             FileObject destination = FileUtil.toFileObject(new File(folder));
@@ -131,14 +131,14 @@ public final class PublishAssetPackAction implements Action {
         if (wiz.getProperty("publish_jmeorg") == null) {
             return;
         }
-        String file = context.getProjectDirectory().getPath() + File.separator + wiz.getProperty("filename");
+        String file = context.getProjectDirectory().getPath() + "/" + wiz.getProperty("filename");
         String user = NbPreferences.forModule(Installer.class).get("assetpack_user", null);
         String pass = NbPreferences.forModule(Installer.class).get("assetpack_pass", null);
         OnlinePacksConnector.upload(file, user, pass);
     }
 
     private void cleanup(WizardDescriptor wiz) {
-        String file = context.getProjectDirectory().getPath() + File.separator + wiz.getProperty("filename");
+        String file = context.getProjectDirectory().getPath() + "/" + wiz.getProperty("filename");
         new File(file).delete();
     }
 

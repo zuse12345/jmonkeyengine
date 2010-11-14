@@ -50,7 +50,7 @@ public class OgreXMLConvertOptions {
             return sourceFile;
         } else {
             FileObject fobj = FileUtil.toFileObject(new File(sourceFile));
-            return fobj.getParent().getPath() + File.separator + fobj.getName();
+            return fobj.getParent().getPath() + "/" + fobj.getName();
         }
     }
 

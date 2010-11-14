@@ -89,10 +89,10 @@ public final class ImportModel implements ActionListener {
         List<FileObject> deleteList=new LinkedList<FileObject>();
         for (Iterator<AssetKey> it = keyList.iterator(); it.hasNext();) {
             AssetKey assetKey = it.next();
-            File file = new File(path + File.separator + assetKey.getFolder() + assetKey.getName());
+            File file = new File(path + "/" + assetKey.getFolder() + assetKey.getName());
             if (file.exists()) {
                 FileObject source = FileUtil.toFileObject(file);
-                File destFolder = new File((manager.getAssetFolderName() + File.separator + importPath + File.separator + assetKey.getFolder() + File.separator).replaceAll("/", File.separator));
+                File destFolder = new File(manager.getAssetFolderName() + "/" + importPath + "/" + assetKey.getFolder() + "/");
                 destFolder.mkdirs();
                 FileObject dest = FileUtil.toFileObject(destFolder);
                 try {

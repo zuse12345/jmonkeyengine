@@ -58,7 +58,7 @@ public class OnlineBrowser extends javax.swing.JPanel implements HyperlinkListen
                     String name = event.getURL().toString();
                     name = name.substring(name.lastIndexOf("/") + 1, name.length());
                     name = name.substring(0, name.lastIndexOf("."));
-                    name = lib.getProjectDirectory().getPath() + File.separator + name;
+                    name = lib.getProjectDirectory().getPath() + "/" + name;
                     File folder = new File(name);
                     folder.mkdirs();
                     try {

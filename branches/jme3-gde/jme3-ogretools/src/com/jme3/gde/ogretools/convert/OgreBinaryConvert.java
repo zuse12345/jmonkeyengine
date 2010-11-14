@@ -68,7 +68,7 @@ public final class OgreBinaryConvert implements ActionListener {
                             throw new UnknownError("could not convert model");
                         }
                         //export model
-                        String outputPath = file.getParent().getPath() + File.separator + file.getName() + ".j3o";
+                        String outputPath = file.getParent().getPath() + "/" + file.getName() + ".j3o";
                         BinaryExporter exp = BinaryExporter.getInstance();
                         File outFile=new File(outputPath);
                         exp.save(model, outFile);

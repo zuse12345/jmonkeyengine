@@ -41,7 +41,7 @@ public final class AdvOgreXMLConvertAction implements ActionListener {
 
         // TODO use context
         final FileObject file = context.getPrimaryFile();
-        final OgreXMLConvertOptions options = new OgreXMLConvertOptions(file.getPath(), file.getParent().getPath() + File.separator + "+" + file.getNameExt());
+        final OgreXMLConvertOptions options = new OgreXMLConvertOptions(file.getPath(), file.getParent().getPath() + "/" + "+" + file.getNameExt());
         AdvOgreXMLConvertDialog dialog = new AdvOgreXMLConvertDialog(WindowManager.getDefault().getMainWindow(), true, options);
         dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
         dialog.setVisible(true);
@@ -83,7 +83,7 @@ public final class AdvOgreXMLConvertAction implements ActionListener {
                 try {
 //                    lock = file.lock();
                     progressHandle.progress("Creating j3o file", 3);
-                    String outputPath = file.getParent().getPath() + File.separator + context.getPrimaryFile().getName() + ".j3o";
+                    String outputPath = file.getParent().getPath() + "/" + context.getPrimaryFile().getName() + ".j3o";
                     ((DesktopAssetManager) manager.getManager()).clearCache();
                     Spatial model = manager.getManager().loadModel(manager.getRelativeAssetPath(file.getPath()));
                     BinaryExporter exp = BinaryExporter.getInstance();

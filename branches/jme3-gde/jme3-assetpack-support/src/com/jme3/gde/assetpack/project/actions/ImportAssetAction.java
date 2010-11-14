@@ -79,7 +79,7 @@ public final class ImportAssetAction implements Action {
                 file.setAttribute(extraProps[i], extraValues[i]);
             }
             if (!fileObject.isExisting()) {
-                File ffile = new File(context.getAssetsFolder().getPath() + File.separator + fileObject.getPath());
+                File ffile = new File(context.getAssetsFolder().getPath() + "/" + fileObject.getPath());
                 try {
                     ffile.mkdirs();
                     fileObject.getFile().copy(FileUtil.toFileObject(ffile), fileObject.getFile().getName(), fileObject.getFile().getExt());

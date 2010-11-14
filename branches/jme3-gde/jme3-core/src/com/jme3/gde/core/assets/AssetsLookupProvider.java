@@ -128,6 +128,7 @@ public class AssetsLookupProvider implements LookupProvider {
         protected void projectOpened() {
             if (project instanceof J2SEProject) {
                 manager.checkExtension(project);
+                getProperties(project);
             }
         }
     };

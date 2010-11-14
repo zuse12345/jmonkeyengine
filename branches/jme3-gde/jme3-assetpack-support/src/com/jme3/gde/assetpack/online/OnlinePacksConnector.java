@@ -57,6 +57,12 @@ public class OnlinePacksConnector {
                             NotifyDescriptor.OK_CANCEL_OPTION,
                             NotifyDescriptor.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notifyLater(msg);
+                }else{
+                    Confirmation msg = new NotifyDescriptor.Confirmation(
+                            "Successfully uploaded to jmonkeyengine.org!\n" + line,
+                            NotifyDescriptor.OK_CANCEL_OPTION,
+                            NotifyDescriptor.INFORMATION_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(msg);
                 }
                 System.out.println(line);
             }

@@ -3,6 +3,7 @@
         <copy file="Info.plist" tofile="_Info.plist">
             <filterchain>
                 <replacestring from="$${main.class}" to="${main.class}"/>
+                <replacestring from="$${run.jvmargs}" to="${run.jvmargs}"/>
                 <replacestring from="$${application.title}" to="${application.title}"/>
             </filterchain>
         </copy>

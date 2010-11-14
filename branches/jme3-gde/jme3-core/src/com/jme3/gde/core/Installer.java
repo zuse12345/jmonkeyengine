@@ -57,8 +57,12 @@ public class Installer extends ModuleInstall {
 
     static {
         //set default projects directory
-        File userDir = new File(System.getProperty("user.home"));
-        File myProjectsDir = new File(userDir, "jMonkeyProjects");
+//        File userDir = new File(System.getProperty("user.home"));
+//        File myProjectsDir = new File(userDir, "jMonkeyProjects");
+        javax.swing.JFileChooser fr = new javax.swing.JFileChooser();
+        javax.swing.filechooser.FileSystemView fw = fr.getFileSystemView();
+        File myProjectsDir = new File(fw.getDefaultDirectory().getPath() + File.separator + "jMonkeyProjects");
+
         if (!myProjectsDir.exists()) {
             myProjectsDir.mkdirs();
         }

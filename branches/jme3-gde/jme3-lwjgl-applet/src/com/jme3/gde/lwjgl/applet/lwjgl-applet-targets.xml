@@ -1,0 +1,8 @@
+    <target name="-lwjgl-applet" depends="-test-lwjgl-applet-enabled" if="is.lwjgl.applet.enabled">
+        <echo>Applet Creation</echo>
+    </target>
+    <target name="-test-lwjgl-applet-enabled">
+        <condition property="is.lwjgl.applet.enabled">
+            <istrue value="${lwjgl.applet.enabled}"/>
+        </condition>
+    </target>

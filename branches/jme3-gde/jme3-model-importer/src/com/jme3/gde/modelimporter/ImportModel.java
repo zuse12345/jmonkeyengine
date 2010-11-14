@@ -65,7 +65,11 @@ public final class ImportModel implements ActionListener {
                 public void run() {
                     ProgressHandle handle=ProgressHandleFactory.createHandle("Importing Model..");
                     handle.start();
-                    copyModel(wiz);
+                    try {
+                        copyModel(wiz);
+                    } catch (Exception e) {
+                        Exceptions.printStackTrace(e);
+                    }
                     handle.finish();
                 }
             }).start();

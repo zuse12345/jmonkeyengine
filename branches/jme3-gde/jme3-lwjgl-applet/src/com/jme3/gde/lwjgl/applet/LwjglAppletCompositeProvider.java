@@ -20,8 +20,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Milan Kubec
- * @author Tomas Zezula
+ * @author normenhansen
  */
 @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-java-j2seproject", category = "Application", position = 300)
 public class LwjglAppletCompositeProvider implements ProjectCustomizer.CompositeCategoryProvider {
@@ -45,42 +44,18 @@ public class LwjglAppletCompositeProvider implements ProjectCustomizer.Composite
     @Override
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         jwsProps = new ProjectExtensionProperties(context.lookup(Project.class), keyList);
+        LwjglAppletCustomizerPanel panel = new LwjglAppletCustomizerPanel(jwsProps);
         category.setStoreListener(new SavePropsListener(jwsProps, context.lookup(Project.class)));
-        // use OkListener to create new configuration first
-//        category.setOkButtonListener(new OKPropsListener(jwsProps, context.lookup(Project.class)));
-        return new LwjglAppletCustomizerPanel(jwsProps);
+        category.setOkButtonListener(panel);
+        return panel;
     }
-
-//    private class OKPropsListener implements ActionListener {
-//
-//        private LwjglAppletProperties jwsProps;
-//        private Project j2seProject;
-//
-//        public OKPropsListener(LwjglAppletProperties props, Project proj) {
-//            this.j2seProject = proj;
-//            this.jwsProps = props;
-//        }
-//
-//        @Override
-//        public void actionPerformed(ActionEvent e) {
-//        }
-//    }
 
     private class SavePropsListener implements ActionListener {
 
         private String extensionName = "lwjglapplet";
         private String extensionVersion = "v0.7";
-        private String extensionTargets =
-                  "    <target name=\"-lwjgl-applet\" depends=\"-test-lwjgl-applet-enabled\" if=\"is.lwjgl.applet.enabled\">\n"
-                + "        <echo>LWJGL Applet Creation</echo>\n"
-                + "    </target>\n"
-                + "    <target name=\"-test-lwjgl-applet-enabled\">\n"
-                + "        <condition property=\"is.lwjgl.applet.enabled\">\n"
-                + "            <istrue value=\"${lwjgl.applet.enabled}\"/>\n"
-                + "        </condition>\n"
-                + "    </target>\n";
         private String[] extensionDependencies = new String[]{"jar", "-lwjgl-applet"};
-        private ProjectExtensionManager manager = new ProjectExtensionManager(extensionName, extensionVersion, extensionTargets, extensionDependencies);
+        private ProjectExtensionManager manager = new ProjectExtensionManager(extensionName, extensionVersion, extensionDependencies);
         private ProjectExtensionProperties properties;
         private Project project;
 
@@ -91,6 +66,7 @@ public class LwjglAppletCompositeProvider implements ProjectCustomizer.Composite
 
         public void actionPerformed(ActionEvent e) {
             if ("true".equals(properties.getProperty("lwjgl.applet.enabled"))) {
+                manager.loadTargets("nbres:/com/jme3/gde/lwjgl/applet/lwjgl-applet-targets.xml");
                 manager.checkExtension(project);
             } else {
                 manager.removeExtension(project);
@@ -101,23 +77,6 @@ public class LwjglAppletCompositeProvider implements ProjectCustomizer.Composite
                 Exceptions.printStackTrace(ioe);
             }
         }
-//        private <C extends ProjectConfiguration> void setActiveConfig(final ProjectConfigurationProvider<C> provider, String displayName) throws IOException {
-//            Collection<C> configs = provider.getConfigurations();
-//            for (final C c : configs) {
-//                if (displayName.equals(c.getDisplayName())) {
-//                    try {
-//                        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-//
-//                            public Void run() throws Exception {
-//                                provider.setActiveConfiguration(c);
-//                                return null;
-//                            }
-//                        });
-//                    } catch (MutexException mex) {
-//                        throw (IOException) mex.getException();
-//                    }
-//                }
-//            }
-//        }
+
     }
 }

@@ -11,12 +11,14 @@
 package com.jme3.gde.lwjgl.applet;
 
 import com.jme3.gde.core.j2seproject.ProjectExtensionProperties;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  *
  * @author normenhansen
  */
-public class LwjglAppletCustomizerPanel extends javax.swing.JPanel {
+public class LwjglAppletCustomizerPanel extends javax.swing.JPanel implements ActionListener {
 
     private ProjectExtensionProperties properties;
 
@@ -34,14 +36,20 @@ public class LwjglAppletCustomizerPanel extends javax.swing.JPanel {
         } else {
             jCheckBox1.setSelected(false);
         }
+        jTextField1.setText(properties.getProperty("lwjgl.applet.mainclass"));
     }
 
-    public void saveProperties(){
+    private void saveProperties(){
         if(jCheckBox1.isSelected()){
             properties.setProperty("lwjgl.applet.enabled", "true");
         }else{
             properties.setProperty("lwjgl.applet.enabled", "");
         }
+        properties.setProperty("lwjgl.applet.mainclass", jTextField1.getText());
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        saveProperties();
     }
 
     /** This method is called from within the constructor to
@@ -55,47 +63,46 @@ public class LwjglAppletCustomizerPanel extends javax.swing.JPanel {
 
         jCheckBox1 = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox();
+        jTextField1 = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
 
         jCheckBox1.setText(org.openide.util.NbBundle.getMessage(LwjglAppletCustomizerPanel.class, "LwjglAppletCustomizerPanel.jCheckBox1.text")); // NOI18N
-        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox1ActionPerformed(evt);
-            }
-        });
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(LwjglAppletCustomizerPanel.class, "LwjglAppletCustomizerPanel.jLabel1.text")); // NOI18N
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jTextField1.setText(org.openide.util.NbBundle.getMessage(LwjglAppletCustomizerPanel.class, "LwjglAppletCustomizerPanel.jTextField1.text")); // NOI18N
+
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(LwjglAppletCustomizerPanel.class, "LwjglAppletCustomizerPanel.jLabel2.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jCheckBox1, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
+            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jComboBox1, 0, 331, Short.MAX_VALUE))
-            .addComponent(jCheckBox1, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jCheckBox1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 250, Short.MAX_VALUE)
-                .addComponent(jCheckBox1))
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(212, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
-        saveProperties();
-    }//GEN-LAST:event_jCheckBox1ActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
 }

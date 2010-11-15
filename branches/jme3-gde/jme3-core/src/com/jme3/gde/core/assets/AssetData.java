@@ -75,7 +75,6 @@ public class AssetData extends Properties {
 
     @Override
     public synchronized String getProperty(String key) {
-//        loadProperties();
         return super.getProperty(key);
     }
 

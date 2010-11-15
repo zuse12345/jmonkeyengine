@@ -55,7 +55,9 @@ public final class ModelImporterVisualPanel1 extends JPanel implements AssetEven
         wiz.putProperty("path", currentPath);
         wiz.putProperty("assetlist", requestedAssets);
         wiz.putProperty("mainkey", mainKey);
-        wiz.putProperty("destpath", "Models/" + mainKey.getName().replaceAll(mainKey.getExtension(), "").replaceAll("\\.", "") + "/");
+        if (mainKey != null) {
+            wiz.putProperty("destpath", "Models/" + mainKey.getName().replaceAll(mainKey.getExtension(), "").replaceAll("\\.", "") + "/");
+        }
     }
 
     public synchronized void loadModel(File path) {

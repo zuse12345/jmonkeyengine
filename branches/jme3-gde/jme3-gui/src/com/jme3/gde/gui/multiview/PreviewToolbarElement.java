@@ -25,12 +25,10 @@ public class PreviewToolbarElement extends ToolBarMultiViewElement {
 //        this.dObj = dObj;
         comp = new ToolBarDesignEditor();
         setVisualEditor(comp);
-        viewPanel=new NiftyPreviewPanel(dObj);
-        comp.setRootContext(Node.EMPTY);
-        comp.setContentView(viewPanel);
-//        viewPanel.open();
+        viewPanel=new NiftyPreviewPanel(dObj, comp);
     }
 
+    @Override
     public SectionView getSectionView() {
         return null;
     }
@@ -38,13 +36,13 @@ public class PreviewToolbarElement extends ToolBarMultiViewElement {
     @Override
     public void componentShowing() {
         super.componentShowing();
-        viewPanel.start();
+        viewPanel.updatePreView();
     }
 
     @Override
     public void componentClosed() {
         super.componentClosed();
-        viewPanel.stop();
+        viewPanel.cleanup();
     }
 
 }

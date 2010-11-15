@@ -75,8 +75,8 @@ public class OffScenePanel extends javax.swing.JPanel implements SceneProcessor 
     private byte[] cpuArray;
     private Node rootNode = new Node("Root Node");
     private FrameBuffer offBuffer;
-    private ViewPort offView;
-    private Camera cam;
+    private ViewPort viewPort;
+    private Camera camera;
     private RenderManager rm;
     //AWT image
     private final Object imageLock = new Object();
@@ -118,7 +118,7 @@ public class OffScenePanel extends javax.swing.JPanel implements SceneProcessor 
         SceneApplication.getApplication().enqueue(new Callable<Object>() {
 
             public Object call() throws Exception {
-                SceneApplication.getApplication().getRenderManager().removePreView(offView);
+                SceneApplication.getApplication().getRenderManager().removePreView(viewPort);
                 return null;
             }
         });
@@ -132,17 +132,17 @@ public class OffScenePanel extends javax.swing.JPanel implements SceneProcessor 
 
     private void setupScene() {
         //setup framebuffer's cam
-        cam.setFrustumPerspective(45f, 1f, 1f, 1000f);
-        cam.setLocation(new Vector3f(5f, 5f, 5f));
-        cam.lookAt(new Vector3f(0f, 0f, 0f), Vector3f.UNIT_Y);
+        camera.setFrustumPerspective(45f, 1f, 1f, 1000f);
+        camera.setLocation(new Vector3f(5f, 5f, 5f));
+        camera.lookAt(new Vector3f(0f, 0f, 0f), Vector3f.UNIT_Y);
 
         // setup framebuffer's scene
         light = new PointLight();
-        light.setPosition(cam.getLocation());
+        light.setPosition(camera.getLocation());
         light.setColor(ColorRGBA.White);
         rootNode.addLight(light);
         // attach the scene to the viewport to be rendered
-        offView.attachScene(rootNode);
+        viewPort.attachScene(rootNode);
     }
 
     private void setupOffBuffer(int width, int height) {
@@ -153,17 +153,17 @@ public class OffScenePanel extends javax.swing.JPanel implements SceneProcessor 
         offBuffer.setDepthBuffer(Format.Depth);
         offBuffer.setColorBuffer(Format.RGBA8);
         //set viewport to render to offscreen framebuffer
-        offView.setOutputFrameBuffer(offBuffer);
-        cam.resize(width, height, true);
+        viewPort.setOutputFrameBuffer(offBuffer);
+        camera.resize(width, height, true);
     }
 
     private void setupOffView() {
-        cam = new Camera(width, height);
+        camera = new Camera(width, height);
         // create a pre-view. a view that is rendered before the main view
-        offView = SceneApplication.getApplication().getRenderManager().createPreView("Offscreen View", cam);
-        offView.setBackgroundColor(ColorRGBA.DarkGray);
-        offView.setClearEnabled(true);
-        offView.addProcessor(this);
+        viewPort = SceneApplication.getApplication().getRenderManager().createPreView("Offscreen View", camera);
+        viewPort.setBackgroundColor(ColorRGBA.DarkGray);
+        viewPort.setClearEnabled(true);
+        viewPort.addProcessor(this);
     }
 
     public void initialize(RenderManager rm, ViewPort vp) {
@@ -178,7 +178,7 @@ public class OffScenePanel extends javax.swing.JPanel implements SceneProcessor 
     }
 
     public void preFrame(float f) {
-        light.setPosition(cam.getLocation());
+        light.setPosition(camera.getLocation());
         rootNode.updateLogicalState(f);
         rootNode.updateGeometricState();
     }
@@ -239,6 +239,14 @@ public class OffScenePanel extends javax.swing.JPanel implements SceneProcessor 
         return rootNode;
     }
 
+    public Camera getCamera() {
+        return camera;
+    }
+
+    public ViewPort getViewPort() {
+        return viewPort;
+    }
+
     /**
      * threadsafe attach to root node
      * @param spat
@@ -283,7 +291,7 @@ public class OffScenePanel extends javax.swing.JPanel implements SceneProcessor 
 
             public Object call() throws Exception {
                 focus.set(focus_);
-                cam.setLocation(focus_.add(vector, cam.getLocation()));
+                camera.setLocation(focus_.add(vector, camera.getLocation()));
                 return null;
             }
         });
@@ -297,19 +305,19 @@ public class OffScenePanel extends javax.swing.JPanel implements SceneProcessor 
 
             public Object call() throws Exception {
                 float amount = amount_;
-                if (axis.equals(cam.getLeft())) {
-                    float elevation = -FastMath.asin(cam.getDirection().y);
+                if (axis.equals(camera.getLeft())) {
+                    float elevation = -FastMath.asin(camera.getDirection().y);
                     amount = Math.min(Math.max(elevation + amount,
                             -FastMath.HALF_PI), FastMath.HALF_PI)
                             - elevation;
                 }
                 rot.fromAngleAxis(amount, axis);
-                cam.getLocation().subtract(focus, vector);
+                camera.getLocation().subtract(focus, vector);
                 rot.mult(vector, vector);
-                focus.add(vector, cam.getLocation());
+                focus.add(vector, camera.getLocation());
 
-                Quaternion curRot = cam.getRotation().clone();
-                cam.setRotation(rot.mult(curRot));
+                Quaternion curRot = camera.getRotation().clone();
+                camera.setRotation(rot.mult(curRot));
                 return null;
             }
         });
@@ -319,10 +327,10 @@ public class OffScenePanel extends javax.swing.JPanel implements SceneProcessor 
         SceneApplication.getApplication().enqueue(new Callable<Object>() {
 
             public Object call() throws Exception {
-                cam.getLeft().mult(left, vector);
-                vector.scaleAdd(up, cam.getUp(), vector);
-                vector.multLocal(cam.getLocation().distance(focus));
-                cam.setLocation(cam.getLocation().add(vector));
+                camera.getLeft().mult(left, vector);
+                vector.scaleAdd(up, camera.getUp(), vector);
+                vector.multLocal(camera.getLocation().distance(focus));
+                camera.setLocation(camera.getLocation().add(vector));
                 focus.addLocal(vector);
                 return null;
             }
@@ -333,8 +341,8 @@ public class OffScenePanel extends javax.swing.JPanel implements SceneProcessor 
         SceneApplication.getApplication().enqueue(new Callable<Object>() {
 
             public Object call() throws Exception {
-                cam.getDirection().mult(forward, vector);
-                cam.setLocation(cam.getLocation().add(vector));
+                camera.getDirection().mult(forward, vector);
+                camera.setLocation(camera.getLocation().add(vector));
                 return null;
             }
         });
@@ -345,12 +353,12 @@ public class OffScenePanel extends javax.swing.JPanel implements SceneProcessor 
 
             public Object call() throws Exception {
                 float amount = amount_;
-                amount = cam.getLocation().distance(focus) * amount;
-                float dist = cam.getLocation().distance(focus);
+                amount = camera.getLocation().distance(focus) * amount;
+                float dist = camera.getLocation().distance(focus);
                 amount = dist - Math.max(0f, dist - amount);
-                Vector3f loc = cam.getLocation().clone();
-                loc.scaleAdd(amount, cam.getDirection(), loc);
-                cam.setLocation(loc);
+                Vector3f loc = camera.getLocation().clone();
+                loc.scaleAdd(amount, camera.getDirection(), loc);
+                camera.setLocation(loc);
                 return null;
             }
         });

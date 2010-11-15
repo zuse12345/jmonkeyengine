@@ -36,13 +36,14 @@ import com.jme3.bullet.BulletAppState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CylinderCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
+import com.jme3.bullet.collision.shapes.PlaneCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.nodes.PhysicsNode;
+import com.jme3.math.Plane;
 
 /**
  * This is a basic Test of jbullet-jme functions
@@ -99,7 +100,7 @@ public class TestSimplePhysics extends SimpleApplication{
         getPhysicsSpace().add(node2);
 
         // the floor mesh, does not move (mass=0)
-        PhysicsNode node3=new PhysicsNode(new MeshCollisionShape(new Box(Vector3f.ZERO,100f,0.2f,100f)),0);
+        PhysicsNode node3=new PhysicsNode(new PlaneCollisionShape(new Plane(new Vector3f(0,1,0),0)),0);
         node3.setLocalTranslation(new Vector3f(0f,-6,0f));
         node3.attachDebugShape(getAssetManager());
         rootNode.attachChild(node3);

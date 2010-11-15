@@ -40,6 +40,7 @@ import com.jme3.bullet.collision.shapes.CylinderCollisionShape;
 import com.jme3.bullet.collision.shapes.GImpactCollisionShape;
 import com.jme3.bullet.collision.shapes.HeightfieldCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
+import com.jme3.bullet.collision.shapes.PlaneCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.collision.shapes.infos.ChildCollisionShape;
 import com.jme3.math.FastMath;
@@ -50,6 +51,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.debug.Arrow;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Cylinder;
 import com.jme3.scene.shape.Sphere;
@@ -260,7 +262,7 @@ public class CollisionShapeFactory {
                 geometry.setLocalRotation(tempRot);
 
                 assert vars.unlock();
-                
+
                 node.attachChild(geometry);
             }
             debugShape = node;
@@ -360,6 +362,11 @@ public class CollisionShapeFactory {
             }
 
             geom.setMesh(cylinder);
+            geom.setLocalScale(scale);
+        } else if (shape instanceof PlaneCollisionShape) {
+            PlaneCollisionShape planeShape=(PlaneCollisionShape)shape;
+            Vector3f scale = planeShape.getScale();
+            geom.setMesh(new Arrow(planeShape.getPlane().getNormal().mult(planeShape.getPlane().getConstant())));
             geom.setLocalScale(scale);
         }
         return geom;

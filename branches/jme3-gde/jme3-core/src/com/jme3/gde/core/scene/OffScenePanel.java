@@ -114,7 +114,7 @@ public class OffScenePanel extends javax.swing.JPanel implements SceneProcessor 
     }
 
     public void stopPreview() {
-        // TODO add your handling code here:
+        //TODO add your handling code here:
         SceneApplication.getApplication().enqueue(new Callable<Object>() {
 
             public Object call() throws Exception {

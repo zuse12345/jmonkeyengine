@@ -46,17 +46,20 @@ import de.lessvoid.nifty.tools.TimeProvider;
 
 public class NiftyJmeDisplay extends TimeProvider implements SceneProcessor {
 
-    private boolean inited = false;
-    private Nifty nifty;
-    private AssetManager assetManager;
-    private RenderManager renderManager;
-    private RenderDeviceJme renderDev;
-    private InputSystemJme inputSys;
-    private SoundDeviceJme soundDev;
-    private Renderer renderer;
-    private ViewPort vp;
+    protected boolean inited = false;
+    protected Nifty nifty;
+    protected AssetManager assetManager;
+    protected RenderManager renderManager;
+    protected RenderDeviceJme renderDev;
+    protected InputSystemJme inputSys;
+    protected SoundDeviceJme soundDev;
+    protected Renderer renderer;
+    protected ViewPort vp;
 
-    private int w, h;
+    protected int w, h;
+
+    public NiftyJmeDisplay() {
+    }
 
     public NiftyJmeDisplay(AssetManager assetManager, 
                            InputManager inputManager,

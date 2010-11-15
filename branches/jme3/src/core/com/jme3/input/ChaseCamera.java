@@ -275,7 +275,7 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
                     //reseting the trailing lerp factor
                     trailingLerpFactor = 0;
                     //stop trailing user has the control                  
-                    trailing = false;                   
+                    trailing = false;
                 }
 
 
@@ -339,7 +339,7 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
                 //linear interpolation of the rotation while rotating horizontally
                 if (rotating) {
                     rotationLerpFactor = Math.min(rotationLerpFactor + tpf * tpf * rotationSensitivity, 1);
-                    rotation = FastMath.interpolateLinear(rotationLerpFactor, rotation, targetRotation);                    
+                    rotation = FastMath.interpolateLinear(rotationLerpFactor, rotation, targetRotation);
                     if (targetRotation + 0.01f >= rotation && targetRotation - 0.01f <= rotation) {
                         rotating = false;
                         rotationLerpFactor = 0;
@@ -667,5 +667,32 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
      */
     public void setZoomSensitivity(float zoomSensitivity) {
         this.zoomSensitivity = zoomSensitivity;
+    }
+
+    /**
+     * Sets the default distance at start of applicaiton
+     * @param defaultDistance
+     */
+    public void setDefaultDistance(float defaultDistance) {
+        distance = defaultDistance;
+        targetDistance = distance;
+    }
+
+    /**
+     * sets the default horizontal rotation of the camera at start of the application
+     * @param angle
+     */
+    public void setDefaultHorizontalRotation(float angle) {
+        rotation = angle;
+        targetRotation = angle;
+    }
+
+    /**
+     * sets the default vertical rotation of the camera at start of the application
+     * @param angle
+     */
+    public void setDefaultVerticalRotation(float angle) {
+        vRotation = angle;
+        targetVRotation = angle;
     }
 }

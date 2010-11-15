@@ -29,9 +29,9 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.scene;
 
+import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.control.CameraControl;
 import com.jme3.scene.control.CameraControl.ControlDirection;
@@ -91,5 +91,10 @@ public class CameraNode extends Node {
 
     public Camera getCamera() {
         return camControl.getCamera();
+    }
+
+    @Override
+    public void lookAt(Vector3f position, Vector3f upVector) {
+        camControl.getCamera().lookAt(position, upVector);
     }
 }

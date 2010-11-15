@@ -32,8 +32,10 @@
 package com.jme3.animation;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -46,6 +48,7 @@ import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.VertexBuffer;
+import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
 import com.jme3.scene.shape.Box;
 import java.io.IOException;
@@ -57,10 +60,8 @@ import java.util.List;
  * Animation path is used to create a path between way points.
  * @author Nehon
  */
-public class AnimationPath implements Control {
+public class AnimationPath extends AbstractControl {
 
-    private Spatial target;
-    private boolean enabled = true;
     private boolean playing = false;
     private int currentWayPoint;
     private float currentValue;
@@ -78,6 +79,16 @@ public class AnimationPath implements Control {
     private List<Vector3f> CRcontrolPoints;
     private float speed;
     private float curveTension = 0.5f;
+
+    @Override
+    protected void controlUpdate(float tpf) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    protected void controlRender(RenderManager rm, ViewPort vp) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
     /**
      * Enum for the different type of target direction behavior
@@ -125,7 +136,7 @@ public class AnimationPath implements Control {
 
     public AnimationPath(Spatial target) {
         super();
-        this.target = target;
+        this.spatial = target;
         target.addControl(this);
     }
 
@@ -142,14 +153,17 @@ public class AnimationPath implements Control {
         return path;
     }
 
+    @Override
     public void setSpatial(Spatial spatial) {
-        target = spatial;
+        this.spatial = spatial;
     }
 
+    @Override
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
+    @Override
     public boolean isEnabled() {
         return enabled;
     }
@@ -159,11 +173,12 @@ public class AnimationPath implements Control {
      * Cal each update, don't call this method, it's for internal use only
      * @param tpf
      */
+    @Override
     public void update(float tpf) {
 
         if (enabled) {
             if (playing) {
-                target.setLocalTranslation(interpolatePath(tpf));
+                spatial.setLocalTranslation(interpolatePath(tpf));
                 computeTargetDirection();
 
                 if (currentValue >= 1.0f) {
@@ -187,15 +202,15 @@ public class AnimationPath implements Control {
                 val = tpf * speed;
                 currentValue += eps;
                 temp = FastMath.interpolateCatmullRom(currentValue, curveTension, CRcontrolPoints.get(currentWayPoint), CRcontrolPoints.get(currentWayPoint + 1), CRcontrolPoints.get(currentWayPoint + 2), CRcontrolPoints.get(currentWayPoint + 3));
-                float dist = temp.subtract(target.getLocalTranslation()).length();
+                float dist = temp.subtract(spatial.getLocalTranslation()).length();
 
                 while (dist < val) {
                     currentValue += eps;
                     temp = FastMath.interpolateCatmullRom(currentValue, curveTension, CRcontrolPoints.get(currentWayPoint), CRcontrolPoints.get(currentWayPoint + 1), CRcontrolPoints.get(currentWayPoint + 2), CRcontrolPoints.get(currentWayPoint + 3));
-                    dist = temp.subtract(target.getLocalTranslation()).length();
+                    dist = temp.subtract(spatial.getLocalTranslation()).length();
                 }
                 if (directionType == Direction.Path || directionType == Direction.PathAndRotation) {
-                    curveDirection = temp.subtract(target.getLocalTranslation()).normalizeLocal();
+                    curveDirection = temp.subtract(spatial.getLocalTranslation()).normalizeLocal();
                 }
                 break;
             case Linear:
@@ -215,11 +230,11 @@ public class AnimationPath implements Control {
             case Path:
                 Quaternion q = new Quaternion();
                 q.lookAt(curveDirection, Vector3f.UNIT_Y);
-                target.setLocalRotation(q);
+                spatial.setLocalRotation(q);
                 break;
             case LookAt:
                 if (lookAt != null) {
-                    target.lookAt(lookAt, upVector);
+                    spatial.lookAt(lookAt, upVector);
                 }
                 break;
             case PathAndRotation:
@@ -227,12 +242,12 @@ public class AnimationPath implements Control {
                     Quaternion q2 = new Quaternion();
                     q2.lookAt(curveDirection, Vector3f.UNIT_Y);
                     q2.multLocal(rotation);
-                    target.setLocalRotation(q2);
+                    spatial.setLocalRotation(q2);
                 }
                 break;
             case Rotation:
                 if (rotation != null) {
-                    target.setLocalRotation(rotation);
+                    spatial.setLocalRotation(rotation);
                 }
                 break;
             case None:
@@ -244,7 +259,7 @@ public class AnimationPath implements Control {
 
     private void attachDebugNode(Node root) {
         if (debugNode == null) {
-            debugNode = new Node("AnimationPathFor" + target.getName());
+            debugNode = new Node("AnimationPathFor" + spatial.getName());
             Material m = assetManager.loadMaterial("Common/Materials/RedColor.j3m");
             for (Iterator<Vector3f> it = wayPoints.iterator(); it.hasNext();) {
                 Vector3f cp = it.next();
@@ -385,14 +400,42 @@ public class AnimationPath implements Control {
 
     }
 
+    @Override
     public void render(RenderManager rm, ViewPort vp) {
         //nothing to render
     }
 
+    @Override
     public void write(JmeExporter ex) throws IOException {
+        super.write(ex);
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.writeSavableArrayList((ArrayList) wayPoints, "wayPoints", null);
+        oc.write(lookAt, "lookAt", Vector3f.ZERO);
+        oc.write(upVector, "upVector", Vector3f.UNIT_Y);
+        oc.write(rotation, "rotation", Quaternion.IDENTITY);
+        oc.write(duration, "duration", 5f);
+        oc.writeSavableArrayList((ArrayList) segmentsLength, "segmentsLength", null);
+        oc.write(totalLength, "totalLength", 0);
+        oc.writeSavableArrayList((ArrayList) CRcontrolPoints, "segmentsLength", null);
+        oc.write(speed, "speed", 0);
+        oc.write(curveTension, "curveTension", 0.5f);
     }
 
+    @Override
     public void read(JmeImporter im) throws IOException {
+        super.read(im);
+        InputCapsule in = im.getCapsule(this);
+
+        wayPoints = (ArrayList<Vector3f>) in.readSavableArrayList("wayPoints", null);
+        lookAt = (Vector3f) in.readSavable("lookAt", Vector3f.ZERO);
+        upVector = (Vector3f) in.readSavable("upVector", Vector3f.UNIT_Y);
+        rotation = (Quaternion) in.readSavable("rotation", Quaternion.IDENTITY);
+        duration = in.readFloat("duration", 5f);
+        segmentsLength = (ArrayList<Float>) in.readSavableArrayList("segmentsLength", null);
+        totalLength = in.readFloat("totalLength", 0);
+        CRcontrolPoints = (ArrayList<Vector3f>) in.readSavableArrayList("segmentsLength", null);
+        speed = in.readFloat("speed", 0);
+        curveTension = in.readFloat("curveTension", 0.5f);
     }
 
     /**
@@ -695,7 +738,4 @@ public class AnimationPath implements Control {
             attachDebugNode(parent);
         }
     }
-
-
-
 }

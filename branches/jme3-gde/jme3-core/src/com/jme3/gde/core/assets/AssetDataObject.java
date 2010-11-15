@@ -98,7 +98,7 @@ public class AssetDataObject extends MultiDataObject {
         while (file != null) {
             if (file.isFolder() && pm.isProject(file)) {
                 try {
-                    Project project = ProjectManager.getDefault().findProject(file.getParent());
+                    Project project = ProjectManager.getDefault().findProject(file);
                     if (project != null) {
                         ProjectAssetManager mgr = project.getLookup().lookup(ProjectAssetManager.class);
                         if (mgr != null) {

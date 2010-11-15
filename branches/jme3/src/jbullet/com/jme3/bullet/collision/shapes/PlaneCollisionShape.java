@@ -26,7 +26,7 @@ public class PlaneCollisionShape extends CollisionShape{
 
     /**
      * Creates a plane Collision shape
-     * @param halfExtents the halfExtents of the CollisionBox
+     * @param plane the plane that defines the shape
      */
     public PlaneCollisionShape(Plane plane) {
         this.plane = plane;

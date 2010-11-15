@@ -91,7 +91,7 @@ public class AssetsLookupProvider implements LookupProvider {
         FileObject assetsProperties = prj.getProjectDirectory().getFileObject("nbproject/assets.properties");
         if (assetsProperties == null) {
             assetsProperties = prj.getProjectDirectory().getFileObject("nbproject/project.properties");
-        }else{
+        } else {
             Logger.getLogger(AssetsLookupProvider.class.getName()).log(Level.WARNING, "Project is using old assets.properties file");
         }
         if (assetsProperties != null && assetsProperties.isValid()) {
@@ -115,7 +115,7 @@ public class AssetsLookupProvider implements LookupProvider {
                 }
             }
         }
-        
+
         return Lookups.fixed();
     }
     private ProjectOpenedHook openedHook = new ProjectOpenedHook() {
@@ -127,8 +127,10 @@ public class AssetsLookupProvider implements LookupProvider {
         @Override
         protected void projectOpened() {
             if (project instanceof J2SEProject) {
-                manager.checkExtension(project);
-                getProperties(project);
+                EditableProperties properties = getProperties(project);
+                if (properties.getProperty("assets.folder.name") != null) {
+                    manager.checkExtension(project);
+                }
             }
         }
     };
@@ -152,17 +154,17 @@ public class AssetsLookupProvider implements LookupProvider {
             }
         } else {
             load(props, project);
-            if (props.getProperty("assets.folder.name") == null) {
-                props.setProperty("assets.jar.name", "assets.jar");
-                props.setProperty("assets.folder.name", "assets");
-                props.setProperty("assets.excludes", "**/*.mesh\\.xml,**/*.skeleton\\.xml,**/*.scene,**/*.material,**/*.obj,**/*.mtl,**/*.j3odata");
-                props.setProperty("assets.compress", "true");
-                try {
-                    store(props, project);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+//            if (props.getProperty("assets.folder.name") == null) {
+//                props.setProperty("assets.jar.name", "assets.jar");
+//                props.setProperty("assets.folder.name", "assets");
+//                props.setProperty("assets.excludes", "**/*.mesh\\.xml,**/*.skeleton\\.xml,**/*.scene,**/*.material,**/*.obj,**/*.mtl,**/*.j3odata");
+//                props.setProperty("assets.compress", "true");
+//                try {
+//                    store(props, project);
+//                } catch (IOException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//            }
         }
         return props;
     }

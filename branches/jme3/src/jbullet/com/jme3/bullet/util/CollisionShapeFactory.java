@@ -364,9 +364,11 @@ public class CollisionShapeFactory {
             geom.setMesh(cylinder);
             geom.setLocalScale(scale);
         } else if (shape instanceof PlaneCollisionShape) {
-            PlaneCollisionShape planeShape=(PlaneCollisionShape)shape;
+            PlaneCollisionShape planeShape = (PlaneCollisionShape) shape;
             Vector3f scale = planeShape.getScale();
-            geom.setMesh(new Arrow(planeShape.getPlane().getNormal().mult(planeShape.getPlane().getConstant())));
+            Vector3f normal = planeShape.getPlane().getNormal();
+            Vector3f constant = normal.mult(planeShape.getPlane().getConstant());
+            geom.setMesh(new Arrow(constant.add(normal).subtractLocal(constant)));
             geom.setLocalScale(scale);
         }
         return geom;

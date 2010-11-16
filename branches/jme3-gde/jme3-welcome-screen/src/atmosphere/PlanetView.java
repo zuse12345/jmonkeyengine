@@ -302,6 +302,7 @@ public class PlanetView implements AppState {
     @Override
     public void stateDetached(AppStateManager asm) {
         SceneApplication.getApplication().getGuiViewPort().removeProcessor(niftyDisplay);
+        audioRenderer.stopSource(musicNode);
         nifty.exit();
     }
 
@@ -322,7 +323,6 @@ public class PlanetView implements AppState {
 
     @Override
     public void cleanup() {
-        audioRenderer.stopSource(musicNode);
     }
 
     /**

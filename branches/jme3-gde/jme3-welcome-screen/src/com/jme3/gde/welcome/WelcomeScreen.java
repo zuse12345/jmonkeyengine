@@ -16,8 +16,9 @@ import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 import java.util.concurrent.Callable;
-import org.openide.util.Exceptions;
+import org.netbeans.api.javahelp.Help;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -27,6 +28,8 @@ public class WelcomeScreen implements ScreenController {
 
     PlanetView planetView;
     SceneRequest request;
+    Nifty nifty;
+    Screen screen;
 
     public void startScreen() {
         final Node rootNode = new Node("Welcome Screen");
@@ -57,19 +60,38 @@ public class WelcomeScreen implements ScreenController {
 
             @Override
             public Object call() throws Exception {
-                planetView = new PlanetView(rootNode, SceneApplication.getApplication().getViewPort(), SceneApplication.getApplication().getCamera(), WelcomeScreen.this);
+                planetView = new PlanetView(rootNode,
+                        SceneApplication.getApplication().getViewPort(),
+                        SceneApplication.getApplication().getCamera(),
+                        WelcomeScreen.this);
                 SceneApplication.getApplication().requestScene(request);
                 return null;
             }
         });
     }
 
-    public void startTutorial() {
-        try {
-            planetView.getNifty().gotoScreen("end");
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    public void startHelp() {
+        nifty.gotoScreen("help");
+    }
+
+    public void startIntro() {
+        nifty.gotoScreen("intro");
+    }
+
+    public void creatingProjects() {
+        Lookup.getDefault().lookup(Help.class).showHelp(new HelpCtx("jme3.jmonkeyplatform.project_creation"));
+    }
+
+    public void importingModels() {
+        Lookup.getDefault().lookup(Help.class).showHelp(new HelpCtx("jme3.jmonkeyplatform.model_loader_and_viewer"));
+    }
+
+    public void editingScenes() {
+        Lookup.getDefault().lookup(Help.class).showHelp(new HelpCtx("jme3.jmonkeyplatform.scene_composer"));
+    }
+
+    public void editingCode() {
+        Lookup.getDefault().lookup(Help.class).showHelp(new HelpCtx("jme3.jmonkeyplatform.code_editor"));
     }
 
     public void quit() {
@@ -77,6 +99,8 @@ public class WelcomeScreen implements ScreenController {
     }
 
     public void bind(Nifty nifty, Screen screen) {
+        this.nifty = nifty;
+        this.screen = screen;
     }
 
     public void onStartScreen() {

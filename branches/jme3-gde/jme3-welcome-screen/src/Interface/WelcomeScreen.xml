@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nifty xmlns="http://nifty-gui.sourceforge.net/nifty.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://nifty-gui.sourceforge.net/nifty.xsd http://nifty-gui.sourceforge.net/nifty.xsd">
+  <!-- +++++++++++++++++++++++++++++++++++++++ -->
+  <!-- start screen -->
+  <!-- +++++++++++++++++++++++++++++++++++++++ -->
+    <screen id="start" controller="com.jme3.gde.welcome.WelcomeScreen">
+        <layer id="layer" childLayout="center">
+            <image align="center" valign="center" filename="Textures/jme-logo.png" >
+                <interact onClick="startTutorial()"/>
+                <effect>
+                    <onStartScreen name="fade" startColor="#0000" endColor="#000f" length="1500" startDelay="1500"/>
+                    <onEndScreen name="move" mode="out" direction="bottom" length="300" startDelay="0" inherit="true"/>
+                </effect>
+            </image>
+        </layer>
+    </screen>
+    <screen id="end" controller="com.jme3.gde.welcome.WelcomeScreen">
+        <layer id="layer" childLayout="center">
+            <image align="center" valign="center" filename="Textures/monkey-logo.png" >
+                <interact onClick="quit()"/>
+                <effect>
+                    <onStartScreen name="fade" startColor="#0000" endColor="#000f" length="1500" startDelay="0"/>
+                    <onEndScreen name="move" mode="out" direction="bottom" length="300" startDelay="0" inherit="true"/>
+                </effect>
+            </image>
+        </layer>
+    </screen>
+</nifty>

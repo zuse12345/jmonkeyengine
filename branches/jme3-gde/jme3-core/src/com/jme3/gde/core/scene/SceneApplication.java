@@ -47,6 +47,7 @@ import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
+import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial.CullHint;
@@ -106,7 +107,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     private ApplicationLogHandler logHandler = new ApplicationLogHandler();
     private WireProcessor wireProcessor;
     private ProgressHandle progressHandle = ProgressHandleFactory.createHandle("Opening SceneViewer..");
-    private boolean sceneActive = false;
+    private boolean sceneActive = true;
     private String lastError = "";
 
     public SceneApplication() {
@@ -551,6 +552,18 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 
     public RenderManager getRenderManager() {
         return renderManager;
+    }
+
+    public ViewPort getViewPort() {
+        return viewPort;
+    }
+
+    public ViewPort getGuiViewPort() {
+        return guiViewPort;
+    }
+
+    public Node getGuiNode() {
+        return guiNode;
     }
 
     /**

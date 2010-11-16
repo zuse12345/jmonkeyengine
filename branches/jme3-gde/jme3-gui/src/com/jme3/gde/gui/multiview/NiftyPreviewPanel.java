@@ -182,5 +182,6 @@ public class NiftyPreviewPanel extends PanelView {
 
     public void cleanup() {
         offPanel.stopPreview();
+        nifty.exit();
     }
 }

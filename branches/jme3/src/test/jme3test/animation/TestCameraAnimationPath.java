@@ -74,15 +74,17 @@ public class TestCameraAnimationPath extends SimpleApplication {
         camNode.setControlDir(ControlDirection.SpatialToCamera);
         camNode.getControl(0).setEnabled(false);
         path = new AnimationPath(camNode);
-        path.setDirectionType(AnimationPath.Direction.PathAndRotation);
-        path.setRotation(new Quaternion().fromAngleNormalAxis(-FastMath.HALF_PI, Vector3f.UNIT_Y));      
+        path.setCycle(true);
+        path.setLoop(true);
+
         path.addWayPoint(new Vector3f(20, 3, 0));
         path.addWayPoint(new Vector3f(0, 3, 20));
         path.addWayPoint(new Vector3f(-20, 3, 0));
         path.addWayPoint(new Vector3f(0, 3, -20));
-        path.addWayPoint(new Vector3f(20, 3, 0));
+        
         path.enableDebugShape(assetManager, rootNode);
         path.setDuration(15f);
+        path.setCurveTension(0.8f);
 
         path.setLookAt(teapot.getWorldTranslation(), Vector3f.UNIT_Y);
         path.setDirectionType(AnimationPath.Direction.LookAt);
@@ -100,8 +102,8 @@ public class TestCameraAnimationPath extends SimpleApplication {
             public void onWayPointReach(AnimationPath path, int wayPointIndex) {
                 if (path.getNbWayPoints() == wayPointIndex + 1) {
                     wayPointsText.setText("Finish!!! ");
-                    chaser.setEnabled(true);
-                    camNode.getControl(0).setEnabled(false);
+//                    chaser.setEnabled(true);
+//                    camNode.getControl(0).setEnabled(false);
                 } else {
                     wayPointsText.setText("Reached way point " + wayPointIndex);
                 }
@@ -115,7 +117,8 @@ public class TestCameraAnimationPath extends SimpleApplication {
         // chaser.setEnabled(false);
         chaser.registerWithInput(inputManager);
         chaser.setSmoothMotion(true);
-        chaser.setDefaultDistance(40);
+        chaser.setMaxDistance(50);
+        chaser.setDefaultDistance(50);
         initInputs();
 
     }

@@ -92,6 +92,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
     }
     protected Node rootNode = new Node("Root Node");
     protected Node guiNode = new Node("Gui Node");
+    private Node statsGuiNode = new Node("Stats Gui Node");
     protected Node toolsNode = new Node("Tools Node");
     private SceneCameraController camController;
     //preview variables
@@ -147,14 +148,15 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         fpsText.setSize(font.getCharSet().getRenderedSize());
         fpsText.setLocalTranslation(0, fpsText.getLineHeight(), 0);
         fpsText.setText("Frames per second");
-        guiNode.attachChild(fpsText);
+        statsGuiNode.attachChild(fpsText);
     }
 
     public void loadStatsView() {
         statsView = new StatsView("Statistics View", assetManager, renderer.getStatistics());
         // move it up so it appears above fps text
         statsView.setLocalTranslation(0, fpsText.getLineHeight(), 0);
-        guiNode.attachChild(statsView);
+        statsGuiNode.attachChild(statsView);
+        guiNode.attachChild(statsGuiNode);
     }
 
     @Override
@@ -509,6 +511,21 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                     rootNode.addLight(camLight);
                 } else {
                     rootNode.removeLight(camLight);
+                }
+                return null;
+            }
+        });
+    }
+
+    public void enableStats(final boolean enabled) {
+        enqueue(new Callable() {
+
+            public Object call() throws Exception {
+                //TODO: how to remove lights?? no removeLight in node?
+                if (enabled) {
+                    guiNode.attachChild(statsGuiNode);
+                } else {
+                    guiNode.detachChild(statsGuiNode);
                 }
                 return null;
             }

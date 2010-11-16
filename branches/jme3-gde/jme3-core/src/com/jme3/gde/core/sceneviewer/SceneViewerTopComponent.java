@@ -86,6 +86,8 @@ public final class SceneViewerTopComponent extends TopComponent{
         jToolBar1 = new javax.swing.JToolBar();
         enableCamLight = new javax.swing.JToggleButton();
         enableWireframe = new javax.swing.JToggleButton();
+        jPanel1 = new javax.swing.JPanel();
+        enableStats = new javax.swing.JToggleButton();
         oGLPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.BorderLayout());
@@ -119,6 +121,21 @@ public final class SceneViewerTopComponent extends TopComponent{
             }
         });
         jToolBar1.add(enableWireframe);
+        jToolBar1.add(jPanel1);
+
+        enableStats.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/core/sceneviewer/icons/65.png"))); // NOI18N
+        enableStats.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(enableStats, org.openide.util.NbBundle.getMessage(SceneViewerTopComponent.class, "SceneViewerTopComponent.enableStats.text")); // NOI18N
+        enableStats.setToolTipText(org.openide.util.NbBundle.getMessage(SceneViewerTopComponent.class, "SceneViewerTopComponent.enableStats.toolTipText")); // NOI18N
+        enableStats.setFocusable(false);
+        enableStats.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        enableStats.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        enableStats.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                enableStatsActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(enableStats);
 
         add(jToolBar1, java.awt.BorderLayout.NORTH);
 
@@ -135,9 +152,16 @@ public final class SceneViewerTopComponent extends TopComponent{
     private void enableWireframeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableWireframeActionPerformed
         app.enableWireFrame(enableWireframe.isSelected());
     }//GEN-LAST:event_enableWireframeActionPerformed
+
+    private void enableStatsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableStatsActionPerformed
+        app.enableStats(enableStats.isSelected());
+    }//GEN-LAST:event_enableStatsActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton enableCamLight;
+    private javax.swing.JToggleButton enableStats;
     private javax.swing.JToggleButton enableWireframe;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JPanel oGLPanel;
     // End of variables declaration//GEN-END:variables

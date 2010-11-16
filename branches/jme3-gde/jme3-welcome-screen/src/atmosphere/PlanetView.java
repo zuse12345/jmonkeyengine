@@ -63,8 +63,7 @@ public class PlanetView implements AppState {
     // Music can't hurt, usually
     private AudioNode musicNode;
     private String[] jukebox = {
-        "Sounds/SpaceDrums.ogg",
-        "Sounds/EarthChant.ogg"
+        "Sounds/SpaceDrums.ogg"
     };
     private int songIndex = 0;
     private AssetManager assetManager;

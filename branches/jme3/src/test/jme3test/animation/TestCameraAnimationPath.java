@@ -180,7 +180,7 @@ public class TestCameraAnimationPath extends SimpleApplication {
                     } else {
                         playing = true;
                         chaser.setEnabled(false);
-                        camNode.getControl(0).setEnabled(true);;
+                        camNode.getControl(0).setEnabled(true);
                         path.play();
                     }
                 }

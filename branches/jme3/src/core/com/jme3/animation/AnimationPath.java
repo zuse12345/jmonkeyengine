@@ -79,9 +79,8 @@ public class AnimationPath extends AbstractControl {
     private List<Vector3f> CRcontrolPoints;
     private float speed;
     private float curveTension = 0.5f;
-    private boolean loop=false;
-    private boolean cycle=false;
-
+    private boolean loop = false;
+    private boolean cycle = false;
 
     @Override
     protected void controlUpdate(float tpf) {
@@ -190,9 +189,9 @@ public class AnimationPath extends AbstractControl {
                     triggerWayPointReach(currentWayPoint);
                 }
                 if (currentWayPoint == wayPoints.size() - 1) {
-                    if(loop){
-                        currentWayPoint=0;
-                    }else{
+                    if (loop) {
+                        currentWayPoint = 0;
+                    } else {
                         stop();
                     }
                 }
@@ -399,19 +398,19 @@ public class AnimationPath extends AbstractControl {
         }
         int nb = list.size() - 1;
 
-        if(cycle){
-            CRcontrolPoints.add(list.get(list.size()-2));
-        }else{
+        if (cycle) {
+            CRcontrolPoints.add(list.get(list.size() - 2));
+        } else {
             CRcontrolPoints.add(list.get(0).subtract(list.get(1).subtract(list.get(0))));
         }
-        
+
         for (Iterator<Vector3f> it = list.iterator(); it.hasNext();) {
             Vector3f vector3f = it.next();
             CRcontrolPoints.add(vector3f);
         }
-        if(cycle){
+        if (cycle) {
             CRcontrolPoints.add(list.get(1));
-        }else{
+        } else {
             CRcontrolPoints.add(list.get(nb).add(list.get(nb).subtract(list.get(nb - 1))));
         }
 
@@ -436,6 +435,8 @@ public class AnimationPath extends AbstractControl {
         oc.writeSavableArrayList((ArrayList) CRcontrolPoints, "segmentsLength", null);
         oc.write(speed, "speed", 0);
         oc.write(curveTension, "curveTension", 0.5f);
+        oc.write(cycle, "cycle", false);
+        oc.write(loop, "loop", false);
     }
 
     @Override
@@ -453,6 +454,8 @@ public class AnimationPath extends AbstractControl {
         CRcontrolPoints = (ArrayList<Vector3f>) in.readSavableArrayList("segmentsLength", null);
         speed = in.readFloat("speed", 0);
         curveTension = in.readFloat("curveTension", 0.5f);
+        cycle = in.readBoolean("cycle", false);
+        loop = in.readBoolean("loop", false);
     }
 
     /**
@@ -482,12 +485,12 @@ public class AnimationPath extends AbstractControl {
      * @param wayPoint a position in world space
      */
     public void addWayPoint(Vector3f wayPoint) {
-        if(wayPoints.size()>2 && this.cycle){
-            wayPoints.remove(wayPoints.size()-1);
+        if (wayPoints.size() > 2 && this.cycle) {
+            wayPoints.remove(wayPoints.size() - 1);
         }
         wayPoints.add(wayPoint);
-        if(wayPoints.size()>=2 && this.cycle){
-             wayPoints.add(wayPoints.get(0));
+        if (wayPoints.size() >= 2 && this.cycle) {
+            wayPoints.add(wayPoints.get(0));
         }
         if (wayPoints.size() > 1) {
             computeTotalLentgh();
@@ -761,19 +764,20 @@ public class AnimationPath extends AbstractControl {
             attachDebugNode(parent);
         }
     }
+
     /**
-    * Sets the path to be a cycle
-    * @param cycle
-    */
+     * Sets the path to be a cycle
+     * @param cycle
+     */
     public void setCycle(boolean cycle) {
-        
-        if(wayPoints.size()>=2){
-            if(this.cycle && !cycle){
-                wayPoints.remove(wayPoints.size()-1);
+
+        if (wayPoints.size() >= 2) {
+            if (this.cycle && !cycle) {
+                wayPoints.remove(wayPoints.size() - 1);
             }
-            if(!this.cycle && cycle){
-               wayPoints.add(wayPoints.get(0));
-               System.out.println("adding first wp");
+            if (!this.cycle && cycle) {
+                wayPoints.add(wayPoints.get(0));
+                System.out.println("adding first wp");
             }
             this.cycle = cycle;
             computeTotalLentgh();
@@ -784,12 +788,12 @@ public class AnimationPath extends AbstractControl {
                 debugNode = null;
                 attachDebugNode(parent);
             }
-        }else{
+        } else {
             this.cycle = cycle;
         }
     }
 
-    public boolean isCycle(){
+    public boolean isCycle() {
         return cycle;
     }
 
@@ -808,6 +812,4 @@ public class AnimationPath extends AbstractControl {
     public void setLoop(boolean loop) {
         this.loop = loop;
     }
-
-
 }

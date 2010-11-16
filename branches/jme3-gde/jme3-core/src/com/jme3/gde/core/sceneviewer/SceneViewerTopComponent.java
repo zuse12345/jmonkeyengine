@@ -124,7 +124,6 @@ public final class SceneViewerTopComponent extends TopComponent{
         jToolBar1.add(jPanel1);
 
         enableStats.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/core/sceneviewer/icons/65.png"))); // NOI18N
-        enableStats.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(enableStats, org.openide.util.NbBundle.getMessage(SceneViewerTopComponent.class, "SceneViewerTopComponent.enableStats.text")); // NOI18N
         enableStats.setToolTipText(org.openide.util.NbBundle.getMessage(SceneViewerTopComponent.class, "SceneViewerTopComponent.enableStats.toolTipText")); // NOI18N
         enableStats.setFocusable(false);

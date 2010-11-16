@@ -156,7 +156,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         // move it up so it appears above fps text
         statsView.setLocalTranslation(0, fpsText.getLineHeight(), 0);
         statsGuiNode.attachChild(statsView);
-        guiNode.attachChild(statsGuiNode);
+//        guiNode.attachChild(statsGuiNode);
     }
 
     @Override

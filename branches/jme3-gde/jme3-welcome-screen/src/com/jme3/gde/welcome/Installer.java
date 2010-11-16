@@ -5,6 +5,7 @@
 package com.jme3.gde.welcome;
 
 import org.openide.modules.ModuleInstall;
+import org.openide.util.NbPreferences;
 
 /**
  * Manages a module's lifecycle. Remember that an installer is optional and
@@ -14,8 +15,8 @@ public class Installer extends ModuleInstall {
 
     @Override
     public void restored() {
-        new WelcomeScreen().startScreen();
-        // By default, do nothing.
-        // Put your startup code here.
+        if(!"true".equals(NbPreferences.forModule(Installer.class).get("NO_WELCOME_SCREEN", null))){
+            new WelcomeScreen().startScreen();
+        }
     }
 }

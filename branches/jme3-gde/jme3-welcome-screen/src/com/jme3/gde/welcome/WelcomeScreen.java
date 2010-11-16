@@ -13,12 +13,14 @@ import com.jme3.gde.core.scene.SceneRequest;
 import com.jme3.gde.core.sceneexplorer.nodes.NodeUtility;
 import com.jme3.scene.Node;
 import de.lessvoid.nifty.Nifty;
+import de.lessvoid.nifty.controls.checkbox.CheckboxControl;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 import java.util.concurrent.Callable;
 import org.netbeans.api.javahelp.Help;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -70,12 +72,20 @@ public class WelcomeScreen implements ScreenController {
         });
     }
 
+    public void setNoStartup(){
+        NbPreferences.forModule(Installer.class).put("NO_WELCOME_SCREEN", "true");
+    }
+
     public void startHelp() {
         nifty.gotoScreen("help");
     }
 
     public void startIntro() {
         nifty.gotoScreen("intro");
+    }
+
+    public void startPlanet() {
+        nifty.gotoScreen("planet");
     }
 
     public void creatingProjects() {
@@ -95,6 +105,9 @@ public class WelcomeScreen implements ScreenController {
     }
 
     public void quit() {
+        if(screen.findElementByName("mainLayer").findElementByName("mainPanel").findElementByName("buttonBar").findElementByName("checkboxPanel").findControl("checkbox", CheckboxControl.class).isChecked()){
+            setNoStartup();
+        }
         SceneApplication.getApplication().closeScene(request);
     }
 

@@ -30,7 +30,7 @@
                     <label text=" "/>
                     <label text="jMonkeyPlatform allows you to create jMonkeyEngine3 projects, manage and edit their assets and code and finally deploy your applications to different platforms. Click the 'New Project' button in the upper left and create a new 'BasicGame' project to get started. You can also create a 'JmeTests' project to see some jME3 code examples." width="95%" wrap="true"/>
                     <label text=" "/>
-                    <label text="The help menu gives you access to the help system which is also available by pressing [F1]. The Help Menu also contains a link to the jMonkeyEngine3 wiki which contains a lot of information about jME. To see some introductory help pages please press the button below." width="95%" wrap="true"/>
+                    <label text="The help menu gives you access to the help system which is also available by pressing [F1]. The Help Menu also has a link to the jMonkeyEngine3 wiki which contains a lot of information about jME. To see some introductory help pages please press the button below." width="95%" wrap="true"/>
                     <label text=" "/>
                     <control id="helpButton" name="button" label="Help Contents" align="center">
                         <interact onClick="startHelp()"/>

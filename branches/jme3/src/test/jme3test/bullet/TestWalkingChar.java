@@ -355,8 +355,7 @@ public class TestWalkingChar extends SimpleApplication implements ActionListener
                 if (!"stand".equals(animationChannel.getAnimationName())) {
                     animationChannel.setAnim("stand");
                 }
-            }
-            else if(!"Walk".equals(animationChannel.getAnimationName())) {
+            } else if (!"Walk".equals(animationChannel.getAnimationName())) {
                 animationChannel.setAnim("Walk", 0.7f);
             }
         }
@@ -417,30 +416,18 @@ public class TestWalkingChar extends SimpleApplication implements ActionListener
     public void collision(PhysicsCollisionEvent event) {
         if ("bullet".equals(event.getNodeA().getName())) {
             final Node node = event.getNodeA();
-            enqueue(new Callable() {
-
-                public Object call() throws Exception {
-                    getPhysicsSpace().remove(node);
-                    node.removeFromParent();
-                    effect.killAllParticles();
-                    effect.setLocalTranslation(node.getLocalTranslation());
-                    effect.emitAllParticles();
-                    return null;
-                }
-            });
+            getPhysicsSpace().remove(node);
+            node.removeFromParent();
+            effect.killAllParticles();
+            effect.setLocalTranslation(node.getLocalTranslation());
+            effect.emitAllParticles();
         } else if ("bullet".equals(event.getNodeB().getName())) {
             final Node node = event.getNodeB();
-            enqueue(new Callable() {
-
-                public Object call() throws Exception {
-                    getPhysicsSpace().remove(node);
-                    node.removeFromParent();
-                    effect.killAllParticles();
-                    effect.setLocalTranslation(node.getLocalTranslation());
-                    effect.emitAllParticles();
-                    return null;
-                }
-            });
+            getPhysicsSpace().remove(node);
+            node.removeFromParent();
+            effect.killAllParticles();
+            effect.setLocalTranslation(node.getLocalTranslation());
+            effect.emitAllParticles();
         }
     }
 

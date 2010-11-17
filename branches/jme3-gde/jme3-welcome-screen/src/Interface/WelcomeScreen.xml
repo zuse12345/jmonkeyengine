@@ -56,21 +56,24 @@
     <screen id="help" controller="com.jme3.gde.welcome.WelcomeScreen">
         <layer id="mainLayer" childLayout="center">
             <panel id="mainPanel" childLayout="vertical" height="80%" width="80%" align="center" valign="center">
-                <label text="Introductory Help Content: " align="left"/>
+                <label text="Introductory Help Content" align="left"/>
                 <panel childLayout="horizontal">
                     <control id="listBoxStatic" name="listBox" horizontal="false" width="*" height="100%" childLayout="vertical" visibleToMouse="true">
-                        <panel id="listBoxStaticData" childLayout="vertical" visibleToMouse="true" width="90%">
-                            <label text="Creating Projects" style="my-listbox-item-style" >
+                        <panel id="listBoxStaticData" childLayout="vertical" visibleToMouse="true" width="100%">
+                            <label text="- Creating Projects" style="my-listbox-item-style">
                                 <interact onClick="creatingProjects()"/>
                             </label>
-                            <label text="Importing Models" style="my-listbox-item-style" >
+                            <label text="- Importing Models" style="my-listbox-item-style">
                                 <interact onClick="importingModels()"/>
                             </label>
-                            <label text="Editing Scenes" style="my-listbox-item-style" >
+                            <label text="- Editing Scenes" style="my-listbox-item-style">
                                 <interact onClick="editingScenes()"/>
                             </label>
-                            <label text="Editing Code" style="my-listbox-item-style" >
+                            <label text="- Editing Code" style="my-listbox-item-style">
                                 <interact onClick="editingCode()"/>
+                            </label>
+                            <label text="- Getting the latest updates" style="my-listbox-item-style">
+                                <interact onClick="updatingJmp()"/>
                             </label>
                         </panel>
                     </control>

@@ -37,7 +37,7 @@ public class WelcomeScreen implements ScreenController {
         final Node rootNode = new Node("Welcome Screen");
         request = new SceneRequest(this, NodeUtility.createNode(rootNode), new ProjectAssetManager(null));
         request.setHelpCtx(new HelpCtx("com.jme3.gde.core.about"));
-        request.setWindowTitle("Welcome to jMonkeyEngine");
+        request.setWindowTitle("Welcome to jMonkeyPlatform");
         SceneApplication.getApplication().addSceneListener(new SceneListener() {
 
             @Override
@@ -102,6 +102,10 @@ public class WelcomeScreen implements ScreenController {
 
     public void editingCode() {
         Lookup.getDefault().lookup(Help.class).showHelp(new HelpCtx("jme3.jmonkeyplatform.code_editor"));
+    }
+
+    public void updatingJmp() {
+        Lookup.getDefault().lookup(Help.class).showHelp(new HelpCtx("com.jme3.gde.core.updating"));
     }
 
     public void quit() {

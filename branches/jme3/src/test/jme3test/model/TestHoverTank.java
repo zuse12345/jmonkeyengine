@@ -29,7 +29,6 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package jme3test.model;
 
 import com.jme3.app.SimpleApplication;
@@ -49,8 +48,9 @@ import jme3test.post.BloomUI;
  *
  * @author Nehon
  */
-public class TestHoverTank extends SimpleApplication{
-        public static void main(String[] args) {
+public class TestHoverTank extends SimpleApplication {
+
+    public static void main(String[] args) {
         TestHoverTank app = new TestHoverTank();
         app.start();
     }
@@ -66,10 +66,10 @@ public class TestHoverTank extends SimpleApplication{
         chaseCam.setMinVerticalRotation(-FastMath.PI / 2);
         viewPort.setBackgroundColor(ColorRGBA.DarkGray);
 
-        
+
 
         Geometry tankGeom = (Geometry) tank.getChild(0);
-    //    tankGeom.getMaterial().selectTechnique("Glow");
+        //    tankGeom.getMaterial().selectTechnique("Glow");
         LodControl control = new LodControl(tankGeom);
         tankGeom.addControl(control);
         rootNode.attachChild(tank);
@@ -84,29 +84,16 @@ public class TestHoverTank extends SimpleApplication{
         dl2.setColor(new ColorRGBA(0.7f, 0.85f, 1.0f, 1f));
         dl2.setDirection(lightDir2);
 
-//        PointLight pl = new PointLight();
-//        pl.setPosition(new Vector3f(0,0,30));
-//        pl.setColor(ColorRGBA.White.clone().multLocal(1.2f));
-//        pl.setRadius(100f);
-//
-//        PointLight pl2 = new PointLight();
-//        pl2.setPosition(new Vector3f(0,0,-30));
-//        pl2.setColor(ColorRGBA.White.clone().multLocal(1.2f));
-//        pl2.setRadius(100f);
-
-//        rootNode.addLight(pl);
-//        rootNode.addLight(pl2);
         rootNode.addLight(dl);
         rootNode.addLight(dl2);
         rootNode.attachChild(tank);
 
-        FilterPostProcessor fpp=new FilterPostProcessor(assetManager);
-        BloomFilter bf=new BloomFilter(viewPort.getCamera().getWidth(), viewPort.getCamera().getHeight(), BloomFilter.GlowMode.Objects);
+        FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
+        BloomFilter bf = new BloomFilter(BloomFilter.GlowMode.Objects);
         bf.setBloomIntensity(2.0f);
         bf.setExposurePower(1.3f);
         fpp.addFilter(bf);
-        BloomUI bui=new BloomUI(inputManager, bf);
+        BloomUI bui = new BloomUI(inputManager, bf);
         viewPort.addProcessor(fpp);
     }
-
 }

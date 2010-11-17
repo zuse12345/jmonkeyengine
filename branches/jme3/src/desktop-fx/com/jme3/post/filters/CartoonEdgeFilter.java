@@ -52,14 +52,12 @@ public class CartoonEdgeFilter extends Filter {
     private Material normalMaterial;
 
     public CartoonEdgeFilter() {
-        normalPass = new Pass();
-        setRequiresDepthTexture(true);
+        super("CartoonEdgeFilter");
     }
 
     @Override
-    public void init(AssetManager manager, int width, int height) {
-        super.init(manager, width, height);
-        normalPass.init(width, height, Format.RGB8, Format.Depth);
+    public boolean isRequiresDepthTexture() {
+        return true;
     }
 
     @Override
@@ -71,7 +69,6 @@ public class CartoonEdgeFilter extends Filter {
         renderManager.renderViewPortQueues(viewPort, false);
         renderManager.setForcedMaterial(null);
         renderManager.getRenderer().setFrameBuffer(viewPort.getOutputFrameBuffer());
-
     }
 
     @Override
@@ -81,7 +78,9 @@ public class CartoonEdgeFilter extends Filter {
     }
 
     @Override
-    public void initMaterial(AssetManager manager) {
+    public void initFilter(AssetManager manager,ViewPort vp) {
+        normalPass = new Pass();
+        normalPass.init(vp.getCamera().getWidth(), vp.getCamera().getHeight(), Format.RGB8, Format.Depth);
         material = new Material(manager, "Common/MatDefs/Post/CartoonEdge.j3md");
         normalMaterial = new Material(manager, "Common/MatDefs/SSAO/normal.j3md");
     }

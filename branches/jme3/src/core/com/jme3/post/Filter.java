@@ -29,10 +29,14 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.post;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
+import com.jme3.export.Savable;
 import com.jme3.material.Material;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.Renderer;
@@ -40,6 +44,7 @@ import com.jme3.renderer.ViewPort;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image.Format;
 import com.jme3.texture.Texture2D;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -48,13 +53,13 @@ import java.util.List;
  * Holds a frameBuffer and a texture
  * The getMaterial must return a Material that use a GLSL shader immplementing the desired effect
  */
-public abstract class Filter {
+public abstract class Filter implements Savable {
 
     private String name;
-    private boolean requiresDepthTexture = false;
-    protected Pass defaultPass = new Pass();
+    protected Pass defaultPass;
     protected List<Pass> postRenderPasses;
     protected Material material;
+    protected boolean enabled = true;
 
     public Filter(String name) {
         this.name = name;
@@ -78,11 +83,11 @@ public abstract class Filter {
             passMaterial = material;
         }
 
-        public boolean requiresSceneAsTexture(){
+        public boolean requiresSceneAsTexture() {
             return false;
         }
 
-        public void beforeRender(){
+        public void beforeRender() {
         }
 
         public FrameBuffer getRenderFrameBuffer() {
@@ -122,9 +127,12 @@ public abstract class Filter {
         this("filter");
     }
 
-    public void init(AssetManager manager, int width, int height) {
-        defaultPass.init(width, height, getDefaultPassTextureFormat(), getDefaultPassDepthFormat());
-        initMaterial(manager);
+    public void init(AssetManager manager, ViewPort vp) {
+        defaultPass = new Pass();
+        defaultPass.init(vp.getCamera().getWidth(), vp.getCamera().getHeight(), getDefaultPassTextureFormat(), getDefaultPassDepthFormat());
+        initFilter(manager, vp);
+        //TODO delete this once the deprecated method will be removed
+        viewPort = vp;
     }
 
     public void cleanup(Renderer r) {
@@ -134,14 +142,69 @@ public abstract class Filter {
         }
     }
 
-    public abstract void initMaterial(AssetManager manager);
+    //TODO delete this once the deprecated method will be removed
+    private ViewPort viewPort;
+    /**
+     * @deprecated use initFilter(AssetManager manager,ViewPort vp) method instead
+     */
+    @Deprecated
+    public void initMaterial(AssetManager manager) {
+        initFilter(manager, viewPort);
+    }    
 
+    /**
+     * This method is called once xhen the filter is added to the FilterPostProcessor
+     * It should contain Maerial initializations and extra passes initialization
+     * @param manager
+     */
+    public abstract void initFilter(AssetManager manager, ViewPort vp);
+
+    /**
+     * this method should return the material used for this filter.
+     * this method is called every frames
+     * @return
+     */
     public abstract Material getMaterial();
 
-    public abstract void preRender(RenderManager renderManager, ViewPort viewPort);
+    /**
+     * Override this method if you want to make a pre pass, before the actual rendering of the frame
+     * @param renderManager
+     * @param viewPort
+     */
+    public void preRender(RenderManager renderManager, ViewPort viewPort) {
+    }
 
-    public void preFrame(float tpf){
-        
+    /**
+     * Use this method if you want to modify parameters according to tpf before the rendering of the frame.
+     * This is usefull for animated filters
+     * @param tpf the time used to render the previous frame
+     */
+    public void preFrame(float tpf) {
+    }
+
+    /**
+     * Override this method if you want to save extra properties when the filter is saved else only basic properties of the filter will be saved
+     * This method should always begin by super.write(ex);
+     * @param ex
+     * @throws IOException
+     */
+    public void write(JmeExporter ex) throws IOException {
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(name, "name", "");
+        oc.write(enabled, "enabled", true);
+    }
+
+    /**
+     * Override this method if you want to load extra properties when the filter is loaded else only basic properties of the filter will be loaded
+     * This method should always begin by super.read(ex);
+     * @param ex
+     * @throws IOException
+     */
+    public void read(JmeImporter im) throws IOException {
+        InputCapsule ic = im.getCapsule(this);
+        name = ic.readString("name", "");
+        enabled = ic.readBoolean("enabled", true);
+
     }
 
     public String getName() {
@@ -168,12 +231,12 @@ public abstract class Filter {
         this.defaultPass.renderedTexture = renderedTexture;
     }
 
+    /**
+     * Override this method and retrun true if your Filter need the depth texture
+     * @return
+     */
     public boolean isRequiresDepthTexture() {
-        return requiresDepthTexture;
-    }
-
-    public void setRequiresDepthTexture(boolean requiresDepthTexture) {
-        this.requiresDepthTexture = requiresDepthTexture;
+        return false;
     }
 
     public List<Pass> getPostRenderPasses() {

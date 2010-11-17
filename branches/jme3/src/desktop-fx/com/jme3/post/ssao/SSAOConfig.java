@@ -35,7 +35,9 @@ package com.jme3.post.ssao;
 /**
  *
  * @author nehon
+ * @deprectad don't use this class params are now embeded in the filter
  */
+@Deprecated
 public class SSAOConfig {
 
     protected float sampleRadius = 5.1f;

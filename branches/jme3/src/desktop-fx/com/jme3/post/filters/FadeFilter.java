@@ -29,14 +29,18 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.post.filters;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
 import com.jme3.material.Material;
 import com.jme3.post.Filter;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
+import java.io.IOException;
 
 /**
  *
@@ -46,18 +50,18 @@ import com.jme3.renderer.ViewPort;
  */
 public class FadeFilter extends Filter {
 
-    private float value=1;
-    private boolean playing=false;
-    private float direction=1;
-    private float duration=1;
- 
+    private float value = 1;
+    private boolean playing = false;
+    private float direction = 1;
+    private float duration = 1;
+
     public FadeFilter() {
         super("Fade In/Out");
     }
 
     public FadeFilter(float duration) {
-        super("Fade In/Out");
-        this.duration=duration;
+        this();
+        this.duration = duration;
     }
 
     @Override
@@ -67,25 +71,26 @@ public class FadeFilter extends Filter {
     }
 
     @Override
-    public void preRender(RenderManager renderManager, ViewPort viewPort) {}
+    public void preRender(RenderManager renderManager, ViewPort viewPort) {
+    }
 
     @Override
-    public void initMaterial(AssetManager manager) {
+    public void initFilter(AssetManager manager, ViewPort vp) {
         material = new Material(manager, "Common/MatDefs/Post/Fade.j3md");
     }
 
     @Override
     public void preFrame(float tpf) {
-        if(playing){
-            value+=tpf*direction/duration;
+        if (playing) {
+            value += tpf * direction / duration;
 
-            if(direction>0 && value>1){
-                value=1;
-                playing=false;
+            if (direction > 0 && value > 1) {
+                value = 1;
+                playing = false;
             }
-            if(direction<0 && value<0){
-                value=0;
-                playing=false;
+            if (direction < 0 && value < 0) {
+                value = 0;
+                playing = false;
             }
         }
     }
@@ -98,15 +103,28 @@ public class FadeFilter extends Filter {
         this.duration = duration;
     }
 
-    public void fadeIn(){       
-        direction=1;
-        playing=true;
+    public void fadeIn() {
+        direction = 1;
+        playing = true;
     }
 
-    public void fadeOut(){      
-        direction=-1;
-        playing=true;
+    public void fadeOut() {
+        direction = -1;
+        playing = true;
 
     }
 
+    @Override
+    public void write(JmeExporter ex) throws IOException {
+        super.write(ex);
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(duration, "duration", 1);
+    }
+
+    @Override
+    public void read(JmeImporter im) throws IOException {
+        super.read(im);
+        InputCapsule ic = im.getCapsule(this);
+        duration = ic.readFloat("duration", 1);
+    }
 }

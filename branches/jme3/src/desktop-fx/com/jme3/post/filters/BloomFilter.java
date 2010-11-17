@@ -32,12 +32,17 @@
 package com.jme3.post.filters;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.post.Filter;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.texture.Image.Format;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -58,18 +63,15 @@ public class BloomFilter extends Filter {
          * Apply bloom filter to bright objects in the scene.
          */
         Scene,
-
         /**
          * Apply bloom only to objects that have a glow map.
          */
         Objects,
-
         /**
          * Apply bloom to both bright objects and objects with glow map.
          */
         SceneAndObjects;
     }
-    
     /**@deprecated use {@link GlowMode} enum */
     public static final int GLOW_SCENE = 0;
     /**@deprecated use {@link GlowMode} enum */
@@ -82,14 +84,13 @@ public class BloomFilter extends Filter {
     public static final int GLOW_MODE_ONLY_GLOW_OBJECTS = 1;
     /**@deprecated use GLOW_BOTH instead*/
     public static final int GLOW_MODE_BOTH = 2;
-    
-    //private int glowMode=GLOW_SCENE;
     private GlowMode glowMode = GlowMode.Scene;
     //Bloom parameters
     private float blurScale = 1.5f;
     private float exposurePower = 5.0f;
     private float exposureCutOff = 0.0f;
     private float bloomIntensity = 2.0f;
+    private float downSamplingFactor = 1;
     private Pass preGlowPass;
     private Pass extractPass;
     private Pass horizontalBlur = new Pass();
@@ -101,20 +102,52 @@ public class BloomFilter extends Filter {
     private int screenHeight;
     private ColorRGBA backupColor;
 
+    /**
+     * creates a Bloom filter
+     */
+    public BloomFilter() {
+        super("BloomFilter");
+    }
+
+    /**
+     * Crete the bloom filter with the specific glow mode
+     * @param glowMode
+     */
+    public BloomFilter(GlowMode glowMode) {
+        this();
+        this.glowMode = glowMode;
+    }
+
+    /**
+     * 
+     * @param width
+     * @param height
+     * @deprecated use BloomFilter() instead
+     */
+    @Deprecated
     public BloomFilter(int width, int height) {
-        super("Bloom");
+        super("BloomFilter");
         screenWidth = width;
         screenHeight = height;
     }
 
+    /**
+     * 
+     * @param width
+     * @param height
+     * @param glowMode
+     * @deprecated use BloomFilter(GlowMode glowMode) instead
+     */
+    @Deprecated
     public BloomFilter(int width, int height, GlowMode glowMode) {
         this(width, height);
         this.glowMode = glowMode;
-
     }
 
     @Override
-    public void initMaterial(AssetManager manager) {
+    public void initFilter(AssetManager manager, ViewPort vp) {
+        screenWidth = (int) (vp.getCamera().getWidth() / downSamplingFactor);
+        screenHeight = (int) (vp.getCamera().getHeight() / downSamplingFactor);
         if (glowMode != GlowMode.Scene) {
             preGlowPass = new Pass();
             preGlowPass.init(screenWidth, screenHeight, Format.RGBA8, Format.Depth);
@@ -147,6 +180,7 @@ public class BloomFilter extends Filter {
         //configuring horizontal blur pass
         hBlurMat = new Material(manager, "Common/MatDefs/Blur/HGaussianBlur.j3md");
         horizontalBlur = new Pass() {
+
             @Override
             public void beforeRender() {
                 hBlurMat.setTexture("m_Texture", extractPass.getRenderedTexture());
@@ -154,13 +188,14 @@ public class BloomFilter extends Filter {
                 hBlurMat.setFloat("m_Scale", blurScale);
             }
         };
-        
+
         horizontalBlur.init(screenWidth, screenHeight, Format.RGBA8, Format.Depth, hBlurMat);
         postRenderPasses.add(horizontalBlur);
 
         //configuring vertical blur pass
         vBlurMat = new Material(manager, "Common/MatDefs/Blur/VGaussianBlur.j3md");
         verticalalBlur = new Pass() {
+
             @Override
             public void beforeRender() {
                 vBlurMat.setTexture("m_Texture", horizontalBlur.getRenderedTexture());
@@ -168,7 +203,7 @@ public class BloomFilter extends Filter {
                 vBlurMat.setFloat("m_Scale", blurScale);
             }
         };
-        
+
         verticalalBlur.init(screenWidth, screenHeight, Format.RGBA8, Format.Depth, vBlurMat);
         postRenderPasses.add(verticalalBlur);
 
@@ -245,5 +280,46 @@ public class BloomFilter extends Filter {
      */
     public void setExposurePower(float exposurePower) {
         this.exposurePower = exposurePower;
+    }
+
+    /**
+     * returns the downSampling factor
+     * @return
+     */
+    public float getDownSamplingFactor() {
+        return downSamplingFactor;
+    }
+
+    /**
+     * Sets the downSampling factor : the size of the computed texture will be divided by this factor.
+     * A 2 value is a good way of widening the blur
+     * @param downSamplingFactor
+     */
+    public void setDownSamplingFactor(float downSamplingFactor) {
+        this.downSamplingFactor = downSamplingFactor;
+    }
+
+    @Override
+    public void write(JmeExporter ex) throws IOException {
+        super.write(ex);
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(glowMode, "glowMode", GlowMode.Scene);
+        oc.write(blurScale, "blurScale", 1.5f);
+        oc.write(exposurePower, "exposurePower", 5.0f);
+        oc.write(exposureCutOff, "exposureCutOff", 0.0f);
+        oc.write(bloomIntensity, "bloomIntensity", 2.0f);
+        oc.write(downSamplingFactor, "downSamplingFactor", 1);
+    }
+
+    @Override
+    public void read(JmeImporter im) throws IOException {
+        super.read(im);
+        InputCapsule ic = im.getCapsule(this);
+        glowMode = ic.readEnum("glowMode", GlowMode.class, GlowMode.Scene);
+        blurScale = ic.readFloat("blurScale", 1.5f);
+        exposurePower = ic.readFloat("exposurePower", 5.0f);
+        exposureCutOff = ic.readFloat("exposureCutOff", 0.0f);
+        bloomIntensity = ic.readFloat("bloomIntensity", 2.0f);
+        downSamplingFactor = ic.readFloat("downSamplingFactor", 1);
     }
 }

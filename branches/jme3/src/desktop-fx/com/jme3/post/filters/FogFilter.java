@@ -32,11 +32,16 @@
 package com.jme3.post.filters;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.post.Filter;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
+import java.io.IOException;
 
 /**
  * A filter to render a fog effect
@@ -44,15 +49,16 @@ import com.jme3.renderer.ViewPort;
  */
 public class FogFilter extends Filter {
 
-    private Material material;
     private ColorRGBA fogColor = ColorRGBA.White.clone();
     private float fogDensity = 0.7f;
     private float fogDistance = 1000;
 
     public FogFilter() {
+        super("FogFilter");
     }
 
     public FogFilter(ColorRGBA fogColor, float fogDensity, float fogDistance) {
+        this();
         this.fogColor = fogColor;
         this.fogDensity = fogDensity;
         this.fogDistance = fogDistance;
@@ -64,7 +70,7 @@ public class FogFilter extends Filter {
     }
 
     @Override
-    public void initMaterial(AssetManager manager) {
+    public void initFilter(AssetManager manager, ViewPort vp) {
         material = new Material(manager, "Common/MatDefs/Post/Fog.j3md");
         material.setColor("m_FogColor", fogColor);
         material.setFloat("m_FogDensity", fogDensity);
@@ -81,6 +87,10 @@ public class FogFilter extends Filter {
     public void preRender(RenderManager renderManager, ViewPort viewPort) {
     }
 
+    /**
+     * returns the fog color
+     * @return
+     */
     public ColorRGBA getFogColor() {
         return fogColor;
     }
@@ -96,11 +106,15 @@ public class FogFilter extends Filter {
         this.fogColor = fogColor;
     }
 
+    /**
+     * returns the fog density
+     * @return
+     */
     public float getFogDensity() {
         return fogDensity;
     }
 
-     /**
+    /**
      * Sets the density of the fog, a high value gives a thick fog
      * @param fogColor
      */
@@ -111,6 +125,10 @@ public class FogFilter extends Filter {
         this.fogDensity = fogDensity;
     }
 
+    /**
+     * returns the fog distance
+     * @return
+     */
     public float getFogDistance() {
         return fogDistance;
     }
@@ -124,5 +142,23 @@ public class FogFilter extends Filter {
             material.setFloat("m_FogDistance", fogDistance);
         }
         this.fogDistance = fogDistance;
+    }
+
+    @Override
+    public void write(JmeExporter ex) throws IOException {
+        super.write(ex);
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(fogColor, "fogColor", ColorRGBA.White.clone());
+        oc.write(fogDensity, "fogDensity", 0.7f);
+        oc.write(fogDistance, "fogDistance", 1000);
+    }
+
+    @Override
+    public void read(JmeImporter im) throws IOException {
+        super.read(im);
+        InputCapsule ic = im.getCapsule(this);
+        fogColor = (ColorRGBA) ic.readSavable("fogColor", ColorRGBA.White.clone());
+        fogDensity = ic.readFloat("fogDensity", 0.7f);
+        fogDistance = ic.readFloat("fogDistance", 1000);
     }
 }

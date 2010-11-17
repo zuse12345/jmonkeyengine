@@ -118,7 +118,8 @@ public class TestBloom extends SimpleApplication {
         rootNode.attachChild(sky);
 
          fpp=new FilterPostProcessor(assetManager);
-        BloomFilter bloom=new BloomFilter(cam.getWidth()/2,cam.getHeight()/2);
+        BloomFilter bloom=new BloomFilter();
+        bloom.setDownSamplingFactor(2);
         bloom.setBlurScale(1.37f);
         bloom.setExposurePower(3.30f);
         bloom.setExposureCutOff(0.2f);

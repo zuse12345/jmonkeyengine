@@ -29,10 +29,13 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.post.ssao;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
 import com.jme3.material.Material;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector2f;
@@ -44,7 +47,7 @@ import com.jme3.renderer.Renderer;
 import com.jme3.renderer.ViewPort;
 import com.jme3.shader.VarType;
 import com.jme3.texture.Image.Format;
-
+import java.io.IOException;
 
 /**
  *
@@ -56,34 +59,67 @@ public class SSAOFilter extends Filter {
     private Material normalMaterial;
     private Vector3f frustumCorner;
     private Vector2f frustumNearFar;
-    private SSAOConfig config;
-    private Vector2f[] samples={new Vector2f(1.0f,0.0f),new Vector2f(-1.0f,0.0f),new Vector2f(0.0f,1.0f),new Vector2f(0.0f,-1.0f)};
+    private Vector2f[] samples = {new Vector2f(1.0f, 0.0f), new Vector2f(-1.0f, 0.0f), new Vector2f(0.0f, 1.0f), new Vector2f(0.0f, -1.0f)};
+    private float sampleRadius = 5.1f;
+    private float intensity = 1.5f;
+    private float scale = 0.2f;
+    private float bias = 0.1f;
+    private boolean useOnlyAo = false;
+    private boolean useAo = true;
 
+    /**
+     * 
+     * @param vp
+     * @deprecated use SSAOFilter()
+     */
+    @Deprecated
     public SSAOFilter(ViewPort vp) {
-        this(vp, new SSAOConfig());
+        this();
     }
 
+    /**
+     * Create a Screen Space Ambiant Occlusion Filter
+     */
+    public SSAOFilter() {
+        super("SSAOFilter");
+    }
+
+    /**
+     *
+     * @param vp
+     * @param sampleRadius
+     * @param intensity
+     * @param scale
+     * @param bias
+     */
+    public SSAOFilter(float sampleRadius, float intensity, float scale, float bias) {
+        this();
+        this.sampleRadius = sampleRadius;
+        this.intensity = intensity;
+        this.scale = scale;
+        this.bias = bias;
+    }
+
+    /**
+     * 
+     * @param vp
+     * @param config
+     * @deprecated Use SSAOFilter(float sampleRadius,float intensity,float scale,float bias)
+     */
+    @Deprecated
     public SSAOFilter(ViewPort vp, SSAOConfig config) {
-        this.config=config;
-        normalPass = new Pass();
-        setRequiresDepthTexture(true);
-        frustumNearFar=new Vector2f();
-
-        int screenWidth = vp.getCamera().getWidth();
-        int screenHeight = vp.getCamera().getHeight();
-        //Need to fix this for the moment only works for 45° FOV
-        float farY = FastMath.tan((float) (FastMath.DEG_TO_RAD * 45.0 / 2.0)) * vp.getCamera().getFrustumFar();
-        float farX = farY * (screenWidth / screenHeight);
-        frustumCorner = new Vector3f(farX, farY, vp.getCamera().getFrustumFar());
-        frustumNearFar.x=vp.getCamera().getFrustumNear();
-        frustumNearFar.y=vp.getCamera().getFrustumFar();
-
+        this(vp);
+        sampleRadius = config.getSampleRadius();
+        intensity = config.getIntensity();
+        scale = config.getScale();
+        bias = config.getBias();
+        useOnlyAo = config.isUseOnlyAo();
+        useAo = config.useAo;
     }
 
     @Override
-    public void init(AssetManager manager, int width, int height) {
-        super.init(manager, width, height);
-        normalPass.init(width, height, Format.RGBA8, Format.Depth);
+    public boolean isRequiresDepthTexture() {
+        return true;
     }
 
     @Override
@@ -100,43 +136,127 @@ public class SSAOFilter extends Filter {
         renderManager.renderViewPortQueues(viewPort, false);
         renderManager.setForcedMaterial(null);
         renderManager.getRenderer().setFrameBuffer(viewPort.getOutputFrameBuffer());
-//        RenderState state=new RenderState();
-//        state.setAlphaTest(true);
-//        state.setAlphaFallOff(0.9f);
-//        renderManager.setForcedRenderState(state);
-
     }
 
     @Override
     public Material getMaterial() {
         material.setTexture("m_Normals", normalPass.getRenderedTexture());
         material.setVector3("frustumCorner", frustumCorner);
-        material.setFloat("m_SampleRadius", config.getSampleRadius() );
-        material.setFloat("m_Intensity", config.getIntensity());
-        material.setFloat("m_Scale", config.getScale());
-        material.setFloat("m_Bias", config.getBias());
-        material.setBoolean("m_UseAo", config.isUseAo());
-        material.setBoolean("m_UseOnlyAo", config.isUseOnlyAo());
-        material.setVector2("m_FrustumNearFar",frustumNearFar);
-        material.setParam("m_Samples",VarType.Vector2Array,samples);
-
- //
+        material.setFloat("m_SampleRadius", sampleRadius);
+        material.setFloat("m_Intensity", intensity);
+        material.setFloat("m_Scale", scale);
+        material.setFloat("m_Bias", bias);
+        material.setBoolean("m_UseAo", useAo);
+        material.setBoolean("m_UseOnlyAo", useOnlyAo);
+        material.setVector2("m_FrustumNearFar", frustumNearFar);
+        material.setParam("m_Samples", VarType.Vector2Array, samples);
         return material;
     }
 
     @Override
-    public void initMaterial(AssetManager manager) {
+    public void initFilter(AssetManager manager, ViewPort vp) {
+        int screenWidth = vp.getCamera().getWidth();
+        int screenHeight = vp.getCamera().getHeight();
+        normalPass = new Pass();
+        normalPass.init(screenWidth, screenHeight, Format.RGBA8, Format.Depth);
+        frustumNearFar = new Vector2f();
+
+        //Need to fix this for the moment only works for 45° FOV
+        float farY = FastMath.tan((float) (FastMath.DEG_TO_RAD * 45.0 / 2.0)) * vp.getCamera().getFrustumFar();
+        float farX = farY * (screenWidth / screenHeight);
+        frustumCorner = new Vector3f(farX, farY, vp.getCamera().getFrustumFar());
+        frustumNearFar.x = vp.getCamera().getFrustumNear();
+        frustumNearFar.y = vp.getCamera().getFrustumFar();
         material = new Material(manager, "Common/MatDefs/SSAO/ssao.j3md");
         normalMaterial = new Material(manager, "Common/MatDefs/SSAO/normal.j3md");
     }
 
+    /**
+     * @deprecated use the proper attribute getter
+     */
+    @Deprecated
     public SSAOConfig getConfig() {
-        return config;
+        return new SSAOConfig(sampleRadius, intensity, scale, bias, useOnlyAo, useAo);
     }
 
+    /**
+     * @deprecated use the proper attribute setter
+     */
+    @Deprecated
     public void setConfig(SSAOConfig config) {
-        this.config = config;
+        sampleRadius = config.getSampleRadius();
+        intensity = config.getIntensity();
+        scale = config.getScale();
+        bias = config.getBias();
+        useOnlyAo = config.isUseOnlyAo();
+        useAo = config.useAo;
     }
 
-    
+    public float getBias() {
+        return bias;
+    }
+
+    public void setBias(float bias) {
+        this.bias = bias;
+    }
+
+    public float getIntensity() {
+        return intensity;
+    }
+
+    public void setIntensity(float intensity) {
+        this.intensity = intensity;
+    }
+
+    public float getSampleRadius() {
+        return sampleRadius;
+    }
+
+    public void setSampleRadius(float sampleRadius) {
+        this.sampleRadius = sampleRadius;
+    }
+
+    public float getScale() {
+        return scale;
+    }
+
+    public void setScale(float scale) {
+        this.scale = scale;
+    }
+
+    public boolean isUseAo() {
+        return useAo;
+    }
+
+    public void setUseAo(boolean useAo) {
+        this.useAo = useAo;
+    }
+
+    public boolean isUseOnlyAo() {
+        return useOnlyAo;
+    }
+
+    public void setUseOnlyAo(boolean useOnlyAo) {
+        this.useOnlyAo = useOnlyAo;
+    }
+
+    @Override
+    public void write(JmeExporter ex) throws IOException {
+        super.write(ex);
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(sampleRadius, "sampleRadius", 5.1f);
+        oc.write(intensity, "intensity", 1.5f);
+        oc.write(scale, "scale", 0.2f);
+        oc.write(bias, "bias", 0.1f);
+    }
+
+    @Override
+    public void read(JmeImporter im) throws IOException {
+        super.read(im);
+        InputCapsule ic = im.getCapsule(this);
+        sampleRadius = ic.readFloat("sampleRadius", 5.1f);
+        intensity = ic.readFloat("intensity", 1.5f);
+        scale = ic.readFloat("scale", 0.2f);
+        bias = ic.readFloat("bias", 0.1f);
+    }
 }

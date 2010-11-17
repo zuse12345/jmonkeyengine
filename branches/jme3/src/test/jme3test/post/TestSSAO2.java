@@ -82,9 +82,9 @@ public class TestSSAO2 extends SimpleApplication {
         scene.addLight(sun);
 
         FilterPostProcessor fpp=new FilterPostProcessor(assetManager);
-        SSAOFilter ssaoFilter= new SSAOFilter(viewPort, new SSAOConfig(0.92f,2.2f,0.46f,0.02f,false,true));
+        SSAOFilter ssaoFilter= new SSAOFilter(0.92f,2.2f,0.46f,0.2f);
         fpp.addFilter(ssaoFilter);
-        SSAOUI ui=new SSAOUI(inputManager, ssaoFilter.getConfig());
+        SSAOUI ui=new SSAOUI(inputManager, ssaoFilter);
 
         viewPort.addProcessor(fpp);
 

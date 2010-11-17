@@ -109,9 +109,9 @@ public class TestSSAO extends SimpleApplication {
 
 
         FilterPostProcessor fpp=new FilterPostProcessor(assetManager);
-        SSAOFilter ssaoFilter= new SSAOFilter(viewPort, new SSAOConfig(0.36f,1.8f,0.84f,0.16f,false,true));
+        SSAOFilter ssaoFilter= new SSAOFilter(0.92f,2.2f,0.29000017f,0.21200025f);
         fpp.addFilter(ssaoFilter);
-        SSAOUI ui=new SSAOUI(inputManager, ssaoFilter.getConfig());
+        SSAOUI ui=new SSAOUI(inputManager, ssaoFilter);
 
         viewPort.addProcessor(fpp);
 

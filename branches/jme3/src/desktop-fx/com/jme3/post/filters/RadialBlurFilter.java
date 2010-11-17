@@ -29,16 +29,19 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.post.filters;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
 import com.jme3.material.Material;
 import com.jme3.post.Filter;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.shader.VarType;
-
+import java.io.IOException;
 
 /**
  *
@@ -48,31 +51,30 @@ public class RadialBlurFilter extends Filter {
 
     private float sampleDist = 1.0f;
     private float sampleStrength = 2.2f;
-    private float[] samples={-0.08f,-0.05f,-0.03f,-0.02f,-0.01f,0.01f,0.02f,0.03f,0.05f,0.08f};
+    private float[] samples = {-0.08f, -0.05f, -0.03f, -0.02f, -0.01f, 0.01f, 0.02f, 0.03f, 0.05f, 0.08f};
 
     public RadialBlurFilter() {
         super("Radial blur");
     }
 
-    public RadialBlurFilter( float sampleDist,float sampleStrength) {
+    public RadialBlurFilter(float sampleDist, float sampleStrength) {
         this();
-        this.sampleDist=sampleDist;
-        this.sampleStrength=sampleStrength;
+        this.sampleDist = sampleDist;
+        this.sampleStrength = sampleStrength;
     }
 
     @Override
     public Material getMaterial() {
-             
+
         material.setFloat("m_SampleDist", sampleDist);
         material.setFloat("m_SampleStrength", sampleStrength);
-        material.setParam("m_Samples",VarType.FloatArray, samples);
-        
+        material.setParam("m_Samples", VarType.FloatArray, samples);
+
         return material;
     }
 
     @Override
-    public void preRender( RenderManager renderManager,ViewPort viewPort) {
-
+    public void preRender(RenderManager renderManager, ViewPort viewPort) {
     }
 
     public float getSampleDist() {
@@ -92,10 +94,23 @@ public class RadialBlurFilter extends Filter {
     }
 
     @Override
-    public void initMaterial(AssetManager manager) {
+    public void initFilter(AssetManager manager, ViewPort vp) {
         material = new Material(manager, "Common/MatDefs/Blur/RadialBlur.j3md");
     }
 
+    @Override
+    public void write(JmeExporter ex) throws IOException {
+        super.write(ex);
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(sampleDist, "sampleDist", 1.0f);
+        oc.write(sampleStrength, "sampleStrength", 2.2f);
+    }
 
-
+    @Override
+    public void read(JmeImporter im) throws IOException {
+        super.read(im);
+        InputCapsule ic = im.getCapsule(this);
+        sampleDist = ic.readFloat("sampleDist", 1.0f);
+        sampleStrength = ic.readFloat("sampleStrength", 2.2f);
+    }
 }

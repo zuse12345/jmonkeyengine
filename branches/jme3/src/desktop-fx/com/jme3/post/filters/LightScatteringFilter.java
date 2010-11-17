@@ -29,16 +29,20 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.post.filters;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
+import com.jme3.export.OutputCapsule;
 import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
 import com.jme3.post.Filter;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
+import java.io.IOException;
 
 /**
  *
@@ -47,20 +51,23 @@ import com.jme3.renderer.ViewPort;
 public class LightScatteringFilter extends Filter {
 
     private Vector3f lightPosition;
-    private Vector3f screenLightPos=new Vector3f();
+    private Vector3f screenLightPos = new Vector3f();
     private int nbSamples = 50;
     private float blurStart = 0.02f;
     private float blurWidth = 0.9f;
     private float lightDensity = 1.4f;
-    private boolean adaptative=true;
-    Vector3f viewLightPos=new Vector3f();
+    private boolean adaptative = true;
+    Vector3f viewLightPos = new Vector3f();
     private boolean display;
     private float innerLightDensity;
 
-    public LightScatteringFilter(Vector3f lightPosition) {
+    public LightScatteringFilter() {
         super("Light Scattering");
+    }
+
+    public LightScatteringFilter(Vector3f lightPosition) {
+        this();
         this.lightPosition = lightPosition;
-       
     }
 
     @Override
@@ -81,35 +88,35 @@ public class LightScatteringFilter extends Filter {
 
     @Override
     public void preRender(RenderManager renderManager, ViewPort viewPort) {
-        getClipCoordinates(lightPosition,screenLightPos,viewPort.getCamera());
-      //  screenLightPos.x = screenLightPos.x / viewPort.getCamera().getWidth();
-      //  screenLightPos.y = screenLightPos.y / viewPort.getCamera().getHeight();
+        getClipCoordinates(lightPosition, screenLightPos, viewPort.getCamera());
+        //  screenLightPos.x = screenLightPos.x / viewPort.getCamera().getWidth();
+        //  screenLightPos.y = screenLightPos.y / viewPort.getCamera().getHeight();
 
         viewPort.getCamera().getViewMatrix().mult(lightPosition, viewLightPos);
         //System.err.println("viewLightPos "+viewLightPos);
-        display=screenLightPos.x<1.6f && screenLightPos.x>-0.6f && screenLightPos.y<1.6f && screenLightPos.y>-0.6f && viewLightPos.z<0;
+        display = screenLightPos.x < 1.6f && screenLightPos.x > -0.6f && screenLightPos.y < 1.6f && screenLightPos.y > -0.6f && viewLightPos.z < 0;
 //System.err.println("camdir "+viewPort.getCamera().getDirection());
 //System.err.println("lightPos "+lightPosition);
 //System.err.println("screenLightPos "+screenLightPos);
-        if(adaptative){
-            innerLightDensity=Math.max(lightDensity-Math.max(screenLightPos.x, screenLightPos.y),0.0f);
+        if (adaptative) {
+            innerLightDensity = Math.max(lightDensity - Math.max(screenLightPos.x, screenLightPos.y), 0.0f);
         }
     }
 
-    public Vector3f getClipCoordinates( Vector3f worldPosition, Vector3f store,Camera cam ) {     
+    public Vector3f getClipCoordinates(Vector3f worldPosition, Vector3f store, Camera cam) {
 
         float w = cam.getViewProjectionMatrix().multProj(worldPosition, store);
         store.divideLocal(w);
 
-        store.x = ( ( store.x + 1f ) * ( cam.getViewPortRight() -  cam.getViewPortLeft() ) / 2f + cam.getViewPortLeft() );
-        store.y = ( ( store.y + 1f ) * (  cam.getViewPortTop() -  cam.getViewPortBottom() ) / 2f + cam.getViewPortBottom() );
-        store.z = ( store.z + 1f ) / 2f;
+        store.x = ((store.x + 1f) * (cam.getViewPortRight() - cam.getViewPortLeft()) / 2f + cam.getViewPortLeft());
+        store.y = ((store.y + 1f) * (cam.getViewPortTop() - cam.getViewPortBottom()) / 2f + cam.getViewPortBottom());
+        store.z = (store.z + 1f) / 2f;
 
         return store;
     }
 
     @Override
-    public void initMaterial(AssetManager manager) {
+    public void initFilter(AssetManager manager, ViewPort vp) {
         material = new Material(manager, "Common/MatDefs/Light/LightScattering.j3md");
     }
 
@@ -151,5 +158,29 @@ public class LightScatteringFilter extends Filter {
 
     public void setNbSamples(int nbSamples) {
         this.nbSamples = nbSamples;
+    }
+
+    @Override
+    public void write(JmeExporter ex) throws IOException {
+        super.write(ex);
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(lightPosition, "lightPosition", Vector3f.ZERO);
+        oc.write(nbSamples, "nbSamples", 50);
+        oc.write(blurStart, "blurStart", 0.02f);
+        oc.write(blurWidth, "blurWidth", 0.9f);
+        oc.write(lightDensity, "lightDensity", 1.4f);
+        oc.write(adaptative, "adaptative", true);
+    }
+
+    @Override
+    public void read(JmeImporter im) throws IOException {
+        super.read(im);
+        InputCapsule ic = im.getCapsule(this);
+        lightPosition = (Vector3f) ic.readSavable("lightPosition", Vector3f.ZERO);
+        nbSamples = ic.readInt("nbSamples", 50);
+        blurStart = ic.readFloat("blurStart", 0.02f);
+        blurWidth = ic.readFloat("blurWidth", 0.9f);
+        lightDensity = ic.readFloat("lightDensity", 1.4f);
+        adaptative = ic.readBoolean("adaptative", true);
     }
 }

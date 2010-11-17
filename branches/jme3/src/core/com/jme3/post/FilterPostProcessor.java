@@ -31,26 +31,36 @@
  */
 package com.jme3.post;
 
+import com.jme3.export.JmeExporter;
+import com.jme3.export.JmeImporter;
 import com.jme3.renderer.Renderer;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.asset.AssetManager;
+import com.jme3.export.InputCapsule;
+import com.jme3.export.OutputCapsule;
+import com.jme3.export.Savable;
 import com.jme3.material.Material;
 import com.jme3.renderer.Camera;
+import com.jme3.renderer.Caps;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image.Format;
 import com.jme3.texture.Texture2D;
 import com.jme3.ui.Picture;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-public class FilterPostProcessor implements SceneProcessor {
+public class FilterPostProcessor implements SceneProcessor, Savable {
 
     private RenderManager renderManager;
     private Renderer renderer;
     private ViewPort viewPort;
+    private FrameBuffer renderFrameBufferMS;
+    private int numSamples = 0;
     private FrameBuffer renderFrameBuffer;
     private Texture2D filterTexture;
     private Texture2D depthTexture;
@@ -61,14 +71,24 @@ public class FilterPostProcessor implements SceneProcessor {
     private boolean computeDepth = false;
     private FrameBuffer outputBuffer;
 
+    /**
+     * Create a FilterProcessor constructor
+     * @param assetManager the Asset Manager
+     */
     public FilterPostProcessor(AssetManager assetManager) {
         this.assetManager = assetManager;
     }
-    
+
+    /**
+     * Don't use this constructor use FilterPostProcessor(AssetManager assetManager)
+     */
+    public FilterPostProcessor() {
+    }
+
     public void addFilter(Filter filter) {
         filters.add(filter);
         if (isInitialized()) {
-            filter.init(assetManager, viewPort.getCamera().getWidth(), viewPort.getCamera().getHeight());
+            filter.init(assetManager, viewPort);
         }
     }
 
@@ -104,7 +124,6 @@ public class FilterPostProcessor implements SceneProcessor {
         }
         fsQuad.setMaterial(mat);
         fsQuad.updateGeometricState();
-
         renderManager.setCamera(filterCam, true);
         r.setFrameBuffer(buff);
         r.clearBuffers(true, true, true);
@@ -154,12 +173,15 @@ public class FilterPostProcessor implements SceneProcessor {
     }
 
     public void postFrame(FrameBuffer out) {
+        if (renderFrameBufferMS != null) {
+            renderer.copyFrameBuffer(renderFrameBufferMS, renderFrameBuffer);
+        }
         renderFilterChain(renderer);
-        renderManager.setCamera(viewPort.getCamera(), false);
+
     }
 
     public void preFrame(float tpf) {
-        if (filters.size() == 0) {
+        if (filters.isEmpty()) {
             viewPort.setOutputFrameBuffer(outputBuffer);
         }
         for (Iterator<Filter> it = filters.iterator(); it.hasNext();) {
@@ -174,6 +196,9 @@ public class FilterPostProcessor implements SceneProcessor {
             viewPort = null;
         }
 
+        if (renderFrameBufferMS != null) {
+            renderer.deleteFrameBuffer(renderFrameBufferMS);
+        }
         for (Iterator<Filter> it = filters.iterator(); it.hasNext();) {
             Filter filter = it.next();
             filter.cleanup(renderer);
@@ -183,23 +208,86 @@ public class FilterPostProcessor implements SceneProcessor {
     public void reshape(ViewPort vp, int w, int h) {
         for (Iterator<Filter> it = filters.iterator(); it.hasNext();) {
             Filter filter = it.next();
-            filter.init(assetManager, w, h);
+            filter.init(assetManager, vp);
             computeDepth = filter.isRequiresDepthTexture();
 
         }
 
+        if (renderFrameBufferMS != null) {
+            renderer.deleteFrameBuffer(renderFrameBufferMS);
+        }
+
+
         if (renderFrameBuffer == null) {
             renderFrameBuffer = new FrameBuffer(w, h, 0);
             renderFrameBuffer.setDepthBuffer(Format.Depth);
-            filterTexture = new Texture2D(w, h, Format.RGB8);
+            filterTexture = new Texture2D(w, h, Format.RGBA8);
             renderFrameBuffer.setColorTexture(filterTexture);
-
             if (computeDepth) {
                 depthTexture = new Texture2D(w, h, Format.Depth);
                 renderFrameBuffer.setDepthTexture(depthTexture);
             }
         }
+
         outputBuffer = viewPort.getOutputFrameBuffer();
-        viewPort.setOutputFrameBuffer(renderFrameBuffer);
+
+
+        Collection<Caps> caps = renderer.getCaps();
+        //antialiasing on filters only supported in opengl 3 due to depth read problem
+        if (numSamples > 1 && caps.contains(Caps.FrameBufferMultisample) && caps.contains(Caps.OpenGL30)) {
+            renderFrameBufferMS = new FrameBuffer(w, h, numSamples);
+            renderFrameBufferMS.setDepthBuffer(Format.Depth);
+            renderFrameBufferMS.setColorBuffer(Format.RGBA8);
+            viewPort.setOutputFrameBuffer(renderFrameBufferMS);
+        } else {
+            viewPort.setOutputFrameBuffer(renderFrameBuffer);
+        }
+        // viewPort.setOutputFrameBuffer(renderFrameBuffer);
+    }
+
+    /**
+     * return the number of samples for antialiasing
+     * @return numSamples
+     */
+    public int getNumSamples() {
+        return numSamples;
+    }
+
+    /**
+     * Sets the number of samples for antialiasing
+     * @param numSamples the number of Samples
+     */
+    public void setNumSamples(int numSamples) {
+        this.numSamples = numSamples;
+    }
+
+    /**
+     * Sets the asset manager for this processor
+     * @param assetManager
+     */
+    public void setAssetManager(AssetManager assetManager) {
+        this.assetManager = assetManager;
+    }
+
+    /**
+     * Writes the processor
+     * @param ex
+     * @throws IOException
+     */
+    public void write(JmeExporter ex) throws IOException {
+        OutputCapsule oc = ex.getCapsule(this);
+        oc.write(numSamples, "numSamples", 0);
+        oc.writeSavableArrayList((ArrayList) filters, "filters", null);
+    }
+
+    /**
+     * Reads the processor
+     * @param im
+     * @throws IOException
+     */
+    public void read(JmeImporter im) throws IOException {
+        InputCapsule ic = im.getCapsule(this);
+        numSamples = ic.readInt("numSamples", 0);
+        filters = ic.readSavableArrayList("filters", null);
     }
 }

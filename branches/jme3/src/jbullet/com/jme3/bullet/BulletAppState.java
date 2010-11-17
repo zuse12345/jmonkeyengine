@@ -149,6 +149,7 @@ public class BulletAppState implements AppState, PhysicsTickListener {
     }
 
     public void update(float tpf) {
+        pSpace.distributeEvents();
         this.tpf = tpf;
     }
 

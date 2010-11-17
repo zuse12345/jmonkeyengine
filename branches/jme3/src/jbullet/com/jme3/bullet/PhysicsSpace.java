@@ -93,10 +93,9 @@ import java.util.logging.Logger;
  */
 public class PhysicsSpace {
 
-    public static final int AXIS_X=0;
-    public static final int AXIS_Y=1;
-    public static final int AXIS_Z=2;
-
+    public static final int AXIS_X = 0;
+    public static final int AXIS_Y = 1;
+    public static final int AXIS_Z = 2;
     public static ThreadLocal<ConcurrentLinkedQueue<AppTask<?>>> rQueueTL =
             new ThreadLocal<ConcurrentLinkedQueue<AppTask<?>>>() {
 
@@ -129,7 +128,7 @@ public class PhysicsSpace {
     private List<PhysicsCollisionEvent> collisionEvents = new LinkedList<PhysicsCollisionEvent>();
     private Map<Integer, PhysicsCollisionGroupListener> collisionGroupListeners = new ConcurrentHashMap<Integer, PhysicsCollisionGroupListener>();
     private ConcurrentLinkedQueue<PhysicsTickListener> tickListeners = new ConcurrentLinkedQueue<PhysicsTickListener>();
-    private PhysicsCollisionEventFactory eventFactory=new PhysicsCollisionEventFactory();
+    private PhysicsCollisionEventFactory eventFactory = new PhysicsCollisionEventFactory();
     private Vector3f worldMin = new Vector3f(-10000f, -10000f, -10000f);
     private Vector3f worldMax = new Vector3f(10000f, 10000f, 10000f);
     private float accuracy = 1f / 60f;
@@ -147,7 +146,7 @@ public class PhysicsSpace {
      * Used internally
      * @param space
      */
-    public static void setLocalThreadPhysicsSpace(PhysicsSpace space){
+    public static void setLocalThreadPhysicsSpace(PhysicsSpace space) {
         physicsSpaceTL.set(space);
     }
 
@@ -291,7 +290,9 @@ public class PhysicsSpace {
                     node1 = physicsGhostNodes.get(rBody);
                 }
                 if (node != null && node1 != null) {
-                    collisionEvents.add(eventFactory.getEvent(PhysicsCollisionEvent.TYPE_PROCESSED, node, node1, cp));
+                    synchronized (collisionEvents) {
+                        collisionEvents.add(eventFactory.getEvent(PhysicsCollisionEvent.TYPE_PROCESSED, node, node1, cp));
+                    }
                 } else {
                     System.out.println("error finding node during collision");
                 }
@@ -376,21 +377,22 @@ public class PhysicsSpace {
         getDynamicsWorld().stepSimulation(time, maxSteps, accuracy);
 
         //distribute events
-        distributeEvents();
     }
 
-    private void distributeEvents() {
+    public void distributeEvents() {
         //add collision callbacks
-        for (PhysicsCollisionListener listener : collisionListeners) {
-            for (PhysicsCollisionEvent event : collisionEvents) {
-                listener.collision(event);
+        synchronized (collisionEvents) {
+            for (PhysicsCollisionListener listener : collisionListeners) {
+                for (PhysicsCollisionEvent event : collisionEvents) {
+                    listener.collision(event);
+                }
             }
-        }
-        //recycle events
-        for (Iterator<PhysicsCollisionEvent> it = collisionEvents.iterator(); it.hasNext();) {
-            PhysicsCollisionEvent physicsCollisionEvent = it.next();
-            eventFactory.recycle(physicsCollisionEvent);
-            it.remove();
+            //recycle events
+            for (Iterator<PhysicsCollisionEvent> it = collisionEvents.iterator(); it.hasNext();) {
+                PhysicsCollisionEvent physicsCollisionEvent = it.next();
+                eventFactory.recycle(physicsCollisionEvent);
+                it.remove();
+            }
         }
     }
 
@@ -674,11 +676,12 @@ public class PhysicsSpace {
     /**
      * Performs a ray collision test and reports the results to the listener
      */
-    public void rayTest(Vector3f from, Vector3f to, PhysicsRayResultListener listener){
+    public void rayTest(Vector3f from, Vector3f to, PhysicsRayResultListener listener) {
         dynamicsWorld.rayTest(Converter.convert(from), Converter.convert(to), new InternalRayListener(listener));
     }
 
-    private class InternalRayListener extends CollisionWorld.RayResultCallback{
+    private class InternalRayListener extends CollisionWorld.RayResultCallback {
+
         private PhysicsRayResultListener listener;
 
         public InternalRayListener(PhysicsRayResultListener listener) {
@@ -687,11 +690,10 @@ public class PhysicsSpace {
 
         @Override
         public float addSingleResult(LocalRayResult lrr, boolean bln) {
-            PhysicsCollisionObject obj=(PhysicsCollisionObject)lrr.collisionObject.getUserPointer();
+            PhysicsCollisionObject obj = (PhysicsCollisionObject) lrr.collisionObject.getUserPointer();
             listener.rayCollision(obj, Converter.convert(lrr.hitNormalLocal), lrr.hitFraction, bln);
             return lrr.hitFraction;
         }
-
     }
 
     /**

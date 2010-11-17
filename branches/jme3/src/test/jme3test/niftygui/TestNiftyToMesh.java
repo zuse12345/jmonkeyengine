@@ -62,7 +62,7 @@ public class TestNiftyToMesh extends SimpleApplication{
                                                           audioRenderer,
                                                           niftyView);
         nifty = niftyDisplay.getNifty();
-        nifty.fromXml("all/intro.xml", "start");
+        nifty.fromXml("jme3test/niftygui/hellojme.xml", "start");
         niftyView.addProcessor(niftyDisplay);
 
         FrameBuffer fb = new FrameBuffer(1024, 768, 0);

@@ -1,4 +1,4 @@
-    <target name="-mac-app">
+    <target name="-mac-app" depends="-test-mac-app-enabled" if="is.mac.app.enabled">
         <echo>MacOSX Application Creation</echo>
         <copy file="Info.plist" tofile="_Info.plist">
             <filterchain>
@@ -15,4 +15,9 @@
             <zipfileset dir="${dist.dir}/lib" prefix="${application.title}.app/Contents/Resources/Java/lib"/>
         </zip>
         <delete file="_Info.plist"/>
+    </target>
+    <target name="-test-mac-app-enabled">
+        <condition property="is.mac.app.enabled">
+            <istrue value="${mac.app.enabled}"/>
+        </condition>
     </target>

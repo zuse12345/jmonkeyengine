@@ -63,6 +63,7 @@ public class DesktopExeCompositeProvider implements ProjectCustomizer.CompositeC
 
         private ProjectExtensionManager launch4j;
         private ProjectExtensionManager macapp;
+        private ProjectExtensionManager linux;
         private ProjectExtensionProperties properties;
         private Project project;
 
@@ -71,7 +72,8 @@ public class DesktopExeCompositeProvider implements ProjectCustomizer.CompositeC
             this.project = project;
             launch4j = new ProjectExtensionManager("launch4j", "v1.1", new String[]{"jar", "-launch4j-exe"});
             launch4j.setAntTaskLibrary("launch4j");
-            macapp = new ProjectExtensionManager("macapp", "v1.0", new String[]{"jar", "-mac-app"});
+            macapp = new ProjectExtensionManager("macapp", "v1.1", new String[]{"jar", "-mac-app"});
+            linux = new ProjectExtensionManager("linuxlauncher", "v1.0", new String[]{"jar", "-linux-launcher"});
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -80,6 +82,12 @@ public class DesktopExeCompositeProvider implements ProjectCustomizer.CompositeC
                 launch4j.checkExtension(project);
             } else {
                 launch4j.removeExtension(project);
+            }
+            if ("true".equals(properties.getProperty("linux.launcher.enabled"))) {
+                linux.loadTargets("nbres:/com/jme3/gde/desktop/executables/linux-targets.xml");
+                linux.checkExtension(project);
+            } else {
+                linux.removeExtension(project);
             }
             if ("true".equals(properties.getProperty("mac.app.enabled"))) {
                 macapp.loadTargets("nbres:/com/jme3/gde/desktop/executables/macapp-targets.xml");

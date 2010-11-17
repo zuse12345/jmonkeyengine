@@ -74,11 +74,13 @@ public class TestBloom extends SimpleApplication {
 
 
         Material mat = new Material(assetManager,"Common/MatDefs/Light/Lighting.j3md");
-      mat.setFloat("m_Shininess", 0.5f);
+        mat.setFloat("m_Shininess", 15f);
         mat.setBoolean("m_UseMaterialColors", true);
-        mat.setColor("m_Ambient", ColorRGBA.Black);
-        mat.setColor("m_Diffuse", ColorRGBA.Black);
-        mat.setColor("m_Specular", ColorRGBA.White.mult(0.6f));
+        mat.setColor("m_Ambient", ColorRGBA.Yellow.mult(0.2f));
+        mat.setColor("m_Diffuse", ColorRGBA.Yellow.mult(0.2f));
+        mat.setColor("m_Specular", ColorRGBA.Yellow.mult(0.8f));
+
+    
 
 
         Material matSoil = new Material(assetManager,"Common/MatDefs/Light/Lighting.j3md");
@@ -117,10 +119,10 @@ public class TestBloom extends SimpleApplication {
 
          fpp=new FilterPostProcessor(assetManager);
         BloomFilter bloom=new BloomFilter(cam.getWidth()/2,cam.getHeight()/2);
-        bloom.setBlurScale(2.77f);
-        bloom.setExposurePower(4.42f);
-        bloom.setExposureCutOff(0.79f);
-        bloom.setBloomIntensity(0.73f);
+        bloom.setBlurScale(1.37f);
+        bloom.setExposurePower(3.30f);
+        bloom.setExposureCutOff(0.2f);
+        bloom.setBloomIntensity(2.45f);
         BloomUI ui=new BloomUI(inputManager, bloom);
    
 

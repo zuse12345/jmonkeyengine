@@ -61,8 +61,9 @@ public class TestHoverTank extends SimpleApplication{
 
         flyCam.setEnabled(false);
         ChaseCamera chaseCam = new ChaseCamera(cam, tank, inputManager);
+        chaseCam.setSmoothMotion(true);
         chaseCam.setMaxDistance(100000);
-        chaseCam.setMinHeight(-FastMath.PI / 2);
+        chaseCam.setMinVerticalRotation(-FastMath.PI / 2);
         viewPort.setBackgroundColor(ColorRGBA.DarkGray);
 
         

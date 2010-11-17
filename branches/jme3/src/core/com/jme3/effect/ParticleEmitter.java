@@ -89,6 +89,19 @@ public class ParticleEmitter extends Geometry implements Control {
     private float endSize = 2f;
     private boolean worldSpace = true;
 
+    @Override
+    public ParticleEmitter clone(){
+        ParticleEmitter clone = (ParticleEmitter) super.clone();
+        clone.shape = shape.deepClone();
+        clone.setNumParticles(particles.length);
+        clone.startVel = startVel.clone();
+        clone.faceNormal = faceNormal.clone();
+        clone.startColor = startColor.clone();
+        clone.endColor = endColor.clone();
+        clone.controls.add(clone);
+        return clone;
+    }
+
     public ParticleEmitter(String name, Type type, int numParticles){
         super(name);
 

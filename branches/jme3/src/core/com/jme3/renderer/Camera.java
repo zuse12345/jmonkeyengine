@@ -177,13 +177,13 @@ public class Camera implements Savable, Cloneable {
 
     //Temporary values computed in onFrustumChange that are needed if a
     //call is made to onFrameChange.
-    protected float coeffLeft[];
+    protected float[] coeffLeft;
 
-    protected float coeffRight[];
+    protected float[] coeffRight;
 
-    protected float coeffBottom[];
+    protected float[] coeffBottom;
 
-    protected float coeffTop[];
+    protected float[] coeffTop;
 
     //view port coordinates
     /**
@@ -1105,8 +1105,8 @@ public class Camera implements Savable, Cloneable {
         if ( isParallelProjection() ) {
             worldPlane[LEFT_PLANE].setConstant( worldPlane[LEFT_PLANE].getConstant() + frustumLeft );
             worldPlane[RIGHT_PLANE].setConstant( worldPlane[RIGHT_PLANE].getConstant() - frustumRight );
-            worldPlane[TOP_PLANE].setConstant( worldPlane[TOP_PLANE].getConstant() + frustumTop );
-            worldPlane[BOTTOM_PLANE].setConstant( worldPlane[BOTTOM_PLANE].getConstant() - frustumBottom );
+            worldPlane[TOP_PLANE].setConstant( worldPlane[TOP_PLANE].getConstant() - frustumTop );
+            worldPlane[BOTTOM_PLANE].setConstant( worldPlane[BOTTOM_PLANE].getConstant() + frustumBottom );
         }
 
         // far plane
@@ -1222,7 +1222,14 @@ public class Camera implements Savable, Cloneable {
     public int getHeight(){
         return height;
     }
-    
+
+    @Override
+    public String toString(){
+        return "Camera[location=" + location + "\n, direction=" + getDirection() + "\n" +
+                     "res=" + width + "x" + height + ", parallel=" + parallelProjection + "\n" +
+                     "near=" + frustumNear + ", far=" + frustumFar + "]";
+    }
+
     public void write(JmeExporter e) throws IOException {
         OutputCapsule capsule = e.getCapsule(this);
         capsule.write(location, "location", Vector3f.ZERO);

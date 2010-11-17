@@ -59,9 +59,6 @@ public class TestParallelProjection  extends SimpleApplication implements Analog
         dl.setColor(ColorRGBA.White);
         dl.setDirection(Vector3f.UNIT_XYZ.negate());
 
-        // TODO: Fix frustum culling for parallel projection cameras.
-        rootNode.setCullHint(CullHint.Never);
-
         rootNode.addLight(dl);
         rootNode.attachChild(teaGeom);
 

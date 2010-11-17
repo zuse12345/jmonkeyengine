@@ -62,6 +62,17 @@ public class EmitterBoxShape implements EmitterShape {
         store.z = min.z + len.z * FastMath.nextRandomFloat();
     }
 
+    public EmitterShape deepClone(){
+        try {
+            EmitterBoxShape clone = (EmitterBoxShape) super.clone();
+            clone.min = min.clone();
+            clone.len = len.clone();
+            return clone;
+        } catch (CloneNotSupportedException ex) {
+            throw new AssertionError();
+        }
+    }
+
     public Vector3f getMin() {
         return min;
     }

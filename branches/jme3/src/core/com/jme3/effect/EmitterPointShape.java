@@ -49,6 +49,16 @@ public class EmitterPointShape implements EmitterShape {
         this.point = point;
     }
 
+    public EmitterShape deepClone(){
+        try {
+            EmitterPointShape clone = (EmitterPointShape) super.clone();
+            clone.point = point.clone();
+            return clone;
+        } catch (CloneNotSupportedException ex) {
+            throw new AssertionError();
+        }
+    }
+
     public void getRandomPoint(Vector3f store) {
        store.set(point);
     }

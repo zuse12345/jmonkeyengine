@@ -59,6 +59,17 @@ public class EmitterSphereShape implements EmitterShape {
         this.radius = radius;
     }
 
+    @Override
+    public EmitterShape deepClone(){
+        try {
+            EmitterSphereShape clone = (EmitterSphereShape) super.clone();
+            clone.center = center.clone();
+            return clone;
+        } catch (CloneNotSupportedException ex) {
+            throw new AssertionError();
+        }
+    }
+
     public void getRandomPoint(Vector3f store) {
         do {
             store.x = ((FastMath.nextRandomFloat() * 2f) - 1f) * radius;

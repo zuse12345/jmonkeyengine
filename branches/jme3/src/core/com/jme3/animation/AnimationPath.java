@@ -136,10 +136,21 @@ public class AnimationPath extends AbstractControl {
     }
     private PathInterpolation pathInterpolation = PathInterpolation.CatmullRom;
 
+    /**
+     * Create an animation Path for this target
+     * @param target
+     */
     public AnimationPath(Spatial target) {
         super();
         this.spatial = target;
         target.addControl(this);
+    }
+
+    /**
+     * don't use this contructor use AnimationPath(Spatial target)
+     */
+    public AnimationPath() {
+        super();
     }
 
     public Control cloneForSpatial(Spatial spatial) {
@@ -430,9 +441,16 @@ public class AnimationPath extends AbstractControl {
         oc.write(upVector, "upVector", Vector3f.UNIT_Y);
         oc.write(rotation, "rotation", Quaternion.IDENTITY);
         oc.write(duration, "duration", 5f);
-        oc.writeSavableArrayList((ArrayList) segmentsLength, "segmentsLength", null);
+        oc.write(directionType, "directionType", Direction.None);
+        oc.write(pathInterpolation, "pathInterpolation", PathInterpolation.CatmullRom);
+        float list[]=new float[segmentsLength.size()];
+        for (int i=0;i<segmentsLength.size();i++) {
+            list[i]=segmentsLength.get(i);
+        }
+        oc.write(list, "segmentsLength", null);
+      
         oc.write(totalLength, "totalLength", 0);
-        oc.writeSavableArrayList((ArrayList) CRcontrolPoints, "segmentsLength", null);
+        oc.writeSavableArrayList((ArrayList) CRcontrolPoints, "CRControlPoints", null);
         oc.write(speed, "speed", 0);
         oc.write(curveTension, "curveTension", 0.5f);
         oc.write(cycle, "cycle", false);
@@ -449,9 +467,17 @@ public class AnimationPath extends AbstractControl {
         upVector = (Vector3f) in.readSavable("upVector", Vector3f.UNIT_Y);
         rotation = (Quaternion) in.readSavable("rotation", Quaternion.IDENTITY);
         duration = in.readFloat("duration", 5f);
-        segmentsLength = (ArrayList<Float>) in.readSavableArrayList("segmentsLength", null);
+        float list[]=in.readFloatArray("segmentsLength", null);
+        if (list!=null){
+            segmentsLength=new ArrayList<Float>();
+            for (int i=0;i<list.length;i++) {
+                segmentsLength.add(new Float(list[i]));
+            }
+        }
+        directionType=in.readEnum("directionType",Direction.class, Direction.None);
+        pathInterpolation= in.readEnum("pathInterpolation", PathInterpolation.class,PathInterpolation.CatmullRom);
         totalLength = in.readFloat("totalLength", 0);
-        CRcontrolPoints = (ArrayList<Vector3f>) in.readSavableArrayList("segmentsLength", null);
+        CRcontrolPoints = (ArrayList<Vector3f>) in.readSavableArrayList("CRControlPoints", null);
         speed = in.readFloat("speed", 0);
         curveTension = in.readFloat("curveTension", 0.5f);
         cycle = in.readBoolean("cycle", false);
@@ -812,4 +838,11 @@ public class AnimationPath extends AbstractControl {
     public void setLoop(boolean loop) {
         this.loop = loop;
     }
+
+    @Override
+    public String toString() {
+        return "AnimationPath{" + "playing=" + playing + "currentWayPoint=" + currentWayPoint + "currentValue=" + currentValue + "wayPoints=" + wayPoints + "debugNode=" + debugNode + "assetManager=" + assetManager + "listeners=" + listeners + "curveDirection=" + curveDirection + "lookAt=" + lookAt + "upVector=" + upVector + "rotation=" + rotation + "duration=" + duration + "segmentsLength=" + segmentsLength + "totalLength=" + totalLength + "CRcontrolPoints=" + CRcontrolPoints + "speed=" + speed + "curveTension=" + curveTension + "loop=" + loop + "cycle=" + cycle + "directionType=" + directionType + "pathInterpolation=" + pathInterpolation + "eps=" + eps + '}';
+    }
+
+    
 }

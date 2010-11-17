@@ -77,6 +77,14 @@ public class FlyByCamera implements AnalogListener, ActionListener {
         initialUpVec = cam.getUp().clone();
     }
 
+    /**
+     * Sets the up vector that should be used for the camera.
+     * @param upVec
+     */
+    public void setUpVector(Vector3f upVec) {
+       initialUpVec.set(upVec);
+    }
+
     public void setMotionAllowedListener(MotionAllowedListener listener){
         this.motionAllowed = listener;
     }

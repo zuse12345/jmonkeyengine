@@ -422,6 +422,13 @@ public class InputManager implements RawInputListener {
     }
 
     /**
+     * @param visible whether the mouse cursor is visible or not.
+     */
+    public boolean isCursorVisible(){
+        return mouseVisible;
+    }
+
+    /**
      * @param visible whether the mouse cursor should be visible or not.
      */
     public void setCursorVisible(boolean visible){

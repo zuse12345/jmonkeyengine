@@ -88,10 +88,11 @@ import jme3tools.converters.ImageToAwt;
  * @author normenhansen
  */
 public class Golem extends SimpleApplication
-                   implements ActionListener, PhysicsCollisionListener, AnimEventListener {
+        implements ActionListener, PhysicsCollisionListener, AnimEventListener {
 
     // constants
     static final Quaternion ROTATE_LEFT = new Quaternion();
+
     static {
         ROTATE_LEFT.fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_Y);
     }
@@ -102,10 +103,10 @@ public class Golem extends SimpleApplication
     PhysicsCharacterNode characterNode;
     Node character;
     //temp vectors
-    Vector3f   walkDirection = new Vector3f();
+    Vector3f walkDirection = new Vector3f();
     Quaternion modelRotation = new Quaternion();
-    Vector3f  modelDirection = new Vector3f();
-    Vector3f      modelRight = new Vector3f();
+    Vector3f modelDirection = new Vector3f();
+    Vector3f modelRight = new Vector3f();
     //terrain
     TerrainQuad terrain;
     Node terrainNode;
@@ -129,16 +130,16 @@ public class Golem extends SimpleApplication
     //enemy's bomb
     Sphere bomb;
     SphereCollisionShape bombCollisionShape;
-    Vector3f wallLoc = new Vector3f(0,11,-105);
-    Vector3f enemyLoc = new Vector3f(wallLoc.x+15f,wallLoc.y+15,wallLoc.z);
-    Vector3f trajectory = new Vector3f(0,10,10);
+    Vector3f wallLoc = new Vector3f(0, 11, -105);
+    Vector3f enemyLoc = new Vector3f(wallLoc.x + 15f, wallLoc.y + 15, wallLoc.z);
+    Vector3f trajectory = new Vector3f(0, 10, 10);
     //explosion
     ParticleEmitter effect;
     //brick wall
     private Node wallNode;
     Box brick;
     float bLength = 1.6f;
-    float bWidth  = 1f;
+    float bWidth = 1f;
     float bHeight = 1f;
 
     public static void main(String[] args) {
@@ -166,24 +167,24 @@ public class Golem extends SimpleApplication
         createCharacter();
         setupChaseCamera();
         setupAnimationController();
-        
+
     }
 
     private void createWall(Vector3f off) {
-        wallNode=new Node("the wall");
+        wallNode = new Node("the wall");
 
         matRock = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         Texture tex_ml = assetManager.loadTexture("Textures/Terrain/BrickWall/BrickWall.jpg");
         matRock.setTexture("m_ColorMap", tex_ml);
 
         brick = new Box(Vector3f.ZERO, bLength, bHeight, bWidth);
-        brick.scaleTextureCoordinates(new Vector2f(1f,1f));
+        brick.scaleTextureCoordinates(new Vector2f(1f, 1f));
         for (int row = 0; row < 4; row++) {
             for (int col = 0; col < 10; col++) {
                 Vector3f vt = new Vector3f(
-                       off.x + (col+1f)*bLength*2.01f,
-                       off.y + (row+1f)*bHeight*2.01f,
-                       off.z);
+                        off.x + (col + 1f) * bLength * 2.01f,
+                        off.y + (row + 1f) * bHeight * 2.01f,
+                        off.z);
                 addBrick(vt);
             }
         }
@@ -202,18 +203,17 @@ public class Golem extends SimpleApplication
         this.getPhysicsSpace().add(brickNode);
     }
 
-        private void createCharacter() {
+    private void createCharacter() {
         CapsuleCollisionShape capsule = new CapsuleCollisionShape(3f, 4f);
         characterNode = new PhysicsCharacterNode(capsule, 0.01f);
         character = (Node) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
         characterNode.attachChild(character);
         characterNode.setName("the Golem");
         characterNode.setLocalTranslation(new Vector3f(0, 10, 50));
-        characterNode.setMaxSlope(FastMath.PI/2f*3f);
+        characterNode.setMaxSlope(FastMath.PI / 2f * 3f);
         rootNode.attachChild(characterNode);
         getPhysicsSpace().add(characterNode);
     }
-
 
     private void prepareBullet() {
         bullet = new Sphere(32, 32, 0.4f, true, false);
@@ -223,7 +223,7 @@ public class Golem extends SimpleApplication
         matBullet.setColor("m_Color", ColorRGBA.Green);
         getPhysicsSpace().addCollisionListener(this);
     }
-    
+
     private void prepareBomb() {
         bomb = new Sphere(32, 32, 2f, true, false);
         bomb.setTextureMode(TextureMode.Projected);
@@ -277,7 +277,7 @@ public class Golem extends SimpleApplication
 
     private void createSky() {
         rootNode.attachChild(
-         SkyFactory.createSky( assetManager, "Textures/Sky/Bright/BrightSky.dds", false));
+                SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false));
     }
 
     private void createTerrain() {
@@ -317,7 +317,7 @@ public class Golem extends SimpleApplication
         terrain.setMaterial(matTerrain);
         terrain.setModelBound(new BoundingBox());
         terrain.updateModelBound();
-        terrain.setLocalScale(new Vector3f(1,1,1));
+        terrain.setLocalScale(new Vector3f(1, 1, 1));
 
         TerrainPhysicsShapeFactory factory = new TerrainPhysicsShapeFactory();
         terrainNode = factory.createPhysicsMesh(terrain);
@@ -379,8 +379,7 @@ public class Golem extends SimpleApplication
                 if (!"stand".equals(animationChannel.getAnimationName())) {
                     animationChannel.setAnim("stand");
                 }
-            }
-            else if(!"Walk".equals(animationChannel.getAnimationName())) {
+            } else if (!"Walk".equals(animationChannel.getAnimationName())) {
                 animationChannel.setAnim("Walk", 0.7f);
             }
         }
@@ -391,9 +390,12 @@ public class Golem extends SimpleApplication
         characterNode.setWalkDirection(walkDirection);
 
         // attack
-        myTimer+=tpf; 
-        if(myTimer>10) { shootBomb(); myTimer=0; }
-        
+        myTimer += tpf;
+        if (myTimer > 10) {
+            shootBomb();
+            myTimer = 0;
+        }
+
 
     }
 
@@ -455,47 +457,27 @@ public class Golem extends SimpleApplication
 
         Vector3f w = wallNode.getWorldTranslation();
         Vector3f c = characterNode.getWorldTranslation();
-        bombNode.setLinearVelocity( w.subtract(c).normalize().mult(30) ); // TODO
+        bombNode.setLinearVelocity(w.subtract(c).normalize().mult(30)); // TODO
         rootNode.attachChild(bombNode);
         getPhysicsSpace().add(bombNode);
     }
 
     public void collision(PhysicsCollisionEvent event) {
         if ("bullet".equals(event.getNodeA().getName())) {
-            final Node node = event.getNodeB();
-            enqueue(new Callable() {
-                public Object call() throws Exception {
-                    bulletHitSomething(node);
-                    return null;
-                }
-            });
+            Node node = event.getNodeA();
+            bulletHitSomething(node);
         } else if ("bullet".equals(event.getNodeB().getName())) {
-            final Node node = event.getNodeA();
-            enqueue(new Callable() {
-                public Object call() throws Exception {
-                    bulletHitSomething(node);
-                    return null;
-                }
-            });
+            Node node = event.getNodeB();
+            bulletHitSomething(node);
         }
         if ("bomb".equals(event.getNodeA().getName())) {
-            final Node agent = event.getNodeA();
-            final Node target = event.getNodeB();
-            enqueue(new Callable() {
-                public Object call() throws Exception {
-                    bombHitSomething(agent, target);
-                    return null;
-                }
-            });
+            Node agent = event.getNodeA();
+            Node target = event.getNodeB();
+            bombHitSomething(agent, target);
         } else if ("bomb".equals(event.getNodeB().getName())) {
-            final Node agent = event.getNodeB();
-            final Node target = event.getNodeA();
-            enqueue(new Callable() {
-                public Object call() throws Exception {
-                    bombHitSomething(agent,target);
-                    return null;
-                }
-            });
+            Node agent = event.getNodeB();
+            Node target = event.getNodeA();
+            bombHitSomething(agent, target);
         }
     }
 
@@ -505,20 +487,22 @@ public class Golem extends SimpleApplication
         effect.killAllParticles();
         effect.setLocalTranslation(t.getLocalTranslation());
         effect.emitAllParticles();
-        if(t.getName().equals("The Golem"))
-        System.out.println("*** A bomb hit " + t.getName()+"! ***");
+        if ("The Golem".equals(t.getName())) {
+            System.out.println("*** A bomb hit " + t.getName() + "! ***");
+        }
     }
 
     private void bulletHitSomething(Node node) {
         getPhysicsSpace().remove(node);
-        if(!node.getName().equals("terrain"))
-        node.removeFromParent();
+        if (!node.getName().equals("terrain")) {
+            node.removeFromParent();
+        }
         effect.killAllParticles();
         effect.setLocalTranslation(node.getLocalTranslation());
         effect.emitAllParticles();
     }
 
-   public void onAnimCycleDone(AnimControl control, AnimChannel channel, String animName) {
+    public void onAnimCycleDone(AnimControl control, AnimChannel channel, String animName) {
         if (channel == shootingChannel) {
             channel.setAnim("stand");
         }
@@ -527,23 +511,24 @@ public class Golem extends SimpleApplication
     public void onAnimChange(AnimControl control, AnimChannel channel, String animName) {
     }
 
-    private void AxisRods(){
+    private void AxisRods() {
         Material mat = new Material(assetManager,
-         "Common/MatDefs/Misc/SolidColor.j3md"); 
+                "Common/MatDefs/Misc/SolidColor.j3md");
         mat.setColor("m_Color", ColorRGBA.White);
         Box x = new Box(Vector3f.ZERO, 100f, 0.5f, 0.5f);
-        Geometry gx = new Geometry("Box", x);  
-        gx.setMaterial(mat);                   
-        rootNode.attachChild(gx);              
+        Geometry gx = new Geometry("Box", x);
+        gx.setMaterial(mat);
+        rootNode.attachChild(gx);
         Box y = new Box(Vector3f.ZERO, 0.5f, 100f, 0.5f);
         Geometry gy = new Geometry("Box", y);
-        gy.setMaterial(mat);                 
-        rootNode.attachChild(gy);            
-        Box z = new Box(Vector3f.ZERO, 0.1f, 0.1f, 100f); 
-        Geometry gz = new Geometry("Box", z);  
-        gz.setMaterial(mat);                   
-        rootNode.attachChild(gz);              
+        gy.setMaterial(mat);
+        rootNode.attachChild(gy);
+        Box z = new Box(Vector3f.ZERO, 0.1f, 0.1f, 100f);
+        Geometry gz = new Geometry("Box", z);
+        gz.setMaterial(mat);
+        rootNode.attachChild(gz);
     }
+
     private PhysicsSpace getPhysicsSpace() {
         return bulletAppState.getPhysicsSpace();
     }
@@ -551,11 +536,11 @@ public class Golem extends SimpleApplication
     /** Mapping WASD keys for walking, return for jumping, space for shooting */
     private void setupKeys() {
         inputManager.addMapping("wireframe", new KeyTrigger(KeyInput.KEY_T));
-        inputManager.addMapping("CharLeft",  new KeyTrigger(KeyInput.KEY_A));
+        inputManager.addMapping("CharLeft", new KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping("CharRight", new KeyTrigger(KeyInput.KEY_D));
-        inputManager.addMapping("CharForw",  new KeyTrigger(KeyInput.KEY_W));
-        inputManager.addMapping("CharBack",  new KeyTrigger(KeyInput.KEY_S));
-        inputManager.addMapping("CharJump",  new KeyTrigger(KeyInput.KEY_RETURN));
+        inputManager.addMapping("CharForw", new KeyTrigger(KeyInput.KEY_W));
+        inputManager.addMapping("CharBack", new KeyTrigger(KeyInput.KEY_S));
+        inputManager.addMapping("CharJump", new KeyTrigger(KeyInput.KEY_RETURN));
         inputManager.addMapping("CharShoot", new KeyTrigger(KeyInput.KEY_SPACE));
         inputManager.addListener(this, "wireframe");
         inputManager.addListener(this, "CharLeft");

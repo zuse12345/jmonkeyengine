@@ -99,7 +99,7 @@ public class PlanetView implements AppState {
         // This plays a small piece of music I did sometime
         // ago. If you don't like it, you can either comment this line or
         // consider using your own sound track ;-)
-        setupMusic();
+//        setupMusic();
         niftyDisplay = new NiftyJmeDisplay(assetManager,
                 SceneApplication.getApplication().getInputManager(),
                 audioRenderer,
@@ -301,7 +301,7 @@ public class PlanetView implements AppState {
     @Override
     public void stateDetached(AppStateManager asm) {
         SceneApplication.getApplication().getGuiViewPort().removeProcessor(niftyDisplay);
-        audioRenderer.stopSource(musicNode);
+//        audioRenderer.stopSource(musicNode);
         nifty.exit();
     }
 

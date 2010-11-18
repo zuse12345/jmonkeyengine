@@ -99,7 +99,7 @@
                 <control id="backButton" name="button" label="Back" align="left" >
                     <interact onClick="startIntro()"/>
                 </control>
-                <label text=" planet shader and music contibuted by jME3 user jiyarza"/>
+                <label text=" planet shader contibuted by jME3 user jiyarza"/>
             </panel>
         </layer>
     </screen>

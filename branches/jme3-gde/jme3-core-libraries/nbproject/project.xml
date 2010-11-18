@@ -12,6 +12,7 @@
                 <package>com.bulletphysics.collision.dispatch</package>
                 <package>com.bulletphysics.collision.narrowphase</package>
                 <package>com.bulletphysics.collision.shapes</package>
+                <package>com.bulletphysics.dom</package>
                 <package>com.bulletphysics.dynamics</package>
                 <package>com.bulletphysics.dynamics.character</package>
                 <package>com.bulletphysics.dynamics.constraintsolver</package>
@@ -53,6 +54,8 @@
                 <package>de.lessvoid.nifty.controls.button.controller</package>
                 <package>de.lessvoid.nifty.controls.checkbox</package>
                 <package>de.lessvoid.nifty.controls.console.controller</package>
+                <package>de.lessvoid.nifty.controls.dragndrop</package>
+                <package>de.lessvoid.nifty.controls.dragndrop.controller</package>
                 <package>de.lessvoid.nifty.controls.dropdown</package>
                 <package>de.lessvoid.nifty.controls.dropdown.controller</package>
                 <package>de.lessvoid.nifty.controls.dropdown.inputmapping</package>
@@ -69,6 +72,8 @@
                 <package>de.lessvoid.nifty.controls.textfield</package>
                 <package>de.lessvoid.nifty.controls.textfield.controller</package>
                 <package>de.lessvoid.nifty.controls.textfield.inputmapping</package>
+                <package>de.lessvoid.nifty.controls.window</package>
+                <package>de.lessvoid.nifty.controls.window.controller</package>
                 <package>de.lessvoid.nifty.effects</package>
                 <package>de.lessvoid.nifty.effects.impl</package>
                 <package>de.lessvoid.nifty.elements</package>

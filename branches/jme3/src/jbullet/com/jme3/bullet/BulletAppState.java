@@ -88,6 +88,7 @@ public class BulletAppState implements AppState, PhysicsTickListener {
 
         public Boolean call() throws Exception {
             pSpace.update(getPhysicsSpace().getAccuracy() * getSpeed());
+            pSpace.distributeEvents();
             long update = System.currentTimeMillis() - detachedPhysicsLastUpdate;
             detachedPhysicsLastUpdate = System.currentTimeMillis();
             executor.schedule(detachedPhysicsUpdate, Math.round(getPhysicsSpace().getAccuracy() * 1000000.0f) - (update * 1000), TimeUnit.MICROSECONDS);
@@ -128,11 +129,11 @@ public class BulletAppState implements AppState, PhysicsTickListener {
         return initialized;
     }
 
-    public void setActive(boolean active){
+    public void setActive(boolean active) {
         this.active = active;
     }
 
-    public boolean isActive(){
+    public boolean isActive() {
         return active;
     }
 
@@ -149,7 +150,9 @@ public class BulletAppState implements AppState, PhysicsTickListener {
     }
 
     public void update(float tpf) {
-        pSpace.distributeEvents();
+        if (threadingType != ThreadingType.DETACHED) {
+            pSpace.distributeEvents();
+        }
         this.tpf = tpf;
     }
 
@@ -157,7 +160,7 @@ public class BulletAppState implements AppState, PhysicsTickListener {
         if (threadingType == ThreadingType.PARALLEL) {
             physicsFuture = executor.submit(parallelPhysicsUpdate);
         } else if (threadingType == ThreadingType.SEQUENTIAL) {
-            pSpace.update( active ? tpf * speed : 0 );
+            pSpace.update(active ? tpf * speed : 0);
         } else {
         }
     }

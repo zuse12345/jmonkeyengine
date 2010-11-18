@@ -97,7 +97,7 @@ This tutorial explains how to create terrains from heightmaps and how to use spl
      * 3.4) As LOD step scale we supply Vector3f(1,1,1).
      * 3.5) At last, we supply the prepared heightmap itself.
      */</span>
-    terrain <span class="sy0">=</span> <span class="kw1">new</span> TerrainQuad<span class="br0">&#40;</span><span class="st0">&quot;my terrain&quot;</span>, <span class="nu0">65</span>, <span class="nu0">513</span>, <span class="kw1">new</span> Vector3f<span class="br0">&#40;</span><span class="nu0">1</span>, <span class="nu0">1</span>, <span class="nu0">1</span><span class="br0">&#41;</span>, heightmap.<span class="me1">getHeightMap</span><span class="br0">&#40;</span><span class="br0">&#41;</span><span class="br0">&#41;</span>;
+    terrain <span class="sy0">=</span> <span class="kw1">new</span> TerrainQuad<span class="br0">&#40;</span><span class="st0">&quot;my terrain&quot;</span>, <span class="nu0">65</span>, <span class="nu0">513</span>, heightmap.<span class="me1">getHeightMap</span><span class="br0">&#40;</span><span class="br0">&#41;</span><span class="br0">&#41;</span>;
 &nbsp;
     <span class="co3">/** 4. We give the terrain its material, position &amp; scale it, and attach it. */</span>
     terrain.<span class="me1">setMaterial</span><span class="br0">&#40;</span>mat_terrain<span class="br0">&#41;</span>;
@@ -118,7 +118,7 @@ When you run this sample you should see a landscape with dirt mountains, grass p
 </p>
 
 </div>
-<!-- SECTION "Sample Code" [504-4106] -->
+<!-- SECTION "Sample Code" [504-4083] -->
 <h2><a name="what_is_a_heightmap" id="what_is_a_heightmap">What is a Heightmap?</a></h2>
 <div class="level2">
 
@@ -168,7 +168,7 @@ In a real game, you will want to use more complex and smoother terrains than the
 </p>
 
 </div>
-<!-- SECTION "What is a Heightmap?" [4107-5811] -->
+<!-- SECTION "What is a Heightmap?" [4084-5788] -->
 <h3><a name="looking_at_the_heightmap_code" id="looking_at_the_heightmap_code">Looking at the Heightmap Code</a></h3>
 <div class="level3">
 
@@ -230,7 +230,7 @@ Here is how you create the heightmap object in your jME code:
       ImageToAwt.<span class="me1">convert</span><span class="br0">&#40;</span>heightMapImage.<span class="me1">getImage</span><span class="br0">&#40;</span><span class="br0">&#41;</span>, <span class="kw2">false</span>, <span class="kw2">true</span>, 0<span class="br0">&#41;</span><span class="br0">&#41;</span>;
     heightmap.<span class="me1">load</span><span class="br0">&#40;</span><span class="br0">&#41;</span>;</pre>
 </div>
-<!-- SECTION "Looking at the Heightmap Code" [5812-7260] -->
+<!-- SECTION "Looking at the Heightmap Code" [5789-7237] -->
 <h2><a name="what_is_texture_splatting" id="what_is_texture_splatting">What is Texture Splatting?</a></h2>
 <div class="level2">
 
@@ -292,7 +292,7 @@ Now we start painting the texture:
 </p>
 
 </div>
-<!-- SECTION "What is Texture Splatting?" [7261-9494] -->
+<!-- SECTION "What is Texture Splatting?" [7238-9471] -->
 <h3><a name="looking_at_the_texturing_code" id="looking_at_the_texturing_code">Looking at the Texturing Code</a></h3>
 <div class="level3">
 
@@ -339,7 +339,7 @@ Later, after we have created the actual terrain object, we must not forgot to se
 </p>
 <pre class="code java">terrain.<span class="me1">setMaterial</span><span class="br0">&#40;</span>mat_terrain<span class="br0">&#41;</span>;</pre>
 </div>
-<!-- SECTION "Looking at the Texturing Code" [9495-11731] -->
+<!-- SECTION "Looking at the Texturing Code" [9472-11708] -->
 <h2><a name="looking_at_the_terrain_generation_code" id="looking_at_the_terrain_generation_code">Looking at the Terrain Generation Code</a></h2>
 <div class="level2">
 
@@ -376,7 +376,6 @@ Let&#039;s assume we want to generate a small 512&times;512 terrain. We already 
   &quot;my terrain&quot;,               // name
   65,                         // tile size
   513,                        // block size
-  new Vector3f(1, 1, 1),      // LOD step 
   heightmap.getHeightMap());  // heightmap
 </pre>
 
@@ -385,7 +384,7 @@ Don&#039;t forget to attach the terrain to the rootNode. You can scale and trans
 </p>
 
 </div>
-<!-- SECTION "Looking at the Terrain Generation Code" [11732-13153] -->
+<!-- SECTION "Looking at the Terrain Generation Code" [11709-13087] -->
 <h2><a name="looking_at_the_level_of_detail_code" id="looking_at_the_level_of_detail_code">Looking at the Level of Detail Code</a></h2>
 <div class="level2">
 
@@ -402,12 +401,12 @@ Close parts of the terrain are rendered in full detail. Terrain parts that are f
 </p>
 
 </div>
-<!-- SECTION "Looking at the Level of Detail Code" [13154-13824] -->
+<!-- SECTION "Looking at the Level of Detail Code" [13088-13758] -->
 <h2><a name="exercises" id="exercises">Exercises</a></h2>
 <div class="level2">
 
 </div>
-<!-- SECTION "Exercises" [13825-13847] -->
+<!-- SECTION "Exercises" [13759-13781] -->
 <h3><a name="exercise_1texture_layers" id="exercise_1texture_layers">Exercise 1: Texture Layers</a></h3>
 <div class="level3">
 
@@ -425,7 +424,7 @@ It&#039;s easier to swap layers in the code than to change the color in the alph
 </p>
 
 </div>
-<!-- SECTION "Exercise 1: Texture Layers" [13848-14153] -->
+<!-- SECTION "Exercise 1: Texture Layers" [13782-14087] -->
 <h3><a name="exercise_2randomized_terrains" id="exercise_2randomized_terrains">Exercise 2: Randomized Terrains</a></h3>
 <div class="level3">
 
@@ -480,7 +479,7 @@ Tip: You can keep using the splatted texture from the sample code above. Just do
 </p>
 
 </div>
-<!-- SECTION "Exercise 2: Randomized Terrains" [14154-15527] -->
+<!-- SECTION "Exercise 2: Randomized Terrains" [14088-15461] -->
 <h2><a name="conclusion" id="conclusion">Conclusion</a></h2>
 <div class="level2">
 
@@ -500,5 +499,5 @@ See also: <a href="/com/jme3/gde/core/docs/jme3/intermediate/terrain_collision.h
 </p>
 
 </div>
-<!-- SECTION "Conclusion" [15528-] -->
+<!-- SECTION "Conclusion" [15462-] -->
 <p><em><a href="http://jmonkeyengine.org/wiki/doku.php/jme3:beginner:hello_terrain?do=export_xhtmlbody">view online version</a></em></p>

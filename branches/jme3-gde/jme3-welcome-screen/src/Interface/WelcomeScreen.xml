@@ -72,6 +72,9 @@
                             <label text="- Editing Code" style="my-listbox-item-style">
                                 <interact onClick="editingCode()"/>
                             </label>
+                            <label text="- jMonkeyEngine3 Tutorials" style="my-listbox-item-style">
+                                <interact onClick="tutorials()"/>
+                            </label>
                             <label text="- Getting the latest updates" style="my-listbox-item-style">
                                 <interact onClick="updatingJmp()"/>
                             </label>

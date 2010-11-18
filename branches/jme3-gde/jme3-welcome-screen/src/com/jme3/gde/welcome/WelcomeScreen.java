@@ -108,6 +108,10 @@ public class WelcomeScreen implements ScreenController {
         Lookup.getDefault().lookup(Help.class).showHelp(new HelpCtx("com.jme3.gde.core.updating"));
     }
 
+    public void tutorials() {
+        Lookup.getDefault().lookup(Help.class).showHelp(new HelpCtx("jme3.beginner.hello_simpleapplication"));
+    }
+
     public void quit() {
         if(screen.findElementByName("mainLayer").findElementByName("mainPanel").findElementByName("buttonBar").findElementByName("checkboxPanel").findControl("checkbox", CheckboxControl.class).isChecked()){
             setNoStartup();

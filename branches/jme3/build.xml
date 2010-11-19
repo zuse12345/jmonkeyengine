@@ -56,7 +56,6 @@
             <zipfileset dir="${src.games.dir}" prefix="source"/>
             <zipfileset dir="${src.jbullet.dir}" prefix="source"/>
             <zipfileset dir="${src.niftygui.dir}" prefix="source"/>
-            <zipfileset dir="${src.joal.dir}" prefix="source"/>
             <zipfileset dir="${src.jogg.dir}" prefix="source"/>
             <zipfileset dir="${src.jogl.dir}" prefix="source"/>
             <zipfileset dir="${src.lwjgl-oal.dir}" prefix="source"/>
@@ -106,8 +105,8 @@
         <!--jme3 base libs-->
         <copy file="${dist.jar}" toDir="${jmp_dir}/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
         <copy file="dist/lib/jME3-lwjgl-natives.jar" toDir="${jmp_dir}/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
-        <copy file="dist/lib/jME3-jogl-natives.jar" toDir="${jmp_dir}/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
-        <copy file="dist/lib/jME3-natives-joal.jar" toDir="${jmp_dir}/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>
+<!--        <copy file="dist/lib/jME3-jogl-natives.jar" toDir="${jmp_dir}/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>-->
+<!--        <copy file="dist/lib/jME3-natives-joal.jar" toDir="${jmp_dir}/jme3-core-baselibs/release/modules/ext/" overwrite="true" failonerror="true" verbose="true"/>-->
 
         <copy file="${dist.jar}" toDir="${jmp_dir}/jme3-project-baselibs/release/libs/" overwrite="true" failonerror="true" verbose="true"/>
 
@@ -149,7 +148,6 @@
             <zipfileset dir="${src.games.dir}"/>
             <zipfileset dir="${src.jbullet.dir}"/>
             <zipfileset dir="${src.niftygui.dir}"/>
-            <zipfileset dir="${src.joal.dir}"/>
             <zipfileset dir="${src.jogg.dir}"/>
             <zipfileset dir="${src.jogl.dir}"/>
             <zipfileset dir="${src.lwjgl-oal.dir}"/>

@@ -114,11 +114,6 @@
                 <package>javax.media.opengl.glu</package>
                 <package>javax.vecmath</package>
                 <package>net.java.games.input</package>
-                <package>net.java.games.joal</package>
-                <package>net.java.games.joal.eax</package>
-                <package>net.java.games.joal.impl</package>
-                <package>net.java.games.joal.util</package>
-                <package>net.java.games.sound3d</package>
                 <package>net.java.games.util</package>
                 <package>net.java.games.util.plugins</package>
                 <package>net.java.games.util.plugins.test</package>
@@ -178,10 +173,6 @@
             <class-path-extension>
                 <runtime-relative-path>ext/xmlpull-xpp3-1.1.4c.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/xmlpull-xpp3-1.1.4c.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/joal.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/joal.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jheora-debug-0.6.0.jar</runtime-relative-path>

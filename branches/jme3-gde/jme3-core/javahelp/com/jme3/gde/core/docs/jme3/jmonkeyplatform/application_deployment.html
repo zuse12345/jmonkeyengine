@@ -75,10 +75,11 @@ In the simplest case, you zip up the <code>dist</code> directory and distribute 
 
 <p>
 Here are your deployment options in detail:
+
 </p>
 
 </div>
-<!-- SECTION "Creating the Distributable" [1206-1712] -->
+<!-- SECTION "Creating the Distributable" [1206-1711] -->
 <h3><a name="desktop_application_jar" id="desktop_application_jar">Desktop Application (JAR)</a></h3>
 <div class="level3">
 
@@ -108,7 +109,31 @@ Most operating systems execute a JAR when users double-click on it, but you can 
 </p>
 
 </div>
-<!-- SECTION "Desktop Application (JAR)" [1713-2596] -->
+
+<h4><a name="desktop_executables" id="desktop_executables">Desktop Executables</a></h4>
+<div class="level4">
+
+<p>
+
+jMonkeyPlatform allows you to create launchers for different desktop platforms, like an .exe file for Windows systems, an Application for MaxOSX and a launcher for Linux systems.
+
+</p>
+<ol>
+<li class="level1"><div class="li"> Right-click your project and open the Project Properties. </div>
+</li>
+<li class="level1"><div class="li"> In the Application&gt;Desktop category, select the checkboxes for the platforms you want to distribute to.</div>
+</li>
+<li class="level1"><div class="li"> Click OK.</div>
+</li>
+</ol>
+
+<p>
+
+When you build your project, zip files for each selected platform will be created in the <code>dist</code> folder that contain all that is needed to run your application on that platform.
+</p>
+
+</div>
+<!-- SECTION "Desktop Application (JAR)" [1712-3170] -->
 <h3><a name="web_start_jnlp" id="web_start_jnlp">Web Start (JNLP)</a></h3>
 <div class="level3">
 
@@ -147,10 +172,11 @@ Look at the sample launch.html, you can have any custom content around the link.
 
 <p>
 Also, see this <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer"><param name="content" value="http://www.youtube.com/watch?v=oZnssg8TBWQ"><param name="text" value="<html><u>demo video</u></html>"><param name="textColor" value="blue"></object> on creating WebStarts.
+
 </p>
 
 </div>
-<!-- SECTION "Web Start (JNLP)" [2597-4206] -->
+<!-- SECTION "Web Start (JNLP)" [3171-4779] -->
 <h3><a name="browser_applet" id="browser_applet">Browser Applet</a></h3>
 <div class="level3">
 
@@ -167,55 +193,12 @@ These instrcutions assume that you have already written a game that you want to 
 
 <h4><a name="to_turn_a_project_into_an_applet" id="to_turn_a_project_into_an_applet">To Turn a Project Into an Applet</a></h4>
 <div class="level4">
-
-<p>
-
-<br/>
-
-</p>
-<ol>
-<li class="level1"><div class="li"> Right-click your project and select “New… Other”.</div>
-</li>
-<li class="level1"><div class="li"> In the New File wizard, choose <code>Java &gt; Applet</code> (not <code>JApplet</code>), click Next</div>
-</li>
-<li class="level1"><div class="li"> Give the Applet class a name, e.g. <code>TestApplet</code>, and click Finish. An empty Applet is created. </div>
-</li>
-<li class="level1"><div class="li"> Browse to the file <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer"><param name="content" value="http://code.google.com/p/jmonkeyengine/source/browse/branches/jme3/src/test/jme3test/awt/TestApplet.java"><param name="text" value="<html><u>TestApplet.java</u></html>"><param name="textColor" value="blue"></object> and copy the sample code. </div>
-<ol>
-<li class="level2"><div class="li"> Fix the package line and other lines that the jMonkeyPlatform highlights as errors.</div>
-</li>
-<li class="level2"><div class="li"> Scroll to the <code>init()</code> method and specify your game&#039;s main class, e.g. <pre class="code">createCanvas(&quot;mygame.Main&quot;);</pre>
-</div>
-</li>
-</ol>
-</li>
-<li class="level1"><div class="li"> Save the TestApplet.java file.</div>
-</li>
-</ol>
-
-</div>
-
-<h4><a name="to_activate_the_applet_build_script" id="to_activate_the_applet_build_script">To Activate the Applet Build Script</a></h4>
-<div class="level4">
-
-<p>
-<br/>
-
-</p>
 <ol>
 <li class="level1"><div class="li"> Right-click your project and open the Project Properties. </div>
 <ol>
-<li class="level2"><div class="li"> In the Application&gt;Web Start category, check the box to Enable Web Start. </div>
+<li class="level2"><div class="li"> In the Application&gt;Applet category, check the box to enable Applet creation. </div>
 </li>
-<li class="level2"><div class="li"> Check the box to make it self-signed. </div>
-</li>
-<li class="level2"><div class="li"> Make sure the <code>Applet Descriptor</code> option is enabled. </div>
-<ol>
-<li class="level3"><div class="li"> Select <code>TestApplet</code> as Applet class.</div>
-</li>
-<li class="level3"><div class="li"> Click the button to specify Applet parameters: width and height.</div>
-</li>
-</ol>
+<li class="level2"><div class="li"> Change the applet width and height as you want it.</div>
 </li>
 <li class="level2"><div class="li"> Click OK.</div>
 </li>
@@ -227,24 +210,19 @@ These instrcutions assume that you have already written a game that you want to 
 
 <p>
 
-The <code>dist</code> directory now contains all the files necessary for the game to run as Applet. To test the Applet-based game, run the project in the jMonkeyPlatform.
+The <code>dist/Applet</code> directory now contains all the files necessary for the game to run as Applet. To test the Applet-based game, run the project in the jMonkeyPlatform.
 </p>
 
 </div>
 
 <h4><a name="to_deploy_the_game_as_applet" id="to_deploy_the_game_as_applet">To Deploy the Game as Applet</a></h4>
 <div class="level4">
-
-<p>
-<br/>
-
-</p>
 <ol>
-<li class="level1"><div class="li"> Edit the <code>dist/launch.html</code> file in anyway you like. Just keep the Applet code.</div>
+<li class="level1"><div class="li"> Edit the <code>dist/Applet/run-applet.html</code> file in anyway you like. Just keep the Applet code.</div>
 </li>
-<li class="level1"><div class="li"> Upload the contents of the <code>dist</code> directory to a public http server.</div>
+<li class="level1"><div class="li"> Upload the contents of the <code>dist/Applet</code> directory to a public http server.</div>
 </li>
-<li class="level1"><div class="li"> Access the launch.html file using a webbrowser</div>
+<li class="level1"><div class="li"> Access the run-applet.html file using a webbrowser</div>
 </li>
 <li class="level1"><div class="li"> Click the link to web-start your application.</div>
 </li>
@@ -254,11 +232,6 @@ The <code>dist</code> directory now contains all the files necessary for the gam
 
 <h4><a name="to_troubleshoot_applets" id="to_troubleshoot_applets">To Troubleshoot Applets</a></h4>
 <div class="level4">
-
-<p>
-<br/>
-
-</p>
 <ul>
 <li class="level1"><div class="li"> Open the Java console for error messages.</div>
 </li>
@@ -267,7 +240,7 @@ The <code>dist</code> directory now contains all the files necessary for the gam
 </ul>
 
 </div>
-<!-- SECTION "Browser Applet" [4207-6838] -->
+<!-- SECTION "Browser Applet" [4780-6550] -->
 <h3><a name="android" id="android">Android</a></h3>
 <div class="level3">
 
@@ -277,7 +250,7 @@ TODO
 </p>
 
 </div>
-<!-- SECTION "Android" [6839-6863] -->
+<!-- SECTION "Android" [6551-6575] -->
 <h2><a name="tipswitching_build_configurations" id="tipswitching_build_configurations">Tip: Switching Build Configurations</a></h2>
 <div class="level2">
 
@@ -305,7 +278,7 @@ Now you can use the <code>Set Project Configuration</code> popup menu to switch 
 </p>
 
 </div>
-<!-- SECTION "Tip: Switching Build Configurations" [6864-7642] -->
+<!-- SECTION "Tip: Switching Build Configurations" [6576-7354] -->
 <h2><a name="tipreducing_distribution_size" id="tipreducing_distribution_size">Tip: Reducing Distribution Size</a></h2>
 <div class="level2">
 
@@ -338,5 +311,5 @@ To remove unused libraries:
 </ol>
 
 </div>
-<!-- SECTION "Tip: Reducing Distribution Size" [7643-] -->
+<!-- SECTION "Tip: Reducing Distribution Size" [7355-] -->
 <p><em><a href="http://jmonkeyengine.org/wiki/doku.php/jme3:jmonkeyplatform:application_deployment?do=export_xhtmlbody">view online version</a></em></p>

@@ -116,8 +116,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         try {
             AppSettings newSetting = new AppSettings(true);
             newSetting.setFrameRate(30);
-//        settings.setVSync(true);
-//        settings.setRenderer("JOGL");
             setSettings(newSetting);
 
             Logger.getLogger("com.jme3").addHandler(logHandler);
@@ -231,6 +229,9 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                 secondCounter = 0.0f;
             }
 
+            rootNode.updateLogicalState(tpf);
+            guiNode.updateLogicalState(tpf);
+            toolsNode.updateLogicalState(tpf);
             rootNode.updateGeometricState();
             guiNode.updateGeometricState();
             toolsNode.updateGeometricState();
@@ -286,7 +287,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                 final V value = callable.call();
                 return new Future<V>() {
 
-                    //Attempts to cancel execution of this task.
                     public boolean cancel(boolean mayInterruptIfRunning) {
                         return true;
                     }
@@ -299,14 +299,10 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                         return true;
                     }
 
-                    // Waits if necessary for the computation to complete,
-                    //  and then retrieves its result.
                     public V get() throws InterruptedException, ExecutionException {
                         return value;
                     }
 
-                    // Waits if necessary for at most the given time for the computation
-                    // to complete, and then retrieves its result, if available.
                     public V get(long timeout, TimeUnit unit) {
                         return value;
                     }
@@ -332,7 +328,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         for (Iterator it = collection.iterator(); it.hasNext();) {
             Object object = it.next();
             if (object instanceof JmeSpatial) {
-//                setSelectedNode((JmeSpatial) object);
                 return;
             }
         }
@@ -505,7 +500,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         enqueue(new Callable() {
 
             public Object call() throws Exception {
-                //TODO: how to remove lights?? no removeLight in node?
                 if (enabled) {
                     rootNode.removeLight(camLight);
                     rootNode.addLight(camLight);
@@ -521,7 +515,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         enqueue(new Callable() {
 
             public Object call() throws Exception {
-                //TODO: how to remove lights?? no removeLight in node?
                 if (enabled) {
                     guiNode.attachChild(statsGuiNode);
                 } else {
@@ -583,9 +576,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
         return guiNode;
     }
 
-    /**
-     * @return the progressHandle
-     */
     public ProgressHandle getProgressHandle() {
         return progressHandle;
     }

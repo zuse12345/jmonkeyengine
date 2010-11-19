@@ -51,10 +51,9 @@ import org.openide.util.lookup.Lookups;
  *
  * @author normenhansen
  */
-public class ProjectAssetManager {
+public class ProjectAssetManager extends DesktopAssetManager{
 
     private Project project;
-    private AssetManager manager;
     private List<String> folderName = new LinkedList<String>();
 
     public ProjectAssetManager(Project prj, String folderName) {
@@ -63,6 +62,7 @@ public class ProjectAssetManager {
     }
 
     public ProjectAssetManager(Project prj) {
+        super(true);
         if (prj == null) {
             this.project = new DummyProject(this);
             folderName.add("assets");
@@ -82,7 +82,7 @@ public class ProjectAssetManager {
     public void addFileLocator(String relativePath) {
         String string = project.getProjectDirectory().getPath() + "/" + relativePath + "/";
         Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Add locator:{0}", string);
-        manager.registerLocator(string,
+        registerLocator(string,
                 "com.jme3.asset.plugins.FileLocator");
         folderName.add(relativePath);
     }
@@ -100,11 +100,9 @@ public class ProjectAssetManager {
         return absolutePath;
     }
 
+    @Deprecated
     public AssetManager getManager() {
-        if (manager == null) {
-            manager = new DesktopAssetManager(true);
-        }
-        return manager;
+        return this;
     }
 
     public String[] getMaterials() {

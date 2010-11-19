@@ -43,7 +43,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -61,11 +63,20 @@ public class ProjectAssetManager {
     }
 
     public ProjectAssetManager(Project prj) {
-        this.project = prj;
+        if (prj == null) {
+            this.project = new DummyProject(this);
+            folderName.add("assets");
+        } else {
+            this.project = prj;
+        }
         AssetManager manager = getManager();
         for (AssetManagerConfigurator di : Lookup.getDefault().lookupAll(AssetManagerConfigurator.class)) {
             di.prepareManager(manager);
         }
+    }
+
+    public ProjectAssetManager() {
+        this(null);
     }
 
     public void addFileLocator(String relativePath) {
@@ -98,6 +109,9 @@ public class ProjectAssetManager {
 
     public String[] getMaterials() {
         FileObject assetsFolder = project.getProjectDirectory().getFileObject(getFolderName() + "/");
+        if (assetsFolder == null) {
+            return new String[]{};
+        }
         Enumeration<FileObject> assets = (Enumeration<FileObject>) assetsFolder.getChildren(true);
         ArrayList<String> list = new ArrayList<String>();
         while (assets.hasMoreElements()) {
@@ -111,6 +125,9 @@ public class ProjectAssetManager {
 
     public String[] getSounds() {
         FileObject assetsFolder = project.getProjectDirectory().getFileObject(getFolderName() + "/");
+        if (assetsFolder == null) {
+            return new String[]{};
+        }
         Enumeration<FileObject> assets = (Enumeration<FileObject>) assetsFolder.getChildren(true);
         ArrayList<String> list = new ArrayList<String>();
         while (assets.hasMoreElements()) {
@@ -124,6 +141,9 @@ public class ProjectAssetManager {
 
     public String[] getTextures() {
         FileObject assetsFolder = project.getProjectDirectory().getFileObject(getFolderName() + "/");
+        if (assetsFolder == null) {
+            return new String[]{};
+        }
         Enumeration<FileObject> assets = (Enumeration<FileObject>) assetsFolder.getChildren(true);
         ArrayList<String> list = new ArrayList<String>();
         while (assets.hasMoreElements()) {
@@ -137,6 +157,9 @@ public class ProjectAssetManager {
 
     public String[] getMatDefs() {
         FileObject assetsFolder = project.getProjectDirectory().getFileObject(getFolderName() + "/");
+        if (assetsFolder == null) {
+            return new String[]{};
+        }
         Enumeration<FileObject> assets = (Enumeration<FileObject>) assetsFolder.getChildren(true);
         ArrayList<String> list = new ArrayList<String>();
         while (assets.hasMoreElements()) {
@@ -182,5 +205,26 @@ public class ProjectAssetManager {
             this.folderName.remove(0);
         }
         this.folderName.add(0, folderName);
+    }
+
+    /**
+     * For situations with no Project
+     */
+    private class DummyProject implements Project {
+
+        ProjectAssetManager pm;
+        XMLFileSystem fileSystem = new XMLFileSystem();
+
+        public DummyProject(ProjectAssetManager pm) {
+            this.pm = pm;
+        }
+
+        public Lookup getLookup() {
+            return Lookups.fixed(this, pm);
+        }
+
+        public FileObject getProjectDirectory() {
+            return fileSystem.getRoot();
+        }
     }
 }

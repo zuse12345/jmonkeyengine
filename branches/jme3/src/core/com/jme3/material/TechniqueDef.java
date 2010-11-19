@@ -150,6 +150,10 @@ public class TechniqueDef implements Savable {
         return usesShaders;
     }
 
+    public EnumSet<Caps> getRequiredCaps() {
+        return requiredCaps;
+    }
+
     public void setShaderFile(String vert, String frag, String lang){
         this.vertName = vert;
         this.fragName = frag;
@@ -210,11 +214,6 @@ public class TechniqueDef implements Savable {
         }
         return false;
     }
-
-//    public void addAttribute(String name) {
-//        Attribute attrib = shader.getAttribute(name);
-//        attribs.put(name, attrib);
-//    }
 
     public List<UniformBinding> getWorldBindings() {
         return worldBinds;

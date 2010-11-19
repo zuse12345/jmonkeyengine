@@ -39,6 +39,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.prefs.Preferences;
 
 public class AppSettings extends HashMap<String, Object> {
 
@@ -48,8 +49,7 @@ public class AppSettings extends HashMap<String, Object> {
                                LWJGL_OPENGL3 = "LWJGL-OpenGL3",
                                JOGL          = "JOGL",
                                NULL          = "NULL";
-    public static final String LWJGL_OPENAL  = "LWJGL",
-                               JOAL          = "JOAL";
+    public static final String LWJGL_OPENAL  = "LWJGL";
 
     private String settingsDialogImage="/com/jme3/app/Monkey.png";
 
@@ -123,6 +123,10 @@ public class AppSettings extends HashMap<String, Object> {
             props.setProperty(entry.getKey() + type, val.toString());
         }
         props.store(out, "jME3 AppSettings");
+    }
+
+    public void load(String preferencesKey){
+        Preferences prefs = Preferences.userRoot().node(preferencesKey);
     }
 
     public int getInteger(String key){

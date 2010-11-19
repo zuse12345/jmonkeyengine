@@ -116,7 +116,7 @@ public class JoglRenderer implements Renderer {
         vbo = gl.isExtensionAvailable("GL_ARB_vertex_buffer_object");
     }
 
-    public Collection<Caps> getCaps() {
+    public EnumSet<Caps> getCaps() {
         return caps;
     }
 

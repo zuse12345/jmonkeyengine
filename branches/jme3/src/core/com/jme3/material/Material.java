@@ -59,8 +59,11 @@ import com.jme3.shader.VarType;
 import com.jme3.texture.Texture;
 import com.jme3.util.ListMap;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -164,10 +167,7 @@ public class Material implements Cloneable, Savable {
             }
             mat.technique = null;
             mat.techniques = new HashMap<String, Technique>();
-//            mat.paramValues = new HashMap<String, MatParam>(paramValues);
-//            mat.paramValues = new ListMap<String, MatParam>(paramValues);
 
-//            mat.paramValues = new HashMap<String, MatParam>();
             mat.paramValues = new ListMap<String, MatParam>();
             for (int i = 0; i < paramValues.size(); i++){
                 Map.Entry<String, MatParam> entry = paramValues.getEntry(i);
@@ -222,25 +222,6 @@ public class Material implements Cloneable, Savable {
         for (MatParam param : paramValues.values()){
             param.uniform = technique.getShader().getUniform(param.name);
         }
-    }
-
-    public void selectTechnique(String name){
-        // check if already created
-        Technique tech = techniques.get(name);
-        if (tech == null){
-            // create technique instance
-            TechniqueDef techDef = def.getTechniqueDef(name);
-            if (techDef == null)
-                throw new IllegalArgumentException("For material "+def.getName()+", technique not found: "+name);
-            tech = new Technique(this, techDef);
-            techniques.put(name, tech);
-        }else if (technique == tech){
-            // attempting to switch to an already
-            // active technique.
-            return;
-        }
-        technique = tech;
-        tech.makeCurrent(def.getAssetManager());
     }
 
     public MatParam getParam(String name){
@@ -403,21 +384,21 @@ public class Material implements Cloneable, Savable {
         setParam(name, VarType.Vector3, value);
     }
 
-    /**
-     * get the additional state on this material
-     * @return additionalState
-     */
-    public RenderState getAdditionalState() {
-        return additionalState;
-    }
-
-    /**
-     * set an additional state to the material
-     * @param additionalState
-     */
-    public void setAdditionalState(RenderState additionalState) {
-        this.additionalState = additionalState;
-    }
+//    /**
+//     * get the additional state on this material
+//     * @return additionalState
+//     */
+//    public RenderState getAdditionalState() {
+//        return additionalState;
+//    }
+//
+//    /**
+//     * set an additional state to the material
+//     * @param additionalState
+//     */
+//    public void setAdditionalState(RenderState additionalState) {
+//        this.additionalState = additionalState;
+//    }
 
     /**
      * Uploads the lights in the light list as two uniform arrays.<br/><br/>
@@ -553,14 +534,56 @@ public class Material implements Cloneable, Savable {
 //        }
     }
 
+    public void selectTechnique(String name, RenderManager renderManager){
+        // check if already created
+        Technique tech = techniques.get(name);
+        if (tech == null){
+            // When choosing technique, we choose one that
+            // supports all the caps.
+            EnumSet<Caps> rendererCaps = renderManager.getRenderer().getCaps();
+
+            if (name.equals("Default")){
+                List<TechniqueDef> techDefs = def.getDefaultTechniques();
+                for (TechniqueDef techDef : techDefs){
+                    if (rendererCaps.containsAll(techDef.getRequiredCaps())){
+                        // use the first one that supports all the caps
+                        tech = new Technique(this, techDef);
+                        techniques.put(name, tech);
+                    }
+                }
+            }else{
+                // create "special" technique instance
+                TechniqueDef techDef = def.getTechniqueDef(name);
+                if (techDef == null)
+                    throw new IllegalArgumentException("For material "+def.getName()+", technique not found: "+name);
+
+                if (!rendererCaps.containsAll(techDef.getRequiredCaps())){
+                    throw new UnsupportedOperationException("The explicitly chosen technique '" + name + "' on material '" + def.getName() + "'\n" +
+                                                            "requires caps " + techDef.getRequiredCaps() + " which are not" +
+                                                            "supported by the video renderer");
+                }
+
+                tech = new Technique(this, techDef);
+                techniques.put(name, tech);
+            }
+        }else if (technique == tech){
+            // attempting to switch to an already
+            // active technique.
+            return;
+        }
+
+        technique = tech;
+        tech.makeCurrent(def.getAssetManager());
+    }
+
     private void autoSelectTechnique(RenderManager rm){
         if (technique == null){
             // XXX: hack warning, choose "FixedFunc" if GLSL100
             // not supported by renderer
             if (!rm.getRenderer().getCaps().contains(Caps.GLSL100)){
-                selectTechnique("FixedFunc");
+                selectTechnique("FixedFunc", rm);
             }else{
-                selectTechnique("Default");
+                selectTechnique("Default", rm);
             }
         }else if (technique.isNeedReload()){
             technique.makeCurrent(def.getAssetManager());

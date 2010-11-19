@@ -365,27 +365,23 @@ public class RenderManager {
         //if forcedTechnique we try to force it for render,
         //if it does not exists in the mat def, we check for forcedMaterial and render the geom if not null
         //else the geom is not rendered
-        if(forcedTechnique!=null){
-             if(g.getMaterial().getMaterialDef().getTechniqueDef(forcedTechnique)!=null){
-                tmpTech=g.getMaterial().getActiveTechnique()!=null?g.getMaterial().getActiveTechnique().getDef().getName():"Default";
-                g.getMaterial().selectTechnique(forcedTechnique);
-                // use geometry's material
-                g.getMaterial().render(g, this);
-                g.getMaterial().selectTechnique(tmpTech);
-             }else if (forcedMaterial != null){
-                 // use forced material
-                 forcedMaterial.render(g, this);
-             }
-        }else if (forcedMaterial != null){
+        if (forcedTechnique != null && g.getMaterial().getMaterialDef().getTechniqueDef(forcedTechnique) != null) {
+            tmpTech = g.getMaterial().getActiveTechnique() != null ? g.getMaterial().getActiveTechnique().getDef().getName() : "Default";
+            g.getMaterial().selectTechnique(forcedTechnique, this);
+            // use geometry's material
+            g.getMaterial().render(g, this);
+            g.getMaterial().selectTechnique(tmpTech, this);
+        } else if (forcedMaterial != null) {
             // use forced material
             forcedMaterial.render(g, this);
-        }else{
-            if(forcedRenderState!=null){
-                g.getMaterial().setAdditionalState(forcedRenderState);
-                // use geometry's material
+        } else {
+            if (forcedRenderState != null) {
+                // TODO: Spec violation. Fix me.
+//                g.getMaterial().setAdditionalState(forcedRenderState);
+//                // use geometry's material
                 g.getMaterial().render(g, this);
-                g.getMaterial().setAdditionalState(null);
-            }else{               
+//                g.getMaterial().setAdditionalState(null);
+            } else {
                 // use geometry's material
                 g.getMaterial().render(g, this);
             }

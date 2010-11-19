@@ -374,13 +374,15 @@ public abstract class Spatial implements Savable, Cloneable, Collidable {
      *            1, 0} in jME.)
      */
     public void lookAt(Vector3f position, Vector3f upVector) {
-        Vector3f worldTranslation=getWorldTranslation();
-        //TODO: tempvar overlap!
-//        assert TempVars.get().lock();
-        Vector3f compVecA = new Vector3f();//TempVars.get().vect1;
+        Vector3f worldTranslation = getWorldTranslation();
+
+        TempVars vars = TempVars.get();
+        assert vars.lock();
+        Vector3f compVecA = vars.vect4;
+        assert vars.unlock();
+        
         compVecA.set(position).subtractLocal(worldTranslation);
         getLocalRotation().lookAt(compVecA, upVector);
-//        assert TempVars.get().unlock();
 
         setTransformRefresh();
     }

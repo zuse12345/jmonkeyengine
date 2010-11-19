@@ -49,9 +49,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.io.IOException;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -412,7 +410,7 @@ public final class SettingsDialog extends JDialog {
             source.setFrequency(freq);
             source.setFullscreen(fullscreen);
             source.setVSync(vsync);
-            source.setRenderer(renderer);
+            //source.setRenderer(renderer);
             source.setSamples(multisample);
 //            try {
 //                source.save();

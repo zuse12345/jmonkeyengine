@@ -43,14 +43,14 @@ import com.jme3.shader.Shader.ShaderSource;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Texture;
 import java.nio.ByteBuffer;
-import java.util.Collection;
+import java.util.EnumSet;
 
 public interface Renderer {
 
     /**
      * @return The capabilities of the renderer.
      */
-    public Collection<Caps> getCaps();
+    public EnumSet<Caps> getCaps();
 
     /**
      * @return The statistics allow tracking of how data

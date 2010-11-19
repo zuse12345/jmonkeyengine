@@ -63,6 +63,7 @@ public enum Caps {
     GLSL130,
     GLSL140,
     GLSL150,
+    GLSL330,
 
     /**
      * Supports reading from textures inside the vertex shader.

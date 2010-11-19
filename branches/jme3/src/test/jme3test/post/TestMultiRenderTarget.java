@@ -70,14 +70,14 @@ public class TestMultiRenderTarget extends SimpleApplication implements ScenePro
     @Override
     public void simpleInitApp() {
         viewPort.addProcessor(this);
+        renderManager.setForcedTechnique("GBuf");
 
 //        flyCam.setEnabled(false);
         cam.setLocation(new Vector3f(4.8037705f, 4.851632f, 10.789033f));
         cam.setRotation(new Quaternion(-0.05143692f, 0.9483723f, -0.21131563f, -0.230846f));
 
         Node tank = (Node) assetManager.loadModel("Models/HoverTank/Tank2.mesh.xml");
-        Geometry tankMesh = (Geometry)tank.getChild(0);
-        tankMesh.getMaterial().selectTechnique("GBuf");
+        
         //tankMesh.getMaterial().setColor("m_Specular", ColorRGBA.Black);
         rootNode.attachChild(tank);
 

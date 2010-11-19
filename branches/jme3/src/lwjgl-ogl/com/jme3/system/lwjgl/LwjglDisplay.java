@@ -97,9 +97,17 @@ public class LwjglDisplay extends LwjglAbstractDisplay {
                                              settings.getStencilBits(),
                                              settings.getSamples());
 
-            if (settings.getBoolean("GraphicsDebug")){
-                ContextAttribs attr = new ContextAttribs();
-                attr = attr.withDebug(true);
+            if (settings.getBoolean("GraphicsDebug") || settings.getRenderer().equals(AppSettings.LWJGL_OPENGL3)){
+                ContextAttribs attr;
+                if (settings.getRenderer().equals(AppSettings.LWJGL_OPENGL3)){
+                    attr = new ContextAttribs(3, 3);
+                    attr = attr.withProfileCore(true).withForwardCompatible(true).withProfileCompatibility(false);
+                }else{
+                    attr = new ContextAttribs();
+                }
+                if (settings.getBoolean("GraphicsDebug")){
+                    attr = attr.withDebug(true);
+                }
                 Display.create(pf, attr);
             }else{
                 Display.create(pf);

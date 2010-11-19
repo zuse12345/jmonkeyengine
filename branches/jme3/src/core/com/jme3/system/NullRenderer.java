@@ -46,7 +46,6 @@ import com.jme3.shader.Shader.ShaderSource;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Texture;
 import java.nio.ByteBuffer;
-import java.util.Collection;
 import java.util.EnumSet;
 
 public class NullRenderer implements Renderer {
@@ -54,7 +53,7 @@ public class NullRenderer implements Renderer {
     private static final EnumSet<Caps> caps = EnumSet.noneOf(Caps.class);
     private static final Statistics stats = new Statistics();
 
-    public Collection<Caps> getCaps() {
+    public EnumSet<Caps> getCaps() {
         return caps;
     }
 

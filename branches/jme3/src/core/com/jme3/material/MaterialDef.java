@@ -34,8 +34,11 @@ package com.jme3.material;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.shader.VarType;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MaterialDef {
@@ -45,6 +48,8 @@ public class MaterialDef {
     private String name;
     private String assetName;
     private AssetManager assetManager;
+
+    private List<TechniqueDef> defaultTechs;
     private Map<String, TechniqueDef> techniques;
     private Map<String, MatParam> matParams;
 
@@ -56,6 +61,8 @@ public class MaterialDef {
         this.name = name;
         techniques = new HashMap<String, TechniqueDef>();
         matParams = new HashMap<String, MatParam>();
+        defaultTechs = new ArrayList<TechniqueDef>();
+        logger.log(Level.INFO, "Loaded material definition: {0}", name);
     }
 
     public void setAssetName(String assetName){
@@ -83,7 +90,15 @@ public class MaterialDef {
     }
 
     public void addTechniqueDef(TechniqueDef technique){
-        techniques.put(technique.getName(), technique);
+        if (technique.getName().equals("Default")){
+            defaultTechs.add(technique);
+        }else{
+            techniques.put(technique.getName(), technique);
+        }
+    }
+
+    public List<TechniqueDef> getDefaultTechniques(){
+        return defaultTechs;
     }
 
     public TechniqueDef getTechniqueDef(String name) {

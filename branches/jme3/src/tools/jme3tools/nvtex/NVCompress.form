@@ -57,7 +57,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -99,11 +99,11 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="pnlExportOpt" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="sclFileList" pref="379" max="32767" attributes="0"/>
+                  <Component id="sclFileList" pref="380" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="barProgress" alignment="3" pref="23" max="32767" attributes="0"/>
+                  <Component id="barProgress" alignment="3" pref="30" max="32767" attributes="0"/>
                   <Component id="btnRemoveFiles" alignment="3" pref="24" max="32767" attributes="1"/>
                   <Component id="btnAddFiles" alignment="3" max="32767" attributes="1"/>
               </Group>
@@ -212,7 +212,7 @@
                           <Component id="cmbCompressType" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace pref="95" max="32767" attributes="0"/>
+                  <EmptySpace pref="117" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -329,7 +329,7 @@
                       <Group type="102" attributes="0">
                           <Component id="lblTargetDir" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="txtTargetDir" pref="176" max="32767" attributes="0"/>
+                          <Component id="txtTargetDir" pref="217" max="32767" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="btnBrowse" min="-2" max="-2" attributes="0"/>
                       </Group>

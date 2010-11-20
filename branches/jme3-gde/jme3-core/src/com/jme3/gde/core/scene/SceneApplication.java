@@ -229,13 +229,6 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                 secondCounter = 0.0f;
             }
 
-            rootNode.updateLogicalState(tpf);
-            guiNode.updateLogicalState(tpf);
-            toolsNode.updateLogicalState(tpf);
-            rootNode.updateGeometricState();
-            guiNode.updateGeometricState();
-            toolsNode.updateGeometricState();
-
             getStateManager().update(tpf);
 
             rootNode.updateLogicalState(tpf);
@@ -247,6 +240,7 @@ public class SceneApplication extends Application implements LookupProvider, Loo
 
             getStateManager().render(renderManager);
             renderManager.render(tpf);
+            getStateManager().postRender();
         } catch (Exception e) {
             String msg = e.getMessage();
             if (msg == null) {

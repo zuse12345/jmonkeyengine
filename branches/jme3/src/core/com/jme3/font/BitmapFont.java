@@ -115,12 +115,17 @@ public class BitmapFont implements Savable {
 
     public float getLineWidth(CharSequence text){
         float lineWidth = 0f;
+        float maxLineWidth = 0f;
         char lastChar = 0;
         boolean firstCharOfLine = true;
 //        float sizeScale = (float) block.getSize() / charSet.getRenderedSize();
         float sizeScale = 1f;
         for (int i = 0; i < text.length(); i++){
             char theChar = text.charAt(i);
+            if (theChar == '\n'){
+                maxLineWidth = Math.max(maxLineWidth, lineWidth);
+                lineWidth = 0f;
+            }
             BitmapCharacter c = charSet.getCharacter((int) theChar);
             if (c != null){
                 if (theChar == '\\' && i<text.length()-1 && text.charAt(i+1)=='#'){
@@ -142,7 +147,7 @@ public class BitmapFont implements Savable {
                 lineWidth += xAdvance;
             }
         }
-        return lineWidth;
+        return Math.max(maxLineWidth, lineWidth);
     }
 
     public float updateText(StringBlock block, QuadList target, boolean rightToLeft) {

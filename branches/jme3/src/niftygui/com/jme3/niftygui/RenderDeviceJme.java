@@ -92,6 +92,7 @@ public class RenderDeviceJme implements RenderDevice {
         quadModTC.setUsage(Usage.Stream);
 
         niftyMat = new Material(display.getAssetManager(), "Common/MatDefs/Nifty/Nifty.j3md");
+        niftyMat.getAdditionalRenderState().setDepthTest(false);
     }
 
     public void setRenderManager(RenderManager rm){

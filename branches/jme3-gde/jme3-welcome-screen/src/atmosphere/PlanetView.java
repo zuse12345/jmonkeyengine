@@ -17,6 +17,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.post.HDRRenderer;
 import com.jme3.renderer.Camera;
+import com.jme3.renderer.Caps;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.Renderer;
 import com.jme3.renderer.ViewPort;
@@ -27,6 +28,8 @@ import com.jme3.scene.control.CameraControl.ControlDirection;
 import com.jme3.util.SkyFactory;
 import de.lessvoid.nifty.Nifty;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Iterator;
 import org.openide.util.Exceptions;
 
 /**
@@ -71,7 +74,7 @@ public class PlanetView implements AppState {
     private AudioRenderer audioRenderer;
     private Camera camera;
     private boolean initialized = false;
-    private boolean active = true;
+    private boolean active = false;
     private Node rootNode;
     private ViewPort viewPort;
     private Nifty nifty;
@@ -94,12 +97,20 @@ public class PlanetView implements AppState {
 
         setupCamera();
         setupLights();
-        setupPlanet();
+        Collection<Caps> caps=renderer.getCaps();
+        for (Iterator<Caps> it = caps.iterator(); it.hasNext();) {
+            Caps caps1 = it.next();
+            if(caps1.equals(Caps.GLSL120)){
+                setupPlanet();
+                active=true;
+            }
+        }
+//        setupPlanet();
 //        setupGUI();
         // This plays a small piece of music I did sometime
         // ago. If you don't like it, you can either comment this line or
         // consider using your own sound track ;-)
-//        setupMusic();
+        setupMusic();
         niftyDisplay = new NiftyJmeDisplay(assetManager,
                 SceneApplication.getApplication().getInputManager(),
                 audioRenderer,

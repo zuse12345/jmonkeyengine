@@ -135,6 +135,8 @@ public class MaterialLoader implements AssetLoader {
             if (texName != null){
                 texture.setName(texName);
                 texName = null;
+            }else{
+                texture.setName(key.getName());
             }
         }
         

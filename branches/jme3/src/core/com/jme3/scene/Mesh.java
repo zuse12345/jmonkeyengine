@@ -224,6 +224,7 @@ public class Mesh implements Savable, Cloneable {
 
     public void setMode(Mode mode) {
         this.mode = mode;
+        updateCounts();
     }
 
     public int getMaxNumWeights() {

@@ -47,6 +47,7 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.light.Light;
 import com.jme3.light.LightList;
 import com.jme3.light.PointLight;
+import com.jme3.material.TechniqueDef.LightMode;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Caps;
@@ -59,7 +60,6 @@ import com.jme3.shader.VarType;
 import com.jme3.texture.Texture;
 import com.jme3.util.ListMap;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -628,8 +628,15 @@ public class Material implements Cloneable, Savable {
     public void render(Geometry geom, RenderManager rm){
         autoSelectTechnique(rm);
 
+
+
         Renderer r = rm.getRenderer();
         TechniqueDef techDef = technique.getDef();
+
+        if (techDef.getLightMode() == LightMode.MultiPass
+         && geom.getWorldLightList().size() == 0)
+            return;
+
         if (techDef.getRenderState() != null){
             r.applyRenderState(techDef.getRenderState());
             if (additionalState != null)

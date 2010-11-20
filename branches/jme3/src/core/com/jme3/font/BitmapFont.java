@@ -152,6 +152,7 @@ public class BitmapFont implements Savable {
         float x = 0;
         float y = 0;
         float lineWidth = 0f;
+        float maxLineWidth = 0f;
         float sizeScale = (float) block.getSize() / charSet.getRenderedSize();
         BitmapCharacter lastChar = null;
         int lineNumber = 1;
@@ -228,6 +229,7 @@ public class BitmapFont implements Savable {
                     }
                 }
 
+                maxLineWidth = Math.max(maxLineWidth, lineWidth);
                 lineWidth = 0f;
                 wordWidth = 0f;
 
@@ -301,7 +303,7 @@ public class BitmapFont implements Savable {
             }
         }
 
-        return lineWidth;
+        return Math.max(lineWidth, maxLineWidth);
     }
 
     public float updateTextRect(StringBlock b, QuadList target) {

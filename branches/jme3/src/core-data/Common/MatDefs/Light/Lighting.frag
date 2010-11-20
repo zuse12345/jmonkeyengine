@@ -68,7 +68,7 @@ float lightComputeDiffuse(in vec3 norm, in vec3 lightdir, in vec3 viewdir){
 }
 
 float lightComputeSpecular(in vec3 norm, in vec3 viewdir, in vec3 lightdir, in float shiny){
-    #ifdef LOW_QUALITY 
+    #ifdef LOW_QUALITY
        // Blinn-Phong
        // Note: preferably, H should be computed in the vertex shader
        vec3 H = (viewdir + lightdir) * vec3(0.5);

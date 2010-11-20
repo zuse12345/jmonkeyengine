@@ -116,7 +116,7 @@ public class BitmapFontLoader implements AssetLoader {
                     mat.setTexture("m_Texture", tex);
                     mat.setColor("m_Color", ColorRGBA.White);
                     mat.setBoolean("m_VertexColor", true);
-                    mat.getAdditionalRenderState().setBlendMode(BlendMode.AlphaAdditive);
+                    mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
                     matPages[index] = mat;
                 }
             }else if (tokens[0].equals("char")){

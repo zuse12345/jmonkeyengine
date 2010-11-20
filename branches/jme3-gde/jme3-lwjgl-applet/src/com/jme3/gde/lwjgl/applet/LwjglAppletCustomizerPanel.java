@@ -13,6 +13,7 @@ package com.jme3.gde.lwjgl.applet;
 import com.jme3.gde.core.j2seproject.ProjectExtensionProperties;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -27,6 +28,7 @@ public class LwjglAppletCustomizerPanel extends javax.swing.JPanel implements Ac
         this.properties = properties;
         initComponents();
         loadProperties();
+        HelpCtx.setHelpIDString(this, "jme3.jmonkeyplatform.application_deployment");
     }
 
     private void loadProperties() {

@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -60,6 +61,7 @@ public class AssetsPropertiesPanel extends javax.swing.JPanel implements ActionL
         initComponents();
         this.project = propertiesFile;
         loadSettings();
+        HelpCtx.setHelpIDString(this, "jme3.jmonkeyplatform.application_deployment");
     }
 
     /** This method is called from within the constructor to

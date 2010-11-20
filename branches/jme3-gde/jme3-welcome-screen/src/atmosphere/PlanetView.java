@@ -30,6 +30,8 @@ import de.lessvoid.nifty.Nifty;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Exceptions;
 
 /**
@@ -97,12 +99,13 @@ public class PlanetView implements AppState {
 
         setupCamera();
         setupLights();
-        Collection<Caps> caps=renderer.getCaps();
+        Collection<Caps> caps = renderer.getCaps();
+//        Logger.getLogger(PlanetView.class.getName()).log(Level.INFO, "Caps: {0}" + caps.toString());
         for (Iterator<Caps> it = caps.iterator(); it.hasNext();) {
             Caps caps1 = it.next();
-            if(caps1.equals(Caps.GLSL120)){
+            if (caps1.equals(Caps.OpenGL21)) {
                 setupPlanet();
-                active=true;
+                active = true;
             }
         }
 //        setupPlanet();
@@ -312,7 +315,9 @@ public class PlanetView implements AppState {
     @Override
     public void stateDetached(AppStateManager asm) {
         SceneApplication.getApplication().getGuiViewPort().removeProcessor(niftyDisplay);
-//        audioRenderer.stopSource(musicNode);
+        if (musicNode != null) {
+            audioRenderer.stopSource(musicNode);
+        }
         nifty.exit();
     }
 

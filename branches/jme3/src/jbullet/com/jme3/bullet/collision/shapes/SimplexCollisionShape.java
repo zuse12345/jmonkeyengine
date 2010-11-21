@@ -32,6 +32,24 @@ public class SimplexCollisionShape extends CollisionShape {
         createShape();
     }
 
+    public SimplexCollisionShape(Vector3f point1, Vector3f point2, Vector3f point3) {
+        vector1 = point1;
+        vector2 = point2;
+        vector3 = point3;
+        createShape();
+    }
+
+    public SimplexCollisionShape(Vector3f point1, Vector3f point2) {
+        vector1 = point1;
+        vector2 = point2;
+        createShape();
+    }
+
+    public SimplexCollisionShape(Vector3f point1) {
+        vector1 = point1;
+        createShape();
+    }
+
     public void write(JmeExporter ex) throws IOException {
         super.write(ex);
         OutputCapsule capsule = ex.getCapsule(this);

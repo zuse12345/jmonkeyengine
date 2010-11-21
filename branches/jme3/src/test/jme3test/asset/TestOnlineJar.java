@@ -62,15 +62,12 @@ public class TestOnlineJar extends SimpleApplication {
         quadMesh.updateGeometry(1, 1, true);
 
         Geometry quad = new Geometry("Textured Quad", quadMesh);
+        assetManager.registerLocator("http://jmonkeyengine.googlecode.com/files/town.zip",
+                           HttpZipLocator.class);
 
-        AssetManager am = new DesktopAssetManager();
-        am.registerLocator("http://www.jmonkeyengine.com/applet/jme3testdata.jar",
-                           HttpZipLocator.class.getName());
-        am.registerLoader(AWTLoader.class.getName(), "png");
-
-        TextureKey key = new TextureKey("textures/pond.png", false);
+        TextureKey key = new TextureKey("grass.jpg", false);
         key.setGenerateMips(true);
-        Texture tex = am.loadTexture(key);
+        Texture tex = assetManager.loadTexture(key);
 
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
         mat.setTexture("m_ColorMap", tex);

@@ -251,7 +251,7 @@ public abstract class PhysicsCollisionObject extends Node {
     protected Spatial getDebugShape() {
         Spatial spatial=CollisionShapeFactory.getDebugShape(collisionShape);
         if (spatial == null) {
-            return null;
+            return new Node("nullnode");
         }
         if (spatial instanceof Node) {
             List<Spatial> children = ((Node) spatial).getChildren();

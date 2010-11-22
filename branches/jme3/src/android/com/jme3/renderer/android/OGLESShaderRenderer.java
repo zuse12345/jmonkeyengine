@@ -148,6 +148,7 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 		return statistics;
 	}
 
+	private boolean verboseLoggingEnabled = false;
 
 
 	public void clearBuffers(boolean color, boolean depth, boolean stencil) {
@@ -169,7 +170,8 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 	}
 
 	public void setBackgroundColor(ColorRGBA color) {
-		logger.info("GLES20.glClearColor(" + color + ")");
+		if (verboseLoggingEnabled)
+			logger.info("GLES20.glClearColor(" + color + ")");
 		GLES20.glClearColor(color.r, color.g, color.b, color.a);
 	}
 
@@ -196,7 +198,8 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 		}
 	*/
 
-		logger.info("applyRenderState(" + state + ")");
+		if (verboseLoggingEnabled)
+			logger.info("applyRenderState(" + state + ")");
 
 		if (state.isDepthTest() && !context.depthTestEnabled) {
 			GLES20.glEnable(GLES20.GL_DEPTH_TEST);
@@ -363,7 +366,8 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 	private int vpX, vpY, vpW, vpH;
 
 	public void setViewPort(int x, int y, int width, int height) {
-		logger.info("setViewPort(" + x + ", " + y + ", " + width + ", " + height + ")");
+		if (verboseLoggingEnabled)
+			logger.info("setViewPort(" + x + ", " + y + ", " + width + ", " + height + ")");
 		GLES20.glViewport(x, y, width, height);
 		vpX = x;
 		vpY = y;
@@ -404,7 +408,8 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 	*/
 	public void setShader(Shader shader) {
 
-		logger.info("setShader(" + shader + ")");
+		if (verboseLoggingEnabled)
+			logger.info("setShader(" + shader + ")");
 
 		if (shader == null) {
 			if (context.boundShaderProgram > 0) {
@@ -702,7 +707,9 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 	}
 
 	protected void updateUniform(Shader shader, Uniform uniform) {
-		logger.info("updateUniform(" + shader + ", " + uniform.getName() + ")");
+
+		if (verboseLoggingEnabled)
+			logger.info("updateUniform(" + shader + ", " + uniform.getName() + ")");
 
 		int shaderId = shader.getId();
 
@@ -772,14 +779,18 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 
 				if (val instanceof ColorRGBA){
 					ColorRGBA c = (ColorRGBA) val;
-					logger.info("glUniform4f ...");
+					if (verboseLoggingEnabled)
+						logger.info("glUniform4f ...");
 					GLES20.glUniform4f(loc, c.r, c.g, c.b, c.a);
-					logger.info("glUniform4f ... done.");
+					if (verboseLoggingEnabled)
+						logger.info("glUniform4f ... done.");
 				} else {
 					Quaternion c = (Quaternion) uniform.getValue();
-					logger.info("glUniform4f ...");
+					if (verboseLoggingEnabled)
+						logger.info("glUniform4f ...");
 					GLES20.glUniform4f(loc, c.getX(), c.getY(), c.getZ(), c.getW());
-					logger.info("glUniform4f ... done.");
+					if (verboseLoggingEnabled)
+						logger.info("glUniform4f ... done.");
 				}
 				break;
 			case Boolean:
@@ -1360,7 +1371,8 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 			indices = buffers.get(Type.Index.ordinal());
 		}
 
-		logger.info("buffers.size: [" + buffers.size() + "]");
+		if (verboseLoggingEnabled)
+			logger.info("buffers.size: [" + buffers.size() + "]");
 
 		for (Entry<VertexBuffer> entry : buffers) {
 			VertexBuffer vb = entry.getValue();
@@ -1381,15 +1393,19 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 			}
 		}
 
-		logger.info("indeces " + (indices == null? "==": "!=") + " null.");
+		if (verboseLoggingEnabled)
+			logger.info("indeces " + (indices == null? "==": "!=") + " null.");
+
 		if (indices != null) {
 			drawTriangleList(indices, mesh, count);
 		} else {
 
 		//            throw new UnsupportedOperationException("Cannot render without index buffer");
-			logger.info("GLES20.glDrawArrays() ...");
+			if (verboseLoggingEnabled)
+				logger.info("GLES20.glDrawArrays() ...");
 			GLES20.glDrawArrays(convertElementMode(mesh.getMode()), 0, mesh.getVertexCount());
-			logger.info("GLES20.glDrawArrays() ... done.");
+			if (verboseLoggingEnabled)
+				logger.info("GLES20.glDrawArrays() ... done.");
 		}
 
 		clearVertexAttribs();
@@ -1431,7 +1447,9 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
     }
 
     protected void setVertexAttrib(VertexBuffer vb, VertexBuffer idb){
-		logger.info("setVertexAttribute()");
+
+		if (verboseLoggingEnabled)
+			logger.info("setVertexAttribute()");
 
         if (vb.getBufferType() == VertexBuffer.Type.Index)
             throw new IllegalArgumentException("Index buffers not allowed to be set to vertex attrib");
@@ -1534,21 +1552,25 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
                 }
                 int elementLength = elementLengths[i];
                 indexData.position(curOffset);
-		logger.info("GLES20.glDrawElements() 0 ...");
+		if (verboseLoggingEnabled)
+			logger.info("GLES20.glDrawElements() 0 ...");
                 GLES20.glDrawElements(elMode,
                                   elementLength,
                                   fmt,
                                   indexData);
                 curOffset += elementLength;
-		logger.info("GLES20.glDrawElements() 0 ... done.");
+		if (verboseLoggingEnabled)
+			logger.info("GLES20.glDrawElements() 0 ... done.");
             }
         }else{
-		logger.info("GLES20.glDrawElements() 1...");
+		if (verboseLoggingEnabled)
+			logger.info("GLES20.glDrawElements() 1...");
 		GLES20.glDrawElements(convertElementMode(mode),
                               indexData.capacity(),
                               convertVertexFormat(indexBuf.getFormat()),
                               indexData);
-		logger.info("GLES20.glDrawElements() 1 ... done.");
+		if (verboseLoggingEnabled)
+			logger.info("GLES20.glDrawElements() 1 ... done.");
         }
     }
 

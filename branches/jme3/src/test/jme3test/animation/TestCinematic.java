@@ -36,8 +36,10 @@ import com.jme3.animation.LoopMode;
 import com.jme3.animation.MotionControl;
 import com.jme3.animation.MotionPath;
 import com.jme3.animation.MotionPathListener;
+import com.jme3.animation.SoundTrack;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AppStateManager;
+import com.jme3.audio.AudioNode;
 import com.jme3.font.BitmapText;
 import com.jme3.input.ChaseCamera;
 import com.jme3.input.KeyInput;
@@ -102,7 +104,10 @@ public class TestCinematic extends SimpleApplication {
 
         rootNode.attachChild(camNode);
 
-        cinematic.addCinematicEvent(0, cameraMotionControl);
+        cinematic.addCinematicEvent(1, cameraMotionControl);
+        cinematic.addCinematicEvent(0, new SoundTrack(new AudioNode(assetManager, "Sound/Environment/Nature.ogg"), audioRenderer));
+        cinematic.addCinematicEvent(3, new SoundTrack(new AudioNode(assetManager, "Sound/Effects/kick.wav"), audioRenderer));
+        cinematic.addCinematicEvent(5.0f, new SoundTrack(new AudioNode(assetManager, "Sound/Effects/Beep.ogg"), audioRenderer));
 
         guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
         final BitmapText wayPointsText = new BitmapText(guiFont, false);

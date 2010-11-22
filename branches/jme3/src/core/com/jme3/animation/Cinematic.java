@@ -181,7 +181,7 @@ public class Cinematic extends AbstractCinematicEvent implements Savable, AppSta
     }
 
     public void onPlayStateChange(CinematicEvent cinematicEvent) {
-        if(cinematicEvent.getPlayState()==PlayState.Stoped && !requestedStop){
+        if(cinematicEvent.getPlayState()==PlayState.Stopped && !requestedStop){
             currentlyPlaying.remove(cinematicEvent);
         }
     }

@@ -9,13 +9,13 @@ package com.jme3.animation;
  * The play state of a cinematic event
  * @author Nehon
  */
-enum PlayState {
+public enum PlayState {
 
         /**The CinematicEvent is currently beeing played*/
         Playing,
         /**The animatable has been paused*/
         Paused,
         /**the animatable is stoped*/
-        Stoped
+        Stopped
 }
     

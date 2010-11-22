@@ -47,7 +47,7 @@ import java.util.List;
 public abstract class AbstractCinematicEvent implements CinematicEvent, Savable {
 
     protected List<PlayStateListener> listeners;
-    protected PlayState playState = PlayState.Stoped;
+    protected PlayState playState = PlayState.Stopped;
     protected float speed = 1;
     protected float initialDuration = 20;
     protected float duration = initialDuration / speed;
@@ -65,7 +65,7 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
      * stops the animation, next time play() is called the animation will start from the begining.
      */
     public void stop() {
-        playState = PlayState.Stoped;
+        playState = PlayState.Stopped;
         stopEvent();
         notifyListeners();
     }
@@ -183,7 +183,7 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
 
     public void write(JmeExporter ex) throws IOException {
         OutputCapsule oc = ex.getCapsule(this);
-        oc.write(playState, "playState", PlayState.Stoped);
+        oc.write(playState, "playState", PlayState.Stopped);
         oc.write(speed, "speed", 1);
         oc.write(initialDuration, "initalDuration", 20);
         oc.write(loopMode, "loopMode", LoopMode.DontLoop);
@@ -191,7 +191,7 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
 
     public void read(JmeImporter im) throws IOException {
         InputCapsule ic = im.getCapsule(this);
-        playState = ic.readEnum("playState", PlayState.class, PlayState.Stoped);
+        playState = ic.readEnum("playState", PlayState.class, PlayState.Stopped);
         speed = ic.readFloat("speed", 1);
         initialDuration = ic.readFloat("initalDuration", 20);
         duration = initialDuration / speed;

@@ -3,8 +3,9 @@
  * and open the template in the editor.
  */
 
-package com.jme3.animation;
+package com.jme3.cinematic;
 
+import com.jme3.animation.LoopMode;
 import com.jme3.audio.AudioNode;
 import com.jme3.audio.AudioRenderer;
 
@@ -47,6 +48,26 @@ public class SoundTrack extends AbstractCinematicEvent {
     public void setAudioRenderer(AudioRenderer audioRenderer) {
         this.audioRenderer = audioRenderer;
     }
+
+    @Override
+    public void updateEvent(float tpf) {
+        if(audioNode.getStatus()==AudioNode.Status.Stopped){
+            stop();
+        }
+    }
+
+    @Override
+    public void setLoopMode(LoopMode loopMode) {
+        super.setLoopMode(loopMode);
+        if(loopMode!=LoopMode.DontLoop){
+            audioNode.setLooping(true);
+        }else{
+            audioNode.setLooping(false);
+        }
+    }
+
+
+
 
 
 

@@ -2,8 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.jme3.animation;
+package com.jme3.cinematic;
 
+import com.jme3.animation.LoopMode;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
@@ -18,13 +19,13 @@ import com.jme3.scene.control.Control;
 import java.io.IOException;
 
 /**
- * A MotionControl is a control over the spatial that manage the position and direction of the spatial while following a motion Path
+ * A MotionTrack is a control over the spatial that manage the position and direction of the spatial while following a motion Path
  *
- * You must first create a MotionPath and then create a MotionControl to associate a spatial and the path.
+ * You must first create a MotionPath and then create a MotionTrack to associate a spatial and the path.
  *
  * @author Nehon
  */
-public class MotionControl extends AbstractCinematicEvent implements Control {
+public class MotionTrack extends AbstractCinematicEvent implements Control {
 
     protected Spatial spatial;
     protected int currentWayPoint;
@@ -66,10 +67,10 @@ public class MotionControl extends AbstractCinematicEvent implements Control {
     }
 
     /**
-     * Create MotionControl,
+     * Create MotionTrack,
      * when using this constructor don't forget to assign spatial and path
      */
-    public MotionControl() {
+    public MotionTrack() {
         super();
     }
 
@@ -78,16 +79,14 @@ public class MotionControl extends AbstractCinematicEvent implements Control {
      * @param spatial
      * @param path
      */
-    public MotionControl(Spatial spatial, MotionPath path) {
+    public MotionTrack(Spatial spatial, MotionPath path) {
         super();
         this.spatial = spatial;
         spatial.addControl(this);
         this.path = path;
     }
 
-    public void update(float tpf) {
-        if (playState == playState.Playing) {
-
+    public void updateEvent(float tpf) {
             spatial.setLocalTranslation(path.interpolatePath(tpf, this));
             computeTargetDirection();
 
@@ -103,7 +102,6 @@ public class MotionControl extends AbstractCinematicEvent implements Control {
                     stop();
                 }
             }
-        }
     }
 
     @Override
@@ -174,7 +172,7 @@ public class MotionControl extends AbstractCinematicEvent implements Control {
      * @return
      */
     public Control cloneForSpatial(Spatial spatial) {
-        MotionControl control = new MotionControl(spatial, path);
+        MotionTrack control = new MotionTrack(spatial, path);
         control.playState = playState;
         control.currentWayPoint = currentWayPoint;
         control.currentValue = currentValue;

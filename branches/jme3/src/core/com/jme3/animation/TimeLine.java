@@ -4,6 +4,7 @@
  */
 package com.jme3.animation;
 
+import com.jme3.cinematic.KeyFrame;
 import java.util.Collection;
 import java.util.HashMap;
 

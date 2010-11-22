@@ -29,7 +29,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.animation;
+package com.jme3.cinematic;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.export.InputCapsule;
@@ -94,7 +94,7 @@ public class MotionPath implements Savable {
      * @param control
      * @return
      */
-    public Vector3f interpolatePath(float tpf, MotionControl control) {
+    public Vector3f interpolatePath(float tpf, MotionTrack control) {
         Vector3f temp = null;
         float val;
         switch (pathInterpolation) {
@@ -513,10 +513,12 @@ public class MotionPath implements Savable {
         return wayPoints.size();
     }
 
-    public void triggerWayPointReach(int wayPointIndex, MotionControl control) {
-        for (Iterator<MotionPathListener> it = listeners.iterator(); it.hasNext();) {
-            MotionPathListener listener = it.next();
-            listener.onWayPointReach(control, wayPointIndex);
+    public void triggerWayPointReach(int wayPointIndex, MotionTrack control) {
+        if(listeners!=null){
+            for (Iterator<MotionPathListener> it = listeners.iterator(); it.hasNext();) {
+                MotionPathListener listener = it.next();
+                listener.onWayPointReach(control, wayPointIndex);
+            }
         }
     }
 

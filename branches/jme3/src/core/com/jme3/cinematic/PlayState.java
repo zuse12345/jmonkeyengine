@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package com.jme3.animation;
+package com.jme3.cinematic;
 
 /**
  * The play state of a cinematic event

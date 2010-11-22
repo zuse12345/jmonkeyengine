@@ -29,16 +29,15 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.animation;
+package com.jme3.cinematic;
 
+import com.jme3.animation.LoopMode;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -46,28 +45,40 @@ import java.util.List;
  */
 public abstract class AbstractCinematicEvent implements CinematicEvent, Savable {
 
-    protected List<PlayStateListener> listeners;
     protected PlayState playState = PlayState.Stopped;
     protected float speed = 1;
-    protected float initialDuration = 20;
+    protected float initialDuration = -1;
     protected float duration = initialDuration / speed;
     protected LoopMode loopMode = LoopMode.DontLoop;
+    protected float time = 0;
 
     public void play() {
         playState = PlayState.Playing;
         playEvent();
-        notifyListeners();
     }
 
     public abstract void playEvent();
+
+    public void update(float tpf) {
+        if (playState == PlayState.Playing) {
+            time += tpf * speed;
+            updateEvent(tpf);
+            if (time >= duration && duration!=-1) {
+                stop();
+            }
+        }
+
+    }
+
+    public abstract void updateEvent(float tpf);
 
     /**
      * stops the animation, next time play() is called the animation will start from the begining.
      */
     public void stop() {
         playState = PlayState.Stopped;
+        time = 0;
         stopEvent();
-        notifyListeners();
     }
 
     public abstract void stopEvent();
@@ -75,7 +86,6 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
     public void pause() {
         playState = PlayState.Paused;
         pauseEvent();
-        notifyListeners();
     }
 
     public abstract void pauseEvent();
@@ -150,20 +160,6 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
         this.loopMode = loopMode;
     }
 
-    public void addListener(PlayStateListener listener) {
-        if(listeners==null){
-            listeners=new ArrayList<PlayStateListener>();
-        }
-        listeners.add(listener);
-    }
-
-    public boolean removeListener(PlayStateListener listener) {
-        if(listeners==null){
-           return listeners.remove(listener);
-        }
-        return false; 
-    }
-
     public void setInitalDuration(float initalDuration) {
         this.initialDuration = initalDuration;
         duration = initalDuration / speed;
@@ -171,14 +167,6 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
 
     public float getInitalDuration() {
         return initialDuration;
-    }
-
-    private void notifyListeners() {
-        if(listeners!=null){
-            for (PlayStateListener playStateListener : listeners) {
-                playStateListener.onPlayStateChange(this);
-            }
-        }
     }
 
     public void write(JmeExporter ex) throws IOException {

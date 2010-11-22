@@ -29,7 +29,9 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.animation;
+package com.jme3.cinematic;
+
+import com.jme3.animation.LoopMode;
 
 /**
  *
@@ -96,10 +98,6 @@ public interface CinematicEvent {
      */
     public LoopMode getLoopMode();
 
-    public void addListener(PlayStateListener listener);
-
-    public boolean removeListener(PlayStateListener listener);
-
     /**
      * returns the initial duration of the animation at speed = 1 in seconds.
      * @return
@@ -111,4 +109,6 @@ public interface CinematicEvent {
      * @param initialDuration
      */
     public void setInitialDuration(float initialDuration);
+
+    public void update(float tpf);
 }

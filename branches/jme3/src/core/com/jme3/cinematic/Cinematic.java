@@ -29,8 +29,9 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.animation;
+package com.jme3.cinematic;
 
+import com.jme3.animation.TimeLine;
 import com.jme3.app.Application;
 import com.jme3.app.state.AppState;
 import com.jme3.app.state.AppStateManager;
@@ -40,26 +41,26 @@ import com.jme3.export.Savable;
 import com.jme3.renderer.RenderManager;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
  *
  * @author Nehon
  */
-public class Cinematic extends AbstractCinematicEvent implements Savable, AppState, PlayStateListener {
+public class Cinematic extends AbstractCinematicEvent implements Savable, AppState {
 
     protected TimeLine timeLine = new TimeLine();
-    protected float time = 0;
     private int lastFetchedKeyFrame = -1;
-    private List<CinematicEvent> currentlyPlaying = new ArrayList<CinematicEvent>();
-    private boolean requestedStop=false;
+    private List<CinematicEvent> cinematicEvents = new ArrayList<CinematicEvent>();
 
     @Override
     public void playEvent() {
-        if(playState==PlayState.Paused){
-            for (CinematicEvent ce : currentlyPlaying) {
-               ce.play();
+        if (playState == PlayState.Paused) {
+            for (int i = 0; i < cinematicEvents.size(); i++) {
+                CinematicEvent ce = cinematicEvents.get(i);
+                if (ce.getPlayState() == PlayState.Paused) {
+                    ce.play();
+                }
             }
         }
     }
@@ -68,20 +69,22 @@ public class Cinematic extends AbstractCinematicEvent implements Savable, AppSta
     public void stopEvent() {
         time = 0;
         lastFetchedKeyFrame = -1;
-        requestedStop=true;
-        for (Iterator<CinematicEvent> it = currentlyPlaying.iterator(); it.hasNext();) {
-            CinematicEvent ce = it.next();
+        for (int i = 0; i < cinematicEvents.size(); i++) {
+            CinematicEvent ce = cinematicEvents.get(i);
             ce.stop();
-            it.remove();
         }
-        requestedStop=false;
+
     }
 
     @Override
     public void pauseEvent() {
-        for (CinematicEvent ce : currentlyPlaying) {
-            ce.pause();
+        for (int i = 0; i < cinematicEvents.size(); i++) {
+            CinematicEvent ce = cinematicEvents.get(i);
+            if (ce.getPlayState() == PlayState.Playing) {
+                ce.pause();
+            }
         }
+
     }
 
     @Override
@@ -98,11 +101,11 @@ public class Cinematic extends AbstractCinematicEvent implements Savable, AppSta
     public void setSpeed(float speed) {
         super.setSpeed(speed);
         duration = initialDuration / speed;
-        for (KeyFrame kf : timeLine.getAllKeyFrames()) {
-            for (CinematicEvent ce : kf.getCinematicEvents()) {
-                ce.setSpeed(speed);
-            }
+        for (int i = 0; i < cinematicEvents.size(); i++) {
+            CinematicEvent ce = cinematicEvents.get(i);
+            ce.setSpeed(speed);
         }
+
 
     }
 
@@ -130,23 +133,24 @@ public class Cinematic extends AbstractCinematicEvent implements Savable, AppSta
         stop();
     }
 
-    public void update(float tpf) {
-        if (playState == PlayState.Playing) {
-            time += tpf * speed;
-            int keyFrameIndex = timeLine.getKeyFrameIndexFromTime(time);
+    @Override
+    public void updateEvent(float tpf) {
+        for (int i = 0; i < cinematicEvents.size(); i++) {
+            CinematicEvent ce = cinematicEvents.get(i);
+            ce.update(tpf);
+        }
 
-            //iterate to make sure every key frame is triggered
-            for (int i = lastFetchedKeyFrame + 1; i <= keyFrameIndex; i++) {
-                KeyFrame keyFrame = timeLine.get(i);
-                if (keyFrame != null) {
-                    currentlyPlaying.addAll(keyFrame.trigger());
-                }
-            }
-            lastFetchedKeyFrame = keyFrameIndex;
-            if (time >= duration) {
-                stop();
+        int keyFrameIndex = timeLine.getKeyFrameIndexFromTime(time);
+
+        //iterate to make sure every key frame is triggered
+        for (int i = lastFetchedKeyFrame + 1; i <= keyFrameIndex; i++) {
+            KeyFrame keyFrame = timeLine.get(i);
+            if (keyFrame != null) {
+                keyFrame.trigger();
             }
         }
+
+        lastFetchedKeyFrame = keyFrameIndex;
     }
 
     public KeyFrame addCinematicEvent(float timeStamp, CinematicEvent cinematicEvent) {
@@ -156,7 +160,7 @@ public class Cinematic extends AbstractCinematicEvent implements Savable, AppSta
             timeLine.addKeyFrameAtTime(timeStamp, keyFrame);
         }
         keyFrame.cinematicEvents.add(cinematicEvent);
-        cinematicEvent.addListener(this);
+        cinematicEvents.add(cinematicEvent);
         return keyFrame;
     }
 
@@ -172,17 +176,13 @@ public class Cinematic extends AbstractCinematicEvent implements Savable, AppSta
     public void fitDuration() {
         KeyFrame kf = timeLine.getKeyFrameAtTime(timeLine.getLastKeyFrameIndex());
         float d = 0;
-        for (CinematicEvent ce : kf.getCinematicEvents()) {
+        for (int i = 0; i < kf.getCinematicEvents().size(); i++) {
+            CinematicEvent ce = kf.getCinematicEvents().get(i);
             if (d < (ce.getDuration() * ce.getSpeed())) {
                 d = (ce.getDuration() * ce.getSpeed());
             }
         }
-        initialDuration = d;
-    }
 
-    public void onPlayStateChange(CinematicEvent cinematicEvent) {
-        if(cinematicEvent.getPlayState()==PlayState.Stopped && !requestedStop){
-            currentlyPlaying.remove(cinematicEvent);
-        }
+        initialDuration = d;
     }
 }

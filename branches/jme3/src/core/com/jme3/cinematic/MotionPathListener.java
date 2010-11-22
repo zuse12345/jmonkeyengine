@@ -30,7 +30,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.jme3.animation;
+package com.jme3.cinematic;
 
 /**
  * Trigger the events appening on an motion path
@@ -40,9 +40,9 @@ public interface MotionPathListener {
 
     /**
      * Triggers every time the target reach a waypoint on the path
-     * @param motionControl the MotionControl objects that reached the waypoint
+     * @param motionControl the MotionTrack objects that reached the waypoint
      * @param wayPointIndex the index of the way point reached
      */
-    public void onWayPointReach(MotionControl motionControl,int wayPointIndex);
+    public void onWayPointReach(MotionTrack motionControl,int wayPointIndex);
 
 }

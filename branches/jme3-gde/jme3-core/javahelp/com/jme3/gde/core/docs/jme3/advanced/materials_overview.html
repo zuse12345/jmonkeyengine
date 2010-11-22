@@ -306,23 +306,80 @@ This is how you use the prepared .j3m Material on a Spatial:
 <!-- SECTION "How to Use .j3m Materials" [8271-8459] -->
 <h3><a name="referencedata_types_in_.j3m_files" id="referencedata_types_in_.j3m_files">Reference: Data Types in .j3m Files</a></h3>
 <div class="level3">
+
+<p>
+All data types(without Color) are fixed in com.jme3.shader.VarType.
+“Color” is identified as Vector4 in J3MLoader.java.
+
+</p>
 <table class="inline">
 	<tr class="row0">
 		<th class="col0">Name</th><th class="col1">jME Java class</th><th class="col2">.j3m file syntax</th>
 	</tr>
 	<tr class="row1">
-		<td class="col0"> Color </td><td class="col1"> <code>com.jme3.math.ColorRGBA</code> </td><td class="col2"> Four floats, no comma or parentheses </td>
+		<td class="col0"> Float</td><td class="col1"> </td><td class="col2"> a float (e.g. 0.72) , no comma or parentheses </td>
 	</tr>
 	<tr class="row2">
-		<td class="col0"> Vector3 </td><td class="col1"> <code>com.jme3.math.Vector3f</code> </td><td class="col2"> Three floats, no comma or parentheses </td>
+		<td class="col0"> Vector2</td><td class="col1"> </td><td class="col2 rightalign">  </td>
 	</tr>
 	<tr class="row3">
-		<td class="col0"> Texture </td><td class="col1"> <code>com.jme3.texture.Texture</code> </td><td class="col2"> Path to texture in <code>assets</code> directory, no quotation marks </td>
+		<td class="col0"> Vector3 </td><td class="col1"> <code>com.jme3.math.Vector3f</code> </td><td class="col2"> Three floats, no comma or parentheses </td>
+	</tr>
+	<tr class="row4">
+		<td class="col0"> Vector4</td><td class="col1"> </td><td class="col2 rightalign">  </td>
+	</tr>
+	<tr class="row5">
+		<td class="col0"> Boolean</td><td class="col1"> </td><td class="col2"> true or false </td>
+	</tr>
+	<tr class="row6">
+		<td class="col0"> Int</td><td class="col1"> </td><td class="col2 rightalign">  </td>
+	</tr>
+	<tr class="row7">
+		<td class="col0"> FloatArray</td><td class="col1"> </td><td class="col2 rightalign">  </td>
+	</tr>
+	<tr class="row8">
+		<td class="col0"> Vector2Array</td><td class="col1"> </td><td class="col2 rightalign">  </td>
+	</tr>
+	<tr class="row9">
+		<td class="col0"> Vector3Array</td><td class="col1"> </td><td class="col2 rightalign">  </td>
+	</tr>
+	<tr class="row10">
+		<td class="col0"> Vector4Array</td><td class="col1"> </td><td class="col2 rightalign">  </td>
+	</tr>
+	<tr class="row11">
+		<td class="col0"> Matrix3</td><td class="col1"> </td><td class="col2 rightalign">  </td>
+	</tr>
+	<tr class="row12">
+		<td class="col0"> Matrix4</td><td class="col1"> </td><td class="col2 rightalign">  </td>
+	</tr>
+	<tr class="row13">
+		<td class="col0"> Matrix3Array</td><td class="col1"> </td><td class="col2 rightalign">  </td>
+	</tr>
+	<tr class="row14">
+		<td class="col0"> Matrix4Array</td><td class="col1"> </td><td class="col2 rightalign">  </td>
+	</tr>
+	<tr class="row15">
+		<td class="col0"> TextureBuffer</td><td class="col1"> </td><td class="col2 rightalign">  </td>
+	</tr>
+	<tr class="row16">
+		<td class="col0"> Texture2D </td><td class="col1"> <code>com.jme3.texture.Texture</code> </td><td class="col2"> Path to texture in <code>assets</code> directory, no quotation marks </td>
+	</tr>
+	<tr class="row17">
+		<td class="col0"> Texture3D</td><td class="col1"> </td><td class="col2 rightalign">  </td>
+	</tr>
+	<tr class="row18">
+		<td class="col0"> TextureArray</td><td class="col1"> </td><td class="col2 rightalign">  </td>
+	</tr>
+	<tr class="row19">
+		<td class="col0">TextureCubeMap</td><td class="col1"> </td><td class="col2 rightalign">  </td>
+	</tr>
+	<tr class="row20">
+		<td class="col0"> Color </td><td class="col1"> <code>com.jme3.math.ColorRGBA</code> </td><td class="col2"> Four floats, no comma or parentheses </td>
 	</tr>
 </table>
 
 </div>
-<!-- SECTION "Reference: Data Types in .j3m Files" [8460-8811] -->
+<!-- SECTION "Reference: Data Types in .j3m Files" [8460-9304] -->
 <h2><a name="transparency" id="transparency">Transparency</a></h2>
 <div class="level2">
 
@@ -376,7 +433,7 @@ Additionally, specify a blendmode.
 </table>
 
 </div>
-<!-- SECTION "Transparency" [8812-10233] -->
+<!-- SECTION "Transparency" [9305-10726] -->
 <h2><a name="material_options" id="material_options">Material Options</a></h2>
 <div class="level2">
 <table class="inline">
@@ -399,7 +456,7 @@ Additionally, specify a blendmode.
 </table>
 
 </div>
-<!-- SECTION "Material Options" [10234-] --><div class="footnotes">
+<!-- SECTION "Material Options" [10727-] --><div class="footnotes">
 <div class="fn"><sup><a href="#fnt__1" id="fn__1" name="fn__1" class="fn_bot">1)</a></sup> 
 m_UseAlpha specifies whether m_DiffuseMap uses the alpha channel</div>
 <div class="fn"><sup><a href="#fnt__2" id="fn__2" name="fn__2" class="fn_bot">2)</a></sup> 

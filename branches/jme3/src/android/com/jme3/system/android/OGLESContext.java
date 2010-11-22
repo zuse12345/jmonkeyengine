@@ -133,13 +133,15 @@ public class OGLESContext implements JmeContext, GLSurfaceView.Renderer {
      */
     protected void deinitInThread(){
         listener.destroy();
-        renderer.cleanup();
-        // do android specific cleaning here
+	if (renderer != null) {
+		renderer.cleanup();
+		// do android specific cleaning here
 
-        logger.info("Display destroyed.");
-        created.set(false);
-        renderer = null;
-        timer = null;
+		logger.info("Display destroyed.");
+		created.set(false);
+		renderer = null;
+		timer = null;
+	}
     }
 
     public void setSettings(AppSettings settings) {

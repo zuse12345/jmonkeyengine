@@ -59,7 +59,7 @@
                 <label text="Introductory Help Content" align="left"/>
                 <panel childLayout="horizontal">
                     <control id="listBoxStatic" name="listBox" horizontal="false" width="*" height="100%" childLayout="vertical" visibleToMouse="true">
-                        <panel id="listBoxStaticData" childLayout="vertical" visibleToMouse="true" width="100%">
+                        <panel id="listBoxStaticData" childLayout="vertical" visibleToMouse="true" width="100%" padding="20px" >
                             <label text="- Creating Projects" style="my-listbox-item-style">
                                 <interact onClick="creatingProjects()"/>
                             </label>

@@ -54,7 +54,7 @@ public class Cinematic extends AbstractCinematicEvent implements Savable, AppSta
     private List<CinematicEvent> cinematicEvents = new ArrayList<CinematicEvent>();
 
     @Override
-    public void playEvent() {
+    public void onPlay() {
         if (playState == PlayState.Paused) {
             for (int i = 0; i < cinematicEvents.size(); i++) {
                 CinematicEvent ce = cinematicEvents.get(i);
@@ -66,7 +66,7 @@ public class Cinematic extends AbstractCinematicEvent implements Savable, AppSta
     }
 
     @Override
-    public void stopEvent() {
+    public void onStop() {
         time = 0;
         lastFetchedKeyFrame = -1;
         for (int i = 0; i < cinematicEvents.size(); i++) {
@@ -77,7 +77,7 @@ public class Cinematic extends AbstractCinematicEvent implements Savable, AppSta
     }
 
     @Override
-    public void pauseEvent() {
+    public void onPause() {
         for (int i = 0; i < cinematicEvents.size(); i++) {
             CinematicEvent ce = cinematicEvents.get(i);
             if (ce.getPlayState() == PlayState.Playing) {
@@ -133,11 +133,17 @@ public class Cinematic extends AbstractCinematicEvent implements Savable, AppSta
         stop();
     }
 
+    public void update(float tpf) {
+       internalUpdate(tpf);
+    }
+
+
+
     @Override
-    public void updateEvent(float tpf) {
+    public void onUpdate(float tpf) {
         for (int i = 0; i < cinematicEvents.size(); i++) {
             CinematicEvent ce = cinematicEvents.get(i);
-            ce.update(tpf);
+            ce.internalUpdate(tpf);
         }
 
         int keyFrameIndex = timeLine.getKeyFrameIndexFromTime(time);

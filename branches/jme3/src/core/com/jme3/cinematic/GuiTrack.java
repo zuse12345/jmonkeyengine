@@ -25,17 +25,17 @@ public class GuiTrack extends AbstractCinematicEvent {
     }
 
     @Override
-    public void playEvent() {
+    public void onPlay() {
         nifty.gotoScreen(screen);
     }
 
     @Override
-    public void stopEvent() {
+    public void onStop() {
         nifty.gotoScreen("");
     }
 
     @Override
-    public void pauseEvent() {
+    public void onPause() {
     }
 
     public void setNifty(Nifty nifty) {
@@ -47,7 +47,7 @@ public class GuiTrack extends AbstractCinematicEvent {
     }
 
     @Override
-    public void updateEvent(float tpf) {
+    public void onUpdate(float tpf) {
     
     }
 }

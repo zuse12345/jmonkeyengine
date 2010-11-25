@@ -27,17 +27,17 @@ public class SoundTrack extends AbstractCinematicEvent {
     }
 
     @Override
-    public void playEvent() {
+    public void onPlay() {
         audioRenderer.playSource(audioNode);
     }
 
     @Override
-    public void stopEvent() {
+    public void onStop() {
         audioRenderer.stopSource(audioNode);
     }
 
     @Override
-    public void pauseEvent() {
+    public void onPause() {
         audioRenderer.pauseSource(audioNode);
     }
 
@@ -50,7 +50,7 @@ public class SoundTrack extends AbstractCinematicEvent {
     }
 
     @Override
-    public void updateEvent(float tpf) {
+    public void onUpdate(float tpf) {
         if(audioNode.getStatus()==AudioNode.Status.Stopped){
             stop();
         }

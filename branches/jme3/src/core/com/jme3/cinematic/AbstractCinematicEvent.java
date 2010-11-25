@@ -53,16 +53,16 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
     protected float time = 0;
 
     public void play() {
+        onPlay();
         playState = PlayState.Playing;
-        playEvent();
     }
 
-    public abstract void playEvent();
+    public abstract void onPlay();
 
-    public void update(float tpf) {
+    public void internalUpdate(float tpf) {
         if (playState == PlayState.Playing) {
             time += tpf * speed;
-            updateEvent(tpf);
+            onUpdate(tpf);
             if (time >= duration && duration!=-1) {
                 stop();
             }
@@ -70,25 +70,25 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
 
     }
 
-    public abstract void updateEvent(float tpf);
+    public abstract void onUpdate(float tpf);
 
     /**
      * stops the animation, next time play() is called the animation will start from the begining.
      */
     public void stop() {
-        playState = PlayState.Stopped;
+        onStop();
         time = 0;
-        stopEvent();
+        playState = PlayState.Stopped;
     }
 
-    public abstract void stopEvent();
+    public abstract void onStop();
 
     public void pause() {
+        onPause();
         playState = PlayState.Paused;
-        pauseEvent();
     }
 
-    public abstract void pauseEvent();
+    public abstract void onPause();
 
     /**
      * returns the actual duration of the animtion (initialDuration/speed)

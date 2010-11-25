@@ -110,5 +110,5 @@ public interface CinematicEvent {
      */
     public void setInitialDuration(float initialDuration);
 
-    public void update(float tpf);
+    public void internalUpdate(float tpf); 
 }

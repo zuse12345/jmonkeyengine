@@ -31,24 +31,25 @@
  */
 package jme3test.animation;
 
+import com.jme3.animation.AnimChannel;
+import com.jme3.animation.AnimControl;
 import com.jme3.cinematic.Cinematic;
 import com.jme3.cinematic.GuiTrack;
 import com.jme3.animation.LoopMode;
 import com.jme3.cinematic.MotionTrack;
 import com.jme3.cinematic.MotionPath;
-import com.jme3.cinematic.MotionPathListener;
 import com.jme3.cinematic.SoundTrack;
 import com.jme3.app.SimpleApplication;
-import com.jme3.app.state.AppStateManager;
 import com.jme3.audio.AudioNode;
-import com.jme3.font.BitmapText;
-import com.jme3.input.ChaseCamera;
-import com.jme3.input.KeyInput;
+import com.jme3.cinematic.AbstractCinematicEvent;
+import com.jme3.cinematic.AnimationTrack;
+import com.jme3.cinematic.PlayState;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.scene.CameraNode;
@@ -57,13 +58,14 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.control.CameraControl.ControlDirection;
 import com.jme3.scene.shape.Box;
 import de.lessvoid.nifty.Nifty;
-import org.lwjgl.opengl.APPLEAuxDepthStencil;
 
 public class TestCinematic extends SimpleApplication {
 
-    private Spatial teapot;
+    private Spatial model;
     private MotionPath path;
     private MotionTrack cameraMotionTrack;
+    private AnimChannel channel;
+    private Cinematic cinematic;
     
     private CameraNode camNode;
 
@@ -76,7 +78,7 @@ public class TestCinematic extends SimpleApplication {
     public void simpleInitApp() {
         createScene();
 
-        Cinematic cinematic = new Cinematic();
+        cinematic = new Cinematic();
         cinematic.setInitalDuration(20);
         stateManager.attach(cinematic);
 
@@ -86,7 +88,7 @@ public class TestCinematic extends SimpleApplication {
                 guiViewPort);
         Nifty nifty = niftyDisplay.getNifty();
 
-        nifty.fromXmlWithoutStartScreen(/*"tutorial/tutorial.xml"*/"jme3test/niftygui/hellojme.xml");
+        nifty.fromXmlWithoutStartScreen("jme3test/animation/subtitle.xml");
 
 
         // attach the nifty display to the gui view port as a processor
@@ -100,11 +102,31 @@ public class TestCinematic extends SimpleApplication {
         SoundTrack beep = new SoundTrack(new AudioNode(assetManager, "Sound/Effects/Beep.ogg"), audioRenderer);
         beep.setInitalDuration(1);
         cinematic.addCinematicEvent(5.0f, beep);
-        cinematic.addCinematicEvent(3, new GuiTrack(nifty, "start", 3));
+        cinematic.addCinematicEvent(3, new SubtitleTrack(nifty, "start", 3,"jMonkey engine really kicks A..."));
+        cinematic.addCinematicEvent(6, new AnimationTrack(channel, "Walk","stand"));
+        cinematic.addCinematicEvent(6, new AbstractCinematicEvent() {
+
+            @Override
+            public void onPlay() {
+            }
+
+            @Override
+            public void onUpdate(float tpf) {
+                model.rotate(new Quaternion().fromAngleAxis(tpf*this.speed, Vector3f.UNIT_Y));
+            }
+
+            @Override
+            public void onStop() {
+            }
+
+            @Override
+            public void onPause() {
+            }
+        });
 
 
         flyCam.setEnabled(false);
-
+        initInputs();
         cinematic.play();
     }
 
@@ -113,7 +135,7 @@ public class TestCinematic extends SimpleApplication {
         camNode.setControlDir(ControlDirection.SpatialToCamera);
         camNode.setName("Motion cam");
         camNode.setLocalTranslation(new Vector3f(43.301273f, 25.0f, 0.0f));
-        camNode.lookAt(teapot.getWorldTranslation(), Vector3f.UNIT_Y);
+        camNode.lookAt(model.getWorldTranslation(), Vector3f.UNIT_Y);
         path = new MotionPath();
         path.setCycle(true);
         path.addWayPoint(new Vector3f(20, 3, 0));
@@ -123,33 +145,57 @@ public class TestCinematic extends SimpleApplication {
         path.setCurveTension(0.83f);
         cameraMotionTrack = new MotionTrack(camNode, path);
         cameraMotionTrack.setLoopMode(LoopMode.Loop);
-        cameraMotionTrack.setLookAt(teapot.getWorldTranslation(), Vector3f.UNIT_Y);
+        cameraMotionTrack.setLookAt(model.getWorldTranslation(), Vector3f.UNIT_Y);
         cameraMotionTrack.setDirectionType(MotionTrack.Direction.LookAt);
         rootNode.attachChild(camNode);
     }
 
     private void createScene() {
-        Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        mat.setFloat("m_Shininess", 1f);
-        mat.setBoolean("m_UseMaterialColors", true);
-        mat.setColor("m_Ambient", ColorRGBA.Black);
-        mat.setColor("m_Diffuse", ColorRGBA.DarkGray);
-        mat.setColor("m_Specular", ColorRGBA.White.mult(0.6f));
+
+        model = (Spatial) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
+        model.center();
+
+        AnimControl control = model.getControl(AnimControl.class);
+        channel = control.createChannel();
+
+        rootNode.attachChild(model);
         Material matSoil = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
         matSoil.setBoolean("m_UseMaterialColors", true);
         matSoil.setColor("m_Ambient", ColorRGBA.Gray);
         matSoil.setColor("m_Diffuse", ColorRGBA.Gray);
         matSoil.setColor("m_Specular", ColorRGBA.Black);
-        teapot = assetManager.loadModel("Models/Teapot/Teapot.obj");
-        teapot.setLocalScale(3);
-        teapot.setMaterial(mat);
-        rootNode.attachChild(teapot);
-        Geometry soil = new Geometry("soil", new Box(new Vector3f(0, -1.0f, 0), 50, 1, 50));
+        
+        Geometry soil = new Geometry("soil", new Box(new Vector3f(0, -6.0f, 0), 50, 1, 50));
         soil.setMaterial(matSoil);
         rootNode.attachChild(soil);
         DirectionalLight light = new DirectionalLight();
         light.setDirection(new Vector3f(0, -1, 0).normalizeLocal());
         light.setColor(ColorRGBA.White.mult(1.5f));
         rootNode.addLight(light);
+    }
+
+     private void initInputs() {
+        inputManager.addMapping("togglePause", new KeyTrigger(keyInput.KEY_SPACE));
+//        inputManager.addMapping("SwitchPathInterpolation", new KeyTrigger(KeyInput.KEY_I));
+//        inputManager.addMapping("tensionUp", new KeyTrigger(KeyInput.KEY_U));
+//        inputManager.addMapping("tensionDown", new KeyTrigger(KeyInput.KEY_J));
+//        inputManager.addMapping("play_stop", new KeyTrigger(KeyInput.KEY_SPACE));
+        ActionListener acl = new ActionListener() {
+
+            public void onAction(String name, boolean keyPressed, float tpf) {
+                if (name.equals("togglePause") && keyPressed) {
+                    if (cinematic.getPlayState()==PlayState.Playing) {
+                        cinematic.pause();
+                        camNode.lookAt(model.getWorldTranslation(), Vector3f.UNIT_Y);
+                    } else {
+                        cinematic.play();
+                    }
+                }
+             
+            }
+        };
+
+        inputManager.addListener(acl, "togglePause");
+
     }
 }

@@ -86,7 +86,18 @@ public class MotionTrack extends AbstractCinematicEvent implements Control {
         this.path = path;
     }
 
-    public void updateEvent(float tpf) {
+     public void update(float tpf) {
+        if (playState == PlayState.Playing) {
+            time += tpf * speed;
+            onUpdate(tpf);
+            if (time >= duration && duration!=-1) {
+                stop();
+            }
+        }
+
+    }
+
+    public void onUpdate(float tpf) {
             spatial.setLocalTranslation(path.interpolatePath(tpf, this));
             computeTargetDirection();
 
@@ -191,16 +202,16 @@ public class MotionTrack extends AbstractCinematicEvent implements Control {
     }
 
     @Override
-    public void playEvent() {
+    public void onPlay() {
     }
 
     @Override
-    public void stopEvent() {
+    public void onStop() {
         currentWayPoint = 0;
     }
 
     @Override
-    public void pauseEvent() {
+    public void onPause() {
     }
 
     /**
@@ -321,7 +332,7 @@ public class MotionTrack extends AbstractCinematicEvent implements Control {
     }
 
     public boolean isEnabled() {
-        return playState == PlayState.Playing;
+        return playState != PlayState.Stopped;
     }
 
     public void render(RenderManager rm, ViewPort vp) {

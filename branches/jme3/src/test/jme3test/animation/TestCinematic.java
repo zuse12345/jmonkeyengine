@@ -103,6 +103,11 @@ public class TestCinematic extends SimpleApplication {
         beep.setInitalDuration(1);
         cinematic.addCinematicEvent(5.0f, beep);
         cinematic.addCinematicEvent(3, new SubtitleTrack(nifty, "start", 3,"jMonkey engine really kicks A..."));
+        /*
+         * normen: is this savable? I guess we should work with names / classnames so we dont have
+         * references to objects in the scenegraph. This might a) save the whole scenegraph
+         * or b) produce non-working links interface the cinematic savable.
+         */
         cinematic.addCinematicEvent(6, new AnimationTrack(channel, "Walk","stand"));
         cinematic.addCinematicEvent(6, new AbstractCinematicEvent() {
 

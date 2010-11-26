@@ -90,8 +90,25 @@ public class MaterialLoader implements AssetLoader {
     private void readTextureImage(){
         // texture image def
         String ln = scan.nextLine();
+        String path = null;
+
+        // find extension
+        int extStart = ln.lastIndexOf(".");
+        for (int i = extStart; i < ln.length(); i++){
+            char c = ln.charAt(i);
+            if (Character.isWhitespace(c)){
+                // extension ends here
+                path = ln.substring(0, i).trim();
+                ln   = ln.substring(i+1).trim();
+                break;
+            }
+        }
+        if (path == null){
+            path = ln.trim();
+            ln = "";
+        }
+
         Scanner lnScan = new Scanner(ln);
-        String path = lnScan.next();
         String mips = null;
         String type = null;
         if (lnScan.hasNext()){

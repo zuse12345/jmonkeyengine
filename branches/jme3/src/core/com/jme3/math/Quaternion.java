@@ -226,12 +226,12 @@ public final class Quaternion implements Savable, Cloneable {
      * @param angles
      *            the Euler angles of rotation (in radians).
      */
-    public void fromAngles(float[] angles) {
+    public Quaternion fromAngles(float[] angles) {
         if (angles.length != 3)
             throw new IllegalArgumentException(
                     "Angles array must have three elements");
 
-        fromAngles(angles[0], angles[1], angles[2]);
+        return fromAngles(angles[0], angles[1], angles[2]);
     }
 
 	/**

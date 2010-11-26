@@ -90,7 +90,7 @@ import jme3tools.converters.ImageToAwt;
 public class TestWalkingChar extends SimpleApplication implements ActionListener, PhysicsCollisionListener, AnimEventListener {
 
     private BulletAppState bulletAppState;
-    static final Quaternion ROTATE_LEFT = new Quaternion();
+    static final Quaternion ROTATE_LEFT = new Quaternion().fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_Y);
     //character
     PhysicsCharacterNode character;
     Node model;
@@ -124,10 +124,6 @@ public class TestWalkingChar extends SimpleApplication implements ActionListener
     float bLength = 0.8f;
     float bWidth = 0.4f;
     float bHeight = 0.4f;
-
-    static {
-        ROTATE_LEFT.fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_Y);
-    }
 
     public static void main(String[] args) {
         TestWalkingChar app = new TestWalkingChar();
@@ -320,8 +316,6 @@ public class TestWalkingChar extends SimpleApplication implements ActionListener
 
     @Override
     public void simpleUpdate(float tpf) {
-        rootNode.updateLogicalState(tpf);
-        rootNode.updateGeometricState();
         Vector3f camDir = cam.getDirection().clone().multLocal(0.2f);
         Vector3f camLeft = cam.getLeft().clone().multLocal(0.2f);
         camDir.y = 0;

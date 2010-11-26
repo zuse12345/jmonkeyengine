@@ -114,6 +114,7 @@ public class TestRagDoll extends SimpleApplication implements ActionListener {
     public void onAction(String string, boolean bln, float tpf) {
         if ("Pull ragdoll up".equals(string)) {
             if (bln) {
+                shoulders.activate();
                 shoulders.applyContinuousForce(true, upforce);
             } else {
                 shoulders.applyContinuousForce(false, upforce);

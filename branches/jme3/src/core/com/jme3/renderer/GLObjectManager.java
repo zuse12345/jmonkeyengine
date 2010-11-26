@@ -108,6 +108,12 @@ public class GLObjectManager {
         deleteUnused(r);
         for (GLObjectRef ref : refList){
             ref.objClone.deleteObject(r);
+            GLObject realObj = ref.realObj.get();
+            if (realObj != null){
+                // Note: make sure to reset them as well
+                // They may get used in a new renderer in the future
+                realObj.resetObject();
+            }
         }
         refList.clear();
     }

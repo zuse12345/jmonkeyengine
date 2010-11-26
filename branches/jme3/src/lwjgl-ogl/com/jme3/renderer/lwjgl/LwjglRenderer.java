@@ -592,7 +592,7 @@ public class LwjglRenderer implements Renderer {
         if (loc < 0){
             uniform.setLocation(-1);
             // uniform is not declared in shader
-            logger.log(Level.WARNING, "Uniform {0} is not declared in shader.", uniform.getName());
+            logger.log(Level.INFO, "Uniform {0} is not declared in shader.", uniform.getName());
         }else{
             uniform.setLocation(loc);
         }

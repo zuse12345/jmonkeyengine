@@ -29,7 +29,6 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.util;
 
 import com.jme3.math.ColorRGBA;
@@ -58,8 +57,7 @@ public class TangentBinormalGenerator {
 
     private static final float ZERO_TOLERANCE = 0.0000001f;
     private static final Logger log = Logger.getLogger(
-			TangentBinormalGenerator.class.getName());
-
+            TangentBinormalGenerator.class.getName());
     private static float toleranceAngle;
     private static float toleranceDot;
 
@@ -68,21 +66,23 @@ public class TangentBinormalGenerator {
     }
 
     private static class VertexData {
+
         public final List<TriangleData> triangles =
-                    new ArrayList<TriangleData>();
+                new ArrayList<TriangleData>();
 
         public VertexData() {
         }
     }
 
     private static class TriangleData {
+
         public final Vector3f tangent;
         public final Vector3f binormal;
         public final Vector3f normal;
 
         public TriangleData(Vector3f tangent, Vector3f binormal,
-                        Vector3f normal,
-                        int index0, int index1, int index2){
+                Vector3f normal,
+                int index0, int index1, int index2) {
             this.tangent = tangent;
             this.binormal = binormal;
             this.normal = normal;
@@ -97,13 +97,13 @@ public class TangentBinormalGenerator {
         return vertices;
     }
 
-    public static void generate(Spatial scene){
-        if (scene instanceof Node){
+    public static void generate(Spatial scene) {
+        if (scene instanceof Node) {
             Node node = (Node) scene;
-            for (Spatial child : node.getChildren()){
+            for (Spatial child : node.getChildren()) {
                 generate(child);
             }
-        }else if (scene instanceof Geometry){
+        } else if (scene instanceof Geometry) {
             Geometry geom = (Geometry) scene;
             generate(geom.getMesh());
         }
@@ -125,34 +125,39 @@ public class TangentBinormalGenerator {
         VertexData[] vertices;
         switch (mesh.getMode()) {
             case Triangles:
-                vertices = processTriangles(mesh, index, v, t); break;
+                vertices = processTriangles(mesh, index, v, t);
+                break;
             case TriangleStrip:
-                vertices = processTriangleStrip(mesh, index, v, t); break;
+                vertices = processTriangleStrip(mesh, index, v, t);
+                break;
             case TriangleFan:
-                vertices = processTriangleFan(mesh, index, v, t); break;
-            default: throw new UnsupportedOperationException(
-                    mesh.getMode() + " is not supported.");
+                vertices = processTriangleFan(mesh, index, v, t);
+                break;
+            default:
+                throw new UnsupportedOperationException(
+                        mesh.getMode() + " is not supported.");
         }
 
         processTriangleData(mesh, vertices, approxTangents);
     }
 
     private static VertexData[] processTriangles(Mesh mesh,
-            int[] index, Vector3f[] v, Vector2f[] t){
-        
+            int[] index, Vector3f[] v, Vector2f[] t) {
+
         IndexBuffer indexBuffer = mesh.getIndexBuffer();
         FloatBuffer vertexBuffer = (FloatBuffer) mesh.getBuffer(Type.Position).getData();
-        if (mesh.getBuffer(Type.TexCoord) == null)
+        if (mesh.getBuffer(Type.TexCoord) == null) {
             throw new IllegalArgumentException("Can only generate tangents for "
-                                             + "meshes with texture coordinates");
-        
+                    + "meshes with texture coordinates");
+        }
+
         FloatBuffer textureBuffer = (FloatBuffer) mesh.getBuffer(Type.TexCoord).getData();
 
         VertexData[] vertices = initVertexData(vertexBuffer.capacity() / 3);
 
         for (int i = 0; i < indexBuffer.size() / 3; i++) {
             for (int j = 0; j < 3; j++) {
-                index[j] = indexBuffer.get(i*3 + j);
+                index[j] = indexBuffer.get(i * 3 + j);
                 populateFromBuffer(v[j], vertexBuffer, index[j]);
                 populateFromBuffer(t[j], textureBuffer, index[j]);
             }
@@ -164,13 +169,13 @@ public class TangentBinormalGenerator {
                 vertices[index[2]].triangles.add(triData);
             }
         }
-        
+
         return vertices;
     }
 
     private static VertexData[] processTriangleStrip(Mesh mesh,
-            int[] index, Vector3f[] v, Vector2f[] t){
-        
+            int[] index, Vector3f[] v, Vector2f[] t) {
+
         IndexBuffer indexBuffer = mesh.getIndexBuffer();
         FloatBuffer vertexBuffer = (FloatBuffer) mesh.getBuffer(Type.Position).getData();
         FloatBuffer textureBuffer = (FloatBuffer) mesh.getBuffer(Type.TexCoord).getData();
@@ -214,8 +219,9 @@ public class TangentBinormalGenerator {
 
         return vertices;
     }
+
     private static VertexData[] processTriangleFan(Mesh mesh,
-            int[] index, Vector3f[] v, Vector2f[] t){
+            int[] index, Vector3f[] v, Vector2f[] t) {
         IndexBuffer indexBuffer = mesh.getIndexBuffer();
         //IndexWrapper indexBuffer =  getIndexWrapper(mesh.getBuffer(Type.Index).getData());
         FloatBuffer vertexBuffer = (FloatBuffer) mesh.getBuffer(Type.Position).getData();
@@ -259,7 +265,7 @@ public class TangentBinormalGenerator {
     }
 
     private static TriangleData processTriangle(int[] index,
-            Vector3f[] v, Vector2f[] t){
+            Vector3f[] v, Vector2f[] t) {
 
         TempVars vars = TempVars.get();
         assert vars.lock();
@@ -275,15 +281,15 @@ public class TangentBinormalGenerator {
 
         t[1].subtract(t[0], edge1uv);
         t[2].subtract(t[0], edge2uv);
-        float det = edge1uv.x*edge2uv.y - edge1uv.y*edge2uv.x;
+        float det = edge1uv.x * edge2uv.y - edge1uv.y * edge2uv.x;
 
         boolean normalize = false;
-        if (Math.abs(det) < ZERO_TOLERANCE && log.isLoggable(Level.WARNING)) {
-            log.log(Level.WARNING, "Colinear uv coordinates for triangle " +
-                    "[{0}, {1}, {2}]; tex0 = [{3}, {4}], " +
-                    "tex1 = [{5}, {6}], tex2 = [{7}, {8}]",
-                    new Object[]{ index[0], index[1], index[2],
-                    t[0].x, t[0].y, t[1].x, t[1].y, t[2].x, t[2].y });
+        if (Math.abs(det) < ZERO_TOLERANCE /*&& log.isLoggable(Level.WARNING)*/) {
+//            log.log(Level.WARNING, "Colinear uv coordinates for triangle "
+//                    + "[{0}, {1}, {2}]; tex0 = [{3}, {4}], "
+//                    + "tex1 = [{5}, {6}], tex2 = [{7}, {8}]",
+//                    new Object[]{index[0], index[1], index[2],
+//                        t[0].x, t[0].y, t[1].x, t[1].y, t[2].x, t[2].y});
             det = 1;
             normalize = true;
         }
@@ -296,54 +302,55 @@ public class TangentBinormalGenerator {
         binormal.set(edge2);
         binormal.normalizeLocal();
 
-        if (Math.abs(Math.abs(tangent.dot(binormal)) - 1)
-                        < ZERO_TOLERANCE && log.isLoggable(Level.WARNING))
-        {
-            log.log(Level.WARNING, "Vertecies are on the same line " +
-                    "for triangle [{0}, {1}, {2}].",
-                    new Object[]{ index[0], index[1], index[2] });
+//        if (Math.abs(Math.abs(tangent.dot(binormal)) - 1)
+//                < ZERO_TOLERANCE && log.isLoggable(Level.WARNING)) {
+//            log.log(Level.WARNING, "Vertecies are on the same line "
+//                    + "for triangle [{0}, {1}, {2}].",
+//                    new Object[]{index[0], index[1], index[2]});
+//        }
+
+        float factor = 1 / det;
+        tangent.x = (edge2uv.y * edge1.x - edge1uv.y * edge2.x) * factor;
+        tangent.y = (edge2uv.y * edge1.y - edge1uv.y * edge2.y) * factor;
+        tangent.z = (edge2uv.y * edge1.z - edge1uv.y * edge2.z) * factor;
+        if (normalize) {
+            tangent.normalizeLocal();
         }
 
-        float factor = 1/det;
-        tangent.x = (edge2uv.y*edge1.x - edge1uv.y*edge2.x)*factor;
-        tangent.y = (edge2uv.y*edge1.y - edge1uv.y*edge2.y)*factor;
-        tangent.z = (edge2uv.y*edge1.z - edge1uv.y*edge2.z)*factor;
-        if (normalize) tangent.normalizeLocal();
-
-        binormal.x = (edge1uv.x*edge2.x - edge2uv.x*edge1.x)*factor;
-        binormal.y = (edge1uv.x*edge2.y - edge2uv.x*edge1.y)*factor;
-        binormal.z = (edge1uv.x*edge2.z - edge2uv.x*edge1.z)*factor;
-        if (normalize) binormal.normalizeLocal();
+        binormal.x = (edge1uv.x * edge2.x - edge2uv.x * edge1.x) * factor;
+        binormal.y = (edge1uv.x * edge2.y - edge2uv.x * edge1.y) * factor;
+        binormal.z = (edge1uv.x * edge2.z - edge2uv.x * edge1.z) * factor;
+        if (normalize) {
+            binormal.normalizeLocal();
+        }
 
         tangent.cross(binormal, normal);
         normal.normalizeLocal();
-        
+
         assert vars.unlock();
 
         return new TriangleData(
-                        tangent,
-                        binormal,
-                        normal,
-                        index[0], index[1], index[2]
-                    );
+                tangent,
+                binormal,
+                normal,
+                index[0], index[1], index[2]);
     }
 
     public static void setToleranceAngle(float angle) {
         if (angle < 0 || angle > 179) {
             throw new IllegalArgumentException(
-                        "The angle must be between 0 and 179 degrees.");
+                    "The angle must be between 0 and 179 degrees.");
         }
-        toleranceDot = FastMath.cos(angle*FastMath.DEG_TO_RAD);
+        toleranceDot = FastMath.cos(angle * FastMath.DEG_TO_RAD);
         toleranceAngle = angle;
     }
 
     private static void processTriangleData(Mesh mesh, VertexData[] vertices,
-            boolean approxTangent)
-    {
+            boolean approxTangent) {
         FloatBuffer normalBuffer = (FloatBuffer) mesh.getBuffer(Type.Normal).getData();
 
         FloatBuffer tangents = BufferUtils.createFloatBuffer(vertices.length * 3);
-        FloatBuffer binormals = BufferUtils.createFloatBuffer(vertices.length * 3);
+//        FloatBuffer binormals = BufferUtils.createFloatBuffer(vertices.length * 3);
 
         Vector3f tangent = new Vector3f();
         Vector3f binormal = new Vector3f();
@@ -372,20 +379,20 @@ public class TangentBinormalGenerator {
 
                 tangentUnit.set(triangleData.tangent);
                 tangentUnit.normalizeLocal();
-                if (tangent.dot(tangentUnit) < toleranceDot && log.isLoggable(Level.WARNING)) {
-                    log.log(Level.WARNING,
-                        "Angle between tangents exceeds tolerance " +
-                        "for vertex {0}.", i);
+                if (tangent.dot(tangentUnit) < toleranceDot /*&& log.isLoggable(Level.WARNING)*/) {
+//                    log.log(Level.WARNING,
+//                            "Angle between tangents exceeds tolerance "
+//                            + "for vertex {0}.", i);
                     break;
                 }
 
                 if (!approxTangent) {
                     binormalUnit.set(triangleData.binormal);
                     binormalUnit.normalizeLocal();
-                    if (binormal.dot(binormalUnit) < toleranceDot && log.isLoggable(Level.WARNING)) {
-                        log.log(Level.WARNING,
-                                "Angle between binormals exceeds tolerance " +
-                                "for vertex {0}.", i);
+                    if (binormal.dot(binormalUnit) < toleranceDot /*&& log.isLoggable(Level.WARNING)*/) {
+//                        log.log(Level.WARNING,
+//                                "Angle between binormals exceeds tolerance "
+//                                + "for vertex {0}.", i);
                         break;
                     }
                 }
@@ -405,98 +412,91 @@ public class TangentBinormalGenerator {
                     flippedNormal = true;
                 }
             }
-            if (flippedNormal && approxTangent && log.isLoggable(Level.WARNING)) {
-                // Generated normal is flipped for this vertex,
-                // so binormal = normal.cross(tangent) will be flipped in the shader
-                log.log(Level.WARNING,
-                        "Binormal is flipped for vertex {0}.", i);
-            }
+//            if (flippedNormal && approxTangent && log.isLoggable(Level.WARNING)) {
+//                // Generated normal is flipped for this vertex,
+//                // so binormal = normal.cross(tangent) will be flipped in the shader
+//                log.log(Level.WARNING,
+//                        "Binormal is flipped for vertex {0}.", i);
+//            }
 
             if (tangent.length() < ZERO_TOLERANCE && log.isLoggable(Level.WARNING)) {
-                log.log(Level.WARNING,
-                        "Shared tangent is zero for vertex {0}.", i);
+//                log.log(Level.WARNING,
+//                        "Shared tangent is zero for vertex {0}.", i);
                 // attempt to fix from binormal
                 if (binormal.length() >= ZERO_TOLERANCE) {
                     binormal.cross(givenNormal, tangent);
                     tangent.normalizeLocal();
-                }
-                // if all fails use the tangent from the first triangle
+                } // if all fails use the tangent from the first triangle
                 else {
                     tangent.set(triangles.get(0).tangent);
                 }
-            }
-            else {
+            } else {
                 tangent.divideLocal(triangles.size());
             }
 
             tangentUnit.set(tangent);
             tangentUnit.normalizeLocal();
-            if (Math.abs(Math.abs(tangentUnit.dot(givenNormal)) - 1)
-                        < ZERO_TOLERANCE && log.isLoggable(Level.WARNING))
-            {
-                log.log(Level.WARNING,
-                        "Normal and tangent are parallel for vertex {0}.", i);
-            }
+//            if (Math.abs(Math.abs(tangentUnit.dot(givenNormal)) - 1)
+//                    < ZERO_TOLERANCE && log.isLoggable(Level.WARNING)) {
+//                log.log(Level.WARNING,
+//                        "Normal and tangent are parallel for vertex {0}.", i);
+//            }
 
-            
+
             if (!approxTangent) {
 
-                if (binormal.length() < ZERO_TOLERANCE && log.isLoggable(Level.WARNING)) {
-                    log.log(Level.WARNING,
-                            "Shared binormal is zero for vertex {0}.", i);
+                if (binormal.length() < ZERO_TOLERANCE /*&& log.isLoggable(Level.WARNING)*/) {
+//                    log.log(Level.WARNING,
+//                            "Shared binormal is zero for vertex {0}.", i);
                     // attempt to fix from tangent
-                    if (tangent.length() >= ZERO_TOLERANCE && log.isLoggable(Level.WARNING)) {
+                    if (tangent.length() >= ZERO_TOLERANCE /*&& log.isLoggable(Level.WARNING)*/) {
                         givenNormal.cross(tangent, binormal);
                         binormal.normalizeLocal();
-                    }
-                    // if all fails use the binormal from the first triangle
+                    } // if all fails use the binormal from the first triangle
                     else {
                         binormal.set(triangles.get(0).binormal);
                     }
-                }
-                else {
+                } else {
                     binormal.divideLocal(triangles.size());
                 }
 
                 binormalUnit.set(binormal);
                 binormalUnit.normalizeLocal();
-                if (Math.abs(Math.abs(binormalUnit.dot(givenNormal)) - 1)
-                            < ZERO_TOLERANCE && log.isLoggable(Level.WARNING))
-                {
-                    log.log(Level.WARNING,
-                            "Normal and binormal are parallel for vertex {0}.", i);
-                }
-                
-                if (Math.abs(Math.abs(binormalUnit.dot(tangentUnit)) - 1)
-                            < ZERO_TOLERANCE && log.isLoggable(Level.WARNING))
-                {
-                    log.log(Level.WARNING,
-                            "Tangent and binormal are parallel for vertex {0}.", i);
-                }
+//                if (Math.abs(Math.abs(binormalUnit.dot(givenNormal)) - 1)
+//                        < ZERO_TOLERANCE && log.isLoggable(Level.WARNING)) {
+//                    log.log(Level.WARNING,
+//                            "Normal and binormal are parallel for vertex {0}.", i);
+//                }
+
+//                if (Math.abs(Math.abs(binormalUnit.dot(tangentUnit)) - 1)
+//                        < ZERO_TOLERANCE && log.isLoggable(Level.WARNING)) {
+//                    log.log(Level.WARNING,
+//                            "Tangent and binormal are parallel for vertex {0}.", i);
+//                }
             }
 
             if (approxTangent) {
                 givenNormal.cross(tangent, binormal);
                 binormal.cross(givenNormal, tangent);
                 tangent.normalizeLocal();
-                
+
                 setInBuffer(tangent, tangents, i);
-            }
-            else {
+            } else {
                 setInBuffer(tangent, tangents, i);
-                setInBuffer(binormal, binormals, i);
+//                setInBuffer(binormal, binormals, i);
             }
         }
 
-        mesh.setBuffer(Type.Tangent,  3, tangents);
-        if (!approxTangent) mesh.setBuffer(Type.Binormal, 3, binormals);
+        mesh.setBuffer(Type.Tangent, 3, tangents);
+//        if (!approxTangent) mesh.setBuffer(Type.Binormal, 3, binormals);
     }
 
     public static Mesh genTbnLines(Mesh mesh, float scale) {
-        if (mesh.getBuffer(Type.Tangent) == null)
+        if (mesh.getBuffer(Type.Tangent) == null) {
             return genNormalLines(mesh, scale);
-        else
+        } else {
             return genTangentLines(mesh, scale);
+        }
     }
 
     public static Mesh genNormalLines(Mesh mesh, float scale) {
@@ -542,11 +542,11 @@ public class TangentBinormalGenerator {
         FloatBuffer vertexBuffer = (FloatBuffer) mesh.getBuffer(Type.Position).getData();
         FloatBuffer normalBuffer = (FloatBuffer) mesh.getBuffer(Type.Normal).getData();
         FloatBuffer tangentBuffer = (FloatBuffer) mesh.getBuffer(Type.Tangent).getData();
-        
-        FloatBuffer binormalBuffer = null;
-        if (mesh.getBuffer(Type.Binormal) != null) {
-            binormalBuffer = (FloatBuffer) mesh.getBuffer(Type.Binormal).getData();
-        }
+
+//        FloatBuffer binormalBuffer = null;
+//        if (mesh.getBuffer(Type.Binormal) != null) {
+//            binormalBuffer = (FloatBuffer) mesh.getBuffer(Type.Binormal).getData();
+//        }
 
         ColorRGBA originColor = ColorRGBA.White;
         ColorRGBA tangentColor = ColorRGBA.Red;
@@ -560,7 +560,7 @@ public class TangentBinormalGenerator {
         Vector3f point = new Vector3f();
         Vector3f tangent = new Vector3f();
         Vector3f normal = new Vector3f();
-        
+
         IntBuffer lineIndex = BufferUtils.createIntBuffer(vertexBuffer.capacity() / 3 * 6);
         FloatBuffer lineVertex = BufferUtils.createFloatBuffer(vertexBuffer.capacity() * 4);
         FloatBuffer lineColor = BufferUtils.createFloatBuffer(vertexBuffer.capacity() / 3 * 4 * 4);
@@ -582,20 +582,20 @@ public class TangentBinormalGenerator {
 
             setInBuffer(origin, lineVertex, index);
             setInBuffer(originColor, lineColor, index);
-            
+
             point.set(tangent);
             point.multLocal(scale);
             point.addLocal(origin);
             setInBuffer(point, lineVertex, index + 1);
             setInBuffer(tangentColor, lineColor, index + 1);
 
-            if (binormalBuffer == null) {
-                normal.cross(tangent, point);
-                point.normalizeLocal();
-            }
-            else {
-                populateFromBuffer(point, binormalBuffer, i);
-            }
+//            if (binormalBuffer == null) {
+            normal.cross(tangent, point);
+            point.normalizeLocal();
+//            }
+//            else {
+//                populateFromBuffer(point, binormalBuffer, i);
+//            }
             point.multLocal(scale);
             point.addLocal(origin);
             setInBuffer(point, lineVertex, index + 2);

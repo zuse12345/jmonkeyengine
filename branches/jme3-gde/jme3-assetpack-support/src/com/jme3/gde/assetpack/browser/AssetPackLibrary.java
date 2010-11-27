@@ -39,6 +39,7 @@ public class AssetPackLibrary implements Project {
     InstanceContent content = new InstanceContent();
     Lookup lookup = new AbstractLookup(content);
     private ProjectAssetManager projectAssetManager;
+    private List<String> categories = new LinkedList<String>();
 
     public AssetPackLibrary() {
         content.add(this);
@@ -55,8 +56,27 @@ public class AssetPackLibrary implements Project {
         return multi;
     }
 
+    public Node getRootNode(String[] categories, String[] tags) {
+        parseLibrary();
+        AssetPackBrowserFolder multi = new AssetPackBrowserFolder(assetElements, this, categories, tags);
+        return multi;
+    }
+
+    public Node getRootNode(String category) {
+        parseLibrary();
+        AssetPackBrowserFolder multi = new AssetPackBrowserFolder(assetElements, this, new String[]{category}, null);
+        return multi;
+    }
+
+    public Node getRootNode(String[] tags) {
+        parseLibrary();
+        AssetPackBrowserFolder multi = new AssetPackBrowserFolder(assetElements, this, null, tags);
+        return multi;
+    }
+
     private void parseLibrary() {
         initLibrary();
+        categories.clear();
         FileObject[] object = library.getChildren();
         List<Element> assetElements = new LinkedList<Element>();
         for (int i = 0; i < object.length; i++) {
@@ -92,6 +112,19 @@ public class AssetPackLibrary implements Project {
         for (int i = 0; i < assetElements.size(); i++) {
             Element element = assetElements.get(i);
             this.assetElements[i] = element;
+            Element child = XmlHelper.findChildElement(element, "asset");
+            while (child != null) {
+                String cats = child.getAttribute("categories");
+                String[] categs = cats.split(",");
+                for (int j = 0; j < categs.length; j++) {
+                    String string = categs[j];
+                    string = string.trim();
+                    if (!categories.contains(string)) {
+                        categories.add(string);
+                    }
+                }
+                child = XmlHelper.findNextElement(child, "asset");
+            }
         }
     }
 
@@ -108,5 +141,12 @@ public class AssetPackLibrary implements Project {
      */
     public ProjectAssetManager getProjectAssetManager() {
         return projectAssetManager;
+    }
+
+    /**
+     * @return the categories
+     */
+    public List<String> getCategories() {
+        return categories;
     }
 }

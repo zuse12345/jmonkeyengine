@@ -4,6 +4,8 @@
  */
 package com.jme3.gde.assetpack.browser;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -46,6 +48,10 @@ public final class AssetPackBrowserTopComponent extends TopComponent implements 
         lib = new AssetPackLibrary();
         rootNode = lib.getRootNode();
         explorerManager.setRootContext(rootNode);
+        List<String> cats = lib.getCategories();
+        for (Iterator<String> it = cats.iterator(); it.hasNext();) {
+            jComboBox1.addItem(it.next());
+        }
     }
 
     private void initActions() {
@@ -86,8 +92,13 @@ public final class AssetPackBrowserTopComponent extends TopComponent implements 
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
-        jComboBox1.setFont(new java.awt.Font("Lucida Grande", 0, 12));
+        jComboBox1.setFont(new java.awt.Font("Lucida Grande", 0, 12)); // NOI18N
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Categories" }));
+        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBox1ActionPerformed(evt);
+            }
+        });
         jToolBar1.add(jComboBox1);
 
         org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(AssetPackBrowserTopComponent.class, "AssetPackBrowserTopComponent.jButton1.text")); // NOI18N
@@ -182,6 +193,8 @@ public final class AssetPackBrowserTopComponent extends TopComponent implements 
     }// </editor-fold>//GEN-END:initComponents
 
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
+        rootNode = lib.getRootNode(jTextField1.getText().split(","));
+        getExplorerManager().setRootContext(rootNode);
     }//GEN-LAST:event_jTextField1ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -201,6 +214,15 @@ public final class AssetPackBrowserTopComponent extends TopComponent implements 
         jPanel2.validate();
     }//GEN-LAST:event_jButton3ActionPerformed
 
+    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
+        if (!"Categories".equals((String) jComboBox1.getSelectedItem())) {
+            rootNode = lib.getRootNode((String) jComboBox1.getSelectedItem());
+            getExplorerManager().setRootContext(rootNode);
+        }else{
+            rootNode = lib.getRootNode();
+            getExplorerManager().setRootContext(rootNode);
+        }
+    }//GEN-LAST:event_jComboBox1ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;

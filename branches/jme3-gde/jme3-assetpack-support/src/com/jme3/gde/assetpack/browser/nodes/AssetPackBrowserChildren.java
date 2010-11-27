@@ -78,9 +78,16 @@ public class AssetPackBrowserChildren extends Children.Keys<Element> {
         boolean checkTags = false;
         if (categories != null) {
             for (int i = 0; i < categories.length; i++) {
-                String string = categories[i];
-                if (string.equals(curElement.getAttribute("categories"))) {
-                    checkCategories = true;
+                String string = categories[i].trim();
+                String cats = curElement.getAttribute("categories");
+                if (cats != null) {
+                    String[] catg = cats.split(",");
+                    for (int j = 0; j < catg.length; j++) {
+                        String string1 = catg[j].trim();
+                        if (string.equalsIgnoreCase(string1)) {
+                            checkCategories = true;
+                        }
+                    }
                 }
             }
         } else {
@@ -88,9 +95,16 @@ public class AssetPackBrowserChildren extends Children.Keys<Element> {
         }
         if (tags != null) {
             for (int i = 0; i < tags.length; i++) {
-                String string = tags[i];
-                if (string.equals(curElement.getAttribute("tags"))) {
-                    checkTags = true;
+                String string = tags[i].trim();
+                String tags = curElement.getAttribute("tags");
+                if (tags != null) {
+                    String[] catg = tags.split(",");
+                    for (int j = 0; j < catg.length; j++) {
+                        String string1 = catg[j].trim();
+                        if (string.equalsIgnoreCase(string1)) {
+                            checkTags = true;
+                        }
+                    }
                 }
             }
         } else {

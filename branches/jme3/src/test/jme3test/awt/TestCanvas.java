@@ -60,12 +60,10 @@ public class TestCanvas {
     private static void createFrame(){
         frame = new JFrame("Test");
         frame.setResizable(false);
-        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter(){
             @Override
-            public void windowClosing(WindowEvent e) {
-                frame.setVisible(false);
-                frame.dispose();
+            public void windowClosed(WindowEvent e) {
                 app.stop();
             }
         });
@@ -119,6 +117,7 @@ public class TestCanvas {
         itemExit.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 frame.dispose();
+                app.stop();
             }
         });
 

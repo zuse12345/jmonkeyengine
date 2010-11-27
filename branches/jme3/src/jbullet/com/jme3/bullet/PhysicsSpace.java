@@ -132,6 +132,7 @@ public class PhysicsSpace {
     private Vector3f worldMin = new Vector3f(-10000f, -10000f, -10000f);
     private Vector3f worldMax = new Vector3f(10000f, 10000f, 10000f);
     private float accuracy = 1f / 60f;
+    private boolean deterministic = true;
 
     /**
      * Get the current PhysicsSpace <b>running on this thread</b><br/>
@@ -315,7 +316,7 @@ public class PhysicsSpace {
      */
     public void update(float time) {
         int subSteps = 1;
-        if (time > accuracy) {
+        if (deterministic && time > accuracy) {
             subSteps = (int) (Math.ceil(time / accuracy));
         }
         update(time, subSteps);
@@ -710,6 +711,19 @@ public class PhysicsSpace {
 
     public void setBroadphaseType(BroadphaseType broadphaseType) {
         this.broadphaseType = broadphaseType;
+    }
+
+    /**
+     * Sets the deterministic mode of this physics space.
+     * If the physicsSpace is deterministic, low fps values will
+     * be compensated by stepping the physics space multiple times per frame.
+     * If not, low fps values will make the physics inaccurate. This switch
+     * has been added to avoid problems with "overloaded" physics spaces that drive
+     * their own fps down.
+     * @param deterministic
+     */
+    public void setDeterministic(boolean deterministic) {
+        this.deterministic = deterministic;
     }
 
     /**

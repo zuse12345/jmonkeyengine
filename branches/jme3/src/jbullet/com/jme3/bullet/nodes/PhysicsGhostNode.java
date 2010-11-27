@@ -231,6 +231,10 @@ public class PhysicsGhostNode extends PhysicsCollisionObject {
      * @return All CollisionObjects overlapping with this GhostNode.
      */
     public List<PhysicsCollisionObject> getOverlappingObjects() {
+        overlappingObjects.clear(); // <-- clear from old values.
+        for (com.bulletphysics.collision.dispatch.CollisionObject collObj : gObject.getOverlappingPairs()) {
+            overlappingObjects.add((PhysicsCollisionObject)collObj.getUserPointer());
+        }
         return overlappingObjects;
     }
 

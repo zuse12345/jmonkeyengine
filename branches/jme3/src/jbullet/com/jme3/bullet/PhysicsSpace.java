@@ -357,20 +357,8 @@ public class PhysicsSpace {
         }
         //sync ghostnodes TODO!
 
-        //sync ghostnodes, with overlapping Objects.
         for (Entry<GhostObject, PhysicsGhostNode> entry : physicsGhostNodes.entrySet()) {
             PhysicsGhostNode node = entry.getValue();
-            List<PhysicsCollisionObject> overlappingObjs = node.getOverlappingObjects();
-            overlappingObjs.clear(); // <-- clear from old values.
-            for (com.bulletphysics.collision.dispatch.CollisionObject collObj : entry.getKey().getOverlappingPairs()) {
-                if (collObj instanceof GhostObject) {
-                    overlappingObjs.add(physicsGhostNodes.get(collObj));
-                } else if (collObj instanceof RigidBody) {
-                    overlappingObjs.add(physicsNodes.get(collObj));
-                }
-            }
-
-            // finally update
             node.updatePhysicsState();
         }
         //step simulation

@@ -177,8 +177,10 @@ public class SkeletonLoader extends DefaultHandler implements AssetLoader {
             animations.add(animation);
             animation = null;
         }else if (qName.equals("track")){
-            tracks.add(track);
-            track = null;
+            if (track != null){ // if track has keyframes
+                tracks.add(track);
+                track = null;
+            }
         }else if (qName.equals("tracks")){
             BoneTrack[] trackList = tracks.toArray(new BoneTrack[tracks.size()]);
             animation.setTracks(trackList);
@@ -197,13 +199,17 @@ public class SkeletonLoader extends DefaultHandler implements AssetLoader {
             rotation = null;
             scale = null;
         }else if (qName.equals("keyframes")){
-            float[] timesArray = new float[times.size()];
-            for (int i = 0; i < timesArray.length; i++)
-                timesArray[i] = times.get(i);
+            if (times.size() > 0){
+                float[] timesArray = new float[times.size()];
+                for (int i = 0; i < timesArray.length; i++)
+                    timesArray[i] = times.get(i);
 
-            Vector3f[] transArray = translations.toArray(new Vector3f[translations.size()]);
-            Quaternion[] rotArray = rotations.toArray(new Quaternion[rotations.size()]);
-            track.setKeyframes(timesArray, transArray, rotArray);
+                Vector3f[] transArray = translations.toArray(new Vector3f[translations.size()]);
+                Quaternion[] rotArray = rotations.toArray(new Quaternion[rotations.size()]);
+                track.setKeyframes(timesArray, transArray, rotArray);
+            }else{
+                track = null;
+            }
 
             times.clear();
             translations.clear();

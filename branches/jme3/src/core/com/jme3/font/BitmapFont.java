@@ -94,6 +94,16 @@ public class BitmapFont implements Savable {
         return charSet.getLineHeight() * (sb.getSize() / charSet.getRenderedSize());
     }
 
+    public float getCharacterAdvance(char curChar, char nextChar, float size){
+        BitmapCharacter c = charSet.getCharacter(curChar);
+        int kerning = c.getKerning((int)nextChar);
+        float advance = size * c.getXAdvance();
+        if (kerning != -1){
+            advance += kerning * size;
+        }
+        return advance;
+    }
+
     private int findKerningAmount(int newLineLastChar, int nextChar) {
         BitmapCharacter c = charSet.getCharacter(newLineLastChar);
         return c.getKerning(nextChar);

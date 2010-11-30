@@ -32,6 +32,7 @@
 package com.jme3.cinematic;
 
 import com.jme3.animation.LoopMode;
+import com.jme3.app.Application;
 
 /**
  *
@@ -110,5 +111,8 @@ public interface CinematicEvent {
      */
     public void setInitialDuration(float initialDuration);
 
-    public void internalUpdate(float tpf); 
+    public void internalUpdate(float tpf);
+
+    public void initEvent(Application app, Cinematic cinematic);
+
 }

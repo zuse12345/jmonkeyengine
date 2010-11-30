@@ -93,8 +93,9 @@ public class CameraNode extends Node {
         return camControl.getCamera();
     }
 
-    @Override
-    public void lookAt(Vector3f position, Vector3f upVector) {
-        camControl.getCamera().lookAt(position, upVector);
-    }
+//    @Override
+//    public void lookAt(Vector3f position, Vector3f upVector) {
+//        this.lookAt(position, upVector);
+//        camControl.getCamera().lookAt(position, upVector);
+//    }
 }

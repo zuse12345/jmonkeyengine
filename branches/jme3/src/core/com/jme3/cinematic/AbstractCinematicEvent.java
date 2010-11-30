@@ -32,6 +32,7 @@
 package com.jme3.cinematic;
 
 import com.jme3.animation.LoopMode;
+import com.jme3.app.Application;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
@@ -47,7 +48,7 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
 
     protected PlayState playState = PlayState.Stopped;
     protected float speed = 1;
-    protected float initialDuration = -1;
+    protected float initialDuration = 10;
     protected float duration = initialDuration / speed;
     protected LoopMode loopMode = LoopMode.DontLoop;
     protected float time = 0;
@@ -62,8 +63,9 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
     public void internalUpdate(float tpf) {
         if (playState == PlayState.Playing) {
             time += tpf * speed;
+            
             onUpdate(tpf);
-            if (time >= duration && duration!=-1) {
+            if (time >= duration && loopMode==loopMode.DontLoop) {
                 stop();
             }
         }
@@ -173,7 +175,7 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
         OutputCapsule oc = ex.getCapsule(this);
         oc.write(playState, "playState", PlayState.Stopped);
         oc.write(speed, "speed", 1);
-        oc.write(initialDuration, "initalDuration", 20);
+        oc.write(initialDuration, "initalDuration", 10);
         oc.write(loopMode, "loopMode", LoopMode.DontLoop);
     }
 
@@ -181,8 +183,12 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
         InputCapsule ic = im.getCapsule(this);
         playState = ic.readEnum("playState", PlayState.class, PlayState.Stopped);
         speed = ic.readFloat("speed", 1);
-        initialDuration = ic.readFloat("initalDuration", 20);
+        initialDuration = ic.readFloat("initalDuration", 10);
         duration = initialDuration / speed;
         loopMode = ic.readEnum("loopMode", LoopMode.class, LoopMode.DontLoop);
+    }
+
+    public void initEvent(Application app, Cinematic cinematic){
+        
     }
 }

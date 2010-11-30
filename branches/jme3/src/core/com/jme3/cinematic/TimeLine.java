@@ -31,104 +31,90 @@
  */
 package com.jme3.cinematic;
 
-import com.jme3.animation.LoopMode;
-import com.jme3.app.Application;
-import com.jme3.audio.AudioNode;
-import com.jme3.audio.AudioRenderer;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
+import com.jme3.export.Savable;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 
 /**
- * A sound track to be played in a cinematic.
+ *
  * @author Nehon
  */
-public class SoundTrack extends AbstractCinematicEvent {
+public class TimeLine extends HashMap<Integer, KeyFrame> implements Savable {
 
-    protected String path;
-    protected AudioNode audioNode;
-    protected AudioRenderer audioRenderer;
-    protected boolean stream = false;
+    protected int keyFramesPerSeconds = 30;
+    protected int lastKeyFrameIndex = 0;
 
-    /**
-     * create a sound track from the given resource path
-     * @param path the patth to an audi file (ie : "Sounds/mySound.wav")
-     */
-    public SoundTrack(String path) {
-        this.path = path;
+    public TimeLine() {
+        super();
     }
 
-    public SoundTrack(String path, boolean stream) {
-        this(path);
-        this.stream = stream;
+    public KeyFrame getKeyFrameAtTime(float time) {
+        return get(getKeyFrameIndexFromTime(time));
     }
 
-    public SoundTrack() {
+    public KeyFrame getKeyFrameAtIndex(int keyFrameIndex) {
+        return get(keyFrameIndex);
     }
 
-    @Override
-    public void initEvent(Application app, Cinematic cinematic) {
-        audioRenderer = app.getAudioRenderer();
-        audioNode = new AudioNode(app.getAssetManager(), path, stream);
-
+    public void addKeyFrameAtTime(float time, KeyFrame keyFrame) {
+        addKeyFrameAtIndex(getKeyFrameIndexFromTime(time), keyFrame);
     }
 
-    @Override
-    public void onPlay() {
-        audioRenderer.playSource(audioNode);
-    }
-
-    @Override
-    public void onStop() {
-        audioRenderer.stopSource(audioNode);
-    }
-
-    @Override
-    public void onPause() {
-        audioRenderer.pauseSource(audioNode);
-    }
-
-    @Override
-    public void onUpdate(float tpf) {
-        if (audioNode.getStatus() == AudioNode.Status.Stopped) {
-            stop();
+    public void addKeyFrameAtIndex(int keyFrameIndex, KeyFrame keyFrame) {
+        put(keyFrameIndex, keyFrame);
+        keyFrame.setIndex(keyFrameIndex);
+        if (lastKeyFrameIndex < keyFrameIndex) {
+            lastKeyFrameIndex = keyFrameIndex;
         }
     }
 
-    /**
-     *  Returns the underlying audion node of this sound track
-     * @return
-     */
-    public AudioNode getAudioNode() {
-        return audioNode;
-    }
-
-    @Override
-    public void setLoopMode(LoopMode loopMode) {
-        super.setLoopMode(loopMode);
-        if (loopMode != LoopMode.DontLoop) {
-            audioNode.setLooping(true);
-        } else {
-            audioNode.setLooping(false);
+    public void removeKeyFrame(int keyFrameIndex) {
+        remove(keyFrameIndex);
+        if (lastKeyFrameIndex == keyFrameIndex) {
+            KeyFrame kf = null;
+            for (int i = keyFrameIndex; kf == null && i >= 0; i--) {
+                kf = getKeyFrameAtIndex(i);
+                lastKeyFrameIndex = i;
+            }
         }
     }
 
-    @Override
+    public void removeKeyFrame(float time) {
+        removeKeyFrame(getKeyFrameIndexFromTime(time));
+    }
+
+    public int getKeyFrameIndexFromTime(float time) {
+        return Math.round(time * keyFramesPerSeconds);
+    }
+
+    public Collection<KeyFrame> getAllKeyFrames() {
+        return values();
+    }
+
+    public int getLastKeyFrameIndex() {
+        return lastKeyFrameIndex;
+    }
+
     public void write(JmeExporter ex) throws IOException {
-        super.write(ex);
         OutputCapsule oc = ex.getCapsule(this);
-        oc.write(path, "path", "");
-        oc.write(stream, "stream", false);
+        ArrayList list = new ArrayList();
+        list.addAll(values());
+        oc.writeSavableArrayList(list, "keyFrames", null);
     }
 
-    @Override
     public void read(JmeImporter im) throws IOException {
-        super.read(im);
         InputCapsule ic = im.getCapsule(this);
-        path = ic.readString("path", "");
-        stream = ic.readBoolean("stream", false);
-
+        ArrayList list = ic.readSavableArrayList("keyFrames", null);
+        for (Iterator it = list.iterator(); it.hasNext();) {
+            KeyFrame keyFrame = (KeyFrame) it.next();
+            addKeyFrameAtIndex(keyFrame.getIndex(), keyFrame);
+        }
     }
 }

@@ -339,4 +339,10 @@ public class AnimChannel {
         
     }
 
+    public AnimControl getControl() {
+        return control;
+    }
+
+
+
 }

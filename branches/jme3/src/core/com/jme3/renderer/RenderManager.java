@@ -34,7 +34,6 @@ package com.jme3.renderer;
 
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
-import com.jme3.material.Technique;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Matrix4f;
 import com.jme3.math.Quaternion;
@@ -410,6 +409,7 @@ public class RenderManager {
             }
         }else if (s instanceof Geometry){
             Geometry gm = (Geometry) s;
+
             RenderQueue.ShadowMode shadowMode = s.getShadowMode();
             if (shadowMode != RenderQueue.ShadowMode.Off && shadowMode != RenderQueue.ShadowMode.Receive){
                 //forcing adding to shadow cast mode, culled objects doesn't have to be in the receiver queue
@@ -451,7 +451,14 @@ public class RenderManager {
       * @param cam
       */
     public void renderScene(Spatial scene, ViewPort vp) {
-      
+       // check culling first.
+        if (!scene.checkCulling(vp.getCamera())) {
+            // move on to shadow-only render
+            if (scene.getShadowMode() != RenderQueue.ShadowMode.Off || scene instanceof Node) {
+                renderShadow(scene, vp.getQueue());
+            }
+            return;
+        }
 
         scene.runControlRender(this, vp);
         if (scene instanceof Node){
@@ -462,14 +469,7 @@ public class RenderManager {
                 renderScene(children.get(i), vp);
             }
         }else if (scene instanceof Geometry){
-            // check culling first.
-            if (!scene.checkCulling(vp.getCamera())){
-                // move on to shadow-only render
-                if (scene.getShadowMode() != RenderQueue.ShadowMode.Off)
-                    renderShadow(scene, vp.getQueue());
-
-                return;
-            }
+           
             // add to the render queue
             Geometry gm = (Geometry) scene;
             if (gm.getMaterial() == null)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2010 jMonkeyEngine
+ * Copyright (c) 2009-2010 jMonkeyEngine, Java Game Networking
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,9 +41,7 @@ import java.nio.ByteBuffer;
 /**
  * Array serializer
  *
- * Thanks JGN!
- * 
- * @author Lars Wesselius
+ * @author Nathan Sweet
  */
 public class ArraySerializer extends Serializer {
     private int[] getDimensions (Object array) {

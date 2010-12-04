@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2010 jMonkeyEngine
+ * Copyright (c) 2009-2010 jMonkeyEngine, Java Game Networking
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@ import com.jme3.network.serializing.Serializer;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.logging.Level;
@@ -44,7 +45,7 @@ import java.util.logging.Level;
 /**
  * The field serializer is the default serializer used for custom class.
  *
- * @author Lars Wesselius
+ * @author Lars Wesselius, Nathan Sweet
  */
 public class FieldSerializer extends Serializer {
     private static Map<Class, SavedField[]> savedFields = new HashMap<Class, SavedField[]>();
@@ -76,9 +77,9 @@ public class FieldSerializer extends Serializer {
         }
 
         Collections.sort(cachedFields, new Comparator<SavedField>() {
-                public int compare (SavedField o1, SavedField o2) {
-                        return o1.field.getName().compareTo(o2.field.getName());
-                }
+            public int compare (SavedField o1, SavedField o2) {
+                    return o1.field.getName().compareTo(o2.field.getName());
+            }
         });
         savedFields.put(clazz, cachedFields.toArray(new SavedField[cachedFields.size()]));
 
@@ -135,6 +136,8 @@ public class FieldSerializer extends Serializer {
                 } else {
                     Serializer.writeClassAndObject(buffer, val);
                 }
+            } catch (BufferOverflowException boe) {
+                throw boe;
             } catch (Exception e) {
                 log.log(Level.WARNING, "[FieldSerializer][???] Exception occurred on writing. Maybe you've forgotten to register a class, or maybe a class member does not have a serializer.");
                 throw new IOException(e.toString());

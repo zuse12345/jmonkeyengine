@@ -38,12 +38,14 @@ import com.jme3.network.message.ClientRegistrationMessage;
 import com.jme3.network.message.DisconnectMessage;
 import com.jme3.network.message.DiscoverHostMessage;
 import com.jme3.network.message.Message;
+import com.jme3.network.queue.MessageQueue;
 import com.jme3.network.serializing.Serializer;
 import com.jme3.network.service.ServiceManager;
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
+import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -65,6 +67,8 @@ public class Client extends ServiceManager implements MessageListener, Connectio
 
     protected ConnectionRunnable
                                 thread;
+
+    protected MessageQueue      messageQueue;
 
     // Client (connector) related.
     protected SocketChannel     tcpChannel;
@@ -99,6 +103,8 @@ public class Client extends ServiceManager implements MessageListener, Connectio
             if (tcp == null) tcp = new TCPConnection(label);
             if (udp == null) udp = new UDPConnection(label);
         }
+
+        messageQueue = new MessageQueue();
     }
 
     /**
@@ -204,6 +210,7 @@ public class Client extends ServiceManager implements MessageListener, Connectio
     private void registerInternalListeners() {
         if (tcp != null) {
             tcp.addConnectionListener(this);
+            tcp.socketChannel.keyFor(tcp.selector).attach(this);
         }
         addMessageListener(this, DisconnectMessage.class);
     }
@@ -218,19 +225,14 @@ public class Client extends ServiceManager implements MessageListener, Connectio
         if (!isConnected) throw new IOException("Not connected yet. Use connect() first.");
 
         if (message.isReliable()) {
-            if (tcp == null) throw new IOException("No TCP client/server.");
-            if (isConnector) {
-                tcp.sendObject(this, message);
+            messageQueue.add(message);
+            if (!isConnector) {
+                tcp.socketChannel.keyFor(tcp.selector).interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
             } else {
-                tcp.sendObject(message);
+                tcpChannel.keyFor(tcp.selector).interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
             }
         } else {
-            if (udp == null) throw new IOException("No UDP client/server.");
-            if (isConnector) {
-                udp.sendObject(this, message);
-            } else {
-                udp.sendObject(message);
-            }
+            udp.sendObject(message);
         }
     }
 
@@ -432,6 +434,10 @@ public class Client extends ServiceManager implements MessageListener, Connectio
 
     public UDPConnection getUDPConnection() {
         return udp;
+    }
+
+    public MessageQueue getMessageQueue() {
+        return messageQueue;
     }
 
     ///////////////

@@ -58,13 +58,11 @@ public class UDPConnection extends Connection {
 
     protected SocketAddress target = null;
 
-    protected final Object writeLock = new Object();
-
     public UDPConnection(String label) {
         this.label = label;
 
-        readBuffer =    ByteBuffer.allocateDirect(12228);
-        writeBuffer =   ByteBuffer.allocateDirect(12228);
+        readBuffer =    ByteBuffer.allocateDirect(8192);
+        writeBuffer =   ByteBuffer.allocateDirect(8192);
     }
 
     public void connect(SocketAddress address) throws IOException {
@@ -103,7 +101,7 @@ public class UDPConnection extends Connection {
 
         String reason = shouldFilterConnector(address);
         if (reason != null) {
-            log.log(Level.INFO, "[Server][UDP] Client with address {0} got filtered with reason: {1}", new Object[]{(InetSocketAddress)socketChannel.socket().getRemoteSocketAddress(), reason});
+            log.log(Level.INFO, "[Server][UDP] Client with address {0} got filtered with reason: {1}", new Object[]{address, reason});
             socketChannel.close();
             return;
         }
@@ -149,21 +147,19 @@ public class UDPConnection extends Connection {
 
     protected void send(SocketAddress dest, Object object) {
         try {
-            synchronized (writeLock){
-                Serializer.writeClassAndObject(writeBuffer, object);
-                writeBuffer.flip();
+            Serializer.writeClassAndObject(writeBuffer, object);
+            writeBuffer.flip();
 
-                int bytes = datagramChannel.send(writeBuffer, dest);
+            int bytes = datagramChannel.send(writeBuffer, dest);
 
-                if (object instanceof Message) {
-                    this.fireMessageSent((Message)object);
-                } else {
-                    this.fireObjectSent(object);
-                }
-
-                log.log(Level.FINE, "[{0}][UDP] Wrote {1} bytes to {2}.", new Object[]{label, bytes, dest});
-                writeBuffer.clear();
+            if (object instanceof Message) {
+                this.fireMessageSent((Message)object);
+            } else {
+                this.fireObjectSent(object);
             }
+
+            log.log(Level.FINE, "[{0}][UDP] Wrote {1} bytes to {2}.", new Object[]{label, bytes, dest});
+            writeBuffer.clear();
         } catch (ClosedChannelException e) {
         } catch (IOException e) {
             e.printStackTrace();

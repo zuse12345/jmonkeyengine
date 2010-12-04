@@ -33,8 +33,8 @@
 package com.jme3.network.connection;
 
 import com.jme3.network.message.Message;
+import com.jme3.network.queue.MessageQueue;
 import com.jme3.network.serializing.Serializer;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -45,6 +45,9 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.logging.Level;
 
 /**
@@ -82,7 +85,6 @@ public class TCPConnection extends Connection {
 
         socketChannel.configureBlocking(false);
         socketChannel.connect(address);
-        
         socketChannel.register(selector, SelectionKey.OP_CONNECT).attach(this);
         log.log(Level.INFO, "[{1}][TCP] Connecting to {0}", new Object[]{address, label});
     }
@@ -97,7 +99,7 @@ public class TCPConnection extends Connection {
 
     public void connect(SelectableChannel channel) throws IOException {
         ((SocketChannel)channel).finishConnect();
-        socketChannel.keyFor(selector).interestOps(SelectionKey.OP_READ);
+        socketChannel.keyFor(selector).interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
         fireClientConnected(null);
         log.log(Level.INFO, "[{0}][TCP] Connection succeeded.", label);
     }
@@ -151,6 +153,10 @@ public class TCPConnection extends Connection {
             }
         }
 
+        if (read != -1) {
+            log.log(Level.FINE, "[{1}][TCP] Read {0} bytes.", new Object[]{read, label});
+        }
+
         readBuffer.flip();
         if (read == -1) {
 			socketChannel.keyFor(selector).cancel();
@@ -164,7 +170,6 @@ public class TCPConnection extends Connection {
 			return;
         }
 
-        log.log(Level.FINE, "[{1}][TCP] Read {0} bytes.", new Object[]{read, label});
         // Okay, see if we can read the data length.
         while (true) {
             try {
@@ -172,7 +177,7 @@ public class TCPConnection extends Connection {
                 // If we're currently not already reading an object, retrieve the length
                 // of the next one.
                 if (objectLength == 0) {
-                    objectLength = readBuffer.getInt();
+                    objectLength = readBuffer.getShort();
                 }
 
                 int pos = readBuffer.position();
@@ -181,10 +186,10 @@ public class TCPConnection extends Connection {
                 int dataLength = objectLength;
                 if (dataLength > 0 && readBuffer.remaining() >= dataLength) {
                     // We can read a full object.
-                    if (pos + dataLength + 4 > readBuffer.capacity()) {
+                    if (pos + dataLength + 2 > readBuffer.capacity()) {
                         readBuffer.limit(readBuffer.capacity());
                     } else {
-                        readBuffer.limit(pos + dataLength + 4);
+                        readBuffer.limit(pos + dataLength + 2);
                     }
                     Object obj = Serializer.readClassAndObject(readBuffer);
                     readBuffer.limit(oldLimit);
@@ -324,24 +329,70 @@ public class TCPConnection extends Connection {
         }
     }
 
-    public void write(SelectableChannel channel) throws IOException {
-
+    public synchronized void write(SelectableChannel channel) throws IOException {
         SocketChannel socketChannel = (SocketChannel)channel;
+        Client client = (Client)socketChannel.keyFor(selector).attachment();
+        MessageQueue queue = client.getMessageQueue();
 
-        synchronized (writeLock) {
+        Map<Message, Short> sizeMap = new LinkedHashMap<Message, Short>();
+        for (Iterator<Message> it = queue.iterator(); it.hasNext();) {
+            Message message = it.next();
+            if (!message.isReliable()) continue;
 
-            writeBuffer.flip();
-            long bytes = writeBuffer.remaining();
-            while (writeBuffer.hasRemaining()) {
-                if (socketChannel.write(writeBuffer) == 0) break;
+            int pos = writeBuffer.position();
+            try {
+                writeBuffer.position(pos + 2);
+                Serializer.writeClassAndObject(writeBuffer, message);
+
+
+                short dataLength = (short)(writeBuffer.position() - pos - 2);
+
+                writeBuffer.position(pos);
+                writeBuffer.putShort(dataLength);
+                writeBuffer.position(pos + dataLength + 2);
+
+                sizeMap.put(message, dataLength);
+
+                it.remove();
+            } catch (Exception bfe) {
+                // No problem, just write the buffer and be done with it.
+                writeBuffer.position(pos);
+                break;
             }
-            if (!writeBuffer.hasRemaining()) {
-                socketChannel.keyFor(selector).interestOps(SelectionKey.OP_READ);
-            }
-
-            writeBuffer.compact();
-
-            log.log(Level.FINE, "[{1}][TCP] Wrote {0} bytes.", new Object[]{bytes, label});
         }
+
+        writeBuffer.flip();
+
+        int written = 0;
+        while (writeBuffer.hasRemaining()) {
+            int wrote = socketChannel.write(writeBuffer);
+            written += wrote;
+
+            if (wrote == 0) {
+                break;
+            }
+        }
+
+        log.log(Level.FINE, "[{1}][TCP] Wrote {0} bytes.", new Object[]{written, label});
+
+        // Check which messages were NOT sent.
+        if (writeBuffer.hasRemaining()) {
+            for (Iterator<Map.Entry<Message, Short>> it = sizeMap.entrySet().iterator(); it.hasNext();) {
+                Map.Entry<Message, Short> entry = it.next();
+
+                written -= entry.getValue();
+                if (written > 0) {
+                    it.remove();
+                } else {
+                    // Re add to queue.
+                    client.getMessageQueue().add(entry.getKey());
+                }
+            }
+        }
+
+        if (queue.isEmpty()) {
+            channel.keyFor(selector).interestOps(SelectionKey.OP_READ);
+        }
+        writeBuffer.clear();
     }
 }

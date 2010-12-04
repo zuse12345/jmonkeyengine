@@ -5,8 +5,7 @@
 
 package jme3test.animation;
 
-import com.jme3.cinematic.GuiTrack;
-import de.lessvoid.nifty.Nifty;
+import com.jme3.cinematic.events.GuiTrack;
 import de.lessvoid.nifty.elements.render.TextRenderer;
 
 /**
@@ -16,8 +15,8 @@ import de.lessvoid.nifty.elements.render.TextRenderer;
 public class SubtitleTrack extends GuiTrack{
     private String text="";
 
-    public SubtitleTrack(Nifty nifty,String screen,float initialDuration, String text) {
-        super(nifty, screen, initialDuration);
+    public SubtitleTrack(String screen,float initialDuration, String text) {
+        super(screen, initialDuration);
         this.text=text;
     }
 

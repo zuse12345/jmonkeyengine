@@ -31,17 +31,18 @@
  */
 package jme3test.animation;
 
-import com.jme3.animation.AnimChannel;
-import com.jme3.animation.AnimControl;
 import com.jme3.cinematic.Cinematic;
 import com.jme3.animation.LoopMode;
-import com.jme3.cinematic.MotionTrack;
+import com.jme3.cinematic.events.MotionTrack;
 import com.jme3.cinematic.MotionPath;
-import com.jme3.cinematic.SoundTrack;
+import com.jme3.cinematic.events.SoundTrack;
 import com.jme3.app.SimpleApplication;
-import com.jme3.cinematic.AbstractCinematicEvent;
-import com.jme3.cinematic.AnimationTrack;
+import com.jme3.cinematic.events.AbstractCinematicEvent;
+import com.jme3.cinematic.events.AnimationTrack;
 import com.jme3.cinematic.PlayState;
+import com.jme3.cinematic.events.PositionTrack;
+import com.jme3.cinematic.events.RotationTrack;
+import com.jme3.cinematic.events.ScaleTrack;
 import com.jme3.font.BitmapText;
 import com.jme3.input.ChaseCamera;
 import com.jme3.input.controls.ActionListener;
@@ -49,26 +50,27 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Quaternion;
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
-import com.jme3.niftygui.NiftyJmeDisplay;
+import com.jme3.post.FilterPostProcessor;
+import com.jme3.post.filters.FadeFilter;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.CameraNode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.shadow.PssmShadowRenderer;
-import de.lessvoid.nifty.Nifty;
 
 public class TestCinematic extends SimpleApplication {
 
     private Spatial model;
+    private Spatial teapot;
     private MotionPath path;
     private MotionTrack cameraMotionTrack;
-    private AnimChannel channel;
     private Cinematic cinematic;
     private ChaseCamera chaseCam;
-    private CameraNode camNode;
+    private FilterPostProcessor fpp;
+    private FadeFilter fade;
 
     public static void main(String[] args) {
         TestCinematic app = new TestCinematic();
@@ -78,60 +80,74 @@ public class TestCinematic extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        createScene();
-
-        cinematic = new Cinematic(rootNode);
-        cinematic.setInitalDuration(20);
-        stateManager.attach(cinematic);
-
+        //just some text
         guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
         final BitmapText text = new BitmapText(guiFont, false);
         text.setSize(guiFont.getCharSet().getRenderedSize());
         text.setText("Press enter to play/pause cinematic");
-        guiNode.attachChild(text);
         text.setLocalTranslation((cam.getWidth() - text.getLineWidth()) / 2, cam.getHeight(), 0);
+        guiNode.attachChild(text);
 
 
-        NiftyJmeDisplay niftyDisplay = new NiftyJmeDisplay(assetManager,
-                inputManager,
-                audioRenderer,
-                guiViewPort);
-        Nifty nifty = niftyDisplay.getNifty();
+        createScene();
 
-        nifty.fromXmlWithoutStartScreen("jme3test/animation/subtitle.xml");
-
-
-        // attach the nifty display to the gui view port as a processor
-        guiViewPort.addProcessor(niftyDisplay);
+        cinematic = new Cinematic(rootNode, 20);
+        cinematic.bindUi("jme3test/animation/subtitle.xml");
+        stateManager.attach(cinematic);
 
         createCameraMotion();
 
-        cinematic.activateCamera(0, "aroundCam");
-        cinematic.addCinematicEvent(0, cameraMotionTrack);
-        cinematic.addCinematicEvent(0, new SoundTrack("Sound/Environment/Nature.ogg"));
-        cinematic.addCinematicEvent(3, new SoundTrack("Sound/Effects/kick.wav"));
-        SoundTrack beep = new SoundTrack("Sound/Effects/Beep.ogg");
-        beep.setInitalDuration(1);
-        cinematic.addCinematicEvent(5.0f, beep);
-        cinematic.addCinematicEvent(3, new SubtitleTrack(nifty, "start", 3, "jMonkey engine really kicks A..."));
-        cinematic.activateCamera(6, "topView");
 
-        cinematic.activateCamera(8, "aroundCam");
-        cinematic.activateCamera(9, "topView");
-        cinematic.activateCamera(9.5f, "aroundCam");
-        cinematic.activateCamera(10f, "topView");
-        cinematic.activateCamera(10.5f, "aroundCam");
-        cinematic.addCinematicEvent(6, new AnimationTrack(channel, "Walk"));
-
-        cinematic.addCinematicEvent(6, new AbstractCinematicEvent() {
+        cinematic.addCinematicEvent(0, new AbstractCinematicEvent() {
 
             @Override
             public void onPlay() {
+                fade.setValue(0);
+                fade.fadeIn();
             }
 
             @Override
             public void onUpdate(float tpf) {
-                model.rotate(new Quaternion().fromAngleAxis(tpf * this.speed, Vector3f.UNIT_Y));
+            }
+
+            @Override
+            public void onStop() {
+            }
+
+            @Override
+            public void onPause() {
+            }
+        });
+        cinematic.addCinematicEvent(0, new PositionTrack(teapot, new Vector3f(10, 0, 10), 0));
+        cinematic.addCinematicEvent(0, new ScaleTrack(teapot, new Vector3f(1, 1, 1), 0));
+        float[] rotation = {0, 0, 0};
+        cinematic.addCinematicEvent(0, new RotationTrack(teapot, rotation, 0));
+
+        cinematic.addCinematicEvent(0, new PositionTrack(teapot, new Vector3f(10, 0, -10), 20));
+        cinematic.addCinematicEvent(0, new ScaleTrack(teapot, new Vector3f(4, 4, 4), 10));
+        cinematic.addCinematicEvent(10, new ScaleTrack(teapot, new Vector3f(1, 1, 1), 10));
+        float[] rotation2 = {0, FastMath.TWO_PI, 0};
+        cinematic.addCinematicEvent(0, new RotationTrack(teapot, rotation2, 20));
+
+        cinematic.activateCamera(0, "aroundCam");
+        cinematic.addCinematicEvent(0, cameraMotionTrack);
+        cinematic.addCinematicEvent(0, new SoundTrack("Sound/Environment/Nature.ogg", LoopMode.Loop));
+        cinematic.addCinematicEvent(3, new SoundTrack("Sound/Effects/kick.wav"));
+        cinematic.addCinematicEvent(3, new SubtitleTrack("start", 3, "jMonkey engine really kicks A..."));
+        cinematic.addCinematicEvent(5.0f, new SoundTrack("Sound/Effects/Beep.ogg", 1));
+        cinematic.addCinematicEvent(6, new AnimationTrack(model, "Walk", LoopMode.Loop));
+        cinematic.activateCamera(6, "topView");
+        cinematic.activateCamera(10, "aroundCam");
+
+        cinematic.addCinematicEvent(19, new AbstractCinematicEvent() {
+
+            @Override
+            public void onPlay() {
+                fade.fadeOut();
+            }
+
+            @Override
+            public void onUpdate(float tpf) {
             }
 
             @Override
@@ -143,24 +159,19 @@ public class TestCinematic extends SimpleApplication {
             }
         });
 
-
         flyCam.setEnabled(false);
         chaseCam = new ChaseCamera(cam, model, inputManager);
-     //   chaseCam.setEnabled(true);
         initInputs();
-     
+
     }
 
     private void createCameraMotion() {
 
-        CameraNode node2 = cinematic.bindCamera("topView", cam);
-        node2.setLocalTranslation(new Vector3f(0, 30, 0));
-        node2.lookAt(model.getLocalTranslation(), Vector3f.UNIT_Y);
+        CameraNode camNode = cinematic.bindCamera("topView", cam);
+        camNode.setLocalTranslation(new Vector3f(0, 50, 0));
+        camNode.lookAt(model.getLocalTranslation(), Vector3f.UNIT_Y);
 
-        camNode = cinematic.bindCamera("aroundCam", cam);
-
-
-
+        CameraNode camNode2 = cinematic.bindCamera("aroundCam", cam);
         path = new MotionPath();
         path.setCycle(true);
         path.addWayPoint(new Vector3f(20, 3, 0));
@@ -168,7 +179,7 @@ public class TestCinematic extends SimpleApplication {
         path.addWayPoint(new Vector3f(-20, 3, 0));
         path.addWayPoint(new Vector3f(0, 3, -20));
         path.setCurveTension(0.83f);
-        cameraMotionTrack = new MotionTrack(camNode, path);
+        cameraMotionTrack = new MotionTrack(camNode2, path);
         cameraMotionTrack.setLoopMode(LoopMode.Loop);
         cameraMotionTrack.setLookAt(model.getWorldTranslation(), Vector3f.UNIT_Y);
         cameraMotionTrack.setDirectionType(MotionTrack.Direction.LookAt);
@@ -178,15 +189,22 @@ public class TestCinematic extends SimpleApplication {
     private void createScene() {
 
         model = (Spatial) assetManager.loadModel("Models/Oto/Oto.mesh.xml");
-        System.out.println("MODEL NAME : " + model.getName());
         model.center();
-
         model.setShadowMode(ShadowMode.CastAndReceive);
-
-        AnimControl control = model.getControl(AnimControl.class);
-        channel = control.createChannel();
-
         rootNode.attachChild(model);
+
+
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/SolidColor.j3md");
+        mat.setColor("m_Color", ColorRGBA.Cyan);
+
+        teapot = assetManager.loadModel("Models/Teapot/Teapot.obj");
+        teapot.setLocalTranslation(10, 0, 10);
+        teapot.setMaterial(mat);
+        teapot.setShadowMode(ShadowMode.CastAndReceive);
+        rootNode.attachChild(teapot);
+
+
+
         Material matSoil = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
         matSoil.setBoolean("m_UseMaterialColors", true);
         matSoil.setColor("m_Ambient", ColorRGBA.Gray);
@@ -206,6 +224,11 @@ public class TestCinematic extends SimpleApplication {
         pssm.setDirection(new Vector3f(0, -1, -1).normalizeLocal());
         pssm.setShadowIntensity(0.4f);
         viewPort.addProcessor(pssm);
+
+        fpp = new FilterPostProcessor(assetManager);
+        fade = new FadeFilter();
+        fpp.addFilter(fade);
+        viewPort.addProcessor(fpp);
 
     }
 
@@ -231,6 +254,4 @@ public class TestCinematic extends SimpleApplication {
         inputManager.addListener(acl, "togglePause");
 
     }
-
-
 }

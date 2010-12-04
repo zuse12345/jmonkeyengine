@@ -31,6 +31,9 @@
  */
 package com.jme3.cinematic;
 
+import com.jme3.cinematic.events.AbstractCinematicEvent;
+import com.jme3.cinematic.events.CinematicEvent;
+import com.jme3.animation.LoopMode;
 import com.jme3.app.Application;
 import com.jme3.app.state.AppState;
 import com.jme3.app.state.AppStateManager;
@@ -39,11 +42,13 @@ import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
+import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.CameraNode;
 import com.jme3.scene.Node;
 import com.jme3.scene.control.CameraControl.ControlDirection;
+import de.lessvoid.nifty.Nifty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,6 +64,7 @@ import java.util.logging.Logger;
 public class Cinematic extends AbstractCinematicEvent implements Savable, AppState {
 
     private static final Logger logger = Logger.getLogger(Application.class.getName());
+    private String niftyXmlPath = null;
     private Node scene;
     protected TimeLine timeLine = new TimeLine();
     private int lastFetchedKeyFrame = -1;
@@ -66,11 +72,28 @@ public class Cinematic extends AbstractCinematicEvent implements Savable, AppSta
     private Map<String, CameraNode> cameras = new HashMap<String, CameraNode>();
     private CameraNode currentCam;
     private boolean initialized = false;
-  
+    private Nifty nifty = null;
+    private Map<String, Map<String, Object>> eventsData;
+
     public Cinematic() {
     }
 
     public Cinematic(Node scene) {
+        this.scene = scene;
+    }
+
+    public Cinematic(Node scene, float initialDuration) {
+        super(initialDuration);
+        this.scene = scene;
+    }
+
+    public Cinematic(Node scene, LoopMode loopMode) {
+        super(loopMode);
+        this.scene = scene;
+    }
+
+    public Cinematic(Node scene, float initialDuration, LoopMode loopMode) {
+        super(initialDuration, loopMode);
         this.scene = scene;
     }
 
@@ -86,7 +109,7 @@ public class Cinematic extends AbstractCinematicEvent implements Savable, AppSta
                     }
                 }
             }
-          }
+        }
     }
 
     @Override
@@ -119,6 +142,7 @@ public class Cinematic extends AbstractCinematicEvent implements Savable, AppSta
         oc.writeSavableArrayList((ArrayList) cinematicEvents, "cinematicEvents", null);
         oc.writeStringSavableMap(cameras, "cameras", null);
         oc.write(timeLine, "timeLine", null);
+        oc.write(niftyXmlPath, "niftyXmlPath", null);
 
 
     }
@@ -131,7 +155,12 @@ public class Cinematic extends AbstractCinematicEvent implements Savable, AppSta
         cinematicEvents = ic.readSavableArrayList("cinematicEvents", null);
         cameras = (Map<String, CameraNode>) ic.readStringSavableMap("cameras", null);
         timeLine = (TimeLine) ic.readSavable("timeLine", null);
+        niftyXmlPath = ic.readString("niftyXmlPath", null);
 
+    }
+
+    public void bindUi(String xmlPath) {
+        niftyXmlPath = xmlPath;
     }
 
     @Override
@@ -147,10 +176,22 @@ public class Cinematic extends AbstractCinematicEvent implements Savable, AppSta
     }
 
     public void initialize(AppStateManager stateManager, Application app) {
+        if (niftyXmlPath != null) {
+            NiftyJmeDisplay niftyDisplay = new NiftyJmeDisplay(app.getAssetManager(),
+                    app.getInputManager(),
+                    app.getAudioRenderer(),
+                    app.getGuiViewPort());
+            nifty = niftyDisplay.getNifty();
+            nifty.fromXmlWithoutStartScreen(niftyXmlPath);
+            app.getGuiViewPort().addProcessor(niftyDisplay);
+        }
         for (CinematicEvent cinematicEvent : cinematicEvents) {
             cinematicEvent.initEvent(app, this);
         }
-        initialized = true;        
+
+
+
+        initialized = true;
     }
 
     public boolean isInitialized() {
@@ -238,7 +279,7 @@ public class Cinematic extends AbstractCinematicEvent implements Savable, AppSta
         node.setControlDir(ControlDirection.SpatialToCamera);
         node.getControl(0).setEnabled(false);
         cameras.put(cameraName, node);
-        scene.attachChild(node);        
+        scene.attachChild(node);
         return node;
     }
 
@@ -286,5 +327,49 @@ public class Cinematic extends AbstractCinematicEvent implements Savable, AppSta
 
     public void setScene(Node scene) {
         this.scene = scene;
+    }
+
+    public Nifty getNifty() {
+        return nifty;
+    }
+
+    private Map<String, Map<String, Object>> getEventsData() {
+        if (eventsData == null) {
+            eventsData = new HashMap<String, Map<String, Object>>();
+        }
+        return eventsData;
+    }
+
+    public void putEventData(String type, String name, Object object) {
+        Map<String, Map<String, Object>> data = getEventsData();
+        Map<String, Object> row = data.get(type);
+        if (row == null) {
+            row = new HashMap<String, Object>();
+        }
+        row.put(name, object);
+    }
+
+    public Object getEventData(String type, String name) {
+        if (eventsData != null) {
+            Map<String, Object> row = eventsData.get(type);
+            if (row != null) {
+                return row.get(name);
+            }
+        }
+        return null;
+    }
+
+    public Savable removeEventData(String type, String name) {
+        if (eventsData != null) {
+            Map<String, Object> row = eventsData.get(type);
+            if (row != null) {
+                row.remove(name);
+            }
+        }
+        return null;
+    }
+
+    public Node getScene() {
+        return scene;
     }
 }

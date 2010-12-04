@@ -31,6 +31,7 @@
  */
 package com.jme3.cinematic;
 
+import com.jme3.cinematic.events.MotionTrack;
 import com.jme3.asset.AssetManager;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;

@@ -29,9 +29,11 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.cinematic;
+package com.jme3.cinematic.events;
 
 import com.jme3.animation.LoopMode;
+import com.jme3.cinematic.MotionPath;
+import com.jme3.cinematic.PlayState;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
@@ -41,7 +43,6 @@ import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
 import java.io.IOException;
 
@@ -113,11 +114,51 @@ public class MotionTrack extends AbstractCinematicEvent implements Control {
         this.path = path;
     }
 
-     public void update(float tpf) {
+    /**
+     * Creates a MotionPath for the given spatial on the given motion path
+     * @param spatial
+     * @param path
+     */
+    public MotionTrack(Spatial spatial, MotionPath path, float initialDuration) {
+        super();
+        this.spatial = spatial;
+        spatial.addControl(this);
+        this.path = path;
+        this.initialDuration = initialDuration;
+    }
+
+    /**
+     * Creates a MotionPath for the given spatial on the given motion path
+     * @param spatial
+     * @param path
+     */
+    public MotionTrack(Spatial spatial, MotionPath path, LoopMode loopMode) {
+        super();
+        this.spatial = spatial;
+        spatial.addControl(this);
+        this.path = path;
+        this.loopMode = loopMode;
+    }
+
+    /**
+     * Creates a MotionPath for the given spatial on the given motion path
+     * @param spatial
+     * @param path
+     */
+    public MotionTrack(Spatial spatial, MotionPath path, float initialDuration, LoopMode loopMode) {
+        super();
+        this.spatial = spatial;
+        spatial.addControl(this);
+        this.path = path;
+        this.initialDuration = initialDuration;
+        this.loopMode = loopMode;
+    }
+
+    public void update(float tpf) {
         if (playState == PlayState.Playing) {
             time += tpf * speed;
             onUpdate(tpf);
-            if (time >= duration && loopMode==loopMode.DontLoop) {
+            if (time >= duration && loopMode == loopMode.DontLoop) {
                 stop();
             }
         }
@@ -125,21 +166,21 @@ public class MotionTrack extends AbstractCinematicEvent implements Control {
     }
 
     public void onUpdate(float tpf) {
-            spatial.setLocalTranslation(path.interpolatePath(tpf, this));
-            computeTargetDirection();
+        spatial.setLocalTranslation(path.interpolatePath(tpf, this));
+        computeTargetDirection();
 
-            if (currentValue >= 1.0f) {
-                currentValue = 0;
-                currentWayPoint++;
-                path.triggerWayPointReach(currentWayPoint, this);
+        if (currentValue >= 1.0f) {
+            currentValue = 0;
+            currentWayPoint++;
+            path.triggerWayPointReach(currentWayPoint, this);
+        }
+        if (currentWayPoint == path.getNbWayPoints() - 1) {
+            if (loopMode == LoopMode.Loop) {
+                currentWayPoint = 0;
+            } else {
+                stop();
             }
-            if (currentWayPoint == path.getNbWayPoints() - 1) {
-                if (loopMode == LoopMode.Loop) {
-                    currentWayPoint = 0;
-                } else {
-                    stop();
-                }
-            }
+        }
     }
 
     @Override

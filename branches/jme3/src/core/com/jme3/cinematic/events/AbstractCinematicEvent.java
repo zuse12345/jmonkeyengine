@@ -29,10 +29,12 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.cinematic;
+package com.jme3.cinematic.events;
 
 import com.jme3.animation.LoopMode;
 import com.jme3.app.Application;
+import com.jme3.cinematic.Cinematic;
+import com.jme3.cinematic.PlayState;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
@@ -53,6 +55,23 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
     protected LoopMode loopMode = LoopMode.DontLoop;
     protected float time = 0;
 
+    public AbstractCinematicEvent() {
+    }
+
+    public AbstractCinematicEvent(float initialDuration) {
+        this.initialDuration = initialDuration;
+        duration = initialDuration / speed;
+    }
+
+    public AbstractCinematicEvent(LoopMode loopMode) {
+        this.loopMode = loopMode;
+    }
+
+    public AbstractCinematicEvent(float initialDuration, LoopMode loopMode) {
+        this.initialDuration = initialDuration;
+        this.loopMode = loopMode;
+    }
+
     public void play() {
         onPlay();
         playState = PlayState.Playing;
@@ -63,9 +82,9 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
     public void internalUpdate(float tpf) {
         if (playState == PlayState.Playing) {
             time += tpf * speed;
-            
+
             onUpdate(tpf);
-            if (time >= duration && loopMode==loopMode.DontLoop) {
+            if (time >= duration && loopMode == loopMode.DontLoop) {
                 stop();
             }
         }
@@ -188,7 +207,6 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
         loopMode = ic.readEnum("loopMode", LoopMode.class, LoopMode.DontLoop);
     }
 
-    public void initEvent(Application app, Cinematic cinematic){
-        
+    public void initEvent(Application app, Cinematic cinematic) {
     }
 }

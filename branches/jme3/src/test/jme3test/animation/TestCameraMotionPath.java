@@ -32,7 +32,7 @@
 package jme3test.animation;
 
 import com.jme3.animation.LoopMode;
-import com.jme3.cinematic.MotionTrack;
+import com.jme3.cinematic.events.MotionTrack;
 import com.jme3.cinematic.MotionPath;
 import com.jme3.cinematic.MotionPathListener;
 import com.jme3.app.SimpleApplication;

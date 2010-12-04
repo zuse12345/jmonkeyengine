@@ -482,4 +482,14 @@ public class Application implements SystemListener {
         timer.reset();
     }
 
+    public ViewPort getGuiViewPort() {
+        return guiViewPort;
+    }
+
+    public ViewPort getViewPort() {
+        return viewPort;
+    }
+
+    
+
 }

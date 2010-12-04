@@ -32,6 +32,8 @@
 
 package com.jme3.cinematic;
 
+import com.jme3.cinematic.events.MotionTrack;
+
 /**
  * Trigger the events appening on an motion path
  * @author Nehon

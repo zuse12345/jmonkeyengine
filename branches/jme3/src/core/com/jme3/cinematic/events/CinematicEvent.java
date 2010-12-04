@@ -29,10 +29,12 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.cinematic;
+package com.jme3.cinematic.events;
 
 import com.jme3.animation.LoopMode;
 import com.jme3.app.Application;
+import com.jme3.cinematic.Cinematic;
+import com.jme3.cinematic.PlayState;
 
 /**
  *

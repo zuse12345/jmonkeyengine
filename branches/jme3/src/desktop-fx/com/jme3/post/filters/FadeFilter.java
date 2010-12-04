@@ -127,4 +127,14 @@ public class FadeFilter extends Filter {
         InputCapsule ic = im.getCapsule(this);
         duration = ic.readFloat("duration", 1);
     }
+
+    public float getValue() {
+        return value;
+    }
+
+    public void setValue(float value) {
+        this.value = value;
+    }
+    
+
 }

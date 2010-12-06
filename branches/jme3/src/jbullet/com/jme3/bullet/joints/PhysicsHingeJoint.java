@@ -88,6 +88,14 @@ public class PhysicsHingeJoint extends PhysicsJoint {
         ((HingeConstraint) constraint).setLimit(low, high, _softness, _biasFactor, _relaxationFactor);
     }
 
+    public float getUpperLimit(){
+        return ((HingeConstraint) constraint).getUpperLimit();
+    }
+
+    public float getLowerLimit(){
+        return ((HingeConstraint) constraint).getLowerLimit();
+    }
+
     public void setAngularOnly(boolean angularOnly) {
         this.angularOnly = angularOnly;
         ((HingeConstraint) constraint).setAngularOnly(angularOnly);

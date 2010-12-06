@@ -77,10 +77,15 @@ public final class ModelImporterVisualPanel1 extends JPanel implements AssetEven
             currentModel = (Spatial) manager.loadAsset(mainKey);
             if (currentModel != null) {
                 offPanel.attach(currentModel);
+            }else{
+                Message msg = new NotifyDescriptor.Message(
+                        "Cannot import this file!",
+                        NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(msg);
             }
         } catch (Exception e) {
             Message msg = new NotifyDescriptor.Message(
-                    "Error importing model!\n"
+                    "Error importing file!\n"
                     + "(" + e + ")",
                     NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notifyLater(msg);

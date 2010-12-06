@@ -70,7 +70,7 @@ public final class ConvertOgreBinaryMeshesAction implements Action {
                     continue;
                 }
                 FileObject fobj = FileUtil.toFileObject(f);
-                if (fobj.getExt().equalsIgnoreCase("mesh")) {
+                if (fobj.getExt().equalsIgnoreCase("mesh")||fobj.getExt().equalsIgnoreCase("skeleton")) {
                     OgreXMLConvertOptions options = new OgreXMLConvertOptions(fobj.getPath());
                     options.setBinaryFile(true);
                     OgreXMLConvert conv = new OgreXMLConvert();

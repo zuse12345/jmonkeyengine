@@ -43,6 +43,7 @@ import com.jme3.terrain.geomipmap.TerrainQuad;
  * 
  * @author Brent Owens
  */
+@Deprecated
 public class TerrainPhysicsShapeFactory {
 
 	/**
@@ -51,6 +52,7 @@ public class TerrainPhysicsShapeFactory {
 	 * @param terrain to create the collision heightfield from
 	 * @return the node with the physics node
 	 */
+        @Deprecated
 	public Node createPhysicsMesh(TerrainQuad terrain) {
 
 		PhysicsNode n = new PhysicsNode(new HeightfieldCollisionShape(terrain.getHeightMap(), terrain.getLocalScale()), 0 );

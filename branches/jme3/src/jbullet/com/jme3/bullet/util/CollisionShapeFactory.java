@@ -43,6 +43,7 @@ import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.collision.shapes.PlaneCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.collision.shapes.infos.ChildCollisionShape;
+import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.math.FastMath;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Quaternion;
@@ -55,6 +56,7 @@ import com.jme3.scene.debug.Arrow;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Cylinder;
 import com.jme3.scene.shape.Sphere;
+import com.jme3.terrain.geomipmap.TerrainQuad;
 import com.jme3.util.TempVars;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -126,7 +128,24 @@ public class CollisionShapeFactory {
      * @return A MeshCollisionShape or a CompoundCollisionShape with MeshCollisionShapes as children if the supplied spatial is a Node.
      */
     public static CollisionShape createMeshShape(Spatial spatial) {
-        if (spatial instanceof Geometry) {
+        if (spatial instanceof TerrainQuad) {
+            TerrainQuad terrain = (TerrainQuad) spatial;
+            return new HeightfieldCollisionShape(terrain.getHeightMap(), terrain.getLocalScale());
+            //BELOW: the old way, keeping it here for a little bit as a reference (and so it gets into version control so I can always access it)
+		/*Map<TerrainPatch,Vector3f> all = new HashMap<TerrainPatch,Vector3f>();
+            terrain.getAllTerrainPatchesWithTranslation(all, terrain.getLocalTranslation());
+            
+            Node node = new Node();
+            
+            for (Entry<TerrainPatch,Vector3f> entry : all.entrySet()) {
+            TerrainPatch tp = entry.getKey();
+            Vector3f trans = entry.getValue();
+            PhysicsNode n = new PhysicsNode(new HeightfieldCollisionShape(tp.getHeightmap(), trans, tp.getLocalScale()), 0 );
+            n.setLocalTranslation(trans);
+            node.attachChild(n);
+            }*/
+
+        } else if (spatial instanceof Geometry) {
             spatial.updateGeometricState();
             return createSingleMeshShape((Geometry) spatial);
         } else if (spatial instanceof Node) {

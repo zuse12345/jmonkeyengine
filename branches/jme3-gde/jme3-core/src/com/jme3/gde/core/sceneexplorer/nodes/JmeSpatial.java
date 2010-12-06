@@ -31,9 +31,11 @@
  */
 package com.jme3.gde.core.sceneexplorer.nodes;
 
+import com.jme3.animation.AnimControl;
 import com.jme3.bounding.BoundingVolume;
 import com.jme3.export.binary.BinaryExporter;
 import com.jme3.gde.core.scene.SceneApplication;
+import com.jme3.gde.core.sceneexplorer.nodes.properties.AnimationProperty;
 import com.jme3.light.LightList;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
@@ -303,6 +305,8 @@ public class JmeSpatial extends AbstractSceneExplorerNode {
         set.put(makeProperty(obj, LightList.class, "getWorldLightList", "World Light List"));
 
         set.put(makeProperty(obj, RenderQueue.Bucket.class, "getQueueBucket", "setQueueBucket", "Queue Bucket"));
+
+        set.put(new AnimationProperty(obj.getControl(AnimControl.class)));
 
         sheet.put(set);
         return sheet;

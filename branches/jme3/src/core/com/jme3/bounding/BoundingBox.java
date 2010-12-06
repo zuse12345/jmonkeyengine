@@ -782,6 +782,13 @@ public class BoundingBox extends BoundingVolume {
                 && FastMath.abs(center.z - point.z) < zExtent;
     }
 
+    @Override
+    public boolean intersects(Vector3f point) {
+        return FastMath.abs(center.x - point.x) <= xExtent
+                && FastMath.abs(center.y - point.y) <= yExtent
+                && FastMath.abs(center.z - point.z) <= zExtent;
+    }
+
     public float distanceToEdge(Vector3f point) {
         // compute coordinates of point in box coordinate system
         Vector3f closest = point.subtract(center);

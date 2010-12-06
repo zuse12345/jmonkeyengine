@@ -272,12 +272,21 @@ public abstract class BoundingVolume implements Savable, Cloneable, Collidable {
     /**
      * 
      * determines if a given point is contained within this bounding volume.
+     * If the point is on the edge of the bounding volume, this method will
+     * return false. Use intersects(Vector3f) to check for edge intersection.
      * 
      * @param point
      *            the point to check
      * @return true if the point lies within this bounding volume.
      */
     public abstract boolean contains(Vector3f point);
+
+    /**
+     * Determines if a given point intersects (touches or is inside) this bounding volume.
+     * @param point the point to check
+     * @return true if the point lies within this bounding volume.
+     */
+    public abstract boolean intersects(Vector3f point);
 
     public abstract float getVolume();
 

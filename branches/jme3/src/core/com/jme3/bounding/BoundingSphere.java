@@ -821,6 +821,11 @@ public class BoundingSphere extends BoundingVolume {
         return center.distanceSquared(point) < (getRadius() * getRadius());
     }
 
+    @Override
+    public boolean intersects(Vector3f point) {
+        return center.distanceSquared(point) <= (getRadius() * getRadius());
+    }
+
     public float distanceToEdge(Vector3f point) {
         return center.distance(point) - radius;
     }

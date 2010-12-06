@@ -32,17 +32,14 @@
 package com.jme3.gde.core.sceneexplorer.nodes;
 
 import com.jme3.asset.AssetKey;
+import com.jme3.asset.ModelKey;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.scene.AssetLinkNode;
 import com.jme3.scene.Spatial;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import org.openide.actions.CopyAction;
-import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
-import org.openide.actions.PasteAction;
-import org.openide.actions.RenameAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
@@ -54,10 +51,10 @@ import org.openide.util.actions.SystemAction;
  */
 public class JmeAssetLinkChild extends AbstractNode {
 
-    private AssetKey<Spatial> key;
+    private ModelKey key;
     private AssetLinkNode linkNode;
 
-    public JmeAssetLinkChild(AssetKey<Spatial> key, AssetLinkNode linkNode) {
+    public JmeAssetLinkChild(ModelKey key, AssetLinkNode linkNode) {
         super(Children.LEAF);
         this.key = key;
         this.linkNode = linkNode;

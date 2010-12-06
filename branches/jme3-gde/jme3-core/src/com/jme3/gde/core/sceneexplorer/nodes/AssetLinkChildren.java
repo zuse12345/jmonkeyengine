@@ -31,14 +31,13 @@
  */
 package com.jme3.gde.core.sceneexplorer.nodes;
 
-import com.jme3.asset.AssetKey;
+import com.jme3.asset.ModelKey;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.scene.AssetLinkNode;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
@@ -90,8 +89,8 @@ public class AssetLinkChildren extends SceneExplorerChildren {
 
     @Override
     protected Node[] createNodes(Object key) {
-        if (key instanceof AssetKey) {
-            AssetKey assetKey = (AssetKey)key;
+        if (key instanceof ModelKey) {
+            ModelKey assetKey = (ModelKey)key;
             return new Node[]{new JmeAssetLinkChild(assetKey, (AssetLinkNode)spatial)};
         }
         return null;

@@ -156,7 +156,7 @@ public class AssetLinkNode extends Node {
         BinaryImporter importer = BinaryImporter.getInstance();
         AssetManager loaderManager = e.getAssetManager();
 
-        assetLoaderKeys = (ArrayList<ModelKey>) capsule.readSavableArrayList("assetLoaderKeys", new ArrayList<ModelKey>());
+        assetLoaderKeys = (ArrayList<ModelKey>) capsule.readSavableArrayList("assetLoaderKeyList", new ArrayList<ModelKey>());
         for (Iterator<ModelKey> it = assetLoaderKeys.iterator(); it.hasNext();) {
             ModelKey modelKey = it.next();
             AssetInfo info = loaderManager.locateAsset(modelKey);
@@ -180,7 +180,7 @@ public class AssetLinkNode extends Node {
         children = new ArrayList<Spatial>();
         super.write(e);
         OutputCapsule capsule = e.getCapsule(this);
-        capsule.writeSavableArrayList(assetLoaderKeys, "assetLoaderKeys", null);
+        capsule.writeSavableArrayList(assetLoaderKeys, "assetLoaderKeyList", null);
         children = childs;
     }
 }

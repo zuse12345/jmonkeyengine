@@ -33,8 +33,8 @@
 package com.jme3.scene;
 
 import com.jme3.asset.AssetInfo;
-import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
+import com.jme3.asset.ModelKey;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
@@ -58,17 +58,17 @@ import java.util.logging.Logger;
  */
 public class AssetLinkNode extends Node {
 
-    protected ArrayList<AssetKey<Spatial>> assetLoaderKeys = new ArrayList<AssetKey<Spatial>>();
-    protected Map<AssetKey<Spatial>, Spatial> assetChildren = new HashMap<AssetKey<Spatial>, Spatial>();
+    protected ArrayList<ModelKey> assetLoaderKeys = new ArrayList<ModelKey>();
+    protected Map<ModelKey, Spatial> assetChildren = new HashMap<ModelKey, Spatial>();
 
     public AssetLinkNode() {
     }
 
-    public AssetLinkNode(AssetKey<Spatial> key) {
+    public AssetLinkNode(ModelKey key) {
         this(key.getName(), key);
     }
 
-    public AssetLinkNode(String name, AssetKey<Spatial> key) {
+    public AssetLinkNode(String name, ModelKey key) {
         super(name);
         assetLoaderKeys.add(key);
     }
@@ -78,35 +78,35 @@ public class AssetLinkNode extends Node {
      * AssetLinkNode is loaded from a binary file.
      * @param key
      */
-    public void addLinkedChild(AssetKey<Spatial> key) {
+    public void addLinkedChild(ModelKey key) {
         if (assetLoaderKeys.contains(key)) {
             return;
         }
         assetLoaderKeys.add(key);
     }
 
-    public void removeLinkedChild(AssetKey<Spatial> key) {
+    public void removeLinkedChild(ModelKey key) {
         assetLoaderKeys.remove(key);
     }
 
-    public ArrayList<AssetKey<Spatial>> getAssetLoaderKeys() {
+    public ArrayList<ModelKey> getAssetLoaderKeys() {
         return assetLoaderKeys;
     }
 
-    public void attachLinkedChild(AssetManager manager, AssetKey<Spatial> key) {
+    public void attachLinkedChild(AssetManager manager, ModelKey key) {
         addLinkedChild(key);
         Spatial child = manager.loadAsset(key);
         assetChildren.put(key, child);
         attachChild(child);
     }
 
-    public void attachLinkedChild(Spatial spat, AssetKey<Spatial> key) {
+    public void attachLinkedChild(Spatial spat, ModelKey key) {
         addLinkedChild(key);
         assetChildren.put(key, spat);
         attachChild(spat);
     }
 
-    public void detachLinkedChild(AssetKey<Spatial> key) {
+    public void detachLinkedChild(ModelKey key) {
         Spatial spatial = assetChildren.get(key);
         if (spatial != null) {
             detachChild(spatial);
@@ -115,7 +115,7 @@ public class AssetLinkNode extends Node {
         assetChildren.remove(key);
     }
 
-    public void detachLinkedChild(Spatial child, AssetKey<Spatial> key) {
+    public void detachLinkedChild(Spatial child, ModelKey key) {
         removeLinkedChild(key);
         assetChildren.remove(key);
         detachChild(child);
@@ -128,8 +128,8 @@ public class AssetLinkNode extends Node {
      */
     public void attachLinkedChildren(AssetManager manager) {
         detachLinkedChildren();
-        for (Iterator<AssetKey<Spatial>> it = assetLoaderKeys.iterator(); it.hasNext();) {
-            AssetKey<Spatial> assetKey = it.next();
+        for (Iterator<ModelKey> it = assetLoaderKeys.iterator(); it.hasNext();) {
+            ModelKey assetKey = it.next();
             Spatial curChild = assetChildren.get(assetKey);
             if (curChild != null) {
                 curChild.removeFromParent();
@@ -141,9 +141,9 @@ public class AssetLinkNode extends Node {
     }
 
     public void detachLinkedChildren() {
-        Set<Entry<AssetKey<Spatial>, Spatial>> set = assetChildren.entrySet();
-        for (Iterator<Entry<AssetKey<Spatial>, Spatial>> it = set.iterator(); it.hasNext();) {
-            Entry<AssetKey<Spatial>, Spatial> entry = it.next();
+        Set<Entry<ModelKey, Spatial>> set = assetChildren.entrySet();
+        for (Iterator<Entry<ModelKey, Spatial>> it = set.iterator(); it.hasNext();) {
+            Entry<ModelKey, Spatial> entry = it.next();
             entry.getValue().removeFromParent();
             it.remove();
         }
@@ -156,9 +156,9 @@ public class AssetLinkNode extends Node {
         BinaryImporter importer = BinaryImporter.getInstance();
         AssetManager loaderManager = e.getAssetManager();
 
-        assetLoaderKeys = (ArrayList<AssetKey<Spatial>>) capsule.readSavableArrayList("assetLoaderKeys", new ArrayList<AssetKey<Spatial>>());
-        for (Iterator<AssetKey<Spatial>> it = assetLoaderKeys.iterator(); it.hasNext();) {
-            AssetKey<Spatial> modelKey = it.next();
+        assetLoaderKeys = (ArrayList<ModelKey>) capsule.readSavableArrayList("assetLoaderKeys", new ArrayList<ModelKey>());
+        for (Iterator<ModelKey> it = assetLoaderKeys.iterator(); it.hasNext();) {
+            ModelKey modelKey = it.next();
             AssetInfo info = loaderManager.locateAsset(modelKey);
             Spatial child = null;
             if (info != null) {

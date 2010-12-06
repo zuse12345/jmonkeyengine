@@ -34,6 +34,7 @@ package jme3test.export;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.AssetKey;
+import com.jme3.asset.ModelKey;
 import com.jme3.export.binary.BinaryExporter;
 import com.jme3.export.binary.BinaryImporter;
 import com.jme3.light.DirectionalLight;
@@ -67,7 +68,7 @@ public class TestAssetLinkNode extends SimpleApplication {
     @Override
     public void simpleInitApp() {
         AssetLinkNode loaderNode=new AssetLinkNode();
-        loaderNode.addLinkedChild(new AssetKey("Models/MonkeyHead/MonkeyHead.mesh.xml"));
+        loaderNode.addLinkedChild(new ModelKey("Models/MonkeyHead/MonkeyHead.mesh.xml"));
         //load/attach the children (happens automatically on load)
 //        loaderNode.attachLinkedChildren(assetManager);
 //        rootNode.attachChild(loaderNode);

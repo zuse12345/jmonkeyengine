@@ -137,7 +137,7 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 
 	private EnumSet<Caps> caps = EnumSet.noneOf(Caps.class);
 
-	public Collection<Caps> getCaps() {
+	public EnumSet<Caps> getCaps() {
 		return caps;
 	}
 

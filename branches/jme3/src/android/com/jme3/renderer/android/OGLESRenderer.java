@@ -103,7 +103,7 @@ public final class OGLESRenderer implements Renderer {
     public void resetGLObjects() {
     }
 
-    public Collection<Caps> getCaps() {
+    public EnumSet<Caps> getCaps() {
         return caps;
     }
 

@@ -5,7 +5,6 @@
 package com.jme3.gde.assetpack.actions;
 
 import com.jme3.gde.assetpack.AssetPackLoader;
-import com.jme3.gde.assetpack.XmlHelper;
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneRequest;
@@ -19,7 +18,6 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import org.openide.nodes.Node;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 public final class PreviewAssetAction implements Action {
 
@@ -36,25 +34,10 @@ public final class PreviewAssetAction implements Action {
             return;
         }
         Element assetElement = context.getLookup().lookup(Element.class);
-        NodeList fileNodeList = assetElement.getElementsByTagName("file");
-        Element fileElement = XmlHelper.findChildElementWithAttribute(assetElement, "file", "main", "true");
-        if (fileElement == null) {
-            fileElement = XmlHelper.findChildElement(assetElement, "file");
-        }
-
         com.jme3.scene.Node node = new com.jme3.scene.Node("PreviewRootNode");
-        while (fileElement != null) {
-            String name = fileElement.getAttribute("path");
-
-            Spatial model = null;
-            model = AssetPackLoader.loadAssetPackModel(name, fileNodeList, pm);
-            if (model != null) {
-                node.attachChild(model);
-            }
-            //TODO:doesnt work?
-            fileElement = XmlHelper.findNextElementWithAttribute(fileElement, "file", "main", "true");
-        }
-
+        Spatial model = null;
+        model = AssetPackLoader.loadAssetPackModel(assetElement, pm);
+        node.attachChild(model);
         JmeNode jmeNode = NodeUtility.createNode(node);
         SceneApplication app = SceneApplication.getApplication();
         SceneRequest request = new SceneRequest(app, jmeNode, pm);

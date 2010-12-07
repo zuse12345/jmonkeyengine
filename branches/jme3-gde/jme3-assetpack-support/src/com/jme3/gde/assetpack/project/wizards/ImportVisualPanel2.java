@@ -48,8 +48,23 @@ public final class ImportVisualPanel2 extends JPanel {
             SingleAssetFilePanel panel = new SingleAssetFilePanel(fileDescription);
             jPanel1.add(panel);
         }
+        updateModelSelection();
         revalidate();
         repaint();
+    }
+
+    public void updateModelSelection() {
+        LinkedList<String> strings = new LinkedList<String>();
+        for (Iterator<FileDescription> it = list.iterator(); it.hasNext();) {
+            FileDescription fileDescription = it.next();
+            if ("material".equals(fileDescription.getType())) {
+                strings.add(fileDescription.getPath() + fileDescription.getName());
+            }
+        }
+        for (int i = 0; i < jPanel1.getComponents().length; i++) {
+            SingleAssetFilePanel component = (SingleAssetFilePanel) jPanel1.getComponents()[i];
+            component.setModelList(strings);
+        }
     }
 
     private void selectFile() {

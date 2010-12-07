@@ -73,6 +73,9 @@ public final class ImportAssetAction implements Action {
             if (fileObject.isMainFile()) {
                 file.setAttribute("main", "true");
             }
+            if(!"default".equals(fileObject.getMaterial())){
+                file.setAttribute("material", fileObject.getMaterial());
+            }
             String[] extraProps = fileObject.getExtraPropsNames();
             String[] extraValues = fileObject.getExtraPropsValues();
             for (int i = 0; i < extraProps.length; i++) {

@@ -17,6 +17,7 @@ public class FileDescription {
     private String path = "";
     private boolean mainFile = false;
     private boolean existing = false;
+    private String material = "default";
     private String[] extraPropsNames = new String[0];
     private String[] extraPropsValues = new String[0];
 
@@ -123,5 +124,19 @@ public class FileDescription {
      */
     public void setExisting(boolean existing) {
         this.existing = existing;
+    }
+
+    /**
+     * @return the material name
+     */
+    public String getMaterial() {
+        return material;
+    }
+
+    /**
+     * @param target the material name to set
+     */
+    public void setMaterial(String material) {
+        this.material = material;
     }
 }

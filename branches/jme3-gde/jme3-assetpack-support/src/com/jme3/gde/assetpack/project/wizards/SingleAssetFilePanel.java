@@ -10,6 +10,10 @@
  */
 package com.jme3.gde.assetpack.project.wizards;
 
+import java.awt.Dimension;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  *
  * @author normenhansen
@@ -25,15 +29,33 @@ public class SingleAssetFilePanel extends javax.swing.JPanel {
         updateInfo();
     }
 
+    public void setModelList(List<String> models){
+        jComboBox2.removeAllItems();
+        jComboBox2.addItem("default");
+        for (Iterator<String> it = models.iterator(); it.hasNext();) {
+            String string = it.next();
+            jComboBox2.addItem(string);
+        }
+        jComboBox2.setPreferredSize(new Dimension(200,25));
+    }
+
     public void updateInfo() {
         jTextField1.setText(desc.getPath());
         jTextField2.setText(desc.getName());
         jComboBox1.setSelectedItem(desc.getType());
         jCheckBox1.setSelected(desc.isMainFile());
+        jComboBox2.setSelectedItem(desc.getMaterial());
         if (desc.isExisting()) {
             jTextField1.setEditable(false);
         } else {
             jTextField1.setEditable(true);
+        }
+        if(!"mesh".equals(desc.getType())&&!"scene".equals(desc.getType())){
+            jToolBar2.setVisible(false);
+            setPreferredSize(new Dimension(100, 25));
+        }else{
+            jToolBar2.setVisible(true);
+            setPreferredSize(new Dimension(100, 50));
         }
     }
 
@@ -41,6 +63,7 @@ public class SingleAssetFilePanel extends javax.swing.JPanel {
         desc.setPath(jTextField1.getText());
         desc.setMainFile(jCheckBox1.isSelected());
         desc.setType((String) jComboBox1.getSelectedItem());
+        desc.setMaterial((String) jComboBox2.getSelectedItem());
     }
 
     /** This method is called from within the constructor to
@@ -56,11 +79,14 @@ public class SingleAssetFilePanel extends javax.swing.JPanel {
         jTextField1 = new javax.swing.JTextField();
         jTextField2 = new javax.swing.JTextField();
         jComboBox1 = new javax.swing.JComboBox();
-        jCheckBox1 = new javax.swing.JCheckBox();
         jButton1 = new javax.swing.JButton();
+        jToolBar2 = new javax.swing.JToolBar();
+        jCheckBox1 = new javax.swing.JCheckBox();
+        jComboBox2 = new javax.swing.JComboBox();
 
-        setMaximumSize(new java.awt.Dimension(32767, 25));
-        setPreferredSize(new java.awt.Dimension(474, 25));
+        setMaximumSize(new java.awt.Dimension(32767, 50));
+        setMinimumSize(new java.awt.Dimension(0, 50));
+        setPreferredSize(new java.awt.Dimension(474, 50));
 
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
@@ -85,26 +111,39 @@ public class SingleAssetFilePanel extends javax.swing.JPanel {
         });
         jToolBar1.add(jComboBox1);
 
+        jButton1.setText(org.openide.util.NbBundle.getMessage(SingleAssetFilePanel.class, "SingleAssetFilePanel.jButton1.text")); // NOI18N
+        jToolBar1.add(jButton1);
+
+        jToolBar2.setFloatable(false);
+        jToolBar2.setRollover(true);
+
         jCheckBox1.setText(org.openide.util.NbBundle.getMessage(SingleAssetFilePanel.class, "SingleAssetFilePanel.jCheckBox1.text")); // NOI18N
         jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveInfo3(evt);
             }
         });
-        jToolBar1.add(jCheckBox1);
+        jToolBar2.add(jCheckBox1);
 
-        jButton1.setText(org.openide.util.NbBundle.getMessage(SingleAssetFilePanel.class, "SingleAssetFilePanel.jButton1.text")); // NOI18N
-        jToolBar1.add(jButton1);
+        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "default" }));
+        jComboBox2.setMaximumSize(new java.awt.Dimension(200, 30));
+        jComboBox2.setMinimumSize(new java.awt.Dimension(100, 27));
+        jComboBox2.setPreferredSize(new java.awt.Dimension(200, 27));
+        jToolBar2.add(jComboBox2);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jToolBar1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jToolBar1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
+            .add(jToolBar2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jToolBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(layout.createSequentialGroup()
+                .add(jToolBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jToolBar2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -123,8 +162,10 @@ public class SingleAssetFilePanel extends javax.swing.JPanel {
     private javax.swing.JButton jButton1;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JComboBox jComboBox1;
+    private javax.swing.JComboBox jComboBox2;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JToolBar jToolBar2;
     // End of variables declaration//GEN-END:variables
 }

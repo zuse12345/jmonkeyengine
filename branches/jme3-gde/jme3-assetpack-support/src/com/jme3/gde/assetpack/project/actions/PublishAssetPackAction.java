@@ -75,24 +75,22 @@ public final class PublishAssetPackAction implements Action {
         try {
             String outFilename = context.getProjectDirectory().getPath() + "/" + wiz.getProperty("filename");
             ZipOutputStream out = new ZipOutputStream(new FileOutputStream(new File(outFilename)));
-            zipDir(((AssetPackProject) context).getProjectDirectory().getPath(), out, (String) wiz.getProperty("filename"));
+            zipDir(((AssetPackProject) context).getProjectDirectory(), out, (String) wiz.getProperty("filename"));
             out.close();
         } catch (IOException e) {
             Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Error creating ZIP file!");
         }
     }
 
-    public void zipDir(String dir2zip, ZipOutputStream zos, String fileName) {
+    public void zipDir(FileObject dir2zip, ZipOutputStream zos, String fileName) {
         try {
-            FileObject zipDir = FileUtil.toFileObject(new File(fileName));
-            FileObject[] dirList = zipDir.getChildren();
+            FileObject[] dirList = dir2zip.getChildren();
             byte[] readBuffer = new byte[2156];
             int bytesIn = 0;
             for (int i = 0; i < dirList.length; i++) {
                 FileObject f = dirList[i];
                 if (f.isFolder()) {
-                    String filePath = f.getPath();
-                    zipDir(filePath, zos, fileName);
+                    zipDir(f, zos, fileName);
                     //loop again
                     continue;
                 }

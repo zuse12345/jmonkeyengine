@@ -413,6 +413,16 @@ public class InputManager implements RawInputListener {
         }
     }
 
+   /**
+    * Clears all the input mappings from this InputManager. Consequently, also clears all of the
+    * InputListeners as well.
+    */
+   public void clearMappings() {
+       mappings.clear();
+       bindings.clear();
+       reset();
+   }
+
     /**
      * Called to reset pressed keys or buttons when focus is restored.
      */

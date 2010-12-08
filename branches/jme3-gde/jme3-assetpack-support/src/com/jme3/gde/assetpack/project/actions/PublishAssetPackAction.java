@@ -14,9 +14,9 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,20 +84,20 @@ public final class PublishAssetPackAction implements Action {
 
     public void zipDir(String dir2zip, ZipOutputStream zos, String fileName) {
         try {
-            File zipDir = new File(dir2zip);
-            String[] dirList = zipDir.list();
+            FileObject zipDir = FileUtil.toFileObject(new File(fileName));
+            FileObject[] dirList = zipDir.getChildren();
             byte[] readBuffer = new byte[2156];
             int bytesIn = 0;
             for (int i = 0; i < dirList.length; i++) {
-                File f = new File(zipDir, dirList[i]);
-                if (f.isDirectory()) {
+                FileObject f = dirList[i];
+                if (f.isFolder()) {
                     String filePath = f.getPath();
                     zipDir(filePath, zos, fileName);
                     //loop again
                     continue;
                 }
-                FileInputStream fis = new FileInputStream(f);
-                if (!f.getName().equals(fileName) && !f.getName().startsWith(".")) {
+                InputStream fis = f.getInputStream();
+                if (!f.getNameExt().equals(fileName) && !f.getNameExt().startsWith(".")) {
                     String filePathName = f.getPath().replaceAll(context.getProjectDirectory().getPath(), "");
                     ZipEntry anEntry = new ZipEntry(filePathName);
                     zos.putNextEntry(anEntry);

@@ -83,7 +83,7 @@ public class MTLLoader implements AssetLoader {
         material.setColor("m_Ambient",  ColorRGBA.Black);
         material.setColor("m_Diffuse",  ColorRGBA.White);
         material.setColor("m_Specular", ColorRGBA.Black);
-//        material.getAdditionalRenderState().setFaceCullMode(FaceCullMode.Off);
+        material.setFloat("m_Shininess", 16f); // prevents "premature culling" bug
         matList.put(name, material);
     }
 

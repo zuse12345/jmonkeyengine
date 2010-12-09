@@ -74,13 +74,9 @@ public class BresenhamTerrainPicker implements TerrainPicker {
 
     public Vector3f getTerrainIntersection(Ray worldPick, CollisionResults results) {
 
-        System.out.println("dir1 "+worldPick);
         List<TerrainPickData> pickData = new ArrayList<TerrainPickData>();
         root.findPick(worldPick.clone(), pickData);
         Collections.sort(pickData);
-
-        System.out.println("dir2 "+worldPick);
-        System.out.println("Picked "+pickData.size());
 
         if (pickData.isEmpty())
             return null;

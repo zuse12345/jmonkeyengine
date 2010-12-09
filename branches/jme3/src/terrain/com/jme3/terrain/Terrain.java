@@ -34,8 +34,19 @@ package com.jme3.terrain;
 
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Spatial;
 import java.util.List;
 
+/**
+ * Terrain can be one or many meshes comprising of a, probably large, piece of land.
+ * Terrain is Y-up in the grid axis, meaning gravity acts in the -Y direction.
+ * Level of Detail (LOD) is supported and expected as terrains can get very large. LOD can
+ * also be disabled if you so desire, however some terrain implementations can choose to ignore
+ * useLOD(boolean).
+ * Terrain implementations should extend Node, or at least Spatial.
+ *
+ * @author bowens
+ */
 public interface Terrain {
 
 	/**
@@ -47,6 +58,9 @@ public interface Terrain {
 	
 	/**
 	 * Set the height at the specified X-Z coordinate.
+     * To set the height of the terrain and see it, you will have
+     * to unlock the terrain meshes by calling terrain.setLocked(false) before
+     * you call setHeight().
 	 * @param xzCoordinate coordinate to set the height
 	 * @param height that will be set at the coordinate
 	 */
@@ -54,15 +68,22 @@ public interface Terrain {
 	
 	/**
 	 * Get the heightmap of the entire terrain.
-	 * This can return null if that terrain object does not store the height data
+	 * This can return null if that terrain object does not store the height data.
+     * Infinite or "paged" terrains will not be able to support this, so use with caution.
 	 */
 	public float[] getHeightMap();
 
 	/**
 	 * Tell the terrain system to use/not use Level of Detail algorithms.
+     * This is allowed to be ignored if a particular implementation cannot support it.
 	 */
 	public void useLOD(boolean useLod);
-	
+
+    /**
+     * Check if the terrain is using LOD techniques.
+     * If a terrain system only supports enabled LOD, then this
+     * should always return true.
+     */
 	public boolean isUsingLOD();
 	
 	/**
@@ -83,4 +104,17 @@ public interface Terrain {
 	 */
 	public void update(List<Vector3f> location);
 	
+    /**
+     * Get the spatial instance of this Terrain. Right now just used in the 
+     * terrain editor in JMP.
+     */
+    public Spatial getSpatial();
+
+    /**
+     * Lock or unlock the meshes of this terrain.
+     * Locked meshes are uneditable but have better performance.
+     * This should call the underlying getMesh().setStatic()/setDynamic() methods.
+     * @param locked or unlocked
+     */
+    public void setLocked(boolean locked);
 }

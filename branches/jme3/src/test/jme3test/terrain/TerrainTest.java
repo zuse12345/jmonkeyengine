@@ -134,12 +134,7 @@ public class TerrainTest extends SimpleApplication {
 		 * terrain will be 513x513. It uses the heightmap we created to generate the height values.
 		 */
 		/**
-		 * Optimal terrain patch size is 65 (64x64)
-		 * If you go for small patch size, it will definitely slow down because the depth of
-		 * the quad tree will increase, and more is done on the CPU then to traverse it.
-		 * I plan to give each node in the tree a reference to its neighbours so that should
-		 * resolve any of these slowdowns. -Brent
-		 *
+		 * Optimal terrain patch size is 65 (64x64).
 		 * The total size is up to you. At 1025 it ran fine for me (200+FPS), however at
 		 * size=2049, it got really slow. But that is a jump from 2 million to 8 million triangles...
 		 */

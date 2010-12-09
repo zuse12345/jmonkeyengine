@@ -261,6 +261,16 @@ public class Mesh implements Savable, Cloneable {
         }
     }
 
+    /**
+     * Unlocks the mesh so it can be modified, this
+     * will un-optimize the data!
+     */
+    public void setDynamic() {
+        for (Entry<VertexBuffer> entry : buffers){
+            entry.getValue().setUsage(Usage.Dynamic);
+        }
+    }
+
     public void setStreamed(){
         for (Entry<VertexBuffer> entry : buffers){
             entry.getValue().setUsage(Usage.Stream);

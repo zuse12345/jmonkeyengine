@@ -52,6 +52,8 @@ import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
+import com.jme3.scene.VertexBuffer;
+import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.terrain.geomipmap.lodcalc.DistanceLodCalculator;
 import com.jme3.terrain.geomipmap.lodcalc.LodCalculator;
 import com.jme3.util.BufferUtils;
@@ -229,67 +231,38 @@ public class TerrainPatch extends Geometry {
 		
 	}
 
-	
-	public float getHeight(Vector2f position) {
-		return getHeight(position.x, position.y);
-	}
+    public float getHeight(float x, float z) {
+        int idx = (int) (z * size + x);
+        return getMesh().getFloatBuffer(Type.Position).get(idx*3+1); // 3 floats per entry (x,y,z), the +1 is to get the Y
+    }
 
-	public float getHeight(Vector3f position) {
-		return getHeight(position.x, position.z);
-	}
+    public void setHeight(float x, float z, float height) {
+        int idx = (int) (z * size + x);
+        geomap.getHeightData().put(idx, height);
+        
+        FloatBuffer newVertexBuffer = geomap.writeVertexArray(null, stepScale, false);
+        getMesh().clearBuffer(Type.Position);
+		getMesh().setBuffer(Type.Position, 3, newVertexBuffer);
+        
+        float h = getMesh().getFloatBuffer(Type.Position).get(idx*3+1);
+    }
 
-	/**
-	 * <code>getHeight</code> returns the height of an arbitrary point on the
-	 * terrain. If the point is between height point values, the height is
-	 * linearly interpolated. This provides smooth height calculations. If the
-	 * point provided is not within the bounds of the height map, the NaN float
-	 * value is returned (Float.NaN).
-	 * 
-	 * @param x
-	 *			the x coordinate to check.
-	 * @param z
-	 *			the z coordinate to check.
-	 * @return the height at the provided location.
-	 */
-	public float getHeight(float x, float z) {
-		
-		return 0; //TODO!!!
-		
-		/*x /= stepScale.x;
-		z /= stepScale.z;
-		float col = FastMath.floor(x);
-		float row = FastMath.floor(z);
+    /**
+     * Locks the mesh (sets it static) to improve performance.
+     * But it it not editable then. Set unlock to make it editable.
+     */
+    public void lockMesh() {
+        getMesh().setStatic();
+    }
 
-		if (col < 0 || row < 0 || col >= size - 1 || row >= size - 1) {
-			return Float.NaN;
-		}
-		float intOnX = x - col, intOnZ = z - row;
-
-		float topLeft, topRight, bottomLeft, bottomRight;
-
-		int focalSpot = (int) (col + row * size);
-
-		// find the heightmap point closest to this position (but will always
-		// be to the left ( < x) and above (< z) of the spot.
-		topLeft = heightMap[focalSpot] * stepScale.y;
-
-		// now find the next point to the right of topLeft's position...
-		topRight = heightMap[focalSpot + 1] * stepScale.y;
-
-		// now find the next point below topLeft's position...
-		bottomLeft = heightMap[focalSpot + size] * stepScale.y;
-
-		// now find the next point below and to the right of topLeft's
-		// position...
-		bottomRight = heightMap[focalSpot + size + 1] * stepScale.y;
-		
-		// Use linear interpolation to find the height.
-		if(intOnX>intOnZ)
-			return (1-intOnX)*topLeft + (intOnX-intOnZ)*topRight + (intOnZ)*bottomRight;
-		else 
-			return (1-intOnZ)*topLeft + (intOnZ-intOnX)*bottomLeft + (intOnX)*bottomRight;
-		*/
-	}
+    /**
+     * Unlocks the mesh (sets it dynamic) to make it editable.
+     * It will be editable but performance will be reduced.
+     * Call lockMesh to improve performance.
+     */
+    public void unlockMesh() {
+        getMesh().setDynamic();
+    }
 	
 	/**
 	 * Returns the offset amount this terrain block uses for textures.

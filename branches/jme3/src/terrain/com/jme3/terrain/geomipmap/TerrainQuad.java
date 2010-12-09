@@ -60,6 +60,8 @@ import com.jme3.terrain.geomipmap.lodcalc.LodDistanceCalculatorFactory;
 import com.jme3.terrain.geomipmap.picking.BresenhamTerrainPicker;
 import com.jme3.terrain.geomipmap.picking.TerrainPickData;
 import com.jme3.terrain.geomipmap.picking.TerrainPicker;
+import com.jme3.util.BufferUtils;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -85,14 +87,9 @@ public class TerrainQuad extends Node implements Terrain {
 
 	protected float offsetAmount;
 
-	protected int quadrant = 1;
+	protected int quadrant = 1; // 1=upper left, 2=lower left, 3=upper right, 4=lower right
 	
 	protected LodCalculatorFactory lodCalculatorFactory;
-
-    /* This heightmap is stored in the root quad only and is used for fast collision,
-     * so we don't have to build up the heightmap array from all of the children
-     */
-	protected float[] heightMap;
 
 
 	protected List<Vector3f> lastCameraLocations; // used for LOD calc
@@ -244,6 +241,10 @@ public class TerrainQuad extends Node implements Terrain {
             return 1;
         else
             return 0;
+    }
+
+    public Spatial getSpatial() {
+        return this;
     }
 	
 	/**
@@ -505,9 +506,6 @@ public class TerrainQuad extends Node implements Terrain {
 		if (lodCalculatorFactory == null)
 			lodCalculatorFactory = new LodDistanceCalculatorFactory(); // set a default one
 
-		if (getParent() == null || !(getParent() instanceof TerrainQuad))
-			this.heightMap = heightMap; // save the overall heightmap for the root quad only
-
 		// 1 upper left
 		float[] heightBlock1 = createHeightSubBlock(heightMap, 0, 0, split);
 
@@ -736,79 +734,152 @@ public class TerrainQuad extends Node implements Terrain {
         g.setLocalTranslation(bb.getCenter());
         parent.attachChild(g);
     }
-	 
-/*    @Override
-	public void setModelBound(BoundingVolume v) {
-		for (int i = 0; i < this.getQuantity(); i++) {
-			if (this.getChild(i) instanceof TerrainQuad) {
-				((TerrainQuad) getChild(i)).setModelBound(v.clone(null));
-			} else if (this.getChild(i) instanceof TerrainPatch) {
-				((TerrainPatch) getChild(i)).setModelBound(v.clone(null));
 
-			}
-		}
+	public float getHeight(Vector2f xz) {
+        // offset
+        int x = (int) ((xz.x / getLocalScale().x) + totalSize / 2);
+        int z = (int) ((xz.y / getLocalScale().y) + totalSize / 2);
+
+        return getHeight(x, z);
 	}
-	 
-    @Override
-	public void updateModelBound() {
-		for (int i = 0; i < this.getQuantity(); i++) {
-			if (this.getChild(i) instanceof TerrainQuad) {
-				((TerrainQuad) getChild(i)).updateModelBound();
-			} else if (this.getChild(i) instanceof TerrainPatch) {
-				((TerrainPatch) getChild(i)).updateModelBound();
-			}
-		}
+
+    /**
+     * This will just get the heightmap value at the supplied point,
+     * not an interpolated (actual) height value.
+     */
+    public float getHeight(int x, int z) {
+        int quad = findQuadrant(x, z);
+        int split = (size + 1) >> 1;
+        if (children != null) {
+            for (int i = children.size(); --i >= 0;) {
+                Spatial spat = children.get(i);
+                int col = x;
+                int row = z;
+                boolean match = false;
+
+                // get the childs quadrant
+                int childQuadrant = 0;
+                if (spat instanceof TerrainQuad) {
+                    childQuadrant = ((TerrainQuad) spat).getQuadrant();
+                } else if (spat instanceof TerrainPatch) {
+                    childQuadrant = ((TerrainPatch) spat).getQuadrant();
+                }
+
+                if (childQuadrant == 1 && (quad & 1) != 0) {
+                    match = true;
+                } else if (childQuadrant == 2 && (quad & 2) != 0) {
+                    row = z - split + 1;
+                    match = true;
+                } else if (childQuadrant == 3 && (quad & 4) != 0) {
+                    col = x - split + 1;
+                    match = true;
+                } else if (childQuadrant == 4 && (quad & 8) != 0) {
+                    col = x - split + 1;
+                    row = z - split + 1;
+                    match = true;
+                }
+
+                if (match) {
+                    if (spat instanceof TerrainQuad) {
+                        return ((TerrainQuad) spat).getHeight(col, row);
+                    } else if (spat instanceof TerrainPatch) {
+                        return ((TerrainPatch) spat).getHeight(col, row);
+                    }
+                }
+
+            }
+        }
+        return Float.NaN;
+    }
+
+
+    public void setHeight(Vector2f xz, float height) {
+        // offset
+        int x = (int) ((xz.x / getLocalScale().x) + totalSize / 2);
+        int z = (int) ((xz.y / getLocalScale().y) + totalSize / 2);
+
+        int idx = z*totalSize + x;
+        setHeight(x, z, height); // adjust the actual mesh
 	}
- */
-	
-	public float getHeight(float x, float z) {
-		// determine which quadrant this is in.
-		Spatial child = null;
-		int split = (size - 1) >> 1;
-		float halfmapx = split * stepScale.x, halfmapz = split * stepScale.z;
-		float newX = 0, newZ = 0;
-		if (x == 0)
-			x += .001f;
-		if (z == 0)
-			z += .001f;
-		if (x > 0) {
-			if (z > 0) {
-				// upper right
-				child = getChild(3);
-				newX = x;
-				newZ = z;
-			} else {
-				// lower right
-				child = getChild(2);
-				newX = x;
-				newZ = z + halfmapz;
-			}
-		} else {
-			if (z > 0) {
-				// upper left
-				child = getChild(1);
-				newX = x + halfmapx;
-				newZ = z;
-			} else {
-				// lower left...
-				child = getChild(0);
-				if (x == 0)
-					x -= .1f;
-				if (z == 0)
-					z -= .1f;
-				newX = x + halfmapx;
-				newZ = z + halfmapz;
-			}
-		}
-		if (child instanceof TerrainPatch)
-			return ((TerrainPatch) child).getHeight(newX, newZ);
-		else if (child instanceof TerrainQuad)
-			return ((TerrainQuad) child).getHeight(x
-					- ((TerrainQuad) child).getLocalTranslation().x, z
-					- ((TerrainQuad) child).getLocalTranslation().z);
-		return Float.NaN;
-	}
-	
+
+    protected void setHeight(int x, int z, float newVal) {
+        int quad = findQuadrant(x, z);
+        int split = (size + 1) >> 1;
+        if (children != null) {
+            for (int i = children.size(); --i >= 0;) {
+                Spatial spat = children.get(i);
+                int col = x;
+                int row = z;
+                boolean match = false;
+
+                // get the childs quadrant
+                int childQuadrant = 0;
+                if (spat instanceof TerrainQuad) {
+                    childQuadrant = ((TerrainQuad) spat).getQuadrant();
+                } else if (spat instanceof TerrainPatch) {
+                    childQuadrant = ((TerrainPatch) spat).getQuadrant();
+                }
+
+                if (childQuadrant == 1 && (quad & 1) != 0) {
+                    match = true;
+                } else if (childQuadrant == 2 && (quad & 2) != 0) {
+                    row = z - split + 1;
+                    match = true;
+                } else if (childQuadrant == 3 && (quad & 4) != 0) {
+                    col = x - split + 1;
+                    match = true;
+                } else if (childQuadrant == 4 && (quad & 8) != 0) {
+                    col = x - split + 1;
+                    row = z - split + 1;
+                    match = true;
+                }
+
+                if (match) {
+                    if (spat instanceof TerrainQuad) {
+                        ((TerrainQuad) spat).setHeight(col, row, newVal);
+                    } else if (spat instanceof TerrainPatch) {
+                        ((TerrainPatch) spat).setHeight(col, row, newVal);
+                    }
+                }
+
+            }
+        }
+    }
+
+    
+    // a position can be in multiple quadrants, so use a bit anded value.
+    private int findQuadrant(int x, int y) {
+        int split = (size + 1) >> 1;
+        int quads = 0;
+        if (x < split && y < split)
+            quads |= 1;
+        if (x < split && y >= split - 1)
+            quads |= 2;
+        if (x >= split - 1 && y < split)
+            quads |= 4;
+        if (x >= split - 1 && y >= split - 1)
+            quads |= 8;
+        return quads;
+    }
+
+    /**
+     * lock or unlock the meshes of this terrain.
+     * Locked meshes are uneditable but have better performance.
+     * @param locked or unlocked
+     */
+    public void setLocked(boolean locked) {
+        for (int i = 0; i < this.getQuantity(); i++) {
+            if (this.getChild(i) instanceof TerrainQuad) {
+                ((TerrainQuad) getChild(i)).setLocked(locked);
+            } else if (this.getChild(i) instanceof TerrainPatch) {
+                if (locked)
+                    ((TerrainPatch) getChild(i)).lockMesh();
+                else
+                    ((TerrainPatch) getChild(i)).unlockMesh();
+            }
+        }
+    }
+
 	
 	public int getQuadrant() {
 		return quadrant;
@@ -1097,8 +1168,10 @@ public class TerrainQuad extends Node implements Terrain {
                         if (tp.getWorldBound().intersects(toTest)) {
                             CollisionResults cr = new CollisionResults();
                             toTest.collideWith(tp.getWorldBound(), cr);
-                            cr.getClosestCollision().getDistance();
-                            results.add(new TerrainPickData(tp, cr.getClosestCollision()));
+                            if (cr != null && cr.getClosestCollision() != null) {
+                                cr.getClosestCollision().getDistance();
+                                results.add(new TerrainPickData(tp, cr.getClosestCollision()));
+                            }
                         }
                     }
                     else
@@ -1152,7 +1225,6 @@ public class TerrainQuad extends Node implements Terrain {
 		quadrant = c.readInt("quadrant", 0);
 		totalSize = c.readInt("totalSize", 0);
 		lodCalculatorFactory = (LodCalculatorFactory) c.readSavable("lodCalculatorFactory", null);
-        heightMap = c.readFloatArray("heightMap", heightMap);
         TerrainLodControl lodControl = getControl(TerrainLodControl.class);
         if (lodControl != null && !(getParent() instanceof TerrainQuad))
             lodControl.setTerrain(this);
@@ -1169,7 +1241,6 @@ public class TerrainQuad extends Node implements Terrain {
 		c.write(offsetAmount, "offsetAmount", 0);
 		c.write(quadrant, "quadrant", 0);
         c.write(lodCalculatorFactory, "lodCalculatorFactory", null);
-        c.write(heightMap, "heightMap", null);
 	}
 	
 	@Override
@@ -1194,18 +1265,67 @@ public class TerrainQuad extends Node implements Terrain {
 		return usingLOD;
 	}
 
-	public void setHeight(Vector2f xzCoordinate, float height) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public float getHeight(Vector2f xz) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
 	public float[] getHeightMap() {
-		return heightMap;
+
+        //if (true)
+        //    return heightMap;
+        
+        float[] hm = null;
+        int length = ((size-1)/2)+1;
+        int area = size*size;
+        hm = new float[area];
+
+        if (getChildren() != null) {
+            float[] ul=null, ur=null, bl=null, br=null;
+            // get the child heightmaps
+            if (getChild(0) instanceof TerrainPatch) {
+                for (Spatial s : getChildren()) {
+                    if ( ((TerrainPatch)s).getQuadrant() == 1)
+                        ul = BufferUtils.getFloatArray(((TerrainPatch)s).getHeightmap());
+                    else if(((TerrainPatch) s).getQuadrant() == 2)
+                        bl = BufferUtils.getFloatArray(((TerrainPatch)s).getHeightmap());
+                    else if(((TerrainPatch) s).getQuadrant() == 3)
+                        ur = BufferUtils.getFloatArray(((TerrainPatch)s).getHeightmap());
+                    else if(((TerrainPatch) s).getQuadrant() == 4)
+                        br = BufferUtils.getFloatArray(((TerrainPatch)s).getHeightmap());
+                }
+            }
+            else {
+                ul = getQuad(1).getHeightMap();
+                bl = getQuad(2).getHeightMap();
+                ur = getQuad(3).getHeightMap();
+                br = getQuad(4).getHeightMap();
+            }
+
+            // combine them into a single heightmap
+            
+
+            // first upper blocks
+            for (int y=0; y<length; y++) { // rows
+                for (int x1=0; x1<length; x1++) {
+                    int row = y*size;
+                    hm[row+x1] = ul[y*length+x1];
+                }
+                for (int x2=1; x2<length; x2++) {
+                    int row = y*size + length;
+                    hm[row+x2-1] = ur[y*length + x2];
+                }
+            }
+            // second lower blocks
+            int rowOffset = size*length;
+            for (int y=1; y<length; y++) { // rows
+                for (int x1=0; x1<length; x1++) {
+                    int row = (y-1)*size;
+                    hm[rowOffset+row+x1] = bl[y*length+x1];
+                }
+                for (int x2=1; x2<length; x2++) {
+                    int row = (y-1)*size + length;
+                    hm[rowOffset+row+x2-1] = br[y*length + x2];
+                }
+            }
+        }
+
+        return hm;
 	}
 }
 

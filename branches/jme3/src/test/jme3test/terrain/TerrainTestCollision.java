@@ -178,6 +178,7 @@ public class TerrainTestCollision extends SimpleBulletApplication {
         terrain.setLocalScale(new Vector3f(2, 2, 2));
         terrain.setModelBound(new BoundingBox());
         terrain.updateModelBound();
+        terrain.setLocked(false); // unlock it so we can edit the height
         rootNode.attachChild(terrain);
         
 
@@ -250,12 +251,16 @@ public class TerrainTestCollision extends SimpleBulletApplication {
         inputManager.addMapping("Downs", new KeyTrigger(KeyInput.KEY_J));
         inputManager.addMapping("Space", new KeyTrigger(KeyInput.KEY_SPACE));
         inputManager.addMapping("Reset", new KeyTrigger(KeyInput.KEY_RETURN));
+        inputManager.addMapping("Raise", new KeyTrigger(KeyInput.KEY_1));
+        inputManager.addMapping("Lower", new KeyTrigger(KeyInput.KEY_2));
         inputManager.addListener(actionListener, "Lefts");
         inputManager.addListener(actionListener, "Rights");
         inputManager.addListener(actionListener, "Ups");
         inputManager.addListener(actionListener, "Downs");
         inputManager.addListener(actionListener, "Space");
         inputManager.addListener(actionListener, "Reset");
+        inputManager.addListener(actionListener, "Raise");
+        inputManager.addListener(actionListener, "Lower");
         inputManager.addMapping("shoot", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
         inputManager.addListener(actionListener, "shoot");
     }
@@ -376,7 +381,8 @@ public class TerrainTestCollision extends SimpleBulletApplication {
                     if (collisionMarker == null) {
                         createCollisionMarker();
                     }
-                    System.out.println("collide "+hit.getContactPoint());
+                    Vector2f loc = new Vector2f(hit.getContactPoint().x, hit.getContactPoint().y);
+                    System.out.println("collide "+hit.getContactPoint()+", height: "+terrain.getHeight(loc));
                     collisionMarker.setLocalTranslation(hit.getContactPoint());
                 }
             }
@@ -421,6 +427,18 @@ public class TerrainTestCollision extends SimpleBulletApplication {
                     vehicle.setAngularVelocity(Vector3f.ZERO);
                     vehicle.resetSuspension();
                 } else {
+                }
+            } else if (binding.equals("Raise")) {
+                if (keyPressed) {
+                    Vector2f loc = new Vector2f(collisionMarker.getWorldTranslation().x, collisionMarker.getWorldTranslation().z);
+                    float h = terrain.getHeight(loc);
+                    terrain.setHeight(loc, h+1);
+                }
+            } else if (binding.equals("Lower")) {
+                if (keyPressed) {
+                    Vector2f loc = new Vector2f(collisionMarker.getWorldTranslation().x, collisionMarker.getWorldTranslation().z);
+                    float h = terrain.getHeight(loc);
+                    terrain.setHeight(loc, h-1);
                 }
             }
         }

@@ -118,7 +118,11 @@ public class Material implements Cloneable, Savable {
             this.value = value;
             this.texture = value;
         }
-        
+
+        public void setUnit(int unit){
+            this.unit = unit;
+        }
+
         public int getUnit() {
             return unit;
         }
@@ -249,7 +253,7 @@ public class Material implements Cloneable, Savable {
         if (paramDef == null)
             throw new IllegalArgumentException("Material parameter is not defined: " + name);
 
-        if (paramDef.getVarType() != type)
+        if (type != null && paramDef.getVarType() != type)
             logger.logp(Level.WARNING, "Material parameter being set: {0} with " +
                                       "type {1} doesn't match definition type {2}",
                                       name, type.name(), paramDef.getVarType());
@@ -272,6 +276,27 @@ public class Material implements Cloneable, Savable {
             paramValues.put(name, new MatParam(type, name, value));
         else
             val.setValue(value);
+    }
+
+    public void clearTextureParam(String name){
+        checkSetParam(null, name);
+
+        MatParamTexture val = getTextureParam(name);
+        if (val == null){
+            throw new IllegalArgumentException("The given texture parameter is not set.");
+        }else{
+            int texUnit = val.getUnit();
+            paramValues.remove(name);
+            nextTexUnit --;
+            for (MatParam param : paramValues.values()){
+                if (param instanceof MatParamTexture){
+                    MatParamTexture texParam = (MatParamTexture) param;
+                    if (texParam.getUnit() > texUnit){
+                        texParam.setUnit(texParam.getUnit()-1);
+                    }
+                }
+            }
+        }
     }
 
     public void setTextureParam(String name, VarType type, Texture value){
@@ -297,8 +322,11 @@ public class Material implements Cloneable, Savable {
      * @param value the Texture object previously loaded by the asset manager
      */
     public void setTexture(String name, Texture value){
-        if (value == null)
-            throw new NullPointerException();
+        if (value == null){
+            // clear it
+            clearTextureParam(name);
+            return;
+        }
 
         VarType paramType = null;
         switch (value.getType()){

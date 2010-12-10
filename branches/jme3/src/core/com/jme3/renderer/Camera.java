@@ -326,7 +326,7 @@ public class Camera implements Savable, Cloneable {
         this.height = height;
         onViewPortChange();
 
-        if (fixAspect && !parallelProjection){
+        if (fixAspect /*&& !parallelProjection*/){
             frustumRight = frustumTop * ((float)width / height);
             frustumLeft = -frustumRight;
             onFrustumChange();

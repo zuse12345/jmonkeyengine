@@ -94,6 +94,7 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
     private Vector3f targetDir;
     private float previousTargetRotation;
     private Vector3f pos;
+    protected boolean dragToRotate = true;
 
     /**
      * Constructs the chase camera
@@ -122,13 +123,15 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
     }
 
     public void onAction(String name, boolean keyPressed, float tpf) {
-        if (name.equals("toggleRotate") && enabled) {
-            if (keyPressed) {
-                canRotate = true;
-                inputManager.setCursorVisible(false);
-            } else {
-                canRotate = false;
-                inputManager.setCursorVisible(true);
+        if(dragToRotate){
+            if (name.equals("toggleRotate") && enabled) {
+                if (keyPressed) {
+                    canRotate = true;
+                    inputManager.setCursorVisible(false);
+                } else {
+                    canRotate = false;
+                    inputManager.setCursorVisible(true);
+                }
             }
         }
 
@@ -694,5 +697,28 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
     public void setDefaultVerticalRotation(float angle) {
         vRotation = angle;
         targetVRotation = angle;
+    }
+
+
+    /**
+     * @return If drag to rotate feature is enabled.
+     *
+     * @see FlyByCamera#setDragToRotate(boolean)
+     */
+    public boolean isDragToRotate() {
+        return dragToRotate;
+    }
+
+    /**
+     * @param dragToRotate When true, the user must hold the mouse button
+     * and drag over the screen to rotate the camera, and the cursor is
+     * visible until dragged. Otherwise, the cursor is invisible at all times
+     * and holding the mouse button is not needed to rotate the camera.
+     * This feature is disabled by default.
+     */
+    public void setDragToRotate(boolean dragToRotate) {
+        this.dragToRotate = dragToRotate;
+        this.canRotate=!dragToRotate;
+        inputManager.setCursorVisible(dragToRotate);
     }
 }

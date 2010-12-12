@@ -17,8 +17,6 @@ public class WaveFrontOBJDataObject extends SpatialAssetDataObject {
 
     public WaveFrontOBJDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
     }
 
 }

@@ -35,6 +35,7 @@ import com.jme3.asset.AssetKey;
 import com.jme3.export.Savable;
 import com.jme3.export.binary.BinaryExporter;
 import com.jme3.gde.core.scene.SceneApplication;
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -84,6 +85,7 @@ public class AssetDataObject extends MultiDataObject {
     };
     protected DataNode dataNode;
     protected Savable savable;
+    protected String saveExtension;
 
     public AssetDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
@@ -156,7 +158,8 @@ public class AssetDataObject extends MultiDataObject {
         FileLock lock = null;
         try {
             lock = getPrimaryFile().lock();
-            Savable spatial = (Savable) mgr.getManager().loadAsset(new AssetKey(assetKey));
+            Savable spatial = (Savable) mgr.loadAsset(new AssetKey(assetKey));
+            savable = spatial;
             lock.releaseLock();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -179,7 +182,17 @@ public class AssetDataObject extends MultiDataObject {
         FileLock lock = null;
         try {
             lock = takePrimaryFileLock();
-            exp.save(savable, FileUtil.toFile(getPrimaryFile()));
+            File outFile = null;
+            if (saveExtension == null) {
+                outFile = FileUtil.toFile(getPrimaryFile());
+            } else {
+                FileObject outFileObject=getPrimaryFile().getParent().getFileObject(getPrimaryFile().getName(), saveExtension);
+                if(outFileObject==null){
+                    outFileObject=getPrimaryFile().getParent().createData(getPrimaryFile().getName(), saveExtension);
+                }
+                outFile = FileUtil.toFile(outFileObject);
+            }
+            exp.save(savable, outFile);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         } finally {

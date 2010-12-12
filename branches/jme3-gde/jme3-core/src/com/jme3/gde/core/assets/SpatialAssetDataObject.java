@@ -36,6 +36,7 @@ import com.jme3.scene.Spatial;
 import java.io.IOException;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Exceptions;
@@ -48,6 +49,8 @@ public class SpatialAssetDataObject extends AssetDataObject {
 
     public SpatialAssetDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
+        getLookup().lookup(AssetData.class).setExtension("j3odata");
+        saveExtension = "j3o";
     }
 
     @Override
@@ -70,7 +73,9 @@ public class SpatialAssetDataObject extends AssetDataObject {
         FileLock lock = null;
         try {
             lock = getPrimaryFile().lock();
-            Spatial spatial = mgr.getManager().loadModel(assetKey);
+            mgr.deleteFromCache(new ModelKey(assetKey));
+            Spatial spatial = mgr.loadModel(assetKey);
+            savable = spatial;
             lock.releaseLock();
             return spatial;
         } catch (IOException ex) {
@@ -80,5 +85,35 @@ public class SpatialAssetDataObject extends AssetDataObject {
             }
         }
         return null;
+    }
+
+    public void saveAsset() {
+        super.saveAsset();
+        ProjectAssetManager mgr = getLookup().lookup(ProjectAssetManager.class);
+        if (mgr == null) {
+            return;
+        }
+        FileObject outFile = null;
+        if (saveExtension == null) {
+            outFile = getPrimaryFile();
+        } else {
+            outFile=getPrimaryFile().getParent().getFileObject(getPrimaryFile().getName(), saveExtension);
+            if(outFile==null){
+                //ERROR
+                return;
+//                outFile=getPrimaryFile().getParent().createData(getPrimaryFile().getName(), saveExtension);
+            }
+        }
+        try {
+            DataObject targetModel = DataObject.find(outFile);
+            AssetData properties = targetModel.getLookup().lookup(AssetData.class);
+            if (properties != null) {
+                properties.loadProperties();
+                properties.setProperty("ORIGINAL_PATH", mgr.getRelativeAssetPath(outFile.getPath()));
+                properties.saveProperties();
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }

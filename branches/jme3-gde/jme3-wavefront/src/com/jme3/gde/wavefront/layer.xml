@@ -18,9 +18,9 @@
         <folder name="text">
             <folder name="x-wavefrontobj">
                 <folder name="Actions">
-                    <file name="com-jme3-gde-wavefront-importer-WavefrontOBJToJme.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Wavefront/com-jme3-gde-wavefront-importer-WavefrontOBJToJme.instance"/>
-                        <attr name="position" intvalue="0"/>
+                    <file name="com-jme3-gde-core-assets-actions-ConvertModel.shadow">
+                        <attr name="originalFile" stringvalue="Actions/jMonkeyPlatform/com-jme3-gde-core-assets-actions-ConvertModel.instance"/>
+                        <attr name="position" intvalue="10"/>
                     </file>
                     <file name="com-jme3-gde-core-assets-actions-OpenModel.shadow">
                         <attr name="originalFile" stringvalue="Actions/jMonkeyPlatform/com-jme3-gde-core-assets-actions-OpenModel.instance"/>

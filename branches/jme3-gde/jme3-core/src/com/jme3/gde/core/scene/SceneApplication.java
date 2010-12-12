@@ -50,6 +50,7 @@ import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.scene.Spatial.CullHint;
 import com.jme3.system.AppSettings;
 import java.util.Collection;
@@ -389,9 +390,9 @@ public class SceneApplication extends Application implements LookupProvider, Loo
                 }
                 setHelpContext(request.getHelpCtx());
                 getCurrentSceneRequest().setDisplayed(true);
-                Node model = request.getLookup().lookup(Node.class);
+                Spatial model = request.getRootNode();
                 if (model == null) {
-                    StatusDisplayer.getDefault().setStatusText("could not load tree from request: " + getCurrentSceneRequest().getWindowTitle());
+                    StatusDisplayer.getDefault().setStatusText("could not load Spatial from request: " + getCurrentSceneRequest().getWindowTitle());
                     return null;
                 }
                 rootNode.attachChild(model);

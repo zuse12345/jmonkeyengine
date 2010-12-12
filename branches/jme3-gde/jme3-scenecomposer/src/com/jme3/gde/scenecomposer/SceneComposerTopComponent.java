@@ -775,7 +775,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
      */
     public void sceneRequested(SceneRequest request) {
         if (request.equals(currentRequest)) {
-            setSceneInfo(currentRequest.getRootNode(), editorController.getCurrentFileObject(), true);
+            setSceneInfo(currentRequest.getJmeNode(), editorController.getCurrentFileObject(), true);
             if (camController != null) {
                 camController.disable();
             }
@@ -783,7 +783,7 @@ public final class SceneComposerTopComponent extends TopComponent implements Sce
                 toolController.cleanup();
             }
             toolController = new SceneToolController(currentRequest.getToolNode(), currentRequest.getManager().getManager());
-            camController = new ComposerCameraController(SceneApplication.getApplication().getCamera(), request.getRootNode());
+            camController = new ComposerCameraController(SceneApplication.getApplication().getCamera(), request.getJmeNode());
             camController.setMaster(this);
             camController.enable();
         }/* else {

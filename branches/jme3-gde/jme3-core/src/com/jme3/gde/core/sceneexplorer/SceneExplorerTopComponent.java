@@ -35,6 +35,7 @@ import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
 import com.jme3.gde.core.scene.SceneRequest;
+import com.jme3.gde.core.sceneexplorer.nodes.JmeNode;
 import com.jme3.gde.core.sceneexplorer.nodes.JmeSpatial;
 import java.util.Collection;
 import java.util.Iterator;
@@ -188,7 +189,7 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
 
     @Override
     public HelpCtx getHelpCtx() {
-        HelpCtx ctx=new HelpCtx("jme3.jmonkeyplatform.scene_explorer");
+        HelpCtx ctx = new HelpCtx("jme3.jmonkeyplatform.scene_explorer");
         //this call is for single components:
         //HelpCtx.setHelpIDString(this, "com.jme3.gde.core.sceneviewer");
         return ctx;
@@ -240,21 +241,24 @@ public final class SceneExplorerTopComponent extends TopComponent implements Exp
         Collection collection = nodeSelectionResult.allInstances();
         for (Iterator it = collection.iterator(); it.hasNext();) {
             Object object = it.next();
-            if(object instanceof JmeSpatial){
-                selectedSpatial=(JmeSpatial)object;
+            if (object instanceof JmeSpatial) {
+                selectedSpatial = (JmeSpatial) object;
                 return;
             }
         }
-        selectedSpatial=null;
+        selectedSpatial = null;
     }
 
     public void sceneRequested(SceneRequest request) {
         this.request = request;
-        explorerManager.setRootContext(request.getRootNode());
-        explorerManager.getRootContext().setDisplayName(request.getRootNode().getName());
+        JmeNode node = request.getJmeNode();
+        if (node != null) {
+            explorerManager.setRootContext(node);
+            explorerManager.getRootContext().setDisplayName(node.getName());
+        }
     }
 
-    public boolean sceneClose(SceneRequest request){
+    public boolean sceneClose(SceneRequest request) {
         this.request = null;
         explorerManager.setRootContext(Node.EMPTY);
         return true;

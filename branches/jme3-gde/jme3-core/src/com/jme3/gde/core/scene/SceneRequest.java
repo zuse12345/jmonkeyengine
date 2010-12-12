@@ -33,9 +33,11 @@ package com.jme3.gde.core.scene;
 
 import com.jme3.gde.core.assets.ProjectAssetManager;
 import com.jme3.gde.core.sceneexplorer.nodes.JmeNode;
+import com.jme3.gde.core.sceneexplorer.nodes.NodeUtility;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -45,7 +47,8 @@ public class SceneRequest {
 
     private String windowTitle = "";
     private Object requester;
-    private JmeNode rootNode;
+    private JmeNode jmeNode;
+    private com.jme3.scene.Spatial rootNode;
     private com.jme3.scene.Node toolNode;
     private ProjectAssetManager manager;
     private boolean displayed = false;
@@ -54,7 +57,17 @@ public class SceneRequest {
 
     public SceneRequest(Object requester, JmeNode rootNode, ProjectAssetManager manager) {
         this.requester = requester;
+        this.jmeNode = rootNode;
+        this.rootNode = rootNode.getLookup().lookup(com.jme3.scene.Node.class);
+        this.manager = manager;
+    }
+
+    public SceneRequest(Object requester, com.jme3.scene.Spatial rootNode, ProjectAssetManager manager) {
+        this.requester = requester;
         this.rootNode = rootNode;
+        if (rootNode instanceof com.jme3.scene.Node) {
+            this.jmeNode = NodeUtility.createNode((com.jme3.scene.Node) rootNode, true);
+        }
         this.manager = manager;
     }
 
@@ -63,7 +76,11 @@ public class SceneRequest {
      * @return
      */
     public Lookup getLookup() {
-        return rootNode.getLookup();
+        if (jmeNode != null) {
+            return jmeNode.getLookup();
+        } else {
+            return Lookups.singleton(new Object());
+        }
     }
 
     /**
@@ -90,7 +107,11 @@ public class SceneRequest {
     /**
      * @return the rootNode
      */
-    public JmeNode getRootNode() {
+    public JmeNode getJmeNode() {
+        return jmeNode;
+    }
+
+    public com.jme3.scene.Spatial getRootNode() {
         return rootNode;
     }
 
@@ -155,5 +176,4 @@ public class SceneRequest {
     public void setHelpCtx(HelpCtx helpCtx) {
         this.helpCtx = helpCtx;
     }
-
 }

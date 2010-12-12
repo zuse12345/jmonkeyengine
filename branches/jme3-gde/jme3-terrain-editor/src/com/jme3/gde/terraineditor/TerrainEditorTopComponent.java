@@ -457,7 +457,7 @@ public final class TerrainEditorTopComponent extends TopComponent implements Sce
     public void sceneRequested(SceneRequest request) {
         if (request.equals(currentRequest)) {
 
-            setLoadedScene(currentRequest.getRootNode(), true);
+            setLoadedScene(currentRequest.getJmeNode(), true);
 
             if (camController != null) {
                 camController.disable();
@@ -466,7 +466,7 @@ public final class TerrainEditorTopComponent extends TopComponent implements Sce
                 toolController.cleanup();
             }
             toolController = new SceneToolController(currentRequest.getToolNode(), currentRequest.getManager().getManager());
-            camController = new TerrainCameraController(SceneApplication.getApplication().getCamera(), SceneApplication.getApplication().getInputManager(), request.getRootNode());
+            camController = new TerrainCameraController(SceneApplication.getApplication().getCamera(), SceneApplication.getApplication().getInputManager(), request.getJmeNode());
             camController.setMaster(this);
             camController.enable();
             camController.setToolsNode(currentRequest.getToolNode());

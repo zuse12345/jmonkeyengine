@@ -56,6 +56,7 @@ import com.jme3.texture.Image.Format;
 import com.jme3.texture.Texture.WrapMode;
 import com.jme3.texture.Texture2D;
 import com.jme3.ui.Picture;
+import sun.reflect.generics.tree.Tree;
 
 /**
  *
@@ -268,19 +269,8 @@ public class SimpleWaterProcessor implements SceneProcessor {
     }
 
     protected void destroyViews() {
-        rm.removePreView(reflectionView);
+      //  rm.removePreView(reflectionView);
         rm.removePreView(refractionView);
-    }
-
-    protected void invertColorLocal(ColorRGBA color) {
-        color.r = 1.0f - color.r;
-        color.g = 1.0f - color.g;
-        color.b = 1.0f - color.b;
-    }
-
-    protected ColorRGBA invertColor(ColorRGBA color) {
-        ColorRGBA ret = new ColorRGBA(1.0f - color.r, 1.0f - color.g, 1.0f - color.b, color.a);
-        return ret;
     }
 
     /**
@@ -456,6 +446,7 @@ public class SimpleWaterProcessor implements SceneProcessor {
         }
 
         public void preFrame(float tpf) {
+
             //Java code
 //            Camera cam = rm.getCurrentCamera();
 //            Matrix4f projMatrix=cam.getProjectionMatrix();
@@ -485,9 +476,25 @@ public class SimpleWaterProcessor implements SceneProcessor {
         }
 
         public void postQueue(RenderQueue rq) {
+
+            rm.getRenderer().setFrameBuffer(reflectionBuffer);
+            reflectionCam.setProjectionMatrix(null);
+            rm.setCamera(reflectionCam, false);
+            rm.getRenderer().clearBuffers(true, true, true);
+            rm.getRenderer().setDepthRange(1, 1);
+            vp.getQueue().renderQueue(RenderQueue.Bucket.Sky, rm, reflectionCam,true);
+            rm.getRenderer().setDepthRange(0, 1);
+            Plane p=plane.clone();
+            p.setConstant(p.getConstant()-5f);
+            reflectionCam.setClipPlane(p,1);
+            rm.setCamera(reflectionCam, false);
+
+
+          
         }
 
         public void postFrame(FrameBuffer out) {
+         
         }
 
         public void cleanup() {
@@ -515,6 +522,9 @@ public class SimpleWaterProcessor implements SceneProcessor {
         }
 
         public void preFrame(float tpf) {
+            Plane p=plane.clone();
+            p.setConstant(p.getConstant()+0.3f);
+            refractionCam.setClipPlane(p,-1);
         }
 
         public void postQueue(RenderQueue rq) {

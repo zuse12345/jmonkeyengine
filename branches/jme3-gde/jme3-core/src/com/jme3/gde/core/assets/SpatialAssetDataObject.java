@@ -49,7 +49,6 @@ public class SpatialAssetDataObject extends AssetDataObject {
 
     public SpatialAssetDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        getLookup().lookup(AssetData.class).setExtension("j3odata");
         saveExtension = "j3o";
     }
 
@@ -100,8 +99,7 @@ public class SpatialAssetDataObject extends AssetDataObject {
             outFile=getPrimaryFile().getParent().getFileObject(getPrimaryFile().getName(), saveExtension);
             if(outFile==null){
                 //ERROR
-                return;
-//                outFile=getPrimaryFile().getParent().createData(getPrimaryFile().getName(), saveExtension);
+                throw new IllegalStateException("Cannot find save file!");
             }
         }
         try {

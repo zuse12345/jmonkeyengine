@@ -27,18 +27,18 @@ public class OgreBinaryMeshDataObject extends SpatialAssetDataObject {
 
     @Override
     public Spatial loadAsset() {
-        ProgressHandle handle=ProgressHandleFactory.createHandle("Converting OgreBinary");
+        ProgressHandle handle = ProgressHandleFactory.createHandle("Converting OgreBinary");
         handle.start(4);
         //mesh
-        OgreXMLConvertOptions options=new OgreXMLConvertOptions(getPrimaryFile().getPath());
+        OgreXMLConvertOptions options = new OgreXMLConvertOptions(getPrimaryFile().getPath());
         options.setBinaryFile(true);
-        OgreXMLConvert conv=new OgreXMLConvert();
+        OgreXMLConvert conv = new OgreXMLConvert();
         conv.doConvert(options, handle);
         //try skeleton
-        if(getPrimaryFile().existsExt("skeleton")){
-            OgreXMLConvertOptions options2=new OgreXMLConvertOptions();
+        if (getPrimaryFile().existsExt("skeleton")) {
+            OgreXMLConvertOptions options2 = new OgreXMLConvertOptions();
             options2.setBinaryFile(true);
-            OgreXMLConvert conv2=new OgreXMLConvert();
+            OgreXMLConvert conv2 = new OgreXMLConvert();
             conv2.doConvert(options2, handle);
         }
         handle.progress(3);
@@ -51,8 +51,9 @@ public class OgreBinaryMeshDataObject extends SpatialAssetDataObject {
         try {
             lock = getPrimaryFile().lock();
             Spatial spatial = mgr.getManager().loadModel(assetKey);
+            savable = spatial;
             lock.releaseLock();
-            File deleteFile=new File(options.getDestFile());
+            File deleteFile = new File(options.getDestFile());
             deleteFile.delete();
             handle.finish();
             return spatial;
@@ -62,10 +63,9 @@ public class OgreBinaryMeshDataObject extends SpatialAssetDataObject {
                 lock.releaseLock();
             }
         }
-        File deleteFile=new File(options.getDestFile());
+        File deleteFile = new File(options.getDestFile());
         deleteFile.delete();
         handle.finish();
         return null;
     }
-
 }

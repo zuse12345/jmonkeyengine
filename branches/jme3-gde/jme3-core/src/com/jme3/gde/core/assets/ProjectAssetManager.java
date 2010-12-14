@@ -51,7 +51,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author normenhansen
  */
-public class ProjectAssetManager extends DesktopAssetManager{
+public class ProjectAssetManager extends DesktopAssetManager {
 
     private Project project;
     private List<String> folderName = new LinkedList<String>();
@@ -211,7 +211,13 @@ public class ProjectAssetManager extends DesktopAssetManager{
     private class DummyProject implements Project {
 
         ProjectAssetManager pm;
+        FileObject folder;
         XMLFileSystem fileSystem = new XMLFileSystem();
+
+        public DummyProject(ProjectAssetManager pm, FileObject folder) {
+            this.folder = folder;
+            this.pm = pm;
+        }
 
         public DummyProject(ProjectAssetManager pm) {
             this.pm = pm;
@@ -222,6 +228,9 @@ public class ProjectAssetManager extends DesktopAssetManager{
         }
 
         public FileObject getProjectDirectory() {
+            if (folder != null) {
+                return folder;
+            }
             return fileSystem.getRoot();
         }
     }

@@ -36,7 +36,7 @@ public class OgreBinaryMeshDataObject extends SpatialAssetDataObject {
         conv.doConvert(options, handle);
         //try skeleton
         if (getPrimaryFile().existsExt("skeleton")) {
-            OgreXMLConvertOptions options2 = new OgreXMLConvertOptions();
+            OgreXMLConvertOptions options2 = new OgreXMLConvertOptions(getPrimaryFile().getParent().getFileObject(getPrimaryFile().getName(), "skeleton").getPath());
             options2.setBinaryFile(true);
             OgreXMLConvert conv2 = new OgreXMLConvert();
             conv2.doConvert(options2, handle);

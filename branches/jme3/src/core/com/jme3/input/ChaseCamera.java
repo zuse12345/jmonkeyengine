@@ -95,6 +95,7 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
     private float previousTargetRotation;
     private Vector3f pos;
     protected boolean dragToRotate = true;
+    protected Vector3f lookAtOffset=null;
 
     /**
      * Constructs the chase camera
@@ -374,7 +375,11 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
             prevPos = new Vector3f(target.getWorldTranslation());
 
             //the cam looks at the target
-            cam.lookAt(target.getWorldTranslation(), initialUpVec);
+            if(lookAtOffset!=null){
+                cam.lookAt(target.getWorldTranslation().add(lookAtOffset), initialUpVec);
+            }else{
+                cam.lookAt(target.getWorldTranslation(), initialUpVec);
+           }
         }
     }
 
@@ -721,4 +726,49 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
         this.canRotate=!dragToRotate;
         inputManager.setCursorVisible(dragToRotate);
     }
+
+
+    /**
+     * return the current distance from the camera to the target
+     * @return
+     */
+    public float getDistanceToTarget() {
+        return distance;
+    }
+
+    /**
+     * returns the current horizontal rotation around the target in radians
+     * @return
+     */
+    public float getHorizontalRotation() {
+        return rotation;
+    }
+
+    /**
+     * returns the current vertical rotation around the target in radians.
+     * @return
+     */
+    public float getVerticalRotation() {
+        return vRotation;
+    }
+
+    /**
+     * returns the offset from the target's position where the camera looks at
+     * @return
+     */
+    public Vector3f getLookAtOffset() {
+        return lookAtOffset;
+    }
+
+    /**
+     * Sets the offset from the target's position where the camera looks at
+     * @param lookAtOffset
+     */
+    public void setLookAtOffset(Vector3f lookAtOffset) {
+        this.lookAtOffset = lookAtOffset;
+    }
+
+
+
+
 }

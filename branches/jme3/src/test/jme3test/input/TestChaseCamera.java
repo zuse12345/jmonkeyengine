@@ -75,6 +75,7 @@ public class TestChaseCamera extends SimpleApplication implements AnalogListener
         // Enable a chase cam
         chaseCam = new ChaseCamera(cam, teaGeom, inputManager);
         chaseCam.setSmoothMotion(true);
+   //     chaseCam.setLookAtOffset(Vector3f.UNIT_Y.mult(3));
         regsiterInput();
         rootNode.attachChild(pivot);
         

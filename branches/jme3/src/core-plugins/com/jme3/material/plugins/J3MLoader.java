@@ -425,26 +425,6 @@ public class J3MLoader implements AssetLoader {
 
     }
 
-//    private void readAttributes() throws IOException{
-//        nextStatement();
-//
-//        String word = scan.next();
-//        throwIfNequal("{", word);
-//
-//        nextStatement();
-//
-//        while (true){
-//            if (scan.hasNext("\\}")){
-//                scan.next();
-//                break;
-//            }
-//
-//            Param p = readParam(true);
-//            technique.addAttribute(p);
-//            nextStatement();
-//        }
-//    }
-
     private void readTechniqueStatement() throws IOException{
         String word = scan.next();
         if (word.equals("VertexShader")){
@@ -461,12 +441,15 @@ public class J3MLoader implements AssetLoader {
             readRenderState();
         }else if (word.equals("Defines")){
             readDefines();
-//        }else if (word.equals("Attributes")){
-//            readAttributes();
         }else{
             throwIfNequal(null, word);
         }
         nextStatement();
+    }
+
+    private void readTransparentStatement() throws IOException{
+        String on = readString("[\n;(\\})]");
+        material.setTransparent(parseBoolean(on));
     }
 
     private void readTechnique() throws IOException{
@@ -563,6 +546,9 @@ public class J3MLoader implements AssetLoader {
                     nextStatement();
                 }else if (word.equals("AdditionalRenderState")){
                     readAdditionalRenderState();
+                    nextStatement();
+                }else if (word.equals("Transparent")){
+                    readTransparentStatement();
                     nextStatement();
                 }
             }else{

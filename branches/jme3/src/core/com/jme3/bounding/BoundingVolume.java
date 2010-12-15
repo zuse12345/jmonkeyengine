@@ -182,7 +182,7 @@ public abstract class BoundingVolume implements Savable, Cloneable, Collidable {
     }
 
     public final void setCenter(Vector3f newCenter) {
-        center = newCenter;
+        center.set(newCenter);
     }
 
     /**

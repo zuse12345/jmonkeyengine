@@ -89,6 +89,10 @@ public class LODGeomap extends BufferGeomap {
 		m.updateBound();
 		return m;
 	}
+
+    protected void removeNormalBuffer() {
+        ndata = null;
+    }
 	
 	public FloatBuffer writeTexCoordArray(FloatBuffer store, Vector2f offset, Vector2f scale, float offsetAmount, int totalSize){
 		if (store!=null){

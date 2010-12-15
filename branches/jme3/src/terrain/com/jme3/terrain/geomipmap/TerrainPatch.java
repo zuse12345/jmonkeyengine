@@ -52,7 +52,6 @@ import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
-import com.jme3.scene.VertexBuffer;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.terrain.geomipmap.lodcalc.DistanceLodCalculator;
 import com.jme3.terrain.geomipmap.lodcalc.LodCalculator;
@@ -181,8 +180,8 @@ public class TerrainPatch extends Geometry {
 		heightBuffer.put(heightMap);
 		
 		geomap = new LODGeomap(size, heightBuffer);
-		Mesh mesh = geomap.createMesh(stepScale, new Vector2f(1,1), offset, offsetAmount, totalSize, false);
-		setMesh(mesh);
+		Mesh m = geomap.createMesh(stepScale, new Vector2f(1,1), offset, offsetAmount, totalSize, false);
+		setMesh(m);
 		
 	}
 
@@ -243,8 +242,29 @@ public class TerrainPatch extends Geometry {
         FloatBuffer newVertexBuffer = geomap.writeVertexArray(null, stepScale, false);
         getMesh().clearBuffer(Type.Position);
 		getMesh().setBuffer(Type.Position, 3, newVertexBuffer);
-        
+
+        //updateNormals(x,z);
+    }
+
+    public void adjustHeight(float x, float z, float delta) {
+        int idx = (int) (z * size + x);
         float h = getMesh().getFloatBuffer(Type.Position).get(idx*3+1);
+        
+        geomap.getHeightData().put(idx, h+delta);
+
+        FloatBuffer newVertexBuffer = geomap.writeVertexArray(null, stepScale, false);
+        getMesh().clearBuffer(Type.Position);
+		getMesh().setBuffer(Type.Position, 3, newVertexBuffer);
+
+        //updateNormals(x,z);
+    }
+
+    protected void updateNormals(float x, float z) {
+        //TODO: we need real smooth normals, and a method to calculate that for the triangle strips
+        ((LODGeomap)geomap).removeNormalBuffer();
+        FloatBuffer nb = geomap.writeNormalArray(null, Vector3f.UNIT_XYZ);
+        getMesh().clearBuffer(Type.Normal);
+        getMesh().setBuffer(Type.Normal, 3, nb);
     }
 
     /**

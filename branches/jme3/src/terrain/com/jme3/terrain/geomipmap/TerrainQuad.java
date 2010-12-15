@@ -738,7 +738,7 @@ public class TerrainQuad extends Node implements Terrain {
 	public float getHeight(Vector2f xz) {
         // offset
         int x = (int) ((xz.x / getLocalScale().x) + totalSize / 2);
-        int z = (int) ((xz.y / getLocalScale().y) + totalSize / 2);
+        int z = (int) ((xz.y / getLocalScale().z) + totalSize / 2);
 
         return getHeight(x, z);
 	}
@@ -747,7 +747,7 @@ public class TerrainQuad extends Node implements Terrain {
      * This will just get the heightmap value at the supplied point,
      * not an interpolated (actual) height value.
      */
-    public float getHeight(int x, int z) {
+    protected float getHeight(int x, int z) {
         int quad = findQuadrant(x, z);
         int split = (size + 1) >> 1;
         if (children != null) {
@@ -796,9 +796,8 @@ public class TerrainQuad extends Node implements Terrain {
     public void setHeight(Vector2f xz, float height) {
         // offset
         int x = (int) ((xz.x / getLocalScale().x) + totalSize / 2);
-        int z = (int) ((xz.y / getLocalScale().y) + totalSize / 2);
+        int z = (int) ((xz.y / getLocalScale().z) + totalSize / 2);
 
-        int idx = z*totalSize + x;
         setHeight(x, z, height); // adjust the actual mesh
 	}
 
@@ -839,6 +838,65 @@ public class TerrainQuad extends Node implements Terrain {
                         ((TerrainQuad) spat).setHeight(col, row, newVal);
                     } else if (spat instanceof TerrainPatch) {
                         ((TerrainPatch) spat).setHeight(col, row, newVal);
+                    }
+                }
+
+            }
+        }
+    }
+
+    protected boolean isPointOnTerrain(int x, int z) {
+        return (x >= 0 && x <= totalSize && z >= 0 && z <= totalSize);
+    }
+
+
+    public void adjustHeight(Vector2f xz, float delta) {
+        int x = (int) ((xz.x / getLocalScale().x) + totalSize / 2);
+        int z = (int) ((xz.y / getLocalScale().z) + totalSize / 2);
+
+        if (!isPointOnTerrain(x,z))
+            return;
+        
+        adjustHeight(x, z,delta);
+    }
+
+    protected void adjustHeight(int x, int z, float delta) {
+        int quad = findQuadrant(x, z);
+        int split = (size + 1) >> 1;
+        if (children != null) {
+            for (int i = children.size(); --i >= 0;) {
+                Spatial spat = children.get(i);
+                int col = x;
+                int row = z;
+                boolean match = false;
+
+                // get the childs quadrant
+                int childQuadrant = 0;
+                if (spat instanceof TerrainQuad) {
+                    childQuadrant = ((TerrainQuad) spat).getQuadrant();
+                } else if (spat instanceof TerrainPatch) {
+                    childQuadrant = ((TerrainPatch) spat).getQuadrant();
+                }
+
+                if (childQuadrant == 1 && (quad & 1) != 0) {
+                    match = true;
+                } else if (childQuadrant == 2 && (quad & 2) != 0) {
+                    row = z - split + 1;
+                    match = true;
+                } else if (childQuadrant == 3 && (quad & 4) != 0) {
+                    col = x - split + 1;
+                    match = true;
+                } else if (childQuadrant == 4 && (quad & 8) != 0) {
+                    col = x - split + 1;
+                    row = z - split + 1;
+                    match = true;
+                }
+
+                if (match) {
+                    if (spat instanceof TerrainQuad) {
+                        ((TerrainQuad) spat).adjustHeight(col, row, delta);
+                    } else if (spat instanceof TerrainPatch) {
+                        ((TerrainPatch) spat).adjustHeight(col, row, delta);
                     }
                 }
 
@@ -1091,7 +1149,7 @@ public class TerrainQuad extends Node implements Terrain {
 	 * Use a lightmap instead.
 	 */
 	public void fixNormals() {
-	/*	if (children != null) {
+		/*if (children != null) {
 			for (int x = children.size(); --x >= 0;) {
 				Spatial child = children.get(x);
 				if (child instanceof TerrainQuad) {

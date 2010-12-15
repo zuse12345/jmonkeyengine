@@ -188,13 +188,13 @@ public abstract class AbstractGeomap implements Geomap {
                 for (int x = 0; x < getWidth(); x++) {
                     rootPoint.set(x, getValue(x,y), y);
                     if (y == getHeight() - 1) {
-                        if (x == getWidth() - 1) { // case #4
+                        if (x == getWidth() - 1) {  // case #4 : last row, last col
                             // left cross up
 //                            adj = normalIndex - getWidth();
 //                            opp = normalIndex - 1;
                             adjacentPoint.set(x, getValue(x,y-1), y-1);
                             oppositePoint.set(x-1, getValue(x-1, y), y);
-                        } else { // case #3
+                        } else {                    // case #3 : last row, except for last col
                             // right cross up
 //                            adj = normalIndex + 1;
 //                            opp = normalIndex - getWidth();
@@ -202,13 +202,13 @@ public abstract class AbstractGeomap implements Geomap {
                             oppositePoint.set(x, getValue(x,y-1), y-1);
                         }
                     } else {
-                        if (x == getWidth() - 1) { // case #2
+                        if (x == getWidth() - 1) {  // case #2 : last column except for last row
                             // left cross down
                             adjacentPoint.set(x-1, getValue(x-1,y), y);
                             oppositePoint.set(x, getValue(x,y+1), y+1);
 //                            adj = normalIndex - 1;
 //                            opp = normalIndex + getWidth();
-                        } else { // case #1
+                        } else {                    // case #1 : most cases
                             // right cross down
                             adjacentPoint.set(x, getValue(x,y+1), y+1);
                             oppositePoint.set(x+1, getValue(x+1,y), y);

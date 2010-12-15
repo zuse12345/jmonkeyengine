@@ -65,6 +65,8 @@ public interface Terrain {
 	 * @param height that will be set at the coordinate
 	 */
 	public void setHeight(Vector2f xzCoordinate, float height);
+
+    public void adjustHeight(Vector2f xzCoordinate, float delta);
 	
 	/**
 	 * Get the heightmap of the entire terrain.

@@ -52,7 +52,7 @@ public class SceneToolController {
         Material blueMat = new Material(manager, "Common/MatDefs/Misc/WireColor.j3md");
         blueMat.setColor("m_Color", ColorRGBA.Blue);
         Material grayMat = new Material(manager, "Common/MatDefs/Misc/WireColor.j3md");
-        blueMat.setColor("m_Color", ColorRGBA.Gray);
+        grayMat.setColor("m_Color", ColorRGBA.Gray);
 
         //cursor
         if (cursor == null) {

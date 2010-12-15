@@ -4,116 +4,206 @@
  */
 package com.jme3.gde.terraineditor;
 
+import com.jme3.app.Application;
+import com.jme3.app.state.AppStateManager;
 import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
-import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.controller.AbstractCameraController;
 import com.jme3.gde.core.sceneexplorer.nodes.JmeNode;
-import com.jme3.gde.terraineditor.TerrainEditorTopComponent.TerrainEditButton;
 import com.jme3.input.InputManager;
-import com.jme3.material.Material;
-import com.jme3.math.ColorRGBA;
+import com.jme3.input.KeyInput;
+import com.jme3.input.event.KeyInputEvent;
+import com.jme3.input.event.MouseMotionEvent;
 import com.jme3.math.Ray;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
-import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
-import com.jme3.scene.shape.Cylinder;
-import com.jme3.terrain.Terrain;
-import java.util.concurrent.Callable;
+
 
 /**
- *
- * @author normenhansen
+ * Runs in the JME thread, not awt thread.
+ * Listens to mouse/camera input and relays the movements
+ * to other controllers: editorController, toolController
+ * 
+ * @author normenhansen, bowens
  */
 public class TerrainCameraController extends AbstractCameraController {
 
-    private JmeNode rootNode;
-    private Node toolsNode;
-    private Node terrainNode;
     private boolean active;
-    private TerrainEditButton currentEditButtonState;
-    private Geometry marker;
+    private TerrainToolController toolController;
+    private TerrainEditorController editorController;
+    private boolean forceCameraControls = false; // when user holds shift, this is true
+
+    private boolean terrainEditToolActivated = false;
+    protected Application app;
+    private float toolModifyRate = 0.1f; // how frequently (in seconds) it should update
+    private long lastModifyTime;
 
     public TerrainCameraController(Camera cam, InputManager inputManager, JmeNode rootNode) {
         super(cam, inputManager);
-        this.rootNode = rootNode;
+        //this.jmeRootNode = rootNode;
+        //this.rootNode = rootNode.getLookup().lookup(Node.class);
     }
 
-    public void setToolsNode(Node toolsNode) {
-        this.toolsNode = toolsNode;
+
+
+    @Override
+    public void initialize(AppStateManager stateManager, Application app) {
+        super.initialize(stateManager, app);
+        this.app = app;
+    }
+
+    public void setToolController(TerrainToolController toolController) {
+        this.toolController = toolController;
+    }
+
+    public void setEditorController(TerrainEditorController editorController) {
+        this.editorController = editorController;
     }
 
     
     @Override
-    protected void checkClick(int button) {
-    }
+    public void onMouseMotionEvent(MouseMotionEvent mme) {
+        super.onMouseMotionEvent(mme);
 
-    public void setActive(boolean bln) {
-        this.active = bln;
-    }
 
-    public boolean isActive() {
-        return active;
-    }
+        // if one of the terrain edit buttons is not enabled, return
+        if (!isTerrainEditButtonEnabled())
+            return;
 
-    public void postRender() {
-        
-    }
-
-    public void setTerrainEditButtonState(final TerrainEditButton state) {
-        if (getTerrain(null) == null)
-            return; // no terrain in map yet
-
-        currentEditButtonState = state;
-        if (state == TerrainEditButton.none) {
-            SceneApplication.getApplication().enqueue(new Callable<Object>() {
-                public Object call() throws Exception {
-                    hideEditTool();
-                    return null;
-                }
-            });
-        } else if (state == TerrainEditButton.raiseTerrain) {
-            SceneApplication.getApplication().enqueue(new Callable<Object>() {
-                public Object call() throws Exception {
-                    showRaiseLowerEditTool(state);
-                    return null;
-                }
-            });
-        }
+        // move the marker
+        Vector3f pos = getTerrainCollisionPoint();
+        if (pos != null)
+            toolController.doMoveEditTool(pos);
     }
     
-    private Node getTerrain(Spatial root) {
-        if (terrainNode != null)
-            return terrainNode;
-        
-        if (root == null)
-            root = rootNode.getLookup().lookup(Node.class);
-
-        // is this the terrain?
-        if (root instanceof Terrain && root instanceof Node) {
-            terrainNode = (Node)root;
-            return terrainNode;
-        }
-
-        if (root instanceof Node) {
-            Node n = (Node) root;
-            for (Spatial c : n.getChildren()) {
-                if (c instanceof Node){
-                    Node res = getTerrain(c);
-                    if (res != null)
-                        return res;
-                }
-            }
-        }
-        
-        return null;
+    private boolean isTerrainEditButtonEnabled() {
+        return toolController.isTerrainEditButtonEnabled();
     }
 
+    @Override
+    public void onAnalog(String string, float f1, float f) {
+        if ("MouseAxisX".equals(string)) {
+            moved = true;
+            movedR = true;
+            if (isTerrainEditButtonEnabled() && !forceCameraControls) {
+                if (leftMouse)
+                    terrainEditToolActivated = true;//toolController.doTerrainEditToolActivated();
+            }
+            else {
+                if (leftMouse) {
+                    rotateCamera(Vector3f.UNIT_Y, -f1 * 2.5f);
+                }
+                if (rightMouse) {
+                    panCamera(f1 * 2.5f, 0);
+                }
+            }
+        } else if ("MouseAxisY".equals(string)) {
+            moved = true;
+            movedR = true;
+            if (isTerrainEditButtonEnabled() && !forceCameraControls) {
+                if (leftMouse)
+                    terrainEditToolActivated = true;//toolController.doTerrainEditToolActivated();
+            }
+            else {
+                if (leftMouse) {
+                    rotateCamera(cam.getLeft(), -f1 * 2.5f);
+                }
+                if (rightMouse) {
+                    panCamera(0, -f1 * 2.5f);
+                }
+            }
+        } else if ("MouseAxisX-".equals(string)) {
+            moved = true;
+            movedR = true;
+            if (isTerrainEditButtonEnabled() && !forceCameraControls) {
+                if (leftMouse)
+                    terrainEditToolActivated = true;//toolController.doTerrainEditToolActivated();
+            }
+            else {
+                if (leftMouse) {
+                    rotateCamera(Vector3f.UNIT_Y, f1 * 2.5f);
+                }
+                if (rightMouse) {
+                    panCamera(-f1 * 2.5f, 0);
+                }
+            }
+        } else if ("MouseAxisY-".equals(string)) {
+            moved = true;
+            movedR = true;
+            if (isTerrainEditButtonEnabled() && !forceCameraControls) {
+                if (leftMouse)
+                    terrainEditToolActivated = true;//toolController.doTerrainEditToolActivated();
+            }
+            else {
+                if (leftMouse) {
+                    rotateCamera(cam.getLeft(), f1 * 2.5f);
+                }
+                if (rightMouse) {
+                    panCamera(0, f1 * 2.5f);
+                }
+            }
+        } else if ("MouseWheel".equals(string)) {
+            zoomCamera(.1f);
+        } else if ("MouseWheel-".equals(string)) {
+            zoomCamera(-.1f);
+        }
+    }
+
+    @Override
+    public void update(float f) {
+        super.update(f);
+        
+        doTerrainUpdates(f);
+    }
+
+    @Override
+    protected void checkClick(int button) {
+        if (button == 0) {
+            if (isTerrainEditButtonEnabled() && !forceCameraControls) {
+                if (leftMouse)
+                    terrainEditToolActivated = true;//toolController.doTerrainEditToolActivated();
+            }
+        }
+    }
+
+    /**
+     * Update the terrain if it has had any editing done on it.
+     * We do it with a Timer to control the intensity and frequency
+     * of the editing.
+     */
+    private void doTerrainUpdates(float dt) {
+
+        if (terrainEditToolActivated) {
+            if (app.getContext().getTimer().getTime() >= lastModifyTime + (toolModifyRate*1000)) {
+                toolController.doTerrainEditToolActivated();
+                terrainEditToolActivated = false;
+                lastModifyTime = app.getContext().getTimer().getTime();
+            }
+        }
+    }
+
+    @Override
+    public void onKeyEvent(KeyInputEvent kie) {
+        if (kie.isPressed()) {
+            if ( KeyInput.KEY_LSHIFT == kie.getKeyCode() ) {
+                forceCameraControls = true;
+            }
+        } else if (kie.isReleased()){
+            if ( KeyInput.KEY_LSHIFT == kie.getKeyCode() ) {
+                forceCameraControls = false;
+            }
+        }
+    }
+
+    /**
+     * Find where on the terrain the mouse intersects.
+     */
     private Vector3f getTerrainCollisionPoint() {
+
+        if (editorController.getTerrain(null) == null)
+            return null;
+
         CollisionResults results = new CollisionResults();
         Ray ray = new Ray();
         Vector3f pos = cam.getWorldCoordinates(new Vector2f(mouseX, mouseY), 0).clone();
@@ -121,30 +211,31 @@ public class TerrainCameraController extends AbstractCameraController {
         dir.subtractLocal(pos).normalizeLocal();
         ray.setOrigin(pos);
         ray.setDirection(dir);
-        getTerrain(null).collideWith(ray, results);
+        editorController.getTerrain(null).collideWith(ray, results);
         if (results == null) {
             return null;
         }
         final CollisionResult result = results.getClosestCollision();
+        if (result == null)
+            return null;
         return result.getContactPoint();
     }
 
-    private void hideEditTool() {
-        if (marker != null) {
-            
-        }
+    @Override
+    public void setActive(boolean bln) {
+        this.active = bln;
     }
 
-    private void showRaiseLowerEditTool(TerrainEditButton terrainEditButton) {
-        if (marker == null) {
-            marker = new Geometry("edit marker");
-            Mesh m = new Cylinder(1, 8, 2, 2, true);
-            marker.setMesh(m);
-            Material mat = new Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/SolidColor.j3md");
-            mat.setColor("m_Color", ColorRGBA.Green);
-            marker.setMaterial(mat);
-        }
-
-
+    @Override
+    public boolean isActive() {
+        return active;
     }
+
+    @Override
+    public void postRender() {
+        
+    }
+    
+    
+
 }

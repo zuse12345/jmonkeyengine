@@ -11,7 +11,6 @@ import com.jme3.gde.core.scene.PreviewRequest;
 import com.jme3.gde.core.scene.SceneApplication;
 import com.jme3.gde.core.scene.SceneListener;
 import com.jme3.gde.core.scene.SceneRequest;
-import com.jme3.gde.core.scene.controller.SceneToolController;
 import com.jme3.gde.core.sceneexplorer.nodes.JmeNode;
 import com.jme3.gde.core.sceneexplorer.nodes.JmeSpatial;
 import com.jme3.gde.core.sceneexplorer.nodes.NodeUtility;
@@ -26,7 +25,6 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
-import javax.swing.JFrame;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -57,11 +55,12 @@ public final class TerrainEditorTopComponent extends TopComponent implements Sce
     private static final String PREFERRED_ID = "TerrainEditorTopComponent";
     private final Result<JmeSpatial> result;
     TerrainCameraController camController;
-    SceneToolController toolController;
+    TerrainToolController toolController;
     TerrainEditorController editorController;
     private SceneRequest currentRequest;
     private SaveCookie saveCookie = new SaveCookieImpl();
     private javax.swing.JToggleButton currentSelectedButton;
+
     public enum TerrainEditButton {none, raiseTerrain, lowerTerrain, smoothTerrain, levelTerrain, paintTerrain, eraseTerrain};
 
     private HelpCtx ctx = new HelpCtx("com.jme3.gde.terraineditor.usage");
@@ -85,91 +84,144 @@ public final class TerrainEditorTopComponent extends TopComponent implements Sce
     private void initComponents() {
 
         terrainModButtonGroup = new ToggleButtonGroup();
-        radiusSlider = new javax.swing.JSlider();
-        radiusLabel = new javax.swing.JLabel();
+        jToolBar1 = new javax.swing.JToolBar();
         createTerrainButton = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JToolBar.Separator();
         raiseTerrainButton = new javax.swing.JToggleButton();
         lowerTerrainButton = new javax.swing.JToggleButton();
         smoothTerrainButton = new javax.swing.JToggleButton();
         roughTerrainButton = new javax.swing.JToggleButton();
+        radiusLabel = new javax.swing.JLabel();
+        radiusSlider = new javax.swing.JSlider();
+        heightLabel = new javax.swing.JLabel();
+        heightSlider = new javax.swing.JSlider();
+        radiusTextField = new javax.swing.JTextField();
+        heightTextField = new javax.swing.JTextField();
 
-        radiusSlider.setMajorTickSpacing(5);
-        radiusSlider.setMaximum(25);
-        radiusSlider.setPaintTicks(true);
-        radiusSlider.setSnapToTicks(true);
-        radiusSlider.setToolTipText(org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.radiusSlider.toolTipText")); // NOI18N
-        radiusSlider.setValue(5);
+        jToolBar1.setRollover(true);
 
-        org.openide.awt.Mnemonics.setLocalizedText(radiusLabel, org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.radiusLabel.text")); // NOI18N
-
+        createTerrainButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/terraineditor/icon_terrain-new.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(createTerrainButton, org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.createTerrainButton.text")); // NOI18N
+        createTerrainButton.setToolTipText(org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.createTerrainButton.toolTipText")); // NOI18N
         createTerrainButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 createTerrainButtonActionPerformed(evt);
             }
         });
+        jToolBar1.add(createTerrainButton);
+        jToolBar1.add(jSeparator1);
 
         terrainModButtonGroup.add(raiseTerrainButton);
+        raiseTerrainButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/terraineditor/icon_terrain-up.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(raiseTerrainButton, org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.raiseTerrainButton.text")); // NOI18N
-        raiseTerrainButton.setEnabled(false);
+        raiseTerrainButton.setToolTipText(org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.raiseTerrainButton.toolTipText")); // NOI18N
+        raiseTerrainButton.setActionCommand(org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.raiseTerrainButton.actionCommand")); // NOI18N
         raiseTerrainButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 raiseTerrainButtonActionPerformed(evt);
             }
         });
+        jToolBar1.add(raiseTerrainButton);
 
         terrainModButtonGroup.add(lowerTerrainButton);
+        lowerTerrainButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/terraineditor/icon_terrain-down.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(lowerTerrainButton, org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.lowerTerrainButton.text")); // NOI18N
-        lowerTerrainButton.setEnabled(false);
+        lowerTerrainButton.setToolTipText(org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.lowerTerrainButton.toolTipText")); // NOI18N
+        lowerTerrainButton.setActionCommand(org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.lowerTerrainButton.actionCommand")); // NOI18N
         lowerTerrainButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 lowerTerrainButtonActionPerformed(evt);
             }
         });
+        jToolBar1.add(lowerTerrainButton);
 
         terrainModButtonGroup.add(smoothTerrainButton);
+        smoothTerrainButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/terraineditor/icon_terrain-smooth.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(smoothTerrainButton, org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.smoothTerrainButton.text")); // NOI18N
+        smoothTerrainButton.setToolTipText(org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.smoothTerrainButton.toolTipText")); // NOI18N
+        smoothTerrainButton.setActionCommand(org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.smoothTerrainButton.actionCommand")); // NOI18N
         smoothTerrainButton.setEnabled(false);
+        jToolBar1.add(smoothTerrainButton);
 
         terrainModButtonGroup.add(roughTerrainButton);
+        roughTerrainButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/jme3/gde/terraineditor/icon_terrain-rough.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(roughTerrainButton, org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.roughTerrainButton.text")); // NOI18N
+        roughTerrainButton.setToolTipText(org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.roughTerrainButton.toolTipText")); // NOI18N
+        roughTerrainButton.setActionCommand(org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.roughTerrainButton.actionCommand")); // NOI18N
         roughTerrainButton.setEnabled(false);
-        roughTerrainButton.setRolloverEnabled(false);
+        jToolBar1.add(roughTerrainButton);
+
+        org.openide.awt.Mnemonics.setLocalizedText(radiusLabel, org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.radiusLabel.text")); // NOI18N
+
+        radiusSlider.setMajorTickSpacing(5);
+        radiusSlider.setMaximum(20);
+        radiusSlider.setMinorTickSpacing(1);
+        radiusSlider.setPaintTicks(true);
+        radiusSlider.setSnapToTicks(true);
+        radiusSlider.setToolTipText(org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.radiusSlider.toolTipText")); // NOI18N
+        radiusSlider.setValue(5);
+        radiusSlider.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                radiusSliderPropertyChange(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(heightLabel, org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.heightLabel.text")); // NOI18N
+
+        heightSlider.setMajorTickSpacing(20);
+        heightSlider.setMaximum(200);
+        heightSlider.setPaintTicks(true);
+        heightSlider.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                heightSliderPropertyChange(evt);
+            }
+        });
+
+        radiusTextField.setText(org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.radiusTextField.text")); // NOI18N
+        radiusTextField.setEnabled(false);
+
+        heightTextField.setEditable(false);
+        heightTextField.setText(org.openide.util.NbBundle.getMessage(TerrainEditorTopComponent.class, "TerrainEditorTopComponent.heightTextField.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(createTerrainButton)
-                .addGap(29, 29, 29)
-                .addComponent(raiseTerrainButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lowerTerrainButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(smoothTerrainButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(roughTerrainButton)
-                .addGap(18, 18, 18)
-                .addComponent(radiusLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(radiusSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(195, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(radiusLabel)
+                            .addComponent(heightLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(heightSlider, 0, 0, Short.MAX_VALUE)
+                            .addComponent(radiusSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE))))
+                .addGap(30, 30, 30)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(heightTextField)
+                    .addComponent(radiusTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 48, Short.MAX_VALUE))
+                .addContainerGap(451, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(radiusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(11, 11, 11)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(radiusLabel)
+                            .addComponent(radiusSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(21, 21, 21)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(createTerrainButton)
-                        .addComponent(raiseTerrainButton)
-                        .addComponent(lowerTerrainButton)
-                        .addComponent(smoothTerrainButton)
-                        .addComponent(roughTerrainButton))
-                    .addComponent(radiusLabel)
-                    .addComponent(radiusSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(366, Short.MAX_VALUE))
+                    .addComponent(heightLabel)
+                    .addComponent(heightSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(heightTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(286, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -178,30 +230,45 @@ public final class TerrainEditorTopComponent extends TopComponent implements Sce
     }//GEN-LAST:event_createTerrainButtonActionPerformed
 
     private void raiseTerrainButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_raiseTerrainButtonActionPerformed
+
+        //toolController.setShowGrid(true);
+
         if (raiseTerrainButton.isSelected()) {
-            System.out.println("raise terrain active");
-            camController.setTerrainEditButtonState(TerrainEditButton.raiseTerrain);
+            toolController.setTerrainEditButtonState(TerrainEditButton.raiseTerrain);
         } else {
-            System.out.println("raise terrain disabled");
-            camController.setTerrainEditButtonState(TerrainEditButton.none);
+            toolController.setTerrainEditButtonState(TerrainEditButton.none);
         }
     }//GEN-LAST:event_raiseTerrainButtonActionPerformed
 
     private void lowerTerrainButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lowerTerrainButtonActionPerformed
         if (lowerTerrainButton.isSelected()) {
-            System.out.println("lower terrain active");
-            camController.setTerrainEditButtonState(TerrainEditButton.lowerTerrain);
+            toolController.setTerrainEditButtonState(TerrainEditButton.lowerTerrain);
         } else {
-            System.out.println("lower terrain disabled");
-            camController.setTerrainEditButtonState(TerrainEditButton.none);
+            toolController.setTerrainEditButtonState(TerrainEditButton.none);
         }
     }//GEN-LAST:event_lowerTerrainButtonActionPerformed
 
+    private void radiusSliderPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_radiusSliderPropertyChange
+        if (toolController != null)
+            toolController.setHeightToolRadius(radiusSlider.getValue());
+    }//GEN-LAST:event_radiusSliderPropertyChange
+
+    private void heightSliderPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_heightSliderPropertyChange
+        if (toolController != null)
+            toolController.setHeightToolHeight(heightSlider.getValue()); // should always be values upto and over 100, because it will be divided by 100
+    }//GEN-LAST:event_heightSliderPropertyChange
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton createTerrainButton;
+    private javax.swing.JLabel heightLabel;
+    private javax.swing.JSlider heightSlider;
+    private javax.swing.JTextField heightTextField;
+    private javax.swing.JToolBar.Separator jSeparator1;
+    private javax.swing.JToolBar jToolBar1;
     private javax.swing.JToggleButton lowerTerrainButton;
     private javax.swing.JLabel radiusLabel;
     private javax.swing.JSlider radiusSlider;
+    private javax.swing.JTextField radiusTextField;
     private javax.swing.JToggleButton raiseTerrainButton;
     private javax.swing.JToggleButton roughTerrainButton;
     private javax.swing.JToggleButton smoothTerrainButton;
@@ -273,6 +340,12 @@ public final class TerrainEditorTopComponent extends TopComponent implements Sce
                     TerrainQuad terrain = new TerrainQuad("terrain", patchSize, totalSize, heightmapData);
                     com.jme3.material.Material mat = new com.jme3.material.Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Misc/WireColor.j3md");
                     mat.setColor("m_Color", ColorRGBA.Brown);
+                    /*com.jme3.material.Material mat = new com.jme3.material.Material(SceneApplication.getApplication().getAssetManager(), "Common/MatDefs/Light/Lighting.j3md");
+                    mat.setFloat("m_Shininess", 1);
+                    mat.setBoolean("m_LowQuality", true);
+                    mat.setBoolean("m_UseMaterialColors", true);
+                    mat.setColor("m_Diffuse", ColorRGBA.Brown);
+                    mat.setColor("m_Specular", ColorRGBA.Brown);*/
                     terrain.setMaterial(mat);
                     terrain.setModelBound(new BoundingBox());
                     terrain.updateModelBound();
@@ -292,9 +365,7 @@ public final class TerrainEditorTopComponent extends TopComponent implements Sce
             Exceptions.printStackTrace(ex);
         }
     }
-
-   
-
+    
     private void refreshSelected() {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
@@ -306,8 +377,6 @@ public final class TerrainEditorTopComponent extends TopComponent implements Sce
         });
 
     }
-
-
 
 
     /**
@@ -465,11 +534,18 @@ public final class TerrainEditorTopComponent extends TopComponent implements Sce
             if (toolController != null) {
                 toolController.cleanup();
             }
-            toolController = new SceneToolController(currentRequest.getToolNode(), currentRequest.getManager().getManager());
+            toolController = new TerrainToolController(currentRequest.getToolNode(), currentRequest.getManager().getManager(), request.getJmeNode());
             camController = new TerrainCameraController(SceneApplication.getApplication().getCamera(), SceneApplication.getApplication().getInputManager(), request.getJmeNode());
             camController.setMaster(this);
             camController.enable();
-            camController.setToolsNode(currentRequest.getToolNode());
+
+            camController.setToolController(toolController);
+            camController.setEditorController(editorController);
+            toolController.setEditorController(editorController);
+            editorController.setToolController(toolController);
+
+            toolController.setHeightToolRadius(radiusSlider.getValue());
+            toolController.setHeightToolHeight(heightSlider.getValue()); // should always be values upto and over 100, because it will be divided by 100
         }
     }
 

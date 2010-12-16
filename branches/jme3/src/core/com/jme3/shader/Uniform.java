@@ -336,8 +336,8 @@ public class Uniform extends ShaderVariable {
                 multiData.clear();
                 break;
             default:
-                if (this.value != null && this.value.equals(value))
-                    return;
+//                if (this.value != null && this.value.equals(value))
+//                    return;
                 
                 this.value = value;
                 break;

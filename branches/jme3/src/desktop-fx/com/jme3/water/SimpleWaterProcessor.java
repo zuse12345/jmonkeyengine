@@ -29,14 +29,12 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.water;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
-import com.jme3.math.Matrix4f;
 import com.jme3.math.Plane;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Ray;
@@ -56,7 +54,6 @@ import com.jme3.texture.Image.Format;
 import com.jme3.texture.Texture.WrapMode;
 import com.jme3.texture.Texture2D;
 import com.jme3.ui.Picture;
-import sun.reflect.generics.tree.Tree;
 
 /**
  *
@@ -82,31 +79,34 @@ public class SimpleWaterProcessor implements SceneProcessor {
     protected int renderHeight = 512;
     protected Plane plane = new Plane(Vector3f.UNIT_Y, Vector3f.ZERO.dot(Vector3f.UNIT_Y));
     protected float speed = 0.05f;
-    protected  Ray ray = new Ray();
+    protected Ray ray = new Ray();
     protected Vector3f targetLocation = new Vector3f();
     protected AssetManager manager;
     protected Material material;
-    protected float waterDepth=1;
-    protected float waterTransparency=0.4f;
+    protected float waterDepth = 1;
+    protected float waterTransparency = 0.4f;
     protected boolean debug = false;
     private Picture dispRefraction;
     private Picture dispReflection;
     private Picture dispDepth;
-
+    private Plane reflectionClipPlane;
+    private Plane refractionClipPlane;
+    private float refractionClippingOffset = -0.3f;
+    private float reflectionClippingOffset = -5f;
 
     public SimpleWaterProcessor(AssetManager manager) {
         this.manager = manager;
         material = new Material(manager, "Common/MatDefs/Water/SimpleWater.j3md");
         material.setFloat("m_waterDepth", waterDepth);
-        material.setFloat("m_waterTransparency",waterTransparency/10);
+        material.setFloat("m_waterTransparency", waterTransparency / 10);
         material.setColor("m_waterColor", ColorRGBA.White);
         material.setVector3("m_lightPos", new Vector3f(1, -1, 1));
 
         material.setColor("m_distortionScale", new ColorRGBA(0.2f, 0.2f, 0.2f, 0.2f));
         material.setColor("m_distortionMix", new ColorRGBA(0.5f, 0.5f, 0.5f, 0.5f));
         material.setColor("m_texScale", new ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f));
+        updateClipPlanes();
 
-        
     }
 
     public void initialize(RenderManager rm, ViewPort vp) {
@@ -119,9 +119,9 @@ public class SimpleWaterProcessor implements SceneProcessor {
 
         createPreViews();
 
-        material.setVector2("m_FrustumNearFar",new Vector2f(vp.getCamera().getFrustumNear(), vp.getCamera().getFrustumFar()));
+        material.setVector2("m_FrustumNearFar", new Vector2f(vp.getCamera().getFrustumNear(), vp.getCamera().getFrustumFar()));
 
-        if (debug){
+        if (debug) {
             dispRefraction = new Picture("dispRefraction");
             dispRefraction.setTexture(manager, refractionTexture, false);
             dispReflection = new Picture("dispRefraction");
@@ -171,7 +171,8 @@ public class SimpleWaterProcessor implements SceneProcessor {
             ray.intersectsWherePlane(plane, targetLocation);
             inv = true;
         }
-        reflectionCam.setLocation(plane.reflect(sceneCam.getLocation(), new Vector3f()));
+        Vector3f loc = plane.reflect(sceneCam.getLocation(), new Vector3f());
+        reflectionCam.setLocation(loc);
         reflectionCam.setFrustum(sceneCam.getFrustumNear(),
                 sceneCam.getFrustumFar(),
                 sceneCam.getFrustumLeft(),
@@ -269,7 +270,7 @@ public class SimpleWaterProcessor implements SceneProcessor {
     }
 
     protected void destroyViews() {
-      //  rm.removePreView(reflectionView);
+        //  rm.removePreView(reflectionView);
         rm.removePreView(refractionView);
     }
 
@@ -320,6 +321,7 @@ public class SimpleWaterProcessor implements SceneProcessor {
     public void setPlane(Plane plane) {
         this.plane.setConstant(plane.getConstant());
         this.plane.setNormal(plane.getNormal());
+        updateClipPlanes();
     }
 
     /**
@@ -329,6 +331,15 @@ public class SimpleWaterProcessor implements SceneProcessor {
      */
     public void setPlane(Vector3f origin, Vector3f normal) {
         this.plane.setOriginNormal(origin, normal);
+        updateClipPlanes();
+    }
+
+    private void updateClipPlanes() {
+        reflectionClipPlane = plane.clone();
+        reflectionClipPlane.setConstant(reflectionClipPlane.getConstant() + reflectionClippingOffset);
+        refractionClipPlane = plane.clone();
+        refractionClipPlane.setConstant(refractionClipPlane.getConstant() + refractionClippingOffset);
+
     }
 
     /**
@@ -354,7 +365,7 @@ public class SimpleWaterProcessor implements SceneProcessor {
      * @param depth
      */
     public void setWaterDepth(float depth) {
-        waterDepth=depth;
+        waterDepth = depth;
         material.setFloat("m_waterDepth", depth);
     }
 
@@ -367,10 +378,9 @@ public class SimpleWaterProcessor implements SceneProcessor {
     }
 
     public void setWaterTransparency(float waterTransparency) {
-        this.waterTransparency =Math.max(0, waterTransparency);
-        material.setFloat("m_waterTransparency", waterTransparency/10);
+        this.waterTransparency = Math.max(0, waterTransparency);
+        material.setFloat("m_waterTransparency", waterTransparency / 10);
     }
-
 
     /**
      * Sets the speed of the wave animation, default = 0.05f.
@@ -426,6 +436,42 @@ public class SimpleWaterProcessor implements SceneProcessor {
     }
 
     /**
+     * returns the reflection clipping plane offset
+     * @return
+     */
+    public float getReflectionClippingOffset() {
+        return reflectionClippingOffset;
+    }
+
+    /**
+     * sets the reflection clipping plane offset
+     * set a nagetive value to lower the clipping plane for relection texture rendering.     
+     * @param reflectionClippingOffset
+     */
+    public void setReflectionClippingOffset(float reflectionClippingOffset) {
+        this.reflectionClippingOffset = reflectionClippingOffset;
+    }
+
+    /**
+     * returns the refraction clipping plane offset
+     * @return
+     */
+    public float getRefractionClippingOffset() {
+        return refractionClippingOffset;
+    }
+
+    /**
+     * Sets the refraction clipping plane offset
+     * set a positive value to raise the clipping plane for refraction texture rendering
+     * @param refractionClippingOffset
+     */
+    public void setRefractionClippingOffset(float refractionClippingOffset) {
+        this.refractionClippingOffset = refractionClippingOffset;
+    }
+
+
+
+    /**
      * Reflection Processor
      */
     public class ReflectionProcessor implements SceneProcessor {
@@ -446,55 +492,25 @@ public class SimpleWaterProcessor implements SceneProcessor {
         }
 
         public void preFrame(float tpf) {
-
-            //Java code
-//            Camera cam = rm.getCurrentCamera();
-//            Matrix4f projMatrix=cam.getProjectionMatrix();
-//            Matrix4f modelViewMatrix=new Matrix4f();
-//            Matrix4f invtransMVP=projMatrix.mult(modelViewMatrix).invertLocal();
-
-            //C++ code
-//            get_matrix(GL_PROJECTION_MATRIX);
-//            M = get_matrix(GL_MODELVIEW_MATRIX);
-//            matrix4f invtrans_MVP = (P * M).inverse().transpose();
-//            vec4f oplane(0,0,-1,0);
-//            vec4f cplane;
-//            invtrans_MVP.mult_matrix_vec(oplane, cplane);
-//
-//            cplane /= abs(cplane[2]); // normalize such that depth is not scaled
-//            cplane[3] -= 1;
-//
-//            if(cplane[2] < 0)
-//                cplane *= -1;
-//
-//            matrix4f suffix;
-//            suffix.set_row(2, cplane);
-//            matrix4f newP = suffix * P;
-//            glMatrixMode(GL_PROJECTION);
-//            glLoadMatrixf(newP.m);
-//            glMatrixMode(GL_MODELVIEW);
         }
 
         public void postQueue(RenderQueue rq) {
-
+            //we need special treatement for the sky because it must not be clipped
             rm.getRenderer().setFrameBuffer(reflectionBuffer);
             reflectionCam.setProjectionMatrix(null);
             rm.setCamera(reflectionCam, false);
             rm.getRenderer().clearBuffers(true, true, true);
+            //Rendering the sky whithout clipping
             rm.getRenderer().setDepthRange(1, 1);
-            vp.getQueue().renderQueue(RenderQueue.Bucket.Sky, rm, reflectionCam,true);
+            vp.getQueue().renderQueue(RenderQueue.Bucket.Sky, rm, reflectionCam, true);
             rm.getRenderer().setDepthRange(0, 1);
-            Plane p=plane.clone();
-            p.setConstant(p.getConstant()-5f);
-            reflectionCam.setClipPlane(p,1);
+            //setting the clip plane to the cam
+            reflectionCam.setClipPlane(reflectionClipPlane, Plane.Side.Positive);//,1
             rm.setCamera(reflectionCam, false);
 
-
-          
         }
 
         public void postFrame(FrameBuffer out) {
-         
         }
 
         public void cleanup() {
@@ -522,9 +538,7 @@ public class SimpleWaterProcessor implements SceneProcessor {
         }
 
         public void preFrame(float tpf) {
-            Plane p=plane.clone();
-            p.setConstant(p.getConstant()+0.3f);
-            refractionCam.setClipPlane(p,-1);
+            refractionCam.setClipPlane(refractionClipPlane, Plane.Side.Negative);//,-1
         }
 
         public void postQueue(RenderQueue rq) {

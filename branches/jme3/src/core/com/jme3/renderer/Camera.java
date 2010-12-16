@@ -283,45 +283,70 @@ public class Camera implements Savable, Cloneable {
         }
     }
 
-    Plane clipPlane;
-    public void setClipPlane(Plane clip, int factor) {
-        clipPlane=clip;
-        float[] mat = new float[16];
-     
-        boolean rowMajor = false;
-        Matrix4f p=projectionMatrix.clone();
-        Matrix4f ivm=viewMatrix.clone();
-        p.get(mat, rowMajor);
-        Vector3f point = clipPlane.getNormal().mult(clipPlane.getConstant());
+     /**
+     * Sets a clipPlane for this camera.
+     * The cliPlane is used to recompute the projectionMatrix using the plane as the near plane
+     * This technique is known as the oblique near-plane clipping method introduced by Eric Lengyel
+     * more info here
+     * http://www.terathon.com/code/oblique.html
+     * http://aras-p.info/texts/obliqueortho.html
+     * http://hacksoflife.blogspot.com/2008/12/every-now-and-then-i-come-across.html
+     *
+     * Note that this will work properly only if it's called on each update, and be aware that it won't work properly with the sky bucket.
+     * if you want to handle the sky bucket, look at how it's done in SimpleWaterProcessor.java
+     * @param clipPlane the plane
+     * @param side the side the camera stands from the plane
+     */
+    public void setClipPlane(Plane clipPlane, Plane.Side side) {
+        float sideFactor = 1;
+        if (side == Plane.Side.Negative) {
+            sideFactor = -1;
+        }
+        //we are on the other side of the plane no need to clip anymore.
+        if (clipPlane.whichSide(location) == side) {
+            return;
+        }
+        Matrix4f p = projectionMatrix.clone();
 
+        Matrix4f ivm = viewMatrix.clone();
+
+        Vector3f point = clipPlane.getNormal().mult(clipPlane.getConstant());
         Vector3f pp = ivm.mult(point);
-        Vector3f pn = ivm.multNormal(clipPlane.getNormal(),null);
-        ColorRGBA clipPlaneV = new ColorRGBA(pn.x*factor, pn.y*factor, pn.z*factor,-(pp.dot(pn))*factor);
+        Vector3f pn = ivm.multNormal(clipPlane.getNormal(), null);
+        ColorRGBA clipPlaneV = new ColorRGBA(pn.x * sideFactor, pn.y * sideFactor, pn.z * sideFactor, -(pp.dot(pn)) * sideFactor);
 
         ColorRGBA q = new ColorRGBA(0, 0, 0, 0);
 
-        q.r = (Math.signum(clipPlaneV.r) + mat[8]) / mat[0];
-        q.g = (Math.signum(clipPlaneV.g) + mat[9]) / mat[5];
+        q.r = (Math.signum(clipPlaneV.r) + p.m02) / p.m00;
+        q.g = (Math.signum(clipPlaneV.g) + p.m12) / p.m11;
         q.b = -1.0f;
-        q.a = (1.0f + mat[10]) / mat[14];
+        q.a = (1.0f + p.m22) / p.m23;
 
         float dot = clipPlaneV.r * q.r + clipPlaneV.g * q.g + clipPlaneV.b * q.b + clipPlaneV.a * q.a;
         ColorRGBA c = clipPlaneV.mult(2.0f / dot);
 
-//        mat[2] = c.r;
-//        mat[6] = c.g;
-//        mat[10] = c.b;
-//        mat[14] = c.a;
+        p.m20 = c.r - p.m30;
+        p.m21 = c.g - p.m31;
+        p.m22 = c.b - p.m32;
+        p.m23 = c.a - p.m33;
+        setProjectionMatrix(p);
+    }
 
-
-        mat[2] = c.r- mat[3];
-        mat[6] = c.g- mat[7];
-        mat[10] = c.b -mat[11];
-        mat[14] = c.a- mat[15];
-
-        Matrix4f projMat = new Matrix4f();
-        projMat.set(mat, rowMajor);
-        setProjectionMatrix(projMat);
+    /**
+     * Sets a clipPlane for this camera.
+     * The cliPlane is used to recompute the projectionMatrix using the plane as the near plane
+     * This technique is known as the oblique near-plane clipping method introduced by Eric Lengyel
+     * more info here
+     * http://www.terathon.com/code/oblique.html
+     * http://aras-p.info/texts/obliqueortho.html
+     * http://hacksoflife.blogspot.com/2008/12/every-now-and-then-i-come-across.html
+     *
+     * Note that this will work properly only if it's called on each update, and be aware that it won't work properly with the sky bucket.
+     * if you want to handle the sky bucket, look at how it's done in SimpleWaterProcessor.java
+     * @param clipPlane the plane
+     */
+    public void setClipPlane(Plane clipPlane) {
+        setClipPlane(clipPlane, clipPlane.whichSide(location));
     }
 
     /**

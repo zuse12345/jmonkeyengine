@@ -335,10 +335,16 @@ public class Uniform extends ShaderVariable {
                 
                 multiData.clear();
                 break;
+            // Only use check if equals optimization for primitive values
+            case Int:
+            case Float:
+            case Boolean:
+                if (this.value != null && this.value.equals(value))
+                    return;
+
+                this.value = value;
+                break;
             default:
-//                if (this.value != null && this.value.equals(value))
-//                    return;
-                
                 this.value = value;
                 break;
         }

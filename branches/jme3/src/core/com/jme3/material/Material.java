@@ -68,7 +68,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Material implements Cloneable, Savable {
+public class Material implements Cloneable, Savable, Comparable<Material> {
 
     private static final Logger logger = Logger.getLogger(Material.class.getName());
 
@@ -86,7 +86,6 @@ public class Material implements Cloneable, Savable {
 
     private MaterialDef def;
     private ListMap<String, MatParam> paramValues = new ListMap<String, MatParam>();
-//    private HashMap<String, MatParam> paramValues = new HashMap<String, MatParam>();
 
     private Technique technique;
     private HashMap<String, Technique> techniques = new HashMap<String, Technique>();
@@ -95,11 +94,13 @@ public class Material implements Cloneable, Savable {
     private boolean transparent = false;
     private boolean receivesShadows = false;
 
+    private int sortingId = -1;
+
     public static class MatParamTexture extends MatParam {
 
         private Texture texture;
         private int unit;
-        private transient TextureKey key;
+//        private transient TextureKey key;
 
         public MatParamTexture(VarType type, String name, Texture texture, int unit){
             super(type, name, texture);
@@ -141,7 +142,7 @@ public class Material implements Cloneable, Savable {
             InputCapsule ic = im.getCapsule(this);
             unit = ic.readInt("texture_unit", -1);
             texture = (Texture) ic.readSavable("texture", null);
-            key = texture.getTextureKey();
+//            key = texture.getTextureKey();
         }
     }
 
@@ -160,6 +161,33 @@ public class Material implements Cloneable, Savable {
      * Do not use this constructor. Serialization purposes only.
      */
     public Material(){
+    }
+
+    public int getSortId(){
+        int texId = 0;
+        Technique t = getActiveTechnique();
+        
+        if (sortingId == -1){
+            for (int i = 0; i < paramValues.size(); i++){
+                MatParam param = paramValues.getValue(i);
+                if (param instanceof MatParamTexture){
+                    MatParamTexture tex = (MatParamTexture) param;
+                    texId = tex.getTextureValue().getId();
+                }
+            }
+            sortingId = texId;
+
+            if (t != null){
+                if (t.getShader() != null){
+                    sortingId = sortingId + t.getShader().getId() * 1000;
+                }
+            }
+        }
+        return sortingId;
+    }
+
+    public int compareTo(Material m) {
+        return m.getSortId() - getSortId();
     }
 
     @Override
@@ -222,11 +250,11 @@ public class Material implements Cloneable, Savable {
         return def;
     }
 
-    void updateUniformLinks(){
-        for (MatParam param : paramValues.values()){
-            param.uniform = technique.getShader().getUniform(param.name);
-        }
-    }
+//    void updateUniformLinks(){
+//        for (MatParam param : paramValues.values()){
+//            param.uniform = technique.getShader().getUniform(param.name);
+//        }
+//    }
 
     public MatParam getParam(String name){
         MatParam param = paramValues.get(name);
@@ -411,22 +439,6 @@ public class Material implements Cloneable, Savable {
     public void setVector3(String name, Vector3f value) {
         setParam(name, VarType.Vector3, value);
     }
-
-//    /**
-//     * get the additional state on this material
-//     * @return additionalState
-//     */
-//    public RenderState getAdditionalState() {
-//        return additionalState;
-//    }
-//
-//    /**
-//     * set an additional state to the material
-//     * @param additionalState
-//     */
-//    public void setAdditionalState(RenderState additionalState) {
-//        this.additionalState = additionalState;
-//    }
 
     /**
      * Uploads the lights in the light list as two uniform arrays.<br/><br/>
@@ -648,6 +660,24 @@ public class Material implements Cloneable, Savable {
             r.setShader(shader);
     }
 
+    private void clearUniformsSetByCurrent(Shader shader){
+        ListMap<String, Uniform> uniforms = shader.getUniformMap();
+        for (int i = 0; i < uniforms.size(); i++){
+            Uniform u = uniforms.getValue(i);
+            u.clearSetByCurrentMaterial();
+        }
+    }
+
+    private void resetUniformsNotSetByCurrent(Shader shader){
+        ListMap<String, Uniform> uniforms = shader.getUniformMap();
+        for (int i = 0; i < uniforms.size(); i++){
+            Uniform u = uniforms.getValue(i);
+            if (!u.isSetByCurrentMaterial()){
+                u.clearValue();
+            }
+        }
+    }
+
     /**
      * Should be called after selectTechnique()
      * @param geom
@@ -655,8 +685,6 @@ public class Material implements Cloneable, Savable {
      */
     public void render(Geometry geom, RenderManager rm){
         autoSelectTechnique(rm);
-
-
 
         Renderer r = rm.getRenderer();
         TechniqueDef techDef = technique.getDef();
@@ -678,15 +706,17 @@ public class Material implements Cloneable, Savable {
         if (rm.getForcedRenderState() != null)
             r.applyRenderState(rm.getForcedRenderState());
 
+
+
         // update camera and world matrices
         // NOTE: setWorldTransform should have been called already
-        // XXX:
-        if (techDef.isUsingShaders())
+        if (techDef.isUsingShaders()){
+            // reset unchanged uniform flag
+            clearUniformsSetByCurrent(technique.getShader());
             rm.updateUniformBindings(technique.getWorldBindUniforms());
+        }
 
-        // setup textures
-//        Collection<MatParam> params = paramValues.values();
-//        for (MatParam param : params){
+        // setup textures and uniforms
         for (int i = 0; i < paramValues.size(); i++){
             MatParam param = paramValues.getValue(i);
             if (param instanceof MatParamTexture){
@@ -708,7 +738,7 @@ public class Material implements Cloneable, Savable {
         }
 
         Shader shader = technique.getShader();
-
+        
         // send lighting information, if needed
         switch (techDef.getLightMode()){
             case Disable:
@@ -722,14 +752,18 @@ public class Material implements Cloneable, Savable {
                 break;
             case MultiPass:
                 // NOTE: Special case!
+                resetUniformsNotSetByCurrent(shader);
                 renderMultipassLighting(shader, geom, r);
                 // very important, notice the return statement!
                 return;
         }
 
         // upload and bind shader
-        if (techDef.isUsingShaders())
+        if (techDef.isUsingShaders()){
+            // any unset uniforms will be set to 0
+            resetUniformsNotSetByCurrent(shader);
             r.setShader(shader);
+        }
         
         r.renderMesh(geom.getMesh(), geom.getLodLevel(), 1);
     }

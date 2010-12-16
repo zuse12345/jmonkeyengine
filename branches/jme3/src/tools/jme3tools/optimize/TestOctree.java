@@ -96,8 +96,8 @@ public class TestOctree extends SimpleApplication implements SceneProcessor {
 //        scene.setMaterial(mat);
 
         // generate octree
-//        tree = new Octree(scene, 20000);
-        tree = new Octree(scene, 50);
+        tree = new Octree(scene, 20000);
+//        tree = new Octree(scene, 50);
         tree.construct();
 
         viewPort.addProcessor(this);
@@ -128,11 +128,11 @@ public class TestOctree extends SimpleApplication implements SceneProcessor {
             rq.addToQueue(geom, geom.getQueueBucket());
         }
 
-        Matrix4f transform = new Matrix4f();
+//        Matrix4f transform = new Matrix4f();
 //        transform.setScale(0.2f, 0.2f, 0.2f);
 //        System.out.println("Tris: "+tris);
         
-        tree.renderBounds(rq, transform, box, mat);
+//        tree.renderBounds(rq, transform, box, mat);
 
 //        renderManager.flushQueue(viewPort);
     }

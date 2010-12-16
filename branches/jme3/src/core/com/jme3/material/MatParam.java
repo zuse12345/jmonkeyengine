@@ -46,7 +46,7 @@ public class MatParam implements Savable, Cloneable {
     protected VarType type;
     protected String name;
     protected Object value;
-    protected Uniform uniform;
+//    protected Uniform uniform;
 
     public MatParam(VarType type, String name, Object value){
         this.type = type;
@@ -73,13 +73,13 @@ public class MatParam implements Savable, Cloneable {
         this.value = value;
     }
 
-    public Uniform getUniform() {
-        return uniform;
-    }
-
-    public void setUniform(Uniform uniform) {
-        this.uniform = uniform;
-    }
+//    public Uniform getUniform() {
+//        return uniform;
+//    }
+//
+//    public void setUniform(Uniform uniform) {
+//        this.uniform = uniform;
+//    }
 
     @Override
     public MatParam clone(){

@@ -40,6 +40,7 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Matrix4f;
 import com.jme3.math.Quaternion;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.util.BufferUtils;
@@ -47,6 +48,10 @@ import java.io.IOException;
 import java.nio.FloatBuffer;
 
 public class Uniform extends ShaderVariable {
+
+    private static final Integer ZERO_INT = Integer.valueOf(0);
+    private static final Float ZERO_FLT = Float.valueOf(0);
+    private static final FloatBuffer ZERO_BUF = BufferUtils.createFloatBuffer(4*4);
 
     /**
      * Currently set value of the uniform.
@@ -64,7 +69,8 @@ public class Uniform extends ShaderVariable {
      */
     protected UniformBinding binding;
 
-    protected Object lastChanger = null;
+    protected boolean setByCurrentMaterial = false;
+//    protected Object lastChanger = null;
 
     @Override
     public void write(JmeExporter ex) throws IOException{
@@ -174,12 +180,63 @@ public class Uniform extends ShaderVariable {
         return value;
     }
 
-    public void setLastChanger(Object lastChanger){
-        this.lastChanger = lastChanger;
+    public boolean isSetByCurrentMaterial() {
+        return setByCurrentMaterial;
     }
 
-    public Object getLastChanger(){
-        return lastChanger;
+    public void clearSetByCurrentMaterial(){
+        setByCurrentMaterial = false;
+    }
+
+//    public void setLastChanger(Object lastChanger){
+//        this.lastChanger = lastChanger;
+//    }
+//
+//    public Object getLastChanger(){
+//        return lastChanger;
+//    }
+
+    public void clearValue(){
+        updateNeeded = true;
+
+        if (multiData != null){
+            ZERO_BUF.clear();
+            multiData.clear();
+
+            while (multiData.remaining() > 0){
+                ZERO_BUF.limit( Math.min(multiData.remaining(), 16) );
+                multiData.put(ZERO_BUF);
+            }
+
+            multiData.clear();
+
+            return;
+        }
+
+        switch (varType){
+            case Int:
+                this.value = ZERO_INT;
+                break;
+            case Boolean:
+                this.value = Boolean.FALSE;
+                break;
+            case Float:
+                this.value = ZERO_FLT;
+                break;
+            case Vector2:
+                this.value = Vector2f.ZERO;
+                break;
+            case Vector3:
+                this.value = Vector3f.ZERO;
+                break;
+            case Vector4:
+                if (this.value instanceof ColorRGBA){
+                    this.value = ColorRGBA.BlackNoAlpha;
+                }else{
+                    this.value = Quaternion.ZERO;
+                }
+                break;
+        }
     }
 
     public void setValue(VarType type, Object value){
@@ -191,6 +248,8 @@ public class Uniform extends ShaderVariable {
 
         if (value == null)
             throw new NullPointerException();
+
+        setByCurrentMaterial = true;
 
         switch (type){
             case Matrix3:
@@ -277,6 +336,9 @@ public class Uniform extends ShaderVariable {
                 multiData.clear();
                 break;
             default:
+                if (this.value != null && this.value.equals(value))
+                    return;
+                
                 this.value = value;
                 break;
         }
@@ -299,6 +361,7 @@ public class Uniform extends ShaderVariable {
 
         varType = VarType.Vector4Array;
         updateNeeded = true;
+        setByCurrentMaterial = true;
     }
 
     public void setVector4InArray(float x, float y, float z, float w, int index){
@@ -313,6 +376,7 @@ public class Uniform extends ShaderVariable {
         fb.put(x).put(y).put(z).put(w);
         fb.rewind();
         updateNeeded = true;
+        setByCurrentMaterial = true;
     }
     
     public boolean isUpdateNeeded(){
@@ -324,7 +388,7 @@ public class Uniform extends ShaderVariable {
     }
 
     public void reset(){
-        lastChanger = null;
+        setByCurrentMaterial = false;
         location = -2;
         updateNeeded = true;
     }

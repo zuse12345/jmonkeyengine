@@ -66,6 +66,7 @@ public final class Quaternion implements Savable, Cloneable {
      */
     public static final Quaternion IDENTITY = new Quaternion();
     public static final Quaternion DIRECTION_Z = new Quaternion();
+    public static final Quaternion ZERO = new Quaternion(0,0,0,0);
 
     static {
         DIRECTION_Z.fromAxes(Vector3f.UNIT_X, Vector3f.UNIT_Y, Vector3f.UNIT_Z);

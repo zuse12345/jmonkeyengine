@@ -144,6 +144,7 @@ public class LwjglRenderer implements Renderer {
     private final Statistics statistics = new Statistics();
 
     private int vpX, vpY, vpW, vpH;
+    private int clipX, clipY, clipW, clipH;
 
     public LwjglRenderer(){
     }
@@ -505,38 +506,38 @@ public class LwjglRenderer implements Renderer {
         }
 
         if (state.getBlendMode() != context.blendMode){
-            if (state.getBlendMode() == RenderState.BlendMode.Off)
+            if (state.getBlendMode() == RenderState.BlendMode.Off){
                 glDisable(GL_BLEND);
-            else
+            } else {
                 glEnable(GL_BLEND);
-
-            switch (state.getBlendMode()){
-                case Off:
-                    break;
-                case Additive:
-                    glBlendFunc(GL_ONE, GL_ONE);
-                    break;
-                case AlphaAdditive:
-                    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-                    break;
-                case Color:
-                    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
-                    break;
-                case Alpha:
-                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                    break;
-                case PremultAlpha:
-                    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-                    break;
-                case Modulate:
-                    glBlendFunc(GL_DST_COLOR, GL_ZERO);
-                    break;
-                case ModulateX2:
-                    glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
-                    break;
-                default:
-                    throw new UnsupportedOperationException("Unrecognized blend mode: "+
-                                                            state.getBlendMode());
+                switch (state.getBlendMode()){
+                    case Off:
+                        break;
+                    case Additive:
+                        glBlendFunc(GL_ONE, GL_ONE);
+                        break;
+                    case AlphaAdditive:
+                        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+                        break;
+                    case Color:
+                        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
+                        break;
+                    case Alpha:
+                        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                        break;
+                    case PremultAlpha:
+                        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+                        break;
+                    case Modulate:
+                        glBlendFunc(GL_DST_COLOR, GL_ZERO);
+                        break;
+                    case ModulateX2:
+                        glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("Unrecognized blend mode: "+
+                                                                state.getBlendMode());
+                }
             }
 
             context.blendMode = state.getBlendMode();
@@ -547,11 +548,13 @@ public class LwjglRenderer implements Renderer {
     |* Camera and World transforms                                       *|
     \*********************************************************************/
     public void setViewPort(int x, int y, int w, int h){
-        glViewport(x, y, w, h);
-        vpX = x;
-        vpY = y;
-        vpW = w;
-        vpH = h;
+        if (x != vpX || vpY != y || vpW != w || vpH != h){
+            glViewport(x, y, w, h);
+            vpX = x;
+            vpY = y;
+            vpW = w;
+            vpH = h;
+        }
     }
 
     public void setClipRect(int x, int y, int width, int height){
@@ -559,13 +562,24 @@ public class LwjglRenderer implements Renderer {
             glEnable(GL_SCISSOR_TEST);
             context.clipRectEnabled = true;
         }
-        glScissor(x, y, width, height);
+        if (clipX != x || clipY != y || clipW != width || clipH != height){
+            glScissor(x, y, width, height);
+            clipX = x;
+            clipY = y;
+            clipW = width;
+            clipH = height;
+        }
     }
 
     public void clearClipRect(){
         if (context.clipRectEnabled){
             glDisable(GL_SCISSOR_TEST);
             context.clipRectEnabled = false;
+
+            clipX = 0;
+            clipY = 0;
+            clipW = 0;
+            clipH = 0;
         }
     }
 
@@ -1458,7 +1472,7 @@ public class LwjglRenderer implements Renderer {
                     glTexParameteri(target, GL_GENERATE_MIPMAP, GL_TRUE);
 //                }
             }else{
-                glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0 );
+//                glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0 );
                 if (img.getMipMapSizes() != null){
                     glTexParameteri(target, GL_TEXTURE_MAX_LEVEL,  img.getMipMapSizes().length );
                 }

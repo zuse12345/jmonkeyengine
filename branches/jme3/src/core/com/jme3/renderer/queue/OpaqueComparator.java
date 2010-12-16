@@ -82,33 +82,12 @@ public class OpaqueComparator implements GeometryComparator {
 
         Material m1 = o1.getMaterial();
         Material m2 = o2.getMaterial();
-        Technique t1 = m1.getActiveTechnique();
-        Technique t2 = m2.getActiveTechnique();
-        int sid1 = -1, sid2 = -1;
-        if (t1 != null){
-            if (t1.getShader() != null){
-                sid1 = t1.getShader().getId();
-            }
-        }
-        if (t2 != null){
-            if (t2.getShader() != null){
-                sid2 = t2.getShader().getId();
-            }
-        }
-        sid1++; sid2++;
-//        sid1 *= 1000;
-//        sid2 *= 1000;
-//        float near = renderer.getCamera().getFrustumNear();
-//        float far  = renderer.getCamera().getFrustumFar();
-//        d1 = (d1 - near) / far;
-//        d2 = (d2 - near) / far;
-//        sid1 += d1 * 1000;
-//        sid2 += d2 * 1000;
 
-        if (sid1 == sid2){
+        int sortId = m1.compareTo(m2);
+
+        if (sortId == 0){
             // use the same shader.
             // sort front-to-back then.
-            
             float d1 = distanceToCam(o1);
             float d2 = distanceToCam(o2);
 
@@ -118,11 +97,9 @@ public class OpaqueComparator implements GeometryComparator {
                 return -1;
             else
                 return 1;
-            
-        } else if (sid1 < sid2)
-            return 1;
-        else
-            return -1;
+        }else{
+            return sortId;
+        }
     }
 
 }

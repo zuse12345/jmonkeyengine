@@ -92,8 +92,8 @@ public class Technique implements Savable {
         worldBindUniforms = ic.readSavableArrayList("worldBindUniforms", null);
         defines = (DefineList) ic.readSavable("defines", null);
         shader = (Shader) ic.readSavable("shader", null);
-        if (shader != null)
-            owner.updateUniformLinks();
+        //if (shader != null)
+        //    owner.updateUniformLinks();
     }
 
     public TechniqueDef getDef() {
@@ -191,7 +191,7 @@ public class Technique implements Savable {
         }
 
         // refresh the uniform links
-        owner.updateUniformLinks();
+        //owner.updateUniformLinks();
 
         // register the world bound uniforms
         worldBindUniforms.clear();

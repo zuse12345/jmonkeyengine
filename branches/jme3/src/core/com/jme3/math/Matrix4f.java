@@ -68,6 +68,7 @@ public final class Matrix4f implements Savable, Cloneable {
     public float m20, m21, m22, m23;
     public float m30, m31, m32, m33;
 
+    public static final Matrix4f ZERO     = new Matrix4f(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
     public static final Matrix4f IDENTITY = new Matrix4f();
 
     /**

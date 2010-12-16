@@ -59,6 +59,9 @@ public final class Matrix3f implements Savable, Cloneable {
     protected float m10, m11, m12;
     protected float m20, m21, m22;
 
+    public static final Matrix3f ZERO = new Matrix3f(0,0,0,0,0,0,0,0,0);
+    public static final Matrix3f IDENTITY = new Matrix3f();
+
     /**
      * Constructor instantiates a new <code>Matrix3f</code> object. The
      * initial values for the matrix is that of the identity matrix.

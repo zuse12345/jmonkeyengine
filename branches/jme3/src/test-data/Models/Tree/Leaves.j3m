@@ -1,0 +1,20 @@
+Material Leaves : Common/MatDefs/Light/Lighting.j3md {
+
+    Transparent On
+
+    MaterialParameters {
+        m_DiffuseMap : Models/Tree/Leaves.png
+	  m_UseAlpha : true
+        m_UseMaterialColors : true
+        m_Ambient : 0 0 0 1
+	   m_Diffuse : 0.7 0.7 0.7 1
+        m_Specular : 0 0 0 1
+        m_Shininess : 16
+    }
+    AdditionalRenderState {
+        Blend Alpha
+        // AlphaTestFalloff 0.90
+        DepthWrite Off
+	   FaceCull Off
+    }
+}

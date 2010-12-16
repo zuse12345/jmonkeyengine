@@ -60,7 +60,7 @@ public class Octree {
 
     private CollisionResults boundResults = new CollisionResults();
 
-    private static final List<Geometry> getGeometries(Spatial scene){
+    private static List<Geometry> getGeometries(Spatial scene){
         if (scene instanceof Geometry){
             List<Geometry> geomList = new ArrayList<Geometry>(1);
             geomList.add((Geometry) scene);

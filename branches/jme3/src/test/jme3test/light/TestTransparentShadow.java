@@ -19,13 +19,15 @@ public class TestTransparentShadow extends SimpleApplication {
 
         GL11.glEnable(ARBMultisample.GL_SAMPLE_ALPHA_TO_COVERAGE_ARB);
 
+        viewPort.setBackgroundColor(ColorRGBA.DarkGray);
+
         // create the geometry and attach it
         Spatial teaGeom = assetManager.loadModel("Models/Tree/Tree2.mesh.xml");
 
-//        DirectionalLight dl = new DirectionalLight();
-//        dl.setDirection(new Vector3f(1, 1, 1).normalizeLocal());
-//        dl.setColor(new ColorRGBA(0.198f, 0.136f, 0.618f, 1f).mult(2.1f));
-//        rootNode.addLight(dl);
+        DirectionalLight dl1 = new DirectionalLight();
+        dl1.setDirection(new Vector3f(1, 1, 1).normalizeLocal());
+        dl1.setColor(new ColorRGBA(0.198f, 0.136f, 0.618f, 1f).mult(2.1f));
+        rootNode.addLight(dl1);
 
         DirectionalLight dl = new DirectionalLight();
         dl.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());

@@ -81,7 +81,7 @@ public class Material implements Cloneable, Savable, Comparable<Material> {
         depthOnly.setFaceCullMode(RenderState.FaceCullMode.Back);
         depthOnly.setColorWrite(false);
 
-        additiveLight.setBlendMode(RenderState.BlendMode.Additive);
+        additiveLight.setBlendMode(RenderState.BlendMode.AlphaAdditive);
     }
 
     private MaterialDef def;

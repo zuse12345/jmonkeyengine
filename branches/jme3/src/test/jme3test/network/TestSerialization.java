@@ -157,6 +157,8 @@ public class TestSerialization extends MessageAdapter {
         Client client = new Client("localhost", 5110, 5110);
         client.start();
 
+        Thread.sleep(100);
+
         server.addMessageListener(new TestSerialization(), TestSerializationMessage.class);
         client.send(new TestSerializationMessage(true));
     }

@@ -80,6 +80,8 @@ public class TestMessages {
         server.addMessageListener(new PingResponder(), PingMessage.class);
         client.addMessageListener(new PingResponder(), PongMessage.class);
 
+        Thread.sleep(100);
+
         System.out.println("Sending ping message..");
         client.send(new PingMessage());
     }

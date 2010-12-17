@@ -32,6 +32,7 @@
 
 package com.jme3.network.serializing;
 
+import com.jme3.math.Vector3f;
 import com.jme3.network.message.*;
 import com.jme3.network.serializing.serializers.*;
 import java.io.File;
@@ -82,6 +83,8 @@ public abstract class Serializer {
         registerClass(Float.class,     new FloatSerializer());
         registerClass(Double.class,    new DoubleSerializer());
         registerClass(String.class,    new StringSerializer());
+
+        registerClass(Vector3f.class,  new Vector3Serializer());
 
         registerClass(Date.class,      new DateSerializer());
         registerClass(Collection.class, new CollectionSerializer());

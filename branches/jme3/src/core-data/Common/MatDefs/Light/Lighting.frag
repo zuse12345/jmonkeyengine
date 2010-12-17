@@ -152,11 +152,9 @@ void main(){
       vec4 specularColor = vec4(1.0);
     #endif
 
-    float alpha = 1.0;
-    #ifdef USE_ALPHA
-       alpha = DiffuseSum.a * diffuseColor.a;
-    #elif defined(ALPHAMAP)
-       alpha = texture2D(m_AlphaMap, newTexCoord).r;
+    float alpha = DiffuseSum.a * diffuseColor.a;
+    #ifdef ALPHAMAP
+       alpha = alpha * texture2D(m_AlphaMap, newTexCoord).r;
     #endif
     #ifdef VERTEX_LIGHTING
        vec2 light = vec2(AmbientSum.a, SpecularSum.a);

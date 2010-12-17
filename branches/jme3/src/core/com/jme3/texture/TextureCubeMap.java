@@ -77,10 +77,6 @@ public class TextureCubeMap extends Texture {
         setImage(img);
     }
 
-    protected TextureCubeMap(int id){
-        super(id);
-    }
-
     public Texture createSimpleClone() {
         return createSimpleClone(new TextureCubeMap());
     }
@@ -165,10 +161,6 @@ public class TextureCubeMap extends Texture {
     @Override
     public Type getType() {
         return Type.CubeMap;
-    }
-
-    public GLObject createDestructableClone(){
-        return new TextureCubeMap(id);
     }
 
     @Override

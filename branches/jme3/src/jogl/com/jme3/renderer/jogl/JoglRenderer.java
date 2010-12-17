@@ -491,28 +491,9 @@ public class JoglRenderer implements Renderer {
         }
     }
 
-    public void updateTextureData(Texture tex) {
-        int texId = tex.getId();
-        if (texId == -1){
-            // create texture
-            gl.glGenTextures(1, ib1);
-            texId = ib1.get(0);
-            tex.setId(texId);
-            objManager.registerForCleanup(tex);
-        }
-
-        // bind texture
+    private void setupTextureParams(Texture tex){
         int target = convertTextureType(tex.getType());
-        if (context.boundTextures[0] != tex){
-            if (context.boundTextureUnit != 0){
-                gl.glActiveTexture(gl.GL_TEXTURE0);
-                context.boundTextureUnit = 0;
-            }
-
-            gl.glBindTexture(target, texId);
-            context.boundTextures[0] = tex;
-        }
-
+        
         // filter things
         int minFilter = convertMinFilter(tex.getMinFilter());
         int magFilter = convertMagFilter(tex.getMagFilter());
@@ -534,23 +515,57 @@ public class JoglRenderer implements Renderer {
                 throw new UnsupportedOperationException("Unknown texture type: "+tex.getType());
         }
 
-        Image img = tex.getImage();
-        if (img != null){
-            boolean generateMips = false;
-            if (!img.hasMipmaps() && tex.getMinFilter().usesMipMapLevels()){
-                // No pregenerated mips available,
-                // generate from base level if required
-                if (hardwareMips){
-                    gl.glTexParameteri(target, GL.GL_GENERATE_MIPMAP, gl.GL_TRUE);
-                }else{
-                    generateMips = true;
-                }
+        // R to Texture compare mode
+        if (tex.getShadowCompareMode() != Texture.ShadowCompareMode.Off){
+            gl.glTexParameteri(target, GL.GL_TEXTURE_COMPARE_MODE, GL.GL_COMPARE_R_TO_TEXTURE);
+            gl.glTexParameteri(target, GL.GL_DEPTH_TEXTURE_MODE, GL.GL_INTENSITY);
+            if (tex.getShadowCompareMode() == Texture.ShadowCompareMode.GreaterOrEqual){
+                gl.glTexParameteri(target, GL.GL_TEXTURE_COMPARE_FUNC, GL.GL_GEQUAL);
+            }else{
+                gl.glTexParameteri(target, GL.GL_TEXTURE_COMPARE_FUNC, GL.GL_LEQUAL);
             }
+        }
+    }
 
-            TextureUtil.uploadTexture(gl, img, tex.getImageDataIndex(), generateMips, powerOf2);
+    public void updateTexImageData(Image image, Texture.Type type, boolean mips) {
+        int texId = image.getId();
+        if (texId == -1){
+            // create texture
+            gl.glGenTextures(1, ib1);
+            texId = ib1.get(0);
+            image.setId(texId);
+            objManager.registerForCleanup(image);
+
+            statistics.onNewTexture();
         }
 
-        tex.clearUpdateNeeded();
+        // bind texture
+        int target = convertTextureType(type);
+        if (context.boundTextures[0] != image){
+            if (context.boundTextureUnit != 0){
+                gl.glActiveTexture(gl.GL_TEXTURE0);
+                context.boundTextureUnit = 0;
+            }
+
+            gl.glBindTexture(target, texId);
+            context.boundTextures[0] = image;
+        }
+
+        boolean generateMips = false;
+        if (!image.hasMipmaps() && mips){
+            // No pregenerated mips available,
+            // generate from base level if required
+            if (hardwareMips){
+                gl.glTexParameteri(target, GL.GL_GENERATE_MIPMAP, gl.GL_TRUE);
+            }else{
+                generateMips = true;
+            }
+        }
+
+        TextureUtil.uploadTexture(gl, image, 0, generateMips, powerOf2);
+        
+
+        image.clearUpdateNeeded();
     }
 
     private void checkTexturingUsed(){
@@ -564,13 +579,15 @@ public class JoglRenderer implements Renderer {
     }
 
     public void setTexture(int unit, Texture tex) {
-        if (tex.isUpdateNeeded())
-            updateTextureData(tex);
+        Image image = tex.getImage();
+        if (image.isUpdateNeeded()){
+            updateTexImageData(image, tex.getType(), tex.getMinFilter().usesMipMapLevels());
+        }
 
-         int texId = tex.getId();
+         int texId = image.getId();
          assert texId != -1;
 
-         Texture[] textures = context.boundTextures;
+         Image[] textures = context.boundTextures;
 
          int type = convertTextureType(tex.getType());
          if (!context.textureIndexList.moveToNew(unit)){
@@ -582,20 +599,20 @@ public class JoglRenderer implements Renderer {
              gl.glEnable(type);
          }
 
-         if (textures[unit] != tex){
+         if (textures[unit] != image){
              if (context.boundTextureUnit != unit){
                 gl.glActiveTexture(gl.GL_TEXTURE0 + unit);
                 context.boundTextureUnit = unit;
              }
 
              gl.glBindTexture(type, texId);
-             textures[unit] = tex;
+             textures[unit] = image;
          }
     }
 
     public void clearTextureUnits() {
         IDList textureList = context.textureIndexList;
-        Texture[] textures = context.boundTextures;
+        Image[] textures = context.boundTextures;
         for (int i = 0; i < textureList.oldLen; i++){
             int idx = textureList.oldList[i];
 
@@ -603,19 +620,20 @@ public class JoglRenderer implements Renderer {
                 gl.glActiveTexture(gl.GL_TEXTURE0 + idx);
                 context.boundTextureUnit = idx;
             }
-            gl.glDisable(convertTextureType(textures[idx].getType()));
+            // XXX: Uncomment me
+            //gl.glDisable(convertTextureType(textures[idx].getType()));
             textures[idx] = null;
         }
         context.textureIndexList.copyNewToOld();
     }
 
-    public void deleteTexture(Texture tex) {
-        int texId = tex.getId();
+    public void deleteImage(Image image) {
+        int texId = image.getId();
         if (texId != -1){
             ib1.put(0, texId);
             ib1.position(0).limit(1);
             gl.glDeleteTextures(1, ib1);
-            tex.resetObject();
+            image.resetObject();
         }
     }
 

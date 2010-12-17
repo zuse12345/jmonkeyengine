@@ -39,7 +39,6 @@ import java.nio.ByteBuffer;
 import org.lwjgl.opengl.ARBDepthBufferFloat;
 import org.lwjgl.opengl.ARBHalfFloatPixel;
 import org.lwjgl.opengl.ARBTextureFloat;
-import org.lwjgl.opengl.ARBTextureRg;
 import org.lwjgl.opengl.EXTPackedFloat;
 import org.lwjgl.opengl.EXTTextureArray;
 import org.lwjgl.opengl.EXTTextureSharedExponent;
@@ -352,6 +351,7 @@ public class TextureUtil {
 
         int[] mipSizes = img.getMipMapSizes();
         int pos = 0;
+        // TODO: Remove unneccessary allocation
         if (mipSizes == null){
             if (data != null)
                 mipSizes = new int[]{ data.capacity() };

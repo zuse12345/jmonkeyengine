@@ -44,6 +44,7 @@ import com.jme3.scene.VertexBuffer;
 import com.jme3.shader.Shader;
 import com.jme3.shader.Shader.ShaderSource;
 import com.jme3.texture.FrameBuffer;
+import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 import java.nio.ByteBuffer;
 import java.util.EnumSet;
@@ -118,9 +119,6 @@ public class NullRenderer implements Renderer {
     public void setTexture(int unit, Texture tex) {
     }
 
-    public void deleteTexture(Texture tex) {
-    }
-
     public void updateBufferData(VertexBuffer vb) {
     }
 
@@ -134,6 +132,9 @@ public class NullRenderer implements Renderer {
     }
 
     public void cleanup() {
+    }
+
+    public void deleteImage(Image image) {
     }
 
 }

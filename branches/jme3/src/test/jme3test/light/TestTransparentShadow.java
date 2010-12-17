@@ -22,12 +22,12 @@ public class TestTransparentShadow extends SimpleApplication {
         // create the geometry and attach it
         Spatial teaGeom = assetManager.loadModel("Models/Tree/Tree2.mesh.xml");
 
-        DirectionalLight dl = new DirectionalLight();
-        dl.setDirection(new Vector3f(1, 1, 1).normalizeLocal());
-        dl.setColor(new ColorRGBA(0.198f, 0.136f, 0.618f, 1f).mult(2.1f));
-        rootNode.addLight(dl);
+//        DirectionalLight dl = new DirectionalLight();
+//        dl.setDirection(new Vector3f(1, 1, 1).normalizeLocal());
+//        dl.setColor(new ColorRGBA(0.198f, 0.136f, 0.618f, 1f).mult(2.1f));
+//        rootNode.addLight(dl);
 
-        dl = new DirectionalLight();
+        DirectionalLight dl = new DirectionalLight();
         dl.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
         dl.setColor(new ColorRGBA(0.965f, 0.949f, 0.772f, 1f).mult(2.1f));
         rootNode.addLight(dl);

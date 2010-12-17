@@ -35,6 +35,7 @@ package com.jme3.renderer;
 import com.jme3.scene.Mesh;
 import com.jme3.shader.Shader;
 import com.jme3.texture.FrameBuffer;
+import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 import java.util.HashSet;
 
@@ -117,10 +118,12 @@ public class Statistics {
     }
 
     public void onTextureUse(Texture texture, boolean wasSwitched){
-        assert texture.id >= 1;
+        Image image = texture.getImage();
 
-        if (!texturesUsed.contains(texture.id))
-            texturesUsed.add(texture.id);
+        assert image.id >= 1;
+
+        if (!texturesUsed.contains(image.id))
+            texturesUsed.add(image.id);
 
         if (wasSwitched)
             numTextureBinds ++;

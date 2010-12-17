@@ -41,6 +41,7 @@ import com.jme3.scene.VertexBuffer;
 import com.jme3.shader.Shader;
 import com.jme3.shader.Shader.ShaderSource;
 import com.jme3.texture.FrameBuffer;
+import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 import java.nio.ByteBuffer;
 import java.util.EnumSet;
@@ -161,7 +162,7 @@ public interface Renderer {
      * Deletes a texture from the GPU.
      * @param tex
      */
-    public void deleteTexture(Texture tex);
+    public void deleteImage(Image image);
 
     /**
      * Uploads a vertex buffer to the GPU.

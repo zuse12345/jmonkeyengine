@@ -41,6 +41,8 @@ import com.jme3.export.Savable;
 import com.jme3.renderer.GLObject;
 import com.jme3.renderer.Renderer;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * <code>Texture</code> defines a texture object to be used to display an
@@ -57,7 +59,7 @@ import java.io.IOException;
  * @author Joshua Slack
  * @version $Id: Texture.java 4131 2009-03-19 20:15:28Z blaine.dev $
  */
-public abstract class Texture extends GLObject implements Savable, Cloneable {
+public abstract class Texture implements Savable, Cloneable {
 
     public enum Type {
 
@@ -286,8 +288,7 @@ public abstract class Texture extends GLObject implements Savable, Cloneable {
     private String name = null;
 
     /**
-     * The image stored in the texture, can be null if the
-     * texture is already on the GPU.
+     * The image stored in the texture
      */
     private Image image = null;
 
@@ -301,14 +302,17 @@ public abstract class Texture extends GLObject implements Savable, Cloneable {
     private MagFilter magnificationFilter = MagFilter.Bilinear;
     private ShadowCompareMode shadowCompareMode = ShadowCompareMode.Off;
     private int anisotropicFilter;
-    private int imageIndex = 0;
 
     /**
-     * Incorrect ?? Should clone ID
      * @return
      */
+    @Override
     public Texture clone(){
-        return (Texture) super.clone();
+        try {
+            return (Texture) super.clone();
+        } catch (CloneNotSupportedException ex) {
+            throw new AssertionError();
+        }
     }
 
     /**
@@ -316,11 +320,6 @@ public abstract class Texture extends GLObject implements Savable, Cloneable {
      * attributes.
      */
     public Texture() {
-        super(GLObject.Type.Texture);
-    }
-
-    protected Texture(int id){
-        super(GLObject.Type.Texture, id);
     }
 
     /**
@@ -396,7 +395,6 @@ public abstract class Texture extends GLObject implements Savable, Cloneable {
      */
     public void setImage(Image image) {
         this.image = image;
-        setUpdateNeeded();
     }
 
     /**
@@ -418,14 +416,6 @@ public abstract class Texture extends GLObject implements Savable, Cloneable {
      */
     public Image getImage() {
         return image;
-    }
-
-    public void setImageDataIndex(int index){
-        this.imageIndex = index;
-    }
-
-    public int getImageDataIndex() {
-        return imageIndex;
     }
 
     /**
@@ -508,17 +498,6 @@ public abstract class Texture extends GLObject implements Savable, Cloneable {
         return getClass().getSimpleName() + "[name="+name+imgTxt+"]";
     }
 
-    @Override
-    public void resetObject() {
-        this.id = -1;
-        setUpdateNeeded();
-    }
-
-    @Override
-    public void deleteObject(Renderer r) {
-        r.deleteTexture(this);
-    }
-
 //    public boolean equals(Object other) {
 //        if (other == this) {
 //            return true;
@@ -598,14 +577,12 @@ public abstract class Texture extends GLObject implements Savable, Cloneable {
         rVal.setMinFilter(minificationFilter);
         rVal.setMagFilter(magnificationFilter);
         rVal.setShadowCompareMode(shadowCompareMode);
-        rVal.setImageDataIndex(imageIndex);
 //        rVal.setHasBorder(hasBorder);
         rVal.setAnisotropicFilter(anisotropicFilter);
         rVal.setImage(image); // NOT CLONED.
 //        rVal.memReq = memReq;
         rVal.setTextureKey(key);
         rVal.setName(name);
-        rVal.setId(id);
 //        rVal.setBlendColor(blendColor != null ? blendColor.clone() : null);
 //        if (getTextureKey() != null) {
 //            rVal.setTextureKey(getTextureKey());

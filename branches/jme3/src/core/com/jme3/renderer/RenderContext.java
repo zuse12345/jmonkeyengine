@@ -34,6 +34,7 @@ package com.jme3.renderer;
 
 import com.jme3.material.RenderState;
 import com.jme3.scene.VertexBuffer;
+import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 
 /**
@@ -132,7 +133,7 @@ public class RenderContext {
     /**
      * Current bound texture IDs for each texture unit.
      */
-    public Texture[] boundTextures = new Texture[16];
+    public Image[] boundTextures = new Image[16];
 
     public IDList textureIndexList = new IDList();
 

@@ -1125,13 +1125,14 @@ public class LwjglRenderer implements Renderer {
 
     public void updateRenderTexture(FrameBuffer fb, RenderBuffer rb){
         Texture tex = rb.getTexture();
-        if (tex.isUpdateNeeded())
-            updateTextureData(tex);
+        Image image = tex.getImage();
+        if (image.isUpdateNeeded())
+            updateTexImageData(image, tex.getType(), tex.getMinFilter().usesMipMapLevels());
 
         glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
                                   convertAttachmentSlot(rb.getSlot()),
                                   convertTextureType(tex.getType()),
-                                  tex.getId(),
+                                  image.getId(),
                                   0);
     }
 
@@ -1399,29 +1400,8 @@ public class LwjglRenderer implements Renderer {
         }
     }
 
-    public void updateTextureData(Texture tex){
-        int texId = tex.getId();
-        if (texId == -1){
-            // create texture
-            glGenTextures(intBuf1);
-            texId = intBuf1.get(0);
-            tex.setId(texId);
-            objManager.registerForCleanup(tex);
-
-            statistics.onNewTexture();
-        }
-
-        // bind texture
+    private void setupTextureParams(Texture tex){
         int target = convertTextureType(tex.getType());
-        if (context.boundTextures[0] != tex){
-            if (context.boundTextureUnit != 0){
-                glActiveTexture(GL_TEXTURE0);
-                context.boundTextureUnit = 0;
-            }
-
-            glBindTexture(target, texId);
-            context.boundTextures[0] = tex;
-        }
 
         // filter things
         int minFilter = convertMinFilter(tex.getMinFilter());
@@ -1462,97 +1442,123 @@ public class LwjglRenderer implements Renderer {
                 glTexParameteri(target, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
             }
         }
+    }
 
-        Image img = tex.getImage();
-        if (img != null){
-            if (!img.hasMipmaps() && tex.getMinFilter().usesMipMapLevels()){
-                // No pregenerated mips available,
-                // generate from base level if required
-//                if (!GLContext.getCapabilities().GL_EXT_framebuffer_multisample){
-                    glTexParameteri(target, GL_GENERATE_MIPMAP, GL_TRUE);
-//                }
-            }else{
-//                glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0 );
-                if (img.getMipMapSizes() != null){
-                    glTexParameteri(target, GL_TEXTURE_MAX_LEVEL,  img.getMipMapSizes().length );
-                }
+    public void updateTexImageData(Image img, Texture.Type type, boolean mips){
+        int texId = img.getId();
+        if (texId == -1){
+            // create texture
+            glGenTextures(intBuf1);
+            texId = intBuf1.get(0);
+            img.setId(texId);
+            objManager.registerForCleanup(img);
+
+            statistics.onNewTexture();
+        }
+
+        // bind texture
+        int target = convertTextureType(type);
+        if (context.boundTextures[0] != img){
+            if (context.boundTextureUnit != 0){
+                glActiveTexture(GL_TEXTURE0);
+                context.boundTextureUnit = 0;
             }
 
-            if (target == GL_TEXTURE_CUBE_MAP){
-                List<ByteBuffer> data = img.getData();
-                if (data.size() != 6){
-                    logger.log(Level.WARNING, "Invalid texture: {0}\n"
-                            + "Cubemap textures must contain 6 data units.", tex);
-                    return;
-                }
-                for (int i = 0; i < 6; i++){
-                    TextureUtil.uploadTexture(img, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, i, 0, tdc);
-                }
-            }else if (target == EXTTextureArray.GL_TEXTURE_2D_ARRAY_EXT){
-                List<ByteBuffer> data = img.getData();
-                // -1 index specifies prepare data for 2D Array
-                TextureUtil.uploadTexture(img, target, -1, 0, tdc);
-                for (int i = 0; i < data.size(); i++){
-                    // upload each slice of 2D array in turn
-                    // this time with the appropriate index
-                     TextureUtil.uploadTexture(img, target, i, 0, tdc);
-                }
-            }else{
-                TextureUtil.uploadTexture(img, target, tex.getImageDataIndex(), 0, tdc);
+            glBindTexture(target, texId);
+            context.boundTextures[0] = img;
+        }
+
+        if (!img.hasMipmaps() && mips){
+            // No pregenerated mips available,
+            // generate from base level if required
+//          if (!GLContext.getCapabilities().GL_EXT_framebuffer_multisample){
+            glTexParameteri(target, GL_GENERATE_MIPMAP, GL_TRUE);
+//          }
+        }else{
+//          glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0 );
+            if (img.getMipMapSizes() != null){
+               glTexParameteri(target, GL_TEXTURE_MAX_LEVEL,  img.getMipMapSizes().length );
             }
+        }
+
+
+        if (target == GL_TEXTURE_CUBE_MAP){
+            List<ByteBuffer> data = img.getData();
+            if (data.size() != 6){
+                logger.log(Level.WARNING, "Invalid texture: {0}\n"
+                        + "Cubemap textures must contain 6 data units.", img);
+                return;
+            }
+            for (int i = 0; i < 6; i++){
+                TextureUtil.uploadTexture(img, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, i, 0, tdc);
+            }
+        }else if (target == EXTTextureArray.GL_TEXTURE_2D_ARRAY_EXT){
+            List<ByteBuffer> data = img.getData();
+            // -1 index specifies prepare data for 2D Array
+            TextureUtil.uploadTexture(img, target, -1, 0, tdc);
+            for (int i = 0; i < data.size(); i++){
+                // upload each slice of 2D array in turn
+                // this time with the appropriate index
+                 TextureUtil.uploadTexture(img, target, i, 0, tdc);
+            }
+        }else{
+            TextureUtil.uploadTexture(img, target, 0, 0, tdc);
+        }
             
 //            if (GLContext.getCapabilities().GL_EXT_framebuffer_multisample){
 //                glGenerateMipmapEXT(target);
 //            }
-        }
-
-        tex.clearUpdateNeeded();
+        
+        img.clearUpdateNeeded();
     }
 
     public void setTexture(int unit, Texture tex){
-         if (tex.isUpdateNeeded())
-            updateTextureData(tex);
+        Image image = tex.getImage();
+         if (image.isUpdateNeeded()){
+            updateTexImageData(image, tex.getType(), tex.getMinFilter().usesMipMapLevels());
+        }
 
-         int texId = tex.getId();
+         int texId = image.getId();
          assert texId != -1;
 
-         Texture[] textures = context.boundTextures;
+         Image[] textures = context.boundTextures;
 
          int type = convertTextureType(tex.getType());
-         if (!context.textureIndexList.moveToNew(unit)){
-             if (context.boundTextureUnit != unit){
-                glActiveTexture(GL_TEXTURE0 + unit);
-                context.boundTextureUnit = unit;
-             }
-
+//         if (!context.textureIndexList.moveToNew(unit)){
+//             if (context.boundTextureUnit != unit){
+//                glActiveTexture(GL_TEXTURE0 + unit);
+//                context.boundTextureUnit = unit;
+//             }
 //             glEnable(type);
-         }
+//         }
 
-         if (textures[unit] != tex){
+         if (textures[unit] != image){
              if (context.boundTextureUnit != unit){
                 glActiveTexture(GL_TEXTURE0 + unit);
                 context.boundTextureUnit = unit;
              }
 
              glBindTexture(type, texId);
-             textures[unit] = tex;
+             textures[unit] = image;
 
              statistics.onTextureUse(tex, true);
          }else{
              statistics.onTextureUse(tex, false);
          }
+
+         setupTextureParams(tex);
     }
 
     public void clearTextureUnits(){
         IDList textureList = context.textureIndexList;
-        Texture[] textures = context.boundTextures;
+        Image[] textures = context.boundTextures;
         for (int i = 0; i < textureList.oldLen; i++){
             int idx = textureList.oldList[i];
 
-            if (context.boundTextureUnit != idx){
-                glActiveTexture(GL_TEXTURE0 + idx);
-                context.boundTextureUnit = idx;
-            }
+//            if (context.boundTextureUnit != idx){
+//                glActiveTexture(GL_TEXTURE0 + idx);
+//                context.boundTextureUnit = idx;
+//            }
 
 //            if (textures[idx] == null){
 //                System.out.println("!!!");
@@ -1564,13 +1570,13 @@ public class LwjglRenderer implements Renderer {
         context.textureIndexList.copyNewToOld();
     }
 
-    public void deleteTexture(Texture tex){
-        int texId = tex.getId();
+    public void deleteImage(Image image){
+        int texId = image.getId();
         if (texId != -1){
             intBuf1.put(0, texId);
             intBuf1.position(0).limit(1);
             glDeleteTextures(intBuf1);
-            tex.resetObject();
+            image.resetObject();
 
             statistics.onDeleteTexture();
         }

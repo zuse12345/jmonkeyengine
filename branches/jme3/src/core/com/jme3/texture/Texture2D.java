@@ -77,10 +77,6 @@ public class Texture2D extends Texture {
         this(new Image(format, width, height, null));
     }
 
-    protected Texture2D(int id){
-        super(id);
-    }
-
     @Override
     public Texture createSimpleClone() {
         Texture2D clone = new Texture2D();
@@ -161,10 +157,6 @@ public class Texture2D extends Texture {
     @Override
     public Type getType() {
         return Type.TwoDimensional;
-    }
-
-    public GLObject createDestructableClone(){
-        return new Texture2D(id);
     }
 
     @Override

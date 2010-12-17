@@ -172,7 +172,7 @@ public class Material implements Cloneable, Savable, Comparable<Material> {
                 MatParam param = paramValues.getValue(i);
                 if (param instanceof MatParamTexture){
                     MatParamTexture tex = (MatParamTexture) param;
-                    texId = tex.getTextureValue().getId();
+                    texId = tex.getTextureValue().getImage().getId();
                 }
             }
             sortingId = texId;

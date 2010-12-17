@@ -32,6 +32,7 @@
 
 package com.jme3.network.connection;
 
+import com.jme3.system.JmeSystem;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,6 +72,14 @@ public class ConnectionRunnable implements Runnable {
     }
 
     public void run() {
+        if (!JmeSystem.isLowPermissions()){
+            Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                public void uncaughtException(Thread thread, Throwable thrown) {
+                    log.log(Level.SEVERE, "Uncaught exception thrown in "+thread.toString(), thrown);
+                }
+            });
+        }
+
         while (keepAlive)
         {
             // Run while one of the connections is still live.

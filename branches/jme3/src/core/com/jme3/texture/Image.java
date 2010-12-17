@@ -36,12 +36,14 @@ import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.OutputCapsule;
+import com.jme3.renderer.Renderer;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import com.jme3.export.Savable;
+import com.jme3.renderer.GLObject;
 
 /**
  * <code>Image</code> defines a data format for a graphical image. The image
@@ -53,7 +55,7 @@ import com.jme3.export.Savable;
  * @author Joshua Slack
  * @version $Id: Image.java 4131 2009-03-19 20:15:28Z blaine.dev $
  */
-public class Image implements Savable, Cloneable {
+public class Image extends GLObject implements Savable /*, Cloneable*/ {
 
     public enum Format {
         Alpha8(8),
@@ -148,20 +150,32 @@ public class Image implements Savable, Cloneable {
     protected Format format;
     protected int width, height, depth;
     protected int[] mipMapSizes;
-    protected transient ArrayList<ByteBuffer> data;
+    protected ArrayList<ByteBuffer> data;
     protected transient Object efficentData;
 //    protected int mipOffset = 0;
 
-    public Image clone(){
-        try{
-            Image clone = (Image) super.clone();
-            clone.mipMapSizes = mipMapSizes != null ? mipMapSizes.clone() : null;
-            clone.data = data != null ? new ArrayList<ByteBuffer>(data) : null;
-            return clone;
-        }catch (CloneNotSupportedException ex){
-        }
-        return null;
+    @Override
+    public void resetObject() {
+        this.id = -1;
+        setUpdateNeeded();
+    }
 
+    @Override
+    public void deleteObject(Renderer r) {
+        r.deleteImage(this);
+    }
+
+    @Override
+    public GLObject createDestructableClone() {
+        return new Image(id);
+    }
+
+    public Image clone(){
+        Image clone = (Image) super.clone();
+        clone.mipMapSizes = mipMapSizes != null ? mipMapSizes.clone() : null;
+        clone.data = data != null ? new ArrayList<ByteBuffer>(data) : null;
+        clone.setUpdateNeeded();
+        return clone;
     }
 
     /**
@@ -169,7 +183,12 @@ public class Image implements Savable, Cloneable {
      * are undefined.
      */
     public Image() {
+        super(Type.Texture);
         data = new ArrayList<ByteBuffer>(1);
+    }
+
+    protected Image(int id){
+        super(GLObject.Type.Texture, id);
     }
 
     /**
@@ -189,6 +208,8 @@ public class Image implements Savable, Cloneable {
      */
     public Image(Format format, int width, int height, int depth, ArrayList<ByteBuffer> data,
             int[] mipMapSizes) {
+        
+        this();
 
         if (mipMapSizes != null && mipMapSizes.length <= 1) {
             mipMapSizes = null;
@@ -219,6 +240,8 @@ public class Image implements Savable, Cloneable {
      */
     public Image(Format format, int width, int height, ByteBuffer data,
             int[] mipMapSizes) {
+
+        this();
 
         if (mipMapSizes != null && mipMapSizes.length <= 1) {
             mipMapSizes = null;
@@ -277,6 +300,7 @@ public class Image implements Savable, Cloneable {
      */
     public void setData(ArrayList<ByteBuffer> data) {
         this.data = data;
+        setUpdateNeeded();
     }
 
     /**
@@ -289,12 +313,14 @@ public class Image implements Savable, Cloneable {
     public void setData(ByteBuffer data) {
         this.data = new ArrayList<ByteBuffer>(1);
         this.data.add(data);
+        setUpdateNeeded();
     }
 
     public void addData(ByteBuffer data) {
         if (this.data == null)
             this.data = new ArrayList<ByteBuffer>(1);
         this.data.add(data);
+        setUpdateNeeded();
     }
 
     public void setData(int index, ByteBuffer data) {
@@ -303,6 +329,7 @@ public class Image implements Savable, Cloneable {
                 this.data.add(null);
             }
             this.data.set(index, data);
+            setUpdateNeeded();
         } else {
             throw new IllegalArgumentException("index must be greater than or equal to 0.");
         }
@@ -318,6 +345,7 @@ public class Image implements Savable, Cloneable {
      */
     public void setEfficentData(Object efficentData){
         this.efficentData = efficentData;
+        setUpdateNeeded();
     }
 
     /**
@@ -342,6 +370,7 @@ public class Image implements Savable, Cloneable {
             mipMapSizes = null;
 
         this.mipMapSizes = mipMapSizes;
+        setUpdateNeeded();
     }
 
     /**
@@ -353,6 +382,7 @@ public class Image implements Savable, Cloneable {
      */
     public void setHeight(int height) {
         this.height = height;
+        setUpdateNeeded();
     }
 
     /**
@@ -365,6 +395,7 @@ public class Image implements Savable, Cloneable {
      */
     public void setDepth(int depth) {
         this.depth = depth;
+        setUpdateNeeded();
     }
 
     /**
@@ -376,6 +407,7 @@ public class Image implements Savable, Cloneable {
      */
     public void setWidth(int width) {
         this.width = width;
+        setUpdateNeeded();
     }
 
     /**
@@ -393,6 +425,7 @@ public class Image implements Savable, Cloneable {
         }
 
         this.format = format;
+        setUpdateNeeded();
     }
 
     /**

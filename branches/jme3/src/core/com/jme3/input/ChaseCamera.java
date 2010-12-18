@@ -95,7 +95,9 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
     private float previousTargetRotation;
     private Vector3f pos;
     protected boolean dragToRotate = true;
-    protected Vector3f lookAtOffset=null;
+    protected Vector3f lookAtOffset = null;
+    protected boolean invertYaxis=false;
+
 
     /**
      * Constructs the chase camera
@@ -124,7 +126,7 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
     }
 
     public void onAction(String name, boolean keyPressed, float tpf) {
-        if(dragToRotate){
+        if (dragToRotate) {
             if (name.equals("toggleRotate") && enabled) {
                 if (keyPressed) {
                     canRotate = true;
@@ -173,9 +175,13 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
         String[] inputs = {"toggleRotate", "Down", "Up", "mouseLeft", "mouseRight", "ZoomIn", "ZoomOut"};
 
         this.inputManager = inputManager;
-
-        inputManager.addMapping("Down", new MouseAxisTrigger(1, true));
-        inputManager.addMapping("Up", new MouseAxisTrigger(1, false));
+        if(!invertYaxis){
+            inputManager.addMapping("Down", new MouseAxisTrigger(1, true));
+            inputManager.addMapping("Up", new MouseAxisTrigger(1, false));
+        }else{
+            inputManager.addMapping("Down", new MouseAxisTrigger(1, false));
+            inputManager.addMapping("Up", new MouseAxisTrigger(1, true));
+        }
         inputManager.addMapping("ZoomIn", new MouseAxisTrigger(2, true));
         inputManager.addMapping("ZoomOut", new MouseAxisTrigger(2, false));
         inputManager.addMapping("mouseLeft", new MouseAxisTrigger(0, true));
@@ -375,11 +381,11 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
             prevPos = new Vector3f(target.getWorldTranslation());
 
             //the cam looks at the target
-            if(lookAtOffset!=null){
+            if (lookAtOffset != null) {
                 cam.lookAt(target.getWorldTranslation().add(lookAtOffset), initialUpVec);
-            }else{
+            } else {
                 cam.lookAt(target.getWorldTranslation(), initialUpVec);
-           }
+            }
         }
     }
 
@@ -704,7 +710,6 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
         targetVRotation = angle;
     }
 
-
     /**
      * @return If drag to rotate feature is enabled.
      *
@@ -723,10 +728,9 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
      */
     public void setDragToRotate(boolean dragToRotate) {
         this.dragToRotate = dragToRotate;
-        this.canRotate=!dragToRotate;
+        this.canRotate = !dragToRotate;
         inputManager.setCursorVisible(dragToRotate);
     }
-
 
     /**
      * return the current distance from the camera to the target
@@ -768,7 +772,23 @@ public class ChaseCamera implements ActionListener, AnalogListener, Control {
         this.lookAtOffset = lookAtOffset;
     }
 
-
+    /**
+     * invert the Y axis movement of the mouse
+     * @param invertYaxis
+     */
+    public void setInvertYaxis(boolean invertYaxis) {
+        this.invertYaxis = invertYaxis;
+        inputManager.deleteMapping("Down");
+        inputManager.deleteMapping("Up");
+        if(!invertYaxis){
+            inputManager.addMapping("Down", new MouseAxisTrigger(1, true));
+            inputManager.addMapping("Up", new MouseAxisTrigger(1, false));
+        }else{
+            inputManager.addMapping("Down", new MouseAxisTrigger(1, false));
+            inputManager.addMapping("Up", new MouseAxisTrigger(1, true));
+        }
+        inputManager.addListener(this, "Down","Up");
+    }
 
 
 }

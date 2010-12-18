@@ -73,7 +73,9 @@ public class TestChaseCamera extends SimpleApplication implements AnalogListener
         flyCam.setEnabled(false);
 
         // Enable a chase cam
-        chaseCam = new ChaseCamera(cam, teaGeom, inputManager);
+        chaseCam = new ChaseCamera(cam, teaGeom,inputManager);
+        chaseCam.setInvertYaxis(false);
+
         chaseCam.setSmoothMotion(true);
    //     chaseCam.setLookAtOffset(Vector3f.UNIT_Y.mult(3));
         regsiterInput();

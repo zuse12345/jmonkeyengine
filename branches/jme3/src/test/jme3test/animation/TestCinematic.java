@@ -33,6 +33,7 @@ package jme3test.animation;
 
 import com.jme3.cinematic.Cinematic;
 import com.jme3.animation.LoopMode;
+import com.jme3.cinematic.events.CinematicEvent;
 import com.jme3.cinematic.events.MotionTrack;
 import com.jme3.cinematic.MotionPath;
 import com.jme3.cinematic.events.SoundTrack;
@@ -40,6 +41,7 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.cinematic.events.AbstractCinematicEvent;
 import com.jme3.cinematic.events.AnimationTrack;
 import com.jme3.cinematic.PlayState;
+import com.jme3.cinematic.events.CinematicEventListener;
 import com.jme3.cinematic.events.PositionTrack;
 import com.jme3.cinematic.events.RotationTrack;
 import com.jme3.cinematic.events.ScaleTrack;
@@ -156,6 +158,26 @@ public class TestCinematic extends SimpleApplication {
 
             @Override
             public void onPause() {
+               
+            }
+        });
+
+        cinematic.addListener(new CinematicEventListener() {
+
+            public void onPlay(CinematicEvent cinematic) {
+                chaseCam.setEnabled(false);
+                System.out.println("play");
+            }
+
+            public void onPause(CinematicEvent cinematic) {
+                chaseCam.setEnabled(true);
+                System.out.println("pause");
+            }
+
+            public void onStop(CinematicEvent cinematic) {
+               chaseCam.setEnabled(true);               
+               fade.setValue(1);
+               System.out.println("stop");
             }
         });
 
@@ -241,9 +263,7 @@ public class TestCinematic extends SimpleApplication {
                 if (name.equals("togglePause") && keyPressed) {
                     if (cinematic.getPlayState() == PlayState.Playing) {
                         cinematic.pause();
-                        chaseCam.setEnabled(true);
                     } else {
-                        chaseCam.setEnabled(false);
                         cinematic.play();
                     }
                 }

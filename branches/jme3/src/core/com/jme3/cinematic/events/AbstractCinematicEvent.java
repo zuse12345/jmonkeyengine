@@ -41,6 +41,8 @@ import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.Savable;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -54,6 +56,7 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
     protected float duration = initialDuration / speed;
     protected LoopMode loopMode = LoopMode.DontLoop;
     protected float time = 0;
+    protected List<CinematicEventListener> listeners;
 
     public AbstractCinematicEvent() {
     }
@@ -75,6 +78,12 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
     public void play() {
         onPlay();
         playState = PlayState.Playing;
+        if (listeners != null) {
+            for (int i = 0; i < listeners.size(); i++) {
+                CinematicEventListener cel = listeners.get(i);
+                cel.onPlay(this);
+            }
+        }
     }
 
     public abstract void onPlay();
@@ -100,6 +109,12 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
         onStop();
         time = 0;
         playState = PlayState.Stopped;
+        if (listeners != null) {
+            for (int i = 0; i < listeners.size(); i++) {
+                CinematicEventListener cel = listeners.get(i);
+                cel.onStop(this);
+            }
+        }
     }
 
     public abstract void onStop();
@@ -107,6 +122,12 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
     public void pause() {
         onPause();
         playState = PlayState.Paused;
+        if (listeners != null) {
+            for (int i = 0; i < listeners.size(); i++) {
+                CinematicEventListener cel = listeners.get(i);
+                cel.onPause(this);
+            }
+        }
     }
 
     public abstract void onPause();
@@ -208,5 +229,20 @@ public abstract class AbstractCinematicEvent implements CinematicEvent, Savable 
     }
 
     public void initEvent(Application app, Cinematic cinematic) {
+    }
+
+    private List<CinematicEventListener> getListeners() {
+        if (listeners == null) {
+            listeners = new ArrayList<CinematicEventListener>();
+        }
+        return listeners;
+    }
+
+    public void addListener(CinematicEventListener listener) {
+        getListeners().add(listener);
+    }
+
+    public void removeListener(CinematicEventListener listener) {
+        getListeners().remove(listener);
     }
 }

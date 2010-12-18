@@ -33,7 +33,6 @@
 package jme3test.bullet;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.app.SimpleBulletApplication;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.PhysicsSpace;
@@ -196,6 +195,7 @@ public class TestHoveringTank extends SimpleApplication implements AnalogListene
         player.setSleepingThresholds(0.75f, 0.2f);
         player.setRestitution(0); // do not bounce
         player.attachDebugShape(assetManager);
+        player.setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
 
         spaceCraft.setShadowMode(ShadowMode.CastAndReceive);
 
@@ -204,19 +204,6 @@ public class TestHoveringTank extends SimpleApplication implements AnalogListene
 
         flyCam.setEnabled(false);
         ChaseCamera chaseCam = new ChaseCamera(cam, spaceCraft, inputManager);
-
-        getPhysicsSpace().addCollisionGroupListener(new PhysicsCollisionGroupListener() {
-            public boolean collide(PhysicsCollisionObject nodeA, PhysicsCollisionObject nodeB) {
-                String a = nodeA.getName();
-                String b = nodeB.getName();
-                if (a.equals("Missile") && b.equals("Player"))
-                    return false;
-                else if (a.equals("Player") && b.equals("Missile"))
-                    return false;
-                
-                return true;
-            }
-        }, PhysicsNode.COLLISION_GROUP_01);
     }
 
     public void makeMissile(){
@@ -246,6 +233,7 @@ public class TestHoveringTank extends SimpleApplication implements AnalogListene
 //        physMissile.attachDebugShape(assetManager);
         physMissile.setLinearDamping(0);
         physMissile.setAngularDamping(1); // prevent rotation
+        physMissile.setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_03);
 
         physMissile.setShadowMode(ShadowMode.CastAndReceive);
 

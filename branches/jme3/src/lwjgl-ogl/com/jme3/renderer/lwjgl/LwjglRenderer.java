@@ -1524,13 +1524,13 @@ public class LwjglRenderer implements Renderer {
          Image[] textures = context.boundTextures;
 
          int type = convertTextureType(tex.getType());
-//         if (!context.textureIndexList.moveToNew(unit)){
+         if (!context.textureIndexList.moveToNew(unit)){
 //             if (context.boundTextureUnit != unit){
 //                glActiveTexture(GL_TEXTURE0 + unit);
 //                context.boundTextureUnit = unit;
 //             }
 //             glEnable(type);
-//         }
+         }
 
          if (textures[unit] != image){
              if (context.boundTextureUnit != unit){
@@ -1554,16 +1554,10 @@ public class LwjglRenderer implements Renderer {
         Image[] textures = context.boundTextures;
         for (int i = 0; i < textureList.oldLen; i++){
             int idx = textureList.oldList[i];
-
 //            if (context.boundTextureUnit != idx){
 //                glActiveTexture(GL_TEXTURE0 + idx);
 //                context.boundTextureUnit = idx;
 //            }
-
-//            if (textures[idx] == null){
-//                System.out.println("!!!");
-//            }
-
 //            glDisable(convertTextureType(textures[idx].getType()));
             textures[idx] = null;
         }

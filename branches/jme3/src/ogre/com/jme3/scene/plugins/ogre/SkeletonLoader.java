@@ -232,7 +232,9 @@ public class SkeletonLoader extends DefaultHandler implements AssetLoader {
         track = null;
         tracks.clear();
         animation = null;
-        animations.clear();
+        if (animations != null)
+            animations.clear();
+        
         bone = null;
         skeleton = null;
         times.clear();

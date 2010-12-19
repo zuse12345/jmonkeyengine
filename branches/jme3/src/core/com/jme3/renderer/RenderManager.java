@@ -29,7 +29,6 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.renderer;
 
 import com.jme3.material.Material;
@@ -72,7 +71,6 @@ import java.util.logging.Logger;
 public class RenderManager {
 
     private static final Logger logger = Logger.getLogger(RenderManager.class.getName());
-
     private Renderer renderer;
     private Timer timer;
     private ArrayList<ViewPort> preViewPorts = new ArrayList<ViewPort>();
@@ -83,7 +81,6 @@ public class RenderManager {
     private String forcedTechnique = null;
     private RenderState forcedRenderState = null;
     private final boolean shader;
-
     private int viewX, viewY, viewWidth, viewHeight;
     private float near, far;
     private Matrix4f orthoMatrix = new Matrix4f();
@@ -92,9 +89,9 @@ public class RenderManager {
     private Matrix4f viewProjMatrix = new Matrix4f();
     private Matrix4f worldMatrix = new Matrix4f();
     private Vector3f camUp = new Vector3f(),
-                     camLeft = new Vector3f(),
-                     camDir = new Vector3f(),
-                     camLoc = new Vector3f();
+            camLeft = new Vector3f(),
+            camDir = new Vector3f(),
+            camLoc = new Vector3f();
     //temp technique
     private String tmpTech;
 
@@ -103,75 +100,80 @@ public class RenderManager {
      * low-level rendering interface.
      * @param renderer
      */
-    public RenderManager(Renderer renderer){
+    public RenderManager(Renderer renderer) {
         this.renderer = renderer;
         this.shader = renderer.getCaps().contains(Caps.GLSL100);
 
     }
 
-    public ViewPort getPreView(String viewName){
-        for (int i = 0; i < preViewPorts.size(); i++){
-            if (preViewPorts.get(i).getName().equals(viewName))
+    public ViewPort getPreView(String viewName) {
+        for (int i = 0; i < preViewPorts.size(); i++) {
+            if (preViewPorts.get(i).getName().equals(viewName)) {
                 return preViewPorts.get(i);
+            }
         }
         return null;
     }
 
-    public boolean removePreView(ViewPort view){
+    public boolean removePreView(ViewPort view) {
         return preViewPorts.remove(view);
     }
 
-    public ViewPort getMainView(String viewName){
-        for (int i = 0; i < viewPorts.size(); i++){
-            if (viewPorts.get(i).getName().equals(viewName))
+    public ViewPort getMainView(String viewName) {
+        for (int i = 0; i < viewPorts.size(); i++) {
+            if (viewPorts.get(i).getName().equals(viewName)) {
                 return viewPorts.get(i);
+            }
         }
         return null;
     }
 
-    public boolean removeMainView(String viewName){
-        for (int i = 0; i < viewPorts.size(); i++){
-            if (viewPorts.get(i).getName().equals(viewName))
+    public boolean removeMainView(String viewName) {
+        for (int i = 0; i < viewPorts.size(); i++) {
+            if (viewPorts.get(i).getName().equals(viewName)) {
                 viewPorts.remove(i);
-                return true;
+            }
+            return true;
         }
         return false;
     }
 
-    public boolean removeMainView(ViewPort view){
+    public boolean removeMainView(ViewPort view) {
         return viewPorts.remove(view);
     }
 
-    public ViewPort getPostView(String viewName){
-        for (int i = 0; i < postViewPorts.size(); i++){
-            if (postViewPorts.get(i).getName().equals(viewName))
+    public ViewPort getPostView(String viewName) {
+        for (int i = 0; i < postViewPorts.size(); i++) {
+            if (postViewPorts.get(i).getName().equals(viewName)) {
                 return postViewPorts.get(i);
+            }
         }
         return null;
     }
 
-    public boolean removePostView(String viewName){
-        for (int i = 0; i < postViewPorts.size(); i++){
-            if (postViewPorts.get(i).getName().equals(viewName))
+    public boolean removePostView(String viewName) {
+        for (int i = 0; i < postViewPorts.size(); i++) {
+            if (postViewPorts.get(i).getName().equals(viewName)) {
                 postViewPorts.remove(i);
-                return true;
+            }
+            return true;
         }
         return false;
     }
 
-    public boolean removePostView(ViewPort view){
+    public boolean removePostView(ViewPort view) {
         return postViewPorts.remove(view);
     }
 
-    public List<ViewPort> getPreViews(){
+    public List<ViewPort> getPreViews() {
         return Collections.unmodifiableList(preViewPorts);
     }
 
-    public List<ViewPort> getMainViews(){
+    public List<ViewPort> getMainViews() {
         return Collections.unmodifiableList(viewPorts);
     }
 
-    public List<ViewPort> getPostViews(){
+    public List<ViewPort> getPostViews() {
         return Collections.unmodifiableList(postViewPorts);
     }
 
@@ -182,56 +184,56 @@ public class RenderManager {
      * @param cam
      * @return
      */
-     public ViewPort createPreView(String viewName, Camera cam){
+    public ViewPort createPreView(String viewName, Camera cam) {
         ViewPort vp = new ViewPort(viewName, cam);
         preViewPorts.add(vp);
         return vp;
-     }
+    }
 
-     public ViewPort createMainView(String viewName, Camera cam){
+    public ViewPort createMainView(String viewName, Camera cam) {
         ViewPort vp = new ViewPort(viewName, cam);
         viewPorts.add(vp);
         return vp;
-     }
+    }
 
-     public ViewPort createPostView(String viewName, Camera cam){
+    public ViewPort createPostView(String viewName, Camera cam) {
         ViewPort vp = new ViewPort(viewName, cam);
         postViewPorts.add(vp);
         return vp;
-     }
+    }
 
-     private void notifyReshape(ViewPort vp, int w, int h){
+    private void notifyReshape(ViewPort vp, int w, int h) {
         List<SceneProcessor> processors = vp.getProcessors();
-        for (SceneProcessor proc : processors){
-            if (!proc.isInitialized()){
+        for (SceneProcessor proc : processors) {
+            if (!proc.isInitialized()) {
                 proc.initialize(this, vp);
-            }else{
+            } else {
                 proc.reshape(vp, w, h);
             }
         }
-     }
+    }
 
-     /**
-      * @param w
-      * @param h
-      */
-     public void notifyReshape(int w, int h) {
-        for (ViewPort vp : preViewPorts){
-            if (vp.getOutputFrameBuffer() == null){
+    /**
+     * @param w
+     * @param h
+     */
+    public void notifyReshape(int w, int h) {
+        for (ViewPort vp : preViewPorts) {
+            if (vp.getOutputFrameBuffer() == null) {
                 Camera cam = vp.getCamera();
                 cam.resize(w, h, true);
             }
             notifyReshape(vp, w, h);
         }
-        for (ViewPort vp : viewPorts){
-            if (vp.getOutputFrameBuffer() == null){
+        for (ViewPort vp : viewPorts) {
+            if (vp.getOutputFrameBuffer() == null) {
                 Camera cam = vp.getCamera();
                 cam.resize(w, h, true);
             }
             notifyReshape(vp, w, h);
         }
-        for (ViewPort vp : postViewPorts){
-            if (vp.getOutputFrameBuffer() == null){
+        for (ViewPort vp : postViewPorts) {
+            if (vp.getOutputFrameBuffer() == null) {
                 Camera cam = vp.getCamera();
                 cam.resize(w, h, true);
             }
@@ -239,19 +241,19 @@ public class RenderManager {
         }
     }
 
-    public void updateUniformBindings(List<Uniform> params){
+    public void updateUniformBindings(List<Uniform> params) {
         // assums worldMatrix is properly set.
         TempVars vars = TempVars.get();
         assert vars.lock();
-        
+
         Matrix4f tempMat4 = vars.tempMat4;
         Matrix3f tempMat3 = vars.tempMat3;
         Vector2f tempVec2 = vars.vect2d;
         Quaternion tempVec4 = vars.quat1;
 
-        for (int i = 0; i < params.size(); i++){
+        for (int i = 0; i < params.size(); i++) {
             Uniform u = params.get(i);
-            switch (u.getBinding()){
+            switch (u.getBinding()) {
                 case WorldMatrix:
                     u.setValue(VarType.Matrix4, worldMatrix);
                     break;
@@ -260,6 +262,9 @@ public class RenderManager {
                     break;
                 case ProjectionMatrix:
                     u.setValue(VarType.Matrix4, projMatrix);
+                    break;
+                case ViewProjectionMatrix:
+                    u.setValue(VarType.Matrix4, viewProjMatrix);
                     break;
                 case WorldViewMatrix:
                     tempMat4.set(viewMatrix);
@@ -279,8 +284,44 @@ public class RenderManager {
                     tempMat4.multLocal(worldMatrix);
                     u.setValue(VarType.Matrix4, tempMat4);
                     break;
+                case WorldMatrixInverse:
+                    tempMat4.multLocal(worldMatrix);
+                    tempMat4.invertLocal();
+                    u.setValue(VarType.Matrix4, tempMat4);
+                    break;
                 case ViewMatrixInverse:
                     tempMat4.set(viewMatrix);
+                    tempMat4.invertLocal();
+                    u.setValue(VarType.Matrix4, tempMat4);
+                    break;
+                case ProjectionMatrixInverse:
+                    tempMat4.set(projMatrix);
+                    tempMat4.invertLocal();
+                    u.setValue(VarType.Matrix4, tempMat4);
+                    break;
+                case ViewProjectionMatrixInverse:
+                    tempMat4.set(viewProjMatrix);
+                    tempMat4.invertLocal();
+                    u.setValue(VarType.Matrix4, tempMat4);
+                    break;
+                case WorldViewMatrixInverse:
+                    tempMat4.set(viewMatrix);
+                    tempMat4.multLocal(worldMatrix);
+                    tempMat4.invertLocal();
+                    u.setValue(VarType.Matrix4, tempMat4);
+                    break;
+                case NormalMatrixInverse:
+                    tempMat4.set(viewMatrix);
+                    tempMat4.multLocal(worldMatrix);
+                    tempMat4.toRotationMatrix(tempMat3);
+                    tempMat3.invertLocal();
+                    tempMat3.transposeLocal();
+                    tempMat3.invertLocal();
+                    u.setValue(VarType.Matrix3, tempMat3);
+                    break;
+                case WorldViewProjectionMatrixInverse:
+                    tempMat4.set(viewProjMatrix);
+                    tempMat4.multLocal(worldMatrix);
                     tempMat4.invertLocal();
                     u.setValue(VarType.Matrix4, tempMat4);
                     break;
@@ -335,7 +376,7 @@ public class RenderManager {
      * functionality.
      * @param mat
      */
-    public void setForcedMaterial(Material mat){
+    public void setForcedMaterial(Material mat) {
         forcedMaterial = mat;
     }
 
@@ -346,18 +387,19 @@ public class RenderManager {
     public void setForcedRenderState(RenderState forcedRenderState) {
         this.forcedRenderState = forcedRenderState;
     }
-    
-    public void setWorldMatrix(Matrix4f mat){
-        if (shader)
+
+    public void setWorldMatrix(Matrix4f mat) {
+        if (shader) {
             worldMatrix.set(mat);
-        else
+        } else {
             renderer.setWorldMatrix(mat);
+        }
     }
 
     public void renderGeometry(Geometry g) {
-        if (g.isIgnoreTransform()){
+        if (g.isIgnoreTransform()) {
             setWorldMatrix(Matrix4f.IDENTITY);
-        }else{
+        } else {
             setWorldMatrix(g.getWorldMatrix());
         }
 
@@ -365,15 +407,15 @@ public class RenderManager {
         //if it does not exists in the mat def, we check for forcedMaterial and render the geom if not null
         //else the geom is not rendered
         if (forcedTechnique != null) {
-            if( g.getMaterial().getMaterialDef().getTechniqueDef(forcedTechnique) != null){
+            if (g.getMaterial().getMaterialDef().getTechniqueDef(forcedTechnique) != null) {
                 tmpTech = g.getMaterial().getActiveTechnique() != null ? g.getMaterial().getActiveTechnique().getDef().getName() : "Default";
                 g.getMaterial().selectTechnique(forcedTechnique, this);
                 // use geometry's material
                 g.getMaterial().render(g, this);
                 g.getMaterial().selectTechnique(tmpTech, this);
-            //Revert this part from revision 6197
-            //If forcedTechnique does not exists, and frocedMaterial is not set, hte geom MUST NOT be rendered
-            }else if (forcedMaterial != null) {
+                //Revert this part from revision 6197
+                //If forcedTechnique does not exists, and frocedMaterial is not set, hte geom MUST NOT be rendered
+            } else if (forcedMaterial != null) {
                 // use forced material
                 forcedMaterial.render(g, this);
             }
@@ -394,71 +436,73 @@ public class RenderManager {
         }
     }
 
-    public void renderGeometryList(GeometryList gl){
-        for (int i = 0; i < gl.size(); i++){
+    public void renderGeometryList(GeometryList gl) {
+        for (int i = 0; i < gl.size(); i++) {
             renderGeometry(gl.get(i));
         }
     }
 
-     /**
-      * If a spatial is not inside the eye frustum, it
-      * is still rendered in the shadow frustum through this
-      * recursive method.
-      * @param s
-      * @param r
-      */
+    /**
+     * If a spatial is not inside the eye frustum, it
+     * is still rendered in the shadow frustum through this
+     * recursive method.
+     * @param s
+     * @param r
+     */
     private void renderShadow(Spatial s, RenderQueue rq) {
-        if (s instanceof Node){
+        if (s instanceof Node) {
             Node n = (Node) s;
             List<Spatial> children = n.getChildren();
-            for (int i = 0; i < children.size(); i++){
+            for (int i = 0; i < children.size(); i++) {
                 renderShadow(children.get(i), rq);
             }
-        }else if (s instanceof Geometry){
+        } else if (s instanceof Geometry) {
             Geometry gm = (Geometry) s;
 
             RenderQueue.ShadowMode shadowMode = s.getShadowMode();
-            if (shadowMode != RenderQueue.ShadowMode.Off && shadowMode != RenderQueue.ShadowMode.Receive){
+            if (shadowMode != RenderQueue.ShadowMode.Off && shadowMode != RenderQueue.ShadowMode.Receive) {
                 //forcing adding to shadow cast mode, culled objects doesn't have to be in the receiver queue
                 rq.addToShadowQueue(gm, RenderQueue.ShadowMode.Cast);
             }
         }
     }
 
-    public void preloadScene(Spatial scene){
-        if (scene instanceof Node){
+    public void preloadScene(Spatial scene) {
+        if (scene instanceof Node) {
             // recurse for all children
             Node n = (Node) scene;
             List<Spatial> children = n.getChildren();
-            for (int i = 0; i < children.size(); i++){
+            for (int i = 0; i < children.size(); i++) {
                 preloadScene(children.get(i));
             }
-        }else if (scene instanceof Geometry){
+        } else if (scene instanceof Geometry) {
             // add to the render queue
             Geometry gm = (Geometry) scene;
-            if (gm.getMaterial() == null)
-                throw new IllegalStateException("No material is set for Geometry: "+ gm.getName());
+            if (gm.getMaterial() == null) {
+                throw new IllegalStateException("No material is set for Geometry: " + gm.getName());
+            }
 
             gm.getMaterial().preload(this);
             Mesh mesh = gm.getMesh();
-            if (mesh != null){
-                for (Entry<VertexBuffer> entry : mesh.getBuffers()){
+            if (mesh != null) {
+                for (Entry<VertexBuffer> entry : mesh.getBuffers()) {
                     VertexBuffer buf = entry.getValue();
-                    if (buf.getData() != null)
+                    if (buf.getData() != null) {
                         renderer.updateBufferData(buf);
+                    }
                 }
             }
         }
     }
 
-     /**
-      * Render scene graph
-      * @param s
-      * @param r
-      * @param cam
-      */
+    /**
+     * Render scene graph
+     * @param s
+     * @param r
+     * @param cam
+     */
     public void renderScene(Spatial scene, ViewPort vp) {
-       // check culling first.
+        // check culling first.
         if (!scene.checkCulling(vp.getCamera())) {
             // move on to shadow-only render
             if (scene.getShadowMode() != RenderQueue.ShadowMode.Off || scene instanceof Node) {
@@ -468,25 +512,26 @@ public class RenderManager {
         }
 
         scene.runControlRender(this, vp);
-        if (scene instanceof Node){
+        if (scene instanceof Node) {
             // recurse for all children
             Node n = (Node) scene;
             List<Spatial> children = n.getChildren();
-            for (int i = 0; i < children.size(); i++){
+            for (int i = 0; i < children.size(); i++) {
                 renderScene(children.get(i), vp);
             }
-        }else if (scene instanceof Geometry){
-           
+        } else if (scene instanceof Geometry) {
+
             // add to the render queue
             Geometry gm = (Geometry) scene;
-            if (gm.getMaterial() == null)
-                throw new IllegalStateException("No material is set for Geometry: "+ gm.getName());
+            if (gm.getMaterial() == null) {
+                throw new IllegalStateException("No material is set for Geometry: " + gm.getName());
+            }
 
             vp.getQueue().addToQueue(gm, scene.getQueueBucket());
 
             // add to shadow queue if needed
             RenderQueue.ShadowMode shadowMode = scene.getShadowMode();
-            if (shadowMode != RenderQueue.ShadowMode.Off){
+            if (shadowMode != RenderQueue.ShadowMode.Off) {
                 vp.getQueue().addToShadowQueue(gm, shadowMode);
             }
         }
@@ -500,16 +545,15 @@ public class RenderManager {
         return renderer;
     }
 
-
     /**
      * Render the given viewport queues, flushing the geometryList
      * @param vp the viewport
      */
-    public void flushQueue(ViewPort vp){
+    public void flushQueue(ViewPort vp) {
         renderViewPortQueues(vp, true);
     }
 
-    public void clearQueue(ViewPort vp){
+    public void clearQueue(ViewPort vp) {
         vp.getQueue().clear();
     }
 
@@ -519,7 +563,7 @@ public class RenderManager {
      * @param vp the viewport
      * @param flush true to flush geometryList
      */
-    public void renderViewPortQueues(ViewPort vp,boolean flush){
+    public void renderViewPortQueues(ViewPort vp, boolean flush) {
         RenderQueue rq = vp.getQueue();
         Camera cam = vp.getCamera();
         boolean depthRangeChanged = false;
@@ -529,7 +573,7 @@ public class RenderManager {
         rq.renderQueue(Bucket.Opaque, this, cam, flush);
 
         // render the sky, with depth range set to the farthest
-        if (!rq.isQueueEmpty(Bucket.Sky)){
+        if (!rq.isQueueEmpty(Bucket.Sky)) {
             renderer.setDepthRange(1, 1);
             rq.renderQueue(Bucket.Sky, this, cam, flush);
             depthRangeChanged = true;
@@ -539,15 +583,15 @@ public class RenderManager {
         // transparent objects are last because they require blending with the
         // rest of the scene's objects. Consequently, they are sorted
         // back-to-front.
-        if (!rq.isQueueEmpty(Bucket.Transparent)){
-            if (depthRangeChanged){
+        if (!rq.isQueueEmpty(Bucket.Transparent)) {
+            if (depthRangeChanged) {
                 renderer.setDepthRange(0, 1);
                 depthRangeChanged = false;
             }
             rq.renderQueue(Bucket.Transparent, this, cam, flush);
         }
 
-        if (!rq.isQueueEmpty(Bucket.Gui)){
+        if (!rq.isQueueEmpty(Bucket.Gui)) {
             renderer.setDepthRange(0, 0);
             setCamera(cam, true);
             rq.renderQueue(Bucket.Gui, this, cam, flush);
@@ -556,47 +600,46 @@ public class RenderManager {
         }
 
         // restore range to default
-        if (depthRangeChanged)
+        if (depthRangeChanged) {
             renderer.setDepthRange(0, 1);
+        }
     }
 
-
-
-    private void setViewPort(Camera cam){
+    private void setViewPort(Camera cam) {
         // this will make sure to update viewport only if needed
-         if (cam != prevCam || cam.isViewportChanged()){
-             viewX      = (int) (cam.getViewPortLeft() * cam.getWidth());
-             viewY      = (int) (cam.getViewPortBottom() * cam.getHeight());
-             viewWidth  = (int) ((cam.getViewPortRight() - cam.getViewPortLeft()) * cam.getWidth());
-             viewHeight = (int) ((cam.getViewPortTop() - cam.getViewPortBottom()) * cam.getHeight());
-             renderer.setViewPort(viewX, viewY, viewWidth, viewHeight);
-             renderer.setClipRect(viewX, viewY, viewWidth, viewHeight);
-             cam.clearViewportChanged();
-             prevCam = cam;
+        if (cam != prevCam || cam.isViewportChanged()) {
+            viewX = (int) (cam.getViewPortLeft() * cam.getWidth());
+            viewY = (int) (cam.getViewPortBottom() * cam.getHeight());
+            viewWidth = (int) ((cam.getViewPortRight() - cam.getViewPortLeft()) * cam.getWidth());
+            viewHeight = (int) ((cam.getViewPortTop() - cam.getViewPortBottom()) * cam.getHeight());
+            renderer.setViewPort(viewX, viewY, viewWidth, viewHeight);
+            renderer.setClipRect(viewX, viewY, viewWidth, viewHeight);
+            cam.clearViewportChanged();
+            prevCam = cam;
 
-             float translateX = viewWidth  == viewX ? 0 : -(viewWidth  + viewX) / (viewWidth  - viewX);
-             float translateY = viewHeight == viewY ? 0 : -(viewHeight + viewY) / (viewHeight - viewY);
-             float scaleX     = viewWidth  == viewX ? 1f : 2f / (viewWidth  - viewX);
-             float scaleY     = viewHeight == viewY ? 1f : 2f / (viewHeight - viewY);
-             orthoMatrix.loadIdentity();
-             orthoMatrix.setTranslation(translateX, translateY, 0);
-             orthoMatrix.setScale(scaleX, scaleY, /*-1f*/0f);
+            float translateX = viewWidth == viewX ? 0 : -(viewWidth + viewX) / (viewWidth - viewX);
+            float translateY = viewHeight == viewY ? 0 : -(viewHeight + viewY) / (viewHeight - viewY);
+            float scaleX = viewWidth == viewX ? 1f : 2f / (viewWidth - viewX);
+            float scaleY = viewHeight == viewY ? 1f : 2f / (viewHeight - viewY);
+            orthoMatrix.loadIdentity();
+            orthoMatrix.setTranslation(translateX, translateY, 0);
+            orthoMatrix.setScale(scaleX, scaleY, /*-1f*/ 0f);
 //             System.out.println(orthoMatrix);
-         }
+        }
     }
 
-    private void setViewProjection(Camera cam, boolean ortho){
-        if (shader){
-            if (ortho){
+    private void setViewProjection(Camera cam, boolean ortho) {
+        if (shader) {
+            if (ortho) {
                 viewMatrix.set(Matrix4f.IDENTITY);
                 projMatrix.set(orthoMatrix);
                 viewProjMatrix.set(orthoMatrix);
-            }else{
+            } else {
                 viewMatrix.set(cam.getViewMatrix());
                 projMatrix.set(cam.getProjectionMatrix());
                 viewProjMatrix.set(cam.getViewProjectionMatrix());
             }
-            
+
 
             camLoc.set(cam.getLocation());
             cam.getLeft(camLeft);
@@ -604,19 +647,19 @@ public class RenderManager {
             cam.getDirection(camDir);
 
             near = cam.getFrustumNear();
-            far  = cam.getFrustumFar();
-        }else{
-            if (ortho){
+            far = cam.getFrustumFar();
+        } else {
+            if (ortho) {
                 renderer.setViewProjectionMatrices(Matrix4f.IDENTITY, orthoMatrix);
-            }else{
+            } else {
                 renderer.setViewProjectionMatrices(cam.getViewMatrix(),
-                                                   cam.getProjectionMatrix());
+                        cam.getProjectionMatrix());
             }
-            
+
         }
     }
 
-    public void setCamera(Camera cam, boolean ortho){
+    public void setCamera(Camera cam, boolean ortho) {
         setViewPort(cam);
         setViewProjection(cam, ortho);
     }
@@ -625,53 +668,54 @@ public class RenderManager {
      * Draws the viewport but doesn't invoke processors.
      * @param vp
      */
-    public void renderViewPortRaw(ViewPort vp){
+    public void renderViewPortRaw(ViewPort vp) {
         setCamera(vp.getCamera(), false);
         List<Spatial> scenes = vp.getScenes();
-        for (int i = scenes.size() - 1; i >= 0; i--){
+        for (int i = scenes.size() - 1; i >= 0; i--) {
             renderScene(scenes.get(i), vp);
         }
         flushQueue(vp);
     }
 
-    public void renderViewPort(ViewPort vp, float tpf){
+    public void renderViewPort(ViewPort vp, float tpf) {
         List<SceneProcessor> processors = vp.getProcessors();
-        if (processors.size() == 0)
+        if (processors.size() == 0) {
             processors = null;
+        }
 
-        if (processors != null){
-            for (SceneProcessor proc : processors){
-                if (!proc.isInitialized()){
+        if (processors != null) {
+            for (SceneProcessor proc : processors) {
+                if (!proc.isInitialized()) {
                     proc.initialize(this, vp);
                 }
                 proc.preFrame(tpf);
             }
         }
-        
+
         renderer.setFrameBuffer(vp.getOutputFrameBuffer());
         setCamera(vp.getCamera(), false);
-        if (vp.isClearEnabled()){
+        if (vp.isClearEnabled()) {
             renderer.setBackgroundColor(vp.getBackgroundColor());
             renderer.clearBuffers(vp.isClearColor(),
-                                  vp.isClearDepth(),
-                                  vp.isClearStencil());
+                    vp.isClearDepth(),
+                    vp.isClearStencil());
         }
 
         List<Spatial> scenes = vp.getScenes();
-        for (int i = scenes.size() - 1; i >= 0; i--){
+        for (int i = scenes.size() - 1; i >= 0; i--) {
             renderScene(scenes.get(i), vp);
         }
 
-        if (processors != null){
-            for (SceneProcessor proc : processors){
+        if (processors != null) {
+            for (SceneProcessor proc : processors) {
                 proc.postQueue(vp.getQueue());
             }
         }
 
         flushQueue(vp);
 
-        if (processors != null){
-            for (SceneProcessor proc : processors){
+        if (processors != null) {
+            for (SceneProcessor proc : processors) {
                 proc.postFrame(vp.getOutputFrameBuffer());
             }
         }
@@ -680,22 +724,23 @@ public class RenderManager {
         clearQueue(vp);
     }
 
-     public void render(float tpf){
-         if (renderer instanceof NullRenderer)
-             return;
+    public void render(float tpf) {
+        if (renderer instanceof NullRenderer) {
+            return;
+        }
 
-         for (int i = 0; i < preViewPorts.size(); i++){
-             renderViewPort(preViewPorts.get(i), tpf);
-         }
-         for (int i = 0; i < viewPorts.size(); i++){
-             renderViewPort(viewPorts.get(i), tpf);
-         }
-         for (int i = 0; i < postViewPorts.size(); i++){
-             renderViewPort(postViewPorts.get(i), tpf);
-         }
-     }
+        for (int i = 0; i < preViewPorts.size(); i++) {
+            renderViewPort(preViewPorts.get(i), tpf);
+        }
+        for (int i = 0; i < viewPorts.size(); i++) {
+            renderViewPort(viewPorts.get(i), tpf);
+        }
+        for (int i = 0; i < postViewPorts.size(); i++) {
+            renderViewPort(postViewPorts.get(i), tpf);
+        }
+    }
 
-     //Remy - 09/14/2010 - added a setter for the timer in order to correctly populate g_Time and g_Tpf in the shaders
+    //Remy - 09/14/2010 - added a setter for the timer in order to correctly populate g_Time and g_Tpf in the shaders
     public void setTimer(Timer timer) {
         this.timer = timer;
     }
@@ -707,6 +752,4 @@ public class RenderManager {
     public void setForcedTechnique(String forcedTechnique) {
         this.forcedTechnique = forcedTechnique;
     }
-
-     
 }

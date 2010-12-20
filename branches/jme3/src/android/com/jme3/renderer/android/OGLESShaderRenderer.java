@@ -123,6 +123,7 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 	 */
 
 	private GL10 gl = null;
+    private boolean tdc;
 
 
 	/*
@@ -965,9 +966,165 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 	//	throw new RendererException("not implemented.");
 	}
 
+    public void updateTexImageData(Image img, Texture.Type type, boolean mips){
+        int texId = img.getId();
+        if (texId == -1){
+            // create texture
+            GLES20.glGenTextures(1, intBuf1);
+            texId = intBuf1.get(0);
+            img.setId(texId);
+            objManager.registerForCleanup(img);
+
+            statistics.onNewTexture();
+        }
+
+        // bind texture
+        int target = convertTextureType(type);
+        if (context.boundTextures[0] != img){
+            if (context.boundTextureUnit != 0){
+                GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+                context.boundTextureUnit = 0;
+            }
+
+            GLES20.glBindTexture(target, texId);
+            context.boundTextures[0] = img;
+        }
+
+        if (!img.hasMipmaps() && mips){
+            // No pregenerated mips available,
+            // generate from base level if required
+//          if (!GLContext.getCapabilities().GL_EXT_framebuffer_multisample){
+            GLES20.glTexParameteri(target, GLES11.GL_GENERATE_MIPMAP, GLES20.GL_TRUE);
+//          }
+        }else{
+//          glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0 );
+            if (img.getMipMapSizes() != null){
+              // GLES20.glTexParameteri(target, GLES20.GL_TEXTURE_MAX_LEVEL,  img.getMipMapSizes().length );
+            }
+        }
+
+
+        if (target == GLES20.GL_TEXTURE_CUBE_MAP){
+            List<ByteBuffer> data = img.getData();
+            if (data.size() != 6){
+                logger.log(Level.WARNING, "Invalid texture: {0}\n"
+                        + "Cubemap textures must contain 6 data units.", img);
+                return;
+            }
+            for (int i = 0; i < 6; i++){
+                TextureUtil.uploadTexture(gl, img, GLES20.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, i, 0, tdc, true, powerOf2);
+            }
+        }else/* if (target == EXTTextureArray.GL_TEXTURE_2D_ARRAY_EXT){
+            List<ByteBuffer> data = img.getData();
+            // -1 index specifies prepare data for 2D Array
+            TextureUtil.uploadTexture(img, target, -1, 0, tdc, true, powerOf2);
+            for (int i = 0; i < data.size(); i++){
+                // upload each slice of 2D array in turn
+                // this time with the appropriate index
+                 TextureUtil.uploadTexture(gl, img, target, i, 0, tdc, true, powerOf2);
+            }
+        }else*/{
+            TextureUtil.uploadTexture(gl, img, target, 0, 0, tdc, true, powerOf2);
+        }
+            
+//            if (GLContext.getCapabilities().GL_EXT_framebuffer_multisample){
+//                glGenerateMipmapEXT(target);
+//            }
+        
+        img.clearUpdateNeeded();
+    }
+
+
+    public void setTexture(int unit, Texture tex){
+        Image image = tex.getImage();
+         if (image.isUpdateNeeded()){
+            updateTexImageData(image, tex.getType(), tex.getMinFilter().usesMipMapLevels());
+        }
+
+         int texId = image.getId();
+         assert texId != -1;
+
+         Image[] textures = context.boundTextures;
+
+         int type = convertTextureType(tex.getType());
+         if (!context.textureIndexList.moveToNew(unit)){
+//             if (context.boundTextureUnit != unit){
+//                glActiveTexture(GL_TEXTURE0 + unit);
+//                context.boundTextureUnit = unit;
+//             }
+//             glEnable(type);
+         }
+
+         if (textures[unit] != image){
+             if (context.boundTextureUnit != unit){
+                GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + unit);
+                context.boundTextureUnit = unit;
+             }
+
+             GLES20.glBindTexture(type, texId);
+             textures[unit] = image;
+
+             statistics.onTextureUse(tex, true);
+         }else{
+             statistics.onTextureUse(tex, false);
+         }
+
+         setupTextureParams(tex);
+    }
+
+    private void setupTextureParams(Texture tex){
+        int target = convertTextureType(tex.getType());
+
+        // filter things
+        int minFilter = convertMinFilter(tex.getMinFilter());
+        int magFilter = convertMagFilter(tex.getMagFilter());
+        GLES20.glTexParameteri(target, GLES20.GL_TEXTURE_MIN_FILTER, minFilter);
+        GLES20.glTexParameteri(target, GLES20.GL_TEXTURE_MAG_FILTER, magFilter);
+/*
+        if (tex.getAnisotropicFilter() > 1){
+            if (GLContext.getCapabilities().GL_EXT_texture_filter_anisotropic){
+                glTexParameterf(target,
+                                EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                                tex.getAnisotropicFilter());
+            }
+        }
+*/
+        // repeat modes
+        switch (tex.getType()){
+            case ThreeDimensional:
+            case CubeMap: // cubemaps use 3D coords
+     //           glTexParameteri(target, GL_TEXTURE_WRAP_R, convertWrapMode(tex.getWrap(WrapAxis.R)));
+            case TwoDimensional:
+            case TwoDimensionalArray:
+                GLES20.glTexParameteri(target, GLES11.GL_TEXTURE_WRAP_T, convertWrapMode(tex.getWrap(WrapAxis.T)));
+                // fall down here is intentional..
+//            case OneDimensional:
+                GLES20.glTexParameteri(target, GLES11.GL_TEXTURE_WRAP_S, convertWrapMode(tex.getWrap(WrapAxis.S)));
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown texture type: "+tex.getType());
+        }
+
+        // R to Texture compare mode
+/*        if (tex.getShadowCompareMode() != Texture.ShadowCompareMode.Off){
+            glTexParameteri(target, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+            glTexParameteri(target, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY);
+            if (tex.getShadowCompareMode() == Texture.ShadowCompareMode.GreaterOrEqual){
+                glTexParameteri(target, GL_TEXTURE_COMPARE_FUNC, GL_GEQUAL);
+            }else{
+                glTexParameteri(target, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+            }
+        }
+*/
+    }
+
+
+
+
 	/**
 	* Sets the texture to use for the given texture unit.
 	*/
+/*
 	public void setTexture(int unit, Texture tex) {
 		if (tex.isUpdateNeeded())
 			updateTextureData(tex);
@@ -1001,9 +1158,9 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 			statistics.onTextureUse(tex, false);
 		}
 	}
-
+*/
 	private boolean powerOf2 = false;
-
+/*
 	public void updateTextureData(Texture tex) {
 
 		int texId = tex.getId();
@@ -1069,12 +1226,12 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 				generateMips = true;
 			}
 
-			TextureUtil.uploadTexture(gl, img, tex.getImageDataIndex(), generateMips, powerOf2);
+	//		TextureUtil.uploadTexture(gl, img, tex.getImageDataIndex(), generateMips, powerOf2);
 		}
 
 		tex.clearUpdateNeeded();
 	}
-
+*/
 	private int convertWrapMode(Texture.WrapMode mode) {
 		switch (mode) {
 /*
@@ -1135,12 +1292,25 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
         }
 	}
 
+    public void deleteImage(Image image){
+        int texId = image.getId();
+        if (texId != -1){
+            intBuf1.put(0, texId);
+            intBuf1.position(0).limit(1);
+            GLES20.glDeleteTextures(1, intBuf1);
+            image.resetObject();
+
+            statistics.onDeleteTexture();
+        }
+    }
+
 
 
 	/**
 	* Deletes a texture from the GPU.
 	* @param tex
 	*/
+/*
 	public void deleteTexture(Texture tex) {
 
 		int texId = tex.getId();
@@ -1155,7 +1325,7 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 			statistics.onDeleteTexture();
 		}
 	}
-
+*/
 
 	/**
 	* Uploads a vertex buffer to the GPU.
@@ -1412,7 +1582,24 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
 		clearTextureUnits();
 	}
 
+    public void clearTextureUnits(){
+        IDList textureList = context.textureIndexList;
+        Image[] textures = context.boundTextures;
+        for (int i = 0; i < textureList.oldLen; i++){
+            int idx = textureList.oldList[i];
+//            if (context.boundTextureUnit != idx){
+//                glActiveTexture(GL_TEXTURE0 + idx);
+//                context.boundTextureUnit = idx;
+//            }
+//            glDisable(convertTextureType(textures[idx].getType()));
+            textures[idx] = null;
+        }
+        context.textureIndexList.copyNewToOld();
+    }
 
+
+
+/*
     public void clearTextureUnits(){
         IDList textureList = context.textureIndexList;
         Texture[] textures = context.boundTextures;
@@ -1433,7 +1620,7 @@ public class OGLESShaderRenderer implements com.jme3.renderer.Renderer {
         }
         context.textureIndexList.copyNewToOld();
     }
-
+*/
 
 
     protected void clearVertexAttribs(){

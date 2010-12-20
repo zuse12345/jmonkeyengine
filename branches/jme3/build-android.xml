@@ -30,6 +30,7 @@
 			srcdir="src/android"
 			destdir="build/android"
 			classpathref="classpath"
+			excludes="**/OGLESRenderer.java"
 		/>
 	</target>
 

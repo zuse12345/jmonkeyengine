@@ -83,9 +83,13 @@ public class TextureUtil {
         }
     }
 
-    public static void uploadTexture(GL10 gl,
+    public static void uploadTexture(
+		GL10 gl,
                                      Image img,
+                                     int target,
                                      int index,
+                                     int border,
+				     boolean tdc,
                                      boolean generateMips,
                                      boolean powerOf2){
 

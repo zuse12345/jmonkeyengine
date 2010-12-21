@@ -39,7 +39,7 @@ import com.jme3.input.JoyInput;
 import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
 import com.jme3.input.android.AndroidInput;
-import com.jme3.renderer.android.OGLESRenderer;
+//import com.jme3.renderer.android.OGLESRenderer;
 import com.jme3.renderer.android.OGLESShaderRenderer;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeContext;
@@ -126,6 +126,13 @@ public class OGLESContext implements JmeContext, GLSurfaceView.Renderer {
 
         renderer.initialize();
         listener.initialize();
+
+	// OGLESShaderRenderer does not support guiView yet
+	// forcefully remove all gui nodes
+
+	if (listener instanceof com.jme3.app.SimpleApplication) {
+		((com.jme3.app.SimpleApplication) listener).getGuiNode().detachAllChildren();
+	}
     }
 
     /**

@@ -30,7 +30,7 @@
 			srcdir="src/android"
 			destdir="build/android"
 			classpathref="classpath"
-			excludes="**/OGLESRenderer.java"
+			excludes="**/OGLESRenderer.java,**/TestsActivity.java,**/AboutActivity.java"
 		/>
 	</target>
 
@@ -38,6 +38,10 @@
 		<jar
 			jarfile="build/jmonkeyengine3-android-renderer.jar"
 			basedir="build/android"
+		/>
+		<jar
+			jarfile="build/jmonkeyengine3-android-tests.jar"
+			basedir="build/testclasses"
 		/>
 		<jar
 			jarfile="build/jmonkeyengine3-android-dist.jar"

@@ -19,7 +19,9 @@ import com.jme3.R;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeSystem;
 import com.jme3.system.android.OGLESContext;
+
 import com.jme3.app.Application;
+import com.jme3.app.SimpleApplication;
 
 
 public class AndroidActivity extends Activity {
@@ -44,7 +46,11 @@ public class AndroidActivity extends Activity {
 
 		AppSettings settings = new AppSettings(true);
 
-		String appClass = "jme3test.android.SimpleTexturedTest";
+		String testClassName = getIntent().getStringExtra(AndroidActivity.class.getName() + ".TEST_CLASS_NAME");
+
+		logger.info("test class name: [" + testClassName + "]");
+
+		String appClass = (testClassName != null? testClassName: "jme3test.android.SimpleTexturedTest");
 
 		Application app = null;
 
@@ -52,8 +58,28 @@ public class AndroidActivity extends Activity {
 			Class<? extends Application> clazz = (Class<? extends Application>) Class.forName(
 				appClass
 			);
-			app = clazz.newInstance();
 
+			app = clazz.newInstance();
+/*
+			app = (Application) java.lang.reflect.Proxy.newProxyInstance(
+				this.getClass().getClassLoader(),
+				new Class[] {Class.forName(appClass)},
+
+				new java.lang.reflect.InvocationHandler() {
+					public Object invoke(Object proxy, java.lang.reflect.Method method, Object[] args) throws Throwable {
+						if (
+							method.getName().equals("loadFPSText") ||
+							method.getName().equals("loadStatsView")
+						) {
+							logger.info("ignoring method: [" + method + "]");
+							return null;
+						}
+
+						return method.invoke(proxy, args);
+					}
+				}
+			);
+*/
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -65,6 +91,9 @@ public class AndroidActivity extends Activity {
 		logger.info("starting app ...");
 		app.start();
 		logger.info("starting app ... done.");
+
+		if (app instanceof SimpleApplication)
+			((SimpleApplication) app).getGuiNode().detachAllChildren();
 
 		logger.info("creating context ...");
 		ctx = (OGLESContext) app.getContext();

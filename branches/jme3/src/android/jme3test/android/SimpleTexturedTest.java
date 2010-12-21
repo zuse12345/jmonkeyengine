@@ -45,6 +45,7 @@ public class SimpleTexturedTest extends SimpleApplication {
 
 
 	private boolean lightingEnabled = true;
+	private boolean texturedEnabled = true;
 	private boolean spheres = true;
 
 	@Override
@@ -71,15 +72,20 @@ public class SimpleTexturedTest extends SimpleApplication {
 
 		Material material = null;
 
-		if (lightingEnabled) {
-			material = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-			material.setBoolean("m_VertexLighting", true);
-			material.setFloat("m_Shininess", 127);
-			material.setBoolean("m_LowQuality", true);
-			material.setTexture("m_DiffuseMap", texture);
+		if (texturedEnabled) {
+			if (lightingEnabled) {
+				material = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+				material.setBoolean("m_VertexLighting", true);
+				material.setFloat("m_Shininess", 127);
+				material.setBoolean("m_LowQuality", true);
+				material.setTexture("m_DiffuseMap", texture);
+			} else {
+				material = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
+				material.setTexture("m_ColorMap", texture);
+			}
 		} else {
-			material = new Material(assetManager, "Common/MatDefs/Misc/SimpleTextured.j3md");
-			material.setTexture("m_ColorMap", texture);
+			material = new Material(assetManager, "Common/MatDefs/Misc/SolidColor.j3md");
+			material.setColor("m_Color", ColorRGBA.Red);
 		}
 
 		TangentBinormalGenerator.generate(shape);
@@ -89,7 +95,6 @@ public class SimpleTexturedTest extends SimpleApplication {
 				Geometry geomClone = new Geometry("geometry-" + y + "-" + x, shape);
 				geomClone.setMaterial(material);
 				geomClone.setLocalTranslation(x, y, 0);
-
                 
 //				Transform t = geom.getLocalTransform().clone();
 //				Transform t2 = geomClone.getLocalTransform().clone();

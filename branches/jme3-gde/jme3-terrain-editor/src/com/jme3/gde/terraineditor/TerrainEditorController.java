@@ -10,9 +10,12 @@ import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.system.Timer;
 import com.jme3.terrain.Terrain;
+import java.io.IOException;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
  * Modifies the actual terrain in the scene.
@@ -24,18 +27,42 @@ public class TerrainEditorController {
     private Node terrainNode;
     private Node rootNode;
     private TerrainToolController toolController;
+    private DataObject currentFileObject;
 
 
     public TerrainEditorController(JmeSpatial jmeRootNode, DataObject currentFileObject) {
         this.jmeRootNode = jmeRootNode;
         rootNode = this.jmeRootNode.getLookup().lookup(Node.class);
+        this.currentFileObject = currentFileObject;
     }
 
     public void setToolController(TerrainToolController toolController) {
         this.toolController = toolController;
     }
 
+    public FileObject getCurrentFileObject() {
+        return currentFileObject.getPrimaryFile();
+    }
 
+    public DataObject getCurrentDataObject() {
+        return currentFileObject;
+    }
+
+    public void setNeedsSave(boolean state) {
+        currentFileObject.setModified(state);
+    }
+
+    public boolean isNeedSave() {
+        return currentFileObject.isModified();
+    }
+
+    public void saveScene() {
+        try {
+            currentFileObject.getLookup().lookup(SaveCookie.class).save();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 
     protected Node getTerrain(Spatial root) {
         if (terrainNode != null)
@@ -75,6 +102,8 @@ public class TerrainEditorController {
         Terrain terrain = (Terrain) getTerrain(null);
         if (terrain == null)
             return;
+
+        setNeedsSave(true);
 
         float posX = worldLoc.x - radius;
         float posZ = worldLoc.z - radius;

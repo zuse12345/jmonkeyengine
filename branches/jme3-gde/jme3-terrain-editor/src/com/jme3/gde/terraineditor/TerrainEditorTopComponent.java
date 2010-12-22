@@ -355,6 +355,8 @@ public final class TerrainEditorTopComponent extends TopComponent implements Sce
                     //JmeTerrain terrainNode = new JmeTerrain(terrain, null);
                     ((Node) node).attachChild(terrain);
 
+                    editorController.setNeedsSave(true);
+                    
                     refreshSelected();
                     return null;
                 }
@@ -413,16 +415,6 @@ public final class TerrainEditorTopComponent extends TopComponent implements Sce
     }
 
 
-
-    /*private DataObject currentFileObject;
-
-    public void setNeedsSave(boolean state) {
-        currentFileObject.setModified(state);
-    }
-
-    public boolean isNeedSave() {
-        return currentFileObject.isModified();
-    }*/
 
     /*
      *
@@ -505,7 +497,7 @@ public final class TerrainEditorTopComponent extends TopComponent implements Sce
         SceneRequest request = new SceneRequest(this, jmeNode, manager);
         request.setDataObject(file);
         request.setHelpCtx(ctx);
-        file.setSaveCookie(saveCookie);
+        //file.setSaveCookie(saveCookie);
         if (editorController != null) {
             editorController.cleanup();
         }
@@ -571,9 +563,28 @@ public final class TerrainEditorTopComponent extends TopComponent implements Sce
         });
     }
 
+    private boolean checkSaved() {
+        if (editorController != null && editorController.isNeedSave()) {
+            Confirmation msg = new NotifyDescriptor.Confirmation(
+                    "Your Scene is not saved, do you want to save?",
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.WARNING_MESSAGE);
+            Object result = DialogDisplayer.getDefault().notify(msg);
+            if (NotifyDescriptor.CANCEL_OPTION.equals(result)) {
+                return false;
+            } else if (NotifyDescriptor.YES_OPTION.equals(result)) {
+                editorController.saveScene();
+                return true;
+            } else if (NotifyDescriptor.NO_OPTION.equals(result)) {
+                return true;
+            }
+        }
+        return true;
+    }
+
     public boolean sceneClose(SceneRequest request) {
         if (request.equals(currentRequest)) {
-//            if (checkSaved()) {
+            if (checkSaved()) {
                 SceneApplication.getApplication().removeSceneListener(this);
                 currentRequest = null;
                 setLoadedScene(null, false);
@@ -583,9 +594,9 @@ public final class TerrainEditorTopComponent extends TopComponent implements Sce
                         cleanupControllers();
                     }
                 });
-//            } else {
-//                return false;
-//            }
+            } else {
+                return false;
+            }
         }
         return true;
     }

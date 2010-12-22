@@ -240,6 +240,7 @@ public abstract class AbstractGeomap implements Geomap {
 
         return store;
     }
+    
 
      /*
       * (non-Javadoc)

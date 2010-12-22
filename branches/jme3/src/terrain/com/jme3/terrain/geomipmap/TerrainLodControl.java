@@ -32,10 +32,6 @@
 
 package com.jme3.terrain.geomipmap;
 
-import com.jme3.export.InputCapsule;
-import com.jme3.export.JmeExporter;
-import com.jme3.export.JmeImporter;
-import com.jme3.export.OutputCapsule;
 import com.jme3.math.Vector3f;
 import java.util.List;
 
@@ -46,7 +42,6 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
 import com.jme3.terrain.Terrain;
-import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -98,9 +93,12 @@ public class TerrainLodControl extends AbstractControl {
 	}
 
 	public Control cloneForSpatial(Spatial spatial) {
-		if (spatial instanceof Terrain)
-			return new TerrainLodControl((Terrain)spatial, cameras);
-		
+		if (spatial instanceof Terrain) {
+            List<Camera> cameraClone = new ArrayList<Camera>();
+            for (Camera c : cameras)
+                cameraClone.add(c);
+			return new TerrainLodControl((Terrain)spatial, cameraClone);
+        }
 		return null;
 	}
 
@@ -112,6 +110,5 @@ public class TerrainLodControl extends AbstractControl {
     public void setTerrain(Terrain terrain) {
         this.terrain = terrain;
     }
-
 
 }

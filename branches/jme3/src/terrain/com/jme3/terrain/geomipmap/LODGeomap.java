@@ -45,6 +45,8 @@ import com.jme3.scene.Mesh.Mode;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.terrain.BufferGeomap;
 import com.jme3.util.BufferUtils;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 /**
  * Produces the mesh for the TerrainPatch.
@@ -384,7 +386,119 @@ public class LODGeomap extends BufferGeomap {
 		//System.out.println("Index buffer size: "+num);
 		return num;
 	}
-	
+
+    /**
+     * This will take the average of all the polygon surface normals at each vertex and
+     * return that, as a much better representation of that smooth normal.
+     * Look into moving this into shaders to be processed on the GPU. It would be great
+     * for batch processing there.
+     *
+     * It assumes a triangle strip in this orientation:
+     * +---+
+     * | \ |
+     * +---+
+     *
+     * Algorithm: Go through each point and calculate the normals of the two polygons (A & B) to
+     * the bottom-right of it. Point X:
+     *   X-----+
+     *   | \ A |
+     *   | B \ |
+     *   +-----+
+     * Save that normal to each vertex (all 4 corner vertices), while keeping a counter how many
+     * normals were saved for each vertex. In the end, use that counter to find the average
+     * normal at that vertex. That average is stored in "store". Most inner vertices will
+     * have 6 normals associated with them.
+     *
+     * @param store
+     * @param scale
+     * @return a normal for each vertex
+     */
+    //@Override
+    public FloatBuffer writeNormalArray2(FloatBuffer store, Vector3f scale) { // temporary, this will become the new writeNormalArray()
+        if (!isLoaded())
+            throw new NullPointerException();
+
+        if (store!=null){
+            if (store.remaining() < getWidth()*getHeight()*3)
+                throw new BufferUnderflowException();
+        }else{
+            store = BufferUtils.createFloatBuffer(getWidth()*getHeight()*3);
+        }
+        store.rewind();
+
+        // create storage for all polygon normals
+        FloatBuffer allNormals = BufferUtils.createFloatBuffer(getWidth()*getHeight()*3 * 6); // posible 6 normals per vertex
+
+        Vector3f rootPoint = new Vector3f();
+        Vector3f oppositePoint1 = new Vector3f();
+        Vector3f oppositePoint2 = new Vector3f();
+        Vector3f adjacentPoint1 = new Vector3f();
+        Vector3f adjacentPoint2 = new Vector3f();
+        Vector3f tempNorm1 = new Vector3f();
+        Vector3f tempNorm2 = new Vector3f();
+
+        HashMap<Integer,Integer> rowColIndexCount = new HashMap<Integer,Integer>(); // used to look up the current index counter for that vertex
+        // initialize them to zero
+        for (int r=0; r<getHeight(); r++) {
+            for (int c=0; c<getWidth(); c++) {
+                rowColIndexCount.put(r*getHeight()+c, new Integer(0));
+            }
+        }
+
+        // calculate normals for each polygon
+        for (int r=0; r<getHeight()-1; r++) {
+            for (int c=0; c<getWidth()-1; c++) {
+
+                rootPoint.set(c, getValue(r,c), r);
+                adjacentPoint1.set(c, getValue(r, c+1), r);
+                oppositePoint1.set(c, getValue(r+1, c+1), r);
+                adjacentPoint2.set(c, getValue(r+1, c+1), r);
+                oppositePoint2.set(c, getValue(r+1, c), r);
+
+                //calculate the 2 normals (each triangle)
+                tempNorm1.set(adjacentPoint1).subtractLocal(rootPoint)
+                        .crossLocal(oppositePoint1.subtractLocal(rootPoint)).normalizeLocal();
+                tempNorm2.set(adjacentPoint2).subtractLocal(rootPoint)
+                        .crossLocal(oppositePoint2.subtractLocal(rootPoint)).normalizeLocal();
+
+
+                // save the normals
+                Integer tri1A_idx = rowColIndexCount.get(r*getWidth()+c);
+                BufferUtils.setInBuffer(tempNorm1, allNormals, tri1A_idx++); // tri 1, vertex 1
+                Integer tri1B_idx = rowColIndexCount.get(r*getWidth()+c+1);
+                BufferUtils.setInBuffer(tempNorm1, allNormals, tri1B_idx++); // tri 1, vertex 2
+                Integer tri1C_idx = rowColIndexCount.get((r+1)*getWidth()+c+1);
+                BufferUtils.setInBuffer(tempNorm1, allNormals, tri1C_idx++); // tri 1, vertex 3
+
+                Integer tri2A_idx = rowColIndexCount.get(r*getWidth()+c);
+                BufferUtils.setInBuffer(tempNorm2, allNormals, tri2A_idx++); // tri 2, vertex 1
+                Integer tri2B_idx = rowColIndexCount.get((r+1)*getWidth()+c+1);
+                BufferUtils.setInBuffer(tempNorm2, allNormals, tri2B_idx++); // tri 2, vertex 2
+                Integer tri2C_idx = rowColIndexCount.get((r+1)*getWidth()+c);
+                BufferUtils.setInBuffer(tempNorm2, allNormals, tri2C_idx++); // tri 2, vertex 3
+
+            }
+        }
+
+        // average the normals
+
+        Vector3f sum = new Vector3f();
+        // for each vertex
+        for (Entry<Integer,Integer> e : rowColIndexCount.entrySet()) {
+            int idx = e.getKey() * 3 * 6; // vertex index * 3 floats * 6 normals
+            int count = e.getValue();
+            sum.set(0,0,0);
+            for (int i=0; i<count; i++) {
+                sum.addLocal(allNormals.get(idx+count), allNormals.get(idx+count+1), allNormals.get(idx+count+2));
+            }
+            sum.normalizeLocal();
+            BufferUtils.setInBuffer(sum, store, e.getKey()); // save it
+        }
+        
+        return store;
+    }
+
+
 	/**
 	 * Keeps a count of the number of indexes, good for debugging
 	 */

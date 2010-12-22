@@ -43,10 +43,12 @@ import com.jme3.export.Savable;
  * 
  * @author bowens
  */
-public interface LodThreshold extends Savable {
+public interface LodThreshold extends Savable, Cloneable {
 
 	/**
 	 * A distance of how far between each LOD threshold.
 	 */
 	public float getLodDistanceThreshold();
+
+    public LodThreshold clone();
 }

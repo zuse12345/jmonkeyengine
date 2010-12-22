@@ -45,8 +45,10 @@ import java.util.List;
  *
  * @author Brent Owens
  */
-public interface LodCalculator extends Savable {
+public interface LodCalculator extends Savable, Cloneable {
 
     public void setTerrainPatch(TerrainPatch terrainPatch);
     public boolean calculateLod(List<Vector3f> locations, HashMap<String,UpdatedTerrainPatch> updates);
+
+    public LodCalculator clone();
 }

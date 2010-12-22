@@ -55,6 +55,7 @@ import com.jme3.scene.Mesh;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.terrain.geomipmap.lodcalc.DistanceLodCalculator;
 import com.jme3.terrain.geomipmap.lodcalc.LodCalculator;
+import com.jme3.terrain.geomipmap.lodcalc.LodCalculatorFactory;
 import com.jme3.util.BufferUtils;
 import java.io.IOException;
 import java.util.List;
@@ -104,6 +105,7 @@ public class TerrainPatch extends Geometry {
 	protected float offsetAmount;
 
     protected LodCalculator lodCalculator;
+    protected LodCalculatorFactory lodCalculatorFactory;
 
     protected TerrainPatch leftNeighbour, topNeighbour, rightNeighbour, bottomNeighbour;
     protected boolean searchedForNeighboursAlready = false;
@@ -463,6 +465,11 @@ public class TerrainPatch extends Geometry {
         this.lodCalculator = lodCalculator;
     }
 
+    public void setLodCalculator(LodCalculatorFactory lodCalculatorFactory) {
+        this.lodCalculatorFactory = lodCalculatorFactory;
+        setLodCalculator(lodCalculatorFactory.createCalculator(this));
+    }
+
     @Override
     public int collideWith(Collidable other, CollisionResults results) throws UnsupportedCollisionException {
         if (refreshFlags != 0)
@@ -516,6 +523,7 @@ public class TerrainPatch extends Geometry {
         oc.write(offset, "offset", Vector3f.UNIT_XYZ);
         oc.write(offsetAmount, "offsetAmount", 0);
         oc.write(lodCalculator, "lodCalculator", null);
+        oc.write(lodCalculatorFactory, "lodCalculatorFactory", null);
         oc.write(geomap.getHeightData(), "heightmap", null);
 
         setMesh(tempMesh); // add the mesh back
@@ -533,12 +541,32 @@ public class TerrainPatch extends Geometry {
         offsetAmount = ic.readFloat("offsetAmount", 0);
         lodCalculator = (LodCalculator) ic.readSavable("lodCalculator", new DistanceLodCalculator());
         lodCalculator.setTerrainPatch(this);
+        lodCalculatorFactory = (LodCalculatorFactory) ic.readSavable("lodCalculatorFactory", null);
         FloatBuffer heightBuffer = ic.readFloatBuffer("heightmap", null);
         geomap = new LODGeomap(size, heightBuffer);
         Mesh m = geomap.createMesh(stepScale, Vector2f.UNIT_XY, offset, offsetAmount, totalSize, false);
         setMesh(m);
     }
 
-
+    @Override
+    public TerrainPatch clone() {
+        TerrainPatch clone = new TerrainPatch();
+        clone.name = name.toString();
+        clone.size = size;
+        clone.totalSize = totalSize;
+        clone.quadrant = quadrant;
+        clone.stepScale = stepScale.clone();
+        clone.offset = offset.clone();
+        clone.offsetAmount = offsetAmount;
+        //clone.lodCalculator = lodCalculator.clone();
+        //clone.lodCalculator.setTerrainPatch(clone);
+        clone.setLodCalculator(lodCalculatorFactory.clone());
+        clone.geomap = new LODGeomap(size, geomap.getHeightData());
+        clone.setLocalTranslation(getLocalTranslation().clone());
+        Mesh m = clone.geomap.createMesh(clone.stepScale, Vector2f.UNIT_XY, clone.offset, clone.offsetAmount, clone.totalSize, false);
+        clone.setMesh(m);
+        clone.setMaterial(material.clone());
+        return clone;
+    }
 
 }

@@ -87,10 +87,13 @@ public class DistanceLodCalculator implements LodCalculator {
 				}
 				utp.setPreviousLod(prevLOD);
 				utp.setReIndexNeeded(reIndexNeeded);
+                
 				return reIndexNeeded;
 			}
 		}
 
+        return false;
+        /*
 		int newLOD = terrainPatch.getLod();
 		int prevLOD = terrainPatch.getPreviousLod();
 
@@ -102,9 +105,11 @@ public class DistanceLodCalculator implements LodCalculator {
 
 		boolean reIndexNeeded = false;
 
-		if (prevLOD != newLOD)
+		if (prevLOD != newLOD) {
 			reIndexNeeded = true;
-
+            System.out.println("lod change prev/new: "+prevLOD+"/"+newLOD);
+        }
+        
 		UpdatedTerrainPatch utp = updates.get(terrainPatch.getName());
 		if (utp == null) {
 			utp = new UpdatedTerrainPatch(terrainPatch, newLOD);// save in here, do not update actual variables
@@ -114,6 +119,7 @@ public class DistanceLodCalculator implements LodCalculator {
 		utp.setReIndexNeeded(reIndexNeeded);
 
 		return reIndexNeeded;
+        */
     }
 
     public Vector3f getCenterLocation() {
@@ -143,6 +149,19 @@ public class DistanceLodCalculator implements LodCalculator {
     public void read(JmeImporter im) throws IOException {
         InputCapsule ic = im.getCapsule(this);
         lodThresholdCalculator = (LodThreshold) ic.readSavable("lodThresholdCalculator", null);
+    }
+
+    @Override
+    public LodCalculator clone() {
+        DistanceLodCalculator clone = new DistanceLodCalculator();
+        clone.lodThresholdCalculator = lodThresholdCalculator.clone();
+
+        return clone;
+    }
+
+    @Override
+    public String toString() {
+        return "DistanceLodCalculator "+lodThresholdCalculator.toString();
     }
 
 }

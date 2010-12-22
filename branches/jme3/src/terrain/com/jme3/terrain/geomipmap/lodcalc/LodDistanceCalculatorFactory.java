@@ -80,4 +80,13 @@ public class LodDistanceCalculatorFactory implements LodCalculatorFactory {
         lodThreshold = (LodThreshold) c.readSavable("lodThreshold", null);
     }
 
+    @Override
+    public LodDistanceCalculatorFactory clone() {
+        LodDistanceCalculatorFactory clone = new LodDistanceCalculatorFactory();
+        clone.lodThreshold = lodThreshold.clone();
+        clone.lodThresholdSize = lodThresholdSize;
+
+        return clone;
+    }
+
 }

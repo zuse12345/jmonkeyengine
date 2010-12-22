@@ -46,6 +46,8 @@ import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
+import com.jme3.export.binary.BinaryExporter;
+import com.jme3.export.binary.BinaryImporter;
 import com.jme3.math.FastMath;
 import com.jme3.math.Ray;
 import com.jme3.math.Vector2f;
@@ -61,6 +63,10 @@ import com.jme3.terrain.geomipmap.picking.BresenhamTerrainPicker;
 import com.jme3.terrain.geomipmap.picking.TerrainPickData;
 import com.jme3.terrain.geomipmap.picking.TerrainPicker;
 import com.jme3.util.BufferUtils;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -619,7 +625,7 @@ public class TerrainQuad extends Node implements Terrain {
 		this.attachChild(patch1);
 		patch1.setModelBound(new BoundingBox());
 		patch1.updateModelBound();
-		patch1.setLodCalculator(lodCalculatorFactory.createCalculator(patch1));
+		patch1.setLodCalculator(lodCalculatorFactory);
 
 		// 2 lower left
 		float[] heightBlock2 = createHeightSubBlock(heightMap, 0, split - 1,
@@ -640,7 +646,7 @@ public class TerrainQuad extends Node implements Terrain {
 		this.attachChild(patch2);
 		patch2.setModelBound(new BoundingBox());
 		patch2.updateModelBound();
-		patch2.setLodCalculator(lodCalculatorFactory.createCalculator(patch2));
+		patch2.setLodCalculator(lodCalculatorFactory);
 
 		// 3 upper right
 		float[] heightBlock3 = createHeightSubBlock(heightMap, split - 1, 0,
@@ -661,7 +667,7 @@ public class TerrainQuad extends Node implements Terrain {
 		this.attachChild(patch3);
 		patch3.setModelBound(new BoundingBox());
 		patch3.updateModelBound();
-		patch3.setLodCalculator(lodCalculatorFactory.createCalculator(patch3));
+		patch3.setLodCalculator(lodCalculatorFactory);
 
 		// 4 lower right
 		float[] heightBlock4 = createHeightSubBlock(heightMap, split - 1,
@@ -682,7 +688,7 @@ public class TerrainQuad extends Node implements Terrain {
 		this.attachChild(patch4);
 		patch4.setModelBound(new BoundingBox());
 		patch4.updateModelBound();
-		patch4.setLodCalculator(lodCalculatorFactory.createCalculator(patch4));
+		patch4.setLodCalculator(lodCalculatorFactory);
 	}
 	
 	public float[] createHeightSubBlock(float[] heightMap, int x,
@@ -1302,9 +1308,22 @@ public class TerrainQuad extends Node implements Terrain {
 	}
 	
 	@Override
-        public Node clone(){
-		//TODO use importer and exporter to clone it
-		return null;
+    public TerrainQuad clone() {
+        TerrainQuad quadClone = (TerrainQuad) super.clone();
+        quadClone.name = name.toString();
+        quadClone.size = size;
+        quadClone.totalSize = totalSize;
+        quadClone.stepScale = stepScale.clone();
+        quadClone.offset = offset.clone();
+        quadClone.offsetAmount = offsetAmount;
+        quadClone.quadrant = quadrant;
+        quadClone.lodCalculatorFactory = lodCalculatorFactory.clone();
+        TerrainLodControl lodControl = quadClone.getControl(TerrainLodControl.class);
+        if (lodControl != null && !(getParent() instanceof TerrainQuad)) {
+            lodControl.setTerrain(quadClone); // set println in controller update to see if it is updating
+        }
+
+        return quadClone;
 	}
 
 

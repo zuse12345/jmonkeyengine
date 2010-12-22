@@ -94,4 +94,17 @@ public class SimpleLodThreshold implements LodThreshold {
         lodMultiplier = ic.readInt("lodMultiplier", 2);
     }
 
+    @Override
+    public LodThreshold clone() {
+        SimpleLodThreshold clone = new SimpleLodThreshold();
+        clone.size = size;
+        clone.lodMultiplier = lodMultiplier;
+        
+        return clone;
+    }
+
+    @Override
+    public String toString() {
+        return "SimpleLodThreshold "+size+", "+lodMultiplier;
+    }
 }

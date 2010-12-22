@@ -59,4 +59,8 @@ public class LodPerspectiveCalculatorFactory implements LodCalculatorFactory {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    public LodCalculatorFactory clone() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }

@@ -40,8 +40,10 @@ import com.jme3.terrain.geomipmap.TerrainPatch;
  *
  * @author Brent Owens
  */
-public interface LodCalculatorFactory extends Savable {
+public interface LodCalculatorFactory extends Savable, Cloneable {
 
     public LodCalculator createCalculator();
     public LodCalculator createCalculator(TerrainPatch terrainPatch);
+
+    public LodCalculatorFactory clone();
 }

@@ -41,6 +41,7 @@ import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.terrain.geomipmap.TerrainLodControl;
@@ -127,12 +128,15 @@ public class TerrainTestReadWrite extends SimpleApplication {
 		matRock.setTexture("m_Tex3", rock);
 		matRock.setFloat("m_Tex3Scale", 128f);
 
+        Material matWire = new Material(assetManager, "Common/MatDefs/Misc/WireColor.j3md");
+        matWire.setColor("m_Color", ColorRGBA.Green);
+
         // create the terrain as normal, and give it a control for LOD management
 		List<Camera> cameras = new ArrayList<Camera>();
 		cameras.add(getCamera());
 		TerrainLodControl control = new TerrainLodControl(terrain, cameras);
 		terrain.addControl(control);
-		terrain.setMaterial(matRock);
+		terrain.setMaterial(matWire);
 		terrain.setModelBound(new BoundingBox());
 		terrain.updateModelBound();
 		terrain.setLocalScale(1f, 0.25f, 1f);
@@ -150,6 +154,9 @@ public class TerrainTestReadWrite extends SimpleApplication {
 
         inputManager.addMapping("load", new KeyTrigger(KeyInput.KEY_Y));
 		inputManager.addListener(loadActionListener, "load");
+
+        inputManager.addMapping("clone", new KeyTrigger(KeyInput.KEY_C));
+		inputManager.addListener(cloneActionListener, "clone");
 	}
 
     public void loadHintText() {
@@ -229,6 +236,19 @@ public class TerrainTestReadWrite extends SimpleApplication {
                         Logger.getLogger(TerrainTestReadWrite.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
+			}
+		}
+	};
+
+    private ActionListener cloneActionListener = new ActionListener() {
+
+		public void onAction(String name, boolean pressed, float tpf) {
+			if (name.equals("clone") && !pressed) {
+
+                TerrainQuad clone = terrain.clone();
+                terrain.removeFromParent();
+                terrain = clone;
+                getRootNode().attachChild(terrain);
 			}
 		}
 	};

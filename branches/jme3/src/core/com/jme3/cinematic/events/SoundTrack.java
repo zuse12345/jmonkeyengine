@@ -84,7 +84,7 @@ public class SoundTrack extends AbstractCinematicEvent {
     }
 
     public SoundTrack(String path, boolean stream, float initialDuration, LoopMode loopMode) {
-        super(initialDuration, loopMode);
+        super(initialDuration, loopMode);        
         this.path = path;
         this.stream = stream;
     }
@@ -95,12 +95,12 @@ public class SoundTrack extends AbstractCinematicEvent {
     }
 
     public SoundTrack(String path, LoopMode loopMode) {
-        super(loopMode);
+        super(loopMode);        
         this.path = path;
     }
 
     public SoundTrack(String path, float initialDuration, LoopMode loopMode) {
-        super(initialDuration, loopMode);
+        super(initialDuration, loopMode);        
         this.path = path;
     }
 
@@ -111,6 +111,7 @@ public class SoundTrack extends AbstractCinematicEvent {
     public void initEvent(Application app, Cinematic cinematic) {
         audioRenderer = app.getAudioRenderer();
         audioNode = new AudioNode(app.getAssetManager(), path, stream);
+        setLoopMode(loopMode);
 
     }
 
@@ -147,6 +148,7 @@ public class SoundTrack extends AbstractCinematicEvent {
     @Override
     public void setLoopMode(LoopMode loopMode) {
         super.setLoopMode(loopMode);
+        
         if (loopMode != LoopMode.DontLoop) {
             audioNode.setLooping(true);
         } else {

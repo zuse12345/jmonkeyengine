@@ -618,4 +618,19 @@ public class Client extends ServiceManager implements MessageListener, Connectio
             thread = null;
         }
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof Client || obj instanceof Integer)) {
+            return false;
+        } else if (obj instanceof Client){
+            return ((Client)obj).getClientID() == getClientID();
+        } else if (obj instanceof Integer) {
+            return ((Integer)obj).intValue() == getClientID();
+        } else {
+            return false;
+        }
+    }
 }

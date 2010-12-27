@@ -440,6 +440,19 @@ public class Server extends ServiceManager implements MessageListener {
         return clientManager.getConnectors();
     }
 
+    /**
+     * Get a specific client based on the provided clientID.
+     * @param clientID The clientID identifying the client requested.
+     * @return The located client or null if the client was not on the list.
+     */
+    public Client getClientByID(int clientID) {
+        Client c = null;
+        if (getConnectors().contains(Integer.valueOf(clientID))) {
+           c = getConnectors().get(getConnectors().indexOf(Integer.valueOf(clientID)));
+        }
+        return c;
+    }
+    
     /////////////////////////////// Connector filters //////////////////////////////
 
     public void addConnectorFilter(ConnectorFilter filter) {

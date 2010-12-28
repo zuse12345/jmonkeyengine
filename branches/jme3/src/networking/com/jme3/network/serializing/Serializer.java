@@ -35,11 +35,15 @@ package com.jme3.network.serializing;
 import com.jme3.math.Vector3f;
 import com.jme3.network.message.*;
 import com.jme3.network.serializing.serializers.*;
+import java.awt.RenderingHints;
+import java.beans.beancontext.BeanContextServicesSupport;
+import java.beans.beancontext.BeanContextSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.jar.Attributes;
 import java.util.logging.Logger;
 
 /**
@@ -87,8 +91,30 @@ public abstract class Serializer {
         registerClass(Vector3f.class,  new Vector3Serializer());
 
         registerClass(Date.class,      new DateSerializer());
-        registerClass(Collection.class, new CollectionSerializer());
-        registerClass(Map.class,       new MapSerializer());
+        
+        // all the Collection classes go here
+        registerClass(AbstractCollection.class,         new CollectionSerializer());
+        registerClass(AbstractList.class,               new CollectionSerializer());
+        registerClass(AbstractSet.class,                new CollectionSerializer());
+        registerClass(ArrayList.class,                  new CollectionSerializer());
+        registerClass(BeanContextServicesSupport.class, new CollectionSerializer());
+        registerClass(BeanContextSupport.class,         new CollectionSerializer());
+        registerClass(HashSet.class,                    new CollectionSerializer());
+        registerClass(LinkedHashSet.class,              new CollectionSerializer());
+        registerClass(LinkedList.class,                 new CollectionSerializer());
+        registerClass(TreeSet.class,                    new CollectionSerializer());
+        registerClass(Vector.class,                     new CollectionSerializer());
+        
+        // All the Map classes go here
+        registerClass(AbstractMap.class,                new MapSerializer());
+        registerClass(Attributes.class,                 new MapSerializer());
+        registerClass(HashMap.class,                    new MapSerializer());
+        registerClass(Hashtable.class,                  new MapSerializer());
+        registerClass(IdentityHashMap.class,            new MapSerializer());
+        registerClass(RenderingHints.class,             new MapSerializer());
+        registerClass(TreeMap.class,                    new MapSerializer());
+        registerClass(WeakHashMap.class,                new MapSerializer());
+        
         registerClass(Enum.class,      new EnumSerializer());
         registerClass(GZIPCompressedMessage.class, new GZIPSerializer());
         registerClass(ZIPCompressedMessage.class, new ZIPSerializer());

@@ -132,8 +132,8 @@ public class RenderManager {
         for (int i = 0; i < viewPorts.size(); i++) {
             if (viewPorts.get(i).getName().equals(viewName)) {
                 viewPorts.remove(i);
+                return true;
             }
-            return true;
         }
         return false;
     }

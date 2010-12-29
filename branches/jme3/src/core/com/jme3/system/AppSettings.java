@@ -39,6 +39,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 public class AppSettings extends HashMap<String, Object> {
@@ -91,6 +92,9 @@ public class AppSettings extends HashMap<String, Object> {
         for (Map.Entry<Object, Object> entry : props.entrySet()){
             String key = (String) entry.getKey();
             String val = (String) entry.getValue();
+            if (val != null) {
+               val = val.trim();
+            }
             if (key.endsWith("(int)")){
                 key = key.substring(0, key.length()-5);
                 int iVal = Integer.parseInt(val);
@@ -125,8 +129,28 @@ public class AppSettings extends HashMap<String, Object> {
         props.store(out, "jME3 AppSettings");
     }
 
-    public void load(String preferencesKey){
+    public void load(String preferencesKey) throws BackingStoreException{
         Preferences prefs = Preferences.userRoot().node(preferencesKey);
+        String[] keys = prefs.keys();
+        if (keys != null) {
+           for (String key : keys) {
+               Object defaultValue = defaults.get(key);
+               if (defaultValue instanceof Integer) {
+                   put(key, prefs.getInt(key, (Integer)defaultValue));
+               } else if (defaultValue instanceof String) {
+                   put(key, prefs.get(key, (String)defaultValue));
+               } else if (defaultValue instanceof Boolean) {
+                   put(key, prefs.getBoolean(key, (Boolean)defaultValue));
+               }
+           }
+        }
+    }
+
+    public void save(String preferencesKey) throws BackingStoreException{
+       Preferences prefs = Preferences.userRoot().node(preferencesKey);
+       for (String key : keySet()) {
+           prefs.put(key, get(key).toString());
+       }
     }
 
     public int getInteger(String key){

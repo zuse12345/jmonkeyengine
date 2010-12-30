@@ -46,8 +46,6 @@ import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
-import com.jme3.export.binary.BinaryExporter;
-import com.jme3.export.binary.BinaryImporter;
 import com.jme3.math.FastMath;
 import com.jme3.math.Ray;
 import com.jme3.math.Vector2f;
@@ -55,6 +53,8 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.VertexBuffer;
+import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.scene.debug.WireBox;
 import com.jme3.terrain.Terrain;
 import com.jme3.terrain.geomipmap.lodcalc.LodCalculatorFactory;
@@ -63,10 +63,6 @@ import com.jme3.terrain.geomipmap.picking.BresenhamTerrainPicker;
 import com.jme3.terrain.geomipmap.picking.TerrainPickData;
 import com.jme3.terrain.geomipmap.picking.TerrainPicker;
 import com.jme3.util.BufferUtils;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -103,7 +99,7 @@ public class TerrainQuad extends Node implements Terrain {
 	private boolean usingLOD = true;
 	private int maxLod = -1;
 	private HashMap<String,UpdatedTerrainPatch> updatedPatches;
-	private Object updatePatchesLock = new Object();
+	private final Object updatePatchesLock = new Object();
 
     private TerrainPicker picker;
 
@@ -123,10 +119,12 @@ public class TerrainQuad extends Node implements Terrain {
 	
 	public TerrainQuad(String name, int blockSize, int size, float[] heightMap) {
 		this(name, blockSize, size, Vector3f.UNIT_XYZ, heightMap, size, new Vector2f(), 0, null);
+        fixNormals();
 	}
 	
 	public TerrainQuad(String name, int blockSize, int size, Vector3f scale, float[] heightMap, LodCalculatorFactory lodCalculatorFactory) {
 		this(name, blockSize, size, scale, heightMap, size, new Vector2f(), 0, lodCalculatorFactory);
+        fixNormals();
 	}
 	
 	protected TerrainQuad(String name, int blockSize, int size,
@@ -149,8 +147,6 @@ public class TerrainQuad extends Node implements Terrain {
 		this.stepScale = stepScale;
 		this.lodCalculatorFactory = lodCalculatorFactory;
 		split(blockSize, heightMap);
-		
-		//fixNormals();
 	}
 	 
 	public void setLodCalculatorFactory(LodCalculatorFactory lodCalculatorFactory) {
@@ -313,7 +309,7 @@ public class TerrainQuad extends Node implements Terrain {
 		synchronized (updatePatchesLock) {
 			//if (true)
 			//	return;
-			if (updatedPatches == null || updatedPatches.size() == 0)
+			if (updatedPatches == null || updatedPatches.isEmpty())
 				return;
 			
 			//TODO do the actual geometry update here
@@ -1151,52 +1147,185 @@ public class TerrainQuad extends Node implements Terrain {
 	}
 	
 	/**
-	 * Ignoring the normals for now. The lighting just makes the terrain "pop" noticeably.
-	 * Use a lightmap instead.
+	 * fix the normals on the edge of the terrain patches.
 	 */
 	public void fixNormals() {
-		/*if (children != null) {
-			for (int x = children.size(); --x >= 0;) {
-				Spatial child = children.get(x);
-				if (child instanceof TerrainQuad) {
-					((TerrainQuad) child).fixNormals();
-				} else if (child instanceof TerrainPatch) {
-					TerrainPatch tb = (TerrainPatch) child;
-					TerrainPatch right = findRightPatch(tb);
-					TerrainPatch down = findDownPatch(tb);
-					int tbSize = tb.getSize();
-					if (right != null) {
-						float[] normData = new float[3];
-						for (int y = 0; y < tbSize; y++) {
-							int index1 = ((y + 1) * tbSize) - 1;
-							int index2 = (y * tbSize);
-							right.getNormalBuffer().position(index2 * 3);
-							right.getNormalBuffer().get(normData);
-							tb.getNormalBuffer().position(index1 * 3);
-							tb.getNormalBuffer().put(normData);
-						}
-						deleteNormalVBO(right);
+		if (children == null)
+            return;
 
-					}
-					if (down != null) {
-						int rowStart = ((tbSize - 1) * tbSize);
-						float[] normData = new float[3];
-						for (int z = 0; z < tbSize; z++) {
-							int index1 = rowStart + z;
-							int index2 = z;
-							down.getNormalBuffer().position(index2 * 3);
-							down.getNormalBuffer().get(normData);
-							tb.getNormalBuffer().position(index1 * 3);
-							tb.getNormalBuffer().put(normData);
-						}
-						deleteNormalVBO(down);
-					}
-					deleteNormalVBO(tb);
-				}
-			}
-		}
-		*/
+        for (int x = children.size(); --x >= 0;) {
+            Spatial child = children.get(x);
+            if (child instanceof TerrainQuad) {
+                ((TerrainQuad) child).fixNormals();
+            } else if (child instanceof TerrainPatch) {
+                TerrainPatch tp = (TerrainPatch) child;
+                TerrainPatch right = findRightPatch(tp);
+                TerrainPatch down = findDownPatch(tp);
+                TerrainPatch top = findTopPatch(tp);
+                TerrainPatch left = findLeftPatch(tp);
+
+                Vector3f rootPoint = new Vector3f();
+                Vector3f rightPoint = new Vector3f();
+                Vector3f leftPoint = new Vector3f();
+                Vector3f topPoint = new Vector3f();
+                Vector3f bottomPoint = new Vector3f();
+                Vector3f normal = new Vector3f();
+
+                int s = tp.getSize()-1;
+
+                if (right != null) { // right side
+                    for (int i=0; i<s+1; i++) {
+                        rootPoint.set(s, tp.getHeight(s,i), i);
+                        leftPoint.set(s-1, tp.getHeight(s-1,i), i);
+                        rightPoint.set(s+1, right.getHeight(1,i), i);
+                        if (i == 0) { // top
+                            if (top == null) {
+                                bottomPoint.set(s, tp.getHeight(s,i+1), i+1);
+                                Vector3f n1 = getNormal(leftPoint, rootPoint, bottomPoint);
+                                Vector3f n2 = getNormal(bottomPoint, rootPoint, rightPoint);
+                                normal.set(n1.add(n2).normalizeLocal());
+                                VertexBuffer tpNB = tp.getMesh().getBuffer(Type.Normal);
+                                VertexBuffer rightNB = right.getMesh().getBuffer(Type.Normal);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)tpNB.getData(), s);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)rightNB.getData(), 0);
+                            } else {
+                                topPoint.set(s, top.getHeight(s,s), i-1);
+                                bottomPoint.set(s, tp.getHeight(s,i+1), i+1);
+                                Vector3f n1 = getNormal(topPoint, rootPoint, leftPoint);
+                                Vector3f n2 = getNormal(leftPoint, rootPoint, bottomPoint);
+                                Vector3f n3 = getNormal(bottomPoint, rootPoint, rightPoint);
+                                Vector3f n4 = getNormal(rightPoint, rootPoint, topPoint);
+                                normal.set(n1.add(n2).add(n3).add(n4).normalizeLocal());
+                                VertexBuffer tpNB = tp.getMesh().getBuffer(Type.Normal);
+                                VertexBuffer rightNB = right.getMesh().getBuffer(Type.Normal);
+                                VertexBuffer topNB = top.getMesh().getBuffer(Type.Normal);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)tpNB.getData(), s);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)rightNB.getData(), 0);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)topNB.getData(), (s+1)*(s+1)-1);
+                            }
+                        } else if (i == s) { // bottom
+                            if (down == null) {
+                                topPoint.set(s, tp.getHeight(s,i-1), i-1);
+                                Vector3f n1 = getNormal(rightPoint, rootPoint, topPoint);
+                                Vector3f n2 = getNormal(topPoint, rootPoint, leftPoint);
+                                normal.set(n1.add(n2).normalizeLocal());
+                                VertexBuffer tpNB = tp.getMesh().getBuffer(Type.Normal);
+                                VertexBuffer rightNB = right.getMesh().getBuffer(Type.Normal);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)tpNB.getData(), (s+1)*(s+1)-1);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)rightNB.getData(), (s+1)*s);
+                            } else {
+                                topPoint.set(s, tp.getHeight(s,i-1), i-1);
+                                bottomPoint.set(s, down.getHeight(s+1,1), i+1);
+                                Vector3f n1 = getNormal(topPoint, rootPoint, leftPoint);
+                                Vector3f n2 = getNormal(leftPoint, rootPoint, bottomPoint);
+                                Vector3f n3 = getNormal(bottomPoint, rootPoint, rightPoint);
+                                Vector3f n4 = getNormal(rightPoint, rootPoint, topPoint);
+                                normal.set(n1.add(n2).add(n3).add(n4).normalizeLocal());
+                                VertexBuffer tpNB = tp.getMesh().getBuffer(Type.Normal);
+                                VertexBuffer rightNB = right.getMesh().getBuffer(Type.Normal);
+                                VertexBuffer downNB = down.getMesh().getBuffer(Type.Normal);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)tpNB.getData(), (s+1)*(s+1)-1);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)rightNB.getData(), (s+1)*s);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)downNB.getData(), s);
+                            }
+                        } else { // all in the middle
+                            topPoint.set(s, tp.getHeight(s,i-1), i-1);
+                            bottomPoint.set(s, tp.getHeight(s,i+1), i+1);
+                            Vector3f n1 = getNormal(topPoint, rootPoint, leftPoint);
+                            Vector3f n2 = getNormal(leftPoint, rootPoint, bottomPoint);
+                            Vector3f n3 = getNormal(bottomPoint, rootPoint, rightPoint);
+                            Vector3f n4 = getNormal(rightPoint, rootPoint, topPoint);
+                            normal.set(n1.add(n2).add(n3).add(n4).normalizeLocal());
+                            VertexBuffer tpNB = tp.getMesh().getBuffer(Type.Normal);
+                            VertexBuffer rightNB = right.getMesh().getBuffer(Type.Normal);
+                            BufferUtils.setInBuffer(normal, (FloatBuffer)tpNB.getData(), (s+1)*(i+1)-1);
+                            BufferUtils.setInBuffer(normal, (FloatBuffer)rightNB.getData(), (s+1)*(i));
+                        }
+                    }
+                }
+
+                if (down != null) {
+                    for (int i=0; i<s+1; i++) {
+                        rootPoint.set(i, tp.getHeight(i,s), s);
+                        topPoint.set(i, tp.getHeight(i,s-1), s-1);
+                        bottomPoint.set(i, down.getHeight(i,1), s+1);
+                        if (i == 0) { // left
+                            if (left == null) {
+                                rightPoint.set(i+1, tp.getHeight(i+1,s), s);
+                                Vector3f n1 = getNormal(rightPoint, rootPoint, topPoint);
+                                Vector3f n2 = getNormal(bottomPoint, rootPoint, rightPoint);
+                                normal.set(n1.add(n2).normalizeLocal());
+                                VertexBuffer tpNB = tp.getMesh().getBuffer(Type.Normal);
+                                VertexBuffer downNB = down.getMesh().getBuffer(Type.Normal);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)tpNB.getData(), (s+1)*s);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)downNB.getData(), 0);
+                            } else {
+                                leftPoint.set(i-1, left.getHeight(s-1,s), s);
+                                rightPoint.set(i+1, tp.getHeight(i+1,s), s);
+                                Vector3f n1 = getNormal(topPoint, rootPoint, leftPoint);
+                                Vector3f n2 = getNormal(leftPoint, rootPoint, bottomPoint);
+                                Vector3f n3 = getNormal(bottomPoint, rootPoint, rightPoint);
+                                Vector3f n4 = getNormal(rightPoint, rootPoint, topPoint);
+                                normal.set(n1.add(n2).add(n3).add(n4).normalizeLocal());
+                                VertexBuffer tpNB = tp.getMesh().getBuffer(Type.Normal);
+                                VertexBuffer leftNB = left.getMesh().getBuffer(Type.Normal);
+                                VertexBuffer downNB = down.getMesh().getBuffer(Type.Normal);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)tpNB.getData(), (s+1)*s);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)leftNB.getData(), (s+1)*(s+1)-1);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)downNB.getData(), 0);
+                            }
+                        } else if (i == s) { // right
+                            if (right == null) {
+                                leftPoint.set(s-1, tp.getHeight(s-1,s), s);
+                                Vector3f n1 = getNormal(rightPoint, rootPoint, topPoint);
+                                Vector3f n2 = getNormal(topPoint, rootPoint, leftPoint);
+                                normal.set(n1.add(n2).normalizeLocal());
+                                VertexBuffer tpNB = tp.getMesh().getBuffer(Type.Normal);
+                                VertexBuffer downNB = left.getMesh().getBuffer(Type.Normal);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)tpNB.getData(), (s+1)*(s+1)-1);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)downNB.getData(), s);
+                            } else {
+                                leftPoint.set(s-1, tp.getHeight(s-1,s), s);
+                                rightPoint.set(s+1, right.getHeight(1,s), s);
+                                Vector3f n1 = getNormal(topPoint, rootPoint, leftPoint);
+                                Vector3f n2 = getNormal(leftPoint, rootPoint, bottomPoint);
+                                Vector3f n3 = getNormal(bottomPoint, rootPoint, rightPoint);
+                                Vector3f n4 = getNormal(rightPoint, rootPoint, topPoint);
+                                normal.set(n1.add(n2).add(n3).add(n4).normalizeLocal());
+                                VertexBuffer tpNB = tp.getMesh().getBuffer(Type.Normal);
+                                VertexBuffer rightNB = right.getMesh().getBuffer(Type.Normal);
+                                VertexBuffer downNB = down.getMesh().getBuffer(Type.Normal);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)tpNB.getData(), (s+1)*(s+1)-1);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)rightNB.getData(), (s+1)*s);
+                                BufferUtils.setInBuffer(normal, (FloatBuffer)downNB.getData(), s);
+                            }
+                        } else { // all in the middle
+                            leftPoint.set(i-1, tp.getHeight(i-1,s), s);
+                            rightPoint.set(i+1, tp.getHeight(i+1,s), s);
+                            Vector3f n1 = getNormal(topPoint, rootPoint, leftPoint);
+                            Vector3f n2 = getNormal(leftPoint, rootPoint, bottomPoint);
+                            Vector3f n3 = getNormal(bottomPoint, rootPoint, rightPoint);
+                            Vector3f n4 = getNormal(rightPoint, rootPoint, topPoint);
+                            normal.set(n1.add(n2).add(n3).add(n4).normalizeLocal());
+                            VertexBuffer tpNB = tp.getMesh().getBuffer(Type.Normal);
+                            VertexBuffer downNB = down.getMesh().getBuffer(Type.Normal);
+                            BufferUtils.setInBuffer(normal, (FloatBuffer)tpNB.getData(), (s+1)*(s)+i);
+                            BufferUtils.setInBuffer(normal, (FloatBuffer)downNB.getData(), i);
+                        }
+                    }
+                }// end if  down!=null
+
+            }
+        } // for each child
+
 	}
+
+    private Vector3f getNormal(Vector3f firstPoint, Vector3f rootPoint, Vector3f secondPoint) {
+        Vector3f normal = new Vector3f();
+        normal.set(firstPoint).subtractLocal(rootPoint)
+                  .crossLocal(secondPoint.subtract(rootPoint)).normalizeLocal();
+        return normal;
+    }
 
     @Override
     public int collideWith(Collidable other, CollisionResults results){

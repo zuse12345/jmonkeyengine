@@ -387,11 +387,115 @@ public class LODGeomap extends BufferGeomap {
 		return num;
 	}
 
+    @Override
+    public FloatBuffer writeNormalArray(FloatBuffer store, Vector3f scale) {
+         if (!isLoaded())
+            throw new NullPointerException();
+
+        if (store!=null){
+            if (store.remaining() < getWidth()*getHeight()*3)
+                throw new BufferUnderflowException();
+        }else{
+            store = BufferUtils.createFloatBuffer(getWidth()*getHeight()*3);
+        }
+        store.rewind();
+
+        Vector3f rootPoint = new Vector3f();
+        Vector3f rightPoint = new Vector3f();
+        Vector3f leftPoint = new Vector3f();
+        Vector3f topPoint = new Vector3f();
+        Vector3f bottomPoint = new Vector3f();
+
+         // calculate normals for each polygon
+        for (int r=0; r<getHeight(); r++) {
+            for (int c=0; c<getWidth(); c++) {
+
+                rootPoint.set(c, getValue(c,r), r);
+                Vector3f normal = new Vector3f();
+
+                if (r == 0) { // first row
+                    if (c == 0) { // first column
+                        rightPoint.set(c+1, getValue(c+1,r), r);
+                        bottomPoint.set(c, getValue(c,r+1), r+1);
+                        normal.set(getNormal(bottomPoint, rootPoint, rightPoint));
+                    } else if (c == getWidth()-1) { // last column
+                        leftPoint.set(c-1, getValue(c-1,r), r);
+                        bottomPoint.set(c, getValue(c,r+1), r+1);
+                        normal.set(getNormal(leftPoint, rootPoint, bottomPoint));
+                    } else { // all middle columns
+                        leftPoint.set(c-1, getValue(c-1,r), r);
+                        rightPoint.set(c+1, getValue(c+1,r), r);
+                        bottomPoint.set(c, getValue(c,r+1), r+1);
+                        Vector3f n1 = getNormal(leftPoint, rootPoint, bottomPoint);
+                        Vector3f n2 = getNormal(bottomPoint, rootPoint, rightPoint);
+                        normal.set(n1.add(n2).normalizeLocal());
+                    }
+                } else if (r == getHeight()-1) { // last row
+                    if (c == 0) { // first column
+                        topPoint.set(c, getValue(c,r-1), r-1);
+                        rightPoint.set(c+1, getValue(c+1, r), r);
+                        normal.set(getNormal(rightPoint, rootPoint, topPoint));
+                    } else if (c == getWidth()-1) { // last column
+                        topPoint.set(c, getValue(c,r-1), r-1);
+                        leftPoint.set(c-1, getValue(c-1,r), r);
+                        normal.set(getNormal(topPoint, rootPoint, leftPoint));
+                    } else { // all middle columns
+                        topPoint.set(c, getValue(c,r-1), r-1);
+                        leftPoint.set(c-1, getValue(c-1,r), r);
+                        rightPoint.set(c+1, getValue(c+1,r), r);
+                        Vector3f n1 = getNormal(topPoint, rootPoint, leftPoint);
+                        Vector3f n2 = getNormal(rightPoint, rootPoint, topPoint);
+                        normal.set(n1.add(n2).normalizeLocal());
+                    }
+                } else { // all middle rows
+                    if (c == 0) { // first column
+                        topPoint.set(c, getValue(c,r-1), r-1);
+                        rightPoint.set(c+1, getValue(c+1,r), r);
+                        bottomPoint.set(c, getValue(c,r+1), r+1);
+                        Vector3f n1 = getNormal(rightPoint, rootPoint, topPoint);
+                        Vector3f n2 = getNormal(bottomPoint, rootPoint, rightPoint);
+                        normal.set(n1.add(n2).normalizeLocal());
+                    } else if (c == getWidth()-1) { // last column
+                        topPoint.set(c, getValue(c,r-1), r-1);
+                        leftPoint.set(c-1, getValue(c-1,r), r);
+                        bottomPoint.set(c, getValue(c,r+1), r+1);
+                        Vector3f n1 = getNormal(topPoint, rootPoint, leftPoint);
+                        Vector3f n2 = getNormal(leftPoint, rootPoint, bottomPoint);
+                        normal.set(n1.add(n2).normalizeLocal());
+                    } else { // all middle columns
+                        topPoint.set(c, getValue(c,r-1), r-1);
+                        leftPoint.set(c-1, getValue(c-1,r), r);
+                        rightPoint.set(c+1, getValue(c+1,r), r);
+                        bottomPoint.set(c, getValue(c,r+1), r+1);
+                        Vector3f n1 = getNormal(topPoint, rootPoint, leftPoint);
+                        Vector3f n2 = getNormal(leftPoint, rootPoint, bottomPoint);
+                        Vector3f n3 = getNormal(bottomPoint, rootPoint, rightPoint);
+                        Vector3f n4 = getNormal(rightPoint, rootPoint, topPoint);
+                        normal.set(n1.add(n2).add(n3).add(n4).normalizeLocal());
+                    }
+                }
+                
+                BufferUtils.setInBuffer(normal, store, (r*getWidth()+c)); // save the normal
+
+            }
+        }
+
+        return store;
+    }
+
+    private Vector3f getNormal(Vector3f firstPoint, Vector3f rootPoint, Vector3f secondPoint) {
+        Vector3f normal = new Vector3f();
+        normal.set(firstPoint).subtractLocal(rootPoint)
+                  .crossLocal(secondPoint.subtract(rootPoint)).normalizeLocal();
+        return normal;
+    }
+
     /**
      * This will take the average of all the polygon surface normals at each vertex and
      * return that, as a much better representation of that smooth normal.
      * Look into moving this into shaders to be processed on the GPU. It would be great
      * for batch processing there.
+     *
      *
      * It assumes a triangle strip in this orientation:
      * +---+
@@ -413,8 +517,7 @@ public class LODGeomap extends BufferGeomap {
      * @param scale
      * @return a normal for each vertex
      */
-    //@Override
-    public FloatBuffer writeNormalArray2(FloatBuffer store, Vector3f scale) { // temporary, this will become the new writeNormalArray()
+    public FloatBuffer writeNormalArray2(FloatBuffer store, Vector3f scale) {
         if (!isLoaded())
             throw new NullPointerException();
 
@@ -444,46 +547,60 @@ public class LODGeomap extends BufferGeomap {
                 rowColIndexCount.put(r*getHeight()+c, new Integer(0));
             }
         }
+        allNormals.rewind();
 
         // calculate normals for each polygon
         for (int r=0; r<getHeight()-1; r++) {
             for (int c=0; c<getWidth()-1; c++) {
 
-                rootPoint.set(c, getValue(r,c), r);
-                adjacentPoint1.set(c, getValue(r, c+1), r);
-                oppositePoint1.set(c, getValue(r+1, c+1), r);
-                adjacentPoint2.set(c, getValue(r+1, c+1), r);
-                oppositePoint2.set(c, getValue(r+1, c), r);
+                rootPoint.set(c, getValue(c,r), r);
+                adjacentPoint1.set(c+1, getValue(c+1, r), r);
+                oppositePoint1.set(c+1, getValue(c+1, r+1), r+1);
+                adjacentPoint2.set(c+1, getValue(c+1, r+1), r+1);
+                oppositePoint2.set(c, getValue(c, r+1), r+1);
+
 
                 //calculate the 2 normals (each triangle)
-                tempNorm1.set(adjacentPoint1).subtractLocal(rootPoint)
-                        .crossLocal(oppositePoint1.subtractLocal(rootPoint)).normalizeLocal();
-                tempNorm2.set(adjacentPoint2).subtractLocal(rootPoint)
-                        .crossLocal(oppositePoint2.subtractLocal(rootPoint)).normalizeLocal();
+                tempNorm1.set(oppositePoint1).subtractLocal(rootPoint)
+                        .crossLocal(adjacentPoint1.subtractLocal(rootPoint)).normalizeLocal();
+                tempNorm2.set(oppositePoint2).subtractLocal(rootPoint)
+                        .crossLocal(adjacentPoint2.subtractLocal(rootPoint)).normalizeLocal();
 
-
+                
                 // save the normals
                 Integer tri1A_idx = rowColIndexCount.get(r*getWidth()+c);
-                BufferUtils.setInBuffer(tempNorm1, allNormals, tri1A_idx++); // tri 1, vertex 1
+                BufferUtils.setInBuffer(tempNorm1, allNormals, (r*getWidth()+c)+tri1A_idx++); // tri 1, vertex 1
+                rowColIndexCount.put(r*getWidth()+c, tri1A_idx);
+
                 Integer tri1B_idx = rowColIndexCount.get(r*getWidth()+c+1);
-                BufferUtils.setInBuffer(tempNorm1, allNormals, tri1B_idx++); // tri 1, vertex 2
+                BufferUtils.setInBuffer(tempNorm1, allNormals, (r*getWidth()+c+1)+tri1B_idx++); // tri 1, vertex 2
+                rowColIndexCount.put(r*getWidth()+c+1, tri1B_idx);
+
                 Integer tri1C_idx = rowColIndexCount.get((r+1)*getWidth()+c+1);
-                BufferUtils.setInBuffer(tempNorm1, allNormals, tri1C_idx++); // tri 1, vertex 3
+                BufferUtils.setInBuffer(tempNorm1, allNormals, ((r+1)*getWidth()+c+1)+tri1C_idx++); // tri 1, vertex 3
+                rowColIndexCount.put((r+1)*getWidth()+c+1, tri1C_idx);
 
                 Integer tri2A_idx = rowColIndexCount.get(r*getWidth()+c);
-                BufferUtils.setInBuffer(tempNorm2, allNormals, tri2A_idx++); // tri 2, vertex 1
+                BufferUtils.setInBuffer(tempNorm2, allNormals, (r*getWidth()+c)+tri2A_idx++); // tri 2, vertex 1
+                rowColIndexCount.put(r*getWidth()+c, tri2A_idx);
+
                 Integer tri2B_idx = rowColIndexCount.get((r+1)*getWidth()+c+1);
-                BufferUtils.setInBuffer(tempNorm2, allNormals, tri2B_idx++); // tri 2, vertex 2
+                BufferUtils.setInBuffer(tempNorm2, allNormals, ((r+1)*getWidth()+c+1)+tri2B_idx++); // tri 2, vertex 2
+                rowColIndexCount.put((r+1)*getWidth()+c+1, tri2B_idx);
+
                 Integer tri2C_idx = rowColIndexCount.get((r+1)*getWidth()+c);
-                BufferUtils.setInBuffer(tempNorm2, allNormals, tri2C_idx++); // tri 2, vertex 3
+                BufferUtils.setInBuffer(tempNorm2, allNormals, ((r+1)*getWidth()+c)+tri2C_idx++); // tri 2, vertex 3
+                rowColIndexCount.put((r+1)*getWidth()+c, tri2C_idx);
 
             }
         }
+        allNormals.rewind();
 
         // average the normals
 
         Vector3f sum = new Vector3f();
         // for each vertex
+        int index = 0;
         for (Entry<Integer,Integer> e : rowColIndexCount.entrySet()) {
             int idx = e.getKey() * 3 * 6; // vertex index * 3 floats * 6 normals
             int count = e.getValue();
@@ -491,8 +608,11 @@ public class LODGeomap extends BufferGeomap {
             for (int i=0; i<count; i++) {
                 sum.addLocal(allNormals.get(idx+count), allNormals.get(idx+count+1), allNormals.get(idx+count+2));
             }
+            if (index == 2000)
+                System.currentTimeMillis();
             sum.normalizeLocal();
-            BufferUtils.setInBuffer(sum, store, e.getKey()); // save it
+            BufferUtils.setInBuffer(sum, store, index++); // save it
+            //BufferUtils.setInBuffer(Vector3f.UNIT_Y, store, index++);
         }
         
         return store;

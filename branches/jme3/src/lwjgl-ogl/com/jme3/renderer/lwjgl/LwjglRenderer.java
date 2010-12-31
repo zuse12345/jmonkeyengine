@@ -1127,7 +1127,7 @@ public class LwjglRenderer implements Renderer {
         Texture tex = rb.getTexture();
         Image image = tex.getImage();
         if (image.isUpdateNeeded())
-            updateTexImageData(image, tex.getType(), tex.getMinFilter().usesMipMapLevels());
+            updateTexImageData(image, tex.getType(), tex.getMinFilter().usesMipMapLevels(), 0);
 
         glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
                                   convertAttachmentSlot(rb.getSlot()),
@@ -1444,7 +1444,7 @@ public class LwjglRenderer implements Renderer {
         }
     }
 
-    public void updateTexImageData(Image img, Texture.Type type, boolean mips){
+    public void updateTexImageData(Image img, Texture.Type type, boolean mips, int unit){
         int texId = img.getId();
         if (texId == -1){
             // create texture
@@ -1458,14 +1458,13 @@ public class LwjglRenderer implements Renderer {
 
         // bind texture
         int target = convertTextureType(type);
-        if (context.boundTextures[0] != img){
-            if (context.boundTextureUnit != 0){
-                glActiveTexture(GL_TEXTURE0);
-                context.boundTextureUnit = 0;
-            }
-
+        if (context.boundTextureUnit != unit){
+            glActiveTexture(GL_TEXTURE0+unit);
+            context.boundTextureUnit = unit;
+        }
+        if (context.boundTextures[unit] != img){
             glBindTexture(target, texId);
-            context.boundTextures[0] = img;
+            context.boundTextures[unit] = img;
         }
 
         if (!img.hasMipmaps() && mips){
@@ -1515,7 +1514,7 @@ public class LwjglRenderer implements Renderer {
     public void setTexture(int unit, Texture tex){
         Image image = tex.getImage();
          if (image.isUpdateNeeded()){
-            updateTexImageData(image, tex.getType(), tex.getMinFilter().usesMipMapLevels());
+            updateTexImageData(image, tex.getType(), tex.getMinFilter().usesMipMapLevels(), unit);
         }
 
          int texId = image.getId();
@@ -1532,12 +1531,11 @@ public class LwjglRenderer implements Renderer {
 //             glEnable(type);
          }
 
+         if (context.boundTextureUnit != unit){
+            glActiveTexture(GL_TEXTURE0 + unit);
+            context.boundTextureUnit = unit;
+         }
          if (textures[unit] != image){
-             if (context.boundTextureUnit != unit){
-                glActiveTexture(GL_TEXTURE0 + unit);
-                context.boundTextureUnit = unit;
-             }
-
              glBindTexture(type, texId);
              textures[unit] = image;
 

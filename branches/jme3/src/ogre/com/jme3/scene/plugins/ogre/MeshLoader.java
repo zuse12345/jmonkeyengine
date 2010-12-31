@@ -516,6 +516,11 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             animData = (AnimData) assetManager.loadAsset(folderName + name + "xml");
     }
 
+    private void startSubmeshName(String indexStr, String nameStr){
+        int index = Integer.parseInt(indexStr);
+        geoms.get(index).setName(nameStr);
+    }
+
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attribs) throws SAXException{
         if (ignoreUntilEnd != null)
@@ -578,6 +583,8 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
             // ok
         }else if (qName.equals("skeletonlink")){
             startSkeleton(attribs.getValue("name"));
+        }else if (qName.equals("submeshname")){
+            startSubmeshName(attribs.getValue("index"), attribs.getValue("name"));
         }else if (qName.equals("mesh")){
             // ok
         }else{
@@ -647,8 +654,9 @@ public class MeshLoader extends DefaultHandler implements AssetLoader {
 
     private void createBindPose(Mesh mesh){
         VertexBuffer pos = mesh.getBuffer(Type.Position);
-        if (pos == null){
+        if (pos == null || mesh.getBuffer(Type.BoneIndex) == null){
             // ignore, this mesh doesn't have positional data
+            // or it doesn't have bone-vertex assignments, so its not animated
             return;
         }
 

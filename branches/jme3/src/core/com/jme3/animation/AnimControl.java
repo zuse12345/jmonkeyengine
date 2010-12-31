@@ -384,7 +384,9 @@ public class AnimControl extends AbstractControl implements Savable, Cloneable {
         // if hardware skinning is supported, the matrices and weight buffer
         // will be sent by the SkinningShaderLogic object assigned to the shader
         for (int i = 0; i < targets.length; i++){
-            softwareSkinUpdate(targets[i], offsetMatrices);
+            // only update targets with bone-vertex assignments
+            if (targets[i].getBuffer(Type.BoneIndex) != null)
+                softwareSkinUpdate(targets[i], offsetMatrices);
         }
     }
 

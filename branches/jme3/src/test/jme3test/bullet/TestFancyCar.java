@@ -36,8 +36,8 @@ import com.jme3.bullet.BulletAppState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.PhysicsSpace;
-import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
+import com.jme3.bullet.collision.shapes.HullCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.nodes.PhysicsNode;
 import com.jme3.bullet.nodes.PhysicsVehicleNode;
@@ -170,10 +170,9 @@ public class TestFancyCar extends SimpleApplication implements ActionListener {
 //        chasis.setLocalTranslation(Vector3f.UNIT_Y);
         chasis.setShadowMode(ShadowMode.Cast);
 
-        CompoundCollisionShape compoundShape=new CompoundCollisionShape();
-        compoundShape.addChildShape(new BoxCollisionShape(extent), Vector3f.UNIT_Y);
+        HullCollisionShape carHull=new HullCollisionShape(chasis.getMesh());
 
-        player = new PhysicsVehicleNode(chasis, compoundShape, mass);
+        player = new PhysicsVehicleNode(chasis, carHull, mass);
 
         //setting default values for wheels
         player.setSuspensionCompression(compValue*2.0f*FastMath.sqrt(stiffness));
@@ -238,7 +237,7 @@ public class TestFancyCar extends SimpleApplication implements ActionListener {
         player.addWheel(primaryNode, box.getCenter().add(0, -back_wheel_h, 0),
                         wheelDirection, wheelAxle, 0.2f, wheelRadius, false);
 
-//        player.attachDebugShape(assetManager);
+        player.attachDebugShape(assetManager);
         player.getWheel(2).setFrictionSlip(4);
         player.getWheel(3).setFrictionSlip(4);
         rootNode.attachChild(player);

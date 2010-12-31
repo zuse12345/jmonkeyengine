@@ -35,8 +35,8 @@ import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
-import com.jme3.bullet.collision.shapes.GImpactCollisionShape;
 import com.jme3.bullet.collision.shapes.HeightfieldCollisionShape;
+import com.jme3.bullet.collision.shapes.HullCollisionShape;
 import com.jme3.bullet.collision.shapes.MeshCollisionShape;
 import com.jme3.bullet.collision.shapes.infos.ChildCollisionShape;
 import com.jme3.math.Matrix3f;
@@ -145,10 +145,9 @@ public class CollisionShapeFactory {
     }
 
     /**
-     * Note that mesh-sccurate dynamic shapes are very expensive and you should consider
-     * using a compound shape of standard shapes instead.<br>
-     * If you use GImpact shapes, its probably best to do so with a low-poly version of your model.
-     * @return A GImpactCollisionShape or a CompoundCollisionShape with GImpactCollisionShapes as children if the supplied spatial is a Node.
+     * This method creates a hull shape for the given Spatial.<br>
+     * If you want to have mesh-accurate dynamic shapes (CPU intense!!!) use GImpact shapes, its probably best to do so with a low-poly version of your model.
+     * @return A HullCollisionShape or a CompoundCollisionShape with HullCollisionShapes as children if the supplied spatial is a Node.
      */
     public static CollisionShape createDynamicMeshShape(Spatial spatial) {
         if (spatial instanceof Geometry) {
@@ -207,14 +206,12 @@ public class CollisionShapeFactory {
     }
 
     /**
-     * Note that these mesh-sccurate dynamic shapes (GImpactCollisionShapes) are very expensive and you should consider
-     * using a compound shape of standard shapes instead.<br>
-     * If you use GImpact shapes, its probably best to do so with a low-poly version of your model.
+     * This method creates a hull collision shape for the given mesh.<br>
      */
-    public static GImpactCollisionShape createSingleDynamicMeshShape(Geometry geom) {
+    public static HullCollisionShape createSingleDynamicMeshShape(Geometry geom) {
         Mesh mesh = geom.getMesh();
         if (mesh != null) {
-            GImpactCollisionShape dynamicShape = new GImpactCollisionShape(mesh);
+            HullCollisionShape dynamicShape = new HullCollisionShape(mesh);
             dynamicShape.setScale(geom.getWorldScale());
             return dynamicShape;
         } else {

@@ -151,6 +151,10 @@ public class Node extends Spatial implements Savable {
         for (int i = 0, cSize = children.size(); i < cSize; i++) {
             Spatial child = children.get(i);
             child.updateLogicalState(tpf);
+            
+            // added this line so that nodes removed by Controls
+            // don't cause IndexOutOfBoundsExceptions
+            cSize = children.size();
         }
     }
 

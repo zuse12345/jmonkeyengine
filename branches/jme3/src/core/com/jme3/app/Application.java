@@ -120,14 +120,16 @@ public class Application implements SystemListener {
     private void initAssetManager(){
         if (settings != null){
             String assetCfg = settings.getString("AssetConfigURL");
+            try {
                 if (assetCfg != null){
-                    URL url = Application.class.getResource(assetCfg);
-                    if (url == null) {
-                        logger.log(Level.SEVERE, "Unable to access URL in asset config:" +assetCfg);
-                        return;
-                    }
+                    URL url = new URL(assetCfg);
                     assetManager = JmeSystem.newAssetManager(url);
                 }
+            } catch (MalformedURLException ex) {
+                logger.log(Level.SEVERE, "Unable to parse URL in asset config:"
+                        +assetCfg, ex);
+                return;
+            }
         }
         if (assetManager == null){
             assetManager = JmeSystem.newAssetManager(

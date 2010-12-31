@@ -65,7 +65,7 @@ import com.jme3.bullet.collision.PhysicsCollisionEventFactory;
 import com.jme3.bullet.collision.PhysicsCollisionGroupListener;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.PhysicsCollisionObject;
-import com.jme3.bullet.collision.PhysicsRayResultListener;
+import com.jme3.bullet.collision.PhysicsRayTestResult;
 import com.jme3.bullet.joints.PhysicsJoint;
 import com.jme3.bullet.nodes.PhysicsGhostNode;
 import com.jme3.bullet.nodes.PhysicsCharacterNode;
@@ -663,24 +663,32 @@ public class PhysicsSpace {
     }
 
     /**
-     * Performs a ray collision test and reports the results to the listener
+     * Performs a ray collision test and returns the results as a list of PhysicsRayTestResults
      */
-    public void rayTest(Vector3f from, Vector3f to, PhysicsRayResultListener listener) {
-        dynamicsWorld.rayTest(Converter.convert(from), Converter.convert(to), new InternalRayListener(listener));
+    public List<PhysicsRayTestResult> rayTest(Vector3f from, Vector3f to) {
+        List<PhysicsRayTestResult> results=new LinkedList<PhysicsRayTestResult>();
+        dynamicsWorld.rayTest(Converter.convert(from), Converter.convert(to), new InternalRayListener(results));
+        return results;
+    }
+
+    public List<PhysicsRayTestResult> rayTest(Vector3f from, Vector3f to, List<PhysicsRayTestResult> results) {
+        results.clear();
+        dynamicsWorld.rayTest(Converter.convert(from), Converter.convert(to), new InternalRayListener(results));
+        return results;
     }
 
     private class InternalRayListener extends CollisionWorld.RayResultCallback {
 
-        private PhysicsRayResultListener listener;
+        private List<PhysicsRayTestResult> results;
 
-        public InternalRayListener(PhysicsRayResultListener listener) {
-            this.listener = listener;
+        public InternalRayListener(List<PhysicsRayTestResult> results) {
+            this.results = results;
         }
 
         @Override
         public float addSingleResult(LocalRayResult lrr, boolean bln) {
             PhysicsCollisionObject obj = (PhysicsCollisionObject) lrr.collisionObject.getUserPointer();
-            listener.rayCollision(obj, Converter.convert(lrr.hitNormalLocal), lrr.hitFraction, bln);
+            results.add(new PhysicsRayTestResult(obj, Converter.convert(lrr.hitNormalLocal), lrr.hitFraction, bln));
             return lrr.hitFraction;
         }
     }

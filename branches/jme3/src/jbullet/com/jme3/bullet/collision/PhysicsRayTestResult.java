@@ -29,24 +29,63 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package com.jme3.bullet.collision;
 
 import com.jme3.math.Vector3f;
 
 /**
- *
+ * Contains the results of a PhysicsSpace rayTest
  * @author normenhansen
  */
-public interface PhysicsRayResultListener {
+public class PhysicsRayTestResult {
+
+    private PhysicsCollisionObject collisionObject;
+    private Vector3f hitNormalLocal;
+    private float hitFraction;
+    private boolean normalInWorldSpace;
+
+    public PhysicsRayTestResult() {
+    }
+
+    public PhysicsRayTestResult(PhysicsCollisionObject collisionObject, Vector3f hitNormalLocal, float hitFraction, boolean normalInWorldSpace) {
+        this.collisionObject = collisionObject;
+        this.hitNormalLocal = hitNormalLocal;
+        this.hitFraction = hitFraction;
+        this.normalInWorldSpace = normalInWorldSpace;
+    }
 
     /**
-     * Called when this listener has been used in a rayTest() call on thePhysicsSpace for each collision found. <i>Called from he physics thread</i>
-     * @param collisionObject
-     * @param hitNormalLocal
-     * @param hitFraction
-     * @param normalInWorldSpace
+     * @return the collisionObject
      */
-    public void rayCollision(PhysicsCollisionObject collisionObject, Vector3f hitNormalLocal, float hitFraction, boolean normalInWorldSpace);
+    public PhysicsCollisionObject getCollisionObject() {
+        return collisionObject;
+    }
 
+    /**
+     * @return the hitNormalLocal
+     */
+    public Vector3f getHitNormalLocal() {
+        return hitNormalLocal;
+    }
+
+    /**
+     * @return the hitFraction
+     */
+    public float getHitFraction() {
+        return hitFraction;
+    }
+
+    /**
+     * @return the normalInWorldSpace
+     */
+    public boolean isNormalInWorldSpace() {
+        return normalInWorldSpace;
+    }
+
+    public void fill(PhysicsCollisionObject collisionObject, Vector3f hitNormalLocal, float hitFraction, boolean normalInWorldSpace) {
+        this.collisionObject = collisionObject;
+        this.hitNormalLocal = hitNormalLocal;
+        this.hitFraction = hitFraction;
+        this.normalInWorldSpace = normalInWorldSpace;
+    }
 }

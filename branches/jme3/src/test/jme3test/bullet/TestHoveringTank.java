@@ -36,11 +36,11 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.PhysicsSpace;
-import com.jme3.bullet.collision.PhysicsCollisionGroupListener;
 import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
-import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
+import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.nodes.PhysicsNode;
+import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.font.BitmapText;
 import com.jme3.input.ChaseCamera;
 import com.jme3.input.KeyInput;
@@ -71,6 +71,8 @@ public class TestHoveringTank extends SimpleApplication implements AnalogListene
 
     private BitmapText angular;
     private BitmapText linear;
+    private Vector3f HOVER_HEIGHT=new Vector3f(0,-8,0);
+    private Vector3f HOVER_FORCE=new Vector3f(0,10000,0);
 
     public static void main(String[] args) {
         TestHoveringTank app = new TestHoveringTank();
@@ -162,6 +164,7 @@ public class TestHoveringTank extends SimpleApplication implements AnalogListene
         PhysicsNode tb=new PhysicsNode(floorGeom,colShape,0);
         tb.setName("Floor");
         tb.setLocalTranslation(new Vector3f(0f,-7,0f));
+        tb.attachDebugShape(assetManager);
 
         rootNode.attachChild(tb);
         getPhysicsSpace().add(tb);
@@ -169,7 +172,7 @@ public class TestHoveringTank extends SimpleApplication implements AnalogListene
 
     private void buildPlayer() {
         spaceCraft = assetManager.loadModel("Models/HoverTank/Tank2.mesh.xml");
-        spaceCraft.scale(0.5f);
+//        spaceCraft.scale(0.5f);
 //        spaceCraft.rotate(0, FastMath.PI, 0);
         spaceCraft.updateGeometricState();
 
@@ -180,15 +183,15 @@ public class TestHoveringTank extends SimpleApplication implements AnalogListene
 
 //        spaceCraft.move(0, -height, 0);
 
-        CompoundCollisionShape colShape = new CompoundCollisionShape();
+        CollisionShape colShape = CollisionShapeFactory.createDynamicMeshShape(spaceCraft);
 
 //        BoxCollisionShape boxShape2 = new BoxCollisionShape(extent.clone().multLocal(2, 0.5f, 2));
 //        colShape.addChildShape(boxShape2, new Vector3f(0, -height, 0));
 
 //        CollisionShapeFactory.shiftCompoundShapeContents(colShape, new Vector3f(0, -height, 0));
 
-        BoxCollisionShape boxShape = new BoxCollisionShape(extent);
-        colShape.addChildShape(boxShape, Vector3f.ZERO);
+//        BoxCollisionShape boxShape = new BoxCollisionShape(extent);
+//        colShape.addChildShape(boxShape, Vector3f.ZERO);
 
         player = new PhysicsNode(spaceCraft, colShape, 1000);
         player.setName("Player");
@@ -242,6 +245,12 @@ public class TestHoveringTank extends SimpleApplication implements AnalogListene
     }
 
      public void updatePlayer(){
+         if(bulletAppState.getPhysicsSpace().rayTest(player.getWorldTranslation(), player.getWorldTranslation().add(HOVER_HEIGHT)).size()>0){
+             player.applyContinuousForce(true, HOVER_FORCE);
+         }
+         else{
+             player.applyContinuousForce(false);
+         }
          rootNode.updateGeometricState();
 
          Vector3f angVel = player.getAngularVelocity();
@@ -257,11 +266,11 @@ public class TestHoveringTank extends SimpleApplication implements AnalogListene
          linear.setText("Linear Velocity: " + ((int)vel.length()) );
          angular.setText("Angular Velocity: " + ((int)velocity) );
 
-         Quaternion newRot = new Quaternion();
-         float pitch = (velocity / 3f) * FastMath.HALF_PI;
-         float yaw   = (vel.length() / 5f / 10f) * FastMath.HALF_PI * 1f;
-         newRot.fromAngles(yaw, 0/*FastMath.PI*/, pitch);
-         spaceCraft.setLocalRotation(newRot);
+//         Quaternion newRot = new Quaternion();
+//         float pitch = (velocity / 3f) * FastMath.HALF_PI;
+//         float yaw   = (vel.length() / 5f / 10f) * FastMath.HALF_PI * 1f;
+//         newRot.fromAngles(yaw, 0/*FastMath.PI*/, pitch);
+//         spaceCraft.setLocalRotation(newRot);
 
         if (steeringValue != 0){
             if (velocity < 1 && velocity > -1){

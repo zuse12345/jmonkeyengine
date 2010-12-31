@@ -288,6 +288,7 @@ public class CollisionShapeFactory {
         Geometry geom = new Geometry();
         geom.setMesh(DebugShapeFactory.getDebugMesh(shape));
         geom.setLocalScale(shape.getScale());
+        geom.updateModelBound();
         return geom;
     }
 }

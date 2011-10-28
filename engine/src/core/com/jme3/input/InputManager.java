@@ -426,8 +426,7 @@ public class InputManager implements RawInputListener {
         if (!eventsPermitted) {
             throw new UnsupportedOperationException("MouseInput has raised an event at an illegal time.");
         }
-        //updating cursor pos on click, so that non android touch events can properly update cursor position.
-        cursorPos.set(evt.getX(), evt.getY());
+
         inputQueue.add(evt);
     }
 

@@ -34,9 +34,7 @@ package com.jme3.app.state;
  
 import com.jme3.app.Application;
 import com.jme3.renderer.RenderManager;
-import com.jme3.util.SafeArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.ArrayList;
 
 /**
  * The <code>AppStateManager</code> holds a list of {@link AppState}s which
@@ -44,50 +42,13 @@ import java.util.List;
  * When an {@link AppState} is attached or detached, the
  * {@link AppState#stateAttached(com.jme3.app.state.AppStateManager) } and
  * {@link AppState#stateDetached(com.jme3.app.state.AppStateManager) } methods
- * will be called respectively.
+ * will be called respectively. 
  *
- * <p>The lifecycle for an attached AppState is as follows:</p>
- * <ul>
- * <li>stateAttached() : called when the state is attached on the thread on which
- *                       the state was attached.
- * <li>initialize() : called ONCE on the render thread at the beginning of the next
- *                    AppStateManager.update().
- * <li>stateDetached() : called when the state is attached on the thread on which
- *                       the state was detached.  This is not necessarily on the
- *                       render thread and it is not necessarily safe to modify
- *                       the scene graph, etc..
- * <li>cleanup() : called ONCE on the render thread at the beginning of the next update
- *                 after the state has been detached or when the application is 
- *                 terminating.  
- * </ul> 
- *
- * @author Kirill Vainer, Paul Speed
+ * @author Kirill Vainer
  */
 public class AppStateManager {
 
-    /**
-     *  List holding the attached app states that are pending
-     *  initialization.  Once initialized they will be added to
-     *  the running app states.  
-     */
-    private final SafeArrayList<AppState> initializing = new SafeArrayList<AppState>(AppState.class);
-    
-    /**
-     *  Holds the active states once they are initialized.  
-     */
-    private final SafeArrayList<AppState> states = new SafeArrayList<AppState>(AppState.class);
-    
-    /**
-     *  List holding the detached app states that are pending
-     *  cleanup.  
-     */
-    private final SafeArrayList<AppState> terminating = new SafeArrayList<AppState>(AppState.class);
- 
-    // All of the above lists need to be thread safe but access will be
-    // synchronized separately.... but always on the states list.  This
-    // is to avoid deadlocking that may occur and the most common use case
-    // is that they are all modified from the same thread anyway.
-    
+    private final ArrayList<AppState> states = new ArrayList<AppState>();
     private final Application app;
     private AppState[] stateArray;
 
@@ -95,21 +56,12 @@ public class AppStateManager {
         this.app = app;
     }
 
-    protected AppState[] getInitializing() { 
+    protected AppState[] getArray(){
         synchronized (states){
-            return initializing.getArray();
-        }
-    } 
-
-    protected AppState[] getTerminating() { 
-        synchronized (states){
-            return terminating.getArray();
-        }
-    } 
-
-    protected AppState[] getStates(){
-        synchronized (states){
-            return states.getArray();
+            if (stateArray == null){
+                stateArray = states.toArray(new AppState[states.size()]);
+            }
+            return stateArray;
         }
     }
 
@@ -123,9 +75,10 @@ public class AppStateManager {
      */
     public boolean attach(AppState state){
         synchronized (states){
-            if (!states.contains(state) && !initializing.contains(state)){
+            if (!states.contains(state)){
                 state.stateAttached(this);
-                initializing.add(state);
+                states.add(state);
+                stateArray = null;
                 return true;
             }else{
                 return false;
@@ -145,11 +98,7 @@ public class AppStateManager {
             if (states.contains(state)){
                 state.stateDetached(this);
                 states.remove(state);
-                terminating.add(state);
-                return true;
-            } else if(initializing.contains(state)){
-                state.stateDetached(this);
-                initializing.remove(state);
+                stateArray = null;
                 return true;
             }else{
                 return false;
@@ -167,7 +116,7 @@ public class AppStateManager {
      */
     public boolean hasState(AppState state){
         synchronized (states){
-            return states.contains(state) || initializing.contains(state);
+            return states.contains(state);
         }
     }
 
@@ -179,19 +128,9 @@ public class AppStateManager {
      */
     public <T extends AppState> T getState(Class<T> stateClass){
         synchronized (states){
-            AppState[] array = getStates();
-            for (AppState state : array) {
-                if (stateClass.isAssignableFrom(state.getClass())){
-                    return (T) state;
-                }
-            }
-            
-            // This may be more trouble than its worth but I think
-            // it's necessary for proper decoupling of states and provides
-            // similar behavior to before where a state could be looked
-            // up even if it wasn't initialized. -pspeed
-            array = getInitializing();
-            for (AppState state : array) {
+            int num = states.size();
+            for (int i = 0; i < num; i++){
+                AppState state = states.get(i);
                 if (stateClass.isAssignableFrom(state.getClass())){
                     return (T) state;
                 }
@@ -200,51 +139,16 @@ public class AppStateManager {
         return null;
     }
 
-    protected void initializePending(){
-        AppState[] array = getInitializing();
-        synchronized( states ) {
-            // Move the states that will be initialized
-            // into the active array.  In all but one case the
-            // order doesn't matter but if we do this here then
-            // a state can detach itself in initialize().  If we
-            // did it after then it couldn't.
-            List<AppState> transfer = Arrays.asList(array);         
-            states.addAll(transfer);
-            initializing.removeAll(transfer);
-        }        
-        for (AppState state : array) {
-            state.initialize(this, app);
-        }
-    }
-    
-    protected void terminatePending(){
-        AppState[] array = getTerminating();
-        for (AppState state : array) {
-            state.cleanup();
-        }        
-        synchronized( states ) {
-            // Remove just the states that were terminated...
-            // which might now be a subset of the total terminating
-            // list.
-            terminating.removeAll(Arrays.asList(array));         
-        }
-    }    
-
     /**
      * Calls update for attached states, do not call directly.
      * @param tpf Time per frame.
      */
     public void update(float tpf){
-    
-        // Cleanup any states pending
-        terminatePending();
-
-        // Initialize any states pending
-        initializePending();
-
-        // Update enabled states    
-        AppState[] array = getStates();
+        AppState[] array = getArray();
         for (AppState state : array){
+            if (!state.isInitialized())
+                state.initialize(this, app);
+
             if (state.isEnabled()) {
                 state.update(tpf);
             }
@@ -252,12 +156,15 @@ public class AppStateManager {
     }
 
     /**
-     * Calls render for all attached and initialized states, do not call directly.
+     * Calls render for all attached states, do not call directly.
      * @param rm The RenderManager
      */
     public void render(RenderManager rm){
-        AppState[] array = getStates();
+        AppState[] array = getArray();
         for (AppState state : array){
+            if (!state.isInitialized())
+                state.initialize(this, app);
+
             if (state.isEnabled()) {
                 state.render(rm);
             }
@@ -265,11 +172,14 @@ public class AppStateManager {
     }
 
     /**
-     * Calls render for all attached and initialized states, do not call directly.
+     * Calls render for all attached states, do not call directly.
      */
     public void postRender(){
-        AppState[] array = getStates();
+        AppState[] array = getArray();
         for (AppState state : array){
+            if (!state.isInitialized())
+                state.initialize(this, app);
+
             if (state.isEnabled()) {
                 state.postRender();
             }
@@ -280,7 +190,7 @@ public class AppStateManager {
      * Calls cleanup on attached states, do not call directly.
      */
     public void cleanup(){
-        AppState[] array = getStates();
+        AppState[] array = getArray();
         for (AppState state : array){
             state.cleanup();
         }

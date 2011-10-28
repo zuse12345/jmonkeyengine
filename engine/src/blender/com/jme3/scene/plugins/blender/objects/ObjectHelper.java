@@ -282,6 +282,14 @@ public class ObjectHelper extends AbstractBlenderHelper {
 
 		//load parent inverse matrix
 		Pointer pParent = (Pointer) objectStructure.getFieldValue("parent");
+		Structure parent = null;
+		if(pParent.isNotNull()) {
+			try {
+				parent = pParent.fetchData(blenderContext.getInputStream()).get(0);
+			} catch (BlenderFileException e) {
+				LOGGER.log(Level.WARNING, "Cannot fetch parent for object! Reason: {0}", e.getLocalizedMessage());
+			}
+		}
 		Matrix4f parentInv = pParent.isNull() ? Matrix4f.IDENTITY : this.getMatrix(objectStructure, "parentinv");
 		
 		//create the global matrix (without the scale)
@@ -301,18 +309,12 @@ public class ObjectHelper extends AbstractBlenderHelper {
 									  size.get(1).floatValue() * scaleY, 
 									  size.get(2).floatValue() * scaleZ);
 		
-		if(fixUpAxis) {
+		//the root object is transformed if the Y axis is UP
+		if(fixUpAxis && (pParent.isNull() || (parent!=null && !this.shouldBeLoaded(parent, blenderContext)))) {
 			float y = translation.y;
 			translation.y = translation.z;
 			translation.z = -y;
-			
-			y = rotation.getY();
-			float z = rotation.getZ();
-			rotation.set(rotation.getX(), z, -y, rotation.getW());
-			
-			y=scale.y;
-			scale.y = scale.z;
-			scale.z = -y;
+			rotation = this.upAxisRotationQuaternion.mult(rotation);
 		}
 		
 		//create the result
